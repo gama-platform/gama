@@ -1,0 +1,40 @@
+name: Publishing GAMA release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION: 
+        required: true
+        default: 2024.03.0 
+        type: string
+      COMMIT_SHA: 
+        required: true 
+        type: string
+      IS_STABLE_RELEASE: 
+        required: true
+        default: false 
+        type: boolean
+    secrets:
+      BOT_TOKEN:
+        required: true
+
+jobs:
+  
+  publish-github:
+    name: Embedding JDK in GAMA 
+    uses: ./.github/workflows/travis-publish-github.yaml
+    with:
+      IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+      RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
+      COMMIT_SHA: ${{ inputs.COMMIT_SHA }}
+    secrets: 
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+  publishing-third-party:
+    needs: publish-github
+    name: Publish archives to 3rd parties
+    uses: ./.github/workflows/travis-publish-third-party.yaml
+    with:
+      tag: ${{ inputs.RELEASE_VERSION }}
+    secrets: 
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}

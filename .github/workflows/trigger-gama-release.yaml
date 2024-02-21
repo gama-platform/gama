@@ -1,0 +1,103 @@
+name: Make new GAMA release
+
+on:  
+  workflow_dispatch:
+    inputs:
+      IS_STABLE_RELEASE: 
+        description: 'Is this a stable release ?'
+        required: true
+        default: false 
+        type: boolean
+      tag:
+        description: "The tag of the release to publish (YYYY.MM.0)"
+        type: string
+        required: true
+        default: 2024.03.0
+
+
+run-name: Building GAMA release
+
+jobs:
+  compiling-gama:
+    name: Compiling GAMA
+    uses: ./.github/workflows/travis-build.yaml
+    with:
+      get_testing_compiled_archives: false
+      get_all_archives_for_release: true
+    secrets:
+      GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
+      GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
+
+  travis-scripts: 
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+          
+      - name: Prepare travis-script
+        id: commit
+        run: |
+          chmod +x ${{ github.workspace }}/travis/*
+          mv ${{ github.workspace }}/gama.product/extraresources ${{ github.workspace }}/travis
+
+          commit=$(git rev-parse --short=7 HEAD)
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: travis-scripts
+          if-no-files-found: error
+          compression-level: 9
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/travis
+
+  #
+  # ██████╗  █████╗  ██████╗██╗  ██╗ █████╗  ██████╗ ██╗███╗   ██╗ ██████╗ 
+  # ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔════╝ ██║████╗  ██║██╔════╝ 
+  # ██████╔╝███████║██║     █████╔╝ ███████║██║  ███╗██║██╔██╗ ██║██║  ███╗
+  # ██╔═══╝ ██╔══██║██║     ██╔═██╗ ██╔══██║██║   ██║██║██║╚██╗██║██║   ██║
+  # ██║     ██║  ██║╚██████╗██║  ██╗██║  ██║╚██████╔╝██║██║ ╚████║╚██████╔╝
+  # ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+  #    
+
+  packaging-gama:
+    needs: [compiling-gama, travis-scripts]
+    name: Package GAMA
+    uses: ./.github/workflows/travis-packaging.yaml
+    with:
+      RELEASE_VERSION: ${{ inputs.tag }}
+    secrets:
+      # === MacOS needs ===
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
+      MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
+      NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+      NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+      NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+      # === JDK needs ===
+      GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
+      GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
+
+  # 
+  # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗███████╗██╗  ██╗██╗███╗   ██╗ ██████╗ 
+  # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝██║  ██║██║████╗  ██║██╔════╝ 
+  # ██████╔╝██║   ██║██████╔╝██║     ██║███████╗███████║██║██╔██╗ ██║██║  ███╗
+  # ██╔═══╝ ██║   ██║██╔══██╗██║     ██║╚════██║██╔══██║██║██║╚██╗██║██║   ██║
+  # ██║     ╚██████╔╝██████╔╝███████╗██║███████║██║  ██║██║██║ ╚████║╚██████╔╝
+  # ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+  #                                                                           
+
+  publish-gama:
+    needs: [packaging-gama, travis-scripts]
+    name: Publish GAMA
+    uses: ./.github/workflows/travis-publish.yaml
+    with:
+      RELEASE_VERSION: ${{ inputs.tag }}
+      IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+      COMMIT_SHA: ${{needs.travis-scripts.travis-scripts.outputs.commit}}
+    secrets: 
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+

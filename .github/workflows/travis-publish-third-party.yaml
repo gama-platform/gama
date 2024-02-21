@@ -16,18 +16,6 @@ on:
       BOT_TOKEN:
         required: true
         description: "The token used to authenticate to the Github API"
-  
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "The tag of the release to publish"
-        type: string
-        required: true
-        default: 1.9.3
-      targets:
-        description: "The targets to publish to separated by spaces"
-        type: string
-        default: "windows linux mac docker"
 
 
 run-name: Auto publishing ${{ inputs.tag }} to external stores

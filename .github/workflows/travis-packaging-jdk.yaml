@@ -1,0 +1,93 @@
+name: Testing Maven Build
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION: 
+        required: true
+        default: 2024.03.0 
+        type: string
+    secrets:
+      GAMA_KEYSTORE_BASE64:
+        required: true
+      GAMA_KEYSTORE_STOREPASS:
+        required: true
+
+jobs:
+  add-jdk: 
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Get linux testing releases
+        uses: actions/download-artifact@v4
+        with:
+          name: gama-compiled-archive
+
+      - name: Get linux testing releases
+        uses: actions/download-artifact@v4
+        with:
+          name: travis-scripts
+          path: ${{ github.workspace }}/travis
+
+      - name: Convert maven tarball to zip archives
+        shell: bash
+        run: |
+          # Convert to zip archives
+          find . -name "gama.application-*.tar.gz" -print -exec bash -c 'tar xzf {} && zip -9 -r -q $(basename \{} .tar.gz).zip $(tar --exclude="*/*" -tf {}) && rm -fr $(tar tf {}) {} && echo "Compressed and convert {} to zip"' \;
+          
+      - name: Make zip file
+        shell: bash
+        run: |
+          touch $GITHUB_WORKSPACE/sign.maven
+          echo "$GAMA_KEYSTORE_BASE64" | base64 --decode > ~/gama.keystore
+          $GITHUB_WORKSPACE/travis/zip_withjdk.sh
+        env:
+          GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
+          GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
+          RUNNER_TMP: ${{ runner.temp }}
+
+      # cf https://github.com/actions/upload-artifact/issues/246
+      - name: Move artefacts to root tree
+        run: |
+          # MacOS Family
+          mv ${{ github.workspace }}/travis/mac-sign.sh ${{ github.workspace }}
+          mv ${{ github.workspace }}/travis/what2sign.sh ${{ github.workspace }}
+          mv ${{ github.workspace }}/travis/extraresources/entitlements.plist ${{ github.workspace }}
+          # Windows Family
+          mv ${{ github.workspace }}/travis/extraresources/installer/windows/* ${{ github.workspace }}
+          # Debian Family
+          mv gama.application-linux.gtk.x86_64.zip gama-platform_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
+          mv gama.application-linux.gtk.x86_64_withJDK.zip gama-platform-jdk_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
+          cd ${{ github.workspace }}/travis/extraresources/installer/unix && zip -r ${{ github.workspace }}/extraresources-unix.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-mac-unsigned
+          path: |
+            ./gama.application-macosx*zip
+            ./mac-sign.sh
+            ./what2sign.sh
+            ./entitlements.plist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-linux
+          path: |
+            ./gama-platform*amd64.zip
+            ./extraresources-unix.zip
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-windows
+          path: |
+            ./gama.application-win32*zip
+            ./icon256.ico
+            ./windows_installer_script.iss
+            ./LICENSE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-zip-builds
+          path: |
+            ./gama.application-win32*zip
+            ./gama-platform*amd64.zip

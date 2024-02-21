@@ -1,0 +1,42 @@
+name: Packaging Windows release
+
+on:
+  workflow_call:
+
+jobs:
+  windows-msi:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        zipName: [gama.application-win32.win32.x86_64.zip, gama.application-win32.win32.x86_64_withJDK.zip]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: gama-windows
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: travis-scripts
+
+      - name: Change variables for JDK installer
+        if: contains( matrix.zipName, 'withJDK')
+        run: |
+          ((Get-Content -path windows_installer_script.iss -Raw) -replace 'x86_64','x86_64_withJDK') | Set-Content -Path windows_installer_script.iss
+          Get-Content -path windows_installer_script.iss
+
+      - name: Prepare vm
+        run: |
+          mkdir gama_output
+          mkdir gama_input
+          7z x ${{ matrix.zipName }} -ogama_input
+
+      - name: Create installer
+        run: iscc.exe windows_installer_script.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-windows-exe
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            gama_output

@@ -1,0 +1,60 @@
+name: Packaging linux release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION: 
+        required: true
+        default: 2024.03.0 
+        type: string
+
+jobs:
+  debian-archive:
+    # https://earthly.dev/blog/creating-and-hosting-your-own-deb-packages-and-apt-repo/#step-1-creating-a-deb-package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        zipName: ["gama-platform_${{ inputs.RELEASE_VERSION }}-1_amd64", "gama-platform-jdk_${{ inputs.RELEASE_VERSION }}-1_amd64"]
+    steps:
+      - name: Prepare vm
+        run: |
+          sudo apt-get install -y gcc dpkg-dev gpg
+          mkdir -p ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform ${{ github.workspace }}/${{ matrix.zipName }}/usr/share/applications
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: gama-linux
+          path: ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform
+
+      - name: Get extra files
+        run: |
+          unzip ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/extraresources-unix.zip -d ${{ github.workspace }}/${{ matrix.zipName }} && rm ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/extraresources-unix.zip
+          mv ${{ github.workspace }}/${{ matrix.zipName }}/gama-platform.desktop ${{ github.workspace }}/${{ matrix.zipName }}/usr/share/applications/gama-platform.desktop
+          cd ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform && unzip ${{ matrix.zipName }}.zip && cd -
+          rm ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/*.zip
+
+      - name: Tweaks for package w/ JDK
+        if: contains(matrix.zipName, 'jdk')
+        run: |
+          sed -i "s/gama-platform-jdk$/gama-platform/g" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
+          sed -i "s/Package: gama-platform$/Package: gama-platform-jdk/g" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
+          sed -i "/^Depends:.*$/d" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
+
+          # Pre-fix relative path for headless helper script (jdk path)
+          sed -i "s|headless_path=.*|headless_path=/opt/gama-platform/headless|g" ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/headless/gama-headless.sh
+
+      - name: Fix relative path for headless helper script (plugin path)
+        run: sed -i "s/\".*\.\/p/\/opt\/gama-platform\/p/g" ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/headless/gama-headless.sh
+
+      - name: Build DEB archive
+        run: |
+          dpkg --build ${{ github.workspace }}/${{ matrix.zipName }}
+          dpkg --info ${{ github.workspace }}/${{ matrix.zipName }}.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gama-linux-deb
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            ${{ github.workspace }}/${{ matrix.zipName }}.deb

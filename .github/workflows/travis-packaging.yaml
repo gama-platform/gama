@@ -1,0 +1,106 @@
+name: Packaging GAMA release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION: 
+        required: true
+        default: 2024.03.0 
+        type: string
+    secrets:
+      # === MacOS needs ===
+      MACOS_CERTIFICATE:
+        required: true
+      MACOS_CERTIFICATE_PWD:
+        required: true
+      MACOS_KEYCHAIN_PWD:
+        required: true
+      MACOS_DEV_ID:
+        required: true
+      NOTARY_APPLE_ID:
+        required: true
+      NOTARY_PASSWORD:
+        required: true
+      NOTARY_TEAM_ID:
+        required: true
+      # === JDK needs ===
+      GAMA_KEYSTORE_BASE64:
+        required: true
+      GAMA_KEYSTORE_STOREPASS:
+        required: true
+      # === 
+
+jobs:
+  
+  packaging-jdk:
+    name: Embedding JDK in GAMA 
+    uses: ./.github/workflows/travis-packaging-jdk.yaml
+    with:
+      RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
+    secrets:
+      GAMA_KEYSTORE_BASE64: ${{ inputs.GAMA_KEYSTORE_BASE64 }}
+      GAMA_KEYSTORE_STOREPASS: ${{ inputs.GAMA_KEYSTORE_STOREPASS }}
+  
+  #
+  #  _      _____ _   _ _    ___   __
+  # | |    |_   _| \ | | |  | \ \ / /
+  # | |      | | |  \| | |  | |\ V / 
+  # | |      | | | . ` | |  | | > <  
+  # | |____ _| |_| |\  | |__| |/ . \ 
+  # |______|_____|_| \_|\____//_/ \_\\
+  #
+  
+  packaging-linux:
+    name: Packaging GAMA for Linux
+    needs: packaging-jdk
+    uses: ./.github/workflows/travis-packaging-linux.yaml
+    with:
+      RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
+  
+  packaging-linux-test:
+    needs: packaging-linux
+    name: Testing Linux package
+    uses: ./.github/workflows/travis-packaging-linux-test.yaml
+    with:
+      RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
+  
+  #
+  # __          _______ _   _ _____   ______          _______ 
+  # \ \        / /_   _| \ | |  __ \ / __ \ \        / / ____|
+  #  \ \  /\  / /  | | |  \| | |  | | |  | \ \  /\  / / (___  
+  #   \ \/  \/ /   | | | . ` | |  | | |  | |\ \/  \/ / \___ \ 
+  #    \  /\  /   _| |_| |\  | |__| | |__| | \  /\  /  ____) |
+  #     \/  \/   |_____|_| \_|_____/ \____/   \/  \/  |_____/ 
+  #
+
+  packaging-windows:
+    name: Packaging GAMA for Windows
+    needs: packaging-jdk
+    uses: ./.github/workflows/travis-packaging-windows.yaml
+
+  #
+  #   __  __          _____    ____   _____ 
+  # |  \/  |   /\   / ____|  / __ \ / ____|
+  # | \  / |  /  \ | |      | |  | | (___  
+  # | |\/| | / /\ \| |      | |  | |\___ \ 
+  # | |  | |/ ____ \ |____  | |__| |____) |
+  # |_|  |_/_/    \_\_____|  \____/|_____/ 
+  #
+
+  packaging-macos:
+    name: Packaging GAMA for MacOS
+    needs: packaging-jdk
+    uses: ./.github/workflows/travis-packaging-macos.yaml
+    secrets:
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
+      MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
+      NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+      NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+      NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+  
+  packaging-macos-test:
+    needs: packaging-macos
+    name: Testing MacOS package
+    uses: ./.github/workflows/travis-packaging-macos-test.yaml

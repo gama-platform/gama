@@ -63,21 +63,18 @@ jobs:
           # Config file
           sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.annotations/pom.xml
           sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.processor/pom.xml
-          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/msi.gama.parent/pom.xml
+          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.parent/pom.xml
           # Trigger jar signing plugin
           touch $GITHUB_WORKSPACE/sign.maven
         env:
           GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
           GAMA_STORE: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
-          
+
       - name: Tag release version
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
           echo "Rename mvn config file"
           echo "Tag latest commit with release"
-      
-
-
 
       # 
       # ██████╗ ██╗   ██╗██╗██╗     ██████╗ ██╗███╗   ██╗ ██████╗ 
