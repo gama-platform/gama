@@ -1,0 +1,43 @@
+/**
+* Name: TestOne
+* Author: Minh Thu
+* Description: Tests common comparisons
+* Tags: comparison, test
+*/
+
+experiment TestOne type: test autorun: true {
+		
+		
+	setup {
+		/** Insert any initialization to run before each of the tests */
+	}
+	
+	test "My First Test" {
+	/** Insert here any assertion you need to test */
+		assert 0 = 0;
+		assert 0 != 1;
+		/**Comparison*/
+		assert (4.0>4) = false;
+		assert (4<4.0) = false;
+		assert 0.0987<0.11;
+		assert 5 = 5.0;
+		assert 6.0 = 6;
+		assert ("abc"="bca") = false;
+		assert "abd">="abc";
+		assert "abc"!="bde";
+		assert "bde"="bde";
+		assert ({3,7}>{7,3}) = false;
+		assert ({3,7}>{2,7}) = false;
+		assert ({3,7}<{4,7}) = false;
+		assert{3,7}={3,7};
+		assert [3,4]!=[4,3];
+		assert [3,4] != [9];
+		assert date('2000-01-02') - date('2000-01-01') = 86400;
+		assert string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02';
+		assert string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31';
+		assert string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02';
+		assert string(date('2000-01-02'),'yyyy-MM-dd','en') = '2000-01-02';
+		 
+	}
+	
+}

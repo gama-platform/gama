@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.extension.image"
+      label="Image"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO"
+      plugin="gama.extension.images">
+
+   <description url="http://www.example.com/description">
+      This plug-in contains the &apos;image&apos; type present in GAML and associated operators.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      Plug-in: GPL v3 licence (GAMA licence)
+   </license>
+
+   <url>
+      <update label="GAMA 1.9.x Update Site" url="https://updates.gama-platform.org"/>
+   </url>
+
+   <requires>
+      <import plugin="gama.core"/>
+      <import plugin="gama.dependencies"/>
+   </requires>
+
+   <plugin
+         id="gama.extension.image"
+         version="0.0.0"/>
+
+</feature>

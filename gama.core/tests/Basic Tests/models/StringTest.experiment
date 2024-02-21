@@ -1,0 +1,56 @@
+/**
+* Name: StringTest
+* Author: Minh Thu
+* Description: Tests common properties of strings
+* Tags: string, test
+*/
+
+experiment StringTest type: test autorun: true {
+	
+		
+	setup {
+		/** Insert any initialization to run before each of the tests */
+	}
+	
+	test "My First Test" {
+		assert "ce" in "abcede" = true;
+		assert "ac" in "abcede" = false;
+		assert 'abcded' contains 'bd' = false;
+		assert 'abcded' contains 'cd' = true;
+		assert 'abcabcabc' contains_any ['ca',"gh"] = true;
+		assert "abcabcabc" contains_all ["ca","xy"] = false;
+		assert "abcabcabc" contains_all ["ca","ab"] = true;
+		assert "abcgrbd" index_of "bd" = 5;
+		assert "abcgr" index_of "g" = 3;
+		assert "abcgrbd" last_index_of "bd" = 5;
+		assert ("abgrbdcghbd" index_of "bd") = 4;
+		assert ("abgrbdcghbd" last_index_of "bd") = 9;
+		assert ("abcgrbc" last_index_of "bc") = 5;
+		assert ("abcgrbc" index_of "bc")=1;
+		assert copy_between("abcabcabc", 2,6) != "cabca";
+		assert copy_between("abcabcabc", 2,6) = "cabc";
+		write ('to be or not to be,that is the question' split_with ',');
+		write ('to be or not to be,that is the question' split_with ' ');
+		write ('to be or not to be,that is the question' split_with ', ');
+		write copy_between("abcabcabc", 2,6);
+		assert is_number("123.56") = true;
+		assert is_number("test") = false;
+		assert is_number("123,56") = false;
+		assert is_number("-123.56") = true;
+		write (reverse("to begin..."));
+		assert empty ('abced')= false;
+		assert empty ("")= true;
+		assert first ("ghaj") = "g";
+		assert last ("ghaj") = "j";
+		assert length ("to be or not to be") = 18;
+		write (length ("to be or not to be"));
+		write (char(45));
+		assert char(49)+"_annees" != "10_annees";
+		assert char(49)+"_annees" = "1_annees";		
+		assert lower_case("HjkLM") = "hjklm";
+		assert upper_case("GaMa") ="GAMA";
+		write (char(49)+char(48)+"_annees"); 
+		
+	}
+	
+}

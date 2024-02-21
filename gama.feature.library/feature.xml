@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.library"
+      label="Models"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO"
+      plugin="gama.library"
+      colocation-affinity="gama.feature.core">
+
+   <description url="http://www.gama-platform.org">
+      The library of models of GAMA 1.9.1
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <plugin
+         id="gama.library"
+         version="0.0.0"/>
+
+</feature>

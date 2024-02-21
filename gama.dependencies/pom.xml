@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!--  this pom is only for dependency identification and copying -->
+  
+  <!--  too launch this pom you must use this command
+  		mvn -f pom-dependencies.xml -DoutputDirectory=lib\  dependency:copy-dependencies
+   -->
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.gama</groupId>
+    <artifactId>gama.parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+    <relativePath>../gama.parent/</relativePath>
+  </parent>
+  <artifactId>gama.dependencies</artifactId>
+  <packaging>eclipse-plugin</packaging>
+
+  <!-- <packaging>jar</packaging> -->
+  
+ 
+  <build>
+  <plugins>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>copy-dependencies</id>
+      <phase>package</phase>
+      <goals>
+       <goal>copy-dependencies</goal>
+      </goals>
+       <configuration>
+              <outputDirectory>${basedir}/target/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+     </configuration>
+     </execution>
+    </executions>
+   </plugin>
+  </plugins>
+ </build>
+</project>

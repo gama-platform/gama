@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Gama" uid="gama.ui.application.product" id="gama.ui.application.product" application="gama.ui.application.GamaApplication" type="features" includeLaunchers="true" autoIncludeRequirements="true" version="0.0.0.qualifier">
+
+   <aboutInfo>
+      <image path="/gama.ui.application/icons/window/icon128.png"/>
+      <text>
+         GAMA Platform - 0.0.0-SNAPSHOT http://gama-platform.org
+
+(c) 2007-2008 IRD-UR GEODES (France) &amp; IFI-MSI (Vietnam)
+(c) 2009-2011 UMI 209 UMMISCO IRD/UPMC - MSI (Vietnam)
+(c) 2012-2017 UMI 209 UMMISCO IRD/UPMC &amp; Partners
+(c) 2018-2023 UMI 209 UMMISCO IRD/SU &amp; Partners
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-data @noDefault 
+         --launcher.defaultAction
+         openFile
+      </programArgs>
+      <programArgsLin>--launcher.GTK_version 3
+      </programArgsLin>
+      <vmArgs>-server 
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
+-Xms4096m
+-Xmx4096m
+-Xss128m
+-Xmn1024m
+-XX:+UseAdaptiveSizePolicy
+-XX:+OptimizeStringConcat
+-Dosgi.locking=none
+-Dosgi.checkConfiguration=false
+-Declipse.log.level=ERROR
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
+-Denable_logging=true 
+-Denable_debug=true
+-Duse_global_preference_store=true 
+-Dswt.autoScale=exact
+-Dread_only=false 
+-Duse_old_tabs=true 
+-Duse_legacy_drawers=false 
+-Duse_delayed_resize=false 
+--add-exports=java.base/java.lang=ALL-UNNAMED
+--add-exports=java.desktop/sun.awt=ALL-UNNAMED
+--add-exports=java.desktop/sun.java2d=ALL-UNNAMED
+--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED
+--add-exports=java.base/java.math=ALL-UNNAMED
+--add-exports=java.base/java.lang=ALL-UNNAMED 
+--add-exports=java.base/sun.nio.ch=ALL-UNNAMED 
+--add-opens=java.base/java.lang=ALL-UNNAMED 
+--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED 
+--add-opens=java.base/java.math=ALL-UNNAMED  
+--add-opens=java.base/java.util=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED 
+--add-opens=java.base/java.net=ALL-UNNAMED 
+--add-opens=java.base/java.security=ALL-UNNAMED 
+--add-opens=java.desktop/java.awt=ALL-UNNAMED 
+--add-opens=java.base/java.io=ALL-UNNAMED 
+--add-opens=java.base/java.time=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+--add-opens=java.base/java.text=ALL-UNNAMED 
+--add-opens=java.base/java.lang.ref=ALL-UNNAMED 
+--add-opens=java.sql/java.sql=ALL-UNNAMED
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread 
+-Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+      <vmArgsWin>-Dfile.encoding=UTF-8
+-Dorg.eclipse.swt.browser.DefaultType=edge
+      </vmArgsWin>
+   </launcherArgs>
+
+   <windowImages i16="/gama.ui.application/icons/window/icon16.png" i32="/gama.ui.application/icons/window/icon32.png" i48="/gama.ui.application/icons/window/icon48.png" i64="/gama.ui.application/icons/window/icon64.png" i128="/gama.ui.application/icons/window/icon128.png" i256="/gama.ui.application/icons/window/icon256.png"/>
+
+   <splash
+      location="gama.ui.application"
+      startupProgressRect="12,466,80,12"
+      startupMessageRect="12,450,445,16"
+      startupForegroundColor="B98080" />
+   <launcher name="Gama">
+      <linux icon="extraresources/launcher/icon.xpm"/>
+      <macosx icon="extraresources/launcher/icon.icns"/>
+      <win useIco="true">
+         <ico path="extraresources/launcher/icon.ico"/>
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <license>
+        <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+   </license>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="gama.feature.ui" installMode="root"/>
+      <feature id="gama.feature.core" installMode="root"/>
+      <feature id="gama.feature.library" installMode="root"/>
+      <feature id="gama.feature.ui.editor" installMode="root"/>
+      <feature id="gama.feature.extensions" installMode="root"/>
+      <feature id="gama.feature.dependencies" installMode="root"/>
+      <feature id="gama.feature.ui.experiment" installMode="root"/>
+      <feature id="gama.feature.ui.dependencies" installMode="root"/>
+      <feature id="gama.feature.extension.image" installMode="root"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
+      <property name="org.eclipse.update.reconcile" value="false" />
+      <property name="version" value="SNAPSHOT" />
+      <property name="eclipse.buildId" value="${build.id}" />
+   </configurations>
+
+   <repositories>
+      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="" enabled="true" />
+      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="" enabled="true" />
+      <repository location="https://anb0s.github.io/EasyShell/release/" name="" enabled="true" />
+      <repository location="https://download.eclipse.org/egit/updates/" name="" enabled="true" />
+   </repositories>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
+
+</product>

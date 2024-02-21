@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Models Library
+Bundle-SymbolicName: gama.library
+Bundle-Version: 0.0.0.qualifier
+Bundle-Vendor: UMMISCO

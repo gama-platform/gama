@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Stats
+Bundle-SymbolicName: gama.extension.stats;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Require-Bundle: gama.core,
+ gama.extension.maths,
+ gama.dependencies
+Bundle-ActivationPolicy: lazy
+Export-Package: gama.extension.stats
+Bundle-ClassPath: .,
+ lib/colt.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: gama.extension.stats

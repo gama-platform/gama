@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Pedestrian
+Bundle-SymbolicName: gama.extension.pedestrian;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Automatic-Module-Name: gama.extension.pedestrian
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: gama.core,
+ gama.dependencies
+Export-Package: gama.extension.pedestrian.operator,
+ gama.extension.pedestrian.skills
+Bundle-ClassPath: .

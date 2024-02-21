@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gama.display">
+      <implementation
+            class="gama.ui.display.java2d.Java2DDisplaySurface"
+            keyword="java2D">
+      </implementation>
+      <implementation
+            class="gama.ui.display.java2d.Java2DDisplaySurface"
+            keyword="2d">
+      </implementation>
+      <implementation
+            class="gama.ui.display.java2d.Java2DDisplaySurface"
+            keyword="2D">
+      </implementation>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            category="gama.ui.category.gama"
+            class="gama.ui.display.java2d.AWTDisplayView"
+            icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.display.png"
+            id="gama.ui.application.view.LayeredDisplayView"
+            name="Display"
+            restorable="false"> 
+      </view>
+   </extension>
+   <extension
+         point="gaml.extension">
+   </extension>
+
+</plugin>

@@ -1,0 +1,24 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java#apache-maven-with-a-settings-path
+
+name: Continuous project validationx
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+  workflow_dispatch: # For manual trigger
+
+jobs:
+
+  compiling-gama:
+    name: Compiling GAMA
+    uses: ./.github/workflows/gama-build.yml
+    with:
+      get_testing_compiled_archives: true
+      get_all_archives_for_release: false
+
+  testing-gama:
+    name: Testing built GAMA
+    needs: compiling-gama
+    uses: ./.github/workflows/gama-build-test.yml

@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Java2d Display for GAMA
+Bundle-SymbolicName: gama.ui.display.java2d;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.swt,
+ gama.dependencies,
+ gama.core,
+ org.eclipse.ui,
+ org.eclipse.core.runtime,
+ gama.ui.shared,
+ gama.ui.experiment,
+ gama.ui.application,
+ gama.extension.image
+Automatic-Module-Name: gama.ui.display.java2d

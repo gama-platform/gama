@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="gama.processor/gama.processor.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/gama.processor/processor/Generate Processor.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" manifestLocation="/gama.processor/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="true">
+        <folder path="/gama.processor/META-INF"/>
+        <file path="/gama.processor/.gitignore"/>
+        <file path="/gama.processor/pom.xml"/>
+        <file path="/gama.processor/.project"/>
+        <javaElement handleIdentifier="=gama.annotations/src"/>
+        <file path="/gama.processor/build.properties"/>
+        <file path="/gama.processor/.classpath"/>
+        <file path="/gama.processor/plugin.xml"/>
+    </selectedElements>
+</jardesc>

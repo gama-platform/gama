@@ -1,0 +1,200 @@
+/*******************************************************************************************************
+ *
+ * ContainerVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * .
+ *
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.gaml.variables;
+
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
+import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.GamlAnnotations.facet;
+import gama.annotations.precompiler.GamlAnnotations.facets;
+import gama.annotations.precompiler.GamlAnnotations.inside;
+import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.core.common.interfaces.IKeyword;
+import gama.gaml.compilation.GAML;
+import gama.gaml.compilation.annotations.validator;
+import gama.gaml.descriptions.IDescription;
+import gama.gaml.expressions.IExpression;
+import gama.gaml.expressions.IExpressionFactory;
+import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.types.IType;
+import gama.gaml.variables.ContainerVariable.ContainerVarValidator;
+
+/**
+ * The Class ContainerVariable.
+ */
+@facets (
+		value = { @facet (
+				name = IKeyword.NAME,
+				type = IType.NEW_VAR_ID,
+				optional = false,
+				doc = @doc ("The name of the attribute")),
+				@facet (
+						name = IKeyword.TYPE,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = @doc ("The type of the attribute")),
+				@facet (
+						name = IKeyword.INIT,
+						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
+						type = IType.NONE,
+						optional = true,
+						doc = @doc ("The initial value of the attribute. Same as <- ")),
+				@facet (
+						name = "<-",
+						internal = true,
+						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
+						type = IType.NONE,
+						optional = true,
+						doc = @doc ("The initial value of the attribute. Same as init:")),
+				@facet (
+						name = IKeyword.VALUE,
+						type = IType.NONE,
+						optional = true,
+						doc = @doc (
+								value = "",
+								deprecated = "Use 'update' instead")),
+				@facet (
+						name = IKeyword.UPDATE,
+						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
+						type = IType.NONE,
+						optional = true,
+						doc = @doc ("An expression that will be evaluated each cycle to compute a new value for the attribute")),
+				@facet (
+						name = IKeyword.FUNCTION,
+						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
+						type = IType.NONE,
+						optional = true,
+						doc = @doc ("Used to specify an expression that will be evaluated each time the attribute is accessed. Equivalent to '->'. This facet is incompatible with both 'init:', 'update:' and 'on_change:' (or the equivalent final block)")),
+				@facet (
+						name = "->",
+						internal = true,
+						type = { IType.INT, IType.FLOAT, IType.POINT, IType.DATE },
+						optional = true,
+						doc = @doc ("Used to specify an expression that will be evaluated each time the attribute is accessed. Equivalent to 'function:'. This facet is incompatible with both 'init:' and 'update:' and 'on_change:' (or the equivalent final block)")),
+				@facet (
+						name = IKeyword.CONST,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Indicates whether this attribute can be subsequently modified or not")),
+				@facet (
+						name = IKeyword.CATEGORY,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
+				@facet (
+						name = IKeyword.PARAMETER,
+						type = { IType.STRING, IType.BOOL },
+						optional = true,
+						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
+				@facet (
+						name = IKeyword.SIZE,
+						type = { IType.INT, IType.POINT },
+						optional = true,
+						doc = @doc (
+								value = "",
+								deprecated = "Use the operator matrix_with(size, fill_with) or list_with(size, fill_with) instead")),
+				@facet (
+						name = IKeyword.ON_CHANGE,
+						type = IType.NONE,
+						optional = true,
+						doc = @doc ("Provides a block of statements that will be executed whenever the value of the attribute changes")),
+
+				@facet (
+						name = IKeyword.OF,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = @doc ("The type of the contents of this container attribute")),
+				@facet (
+						name = IKeyword.INDEX,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = @doc ("The type of the key used to retrieve the contents of this attribute")),
+				@facet (
+						name = IKeyword.FILL_WITH,
+						type = IType.NONE,
+						optional = true,
+						doc = @doc (
+								value = "",
+								deprecated = "Use the operator matrix_with(size, fill_with) or list_with(size, fill_with) instead")) },
+		omissible = IKeyword.NAME)
+@symbol (
+		kind = ISymbolKind.Variable.CONTAINER,
+		with_sequence = false,
+		concept = { IConcept.CONTAINER })
+@inside (
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+@doc ("Declaration of an attribute of a species or an experiment")
+@validator (ContainerVarValidator.class)
+public class ContainerVariable extends Variable {
+
+	/**
+	 * The Class ContainerVarValidator.
+	 */
+	public static class ContainerVarValidator extends VarValidator {
+
+		/**
+		 * Method validate()
+		 *
+		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 */
+		@Override
+		public void validate(final IDescription vd) {
+			// Replaces the size: and fill_with: facets with an operator
+			// depending on the type of the container
+			if (vd.hasFacet(SIZE)) {
+				final IExpression size = vd.getFacetExpr(SIZE);
+				IExpression fill = vd.getFacetExpr(FILL_WITH);
+				if (fill == null) { fill = IExpressionFactory.NIL_EXPR; }
+				final IType<?> type = vd.getGamlType();
+				switch (type.id()) {
+					case IType.LIST:
+						if (size.getGamlType().id() != IType.INT) {
+							vd.error("Facet 'size:' must be of type int", IGamlIssue.WRONG_TYPE, SIZE, "int");
+							return;
+						}
+						IExpression init =
+								GAML.getExpressionFactory().createOperator("list_with", vd, null, size, fill);
+						vd.setFacet(INIT, init);
+						break;
+					case IType.MATRIX:
+						if (size.getGamlType().id() != IType.POINT) {
+							vd.error("Facet 'size:' must be of type point", IGamlIssue.WRONG_TYPE, SIZE, "point");
+							return;
+						}
+
+						init = GAML.getExpressionFactory().createOperator("matrix_with", vd, null, size, fill);
+						vd.setFacet(INIT, init);
+						break;
+					default:
+						vd.error("Facet 'size:' can only be used for lists and matrices", IGamlIssue.UNKNOWN_FACET,
+								SIZE);
+						return;
+				}
+			} else if (vd.hasFacet(FILL_WITH)) {
+				vd.error("Facet 'size:' missing. A container cannot be filled if no size is provided",
+						IGamlIssue.MISSING_FACET, vd.getUnderlyingElement(), SIZE, "0");
+				return;
+			}
+			super.validate(vd);
+		}
+	}
+
+	/**
+	 * Instantiates a new container variable.
+	 *
+	 * @param sd
+	 *            the sd
+	 */
+	public ContainerVariable(final IDescription sd) {
+		super(sd);
+	}
+
+}

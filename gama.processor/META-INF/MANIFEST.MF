@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GAMA Processor
+Bundle-SymbolicName: gama.processor;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-Vendor: MSI
+Export-Package: gama.processor;
+  uses:="org.w3c.dom,
+   javax.lang.model.util,
+   javax.lang.model,
+   javax.tools,
+   javax.lang.model.type,
+   javax.xml.parsers,
+   javax.xml.transform,
+   javax.annotation.processing,
+   javax.lang.model.element"
+Require-Bundle: gama.annotations
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: gama.processor

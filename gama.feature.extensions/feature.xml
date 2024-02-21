@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.extensions"
+      label="Standard Extensions to the Core of GAMA"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO, ESPACE-DEV, IRIT &amp; MIAT"
+      plugin="gama.extension.maths">
+
+   <description url="http://gama-platform.org">
+      Direct extensions to the core of GAMA
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="Gama 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <requires>
+      <import feature="gama.feature.core"/>
+      <import plugin="org.eclipse.osgi"/>
+      <import plugin="gama.extension.serialize"/>
+      <import plugin="gama.core"/>
+      <import plugin="gama.dependencies"/>
+   </requires>
+
+   <plugin
+         id="gama.extension.database"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="gama.extension.fipa"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.traffic"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="gama.extension.bdi"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.maths"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.network"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.serialize"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.physics"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.pedestrian"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

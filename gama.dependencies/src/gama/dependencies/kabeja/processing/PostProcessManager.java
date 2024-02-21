@@ -1,0 +1,72 @@
+/*******************************************************************************************************
+ *
+ * PostProcessManager.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
+ * .
+ *
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.dependencies.kabeja.processing;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+
+import gama.dependencies.kabeja.dxf.DXFDocument;
+
+/**
+ * @author <a href="mailto:simon.mieth@gmx.de">Simon Mieth</a>
+ *
+ */
+public class PostProcessManager {
+
+	/** The processors. */
+	private final ArrayList<PostProcessor> processors = new ArrayList<>();
+
+	/**
+	 * Adds the post processor.
+	 *
+	 * @param pp
+	 *            the pp
+	 */
+	public void addPostProcessor(final PostProcessor pp) {
+		processors.add(pp);
+	}
+
+	/**
+	 * Adds the post processor.
+	 *
+	 * @param classname
+	 *            the classname
+	 */
+	public void addPostProcessor(final String classname) {
+		try {
+			PostProcessor pp = (PostProcessor) this.getClass().getClassLoader().loadClass(classname).newInstance();
+			addPostProcessor(pp);
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Process.
+	 *
+	 * @param doc
+	 *            the doc
+	 * @param context
+	 *            the context
+	 * @throws ProcessorException
+	 *             the processor exception
+	 */
+	public void process(final DXFDocument doc, final Map context) throws ProcessorException {
+		Iterator i = processors.iterator();
+
+		while (i.hasNext()) {
+			PostProcessor pp = (PostProcessor) i.next();
+			pp.process(doc, context);
+		}
+	}
+}

@@ -1,0 +1,67 @@
+/*******************************************************************************************************
+ *
+ * CylinderShapeX.java, in gaml.extensions.physics, is part of the source code of the
+ * GAMA modeling and simulation platform .
+ *
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ * 
+ ********************************************************************************************************/
+
+package com.bulletphysics.collision.shapes;
+
+import static com.bulletphysics.Pools.VECTORS;
+
+import javax.vecmath.Vector3f;
+
+/**
+ * Cylinder shape around the X axis.
+ *
+ * @author jezek2
+ */
+public class CylinderShapeX extends CylinderShape {
+
+	/**
+	 * Instantiates a new cylinder shape X.
+	 *
+	 * @param halfExtents the half extents
+	 */
+	public CylinderShapeX(final Vector3f halfExtents) {
+		super(halfExtents, false);
+		upAxis = 0;
+		recalcLocalAabb();
+	}
+
+	@Override
+	public Vector3f localGetSupportingVertexWithoutMargin(final Vector3f vec, final Vector3f out) {
+		Vector3f tmp = getHalfExtentsWithMargin(VECTORS.get());
+		Vector3f result = cylinderLocalSupportX(tmp, vec, out);
+		VECTORS.release(tmp);
+		return result;
+	}
+
+	@Override
+	public void batchedUnitVectorGetSupportingVertexWithoutMargin(final Vector3f[] vectors,
+			final Vector3f[] supportVerticesOut, final int numVectors) {
+		for (int i = 0; i < numVectors; i++) {
+			Vector3f tmp = getHalfExtentsWithMargin(VECTORS.get());
+			cylinderLocalSupportX(tmp, vectors[i], supportVerticesOut[i]);
+			VECTORS.release(tmp);
+		}
+	}
+
+	@Override
+	public float getRadius() {
+		Vector3f tmp = getHalfExtentsWithMargin(VECTORS.get());
+		float result = tmp.y;
+		VECTORS.release(tmp);
+		return result;
+	}
+
+	@Override
+	public String getName() {
+		return "CylinderX";
+	}
+
+}

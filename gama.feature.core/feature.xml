@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.core"
+      label="Core plugins of GAMA"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO"
+      plugin="gama.core">
+
+   <description url="http://gama-platform.org">
+      The core of the GAMA Modeling and Simulation Platform
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <requires>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.emf.ecore"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="com.google.guava"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.equinox.p2.core"/>
+      <import plugin="org.eclipse.equinox.p2.metadata"/>
+      <import plugin="org.eclipse.equinox.p2.operations"/>
+      <import plugin="org.eclipse.equinox.p2.engine"/>
+      <import plugin="gama.extension.traffic"/>
+      <import plugin="gama.extension.database"/>
+      <import plugin="gama.extension.network"/>
+      <import plugin="org.eclipse.xtext"/>
+      <import plugin="org.eclipse.xtext.util"/>
+      <import plugin="org.eclipse.emf.common"/>
+      <import plugin="org.eclipse.xtext.xbase.lib"/>
+      <import plugin="gama.extension.maths"/>
+      <import plugin="gama.dependencies"/>
+   </requires>
+
+   <plugin
+         id="gama.core"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.headless"
+         version="0.0.0"/>
+
+   <plugin
+         id="gaml.compiler"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.annotations"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.processor"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.stats"
+         version="0.0.0"/>
+
+</feature>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.extension.stats"
+      label="Stats"
+      version="0.0.0.qualifier"
+      plugin="gama.extension.stats">
+
+   <description url="http://www.example.com/description">
+      This plug-in contains additional statistical operators.
+
+It uses the 2 additional library: colt.jar and concurrent.jar.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      Plug-in: GPL v3 licence (GAMA licence)
+
+Aditional library:
+- colt.jar: LGPL and CERN
+- concurrent.jar: public domain and some classes from SUN Microsystems (using sun-licence)
+   </license>
+
+   <url>
+      <update label="GAMA 1.9.x Update Site" url="https://updates.gama-platform.org"/>
+   </url>
+
+   <requires>
+      <import plugin="gama.core"/>
+      <import plugin="gama.extension.maths"/>
+      <import plugin="gama.dependencies"/>
+   </requires>
+
+   <plugin
+         id="gama.extension.stats"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

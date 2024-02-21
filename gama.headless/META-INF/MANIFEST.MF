@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Headless version of GAMA
+Bundle-SymbolicName: gama.headless;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Require-Bundle: gama.core,
+ gaml.compiler,
+ org.eclipse.core.runtime,
+ gama.dependencies,
+ gama.extension.traffic,
+ gama.extension.maths,
+ gama.extension.database,
+ gama.extension.network
+Bundle-ActivationPolicy: lazy
+Export-Package: 
+ gama.headless.common,
+ gama.headless.core,
+ gama.headless.job,
+ gama.headless.openmole,
+ gama.headless.runtime,
+ gama.headless.script,
+ gama.headless.xml
+Import-Package: com.google.inject
+Bundle-ClassPath: .
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: gama.headless

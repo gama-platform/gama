@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+    <extension
+          point="gaml.extension">
+    </extension>
+    <extension
+          point="org.eclipse.ui.views">
+       <view
+             allowMultiple="true"
+             category="gama.ui.category.gama"
+             class="gama.ui.display.opengl.view.OpenGLDisplayView"
+             icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.display.png"
+             id="gama.ui.application.view.OpenGLDisplayView"
+             name="3D"
+             restorable="false">
+       </view>
+    </extension>    
+    <extension
+          point="gama.display">
+       <implementation
+             class="gama.ui.display.opengl.view.SWTOpenGLDisplaySurface"
+             keyword="opengl">
+       </implementation>
+       <implementation
+             class="gama.ui.display.opengl.view.SWTOpenGLDisplaySurface"
+             keyword="3d">
+       </implementation>
+       <implementation
+             class="gama.ui.display.opengl.view.SWTOpenGLDisplaySurface"
+             keyword="3D">
+       </implementation>
+    </extension>
+</plugin>

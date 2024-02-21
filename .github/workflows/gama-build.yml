@@ -1,0 +1,114 @@
+name: Full maven build of GAMA
+
+on:
+  workflow_call:
+    inputs:
+      get_testing_compiled_archives: 
+        description: 'Is this built used for a release ?'
+        required: true
+        default: false 
+        type: boolean
+      get_all_archives_for_release: 
+        description: 'Needs a release to test in runner ?'
+        required: false
+        default: false 
+        type: boolean
+      mvn_extra_arguments: 
+        required: false
+        default: "" 
+        type: string
+      new_release_tag:
+        description: "The tag of the release to publish (YYYY.MM.0)"
+        type: string
+        required: false
+        default: "2024.03.0"
+    secrets:
+      GAMA_KEYSTORE_BASE64:
+        required: false
+      GAMA_KEYSTORE_STOREPASS:
+        required: false
+
+jobs:
+  compilation: 
+    runs-on: ubuntu-latest
+    steps:
+
+      # Prep runner
+
+      - uses: actions/checkout@v4
+      
+      - name: Set up Adopt OpenJDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          java-package: jdk
+
+      - name: Set custom runner parameters
+        run: |
+          echo "MAVEN_OPTS='-Dorg.slf4j.simpleLogger.defaultLogLevel=error -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx15g'" >> ~/.mavenrc
+          sudo chmod +x $GITHUB_WORKSPACE/travis/*
+
+      # Prep release
+
+      - name: Tag GAMA with new release 
+        if: "${{ inputs.get_all_archives_for_release }}"
+        run: |
+          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} 
+
+      - name: Import & Prepare JAR signing
+        if: "${{ inputs.get_all_archives_for_release }}"
+        run: |
+          echo "$GAMA_KEYSTORE_BASE64" | base64 --decode > ~/gama.keystore
+          # Config file
+          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.annotations/pom.xml
+          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.processor/pom.xml
+          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/msi.gama.parent/pom.xml
+          # Trigger jar signing plugin
+          touch $GITHUB_WORKSPACE/sign.maven
+        env:
+          GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
+          GAMA_STORE: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
+          
+      - name: Tag release version
+        if: "${{ inputs.get_all_archives_for_release }}"
+        run: |
+          echo "Rename mvn config file"
+          echo "Tag latest commit with release"
+      
+
+
+
+      # 
+      # ██████╗ ██╗   ██╗██╗██╗     ██████╗ ██╗███╗   ██╗ ██████╗ 
+      # ██╔══██╗██║   ██║██║██║     ██╔══██╗██║████╗  ██║██╔════╝ 
+      # ██████╔╝██║   ██║██║██║     ██║  ██║██║██╔██╗ ██║██║  ███╗
+      # ██╔══██╗██║   ██║██║██║     ██║  ██║██║██║╚██╗██║██║   ██║
+      # ██████╔╝╚██████╔╝██║███████╗██████╔╝██║██║ ╚████║╚██████╔╝
+      # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝                                                       
+      # 
+
+      - name: Compiling gama
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -B ${{ inputs.mvn_extra_arguments }}
+
+      - name: Export linux release
+        uses: actions/upload-artifact@v4
+        if: "${{ inputs.get_testing_compiled_archives }}"
+        with:
+          name: gama-compiled-archive
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/gama.product/target/products/gama.application-linux.gtk.x86_64.tar.gz
+
+      - name: Export every releases
+        uses: actions/upload-artifact@v4
+        if: "${{ inputs.get_all_archives_for_release }}"
+        with:
+          name: gama-compiled-archive
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/gama.product/target/products/gama.application-*

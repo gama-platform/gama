@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Network
+Bundle-SymbolicName: gama.extension.network;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: 
+ com.fazecast.jSerialComm,
+ gama.extension.network.common,
+ gama.extension.network.mqtt,
+ gama.extension.network.skills,
+ gama.extension.network.tcp,
+ gama.extension.network.udp,
+ gama.extension.network.websocket,
+ org.eclipse.paho.client.mqttv3,
+ org.eclipse.paho.client.mqttv3.persist
+Import-Package: org.java_websocket.handshake
+Require-Bundle: gama.core,
+ gama.extension.serialize,
+ gama.dependencies
+Bundle-ClassPath: .,
+ ext/arduino.jar,
+ ext/jSerialComm-2.9.3.jar,
+ ext/org.eclipse.paho.client.mqttv3-1.2.5.jar
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: gama.extension.network
+ 

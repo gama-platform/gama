@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="product"
+         name="Headless Gama"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="gama.headless.runtime.HeadlessApplication">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="gaml.extension">
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="gama.headless.product"
+            name="gama.headless">
+         <property
+               name="appName"
+               value="gama.headless">
+         </property>
+      </product>
+   </extension>
+
+</plugin>

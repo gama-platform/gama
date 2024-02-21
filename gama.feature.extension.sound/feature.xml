@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.extension.sound"
+      label="Sound"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO"
+      plugin="gama.extension.sound">
+
+   <description url="http://www.example.com/description">
+      Audio features for GAMA (Experimental right now)
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <requires>
+      <import plugin="gama.core"/>
+      <import plugin="gama.dependencies"/>
+   </requires>
+
+   <plugin
+         id="gama.extension.sound"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+</feature>

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Gama Platform
+Comment=version 0.0.0
+Exec=env GTK_OVERLAY_SCROLLING=0 GDK_BACKEND=x11 /opt/gama-platform/Gama
+Icon=/opt/gama-platform/icon.icns
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=TextEditor;

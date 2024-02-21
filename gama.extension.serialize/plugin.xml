@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gaml.extension">
+   </extension>
+   <extension
+         point="gama.models">
+      <path
+            name="models">
+      </path>
+   </extension>
+   <extension
+         point="gama.create">
+      <implementation
+            class="gama.extension.serialize.gaml.CreateAgentsFromSerialisedFileDelegate"
+            description="Create simulation from saved simulation">
+      </implementation>
+      <implementation
+            class="gama.extension.serialize.gaml.CreateAgentsFromSerialisedStringDelegate"
+            description="Creates agents ">
+      </implementation>
+   </extension>
+   <extension
+         point="gama.save">
+      <implementation
+            class="gama.extension.serialize.gaml.SimulationSaveDelegate">
+      </implementation>
+   </extension>   
+</plugin>
+

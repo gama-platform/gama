@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="gama.headless" uid="gama.headless.product" id="gama.headless.product" application="gama.headless.product" version="0.0.0.qualifier" type="features" includeLaunchers="false" autoIncludeRequirements="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <vmArgs>-server 
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
+-XX:+UseAdaptiveSizePolicy
+-XX:+OptimizeStringConcat
+-Dosgi.locking=none
+-Dosgi.checkConfiguration=false
+-Declipse.log.level=ERROR
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
+-Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
+-Denable_logging=true 
+-Denable_debug=true
+-Duse_global_preference_store=true 
+-Dswt.autoScale=exact
+-Dread_only=false 
+-Duse_old_tabs=true 
+-Duse_legacy_drawers=false 
+-Duse_delayed_resize=false 
+--add-exports=java.base/java.lang=ALL-UNNAMED
+--add-exports=java.desktop/sun.awt=ALL-UNNAMED
+--add-exports=java.desktop/sun.java2d=ALL-UNNAMED
+--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED
+--add-exports=java.base/java.math=ALL-UNNAMED
+--add-exports=java.base/java.lang=ALL-UNNAMED 
+--add-exports=java.base/sun.nio.ch=ALL-UNNAMED 
+--add-opens=java.base/java.lang=ALL-UNNAMED 
+--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED 
+--add-opens=java.base/java.math=ALL-UNNAMED  
+--add-opens=java.base/java.util=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED 
+--add-opens=java.base/java.net=ALL-UNNAMED 
+--add-opens=java.base/java.security=ALL-UNNAMED 
+--add-opens=java.desktop/java.awt=ALL-UNNAMED 
+--add-opens=java.base/java.io=ALL-UNNAMED 
+--add-opens=java.base/java.time=ALL-UNNAMED 
+--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+--add-opens=java.base/java.text=ALL-UNNAMED 
+--add-opens=java.base/java.lang.ref=ALL-UNNAMED 
+--add-opens=java.sql/java.sql=ALL-UNNAMED
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread
+      </vmArgsMac>
+      <vmArgsWin>-Dfile.encoding=UTF-8
+      </vmArgsWin>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="gama.feature.core" installMode="root"/>
+      <feature id="gama.feature.library" installMode="root"/>
+      <feature id="gama.feature.extensions" installMode="root"/>
+      <feature id="gama.feature.dependencies" installMode="root"/>
+      <feature id="gama.feature.extension.image" installMode="root"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
+
+</product>

@@ -1,0 +1,313 @@
+/*******************************************************************************************************
+ *
+ * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and
+ * simulation platform .
+ *
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.headless.server;
+
+import java.io.IOException;
+
+import org.java_websocket.WebSocket;
+
+import gama.core.kernel.experiment.AbstractExperimentController;
+import gama.core.kernel.experiment.ExperimentAgent;
+import gama.core.kernel.experiment.IExperimentAgent;
+import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.runtime.GAMA;
+import gama.core.runtime.IExperimentStateListener;
+import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.GamaExecutorService;
+import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.runtime.server.CommandResponse;
+import gama.core.runtime.server.GamaServerExperimentConfiguration;
+import gama.core.runtime.server.GamaServerMessage;
+import gama.core.util.IList;
+import gama.core.util.IMap;
+import gama.core.util.file.json.Json;
+import gama.dev.DEBUG;
+import gama.gaml.operators.Cast;
+import gama.headless.core.GamaHeadlessException;
+
+/**
+ * The Class ExperimentController.
+ */
+public class GamaServerExperimentController extends AbstractExperimentController {
+
+	/** The parameters. */
+	final IList parameters;
+
+	/** The stop condition. */
+	final String stopCondition;
+
+	/** The execution thread. */
+	public MyRunnable executionThread;
+
+	/** The job. */
+	private final GamaServerExperimentJob _job;
+
+	/**
+	 * The Class OwnRunnable.
+	 */
+	public class MyRunnable implements Runnable {
+
+		/** The sim. */
+		final GamaServerExperimentJob mexp;
+
+		/**
+		 * Instantiates a new own runnable.
+		 *
+		 * @param s
+		 *            the s
+		 */
+		MyRunnable(final GamaServerExperimentJob s) {
+			mexp = s;
+		}
+
+		/**
+		 * Run.
+		 */
+		@Override
+		public void run() {
+			try {
+
+				while (experimentAlive) {
+					if (mexp.simulator.isInterrupted()) { break; }
+					final SimulationAgent sim = mexp.simulator.getSimulation();
+					final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
+					final IScope scope = sim == null ? exp.getScope() : sim.getScope();
+					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
+						if (!"".equals(stopCondition)) {
+							mexp.socket.send(Json.getNew()
+									.valueOf(new CommandResponse(GamaServerMessage.Type.SimulationEnded, "",
+											(IMap<String, Object>) exp.getAttribute("%%playCommand%%"), false))
+									.toString());
+
+						}
+						break;
+					}
+					step();
+				}
+			} catch (Exception e) {
+				DEBUG.OUT(e);
+			}
+		}
+	}
+
+	/**
+	 * Instantiates a new experiment controller.
+	 *
+	 * @param socket
+	 *
+	 * @param experiment
+	 *            the experiment
+	 */
+	public GamaServerExperimentController(final GamaServerExperimentJob j, final IList parameters,
+			final String stopCondition, final WebSocket sock, final boolean console, final boolean status,
+			final boolean dialog, final boolean runtime) {
+		_job = j;
+		serverConfiguration = new GamaServerExperimentConfiguration(sock, "Unknown", console, status, dialog, runtime);
+		this.parameters = parameters;
+		this.stopCondition = stopCondition;
+		executionThread = new MyRunnable(j);
+
+		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
+		try {
+			lock.acquire();
+		} catch (final InterruptedException e) {}
+		commandThread.start();
+	}
+
+	/**
+	 * Process user command.
+	 *
+	 * @param command
+	 *            the command
+	 */
+	@Override
+	protected void processUserCommand(final ExperimentCommand command) {
+		switch (command) {
+			case _OPEN:
+				try {
+					_job.loadAndBuildWithJson(parameters, stopCondition);
+				} catch (IOException | GamaHeadlessException e) {
+					DEBUG.OUT(e);
+					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
+				}
+				break;
+			case _START:
+				paused = false;
+				lock.release();
+				break;
+			case _PAUSE:
+				paused = true;
+				break;
+			case _STEP:
+				paused = true;
+				lock.release();
+				break;
+			case _BACK:
+				paused = true;
+				experiment.getAgent().backward(getScope());
+				break;
+			case _RELOAD:
+
+				try {
+					experiment.reload();
+//					experiment.dispose();
+//					_job.simulator.dispose();
+//
+//					_job.loadAndBuildWithJson(parameters, stopCondition);
+//					executionThread = null;
+//					commandThread.interrupt();
+//					commandThread = null;
+//					executionThread = new MyRunnable(_job);
+//					commandThread = new Thread(() -> {
+//						while (acceptingCommands) {
+//							try {
+//								processUserCommand(commands.take());
+//							} catch (final Exception e) {}
+//						}
+//					}, "Front end controller");
+//					commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
+//					try {
+//						lock.acquire();
+//					} catch (final InterruptedException e) {}
+//					experimentAlive = true;
+//					acceptingCommands = true;
+//					disposing = false;
+//					commandThread.start();
+//					_job.server.execute(executionThread);
+
+				} catch (final GamaRuntimeException e) {
+					e.printStackTrace();
+					closeExperiment(e);
+					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
+				} catch (final Throwable e) {
+					closeExperiment(GamaRuntimeException.create(e, scope));
+					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
+
+				} finally {
+					// scope.getGui().updateExperimentState(scope);
+				}
+				break;
+			case _CLOSE:
+				break;
+			default:
+				break;
+		}
+	}
+
+	@Override
+	public void dispose() {
+		scope = null;
+		if (experiment != null) {
+			try {
+				paused = true;
+				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
+				getScope().getGui().closeDialogs(getScope());
+				// Dec 2015 This method is normally now called from
+				// ExperimentPlan.dispose()
+			} finally {
+				acceptingCommands = false;
+				experimentAlive = false;
+				lock.release();
+				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
+				if (commandThread != null && commandThread.isAlive()) { commands.offer(ExperimentCommand._CLOSE); }
+			}
+		}
+	}
+
+	@Override
+	public void close() {
+		closeExperiment(null);
+	}
+
+	/**
+	 * Close experiment.
+	 *
+	 * @param e
+	 *            the e
+	 */
+	public void closeExperiment(final Exception e) {
+		disposing = true;
+		if (e != null) { getScope().getGui().getStatus().errorStatus(getScope(), e.getMessage()); }
+		experiment.dispose(); // will call own dispose() later
+	}
+
+	/**
+	 * Checks if is paused.
+	 *
+	 * @return true, if is paused
+	 */
+	@Override
+	public boolean isPaused() { return paused; }
+
+	/**
+	 * Schedule.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 */
+	@Override
+	public void schedule(final ExperimentAgent agent) {
+		scope = agent.getScope();
+		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
+		scope.setServerConfiguration(serverConfiguration);
+		try {
+			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
+		} catch (final Throwable e) {
+			if (scope != null && scope.interrupted()) {} else if (!(e instanceof GamaRuntimeException)) {
+				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+			}
+		}
+	}
+
+	/**
+	 * Step.
+	 */
+	public void step() {
+		if (paused) {
+			try {
+				lock.acquire();
+			} catch (InterruptedException e) {
+				experimentAlive = false;
+			}
+		}
+		try {
+			_job.doStep();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void processStep(final boolean andWait) {
+		paused = true;
+		if (andWait) {
+			_job.doStep();
+		} else {
+			super.processStep(andWait);
+		}
+	}
+
+	@Override
+	public void processBack(final boolean andWait) {
+		paused = true;
+		if (andWait) {
+			_job.doBackStep();
+		} else {
+			super.processBack(andWait);
+		}
+	}
+
+}

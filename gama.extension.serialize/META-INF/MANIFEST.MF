@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Serialize
+Bundle-SymbolicName: gama.extension.serialize;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Require-Bundle: gama.core,
+ gama.dependencies
+Bundle-ClassPath: .
+Export-Package: gama.extension.serialize,
+ gama.extension.serialize.gaml,
+ gama.extension.serialize.implementations
+Import-Package: org.osgi.framework;version="1.10.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: gama.extension.serialize
+Bundle-Activator: gama.extension.serialize.Activator
