@@ -99,8 +99,8 @@ public class BinarySerialisation implements ISerialisationConstants {
 		byte type = bytes[0];
 		if (type != GAMA_OBJECT_IDENTIFIER && type != GAMA_AGENT_IDENTIFIER)
 			throw GamaRuntimeException.error("Not a GAMA serialisation record", scope);
-		boolean zip = bytes[2] == COMPRESSED;
-		byte[] some = Arrays.copyOfRange(bytes, 3, bytes.length);
+		boolean zip = bytes[1] == COMPRESSED;
+		byte[] some = Arrays.copyOfRange(bytes, 2, bytes.length);
 		if (zip) { some = ByteArrayZipper.unzip(some); }
 		return type == GAMA_OBJECT_IDENTIFIER ? PROCESSOR.createObjectFromBytes(scope, some)
 				: PROCESSOR.createAgentFromBytes(scope, some);
