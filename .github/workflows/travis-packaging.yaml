@@ -38,8 +38,8 @@ jobs:
     with:
       RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
     secrets:
-      GAMA_KEYSTORE_BASE64: ${{ inputs.GAMA_KEYSTORE_BASE64 }}
-      GAMA_KEYSTORE_STOREPASS: ${{ inputs.GAMA_KEYSTORE_STOREPASS }}
+      GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
+      GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
   
   #
   #  _      _____ _   _ _    ___   __
