@@ -79,6 +79,7 @@ jobs:
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
         run: |
+          mv ./artifacts/entitlements.plist ./
           # Prepare the keychain - Based on https://localazy.com/blog/how-to-automatically-sign-macos-apps-using-github-actions
           security create-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
           security default-keychain -s build.keychain
@@ -95,15 +96,16 @@ jobs:
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
           MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
+          IS_WITH_JDK: ${{ secrets.IS_WITH_JDK }}
         run: |
           # Unlock
           security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
           unzip -q ${{ github.workspace }}/artifacts/${{ matrix.zipName }}.zip -d . && rm ${{ github.workspace }}/artifacts/*.zip
           # Sign everything inside app
           bash ${{ github.workspace }}/artifacts/mac-sign.sh
-          plutil -convert xml1 ./artifacts/entitlements.plist && plutil -lint ./artifacts/entitlements.plist
-          codesign --entitlements "./artifacts/entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
-
+          plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
+          codesign --entitlements "./entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
+          
       - name: Packaging signed Application w/o JDK
         shell: bash
         env: 
