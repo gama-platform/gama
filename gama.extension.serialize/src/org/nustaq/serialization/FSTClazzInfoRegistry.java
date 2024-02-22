@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTClazzInfoRegistry.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTClazzInfoRegistry.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -151,13 +151,13 @@ public class FSTClazzInfoRegistry {
 	 * @date 30 sept. 2023
 	 */
 	public FSTClazzInfo getCLInfo(final Class<?> c, final FSTConfiguration conf) {
-		while (!rwLock.compareAndSet(false, true)) { ; }
+		while (!rwLock.compareAndSet(false, true)) {}
 		try {
 			FSTClazzInfo res = (FSTClazzInfo) mInfos.get(c);
 			if (res == null) {
 				if (c == null) throw new NullPointerException("Class is null");
-				if ((conf.getVerifier() != null) && !conf.getVerifier().allowClassDeserialization(c))
-					throw new RuntimeException("tried to deserialize forbidden class " + c.getName());
+				// if ((conf.getVerifier() != null) && !conf.getVerifier().allowClassDeserialization(c))
+				// throw new RuntimeException("tried to deserialize forbidden class " + c.getName());
 				res = new FSTClazzInfo(conf, c, this, ignoreAnnotations);
 				mInfos.put(c, res);
 			}

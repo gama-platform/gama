@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTClazzInfo.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FSTClazzInfo.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -223,7 +223,7 @@ public final class FSTClazzInfo {
 			}
 		}
 
-		requiresInit = isExternalizable() || useCompatibleMode() || hasTransient || conf.isForceClzInit();
+		requiresInit = isExternalizable() || useCompatibleMode() || hasTransient;
 
 		if (useCompatibleMode() && crossPlatform && getSer() == null && !clazz.isEnum()) throw new RuntimeException(
 				"cannot support legacy JDK serialization methods in crossplatform mode. Define a serializer for this class "

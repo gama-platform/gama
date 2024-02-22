@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTAbstractProcessor.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTAbstractProcessor.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -41,7 +41,6 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.gaml.compilation.kernel.GamaClassLoader;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
@@ -400,9 +399,6 @@ public abstract class FSTAbstractProcessor extends AbstractSerialisationProcesso
 	 * @date 2 août 2023
 	 */
 	public FSTConfiguration initConfiguration(final FSTConfiguration conf) {
-		conf.setClassLoader(GamaClassLoader.getInstance());
-		conf.setForceSerializable(true);
-		conf.setShareReferences(true);
 		registerSerialisers(conf);
 		return conf;
 	}

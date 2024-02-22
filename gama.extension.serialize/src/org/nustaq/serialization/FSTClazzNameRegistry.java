@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTClazzNameRegistry.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTClazzNameRegistry.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -310,7 +310,7 @@ public class FSTClazzNameRegistry {
 	public Class classForName(String clName, final FSTConfiguration conf) throws ClassNotFoundException {
 		if (parent != null) return parent.classForName(clName, conf);
 		try {
-			while (!classCacheLock.compareAndSet(false, true)) { ; }
+			while (!classCacheLock.compareAndSet(false, true)) {}
 			Class res = classCache.get(clName);
 			if (res == null) {
 				try {
@@ -330,27 +330,25 @@ public class FSTClazzNameRegistry {
 					// }
 					// } else
 
-					if (!clName.endsWith("_ActorProxy")) {
-						if (conf.getLastResortResolver() != null) {
-							Class aClass = conf.getLastResortResolver().getClass(clName);
-							if (aClass != null) return aClass;
-						}
+					if (!clName.endsWith("_ActorProxy")) // if (conf.getLastResortResolver() != null) {
+						// Class aClass = conf.getLastResortResolver().getClass(clName);
+						// if (aClass != null) return aClass;
+						// }
 						throw new RuntimeException(
 								"class not found CLASSNAME:" + clName + " loader:" + conf.getClassLoader(), th);
-					}
 					// same as above for actors. As there is a custom serializer defined for actors, just instantiate
 					// actor clazz
-					String clName0 = clName;
+					// String clName0 = clName;
 					clName = clName.substring(0, clName.length() - "_ActorProxy".length());
 					Class actorClz = classCache.get(clName);
 					if (actorClz == null) {
 						try {
 							actorClz = Class.forName(clName, false, conf.getClassLoader());
 						} catch (ClassNotFoundException clf) {
-							if (conf.getLastResortResolver() != null) {
-								Class aClass = conf.getLastResortResolver().getClass(clName0);
-								if (aClass != null) return aClass;
-							}
+							// if (conf.getLastResortResolver() != null) {
+							// Class aClass = conf.getLastResortResolver().getClass(clName0);
+							// if (aClass != null) return aClass;
+							// }
 							FSTUtil.<RuntimeException> rethrow(clf);
 						}
 					}
@@ -373,7 +371,7 @@ public class FSTClazzNameRegistry {
 	 * @date 30 sept. 2023
 	 */
 	public void registerClazzFromOtherLoader(final Class cl) {
-		while (!classCacheLock.compareAndSet(false, true)) { ; }
+		while (!classCacheLock.compareAndSet(false, true)) {}
 		classCache.put(cl.getName(), cl);
 		classCacheLock.set(false);
 	}

@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package org.nustaq.serialization;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +20,6 @@ import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.EnumSet;
@@ -62,6 +60,7 @@ import org.nustaq.serialization.util.FSTInt2ObjectMapFactory;
 import org.nustaq.serialization.util.FSTUtil;
 
 import gama.core.runtime.IScope;
+import gama.gaml.compilation.kernel.GamaClassLoader;
 
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 18.11.12 Time: 20:41
@@ -71,6 +70,48 @@ import gama.core.runtime.IScope;
  *
  */
 public class FSTConfiguration {
+
+	/**
+	 * The Enum ConfType.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @date 30 sept. 2023
+	 */
+	enum ConfType {
+
+		/** The default. */
+		DEFAULT,
+		/** The unsafe. */
+		UNSAFE,
+		/** The json. */
+		JSON,
+		/** The jsonpretty. */
+		JSONPRETTY
+	}
+
+	/** The stream coder factory. */
+	private StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
+
+	/** The name. */
+	private String name;
+
+	/** The serialization info registry. */
+	private final FSTClazzInfoRegistry serializationInfoRegistry = new FSTClazzInfoRegistry();
+
+	/** The cached objects. */
+	private final HashMap<Class, List<SoftReference>> cachedObjects = new HashMap<>(97);
+
+	/** The int to object map factory. */
+	FSTInt2ObjectMapFactory intToObjectMapFactory = new DefaultFSTInt2ObjectMapFactory();
+
+	/** The class registry. */
+	private final FSTClazzNameRegistry classRegistry = new FSTClazzNameRegistry(null);
+
+	/** The class loader. */
+	private final ClassLoader classLoader = GamaClassLoader.getInstance();
+
+	/** The instantiator. */
+	private final FSTClassInstantiator instantiator = new FSTDefaultClassInstantiator();
 
 	/**
 	 * The scope. A bit of a hack, in order for serialisers to have access to the current scope when deserialising
@@ -92,154 +133,6 @@ public class FSTConfiguration {
 	 *            the new scope
 	 */
 	public void setScope(final IScope scope) { this.scope = scope; }
-
-	/**
-	 * The Enum ConfType.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 30 sept. 2023
-	 */
-	enum ConfType {
-
-		/** The default. */
-		DEFAULT,
-		/** The unsafe. */
-		UNSAFE,
-		/** The json. */
-		JSON,
-		/** The jsonpretty. */
-		JSONPRETTY
-	}
-
-	/**
-	 * if all attempts fail to find a class this guy is asked. Can be used in case e.g. dynamic classes need get
-	 * generated.
-	 */
-	public interface LastResortClassResolver {
-
-		/**
-		 * Gets the class.
-		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-		 * @param clName
-		 *            the cl name
-		 * @return the class
-		 * @date 30 sept. 2023
-		 */
-		Class<?> getClass(String clName);
-	}
-
-	/**
-	 * Security: disallow packages/classes upon deserialization
-	 */
-	public interface ClassSecurityVerifier {
-		/**
-		 * return false if your application does not allow to deserialize objects of type cl. This can be implemented
-		 * using whitelisting/blacklisting whole packages, subpackages, single classes
-		 *
-		 * Note: this also disallows serialization of forbidden classes. For assymetric use cases register a custom
-		 * serializer in order to prevent reading/writing of certain classes.
-		 *
-		 * @param cl
-		 *            - the class being serialized/deserialized
-		 * @return
-		 */
-		boolean allowClassDeserialization(Class<?> cl);
-	}
-
-	/** The stream coder factory. */
-	StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
-
-	/** The name. */
-	String name;
-
-	/** The verifier. */
-	ClassSecurityVerifier verifier;
-
-	/** The type. */
-	ConfType type = ConfType.DEFAULT;
-
-	/** The serialization info registry. */
-	FSTClazzInfoRegistry serializationInfoRegistry = new FSTClazzInfoRegistry();
-
-	/** The cached objects. */
-	HashMap<Class, List<SoftReference>> cachedObjects = new HashMap<>(97);
-
-	/** The int to object map factory. */
-	FSTInt2ObjectMapFactory intToObjectMapFactory = new DefaultFSTInt2ObjectMapFactory();
-
-	/** The class registry. */
-	FSTClazzNameRegistry classRegistry = new FSTClazzNameRegistry(null);
-
-	/** The prefer speed. */
-	boolean preferSpeed = false; // hint to prefer speed over size in case, currently ignored.
-
-	/** The share references. */
-	boolean shareReferences = true;
-
-	/** The class loader. */
-	volatile ClassLoader classLoader = getClass().getClassLoader();
-
-	/** The force serializable. */
-	boolean forceSerializable = false; // serialize objects which are not instanceof serializable using default
-										// serialization scheme.
-
-	/** The instantiator. */
-	FSTClassInstantiator instantiator = new FSTDefaultClassInstantiator();
-
-	/** The coder specific. */
-	Object coderSpecific;
-
-	/** The last resort resolver. */
-	LastResortClassResolver lastResortResolver;
-
-	/** The force clz init. */
-	boolean forceClzInit = false; // always execute default fields init, even if no transients
-	//
-	// /** The json field names. */
-	// FSTJsonFieldNames jsonFieldNames = new FSTJsonFieldNames("typ", "obj", "styp", "seq", "enum", "val", "ref");
-	//
-	// /**
-	// * Gets the json field names.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @return the json field names
-	// * @date 30 sept. 2023
-	// */
-	// public FSTJsonFieldNames getJsonFieldNames() { return jsonFieldNames; }
-	//
-	// /**
-	// * Sets the json field names.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param fieldNames
-	// * the new json field names
-	// * @date 30 sept. 2023
-	// */
-	// public void setJsonFieldNames(final FSTJsonFieldNames fieldNames) { this.jsonFieldNames = fieldNames; }
-
-	/**
-	 * Gets the verifier.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the verifier
-	 * @date 30 sept. 2023
-	 */
-	public ClassSecurityVerifier getVerifier() { return verifier; }
-
-	/**
-	 * Sets the verifier.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param verifier
-	 *            the verifier
-	 * @return the FST configuration
-	 * @date 30 sept. 2023
-	 */
-	public FSTConfiguration setVerifier(final ClassSecurityVerifier verifier) {
-		this.verifier = verifier;
-		return this;
-	}
 
 	/**
 	 * Gets the int to object map factory.
@@ -302,187 +195,6 @@ public class FSTConfiguration {
 
 	/** The field info cache. */
 	final ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> fieldInfoCache;
-
-	/**
-	 * debug helper
-	 *
-	 * @return
-	 */
-	public String getName() { return name; }
-
-	/**
-	 * debug helper
-	 *
-	 * @param name
-	 */
-	public void setName(final String name) { this.name = name; }
-
-	/////////////////////////////////////
-	// cross platform stuff only
-
-	/** The minbin names. */
-	// contains symbol => full qualified name
-	private final HashMap<String, String> minbinNames = new HashMap<>();
-
-	/** The min bin names bytez. */
-	// may contain symbol => cached binary output
-	private final HashMap<String, byte[]> minBinNamesBytez = new HashMap<>();
-
-	/** The minbin names reverse. */
-	// contains full qualified name => symbol
-	private final HashMap<String, String> minbinNamesReverse = new HashMap<>();
-
-	/** The cross platform. */
-	private boolean crossPlatform = false; // if true do not support writeObject/readObject etc.
-
-	// end cross platform stuff only
-	/////////////////////////////////////
-
-	/**
-	 * create a json conf with given attributes. Note that shared refs = true for jason might be not as stable as for
-	 * binary encodings as fst relies on stream positions to identify objects within a given input, so any inbetween
-	 * formatting will break proper reference resolution.
-	 *
-	 * WARNING: use of sharedrefs = true is Deprecated as its flakey
-	 *
-	 * @param prettyPrint
-	 * @param shareReferences
-	 * @return
-	 */
-	// public static FSTConfiguration createJsonConfiguration(final boolean prettyPrint, final boolean shareReferences)
-	// {
-	//
-	// final FSTConfiguration conf = createDefaultConfiguration();
-	// conf.setCrossPlatform(true);
-	// // override some serializers
-	// FSTSerializerRegistry reg = conf.serializationInfoRegistry.getSerializerRegistry();
-	// reg.putSerializer(EnumSet.class, new FSTCPEnumSetSerializer(), true);
-	// reg.putSerializer(Throwable.class, new FSTCPThrowableSerializer(), true);
-	// // for crossplatform fallback does not work => register default serializers for collections and subclasses
-	// reg.putSerializer(AbstractCollection.class, new FSTCollectionSerializer(), true);
-	// reg.putSerializer(AbstractMap.class, new FSTMapSerializer(), true); // subclass should register manually
-	// conf.registerCrossPlatformClassMapping(new String[][] { { "map", HashMap.class.getName() },
-	// { "list", ArrayList.class.getName() }, { "set", HashSet.class.getName() },
-	// { "long", Long.class.getName() }, { "integer", Integer.class.getName() },
-	// { "short", Short.class.getName() }, { "byte", Byte.class.getName() },
-	// { "char", Character.class.getName() }, { "float", Float.class.getName() },
-	// { "double", Double.class.getName() }, { "date", Date.class.getName() },
-	// { "enumSet", "java.util.RegularEnumSet" }, { "array", "[Ljava.lang.Object;" },
-	// { "String[]", "[Ljava.lang.String;" }, { "Double[]", "[Ljava.lang.Double;" },
-	// { "Float[]", "[Ljava.lang.Float;" }, { "double[]", "[D" }, { "float[]", "[F" } });
-	// conf.registerSerializer(BigDecimal.class, new FSTJSonSerializers.BigDecSerializer(), true);
-	// reg.putSerializer(FSTJSonUnmodifiableCollectionSerializer.UNMODIFIABLE_COLLECTION_CLASS,
-	// new FSTJSonUnmodifiableCollectionSerializer(), true);
-	// reg.putSerializer(FSTJSonUnmodifiableMapSerializer.UNMODIFIABLE_MAP_CLASS,
-	// new FSTJSonUnmodifiableMapSerializer(), false);
-	//
-	// conf.type = prettyPrint ? ConfType.JSONPRETTY : ConfType.JSON;
-	// JsonFactory fac;
-	// if (prettyPrint) {
-	// fac = new JsonFactory() {
-	// @Override
-	// protected JsonGenerator _createUTF8Generator(final OutputStream out, final IOContext ctxt)
-	// throws IOException {
-	// UTF8JsonGenerator gen = new JacksonAccessWorkaround(ctxt, _generatorFeatures, _objectCodec, out);
-	// if (_characterEscapes != null) { gen.setCharacterEscapes(_characterEscapes); }
-	// SerializableString rootSep = _rootValueSeparator;
-	// if (rootSep != DefaultPrettyPrinter.DEFAULT_ROOT_VALUE_SEPARATOR) {
-	// gen.setRootValueSeparator(rootSep);
-	// }
-	// return gen;
-	// }
-	//
-	// @Override
-	// public JsonGenerator createGenerator(final OutputStream out) throws IOException {
-	// return super.createGenerator(out).setPrettyPrinter(new DefaultPrettyPrinter());
-	// }
-	// }.disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM).disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
-	// } else {
-	// fac = new JsonFactory() {
-	// @Override
-	// protected JsonGenerator _createUTF8Generator(final OutputStream out, final IOContext ctxt)
-	// throws IOException {
-	// UTF8JsonGenerator gen = new JacksonAccessWorkaround(ctxt, _generatorFeatures, _objectCodec, out);
-	// if (_characterEscapes != null) { gen.setCharacterEscapes(_characterEscapes); }
-	// SerializableString rootSep = _rootValueSeparator;
-	// if (rootSep != DefaultPrettyPrinter.DEFAULT_ROOT_VALUE_SEPARATOR) {
-	// gen.setRootValueSeparator(rootSep);
-	// }
-	// return gen;
-	// }
-	// };
-	// fac.disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM).disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
-	// }
-	// conf.setCoderSpecific(fac);
-	// conf.setStreamCoderFactory(new JSonStreamCoderFactory(conf));
-	// conf.setShareReferences(shareReferences);
-	// conf.setLastResortResolver(clName -> Unknown.class);
-	// return conf;
-	//
-	// }
-	//
-	// /**
-	// * The Class JacksonAccessWorkaround.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @date 30 sept. 2023
-	// */
-	// public static class JacksonAccessWorkaround extends UTF8JsonGenerator {
-	//
-	// /**
-	// * Instantiates a new jackson access workaround.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param ctxt
-	// * the ctxt
-	// * @param features
-	// * the features
-	// * @param codec
-	// * the codec
-	// * @param out
-	// * the out
-	// * @date 30 sept. 2023
-	// */
-	// public JacksonAccessWorkaround(final IOContext ctxt, final int features, final ObjectCodec codec,
-	// final OutputStream out) {
-	// super(ctxt, features, codec, out);
-	// }
-	//
-	// /**
-	// * Instantiates a new jackson access workaround.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param ctxt
-	// * the ctxt
-	// * @param features
-	// * the features
-	// * @param codec
-	// * the codec
-	// * @param out
-	// * the out
-	// * @param outputBuffer
-	// * the output buffer
-	// * @param outputOffset
-	// * the output offset
-	// * @param bufferRecyclable
-	// * the buffer recyclable
-	// * @date 30 sept. 2023
-	// */
-	// public JacksonAccessWorkaround(final IOContext ctxt, final int features, final ObjectCodec codec,
-	// final OutputStream out, final byte[] outputBuffer, final int outputOffset,
-	// final boolean bufferRecyclable) {
-	// super(ctxt, features, codec, out, outputBuffer, outputOffset, bufferRecyclable);
-	// }
-	//
-	// /**
-	// * Gets the output tail.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @return the output tail
-	// * @date 30 sept. 2023
-	// */
-	// public int getOutputTail() { return _outputTail; }
-	// }
 
 	/**
 	 * the standard FSTConfiguration. - safe (no unsafe r/w) - platform independent byte order - moderate compression
@@ -561,48 +273,6 @@ public class FSTConfiguration {
 	}
 
 	/**
-	 * Checks if is force clz init.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return true, if is force clz init
-	 * @date 30 sept. 2023
-	 */
-	public boolean isForceClzInit() { return forceClzInit; }
-
-	/**
-	 * Gets the last resort resolver.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the last resort resolver
-	 * @date 30 sept. 2023
-	 */
-	public LastResortClassResolver getLastResortResolver() { return lastResortResolver; }
-
-	/**
-	 * Sets the last resort resolver.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param lastResortResolver
-	 *            the new last resort resolver
-	 * @date 30 sept. 2023
-	 */
-	public void setLastResortResolver(final LastResortClassResolver lastResortResolver) {
-		this.lastResortResolver = lastResortResolver;
-	}
-
-	/**
-	 * always execute default fields init, even if no transients (so would get overwritten anyway) required for lossy
-	 * codecs (kson)
-	 *
-	 * @param forceClzInit
-	 * @return
-	 */
-	public FSTConfiguration setForceClzInit(final boolean forceClzInit) {
-		this.forceClzInit = forceClzInit;
-		return this;
-	}
-
-	/**
 	 * Gets the instantiator.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -614,47 +284,6 @@ public class FSTConfiguration {
 	public FSTClassInstantiator getInstantiator(final Class<?> clazz) {
 		return instantiator;
 	}
-
-	/**
-	 * Sets the instantiator.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param instantiator
-	 *            the new instantiator
-	 * @date 30 sept. 2023
-	 */
-	public void setInstantiator(final FSTClassInstantiator instantiator) { this.instantiator = instantiator; }
-
-	/**
-	 * Gets the coder specific.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param <T>
-	 *            the generic type
-	 * @return the coder specific
-	 * @date 30 sept. 2023
-	 */
-	public <T> T getCoderSpecific() { return (T) coderSpecific; }
-
-	/**
-	 * Sets the coder specific.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param coderSpecific
-	 *            the new coder specific
-	 * @date 30 sept. 2023
-	 */
-	public void setCoderSpecific(final Object coderSpecific) { this.coderSpecific = coderSpecific; }
-
-	/**
-	 * Sets the class loader.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param classLoader
-	 *            the new class loader
-	 * @date 30 sept. 2023
-	 */
-	public void setClassLoader(final ClassLoader classLoader) { this.classLoader = classLoader; }
 
 	/**
 	 * special configuration used internally for struct emulation
@@ -779,18 +408,7 @@ public class FSTConfiguration {
 	 * @return true, if is force serializable
 	 * @date 30 sept. 2023
 	 */
-	public boolean isForceSerializable() { return forceSerializable; }
-
-	/**
-	 * treat unserializable classes same as if they would be serializable.
-	 *
-	 * @param forceSerializable
-	 *            //
-	 */
-	public FSTConfiguration setForceSerializable(final boolean forceSerializable) {
-		this.forceSerializable = forceSerializable;
-		return this;
-	}
+	public boolean isForceSerializable() { return true; }
 
 	/**
 	 * clear global deduplication caches. Useful for class reloading scenarios, else counter productive as
@@ -823,20 +441,7 @@ public class FSTConfiguration {
 	 * @return true, if is share references
 	 * @date 30 sept. 2023
 	 */
-	public boolean isShareReferences() { return shareReferences; }
-
-	/**
-	 * if false, identical objects will get serialized twice. Gains speed as long there are no double objects/cyclic
-	 * references (typical for small snippets as used in e.g. RPC)
-	 *
-	 * Cycles and Objects referenced more than once will not be detected (if set to false). Additionally JDK
-	 * compatibility is not supported (read/writeObject and stuff). Use case is highperformance serialization of plain
-	 * cycle free data (e.g. messaging). Can perform significantly faster (20-40%).
-	 *
-	 * @param shareReferences
-	 *
-	 */
-	public void setShareReferences(final boolean shareReferences) { this.shareReferences = shareReferences; }
+	public boolean isShareReferences() { return true; }
 
 	/**
 	 *
@@ -1150,38 +755,13 @@ public class FSTConfiguration {
 	}
 
 	/**
-	 * Sets the cross platform.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param crossPlatform
-	 *            the new cross platform
-	 * @date 30 sept. 2023
-	 */
-	public void setCrossPlatform(final boolean crossPlatform) { this.crossPlatform = crossPlatform; }
-
-	/**
 	 * Checks if is cross platform.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @return true, if is cross platform
 	 * @date 30 sept. 2023
 	 */
-	public boolean isCrossPlatform() { return crossPlatform; }
-
-	/**
-	 * Deep copy.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param <T>
-	 *            the generic type
-	 * @param metadata
-	 *            the metadata
-	 * @return the t
-	 * @date 30 sept. 2023
-	 */
-	public <T> T deepCopy(final T metadata) {
-		return (T) asObject(asByteArray(metadata));
-	}
+	public boolean isCrossPlatform() { return false; }
 
 	/**
 	 * A factory for creating StreamCoder objects.
@@ -1251,112 +831,6 @@ public class FSTConfiguration {
 	}
 
 	/**
-	 * init right after creation of configuration, not during operation as it is not threadsafe regarding mutation
-	 * currently only for minbin serialization
-	 *
-	 * @param keysAndVals
-	 *            { { "symbolicName", "fullQualifiedClazzName" }, .. }
-	 */
-	public FSTConfiguration registerCrossPlatformClassMapping(final String[][] keysAndVals) {
-		for (String[] keysAndVal : keysAndVals) { registerCrossPlatformClassMapping(keysAndVal[0], keysAndVal[1]); }
-		return this;
-	}
-
-	/**
-	 * Register cross platform class mapping.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param shortName
-	 *            the short name
-	 * @param fqName
-	 *            the fq name
-	 * @return the FST configuration
-	 * @date 30 sept. 2023
-	 */
-	public FSTConfiguration registerCrossPlatformClassMapping(final String shortName, final String fqName) {
-		minbinNames.put(shortName, fqName);
-		minbinNamesReverse.put(fqName, shortName);
-		return this;
-	}
-
-	/**
-	 * shorthand for registerCrossPlatformClassMapping(_,_)
-	 *
-	 * @param shortName
-	 *            - class name in json type field
-	 * @param clz
-	 *            - class
-	 * @return
-	 */
-	public FSTConfiguration cpMap(final String shortName, final Class<?> clz) {
-		return registerCrossPlatformClassMapping(shortName, clz.getName());
-	}
-
-	/**
-	 * init right after creation of configuration, not during operation as it is not threadsafe regarding mutation
-	 */
-	public FSTConfiguration registerCrossPlatformClassMappingUseSimpleName(final Class<?>... classes) {
-		registerCrossPlatformClassMappingUseSimpleName(Arrays.asList(classes));
-		return this;
-	}
-
-	/**
-	 * Register cross platform class mapping use simple name.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param classes
-	 *            the classes
-	 * @return the FST configuration
-	 * @date 30 sept. 2023
-	 */
-	public FSTConfiguration registerCrossPlatformClassMappingUseSimpleName(final List<Class> classes) {
-		for (Class<?> clz : classes) {
-			minbinNames.put(clz.getSimpleName(), clz.getName());
-			minbinNamesReverse.put(clz.getName(), clz.getSimpleName());
-			try {
-				if (!clz.isArray()) {
-					Class<?> ac = Class.forName("[L" + clz.getName() + ";");
-					minbinNames.put(clz.getSimpleName() + "[]", ac.getName());
-					minbinNamesReverse.put(ac.getName(), clz.getSimpleName() + "[]");
-				}
-			} catch (ClassNotFoundException e) {
-				FSTUtil.<RuntimeException> rethrow(e);
-			}
-		}
-		return this;
-	}
-
-	/**
-	 * get cross platform symbolic class identifier
-	 *
-	 * @param cl
-	 * @return
-	 */
-	public String getCPNameForClass(final Class<?> cl) {
-		String res = minbinNamesReverse.get(cl.getName());
-		if (res == null) {
-			if (cl.isAnonymousClass()) return getCPNameForClass(cl.getSuperclass());
-			return cl.getName();
-		}
-		return res;
-	}
-
-	/**
-	 * Gets the class for CP name.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param name
-	 *            the name
-	 * @return the class for CP name
-	 * @date 30 sept. 2023
-	 */
-	public String getClassForCPName(final String name) {
-		String res = minbinNames.get(name);
-		if (res == null) return name;
-		return res;
-	}
-
-	/**
 	 * convenience
 	 */
 	public Object asObject(final byte b[]) {
@@ -1401,66 +875,6 @@ public class FSTConfiguration {
 			FSTUtil.<RuntimeException> rethrow(e);
 		}
 		return null;
-	}
-
-	/**
-	 * utility/debug method. Use "asByteArray" for programmatic use as the byte array will already by UTF-8 and ready to
-	 * be sent on network.
-	 *
-	 * @param o
-	 * @return
-	 */
-	// public String asJsonString(final Object o) {
-	// if (!(getCoderSpecific() instanceof JsonFactory)) return "can be called on JsonConfiguration only";
-	// return new String(asByteArray(o), StandardCharsets.UTF_8);
-	// }
-
-	/**
-	 * helper to write series of objects to streams/files > Integer.MAX_VALUE. it - serializes the object - writes the
-	 * length of the serialized object to the stream - the writes the serialized object data
-	 *
-	 * on reader side (e.g. from a blocking socketstream, the reader then - reads the length - reads [length] bytes from
-	 * the stream - deserializes
-	 *
-	 * @see decodeFromStream
-	 *
-	 * @param out
-	 * @param toSerialize
-	 * @throws IOException
-	 */
-	public void encodeToStream(final OutputStream out, final Object toSerialize) throws IOException {
-		FSTObjectOutput objectOutput = getObjectOutput(); // could also do new with minor perf impact
-		objectOutput.writeObject(toSerialize);
-		int written = objectOutput.getWritten();
-		out.write(written >>> 0 & 0xFF);
-		out.write(written >>> 8 & 0xFF);
-		out.write(written >>> 16 & 0xFF);
-		out.write(written >>> 24 & 0xFF);
-
-		// copy internal buffer to bufferedoutput
-		out.write(objectOutput.getBuffer(), 0, written);
-		objectOutput.flush();
-	}
-
-	/**
-	 * @see encodeToStream
-	 *
-	 * @param in
-	 * @return
-	 * @throws Exception
-	 */
-	public Object decodeFromStream(final InputStream in) throws Exception {
-		int read = in.read();
-		if (read < 0) throw new EOFException("stream is closed");
-		int ch1 = read + 256 & 0xff;
-		int ch2 = in.read() + 256 & 0xff;
-		int ch3 = in.read() + 256 & 0xff;
-		int ch4 = in.read() + 256 & 0xff;
-		int len = (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
-		if (len <= 0) throw new EOFException("stream is corrupted");
-		byte buffer[] = new byte[len]; // this could be reused !
-		while (len > 0) { len -= in.read(buffer, buffer.length - len, len); }
-		return getObjectInput(buffer).readObject();
 	}
 
 	@Override
@@ -1515,96 +929,4 @@ public class FSTConfiguration {
 
 	}
 
-	/**
-	 * A factory for creating JSonStreamCoder objects.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 30 sept. 2023
-	 */
-	// protected static class JSonStreamCoderFactory implements StreamCoderFactory {
-	//
-	// /** The conf. */
-	// protected final FSTConfiguration conf;
-	//
-	// /**
-	// * Instantiates a new j son stream coder factory.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param conf
-	// * the conf
-	// * @date 30 sept. 2023
-	// */
-	// public JSonStreamCoderFactory(final FSTConfiguration conf) {
-	// this.conf = conf;
-	// }
-	//
-	// @Override
-	// public FSTEncoder createStreamEncoder() {
-	// return new FSTJsonEncoder(conf);
-	// }
-	//
-	// @Override
-	// public FSTDecoder createStreamDecoder() {
-	// return new FSTJsonDecoder(conf);
-	// }
-	//
-	// /** The input. */
-	// static ThreadLocal<FSTObjectInput> input = new ThreadLocal<>();
-	//
-	// /** The output. */
-	// static ThreadLocal<FSTObjectOutput> output = new ThreadLocal<>();
-	//
-	// @Override
-	// public ThreadLocal<FSTObjectInput> getInput() { return input; }
-	//
-	// @Override
-	// public ThreadLocal<FSTObjectOutput> getOutput() { return output; }
-	// }
-
-	// /**
-	// * A factory for creating FBinaryStreamCoder objects.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @date 30 sept. 2023
-	// */
-	// protected static class FBinaryStreamCoderFactory implements StreamCoderFactory {
-	//
-	// /** The conf. */
-	// protected final FSTConfiguration conf;
-	//
-	// /**
-	// * Instantiates a new f binary stream coder factory.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param conf
-	// * the conf
-	// * @date 30 sept. 2023
-	// */
-	// public FBinaryStreamCoderFactory(final FSTConfiguration conf) {
-	// this.conf = conf;
-	// }
-	//
-	// @Override
-	// public FSTEncoder createStreamEncoder() {
-	// return new FSTBytezEncoder(conf, new HeapBytez(new byte[4096]));
-	// }
-	//
-	// @Override
-	// public FSTDecoder createStreamDecoder() {
-	// return new FSTBytezDecoder(conf);
-	// }
-	//
-	// /** The input. */
-	// static ThreadLocal<FSTObjectInput> input = new ThreadLocal<>();
-	//
-	// /** The output. */
-	// static ThreadLocal<FSTObjectOutput> output = new ThreadLocal<>();
-	//
-	// @Override
-	// public ThreadLocal<FSTObjectInput> getInput() { return input; }
-	//
-	// @Override
-	// public ThreadLocal<FSTObjectOutput> getOutput() { return output; }
-	//
-	// }
 }

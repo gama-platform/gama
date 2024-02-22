@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTObjectInput.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTObjectInput.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -820,14 +820,8 @@ public class FSTObjectInput implements ObjectInput {
 		// fixme: code below improves unshared decoding perf, however disables to run mixed mode (clients can decide)
 		// actually would need 2 flags for encode/decode
 		// tested with json mixed mode does not work anyway ...
-		final boolean needsRefLookup = conf.shareReferences && !referencee.isFlat() && !clzSerInfo.isFlat();
-		// previously :
-		// final boolean needsRefLookup = !referencee.isFlat() && !clzSerInfo.isFlat();
-		if (needsRefLookup) {
-
-			objects.registerObjectForRead(newObj, readPos);
-
-		}
+		final boolean needsRefLookup = !referencee.isFlat() && !clzSerInfo.isFlat();
+		if (needsRefLookup) { objects.registerObjectForRead(newObj, readPos); }
 		if (clzSerInfo.isExternalizable()) {
 			int tmp = readPos;
 			getCodec().ensureReadAhead(readExternalReadAHead);
