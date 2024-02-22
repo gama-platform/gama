@@ -413,7 +413,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 *            the scope
 	 * @return the i population
 	 */
-	IPopulation findPopulation(final IScope scope) {
+	protected IPopulation findPopulation(final IScope scope) {
 		final IAgent executor = scope.getAgent();
 		if (species == null) return executor.getPopulationFor(description.getSpeciesContext().getName());
 		ISpecies s = Cast.asSpecies(scope, species.value(scope));
@@ -475,7 +475,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 * @param scope
 	 * @throws GamaRuntimeException
 	 */
-	private void checkPopulationValidity(final IPopulation pop, final IScope scope) throws GamaRuntimeException {
+	protected void checkPopulationValidity(final IPopulation pop, final IScope scope) throws GamaRuntimeException {
 		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
 			throw error("Simulations can only be created within experiments", scope);
 		final SpeciesDescription sd = pop.getSpecies().getDescription();
