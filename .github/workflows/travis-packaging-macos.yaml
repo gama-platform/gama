@@ -126,11 +126,9 @@ jobs:
           xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         env: 
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
           name: gama-mac-signed
-          if-no-files-found: error
-          compression-level: 0
           path: ./${{ matrix.zipName }}.dmg

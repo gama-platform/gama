@@ -54,10 +54,8 @@ jobs:
           dpkg --build ${{ github.workspace }}/${{ matrix.zipName }}
           dpkg --info ${{ github.workspace }}/${{ matrix.zipName }}.deb
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: gama-linux-deb
-          if-no-files-found: error
-          compression-level: 0
           path: |
             ${{ github.workspace }}/${{ matrix.zipName }}.deb
