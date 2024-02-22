@@ -61,9 +61,9 @@ jobs:
         run: |
           echo "$GAMA_KEYSTORE_BASE64" | base64 --decode > ~/gama.keystore
           # Config file
-          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.annotations/pom.xml
-          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.processor/pom.xml
-          sed -i "s/<storepass>GAMA_STORE/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.parent/pom.xml
+          sed -i "s/<storepass>GAMA_PLATFORM/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.annotations/pom.xml
+          sed -i "s/<storepass>GAMA_PLATFORM/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.processor/pom.xml
+          sed -i "s/<storepass>GAMA_PLATFORM/<storepass>$GAMA_STORE/g" $GITHUB_WORKSPACE/gama.parent/pom.xml
           # Trigger jar signing plugin
           touch $GITHUB_WORKSPACE/sign.maven
         env:
@@ -86,7 +86,7 @@ jobs:
       # 
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -B ${{ inputs.mvn_extra_arguments }}
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
 
       - name: Export linux release
         uses: actions/upload-artifact@v4
