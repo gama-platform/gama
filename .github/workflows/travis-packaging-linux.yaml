@@ -48,6 +48,9 @@ jobs:
 
       - name: Build DEB archive
         run: |
+          chmod 0755  ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/postinst
+          chmod 0755  ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/postrm
+          # Build package
           dpkg --build ${{ github.workspace }}/${{ matrix.zipName }}
           dpkg --info ${{ github.workspace }}/${{ matrix.zipName }}.deb
 
