@@ -6,7 +6,7 @@ name: Continuous project validation
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    branches: [ 2024-06 ]
     paths-ignore:
       - 'travis/**'
 
@@ -17,6 +17,9 @@ jobs:
   ci-handler:
     runs-on: ubuntu-latest
     steps:
+      - name: Check commit message
+        run: echo ${{ github.event.commits[0].message }}
+
       - name: Validate Commit Message
         if: ${{ github.event.commits[0].message && contains(github.event.commits[0].message, 'ci release') }}
         run: |
