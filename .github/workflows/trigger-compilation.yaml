@@ -22,7 +22,7 @@ jobs:
           echo "${{ github.event.head_commit.message }}"
 
       - name: Validate Commit Message
-        if: ${{ github.event.head_commit.message && contains(join(' ', split(github.event.head_commit.message, '\n')), 'ci release') }}
+        if: ${{ contains(github.event.head_commit.message, 'ci release') }}
         run: |
           echo "'ci release' Commit message detected!"
           echo "Triggering workflow '/.github/workflows/travis-gama-release.yaml'..."
@@ -37,7 +37,7 @@ jobs:
 
   compiling-gama:
     needs: ci-handler
-    if: ${{ !contains(join(' ', split(github.event.head_commit.message, '\n')), 'ci release') }}
+    if: ${{ !contains(github.event.head_commit.message, 'ci release') }}
     name: Compiling GAMA
     uses: ./.github/workflows/travis-build.yaml
     with:
