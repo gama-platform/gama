@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SerialisedSimulationRecorder.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * SerialisedSimulationRecorder.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -48,12 +48,6 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 		/** The cycle. */
 		long cycle;
 
-		/** The path to model. */
-		String pathToModel;
-
-		/** The experiment name. */
-		String experimentName;
-
 		/**
 		 * Instantiates a new history node.
 		 *
@@ -62,22 +56,12 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 		 *            the state
 		 * @date 22 oct. 2023
 		 */
-		public HistoryNode(final byte[] state, final long cycle, final String path, final String exp) {
+		public HistoryNode(final byte[] state, final long cycle) {
 			bytes = state;
 			this.cycle = cycle;
-			pathToModel = path;
-			experimentName = exp;
 		}
 
 	}
-
-	/**
-	 * The Class SimulationHistory.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 22 oct. 2023
-	 */
-	private static class SimulationHistory extends LinkedList<HistoryNode> {}
 
 	/** The executor. */
 	ExecutorService executor = Executors.newCachedThreadPool();
@@ -96,7 +80,7 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 	 * @date 8 août 2023
 	 */
 	public SerialisedSimulationRecorder() {
-		processor = SerialisationProcessorFactory.create(BINARY_FORMAT);
+		processor = new FSTBinaryProcessor();
 	}
 
 	/**
@@ -113,8 +97,7 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 			long startTime = System.nanoTime();
 			byte[] state = processor.saveAgentToBytes(sim.getScope(), sim);
 			LinkedList<HistoryNode> history = getSimulationHistory(sim);
-			HistoryNode node = new HistoryNode(state, sim.getClock().getCycle(), sim.getModel().getFilePath(),
-					sim.getExperiment().getSpecies().getName());
+			HistoryNode node = new HistoryNode(state, sim.getClock().getCycle());
 			history.push(node);
 			asyncZip(node, startTime);
 		} catch (Throwable e) {
@@ -152,8 +135,8 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 	protected void asyncZip(final HistoryNode node, final long startTime) {
 		executor.execute(() -> {
 			node.bytes = ByteArrayZipper.zip(node.bytes);
-			DEBUG.OUT("Serialised in " + processor.getFormat() + " and compressed to " + node.bytes.length / 1000000d
-					+ "Mb in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
+			DEBUG.OUT("Serialised and compressed to " + node.bytes.length / 1000000d + "Mb in "
+					+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
 
 		});
 	}
@@ -176,8 +159,7 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 				if (node != null) {
 					long startTime = System.nanoTime();
 					processor.restoreAgentFromBytes(sim, ByteArrayZipper.unzip(node.bytes));
-					DEBUG.OUT("Deserialise from " + processor.getFormat() + " in "
-							+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
+					DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
 				}
 			}
 		} catch (Throwable e) {
@@ -196,7 +178,6 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 	@Override
 	public boolean canStepBack(final SimulationAgent sim) {
 		return getSimulationHistory(sim).size() > 0;
-
 	}
 
 }

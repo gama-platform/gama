@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ISerialisationProcessor.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * ISerialisationProcessor.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -11,7 +11,6 @@
 package gama.extension.serialize.implementations;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.runtime.IScope;
 
 /**
@@ -22,7 +21,7 @@ import gama.core.runtime.IScope;
  *            the generic type
  * @date 8 août 2023
  */
-public interface ISerialisationProcessor<SerialisedForm extends ISerialisedAgent> {
+public interface ISerialisationProcessor {
 
 	/**
 	 * Save simulation to bytes.
@@ -46,32 +45,7 @@ public interface ISerialisationProcessor<SerialisedForm extends ISerialisedAgent
 	 * @return the i agent
 	 * @date 30 oct. 2023
 	 */
-	IAgent createAgentFromBytes(IScope scope, byte[] bytes);
-
-	/**
-	 * Save object to bytes.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            TODO
-	 * @param obj
-	 *            the obj
-	 * @return the byte[]
-	 * @date 29 sept. 2023
-	 */
-	byte[] saveObjectToBytes(IScope scope, final Object obj);
-
-	/**
-	 * Restore simulation from bytes.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param sim
-	 *            the sim
-	 * @param input
-	 *            the input
-	 * @date 8 août 2023
-	 */
-	void restoreAgentFromBytes(final IAgent sim, final byte[] input);
+	IAgent createAgentFromBytes(final IScope scope, final byte[] bytes);
 
 	/**
 	 * Restore object from bytes.
@@ -85,51 +59,28 @@ public interface ISerialisationProcessor<SerialisedForm extends ISerialisedAgent
 	Object createObjectFromBytes(final IScope scope, final byte[] input);
 
 	/**
-	 * Gets the format identifier.
+	 * Save object to bytes.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the format identifier
-	 * @date 8 août 2023
-	 */
-	byte getFormatIdentifier();
-
-	/**
-	 * Gets the format.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the format
-	 * @date 8 août 2023
-	 */
-	String getFormat();
-
-	/**
-	 * Write.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param objectToSerialise
-	 *            the object to serialise
+	 * @param scope
+	 *            TODO
+	 * @param obj
+	 *            the obj
 	 * @return the byte[]
-	 * @date 7 août 2023
+	 * @date 29 sept. 2023
 	 */
-	byte[] write(IScope scope, SerialisedForm objectToSerialise);
+	byte[] saveObjectToBytes(final IScope scope, final Object obj);
 
 	/**
-	 * Read.
+	 * Restore simulation from bytes.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param sim
+	 *            the sim
 	 * @param input
 	 *            the input
-	 * @return the proxy
-	 * @date 7 août 2023
-	 */
-	SerialisedForm read(IScope scope, byte[] input);
-
-	/**
-	 * Pretty print.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 8 août 2023
 	 */
-	default void prettyPrint() {}
+	void restoreAgentFromBytes(final IAgent sim, final byte[] input);
 
 }

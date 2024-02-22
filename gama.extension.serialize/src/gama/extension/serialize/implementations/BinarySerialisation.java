@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * BinarySerialisation.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -34,6 +34,9 @@ import gama.core.util.ByteArrayZipper;
  * @date 31 oct. 2023
  */
 public class BinarySerialisation implements ISerialisationConstants {
+
+	/** The processor. */
+	private static FSTBinaryProcessor PROCESSOR = new FSTBinaryProcessor();
 
 	/**
 	 * Creates an object or an agent from a file.
@@ -96,12 +99,11 @@ public class BinarySerialisation implements ISerialisationConstants {
 		byte type = bytes[0];
 		if (type != GAMA_OBJECT_IDENTIFIER && type != GAMA_AGENT_IDENTIFIER)
 			throw GamaRuntimeException.error("Not a GAMA serialisation record", scope);
-		ISerialisationProcessor processor = SerialisationProcessorFactory.create(bytes[1]);
 		boolean zip = bytes[2] == COMPRESSED;
 		byte[] some = Arrays.copyOfRange(bytes, 3, bytes.length);
 		if (zip) { some = ByteArrayZipper.unzip(some); }
-		return type == GAMA_OBJECT_IDENTIFIER ? processor.createObjectFromBytes(scope, some)
-				: processor.createAgentFromBytes(scope, some);
+		return type == GAMA_OBJECT_IDENTIFIER ? PROCESSOR.createObjectFromBytes(scope, some)
+				: PROCESSOR.createAgentFromBytes(scope, some);
 	}
 
 	/**
@@ -160,11 +162,10 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) throws IOException {
 		if (bytes[0] != GAMA_AGENT_IDENTIFIER) throw new IOException("Not an agent serialisation record");
-		ISerialisationProcessor processor = SerialisationProcessorFactory.create(bytes[1]);
-		boolean zip = bytes[2] == COMPRESSED;
-		byte[] some = Arrays.copyOfRange(bytes, 3, bytes.length);
+		boolean zip = bytes[1] == COMPRESSED;
+		byte[] some = Arrays.copyOfRange(bytes, 2, bytes.length);
 		if (zip) { some = ByteArrayZipper.unzip(some); }
-		processor.restoreAgentFromBytes(sim, some);
+		PROCESSOR.restoreAgentFromBytes(sim, some);
 	}
 
 	/**
@@ -221,15 +222,11 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static final byte[] saveToBytes(final IScope scope, final Object agent, final String format,
 			final boolean zip) {
-		ISerialisationProcessor processor = SerialisationProcessorFactory.create(format);
-		if (processor == null) throw GamaRuntimeException.error("No object serializer called " + format
-				+ " found. Available serializers are " + SerialisationProcessorFactory.getAvailableProcessors(), scope);
-		byte[] toSave = agent instanceof IAgent a ? processor.saveAgentToBytes(scope, a)
-				: processor.saveObjectToBytes(scope, agent);
+		byte[] toSave = agent instanceof IAgent a ? PROCESSOR.saveAgentToBytes(scope, a)
+				: PROCESSOR.saveObjectToBytes(scope, agent);
 		if (zip) { toSave = ByteArrayZipper.zip(toSave); }
 		try (ByteArrayOutputStream fos = new ByteArrayOutputStream()) {
 			fos.write(agent instanceof IAgent ? GAMA_AGENT_IDENTIFIER : GAMA_OBJECT_IDENTIFIER);
-			fos.write(processor.getFormatIdentifier());
 			fos.write(zip ? COMPRESSED : UNCOMPRESSED);
 			fos.write(toSave);
 			return fos.toByteArray();

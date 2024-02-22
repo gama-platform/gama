@@ -59,7 +59,6 @@ import org.nustaq.serialization.util.FSTInputStream;
 import org.nustaq.serialization.util.FSTInt2ObjectMapFactory;
 import org.nustaq.serialization.util.FSTUtil;
 
-import gama.core.runtime.IScope;
 import gama.gaml.compilation.kernel.GamaClassLoader;
 
 /**
@@ -112,27 +111,6 @@ public class FSTConfiguration {
 
 	/** The instantiator. */
 	private final FSTClassInstantiator instantiator = new FSTDefaultClassInstantiator();
-
-	/**
-	 * The scope. A bit of a hack, in order for serialisers to have access to the current scope when deserialising
-	 * objects
-	 */
-	private IScope scope;
-
-	/**
-	 * Gets the scope.
-	 *
-	 * @return the scope
-	 */
-	public IScope getScope() { return scope; }
-
-	/**
-	 * Sets the scope.
-	 *
-	 * @param scope
-	 *            the new scope
-	 */
-	public void setScope(final IScope scope) { this.scope = scope; }
 
 	/**
 	 * Gets the int to object map factory.
