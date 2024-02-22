@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gama Server Connector</title>
+    <link rel="stylesheet" href="connector.css">
+
+
+</head>
+<body>
+    <div class="title">
+        <h1>Gama Server Connector</h1>
+        <a href="connector.html">
+            <button class="help-button">
+                <img src="return.png" alt="Icône de retour">
+            </button>
+        </a>
+    </div>
+
+    <h2 class="with-bar-left">What is Gama Server Connector?</h2>
+    <div class="text">
+        This tool will help you understand how to use Gama Server. 
+        It allows you to see which messages to send, and to decrypt messages received and their meaning. 
+        It will familiarize you with this powerful tool.<br><br>
+        About Gama Server, it's a server that starts up every time you launch GAMA, opens a websocket port and waits for clients to come and control it. 
+        Gama Server Connector is an example of a client, which implements all the requests you can send to Gama Server.<br><br>
+        <a href="https://gama-platform.org/wiki/HeadlessServer" style="color: rgb(155, 155, 255); text-decoration: underline;">Learn more about Gama Server</a>
+
+    </div>
+    <h2 class="with-bar-left">How to use this tool ?</h2>
+    <div class="text">
+        Please follow the steps below: <br>
+        <ul class="text">
+            <li>Check that you are connected to Gama Server, as can be seen in the Connection information section. 
+                You must have CONNECTED status. 
+                If this is not the case, check and, if necessary, modify the Gama Server web address in the Address section.</li>
+            <li>Load the model you wish to use. To do this, enter the path to your .gaml file, and the name of the experiment 
+                you wish to view in the Load An Experiment section.</li>
+            <li>Launch the model by clicking on Load / Reload in the Simulation Commands section.</li>
+            <li>You can check whether the model has been launched by looking at the GAMA response messages. 
+                You should receive a CommandExecutedSucessfully message and have Gama State paused or launched.</li>
+            <li>Click on the play button if the simulation is paused.</li>
+            <li>You can check that this is working by going to GAMA GUI</li>
+        </ul>
+        In this following flowchart, you can see the whole process to launch a simulation remotely: <br><br>
+        <div class="svg-container">
+            <object type="image/svg+xml" data="instruction.svg"></object>
+        </div>
+    </div>
+    <h2 class="with-bar-left">FAQ</h2>
+    <div class="text">
+        <h3>Why sometimes I have no response when I want to load an experiment ?</h3>
+        <ul class="text">
+            <li>When you reload an experiment, GAMA asks you, via an internal pop-up window, if you're sure you want to do it.
+                When this happens, you must answer "yes" and GAMA will immediately respond to the loading of the results you previously sent. <br>
+                If you want to avoid this probem, I suggest to set the global variable pref_experiment_ask_closing to false in the init of the global of your model.
+            </li>
+        </ul>
+        <h3>Why can't the connector connect to Gama Server?</h3>
+        <ul class="text">
+            <li>I'll be very clear on this point: if you can't connect to the Gama server, it's either because you haven't specified the right connection port, 
+                or because the Gama Server port hasn't been launched. In no case is it a connector problem. 
+                If Gama Server hasn't launched (you have no way of checking this), go to the settings in the execution > server mode tab and disable server mode, 
+                then save your preferences. Then restart it. This action resets Gama Server.
+            </li>
+        </ul>
+        <h3>Why the Gama Server simulation status is UNKNOWN when I'm connecting to Gama Server ?</h3>
+        <ul class="text">
+            <li>Simulation status is the state of Gama Server: is a simulation running?
+                 is it paused? The connector knows this status when it receives a SimlationStatus message.
+                  This message is only sent when there's a change in Gama Server status, so it's normal not to know it when you connect.
+            </li>
+        </ul>
+        
+
+    </div>
+
+    
+</body>
