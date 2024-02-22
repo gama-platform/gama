@@ -28,7 +28,7 @@ jobs:
           curl --request POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
-            --data "{\"event_type\": \"ci_release\", \"inputs\": { \"IS_STABLE_RELEASE\": \"false\", \"tag\": \"$releaseVersion\" }}" \
+            --data "{\"event_type\": \"ci_release\", \"client_payload\": { \"IS_STABLE_RELEASE\": \"false\", \"tag\": \"$releaseVersion\" }}" \
             https://api.github.com/repos/gama-platform/gama/dispatches
 
   compiling-gama:
