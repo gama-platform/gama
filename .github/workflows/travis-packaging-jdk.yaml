@@ -40,7 +40,7 @@ jobs:
         run: |
           touch $GITHUB_WORKSPACE/sign.maven
           echo "$GAMA_KEYSTORE_BASE64" | base64 --decode > ~/gama.keystore
-          $GITHUB_WORKSPACE/travis/zip_withjdk.sh
+          bash $GITHUB_WORKSPACE/travis/zip_withjdk.sh
         env:
           GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
           GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
