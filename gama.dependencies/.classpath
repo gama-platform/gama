@@ -149,6 +149,6 @@
 	<classpathentry exported="true" kind="lib" path="geotools/gt-http-commons-25.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="protobuf-java-3.6.1.jar"/>
-	<classpathentry kind="lib" path="geotools/jackson-core-2.16.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="geotools/jackson-core-2.16.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
