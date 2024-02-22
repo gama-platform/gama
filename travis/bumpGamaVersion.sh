@@ -6,10 +6,16 @@
 
 # check if 2 param
 oldVersion="0.0.0"
-newVersion=$1
+inputVersion=$1
+
+month=$(echo $inputVersion | awk -F'.' '{print $2}' | awk '{print int($1)}')
+id=$(echo $inputVersion | awk -F'.' '{print $3}' | awk '{print int($1)}')
+newVersion=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2=month; $3=id; print}' | sed 's/\ /\./g') # Remove leading zero(s) after dot character, enforcing OSGi version format
 
 # Set path
 path="$( dirname $( realpath "${BASH_SOURCE[0]}" ) )/.."
+
+echo "Tagging GAMA packages release as $newVersion"
 
 #
 #	Should I clean maven ?

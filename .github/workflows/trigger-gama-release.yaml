@@ -24,6 +24,8 @@ jobs:
     with:
       get_testing_compiled_archives: false
       get_all_archives_for_release: true
+    with:
+      new_release_tag: ${{ inputs.tag }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
