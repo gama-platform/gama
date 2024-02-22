@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaSavedSimulationFile.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamaSavedSimulationFile.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -10,11 +10,10 @@
  ********************************************************************************************************/
 package gama.extension.serialize.gaml;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.types.IType;
@@ -32,7 +31,7 @@ import gama.gaml.types.IType;
 		doc = @doc ("Represents a saved simulation file. The internal contents is a string at index 0 that contains the binary (bytes) representation of the simulation"))
 // TODO : this type needs to be improved ....
 @SuppressWarnings ({ "unchecked" })
-public class GamaSavedSimulationFile extends GamaSavedAgentFile implements ISerialisationConstants {
+public class GamaSavedSimulationFile extends GamaSavedAgentFile {
 
 	/**
 	 * Instantiates a new gama saved simulation file.

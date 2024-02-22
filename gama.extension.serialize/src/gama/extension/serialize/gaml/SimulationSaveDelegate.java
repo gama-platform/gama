@@ -20,7 +20,7 @@ import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
-import gama.extension.serialize.implementations.BinarySerialisation;
+import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

@@ -7,8 +7,8 @@ Require-Bundle: gama.core,
  gama.dependencies
 Bundle-ClassPath: .
 Export-Package: gama.extension.serialize,
- gama.extension.serialize.gaml,
- gama.extension.serialize.implementations
+ gama.extension.serialize.binary,
+ gama.extension.serialize.gaml
 Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

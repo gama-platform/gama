@@ -20,7 +20,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.util.IList;
-import gama.extension.serialize.implementations.BinarySerialisation;
+import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
 import gama.gaml.statements.RemoteSequence;
