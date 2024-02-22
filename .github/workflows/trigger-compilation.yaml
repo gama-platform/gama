@@ -8,14 +8,31 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
-      - '.github/**'
       - 'travis/**'
 
   workflow_dispatch: # For manual trigger
 
 jobs:
 
+  ci-handler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Commit Message
+        if: ${{ github.event.commits[0].message && contains(github.event.commits[0].message, 'ci release') }}
+        run: |
+          echo "'ci release' Commit message detected!"
+          echo "Triggering workflow '/.github/workflows/travis-gama-release.yaml'..."
+          releaseVersion=$(date +"%Y").$(date +"%m").0
+          #
+          # Manually trigger the target workflow
+          curl --request POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
+            --data "{\"event_type\": \"ci_release\", \"ref\": \"${{ github.sha }}\", \"inputs\": { \"IS_STABLE_RELEASE\": \"false\", \"tag\": \"$releaseVersion\" }}" \
+            https://api.github.com/repos/gama-platform/gama/dispatches
+
   compiling-gama:
+    if: ${{ !contains(github.event.commits[0].message, 'ci release') }}
     name: Compiling GAMA
     uses: ./.github/workflows/travis-build.yaml
     with:

@@ -13,6 +13,16 @@ on:
         type: string
         required: true
         default: 2024.03.0
+  repository_dispatch: # For "ci" trigger
+    types: ci_release
+    inputs:
+      IS_STABLE_RELEASE: 
+        required: true
+        default: false 
+        type: boolean
+      tag:
+        type: string
+        required: true
 
 
 run-name: Building GAMA release
