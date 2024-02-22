@@ -15,14 +15,10 @@ on:
 jobs:
 
   ci-handler:
+    if: ${{ contains(github.event.head_commit.message, 'ci release') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check commit message
-        run: |
-          echo "${{ github.event.head_commit.message }}"
-
-      - name: Validate Commit Message
-        if: ${{ contains(github.event.head_commit.message, 'ci release') }}
+      - name: Trigger release
         run: |
           echo "'ci release' Commit message detected!"
           echo "Triggering workflow '/.github/workflows/travis-gama-release.yaml'..."
@@ -32,11 +28,10 @@ jobs:
           curl --request POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
-            --data "{\"event_type\": \"ci_release\", \"ref\": \"${{ github.sha }}\", \"inputs\": { \"IS_STABLE_RELEASE\": \"false\", \"tag\": \"$releaseVersion\" }}" \
+            --data "{\"event_type\": \"ci_release\", \"inputs\": { \"IS_STABLE_RELEASE\": \"false\", \"tag\": \"$releaseVersion\" }}" \
             https://api.github.com/repos/gama-platform/gama/dispatches
 
   compiling-gama:
-    needs: ci-handler
     if: ${{ !contains(github.event.head_commit.message, 'ci release') }}
     name: Compiling GAMA
     uses: ./.github/workflows/travis-build.yaml
