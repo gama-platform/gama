@@ -64,24 +64,10 @@ public class SerialisedSimulationRecorder implements ISimulationRecorder, ISeria
 	}
 
 	/** The executor. */
-	ExecutorService executor = Executors.newCachedThreadPool();
+	final ExecutorService executor = Executors.newCachedThreadPool();
 
 	/** The processor. */
-	ISerialisationProcessor processor;
-
-	/**
-	 * Instantiates a new serialised simulation recorder.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param format
-	 *            the format
-	 * @param zip
-	 *            the zip
-	 * @date 8 août 2023
-	 */
-	public SerialisedSimulationRecorder() {
-		processor = new FSTBinaryProcessor();
-	}
+	final FSTBinaryProcessor processor = new FSTBinaryProcessor();
 
 	/**
 	 * Record.

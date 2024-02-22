@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SimulationsMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SimulationsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -58,8 +58,8 @@ public class SimulationsMenu extends ContributionItem {
 	public static GamaCommand duplicateCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
 					"Duplicate the current simulation and add it to the experiment", e -> {
-						byte[] bytes = BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation(),
-								ISerialisationConstants.BINARY_FORMAT, true);
+						byte[] bytes =
+								BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation(), true);
 						final SimulationAgent sim =
 								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 						GAMA.runAndUpdateAll(() -> {

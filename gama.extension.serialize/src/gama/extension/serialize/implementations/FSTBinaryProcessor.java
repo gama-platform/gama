@@ -56,7 +56,7 @@ import gama.gaml.types.IType;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 2 août 2023
  */
-public class FSTBinaryProcessor implements ISerialisationProcessor, ISerialisationConstants {
+public class FSTBinaryProcessor implements ISerialisationConstants {
 
 	/** The fst. */
 	FSTConfiguration fst;
@@ -89,7 +89,6 @@ public class FSTBinaryProcessor implements ISerialisationProcessor, ISerialisati
 	 *            the some
 	 * @date 8 août 2023
 	 */
-	@Override
 	public void restoreAgentFromBytes(final IAgent sim, final byte[] input) {
 		scope = sim.getScope();
 		try {
@@ -111,15 +110,68 @@ public class FSTBinaryProcessor implements ISerialisationProcessor, ISerialisati
 	 * @return the byte[]
 	 * @date 8 août 2023
 	 */
-	@Override
-	public byte[] saveAgentToBytes(final IScope scope, final IAgent sim) {
-		return saveObjectToBytes(scope, SerialisedAgent.of(sim, true));
+	public byte[] saveAgentToBytes(final IScope newScope, final IAgent sim) {
+		return saveObjectToBytes(newScope, SerialisedAgent.of(sim, true));
 	}
 
-	@Override
-	public byte[] saveObjectToBytes(final IScope scope, final Object obj) {
+	/**
+	 * Save object to bytes.
+	 *
+	 * @param newScope
+	 *            the scope
+	 * @param obj
+	 *            the obj
+	 * @return the byte[]
+	 */
+	public byte[] saveObjectToBytes(final IScope newScope, final Object obj) {
 		inAgent = false;
 		return fst.asByteArray(obj);
+	}
+
+	/**
+	 * Restore object from bytes.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param scope
+	 *            the scope
+	 * @param input
+	 *            the input
+	 * @return the object
+	 * @date 29 sept. 2023
+	 */
+	public Object createObjectFromBytes(final IScope newScope, final byte[] input) {
+		try {
+			scope = newScope;
+			return fst.asObject(input);
+		} catch (Exception e) {
+			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			scope = null;
+		}
+
+	}
+
+	/**
+	 * Creates the agent from bytes.
+	 *
+	 * @param newScope
+	 *            the new scope
+	 * @param input
+	 *            the input
+	 * @return the i agent
+	 */
+	public IAgent createAgentFromBytes(final IScope newScope, final byte[] input) {
+		try {
+			scope = newScope;
+			Object o = fst.asObject(input);
+			if (o instanceof SerialisedAgent sa) return sa.recreateIn(scope);
+			return null;
+		} catch (Exception e) {
+			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			scope = null;
+		}
+
 	}
 
 	/**
@@ -451,45 +503,6 @@ public class FSTBinaryProcessor implements ISerialisationProcessor, ISerialisati
 	public FSTConfiguration initConfiguration(final FSTConfiguration conf) {
 		registerSerialisers(conf);
 		return conf;
-	}
-
-	/**
-	 * Restore object from bytes.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @param input
-	 *            the input
-	 * @return the object
-	 * @date 29 sept. 2023
-	 */
-	@Override
-	public Object createObjectFromBytes(final IScope newScope, final byte[] input) {
-		try {
-			scope = newScope;
-			return fst.asObject(input);
-		} catch (Exception e) {
-			throw GamaRuntimeException.create(e, scope);
-		} finally {
-			scope = null;
-		}
-
-	}
-
-	@Override
-	public IAgent createAgentFromBytes(final IScope newScope, final byte[] input) {
-		try {
-			scope = newScope;
-			Object o = fst.asObject(input);
-			if (o instanceof SerialisedAgent sa) return sa.recreateIn(scope);
-			return null;
-		} catch (Exception e) {
-			throw GamaRuntimeException.create(e, scope);
-		} finally {
-			scope = null;
-		}
-
 	}
 
 	/**

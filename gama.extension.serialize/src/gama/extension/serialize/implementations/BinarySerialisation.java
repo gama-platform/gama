@@ -10,12 +10,11 @@
  ********************************************************************************************************/
 package gama.extension.serialize.implementations;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.common.util.FileUtils;
@@ -59,6 +58,17 @@ public class BinarySerialisation implements ISerialisationConstants {
 	}
 
 	/**
+	 * Checks if is serialisation header.
+	 *
+	 * @param b
+	 *            the b
+	 * @return true, if is serialisation header
+	 */
+	private static boolean isSerialisationHeader(final byte b) {
+		return b == GAMA_OBJECT_IDENTIFIER || b == GAMA_AGENT_IDENTIFIER;
+	}
+
+	/**
 	 * Creates the from string.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -97,10 +107,9 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static Object createFromBytes(final IScope scope, final byte[] bytes) {
 		byte type = bytes[0];
-		if (type != GAMA_OBJECT_IDENTIFIER && type != GAMA_AGENT_IDENTIFIER)
-			throw GamaRuntimeException.error("Not a GAMA serialisation record", scope);
+		if (!isSerialisationHeader(type)) throw GamaRuntimeException.error("Not a GAMA serialisation record", scope);
 		boolean zip = bytes[1] == COMPRESSED;
-		byte[] some = Arrays.copyOfRange(bytes, 2, bytes.length);
+		byte[] some = removeIdentifiers(bytes);
 		if (zip) { some = ByteArrayZipper.unzip(some); }
 		return type == GAMA_OBJECT_IDENTIFIER ? PROCESSOR.createObjectFromBytes(scope, some)
 				: PROCESSOR.createAgentFromBytes(scope, some);
@@ -117,7 +126,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	public static void restoreFromFile(final IAgent agent, final String path) {
 		try {
 			byte[] all = Files.readAllBytes(Path.of(path));
-			restoreFromBytes(agent, all);
+			if (isSerialisationHeader(all[0])) { restoreFromBytes(agent, all); }
 		} catch (IOException e) {
 			throw GamaRuntimeException.create(e, agent.getScope());
 		}
@@ -163,7 +172,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) throws IOException {
 		if (bytes[0] != GAMA_AGENT_IDENTIFIER) throw new IOException("Not an agent serialisation record");
 		boolean zip = bytes[1] == COMPRESSED;
-		byte[] some = Arrays.copyOfRange(bytes, 2, bytes.length);
+		byte[] some = removeIdentifiers(bytes);
 		if (zip) { some = ByteArrayZipper.unzip(some); }
 		PROCESSOR.restoreAgentFromBytes(sim, some);
 	}
@@ -192,7 +201,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 			if (o instanceof SimulationAgent sim) {
 				sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, includingHistory);
 			}
-			fos.write(saveToBytes(scope, o, format, zip));
+			fos.write(saveToBytes(scope, o, zip));
 			if (o instanceof SimulationAgent sim) { sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, false); }
 		} catch (IOException e) {
 			throw GamaRuntimeException.create(e, scope);
@@ -208,48 +217,58 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static final String saveToString(final IScope scope, final Object sim, final String format,
 			final boolean zip) {
-		return new String(saveToBytes(scope, sim, format, zip), STRING_BYTE_ARRAY_CHARSET);
+		return new String(saveToBytes(scope, sim, zip), STRING_BYTE_ARRAY_CHARSET);
 	}
 
 	/**
 	 * Save to bytes.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param agent
+	 * @param object
 	 *            the sim
 	 * @return the string
 	 * @date 21 août 2023
 	 */
-	public static final byte[] saveToBytes(final IScope scope, final Object agent, final String format,
-			final boolean zip) {
-		byte[] toSave = agent instanceof IAgent a ? PROCESSOR.saveAgentToBytes(scope, a)
-				: PROCESSOR.saveObjectToBytes(scope, agent);
+	public static final byte[] saveToBytes(final IScope scope, final Object object, final boolean zip) {
+		byte[] toSave = object instanceof IAgent a ? PROCESSOR.saveAgentToBytes(scope, a)
+				: PROCESSOR.saveObjectToBytes(scope, object);
 		if (zip) { toSave = ByteArrayZipper.zip(toSave); }
-		try (ByteArrayOutputStream fos = new ByteArrayOutputStream()) {
-			fos.write(agent instanceof IAgent ? GAMA_AGENT_IDENTIFIER : GAMA_OBJECT_IDENTIFIER);
-			fos.write(zip ? COMPRESSED : UNCOMPRESSED);
-			fos.write(toSave);
-			return fos.toByteArray();
-		} catch (IOException e) {
-			throw GamaRuntimeException.create(e, scope);
-		}
+		return addIdentifiers(toSave, object instanceof IAgent ? GAMA_AGENT_IDENTIFIER : GAMA_OBJECT_IDENTIFIER,
+				zip ? COMPRESSED : UNCOMPRESSED);
 	}
 
 	/**
-	 * Save to bytes.
+	 * Adds the byte.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @param object
-	 *            the agent
+	 * @param array
+	 *            the array
+	 * @param identifier
+	 *            the identifier
 	 * @param zip
 	 *            the zip
 	 * @return the byte[]
-	 * @date 29 déc. 2023
 	 */
-	public static final byte[] saveToBytes(final IScope scope, final Object object, final boolean zip) {
-		return saveToBytes(scope, object, BINARY_FORMAT, zip);
+	private static byte[] addIdentifiers(final byte[] array, final byte identifier, final byte zip) {
+		if (array == null) return new byte[] { identifier, zip };
+		ByteBuffer buffer = ByteBuffer.allocate(array.length + 2);
+		buffer.put(identifier);
+		buffer.put(zip);
+		buffer.put(array);
+		return buffer.array();
+	}
+
+	/**
+	 * Removes the identifiers.
+	 *
+	 * @param array
+	 *            the tableau
+	 * @return the byte[]
+	 */
+	public static byte[] removeIdentifiers(final byte[] array) {
+		if (array == null || array.length < 2) return new byte[0];
+		byte[] newArray = new byte[array.length - 2];
+		System.arraycopy(array, 2, newArray, 0, newArray.length);
+		return newArray;
 	}
 
 	/**
@@ -264,7 +283,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 29 déc. 2023
 	 */
 	public static final byte[] saveToBytes(final Object object, final boolean zip) {
-		return saveToBytes(null, object, BINARY_FORMAT, zip);
+		return saveToBytes(GAMA.getRuntimeScope(), object, zip);
 	}
 
 }
