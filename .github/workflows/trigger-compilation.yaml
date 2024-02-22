@@ -18,10 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check commit message
-        run: echo ${{ github.event.commits[0].message }}
+        run: |
+          echo "${{ github.event.head_commit.message }}"
 
       - name: Validate Commit Message
-        if: ${{ github.event.commits[0].message && contains(github.event.commits[0].message, 'ci release') }}
+        if: ${{ github.event.head_commit.message && contains(join(' ', split(github.event.head_commit.message, '\n')), 'ci release') }}
         run: |
           echo "'ci release' Commit message detected!"
           echo "Triggering workflow '/.github/workflows/travis-gama-release.yaml'..."
@@ -35,7 +36,8 @@ jobs:
             https://api.github.com/repos/gama-platform/gama/dispatches
 
   compiling-gama:
-    if: ${{ !contains(github.event.commits[0].message, 'ci release') }}
+    needs: ci-handler
+    if: ${{ !contains(join(' ', split(github.event.head_commit.message, '\n')), 'ci release') }}
     name: Compiling GAMA
     uses: ./.github/workflows/travis-build.yaml
     with:
