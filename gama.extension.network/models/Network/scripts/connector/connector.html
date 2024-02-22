@@ -9,11 +9,21 @@
     <link rel="stylesheet" href="connector.css">
 </head>
 <body>
-    <h1>Gama Server Connector</h1>
+    <div class="title">
+      <h1>Gama Server Connector</h1>
+      <a href="help.html">
+        <button class="help-button">
+            <img src="help.png" alt="Icône de retour">
+        </button>
+    </a>
+    </div>
+    
 
     <div class="content">
-      <div class="content-item">
-    <h2>General informations</h2>
+    <div class="content-item">
+    
+    <div class="control-panel">
+      <h2>General informations</h2>
     <div class="grid-container">
         <div class="grid-item">
             <div class="name-container">Connection information</div>
@@ -23,7 +33,7 @@
         </div>
 
         <div class="grid-item">
-            <div class="name-container">Gama Server simulation state</div>
+            <div class="name-container">Gama Server simulation status</div>
             <div class="content-container-column">
               <div id="gama-state"></div>
             </div>
@@ -33,7 +43,7 @@
             <div class="name-container">Simulation commands</div>
             <div class="content-container-buttons">
                 <button onclick="load()" class="square-button control-button" style="background-color:blue;">Load / Reload</button>
-                <button onclick="start()" class="square-button control-button" style="background-color:green;">Start</button>
+                <button onclick="start()" class="square-button control-button" style="background-color:green;">Play</button>
                 <button onclick="pause()" class="square-button control-button" style="background-color:orange;">Pause</button>
                 <button onclick="end()" class="square-button control-button" style="background-color:red;">Stop</button>
             </div>
@@ -105,8 +115,11 @@
           </div>
         </div>
       </div>
+      </div>
       <div class="content-item">
-      <h2>Request - Response timeline</h2>
+      
+      <div class="message-panel">
+        <h2>Request - Response timeline</h2>
       <div id="request-response-title">
         <span>Request</span>
         <span>Response</span>
@@ -114,6 +127,7 @@
     
       <div id="request-response-timeline">
 
+      </div>
       </div>
     </div>
     </div>

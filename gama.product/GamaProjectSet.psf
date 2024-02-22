@@ -1,48 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <psf version="2.0">
-<provider id="org.eclipse.egit.core.GitProvider">
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.annotations"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.core"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.dependencies"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.documentation"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.bdi"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.database"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.fipa"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.image"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.maths"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.network"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.pedestrian"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.physics"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.serialize"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.sound"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.stats"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.extension.traffic"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.core"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.dependencies"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.extension.image"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.extension.sound"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.extension.stats"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.extensions"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.library"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.ui"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.ui.dependencies"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.ui.editor"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.feature.ui.experiment"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.headless"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.library"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.p2site"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.processor"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.product"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.application"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.display.java2d"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.display.opengl"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.editor"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.experiment"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.navigator"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.shared"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gama.ui.viewers"/>
-<project reference="1.0,https://github.com/gama-platform/new.gama.git,main,gaml.compiler"/>
-</provider>
+
 <workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537417360_7" label="==================== BUILD" name="==================== BUILD">
 <item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.parent" type="4"/>
 <item elementID="=gama.processor" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>

@@ -80,6 +80,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval);
 		try {
+			server.setReuseAddr(true);
 			server.start();
 			return server;
 		} finally {

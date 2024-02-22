@@ -14,7 +14,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import gama.core.kernel.experiment.SimulationRecorderFactory;
-import gama.extension.serialize.implementations.SerialisedSimulationRecorder;
+import gama.extension.serialize.binary.SimulationSerialiser;
 
 /**
  * The Class Activator.
@@ -26,7 +26,7 @@ public class Activator implements BundleActivator {
 
 	@Override
 	public void start(final BundleContext context) throws Exception {
-		SimulationRecorderFactory.setRecorderClass(SerialisedSimulationRecorder.class);
+		SimulationRecorderFactory.setRecorderClass(SimulationSerialiser.class);
 	}
 
 	@Override

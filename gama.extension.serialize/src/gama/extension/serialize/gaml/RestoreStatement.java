@@ -27,7 +27,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.IGamaFile;
-import gama.extension.serialize.implementations.BinarySerialisation;
+import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;

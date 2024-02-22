@@ -31,7 +31,7 @@ import gama.core.util.IContainer;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.WriterConfig;
 import gama.dev.DEBUG;
-import gama.extension.serialize.implementations.BinarySerialisation;
+import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
