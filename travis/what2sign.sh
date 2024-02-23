@@ -72,7 +72,7 @@ function unzipAndParse(){
 
 
 touch alreadySawJar.txt needToSign.txt currentAppJar.txt nestedJar.txt
-for gama in ./Gama**zip; do
+for gama in ./gama.application-macosx**zip; do
 	unzipAndParse $gama
 done
 
