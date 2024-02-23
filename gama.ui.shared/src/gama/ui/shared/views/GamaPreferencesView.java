@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaPreferencesView.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaPreferencesView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -181,7 +181,7 @@ public class GamaPreferencesView {
 	 * @param entries
 	 *            the entries
 	 */
-	private void buildContentsFor(final CTabItem tab, final Map<String, List<Pref>> entries) {
+	private void buildContentsFor(final CTabItem tab, final Map<String, List<Pref<?>>> entries) {
 		final var viewer = new ParameterExpandBar(tab.getParent(), SWT.V_SCROLL);
 		viewer.setBackground(
 				!ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.DARK_GRAY.darker());
@@ -251,7 +251,7 @@ public class GamaPreferencesView {
 	 * @param list
 	 *            the list
 	 */
-	private void buildGroupContents(final Composite compo, final List<Pref> list) {
+	private void buildGroupContents(final Composite compo, final List<Pref<?>> list) {
 		GridLayoutFactory.fillDefaults().numColumns(NB_DIVISIONS).spacing(5, 0).equalWidth(true).applyTo(compo);
 		final var comps = new EditorsGroup[NB_DIVISIONS];
 		for (var i = 0; i < NB_DIVISIONS; i++) { comps[i] = new EditorsGroup(compo, SWT.NONE); }
