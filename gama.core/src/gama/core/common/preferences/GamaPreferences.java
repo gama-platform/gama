@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -49,38 +49,12 @@ import gama.gaml.types.IType;
 import one.util.streamex.StreamEx;
 
 /**
- * Class GamaPreferences.
- *
- * @author drogoul
- * @since 26 août 2013
- *
- */
-
-/**
- * The Class GamaPreferences.
- */
-
-/**
- * The Class GamaPreferences.
- */
-
-/**
- * The Class GamaPreferences.
- */
-
-/**
  * The Class GamaPreferences.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 19 août 2023
  */
 
-/**
- * The Class GamaPreferences.
- *
- * @author Alexis Drogoul (alexis.drogoul@ird.fr)
- * @date 19 août 2023
- */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaPreferences {
 
@@ -748,12 +722,11 @@ public class GamaPreferences {
 		public static final Pref<Boolean> OPENGL_Z_FIGHTING = create("pref_opengl_z_fighting",
 				"Add a small increment to the z ordinate of objects and layers to fight visual artefacts", true,
 				IType.BOOL, true).in(NAME, RENDERING).activates("pref_opengl_z_factor");
-		 
-       /** The Constant OPENGL_Z_FACTOR. */
-       public static final Pref<Double> OPENGL_Z_FACTOR =
-               create("pref_opengl_z_factor", "Increment factor (from 0, none, to 1, max)", 0.05, IType.FLOAT, true)
-                       .in(NAME, RENDERING).between(0d, 1d).step(0.001);
 
+		/** The Constant OPENGL_Z_FACTOR. */
+		public static final Pref<Double> OPENGL_Z_FACTOR =
+				create("pref_opengl_z_factor", "Increment factor (from 0, none, to 1, max)", 0.05, IType.FLOAT, true)
+						.in(NAME, RENDERING).between(0d, 1d).step(0.001);
 
 		/** The Constant OPENGL_TEXTURE_ORIENTATION. */
 		public static final Pref<Boolean> OPENGL_TEXTURE_ORIENTATION = create("pref_texture_orientation",
@@ -1080,7 +1053,7 @@ public class GamaPreferences {
 	 * @param gp
 	 *            the gp
 	 */
-	private static void register(final Pref gp) {
+	private static void register(final Pref<?> gp) {
 		final var key = gp.key;
 		if (key == null) return;
 		prefs.put(key, gp);
@@ -1098,9 +1071,9 @@ public class GamaPreferences {
 	 *
 	 * @return the map
 	 */
-	public static Map<String, Map<String, List<Pref>>> organizePrefs() {
-		final Map<String, Map<String, List<Pref>>> result = GamaMapFactory.create();
-		for (final Pref e : prefs.values()) {
+	public static Map<String, Map<String, List<Pref<?>>>> organizePrefs() {
+		final Map<String, Map<String, List<Pref<?>>>> result = GamaMapFactory.create();
+		for (final Pref<?> e : prefs.values()) {
 			if (e.isHidden()) { continue; }
 			final var tab = e.tab;
 			var groups = result.get(tab);
@@ -1155,8 +1128,8 @@ public class GamaPreferences {
 	public static void applyPreferencesFrom(final String path, final Map<String, Object> modelValues) {
 		// DEBUG.OUT("Apply preferences from " + path);
 		getStore().loadFromProperties(path);
-		final List<Pref> entries = new ArrayList(prefs.values());
-		for (final Pref e : entries) {
+		final List<Pref<?>> entries = new ArrayList(prefs.values());
+		for (final Pref<?> e : entries) {
 			register(e);
 			modelValues.put(e.key, e.getValue());
 		}
@@ -1174,7 +1147,7 @@ public class GamaPreferences {
 
 			final var read = new StringBuilder(1000);
 			final var write = new StringBuilder(1000);
-			for (final Pref e : entries) {
+			for (final Pref<?> e : entries) {
 				if (e.isHidden() || !e.inGaml()) { continue; }
 				read.append(Strings.TAB).append("//").append(e.getTitle()).append(Strings.LN);
 				read.append(Strings.TAB).append("write sample(gama.").append(e.getName()).append(");")
