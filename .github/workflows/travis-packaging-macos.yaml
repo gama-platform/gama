@@ -22,7 +22,7 @@ jobs:
   macOS-pre-signing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v2
         with:
           name: gama-mac-unsigned
 
@@ -32,7 +32,7 @@ jobs:
           echo "\nPrint `needToSign.txt` :"
           cat needToSign.txt
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v2
         with:
           name: gama-mac-what2sign
           path: |
@@ -54,7 +54,7 @@ jobs:
       matrix:
         zipName: [gama.application-macosx.cocoa.x86_64, gama.application-macosx.cocoa.x86_64_withJDK, gama.application-macosx.cocoa.aarch64, gama.application-macosx.cocoa.aarch64_withJDK]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
       - name: Prepare vm
         shell: bash
@@ -63,11 +63,11 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           mkdir -p ${{ github.workspace }}/artifacts/work
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v2
         with:
           name: gama-mac-what2sign
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v2
         with:
           name: gama-mac-unsigned
           path: ./artifacts/
@@ -95,14 +95,15 @@ jobs:
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
           MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
+          IS_WITH_JDK: ${{ secrets.IS_WITH_JDK }}
         run: |
           # Unlock
           security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
           unzip -q ${{ github.workspace }}/artifacts/${{ matrix.zipName }}.zip -d . && rm ${{ github.workspace }}/artifacts/*.zip
           # Sign everything inside app
-          bash ${{ github.workspace }}/artifacts/mac-sign.sh
-          plutil -convert xml1 ./artifacts/entitlements.plist && plutil -lint ./artifacts/entitlements.plist
-          codesign --entitlements "./artifacts/entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
+          bash ../mac-sign.sh
+          plutil -convert xml1 ../entitlements.plist && plutil -lint ../entitlements.plist
+          codesign --entitlements "../entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
 
       - name: Packaging signed Application w/o JDK
         shell: bash
@@ -132,3 +133,4 @@ jobs:
         with:
           name: gama-mac-signed
           path: ./${{ matrix.zipName }}.dmg
+          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
