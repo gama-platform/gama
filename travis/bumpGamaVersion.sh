@@ -65,3 +65,5 @@ sed -i "s/V$oldVersion-SNAPSHOT http/V$newVersion http/g" $path/gama.ui.applicat
 
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.core/src/gama/core/runtime/GAMA.java
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.annotations/src/gama/annotations/precompiler/doc/utils/Constants.java
+
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist

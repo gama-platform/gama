@@ -15,7 +15,7 @@ global parent: physical_world {
 	bool flowing <- true;
 	point gravity <- {-z_scale/4, z_scale, -9.81};
 	int number_of_water_units <- 1 min: 0 max: 10;
-	list<point> origins_of_flow <- [{17,3}, {55,3}];
+	list<point> origins_of_flow <- [{17,4}, {55,4}];
 	field terrain <- field(grid_file("../images/DEM/RedRiver.asc"));
 
 	geometry shape <- box({terrain.columns, terrain.rows, max(terrain)*z_scale});
@@ -24,14 +24,16 @@ global parent: physical_world {
 
 
 	init {
+		accurate_collision_detection <- true;
+		max_substeps <- 100;
 		do register([self]);
 	}
 
 	reflex flow {
 			loop origin_of_flow over: origins_of_flow {
-				int x <- int(min(terrain.columns - 1, max(0, origin_of_flow.x + rnd(10) - 5)));
-				int y <- int(min(terrain.rows - 1, max(0, origin_of_flow.y + rnd(10) - 5)));
-				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 4};
+				int x <- int(min(terrain.columns - 1, max(0, origin_of_flow.x + 10)));
+				int y <- int(min(terrain.rows - 1, max(0, origin_of_flow.y + 10)));
+				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 10};
 				create water number: number_of_water_units with: [location::p];
 			}
 	}
