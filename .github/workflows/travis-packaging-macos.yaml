@@ -103,8 +103,8 @@ jobs:
           unzip -q ${{ github.workspace }}/artifacts/${{ matrix.zipName }}.zip -d . && rm ${{ github.workspace }}/artifacts/*.zip
           # Sign everything inside app
           bash ${{ github.workspace }}/artifacts/mac-sign.sh
-          plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
-          codesign --entitlements "./entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
+          plutil -convert xml1 ./artifacts/entitlements.plist && plutil -lint ./artifacts/entitlements.plist
+          codesign --entitlements "./artifacts/entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
           
       - name: Packaging signed Application w/o JDK
         shell: bash
