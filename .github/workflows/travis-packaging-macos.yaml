@@ -127,7 +127,7 @@ jobs:
           xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         env: 
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
