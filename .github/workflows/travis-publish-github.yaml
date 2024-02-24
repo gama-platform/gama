@@ -34,7 +34,7 @@ jobs:
           name: gama-zip-builds
 
       # Get Mac dmg signed archives
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: gama-mac-signed
 
