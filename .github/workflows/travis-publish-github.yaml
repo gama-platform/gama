@@ -39,12 +39,12 @@ jobs:
           name: gama-mac-signed
 
       # Get Linux deb archive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: gama-linux-deb
 
       # Get Windows exe
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: gama-windows-exe
 
