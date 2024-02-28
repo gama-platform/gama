@@ -17,15 +17,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
@@ -52,67 +56,25 @@ import gama.gaml.operators.Cast;
 
 public class Stochanalysis {
 
-	/**
-	 * We decided to select alpha = 95%
-	 * https://en.wikipedia.org/wiki/Student%27s_t-distribution
-	 */
-	final static double[] Talpha = { 6.314, 2.920, 2.353, 2.132, 2.015, 1.943, 1.895, 1.860, 1.833, 1.812, 1.796, 1.782,
-			1.771, 1.761, 1.753, 1.746, 1.740, 1.734, 1.729, 1.725, 1.721, 1.717, 1.714, 1.711, 1.708, 1.706, 1.703,
-			1.701, 1.699, 1.697, 1.684, 1.676, 1.671, 1.664, 1.660, 1.658, 1.645 };
-
-	/** The Constant Tbeta. */
-	final static double[] Tbeta = { 3.078, 1.886, 1.638, 1.533, 1.476, 1.440, 1.415, 1.397, 1.383, 1.372, 1.363, 1.356,
-			1.350, 1.345, 1.341, 1.337, 1.333, 1.330, 1.328, 1.325, 1.323, 1.321, 1.319, 1.318, 1.316, 1.315, 1.314,
-			1.313, 1.311, 1.310, 1.303, 1.299, 1.296, 1.292, 1.290, 1.289, 1.282 };
-
 	// Statistical arbitrary indicators
 	final static public String CV = "Coefficient of variation";
 	final static public String SE = "Standard error";
 	final static double[] STOCHThresholds = {0.05,0.01,0.001};
-	// Critical size effect TODO : to be refined
+	
 	final static public String ES = "Critical effect size";
-	final static double[] ESPower = {0.5,0.8,0.9};
+	final static double[] FISHEREffectSize = {0.01,0.05,0.1,0.2,0.4,0.8};
+	final static String[] FISHERES = {"ultra-micro","micro","small","medium","large","huge"};
+	final static double[] TALPHA = {.99,.95};
+	final static double[] TBETA = {.95,.80};
+	
+	final static public String PT = "Power test";
+	
 	// List of methods
-	final static protected List<String> SA = List.of(CV,SE,ES); 
+	final static protected List<String> SA = List.of(CV,SE,ES,PT); 
 	
 	// UTILS 
 	final static String SEP = ",";
 	final static String RL = "\n";
-	
-	/**
-	 * Find the median value of a list (Skipping -1 values)
-	 *
-	 * @param list
-	 *            : List of value (N minimum for each point)
-	 * @param scope
-	 * @return the median value
-	 */
-	private static int findMedian(final List<Integer> list, final IScope scope) {
-		List<Integer> list_t = new ArrayList<>();
-		for (int o : list) { if (o > 0) { list_t.add(o); } }
-		Arrays.sort(list_t.toArray());
-		double median;
-		if (list_t.size() % 2 == 0) {
-			median = ((double) list_t.get(list_t.size() / 2) + (double) list_t.get(list_t.size() / 2 - 1)) / 2;
-		} else {
-			median = list_t.get(list.size() / 2);
-		}
-		return (int) Math.ceil(median);
-	}
-
-	/**
-	 * Find the max value of a list of Integer
-	 *
-	 * @param list
-	 * @param scope
-	 * @return the max value
-	 */
-
-	private static int findMax(final List<Integer> list, final IScope scope) {
-		int max = 0;
-		for (Integer element : list) { if (element > 0 && max < element) { max = element; } }
-		return max;
-	}
 
 	/**
 	 * Build the report with result for each method and each output
@@ -129,9 +91,14 @@ public class Stochanalysis {
 		
 		sb.append("== STOCHASTICITY ANALYSIS ==");
 		sb.append(RL);
-		sb.append(Out.size()+" outputs | "+nbsample+" samples | "+nbreplicates+" max replications | Thresholds: ").append(Arrays.toString(STOCHThresholds)).append(RL);
-		sb.append("Meaning: threshold represent the delta of marginal decrease of the minimum value of concerned statistic to decide on the number of replicates").append(RL);
-		sb.append("Exemple: focusing on ").append(SE).append(" the corresponding number of replicates is defined when marginal decrease is lower than arg_min(standard error) * threshold").append(RL);
+		sb.append(Out.size()+" outputs | "+nbsample+" samples | "+nbreplicates+" max replications")
+			.append(" | Thresholds: ").append(Arrays.toString(STOCHThresholds))
+			.append(" | T test alpha: 0.01").append(" | T test beta: 0.05")
+			.append(" | Critical effect size: ").append(Arrays.toString(FISHEREffectSize))
+			.append(RL);
+		sb.append("Threshold maning: threshold represent the marginal decrease of concerned statistic to decide on the number of replicates").append(RL);
+		sb.append("Exemple: increase one replicates decreases standard error, if marginal decrease is under a given threshold, then select this number of replicates").append(RL);
+		sb.append("Critical effect size: look at False negative (alpha) & False positive (beta) hypothesis - according to https://www.jasss.org/18/4/4.html").append(RL);
 		sb.append(RL).append(RL);
 
 		for (String outputs : Out.keySet()) {
@@ -143,7 +110,8 @@ public class Stochanalysis {
 			for (String method : SA) {
 				if (pso.values().stream().noneMatch(m -> m.containsKey(method))) { continue; }
 				
-				if (method != ES) {
+				switch (method) {
+				case CV, SE -> {
 					// Compute all given nb of replicate required to accept a threshold hypothesis
 					IMap<Double, List<Integer>> res = GamaMapFactory.create();
 					for (Double thresh : STOCHThresholds) {
@@ -158,9 +126,45 @@ public class Stochanalysis {
 						sb.append("max = ").append(Collections.max(res.get(threshold))).append(" | ");
 						sb.append("avr = ").append(Math.round(res.get(threshold).stream().mapToInt(i -> i).average().getAsDouble())).append(RL);
 					}
-				} else {
-					// TODO
 				}
+				case ES -> {
+					IMap<Double, List<List<Integer>>> res = GamaMapFactory.create();
+					for (Double es : FISHEREffectSize) {
+						int idx = DoubleStream.of(FISHEREffectSize).boxed().toList().indexOf(es) * 2;
+						List<List<Integer>> ab = new ArrayList<>();
+						// High alpha/beta
+						ab.add(pso.values().stream().mapToInt(r -> r.get(ES).get(idx).intValue()).boxed().toList());
+						// Low alpha/beta
+						ab.add(pso.values().stream().mapToInt(r -> r.get(ES).get(idx+1).intValue()).boxed().toList());
+						res.put(es, ab);
+					}
+					
+					List<Double> pt = pso.values().stream().filter(m -> m.containsKey(PT)).findFirst().get().get(PT);
+					if (pt.isEmpty() || pt.get(0).isNaN() || pt.size() != 2) {throw GamaRuntimeException.error("Trying to retriev Power Test n estimates but failed to find results: ["+pt.stream().map(d->d.toString()).collect(Collectors.joining(","))+"]", scope);}
+					
+					sb.append(method).append(RL);
+					sb.append(PT).append(" with  alpha=0.01 (0.05), beta=0.05 (0.2) and effect sized based on (ANOVA) f="+pt.get(1)+", theoretical number of replicate is ").append(pt.get(0)).append(RL);
+					for (int i = 0; i < FISHEREffectSize.length; i++) {
+						
+						if (res.get(FISHEREffectSize[i]).stream().flatMap(List::stream).distinct().count() == 1) {
+							sb.append(FISHERES[i]).append(" (").append(FISHEREffectSize[i])
+								.append(") : "+res.get(FISHEREffectSize[i]).get(0).get(0)+" replicates is not enough")
+								.append(RL);
+						} else {
+							sb.append(FISHERES[i]).append(" (").append(FISHEREffectSize[i]).append(") : ");
+							sb.append("min = ").append(Collections.min(res.get(FISHEREffectSize[i]).get(0)))
+								.append(" (").append(Collections.min(res.get(FISHEREffectSize[i]).get(1))).append(") | ");
+							sb.append("max = ").append(Collections.max(res.get(FISHEREffectSize[i]).get(0)))
+								.append(" (").append(Collections.max(res.get(FISHEREffectSize[i]).get(1))).append(") | ");
+							sb.append("avr = ").append(Math.round(res.get(FISHEREffectSize[i]).get(0).stream().mapToInt(e->e).average().getAsDouble()))
+							.append(" (").append(Math.round(res.get(FISHEREffectSize[i]).get(1).stream().mapToInt(e->e).average().getAsDouble())).append(")"+RL);
+						}
+					}
+				}
+				case PT -> { /* Have been put in the Critical Effect Size analysis */ }
+				default -> throw new IllegalArgumentException("Unexpected stochastic analysis: " + method);
+				}
+				
 			}
 			sb.append(RL).append(RL);
 		}
@@ -281,6 +285,8 @@ public class Stochanalysis {
 			throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);
 		}
 	}
+	
+	// ----------------------------- Inner methods
 
 	/**
 	 * Compute the mean of a List of object
@@ -301,49 +307,6 @@ public class Stochanalysis {
 		return mean;
 	}
 
-
-	/*
-	 * Compute all possible means of combinationSize elements of the list
-	 *
-	 * @param val : List of value (data of each replicates)
-	 *
-	 * @param scope
-	 *
-	 * @param combinationSize : size of the local mean to assess
-	 *
-	 * @return the mean for each number of replicates
-	 */
-	private static List<Double> computeMeanCombination(final List<Object> val, final IScope scope) {
-		List<Double> mean = new ArrayList<>();
-		final double rm = val.stream().mapToDouble(o -> Cast.asFloat(scope, o)).boxed()
-				.collect(Collectors.averagingDouble(Double::doubleValue));
-		for (int i = 1; i < val.size(); i++) {
-			Double localMean = 0.0;
-			int combinationSize = i + 1;
-			for (Object r : val) {
-				List<Object> remainings = new ArrayList<>(val);
-				remainings.remove(r);
-				List<Double> currentMean = new ArrayList<>();
-				while (remainings.size() > combinationSize - 1) {
-					Collections.shuffle(remainings);
-					List<Object> sample = remainings.stream().limit(combinationSize - 1).toList();
-					currentMean.add(sample.stream().mapToDouble(e -> Cast.asFloat(scope, e).doubleValue()).boxed()
-							.collect(Collectors.averagingDouble(Double::doubleValue)));
-					remainings.removeAll(sample);
-				}
-				double ct = -1.0;
-				for (Double cm : currentMean) {
-					double lt = Math.abs(cm - rm);
-					if (lt > ct) {
-						localMean = cm;
-						ct = lt;
-					}
-				}
-			}
-			mean.add(localMean);
-		}
-		return mean;
-	}
 
 	/**
 	 * Compute the Standard Deviation of a list
@@ -424,56 +387,9 @@ public class Stochanalysis {
 		return Stat.size();
 	}
 
-	/**
-	 * Compute the standard deviation of a list.
-	 *
-	 * @param val
-	 *            : list of data
-	 * @param mean
-	 *            : the mean of the list
-	 * @param scope
-	 * @return return the standard deviation of the list
-	 */
-	private static double computeS(final List<Object> val, final double mean, final IScope scope) {
-		double tmp_s = 0;
-		for (Object element : val) {
-			double tmp_val = Cast.asFloat(scope, element);
-			tmp_s = tmp_s + (Math.pow(tmp_val, 2) - Math.pow(mean, 2));
-		}
-		return Math.sqrt(tmp_s / val.size());
-	}
-
-	/**
-	 * Find the right Student t value depending of the sample size
-	 *
-	 * @param isAlpha
-	 *            : Is alpha ? No - Then is beta.
-	 * @param sample_size
-	 *            : the number of repeat.
-	 * @return return the right alpha or beta value
-	 */
-	private static double computeT(final boolean isAlpha, final int sample_size) {
-		if (isAlpha) {
-			if (sample_size <= 30) return Talpha[sample_size - 1];
-			if (30 < sample_size && sample_size <= 40) return Talpha[30];
-			if (40 < sample_size && sample_size <= 50) return Talpha[31];
-			if (50 < sample_size && sample_size <= 60) return Talpha[32];
-			if (60 < sample_size && sample_size <= 80) return Talpha[33];
-			if (80 < sample_size && sample_size <= 100) return Talpha[34];
-			if (100 < sample_size && sample_size <= 120) return Talpha[35];
-			return Talpha[36];
-		}
-		if (sample_size <= 30) return Tbeta[sample_size - 1];
-		if (30 < sample_size && sample_size <= 40) return Tbeta[30];
-		if (40 < sample_size && sample_size <= 50) return Tbeta[31];
-		if (50 < sample_size && sample_size <= 60) return Tbeta[32];
-		if (60 < sample_size && sample_size <= 80) return Tbeta[33];
-		if (80 < sample_size && sample_size <= 100) return Tbeta[34];
-		if (100 < sample_size && sample_size <= 120) return Tbeta[35];
-		return Tbeta[36];
-	}
-
-
+	// -------------------------------------------------- //
+	// ################# ACTUAL METHODS ################# //
+	
 	/**
 	 * Main method for the Stochastic Analysis
 	 *
@@ -493,38 +409,38 @@ public class Stochanalysis {
 		
 		IMap<ParametersSet,List<Double>> res = GamaMapFactory.create();
 		switch (method) {
-		case CV: {
+		case CV -> {
 			for (ParametersSet ps : sample.keySet()) {
 				List<Object> currentXp = new ArrayList<>(sample.get(ps));
 				Collections.shuffle(currentXp);
 				res.put(ps, coefficientOfVariance(currentXp, scope));
 			}
-			break;
 		}
-		case SE: {
+		case SE -> {
 			for (ParametersSet ps : sample.keySet()) {
 				List<Object> currentXp = new ArrayList<>(sample.get(ps));
 				Collections.shuffle(currentXp);
 				res.put(ps, standardError(currentXp, scope));
-			}	
-			break;
+			}
 		}
-		case ES: {
+		case ES -> {
 			for (ParametersSet ps : sample.keySet()) {
 				List<Object> currentXp = new ArrayList<>(sample.get(ps));
 				Collections.shuffle(currentXp);
-				res.put(ps, List.of((double)criticalEffectSize(currentXp, scope)));
+				res.put(ps, criticalEffectSize(currentXp, scope) );
 			}
-			break;
 		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + method);
+		case PT -> {
+			double effectSize = FTestEffectSize(sample.values(), scope);
+			sample.getKeys().forEach(ps -> res.put(ps, List.of(
+					powerTestEffectSize(sample.values().size(), effectSize), effectSize
+					)));
+		}
+		default -> throw new IllegalArgumentException("Unexpected value: " + method);
 		}
 		return res;
 		
 	}
-	
-	// ################# ACTUAL METHODS ################# //
 	
 	/**
 	 * Return the coefficient of variance over a set of replicates
@@ -541,31 +457,6 @@ public class Stochanalysis {
 	
 	/**
 	 * 
-	 * TODO review methods and adapt the indicator to be out ready
-	 * 
-	 * @see https://www.jasss.org/18/4/4.html
-	 * @see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7745163/
-	 * 
-	 * @param aSample
-	 * @param scope
-	 * @return
-	 */
-	private static int criticalEffectSize(List<Object> aSample, final IScope scope) {
-		List<Double> mean = computeMean(aSample, scope);
-		double val_mean = mean.get(mean.size() - 1);
-		double s = computeS(aSample, val_mean, scope);
-		// 1.96 is the normal distribution hypothesis 95% CI
-		// std is the standard deviation of the sample
-		// sqrt(n) is the square root of the sample size
-		// std / sqrt(n) is the standard error btw
-		double delta = 1.96 * s / Math.sqrt(aSample.size());
-		double t1 = computeT(true, aSample.size());
-		double t2 = computeT(false, aSample.size());
-		return (int) Math.ceil(2 * (Math.pow(s, 2) / Math.pow(delta, 2)) * Math.pow(t1 + t2, 2));
-	}
-	
-	/**
-	 * 
 	 * @param aSample
 	 * @param scope
 	 * @return
@@ -577,6 +468,86 @@ public class Stochanalysis {
 		for (int i = 1; i < std.size(); i++) { SE.add(std.get(i) / Math.sqrt(i + 1)); }
 		return SE;
 	}
+	
+	/**
+	 * Return a list of desired number of replicates based on more permissive conditions: <\br>
+	 * from ES=0.01, alpha=.99 and beta=.95 to ES=0.8, alpha=.95 and beta=.80
+	 * 
+	 * @param aSample
+	 * @param scope
+	 * @return
+	 */
+	private static List<Double> criticalEffectSize(List<Object> aSample, final IScope scope) {
+		List<Double> ce = new ArrayList<>();
+		for (double es : FISHEREffectSize) {
+			for(int i = 0; i < TALPHA.length; i++) {
+				ce.add( (double) ces(aSample, TALPHA[i], TBETA[i], es, scope) );
+			}
+		}
+		return ce;
+	}
+
+	/**
+	 * @see inspiration: https://www.jasss.org/18/4/4.html
+	 * @see inspiration: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7745163/
+	 * @see actual implementation: https://rseri.me/publication/b016/B016.pdf
+	 * 
+	 * @param aSample
+	 * @param delta : test F value (from ANOVA),
+	 * @param scope
+	 * @return
+	 */
+	private static int ces(List<Object> aSample, double alpha, double beta, double effectSize, final IScope scope) {
+		List<Double> dSample = aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(Collectors.toList());
+		double mean = dSample.stream().mapToDouble(v->v).average().getAsDouble();
+		effectSize *= mean;
+		
+		List<Double> currentES = new ArrayList<>();
+		// Starting from worst case deviation
+		currentES.add(dSample.stream().mapToDouble(d->d).min().getAsDouble());
+		currentES.add(dSample.stream().mapToDouble(d->d).max().getAsDouble());
+		dSample.removeAll(currentES);
+		// Sort according to deviation from the mean
+		dSample.stream().sorted((v1,v2) -> (v1==v2?0:(Math.abs(v1-mean)>Math.abs(v2-mean)?-1:1)));
+		for(Double n_incr : dSample) {
+			currentES.add(n_incr);
+			TDistribution td = new TDistribution(currentES.size()-1);
+			double thresh = 2 * Math.pow( new StandardDeviation().evaluate(currentES.stream().mapToDouble(v->v).toArray()), 2 ) 
+					/ effectSize * Math.pow( td.inverseCumulativeProbability(alpha) + td.inverseCumulativeProbability(beta), 2 ); 
+			if (currentES.size() >= thresh) { return currentES.size();}
+		}
+		return aSample.size();
+	}
+	
+	// ########### POWER TEST
+	
+	/**
+	 * @see https://doi.org/10.1007/s10588-016-9218-0
+	 * 
+	 * @param j
+	 * @param es
+	 * @return
+	 */
+	private static double powerTestEffectSize(int j, double es) {
+		return 14.091 * Math.pow(j, -0.640) * Math.pow(es, -1.986);
+	}
+	
+	// see : https://en.wikipedia.org/wiki/F-test
+	private static double FTestEffectSize(Collection<List<Object>> groups, final IScope scope) {
+		List<Double> groupMean = groups.stream()
+				.mapToDouble(group -> group.stream()
+						.mapToDouble(e -> Cast.asFloat(scope, e)).average().getAsDouble())
+				.boxed().toList();
+		double overallMean = groupMean.stream().mapToDouble(d->d).average().getAsDouble();
+		double betweenGroupVariability =  groupMean.stream().mapToDouble(mean -> Math.pow(overallMean-mean,2)).sum() / (groups.size()-1);
+		double withinGroupVariability = 0.0;
+		for(Double m : groupMean) {
+			withinGroupVariability += groups.stream().mapToDouble(d -> Math.pow(Cast.asFloat(scope, d)-m,2)).sum();
+		}
+		withinGroupVariability /= groups.stream().mapToInt(group -> group.size()).sum();
+		return betweenGroupVariability / withinGroupVariability;
+	}
+	
 	
 	/*
 	 * "#################################################################################################"
