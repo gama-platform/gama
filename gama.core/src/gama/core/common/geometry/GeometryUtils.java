@@ -738,26 +738,31 @@ public class GeometryUtils {
 	public static IList<IShape> triangulation(final IScope scope, final Geometry geom,
 			final double toleranceTriangulation, final double toleranceClip, final boolean approxClipping) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		if (geom instanceof GeometryCollection gc) {
+		if (geom instanceof GeometryCollection gc && !(geom instanceof MultiLineString)) {
 			for (int i = 0; i < gc.getNumGeometries(); i++) {
 				geoms.addAll(triangulation(scope, gc.getGeometryN(i), toleranceTriangulation, toleranceClip,
 						approxClipping));
 			}
 		} else {
+			boolean toClip = !(geom instanceof LineString) && !(geom instanceof MultiLineString) && !(geom instanceof MultiPoint)  && !(geom instanceof Point);
 			final ConformingDelaunayTriangulationBuilder dtb = new ConformingDelaunayTriangulationBuilder();
 			dtb.setTolerance(toleranceTriangulation);
 			GeometryCollection tri = null;
 			try {
 				dtb.setSites(geom);
 				dtb.setConstraints(geom);
+				
 				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
 			} catch (final LocateFailureException | ConstraintEnforcementException e) {
 				dtb.setTolerance(toleranceTriangulation + 0.1);
 				dtb.setSites(geom);
 				dtb.setConstraints(geom);
+				System.out.println("BUG DONC TOL 0.1");
 				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
 			}
-			if (tri != null) { geoms.addAll(filterGeoms(tri, geom, toleranceClip, approxClipping)); }
+			if (tri != null) {
+				System.out.println("tri: " + tri.getLength());
+				geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
 
 		}
 		return geoms;
@@ -773,10 +778,10 @@ public class GeometryUtils {
 	 * @param sizeTol
 	 *            the size tol
 	 * @param approxClipping
-	 *            the approx clipping
+	 *            the approx clipping 
 	 * @return the i list
 	 */
-	private static IList<IShape> filterGeoms(final GeometryCollection geom, final Geometry clip, final double sizeTol,
+	private static IList<IShape> filterGeoms(final GeometryCollection geom, final Geometry clip, boolean toCLip, final double sizeTol,
 			final boolean approxClipping) {
 		if (geom == null) return null;
 		final double elevation = getContourCoordinates(clip).averageZ();
@@ -788,14 +793,14 @@ public class GeometryUtils {
 		try {
 			for (int i = 0; i < geom.getNumGeometries(); i++) {
 				final Geometry gg = geom.getGeometryN(i);
-				if (!clip.covers(gg.getCentroid())) { continue; }
+				if (toCLip && !clip.covers(gg.getCentroid())) { continue; }
 				final Coordinate[] coord = gg.getCoordinates();
 				boolean cond = env.covers(gg.getCentroid().getCoordinate());
-				cond = cond && (approxClipping
+				cond = cond && (!toCLip || (approxClipping
 						? buffered.covers(gg.getCentroid()) && buffered.covers(GEOMETRY_FACTORY.createPoint(coord[0]))
 								&& buffered.covers(GEOMETRY_FACTORY.createPoint(coord[1]))
 								&& buffered.covers(GEOMETRY_FACTORY.createPoint(coord[2]))
-						: bufferClip.covers(gg));
+						: bufferClip.covers(gg)));
 				if (cond) {
 					if (setZ) {
 						final ICoordinates cc = getContourCoordinates(gg);
