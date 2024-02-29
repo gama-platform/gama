@@ -1,4 +1,4 @@
-name: "./.github/workflows/travis-publish-third-party.yaml"
+name: "[./.github/workflows/travis-publish-third-party.yaml]"
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: "./.github/workflows/travis-packaging-macos-test.yaml"
+name: "[./.github/workflows/travis-packaging-macos-test.yaml]"
 
 on:
   workflow_call:
