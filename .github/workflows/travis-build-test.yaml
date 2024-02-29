@@ -1,4 +1,4 @@
-name: Testing Maven Build
+name: "./.github/workflows/travis-build-test.yaml"
 
 on:
   workflow_call:

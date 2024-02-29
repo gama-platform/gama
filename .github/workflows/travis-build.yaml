@@ -1,4 +1,4 @@
-name: Full maven build of GAMA
+name: "./.github/workflows/travis-build.yaml"
 
 on:
   workflow_call:

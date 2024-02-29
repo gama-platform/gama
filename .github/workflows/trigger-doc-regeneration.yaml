@@ -4,7 +4,7 @@
 # + trigger GHA on website's repository
 # 
 
-name: "[RUNNABLE] Documentation Auto Refresh"
+name: "Documentation Auto Refresh"
 
 on:
   workflow_dispatch:  # For manual trigger

@@ -1,4 +1,4 @@
-name: Packaging linux release
+name: "./.github/workflows/travis-packaging-linux.yaml"
 
 on:
   workflow_call:

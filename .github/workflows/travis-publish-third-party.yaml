@@ -1,4 +1,4 @@
-name: Auto publish release to external stores
+name: "./.github/workflows/travis-publish-third-party.yaml"
 
 on:
   workflow_call:

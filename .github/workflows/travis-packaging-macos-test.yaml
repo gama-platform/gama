@@ -1,4 +1,4 @@
-name: Testing MacOS packages
+name: "./.github/workflows/travis-packaging-macos-test.yaml"
 
 on:
   workflow_call:

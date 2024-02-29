@@ -1,4 +1,4 @@
-name: Publishing GAMA release
+name: "./.github/workflows/travis-publish.yaml"
 
 on:
   workflow_call:

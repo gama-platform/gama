@@ -1,4 +1,4 @@
-name: Packaging GAMA release
+name: "./.github/workflows/travis-packaging.yaml"
 
 on:
   workflow_call:

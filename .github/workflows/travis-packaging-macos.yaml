@@ -1,4 +1,4 @@
-name: Packaging MacOS release
+name: "./.github/workflows/travis-packaging-macos.yaml"
 
 on:
   workflow_call:
