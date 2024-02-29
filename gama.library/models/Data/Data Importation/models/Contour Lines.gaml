@@ -15,13 +15,16 @@ global {
 	
 	//define the size of the world from the countour line shapefile
 	geometry shape <- envelope(shape_file_cl);
+
+        //tolerance for the triangulation; if an error appears during the triangulation, a workaround consists in increasing this tolerance (0.01 for instance).
+	float tolerance <- 0.0;
 	
 	init {
 		//create the contour line agents from the shapefile, and init the elevation for each agent
 		create contour_line from: shape_file_cl with: [elevation:: float(read("ELEVATION"))];
 		
 		//triangulate the contour lines
-		list<geometry> triangles  <- triangulate (list(contour_line));
+		list<geometry> triangles  <- triangulate (list(contour_line), tolerance);
 		
 		//for each triangle geometry, create a triangle_ag agent and compute the elevation of each of its points (and modified their z value)
 		loop tr over: triangles {

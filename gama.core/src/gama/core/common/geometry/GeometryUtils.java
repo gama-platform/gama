@@ -704,10 +704,10 @@ public class GeometryUtils {
 	 *            the lines
 	 * @return the i list
 	 */
-	public static IList<IShape> triangulation(final IScope scope, final IList<IShape> lines) {
+	public static IList<IShape> triangulation(final IScope scope, final IList<IShape> lines, double tol) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final ConformingDelaunayTriangulationBuilder dtb = new ConformingDelaunayTriangulationBuilder();
-
+		dtb.setTolerance(tol);
 		final Geometry points = GamaGeometryType.geometriesToGeometry(scope, lines).getInnerGeometry();
 		dtb.setSites(points);
 		dtb.setConstraints(points);
@@ -720,6 +720,7 @@ public class GeometryUtils {
 		return geoms;
 	}
 
+	
 	/**
 	 * Triangulation.
 	 *

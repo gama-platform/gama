@@ -3682,6 +3682,7 @@ public abstract class Spatial {
 			return GeometryUtils.triangulation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
 		}
 
+		
 		/**
 		 * Triangulate.
 		 *
@@ -3735,8 +3736,28 @@ public abstract class Spatial {
 		@no_test
 		public static IList<IShape> triangulate(final IScope scope, final IList<IShape> gs) {
 			if (gs == null || gs.isEmpty()) return null;
-			return GeometryUtils.triangulation(scope, gs);
+			return GeometryUtils.triangulation(scope, gs, 0.0);
 		}
+		
+		
+		@operator (
+				value = { "triangulate", "to_triangles" },
+				content_type = IType.GEOMETRY,
+				category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+				concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+		@doc (
+				value = "A list of geometries (triangles) corresponding to the Delaunay triangulation computed from the list of polylines with the given tolerance for the triangulation",
+				masterDoc = true,
+				examples = { @example (
+						value = "triangulate([line([{0,50},{100,50}]), line([{50,0},{50,100}], 0.01))",
+						equals = "the list of geometries (triangles) corresponding to the Delaunay triangulation of the geometry of the agent applying the operator with the a tolerance of 0.01 for the triangulation.",
+						test = false) })
+		@no_test
+		public static IList<IShape> triangulate(final IScope scope, final IList<IShape> gs, final double tol) {
+			if (gs == null || gs.isEmpty()) return null;
+			return GeometryUtils.triangulation(scope, gs, tol);
+		}
+
 
 		/**
 		 * Triangulate.
