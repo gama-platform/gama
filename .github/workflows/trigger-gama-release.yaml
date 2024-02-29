@@ -1,4 +1,4 @@
-name: [RUNNABLE] Make new GAMA release
+name: "[RUNNABLE] Make new GAMA release"
 
 on:  
   workflow_dispatch:
