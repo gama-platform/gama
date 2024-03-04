@@ -98,7 +98,7 @@ jobs:
     with:
       RELEASE_VERSION: ${{ inputs.tag }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
-      COMMIT_SHA: ${{needs.travis-scripts.travis-scripts.outputs.commit}}
+      COMMIT_SHA: ${{needs.travis-scripts.outputs.commit}}
     secrets: 
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 

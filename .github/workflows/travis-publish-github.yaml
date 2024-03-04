@@ -84,7 +84,7 @@ jobs:
 
           # Mac
           for file in *.dmg; do
-            prefix="_${fileNameExtension}.dmg"
+            prefix="${fileNameExtension}.dmg"
             if [[ "$(echo $file | awk -F'_' '{print $NF}')" == *"withJDK"* ]]; then
               prefix="_with_JDK${prefix}"
             fi
