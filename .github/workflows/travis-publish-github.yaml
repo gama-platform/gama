@@ -107,6 +107,23 @@ jobs:
             fi
           done
 
+      - name: Create checksum file
+        run: |
+          cd ${{ runner.temp }}/files
+          touch checksum.txt
+          echo "SHA1" > checksum.txt
+          sha1sum ./GAMA_* >> checksum.txt
+          echo "" >> checksum.txt
+          echo "SHA256" >> checksum.txt
+          sha256sum ./GAMA_* >> checksum.txt
+          echo "" >> checksum.txt
+          echo "SHA512" >> checksum.txt
+          sha512sum ./GAMA_* >> checksum.txt
+          echo "" >> checksum.txt
+          echo "MD5" >> checksum.txt
+          md5sum ./GAMA_* >> checksum.txt
+          cat checksum.txt
+
       - name: Delete old release
         uses: cb80/delrel@v0.16.0
         with:
