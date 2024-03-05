@@ -82,6 +82,14 @@ jobs:
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
 
+      - name: Compiling gama
+        # Consider it's a release and want to update p2 site for it
+        if: "${{ inputs.get_all_archives_for_release }}"
+        run: |
+          sed -i "s/<username>GAMA_PASS/<username>$GAMA_SERVER_USERNAME/g" $GITHUB_WORKSPACE/travis/settings.xml
+          sed -i "s/<password>GAMA_PASS/<password>$GAMA_SERVER_PASSWORD/g" $GITHUB_WORKSPACE/travis/settings.xml
+          bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
+
       - name: Export linux release
         uses: actions/upload-artifact@v4
         if: "${{ inputs.get_testing_compiled_archives }}"

@@ -1,10 +1,13 @@
-#!/bin/sh
-cd gama.annotations &&
-mvn clean deploy --settings ../travis/settings.xml -DskipTests=true -B && 
-cd - &&
-cd msi.gama.processor &&
-mvn clean deploy --settings ../travis/settings.xml -DskipTests=true -B && 
-cd - &&
-cd msi.gama.parent &&
-mvn clean deploy --settings ../travis/settings.xml -DskipTests=true -B && 
-cd -
+#!/bin/bash
+
+echo "Publishing module gama.annotations on p2 site"
+cd $( dirname $( realp
+mvn deploy --settings ../travis/settings.xml -DskipTests=true -B "$@"
+
+echo "Publishing module gama.processor on p2 site"
+cd ../gama.processor 
+mvn deploy --settings ../travis/settings.xml -DskipTests=true -B "$@"
+
+echo "Publishing module gama.parent on p2 site"
+cd ../gama.parent 
+mvn deploy --settings ../travis/settings.xml -DskipTests=true -B "$@"
