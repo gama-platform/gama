@@ -758,11 +758,9 @@ public class GeometryUtils {
 				dtb.setTolerance(toleranceTriangulation + 0.1);
 				dtb.setSites(geom);
 				dtb.setConstraints(geom);
-				System.out.println("BUG DONC TOL 0.1");
 				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
 			}
 			if (tri != null) {
-				System.out.println("tri: " + tri.getLength());
 				geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
 
 		}
