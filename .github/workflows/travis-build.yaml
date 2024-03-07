@@ -82,7 +82,7 @@ jobs:
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
 
-      - name: Compiling gama
+      - name: Deploy p2 GAMA's module
         # Consider it's a release and want to update p2 site for it
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
