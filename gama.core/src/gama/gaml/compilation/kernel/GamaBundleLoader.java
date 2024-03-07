@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * GamaBundleLoader.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -158,6 +158,9 @@ public class GamaBundleLoader {
 	/** The Constant GAMA_CORE_DISPLAY_PLUGINS. */
 	private static final Set<String> GAMA_CORE_DISPLAY_PLUGINS =
 			Set.of("gama.ui.display.java2d", "gama.ui.display.opengl");
+
+	/** The Constant GAMA_DIAGRAM_EDITOR_PLUGIN. */
+	private static final String GAMA_DIAGRAM_EDITOR_PLUGIN = "gama.ui.diagram";
 
 	/** The model plugins. */
 	private static final Multimap<Bundle, String> MODEL_PLUGINS = ArrayListMultimap.create();
@@ -524,7 +527,13 @@ public class GamaBundleLoader {
 	 */
 	public static void addDisplayPlugin(final String plugin) {
 		GAMA_DISPLAY_PLUGINS_NAMES.add(plugin);
-
 	}
+
+	/**
+	 * Checks if is diagram editor loaded.
+	 *
+	 * @return true, if is diagram editor loaded
+	 */
+	public static boolean isDiagramEditorLoaded() { return Platform.getBundle(GAMA_DIAGRAM_EDITOR_PLUGIN) != null; }
 
 }

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * EditorToolbar.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorToolbar.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -28,6 +28,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.ToolItem;
 
+import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
@@ -43,7 +44,7 @@ import gaml.compiler.ui.editor.GamlEditor;
 public class EditorToolbar {
 
 	/** The previous. */
-	ToolItem next, previous;
+	ToolItem next, previous, diagram;
 
 	/** The find. */
 	EditorSearchControls find;
@@ -108,6 +109,16 @@ public class EditorToolbar {
 				editor.openOutlinePopup();
 			}
 		});
+		if (GamaBundleLoader.isDiagramEditorLoaded()) {
+			diagram = toolbar.button("editor/command.graphical", null, "Switch to diagram", new SelectionAdapter() {
+
+				@Override
+				public void widgetSelected(final SelectionEvent e) {
+					if (editor == null) return;
+					editor.switchToDiagram();
+				}
+			});
+		}
 
 		// Attaching listeners to the global commands in order to enable/disable the
 		// toolbar items
