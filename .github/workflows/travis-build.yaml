@@ -82,6 +82,15 @@ jobs:
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
 
+      - name: Install SSH key
+        # Consider it's a release and want to update p2 site for it
+        if: "${{ inputs.get_all_archives_for_release }}"
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.GAMA_SERVER_SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.GAMA_SERVER_SSH_KNOWN_HOSTS }}
+          if_key_exists: replace # replace / ignore / fail; optional (defaults to fail)
+
       - name: Deploy p2 GAMA's module
         # Consider it's a release and want to update p2 site for it
         if: "${{ inputs.get_all_archives_for_release }}"
