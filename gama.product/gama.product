@@ -116,7 +116,6 @@
       <feature id="gama.feature.ui.experiment" installMode="root"/>
       <feature id="gama.feature.ui.dependencies" installMode="root"/>
       <feature id="gama.feature.extension.image" installMode="root"/>
-      <feature id="gama.feature.ui.diagram" installMode="root"/>
    </features>
 
    <configurations>
