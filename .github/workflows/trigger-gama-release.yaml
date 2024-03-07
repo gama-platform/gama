@@ -27,6 +27,8 @@ jobs:
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
+      GAMA_SERVER_SSH_PRIVATE_KEY: ${{ secrets.GAMA_SERVER_SSH_PRIVATE_KEY }}
+      GAMA_SERVER_SSH_KNOWN_HOSTS: ${{ secrets.GAMA_SERVER_SSH_KNOWN_HOSTS }}
 
   travis-scripts: 
     runs-on: ubuntu-latest
