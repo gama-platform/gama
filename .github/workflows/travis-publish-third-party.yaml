@@ -7,7 +7,7 @@ on:
         description: "The tag of the release to publish"
         type: string
         required: true
-        default: 1.9.3
+        default: 2024.03.0
       targets:
         description: "The targets to publish to separated by spaces"
         type: string

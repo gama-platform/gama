@@ -148,7 +148,7 @@ jobs:
           make_latest: false
           promote: false
           prerelease: true
-          release_name: Alpha Version ${{ inputs.RELEASE_VERSION }} (${{ steps.setup_new_release_data.outputs.commit }})
+          release_name: Alpha Version ${{ inputs.RELEASE_VERSION }} (${{ inputs.COMMIT_SHA }})
           tag: ${{ inputs.RELEASE_VERSION }}
           repo_token: ${{ secrets.BOT_TOKEN }}
 
