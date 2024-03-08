@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * GaussianBlurMeshSmoothProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.1).
+ * platform.
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *

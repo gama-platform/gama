@@ -27,6 +27,10 @@ on:
         required: false
       GAMA_KEYSTORE_STOREPASS:
         required: false
+      GAMA_SERVER_USERNAME:
+        required: false
+      GAMA_SERVER_PASSWORD:
+        required: false
       GAMA_SERVER_SSH_PRIVATE_KEY:
         required: false
       GAMA_SERVER_SSH_KNOWN_HOSTS:
@@ -98,13 +102,18 @@ jobs:
       - name: Deploy p2 GAMA's module
         # Consider it's a release and want to update p2 site for it
         if: "${{ inputs.get_all_archives_for_release }}"
+        env:
+          GAMA_SERVER_USERNAME: ${{ secrets.GAMA_SERVER_USERNAME }}
+          GAMA_SERVER_PASSWORD: ${{ secrets.GAMA_SERVER_PASSWORD }}
         run: |
+          echo "Publishing p2 repository"
           sed -i "s/<username>GAMA_PASS/<username>$GAMA_SERVER_USERNAME/g" $GITHUB_WORKSPACE/travis/settings.xml
           sed -i "s/<password>GAMA_PASS/<password>$GAMA_SERVER_PASSWORD/g" $GITHUB_WORKSPACE/travis/settings.xml
           bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
+          echo "Publishing m2 repository"
           cd ~/.m2/repository
-          rm -fr org/gama/gama.product org/gama/gama.p2site
-          rsync -avP -e ssh . $GAMA_SERVER_USERNAME@51.255.46.42:/var/www/gama_updates/0.0.0
+          rm -fr org/gama/gama.product org/gama/gama.p2site .cache
+          rsync -avPq -e ssh . $GAMA_SERVER_USERNAME@51.255.46.42:/var/www/gama_updates/0.0.0
 
       - name: Export linux release
         uses: actions/upload-artifact@v4
