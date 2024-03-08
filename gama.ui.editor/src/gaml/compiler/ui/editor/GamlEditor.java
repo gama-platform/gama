@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamlEditor.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlEditor.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -200,6 +200,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 		}
 
 	}
+
+	/** The diagram opener. */
+	static IDiagramOpener diagramOpener;
 
 	/** The images. */
 	static Map<String, Image> images = new HashMap();
@@ -478,7 +481,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 		// toolbarParent.setBackground(IGamaColors.WHITE.color());
 
 		// Asking the editor to fill the rest
-		// final int style = GamaToolbarFactory.REDUCED_VIEW_TOOLBAR_HEIGHT.getValue() ? SWT.NONE : SWT.BORDER;
 		final var editor = new Composite(toolbarParent, SWT.NONE);
 		final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		editor.setLayoutData(data);
@@ -1135,5 +1137,24 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 	 * @return
 	 */
 	public URI getURI() { return fileURI; }
+
+	/**
+	 *
+	 */
+	public void switchToDiagram() {
+		if (diagramOpener != null) { diagramOpener.open(this); }
+	}
+
+	/**
+	 * Switch to text.
+	 */
+	public void switchToText() {
+		if (diagramOpener != null) { diagramOpener.close(this); }
+	}
+
+	/**
+	 * @param generateDiagramHandler
+	 */
+	public static void setDiagramOpener(final IDiagramOpener opener) { diagramOpener = opener; }
 
 }

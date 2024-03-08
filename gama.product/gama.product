@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Gama" uid="gama.ui.application.product" id="gama.ui.application.product" application="gama.ui.application.GamaApplication" type="features" includeLaunchers="true" autoIncludeRequirements="true" version="0.0.0.qualifier">
+<product name="Gama" uid="gama.ui.application.product" id="gama.ui.application.product" application="gama.ui.application.GamaApplication" version="0.0.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/gama.ui.application/icons/window/icon128.png"/>
@@ -120,11 +120,11 @@
 
    <configurations>
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="1" />
-      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <property name="org.eclipse.update.reconcile" value="false" />
       <property name="version" value="SNAPSHOT" />
       <property name="eclipse.buildId" value="${build.id}" />
