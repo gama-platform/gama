@@ -112,8 +112,8 @@ jobs:
           bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
           echo "Publishing m2 repository"
           cd ~/.m2/repository
-          rm -fr org/gama/gama.product org/gama/gama.p2site
-          rsync -avP -e ssh . $GAMA_SERVER_USERNAME@51.255.46.42:/var/www/gama_updates/0.0.0
+          rm -fr org/gama/gama.product org/gama/gama.p2site .cache
+          rsync -avPq -e ssh . $GAMA_SERVER_USERNAME@51.255.46.42:/var/www/gama_updates/0.0.0
 
       - name: Export linux release
         uses: actions/upload-artifact@v4
