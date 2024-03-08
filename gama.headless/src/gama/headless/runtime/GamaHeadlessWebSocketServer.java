@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * GamaHeadlessWebSocketServer.java, in gama.headless, is part of the source code of the GAMA modeling and
- * simulation platform (v.1.9.3).
+ * simulation platform.
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
