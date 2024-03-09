@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTMapSerializer.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTMapSerializer.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -67,7 +67,7 @@ public class FSTMapSerializer extends FSTBasicObjectSerializer {
 			res = objectClass.newInstance();
 		}
 		in.registerObject(res, streamPosition, serializationInfo, referencee);
-		Map col = (Map) res;
+		@SuppressWarnings ("unchecked") Map<Object, Object> col = (Map) res;
 		for (int i = 0; i < len; i++) {
 			Object key = in.readObjectInternal();
 			Object val = in.readObjectInternal();

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTDefaultClassInstantiator.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * FSTDefaultClassInstantiator.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -81,7 +81,7 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 			Constructor constructor = constructorMap.get(clazz);
 			if (constructor != null) return constructor;
 		}
-		Class curCl = clazz;
+		Class<?> curCl = clazz;
 		while (Serializable.class.isAssignableFrom(curCl)) { if ((curCl = curCl.getSuperclass()) == null) return null; }
 		try {
 			Constructor c = curCl.getDeclaredConstructor((Class[]) null);

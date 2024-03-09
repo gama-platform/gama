@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTCollectionSerializer.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * FSTCollectionSerializer.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -85,7 +85,7 @@ public class FSTCollectionSerializer extends FSTBasicObjectSerializer {
 				res = objectClass.newInstance();
 			}
 			in.registerObject(res, streamPosition, serializationInfo, referencee);
-			Collection col = (Collection) res;
+			@SuppressWarnings ("unchecked") Collection<Object> col = (Collection<Object>) res;
 			if (col instanceof ArrayList) { ((ArrayList) col).ensureCapacity(len); }
 			for (int i = 0; i < len; i++) {
 				final Object o = in.readObjectInternal();

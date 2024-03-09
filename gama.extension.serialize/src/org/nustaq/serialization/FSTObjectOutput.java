@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * FSTObjectOutput.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTObjectOutput.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -462,6 +462,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 * @date 29 sept. 2023
 	 */
 	// splitting this slows down ...
+	@SuppressWarnings ("null")
 	protected FSTClazzInfo writeObjectWithContext(final FSTClazzInfo.FSTFieldInfo referencee, Object toWrite,
 			final FSTClazzInfo ci) throws IOException {
 		int startPosition = 0;
@@ -631,8 +632,8 @@ public class FSTObjectOutput implements ObjectOutput {
 	protected boolean writeHandleIfApplicable(final Object toWrite, final FSTClazzInfo serializationInfo)
 			throws IOException {
 		if (toWrite instanceof IAgent || toWrite instanceof IShape || toWrite instanceof IList
-               || toWrite instanceof IType || toWrite instanceof GamaGeometryFactory)
-           return false;
+				|| toWrite instanceof IType || toWrite instanceof GamaGeometryFactory)
+			return false;
 		int writePos = getCodec().getWritten();
 		int handle = objects.registerObjectForWrite(toWrite, writePos, serializationInfo, tmp);
 		// determine class header
@@ -640,7 +641,7 @@ public class FSTObjectOutput implements ObjectOutput {
 			final boolean isIdentical = tmp[0] == 0; // objects.getReadRegisteredObject(handle) == toWrite;
 			if (isIdentical) {
 				// String s = toWrite.getClass().getSimpleName();
-                // if (!"String".equals(s)) { System.out.println("POK writeHandle" + handle + " " + s); }
+				// if (!"String".equals(s)) { System.out.println("POK writeHandle" + handle + " " + s); }
 				if (!getCodec().writeTag(HANDLE, null, handle, toWrite, this)) { getCodec().writeFInt(handle); }
 				return true;
 			}
@@ -1203,13 +1204,7 @@ public class FSTObjectOutput implements ObjectOutput {
 			@Override
 			public void writeFields() throws IOException {
 				writeByte(77); // tag writeFields
-				// FSTClazzInfo.FSTCompatibilityInfo fstCompatibilityInfo = clinfo.compInfo.get(cl);
-				// if ( fstCompatibilityInfo.isAsymmetric() ) {
-				// FSTObjectOutput.this.writeCompatibleObjectFields(toWrite, fields,
-				// fstCompatibilityInfo.getFieldArray());
-				// } else {
 				FSTObjectOutput.this.writeObjectInternal(fields, null, HashMap.class);
-				// }
 			}
 
 			@Override

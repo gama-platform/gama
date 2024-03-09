@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * FSTObjectInput.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform.
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -475,8 +475,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             the instantiation exception
 	 * @date 29 sept. 2023
 	 */
-	public Object readObjectInternal(final Class<?>... expected)
-			throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException {
+	public Object readObjectInternal(final Class<?>... expected) {
 		try {
 			FSTClazzInfo.FSTFieldInfo info = infoCache;
 			infoCache = null;
@@ -533,7 +532,7 @@ public class FSTObjectInput implements ObjectInput {
 			return res;
 		}
 		try {
-			FSTObjectSerializer ser = clzSerInfo.getSer();
+			@SuppressWarnings ("null") FSTObjectSerializer ser = clzSerInfo.getSer();
 			if (ser != null) {
 				Object res = instantiateAndReadWithSer(c, ser, clzSerInfo, referencee, readPos);
 				getCodec().readArrayEnd(clzSerInfo);
@@ -940,7 +939,7 @@ public class FSTObjectInput implements ObjectInput {
 				tag = readByte(); // consume tag of defaultwriteobject (99)
 				if (tag == 77) // came from putfield
 				{
-					HashMap<String, Object> fieldMap =
+					@SuppressWarnings ("unchecked") HashMap<String, Object> fieldMap =
 							(HashMap<String, Object>) FSTObjectInput.this.readObjectInternal(HashMap.class);
 					final FSTClazzInfo.FSTFieldInfo[] fieldArray = fstCompatibilityInfo.getFieldArray();
 					for (FSTFieldInfo fstFieldInfo : fieldArray) {
@@ -1595,11 +1594,12 @@ public class FSTObjectInput implements ObjectInput {
 			public Object readUnshared() throws IOException, ClassNotFoundException {
 				try {
 					return FSTObjectInput.this.readObjectInternal(referencee.getPossibleClasses()); // fixme
-				} catch (IllegalAccessException | InstantiationException e) {
+				} catch (RuntimeException e) {
 					throw new IOException(e);
 				}
 			}
 
+			@SuppressWarnings ("unchecked")
 			@Override
 			public void defaultReadObject() throws IOException, ClassNotFoundException {
 				try {
@@ -1629,6 +1629,7 @@ public class FSTObjectInput implements ObjectInput {
 
 			HashMap<String, Object> fieldMap;
 
+			@SuppressWarnings ("unchecked")
 			@Override
 			public GetField readFields() throws IOException, ClassNotFoundException {
 				int tag = readByte();

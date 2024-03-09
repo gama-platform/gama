@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * FSTConfiguration.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform.
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -637,6 +637,7 @@ public class FSTConfiguration {
 	 * @return the in
 	 * @date 30 sept. 2023
 	 */
+	@SuppressWarnings ("resource")
 	protected FSTObjectInput getIn() {
 		FSTObjectInput fstObjectInput = streamCoderFactory.getInput().get();
 		if (fstObjectInput != null && fstObjectInput.isClosed()) { fstObjectInput = null; }
@@ -656,6 +657,7 @@ public class FSTConfiguration {
 	 * @return the out
 	 * @date 30 sept. 2023
 	 */
+	@SuppressWarnings ("resource")
 	protected FSTObjectOutput getOut() {
 		FSTObjectOutput fstOut = streamCoderFactory.getOutput().get();
 		if (fstOut == null || fstOut.closed) {
