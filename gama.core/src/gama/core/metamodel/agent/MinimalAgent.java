@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * MinimalAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MinimalAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -174,7 +173,7 @@ public class MinimalAgent extends AbstractAgent {
 		final GamaPoint newLocation = point.copy(scope);
 		final ITopology topology = getTopology();
 		if (topology == null) return getLocation();
-		topology.normalizeLocation(newLocation, false);
+		topology.normalizeLocation(scope, newLocation, false);
 
 		if (geometry == null || geometry.getInnerGeometry() == null) {
 			setGeometry(GamaGeometryType.createPoint(newLocation));

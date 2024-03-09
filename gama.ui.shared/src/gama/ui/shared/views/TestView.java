@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * TestView.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TestView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -43,8 +42,8 @@ import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.parameters.AssertEditor;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -309,7 +308,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	public Map<String, Runnable> handleMenu(final AbstractSummary<?> item, final int x, final int y) {
 		final Map<String, Runnable> result = new HashMap<>();
 		result.put("Copy summary to clipboard", () -> { WorkbenchHelper.copy(item.toString()); });
-		result.put("Show in editor", () -> GAMA.getGui().editModel(null, item.getURI()));
+		result.put("Show in editor", () -> GAMA.getGui().editModel(item.getURI()));
 		return result;
 	}
 

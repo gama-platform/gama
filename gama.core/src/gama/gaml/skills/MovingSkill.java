@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * MovingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MovingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -171,7 +170,7 @@ public class MovingSkill extends Skill {
 		final GamaPoint actualLocation = agent.getLocation();
 		final double dist = computeDistance(agent.getScope(), agent);
 		final ITopology topology = getTopology(agent);
-		return topology.getDestination(actualLocation, getHeading(agent), dist, false);
+		return topology.getDestination(agent.getScope(), actualLocation, getHeading(agent), dist, false);
 	}
 
 	/**
@@ -524,7 +523,7 @@ public class MovingSkill extends Skill {
 		final double heading = computeHeadingFromAmplitude(scope, agent);
 		final double dist = computeDistance(scope, agent);
 
-		GamaPoint loc = scope.getTopology().getDestination(location, heading, dist, true);
+		GamaPoint loc = scope.getTopology().getDestination(scope, location, heading, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			// pathFollowed = null;
@@ -613,7 +612,7 @@ public class MovingSkill extends Skill {
 		final double dist = computeDistance(scope, agent);
 		final double heading = computeHeading(scope, agent);
 
-		GamaPoint loc = scope.getTopology().getDestination(location, heading, dist, true);
+		GamaPoint loc = scope.getTopology().getDestination(scope, location, heading, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 		} else {
@@ -1081,7 +1080,7 @@ public class MovingSkill extends Skill {
 						final IAgentFilter filter = In.edgesOf(graph);
 						if (optimization) {
 							final Collection<IAgent> ags = scope.getSimulation().getTopology().getNeighborsOf(scope,
-                                   currentLocation, dist, filter);
+									currentLocation, dist, filter);
 							if (!ags.isEmpty()) {
 								double distMin = Double.MAX_VALUE;
 								for (final IAgent e : ags) {

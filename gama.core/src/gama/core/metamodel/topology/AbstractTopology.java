@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * AbstractTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -268,7 +268,7 @@ public abstract class AbstractTopology implements ITopology {
 	public IShape getEnvironment() { return environment; }
 
 	@Override
-	public GamaPoint normalizeLocation(final GamaPoint point, final boolean nullIfOutside) {
+	public GamaPoint normalizeLocation(final IScope scope, final GamaPoint point, final boolean nullIfOutside) {
 
 		boolean covers = environment.getGeometry().covers(point);
 		if (covers) return point;
@@ -319,21 +319,21 @@ public abstract class AbstractTopology implements ITopology {
 	}
 
 	@Override
-	public GamaPoint getDestination(final GamaPoint source, final double direction, final double distance,
-			final boolean nullIfOutside) {
+	public GamaPoint getDestination(final IScope scope, final GamaPoint source, final double direction,
+			final double distance, final boolean nullIfOutside) {
 		final double cos = distance * Maths.cos(direction);
 		final double sin = distance * Maths.sin(direction);
 		final GamaPoint result = source.plus(cos, sin, 0);
-		return normalizeLocation(result, nullIfOutside);
+		return normalizeLocation(scope, result, nullIfOutside);
 	}
 
 	@Override
-	public GamaPoint getDestination3D(final GamaPoint source, final double heading, final double pitch,
-			final double distance, final boolean nullIfOutside) {
+	public GamaPoint getDestination3D(final IScope scope, final GamaPoint source, final double heading,
+			final double pitch, final double distance, final boolean nullIfOutside) throws GamaRuntimeException {
 		final double x = distance * Maths.cos(pitch) * Maths.cos(heading);
 		final double y = distance * Maths.cos(pitch) * Maths.sin(heading);
 		final double z = distance * Maths.sin(pitch);
-		return normalizeLocation3D(new GamaPoint(source.getX() + x, source.getY() + y, source.getZ() + z),
+		return normalizeLocation3D(scope, new GamaPoint(source.getX() + x, source.getY() + y, source.getZ() + z),
 				nullIfOutside);
 	}
 
@@ -346,8 +346,9 @@ public abstract class AbstractTopology implements ITopology {
 	 *            the null if outside
 	 * @return the gama point
 	 */
-	public GamaPoint normalizeLocation3D(final GamaPoint point, final boolean nullIfOutside) {
-		final GamaPoint p = normalizeLocation(point, nullIfOutside);
+	public GamaPoint normalizeLocation3D(final IScope scope, final GamaPoint point, final boolean nullIfOutside)
+			throws GamaRuntimeException {
+		final GamaPoint p = normalizeLocation(scope, point, nullIfOutside);
 		if (p == null) return null;
 		final double z = p.getZ();
 		if (z < 0) return null;
@@ -355,7 +356,7 @@ public abstract class AbstractTopology implements ITopology {
 			if (z > ((GamaShape) environment.getGeometry()).getDepth()) return null;
 			return point;
 		}
-		throw GamaRuntimeException.error("The environment must be a 3D environment (e.g shape <- cube(100).", null);
+		throw GamaRuntimeException.error("The environment must be a 3D environment (e.g shape <- cube(100)).", scope);
 
 	}
 

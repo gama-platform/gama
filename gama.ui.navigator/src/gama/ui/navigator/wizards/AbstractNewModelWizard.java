@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * AbstractNewModelWizard.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * AbstractNewModelWizard.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.wizards;
 
@@ -92,7 +92,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 				TEMPLATES.put(name, uri.getPath());
 
 			} catch (final URISyntaxException e) {
-				
+
 				e.printStackTrace();
 			}
 
@@ -113,7 +113,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 
 	/** The selection. */
 	protected AbstractNewModelWizardPage page;
-	
+
 	/** The selection. */
 	protected ISelection selection;
 	// protected String fileHeader;
@@ -239,7 +239,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 		}
 		monitor.worked(1);
 		monitor.setTaskName("Opening file for editing...");
-		GAMA.getGui().editModel(null, file);
+		GAMA.getGui().editModel(file);
 		monitor.worked(1);
 	}
 

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * EditorMenu.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * EditorMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -216,7 +216,7 @@ public class EditorMenu extends ContributionItem implements IWorkbenchContributi
 		public void widgetSelected(final SelectionEvent e) {
 			final MenuItem mi = (MenuItem) e.widget;
 			final URI uri = (URI) mi.getData("uri");
-			GAMA.getGui().editModel(null, uri);
+			GAMA.getGui().editModel(uri);
 		}
 	};
 

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ContinuousTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -86,8 +86,8 @@ public class ContinuousTopology extends AbstractTopology {
 		GamaPoint source = g1.getLocation();
 		GamaPoint target = g2.getLocation();
 		if (isTorus()) {
-			source = normalizeLocation(source, false);
-			target = normalizeLocation(target, false);
+			source = normalizeLocation(scope, source, false);
+			target = normalizeLocation(scope, target, false);
 		}
 
 		final double x2 = /* translateX(source.x, target.x); */target.getX();

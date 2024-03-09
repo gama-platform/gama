@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * OpenImportedErrorSelectionListener.java, in gama.ui.shared.modeling, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * OpenImportedErrorSelectionListener.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor.toolbar;
 
@@ -34,12 +34,12 @@ public class OpenImportedErrorSelectionListener implements Selector {
 
 	/** The editor. */
 	GamlEditor editor;
-	
+
 	/** The state. */
 	GamlEditorState state;
 
 	/**
-	 * 
+	 *
 	 */
 	public OpenImportedErrorSelectionListener(final GamlEditor editor, final GamlEditorState state,
 			final Control toolbar) {
@@ -64,7 +64,7 @@ public class OpenImportedErrorSelectionListener implements Selector {
 
 							@Override
 							public void widgetSelected(final SelectionEvent e1) {
-								GAMA.getGui().editModel(null, msgs.get(s));
+								GAMA.getGui().editModel(msgs.get(s));
 							}
 
 						}, null);

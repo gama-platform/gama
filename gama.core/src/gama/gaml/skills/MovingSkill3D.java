@@ -1,16 +1,14 @@
 /*******************************************************************************************************
  *
- * MovingSkill3D.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -20,6 +18,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -80,13 +79,15 @@ public class MovingSkill3D extends MovingSkill {
 		final GamaPoint actualLocation = agent.getLocation();
 		final double dist = this.computeDistance(agent.getScope(), agent);
 		final ITopology topology = getTopology(agent);
-		return topology.getDestination3D(actualLocation, getHeading(agent), getPitch(agent), dist, false);
+		return topology.getDestination3D(agent.getScope(), actualLocation, getHeading(agent), getPitch(agent), dist,
+				false);
 	}
 
 	/**
 	 * Gets the pitch.
 	 *
-	 * @param agent the agent
+	 * @param agent
+	 *            the agent
 	 * @return the pitch
 	 */
 	@getter (IKeyword.PITCH)
@@ -102,8 +103,10 @@ public class MovingSkill3D extends MovingSkill {
 	/**
 	 * Sets the pitch.
 	 *
-	 * @param agent the agent
-	 * @param newPitch the new pitch
+	 * @param agent
+	 *            the agent
+	 * @param newPitch
+	 *            the new pitch
 	 */
 	@setter (IKeyword.PITCH)
 	public void setPitch(final IAgent agent, final double newPitch) {
@@ -113,7 +116,8 @@ public class MovingSkill3D extends MovingSkill {
 	/**
 	 * Gets the roll.
 	 *
-	 * @param agent the agent
+	 * @param agent
+	 *            the agent
 	 * @return the roll
 	 */
 	@getter (IKeyword.ROLL)
@@ -129,8 +133,10 @@ public class MovingSkill3D extends MovingSkill {
 	/**
 	 * Sets the roll.
 	 *
-	 * @param agent the agent
-	 * @param newRoll the new roll
+	 * @param agent
+	 *            the agent
+	 * @param newRoll
+	 *            the new roll
 	 */
 	@setter (IKeyword.ROLL)
 	public void setRoll(final IAgent agent, final Double newRoll) {
@@ -140,10 +146,13 @@ public class MovingSkill3D extends MovingSkill {
 	/**
 	 * Compute pitch from amplitude.
 	 *
-	 * @param scope the scope
-	 * @param agent the agent
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
 	 * @return the double
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	protected double computePitchFromAmplitude(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final int ampl = scope.hasArg("amplitude") ? scope.getIntArg("amplitude") : 359;
@@ -154,10 +163,13 @@ public class MovingSkill3D extends MovingSkill {
 	/**
 	 * Compute pitch.
 	 *
-	 * @param scope the scope
-	 * @param agent the agent
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
 	 * @return the double
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	protected double computePitch(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final Integer pitch = scope.hasArg(IKeyword.PITCH) ? scope.getIntArg(IKeyword.PITCH) : null;
@@ -203,7 +215,7 @@ public class MovingSkill3D extends MovingSkill {
 		final double dist = computeDistance(scope, agent);
 		final double heading = computeHeading(scope, agent);
 		final double pitch = computePitch(scope, agent);
-		final GamaPoint loc = scope.getTopology().getDestination3D(location, heading, pitch, dist, true);
+		final GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
@@ -228,15 +240,14 @@ public class MovingSkill3D extends MovingSkill {
 		final double heading = computeHeadingFromAmplitude(scope, agent);
 		final double pitch = computePitchFromAmplitude(scope, agent);
 		final double dist = computeDistance(scope, agent);
-		GamaPoint loc = scope.getTopology().getDestination3D(location, heading, pitch, dist, true);
+		GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
 		} else {
 			final Object on = scope.getArg(IKeyword.ON, IType.GRAPH);
 			Double newHeading = null;
-			if (on instanceof GamaSpatialGraph) {
-				final GamaSpatialGraph graph = (GamaSpatialGraph) on;
+			if (on instanceof final GamaSpatialGraph graph) {
 				IMap<IShape, Double> probaDeplacement = null;
 				if (scope.hasArg("proba_edges")) {
 					probaDeplacement = (IMap<IShape, Double>) scope.getVarValue("proba_edges");

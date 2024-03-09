@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ITopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ITopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -285,7 +285,7 @@ public interface ITopology extends IValue {
 	 *            tells wether to return the destination point or null if the destination is outside the topology
 	 * @return a point or null if no random locations are available
 	 */
-	GamaPoint getDestination(final GamaPoint source, final double direction, final double distance,
+	GamaPoint getDestination(IScope scope, final GamaPoint source, final double direction, final double distance,
 			boolean nullIfOutside);
 
 	/**
@@ -302,8 +302,8 @@ public interface ITopology extends IValue {
 	 *            tells wether to return the destination point or null if the destination is outside the topology
 	 * @return a point or null if no random locations are available
 	 */
-	GamaPoint getDestination3D(final GamaPoint source, final double heading, final double pitch, final double distance,
-			boolean nullIfOutside);
+	GamaPoint getDestination3D(IScope scope, final GamaPoint source, final double heading, final double pitch,
+			final double distance, boolean nullIfOutside);
 
 	/**
 	 * Return a random location inside the bounds of the environment's shape. The returned point is a valid local
@@ -341,7 +341,7 @@ public interface ITopology extends IValue {
 	 *            tells whether to return null or to coerce p if p is outside the bounds of the topology
 	 * @return a valid point or null if nullIfOutside is true and the point is outside
 	 */
-	GamaPoint normalizeLocation(final GamaPoint p, boolean nullIfOutside);
+	GamaPoint normalizeLocation(IScope scope, final GamaPoint p, boolean nullIfOutside);
 
 	/**
 	 * @throws GamaRuntimeException

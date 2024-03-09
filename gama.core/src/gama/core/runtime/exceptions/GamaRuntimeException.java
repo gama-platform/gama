@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * GamaRuntimeException.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -220,9 +220,10 @@ public class GamaRuntimeException extends RuntimeException {
 	 *            the s
 	 */
 	public void addContext(final ISymbol s) {
-		addContext("in " + s.serializeToGaml(false));
+		String serial = s.serializeToGaml(false);
+		if (serial != null && !serial.isBlank()) { addContext("in " + serial); }
 		final EObject e = s.getDescription().getUnderlyingElement();
-		if (e != null) { editorContext = e; }
+		if (e != null && editorContext == null) { editorContext = e; }
 	}
 
 	/**
@@ -301,7 +302,7 @@ public class GamaRuntimeException extends RuntimeException {
 	public List<String> getContextAsList() {
 		final List<String> result = new ArrayList<>();
 		if (scope != null && scope.getRoot() != null) { result.add("in " + scope.getRoot().getName()); }
-		result.addAll(context);
+
 		final int size = agentsNames.size();
 		if (size == 0) return result;
 		if (size == 1) {
@@ -318,6 +319,7 @@ public class GamaRuntimeException extends RuntimeException {
 			}
 			result.add(sb.toString());
 		}
+		result.addAll(context);
 		return result;
 	}
 

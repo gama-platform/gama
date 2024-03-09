@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * SwtGui.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -32,17 +31,17 @@ import org.eclipse.ui.commands.ICommandService;
 
 import gama.core.common.CompositeConsoleListener;
 import gama.core.common.interfaces.IConsoleListener;
+import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IGamaView.Error;
 import gama.core.common.interfaces.IGamaView.Parameters;
 import gama.core.common.interfaces.IGamaView.Test;
 import gama.core.common.interfaces.IGamaView.User;
+import gama.core.common.interfaces.IGui;
+import gama.core.common.interfaces.IKeyword;
+import gama.core.common.interfaces.IRuntimeExceptionHandler;
+import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
@@ -380,7 +379,7 @@ public class SwtGui implements IGui {
 	private IModelRunner getModelRunner() { return WorkbenchHelper.getService(IModelRunner.class); }
 
 	@Override
-	public void editModel(final IScope scope, final Object eObject) {
+	public void editModel(final Object eObject) {
 		final IModelRunner modelRunner = getModelRunner();
 		if (modelRunner == null) return;
 		modelRunner.editModel(eObject);

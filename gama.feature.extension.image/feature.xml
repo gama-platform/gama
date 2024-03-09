@@ -4,7 +4,7 @@
       label="Image"
       version="0.0.0.qualifier"
       provider-name="UMMISCO"
-      plugin="gama.extension.images">
+      plugin="gama.extension.image">
 
    <description url="http://www.example.com/description">
       This plug-in contains the &apos;image&apos; type present in GAML and associated operators.

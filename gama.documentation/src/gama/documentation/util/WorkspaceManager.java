@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * WorkspaceManager.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -147,7 +147,7 @@ public class WorkspaceManager {
 	 * @return It will then return the HashMap containing all their project name with their associated files associated
 	 * @throws IOException
 	 */
-	public HashMap<String, File> getAllDocFiles() throws IOException {
+	public HashMap<String, File> getAllDocFiles() {
 		HashMap<String, File> hmFilesPackages = new HashMap<>();
 
 		for (File f : wsFile.listFiles()) {
@@ -164,7 +164,7 @@ public class WorkspaceManager {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	public HashMap<String, File> getAllDocFilesLocal() throws IOException {
+	public HashMap<String, File> getAllDocFilesLocal() {
 		HashMap<String, File> hmFilesPackages = new HashMap<>();
 
 		for (File f : wsFile.listFiles()) {
@@ -329,12 +329,12 @@ public class WorkspaceManager {
 	}
 
 	/*****************************************************************************************************
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	public ArrayList<String> getModelLibrary() {
-		ArrayList<String> modelList = litRep(
-				wsFile.getAbsolutePath() + File.separator + "gama.library" + File.separator + "models");
+		ArrayList<String> modelList =
+				litRep(wsFile.getAbsolutePath() + File.separator + "gama.library" + File.separator + "models");
 		return modelList;
 	}
 

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * WorkspaceModelsManager.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -149,7 +149,7 @@ public class WorkspaceModelsManager {
 			if (en == null) {
 				// System.out
 				// .println(Thread.currentThread().getName() + ": Opening the model " + fp + " in the editor");
-				GAMA.getGui().editModel(null, file);
+				GAMA.getGui().editModel(file);
 			} else {
 				// DEBUG.OUT(Thread.currentThread().getName() + ": Trying to run experiment " + en);
 				GAMA.getGui().runModel(file, en);

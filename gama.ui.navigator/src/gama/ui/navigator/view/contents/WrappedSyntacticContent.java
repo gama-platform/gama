@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * WrappedSyntacticContent.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * WrappedSyntacticContent.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -91,14 +91,14 @@ public class WrappedSyntacticContent extends VirtualContent<VirtualContent<?>>
 
 	@Override
 	public boolean handleDoubleClick() {
-		GAMA.getGui().editModel(null, element.getElement());
+		GAMA.getGui().editModel(element.getElement());
 		return true;
 	}
 
 	@Override
 	public boolean handleSingleClick() {
 		if (element == null) return false;
-		GAMA.getGui().editModel(null, element.getElement());
+		GAMA.getGui().editModel(element.getElement());
 		return true;
 	}
 

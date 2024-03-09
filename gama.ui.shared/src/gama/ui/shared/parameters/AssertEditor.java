@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * AssertEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AssertEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -25,8 +25,8 @@ import gama.gaml.statements.test.TestState;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.views.toolbar.Selector;
 
 /**
@@ -80,7 +80,7 @@ public class AssertEditor extends AbstractStatementEditor<AbstractSummary<?>> {
 				? getStatement().getState().toString() + ": " + ((AssertionSummary) getStatement()).getError()
 				: getStatement().getState().toString();
 		textBox = FlatButton.button(composite, null, text);
-		textBox.addSelectionListener((Selector) e -> GAMA.getGui().editModel(null, getStatement().getURI()));
+		textBox.addSelectionListener((Selector) e -> GAMA.getGui().editModel(getStatement().getURI()));
 		return textBox;
 	}
 

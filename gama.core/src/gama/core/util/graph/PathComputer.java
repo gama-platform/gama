@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * PathComputer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * PathComputer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -461,9 +460,9 @@ public class PathComputer<V, E> {
 			final V target) {
 		final GraphPath ph = algo.getPath(source, target);
 		if (ph == null) return GamaListFactory.create(graph.getGamlType().getKeyType());
-		final List re = ph.getEdgeList();
+		final List<E> re = ph.getEdgeList();
 		if (re == null) return GamaListFactory.create(graph.getGamlType().getKeyType());
-		return GamaListFactory.create(scope, graph.getGamlType().getContentType(), re);
+		return GamaListFactory.<E> create(scope, graph.getGamlType().getContentType(), re);
 	}
 
 	/**

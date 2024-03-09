@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * AmorphousTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -135,8 +135,8 @@ public class AmorphousTopology implements ITopology {
 	}
 
 	@Override
-	public GamaPoint getDestination(final GamaPoint source, final double direction, final double distance,
-			final boolean nullIfOutside) {
+	public GamaPoint getDestination(final IScope scope, final GamaPoint source, final double direction,
+			final double distance, final boolean nullIfOutside) {
 		final double cos = distance * Maths.cos(direction);
 		final double sin = distance * Maths.sin(direction);
 		return new GamaPoint(source.getX() + cos, source.getY() + sin);
@@ -144,8 +144,8 @@ public class AmorphousTopology implements ITopology {
 	}
 
 	@Override
-	public GamaPoint getDestination3D(final GamaPoint source, final double heading, final double pitch,
-			final double distance, final boolean nullIfOutside) {
+	public GamaPoint getDestination3D(final IScope scope, final GamaPoint source, final double heading,
+			final double pitch, final double distance, final boolean nullIfOutside) {
 		final double x = distance * Maths.cos(pitch) * Maths.cos(heading);
 		final double y = distance * Maths.cos(pitch) * Maths.sin(heading);
 		final double z = distance * Maths.sin(pitch);
@@ -171,7 +171,7 @@ public class AmorphousTopology implements ITopology {
 	 * @see gama.environment.ITopology#normalizeLocation(gama.core.util.GamaPoint, boolean)
 	 */
 	@Override
-	public GamaPoint normalizeLocation(final GamaPoint p, final boolean nullIfOutside) {
+	public GamaPoint normalizeLocation(final IScope scope, final GamaPoint p, final boolean nullIfOutside) {
 		return p;
 	}
 

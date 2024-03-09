@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamlActionProvider.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlActionProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -64,7 +64,7 @@ public class GamlActionProvider extends CommonActionProvider {
 		revealAction = new SelectionListenerAction("Reveal...") {
 			@Override
 			public void run() {
-				GAMA.getGui().editModel(null, selection.getElement().getElement());
+				GAMA.getGui().editModel(selection.getElement().getElement());
 			}
 		};
 		revealAction.setId("reveal.item");

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ErrorView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ErrorView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -129,7 +129,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				GAMA.getGui().editModel(null, exception.getEditorContext());
+				GAMA.getGui().editModel(exception.getEditorContext());
 			}
 
 			@Override
@@ -141,8 +141,6 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 		t.setForeground(exception.isWarning() ? GamaColors.get(PreferencesHelper.WARNING_TEXT_COLOR.getValue()).color()
 				: GamaColors.get(PreferencesHelper.ERROR_TEXT_COLOR.getValue()).color());
 		final TableColumn c = new TableColumn(t, SWT.NONE);
-		// c.setResizable(true);
-		// final TableColumn column2 = new TableColumn(t, SWT.NONE);
 		for (String string : strings) {
 			if (string.isBlank()) { continue; }
 			final TableItem item = new TableItem(t, SWT.NONE);
@@ -150,13 +148,9 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 			item.setText(new String[] { string });
 		}
 		c.pack();
-		// column2.pack();
 		t.setSize(t.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		// t.pack();
-		// compo.setContent(t);
 		t.requestLayout();
 		compo.requestLayout();
-		// compo.pack();
 	}
 
 	@Override
@@ -240,7 +234,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	public Map<String, Runnable> handleMenu(final GamaRuntimeException item, final int x, final int y) {
 		final Map<String, Runnable> result = new HashMap<>();
 		result.put("Copy error to clipboard", () -> { WorkbenchHelper.copy(item.getAllText()); });
-		result.put("Show in editor", () -> GAMA.getGui().editModel(null, item.getEditorContext()));
+		result.put("Show in editor", () -> GAMA.getGui().editModel(item.getEditorContext()));
 		result.put("Report issue on GitHub", () -> this.reportError(item));
 		return result;
 	}

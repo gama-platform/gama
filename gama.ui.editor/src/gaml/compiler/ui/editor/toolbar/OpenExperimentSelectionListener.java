@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * OpenExperimentSelectionListener.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * OpenExperimentSelectionListener.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
+ * simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -78,7 +78,7 @@ public class OpenExperimentSelectionListener implements Selector {
 	 */
 	void gotoEditor(final GamaRuntimeException exception) {
 		final EObject o = exception.getEditorContext();
-		if (o != null) { WorkbenchHelper.asyncRun(() -> GAMA.getGui().editModel(null, o)); }
+		if (o != null) { WorkbenchHelper.asyncRun(() -> GAMA.getGui().editModel(o)); }
 
 	}
 
