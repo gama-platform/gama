@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Sobol.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Sobol.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -314,12 +314,12 @@ public class Sobol {
 	/**
 	 * Build the string that contains the report of the Sobol analysis
 	 */
-	public String buildReportString(String extension) {
-		
+	public String buildReportString(final String extension) {
+
 		StringBuilder sb = new StringBuilder();
 		char sep = ',';
-		
-		if (extension.equalsIgnoreCase("csv")) {
+
+		if ("csv".equalsIgnoreCase(extension)) {
 			// Build header
 			sb.append("output").append(sep);
 			sb.append("parameter").append(sep);
@@ -338,7 +338,7 @@ public class Sobol {
 					}
 					sb.append(Strings.LN);
 				}
-			}	
+			}
 		} else {
 			sb.append("SOBOL ANALYSIS:\n");
 			for (String output_name : sobol_analysis.keySet()) {
@@ -359,7 +359,7 @@ public class Sobol {
 				}
 			}
 		}
-		
+
 		return sb.toString();
 	}
 
@@ -478,19 +478,19 @@ public class Sobol {
 	private void roll(final String param, final Double saltelli, final List<Object> info) {
 		Object val = null;
 		// Double
-		if (info.stream().allMatch(p -> p instanceof Double)) {
+		if (info.stream().allMatch(Double.class::isInstance)) {
 			Double min = (Double) info.get(0);
 			Double max = (Double) info.get(1);
 			val = min + saltelli * (max - min);
 		}
 		// Intege
-		else if (info.stream().allMatch(p -> p instanceof Integer)) {
+		else if (info.stream().allMatch(Integer.class::isInstance)) {
 			int min = (int) info.get(0);
 			int max = (int) info.get(1);
 			val = (int) Math.floor(min + saltelli * (max - min));
 		}
 		// Boolean
-		else if (info.stream().allMatch(p -> p instanceof Boolean)) {
+		else if (info.stream().allMatch(Boolean.class::isInstance)) {
 			val = saltelli > 0.5;
 		}
 		// Discrete variable

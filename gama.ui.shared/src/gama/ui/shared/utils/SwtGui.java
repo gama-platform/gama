@@ -257,11 +257,10 @@ public class SwtGui implements IGui {
 		Object o = internalShowView(viewId, secondaryId, code);
 		if (o instanceof IWorkbenchPart) {
 			if (o instanceof IGamaView) return (IGamaView) o;
-			o = GamaRuntimeException.error("Impossible to open view " + viewId, GAMA.getRuntimeScope());
+			o = GamaRuntimeException.error("Impossible to open view " + viewId, scope);
 		}
 		if (o instanceof Throwable) {
-			GAMA.reportError(GAMA.getRuntimeScope(), GamaRuntimeException.create((Exception) o, GAMA.getRuntimeScope()),
-					false);
+			GAMA.reportError(scope, GamaRuntimeException.create((Exception) o, scope), false);
 		}
 		return null;
 	}

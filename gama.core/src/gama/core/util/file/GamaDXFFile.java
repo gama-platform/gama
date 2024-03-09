@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -18,10 +17,10 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Envelope;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -119,7 +118,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 					isExecutable = false) })
 	public GamaDXFFile(final IScope scope, final String pathName, final Double unit) throws GamaRuntimeException {
 		super(scope, pathName);
-		if (unit <= 0) { GamaRuntimeException.error("the unity given has to be higher than 0", scope); }
+		if (unit <= 0) throw GamaRuntimeException.error("the unity given has to be higher than 0", scope);
 		this.unit = unit;
 	}
 

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -34,15 +34,15 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationSet;
@@ -56,13 +56,13 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaListFactory;
+import gama.core.util.GamaListFactory.GamaListSupplier;
 import gama.core.util.GamaMapFactory;
+import gama.core.util.GamaMapFactory.GamaMapSupplier;
 import gama.core.util.GamaPair;
 import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.core.util.GamaListFactory.GamaListSupplier;
-import gama.core.util.GamaMapFactory.GamaMapSupplier;
 import gama.core.util.graph.IGraph;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.compilation.GAML;
@@ -1930,7 +1930,7 @@ public class Containers {
 	@test ("cartesian_product([['A','B'],['C','D']]) = [['A','C'],['A','D'],['B','C'],['B','D']]")
 	public static Object cart_prod(final IScope scope, final IList list) {
 		IType ct = list.getGamlType().getContentType();
-		if (!ct.isContainer()) { GamaRuntimeException.error("Must be a list of list", scope); }
+		if (!ct.isContainer()) throw GamaRuntimeException.error("Must be a list of list", scope);
 
 		final IList<IList> l = notNull(scope, list).listValue(scope, list.getGamlType().getContentType(), false);
 		List<? extends Set<Object>> setOfSet = l.stream(scope).map(LinkedHashSet::new).collect(Collectors.toList());
@@ -1989,7 +1989,7 @@ public class Containers {
 			case IType.POINT -> ((Stream<GamaPoint>) s).reduce(new GamaPoint(), GamaPoint::plus);
 			case IType.COLOR -> ((Stream<GamaColor>) s).reduce(GamaColor.get(0, 0, 0, 0), GamaColor::merge);
 			case IType.STRING -> ((Stream<String>) s).reduce("", String::concat);
-			default -> GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
+			default -> throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
 					scope);
 		};
 	}

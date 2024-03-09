@@ -1,20 +1,17 @@
 /*******************************************************************************************************
  *
- * MatchStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MatchStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,6 +19,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
@@ -106,36 +105,41 @@ public class MatchStatement extends AbstractStatementSequence {
 
 	/** The value. */
 	final IExpression value;
-	
+
 	/** The constant value. */
 	Object constantValue;
-	
+
 	/** The executer. */
 	final MatchExecuter executer;
 
 	/**
 	 * Instantiates a new match statement.
 	 *
-	 * @param desc the desc
+	 * @param desc
+	 *            the desc
 	 */
 	public MatchStatement(final IDescription desc) {
 		super(desc);
 		value = getFacet(IKeyword.VALUE);
 		final String keyword = desc.getKeyword();
 		setName(keyword + " " + (value == null ? "" : value.serializeToGaml(false)));
-		executer = IKeyword.MATCH.equals(keyword) ? new SimpleMatch()
-				: IKeyword.MATCH_ONE.equals(keyword) ? new MatchOne() : IKeyword.MATCH_BETWEEN.equals(keyword)
-						? new MatchBetween() : IKeyword.MATCH_REGEX.equals(keyword) ? new MatchRegex() : null;
+		executer =
+				IKeyword.MATCH.equals(keyword) ? new SimpleMatch() : IKeyword.MATCH_ONE.equals(keyword) ? new MatchOne()
+						: IKeyword.MATCH_BETWEEN.equals(keyword) ? new MatchBetween()
+						: IKeyword.MATCH_REGEX.equals(keyword) ? new MatchRegex() : null;
 		if (executer != null) { executer.acceptValue(); }
 	}
 
 	/**
 	 * Matches.
 	 *
-	 * @param scope the scope
-	 * @param switchValue the switch value
+	 * @param scope
+	 *            the scope
+	 * @param switchValue
+	 *            the switch value
 	 * @return true, if successful
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
 		if (executer == null) return false;
@@ -150,10 +154,13 @@ public class MatchStatement extends AbstractStatementSequence {
 		/**
 		 * Matches.
 		 *
-		 * @param scope the scope
-		 * @param switchValue the switch value
+		 * @param scope
+		 *            the scope
+		 * @param switchValue
+		 *            the switch value
 		 * @return true, if successful
-		 * @throws GamaRuntimeException the gama runtime exception
+		 * @throws GamaRuntimeException
+		 *             the gama runtime exception
 		 */
 		abstract boolean matches(IScope scope, Object switchValue) throws GamaRuntimeException;
 
@@ -167,9 +174,11 @@ public class MatchStatement extends AbstractStatementSequence {
 		/**
 		 * Gets the value.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the value
-		 * @throws GamaRuntimeException the gama runtime exception
+		 * @throws GamaRuntimeException
+		 *             the gama runtime exception
 		 */
 		Object getValue(final IScope scope) throws GamaRuntimeException {
 			return constantValue == null ? value.value(scope) : constantValue;
@@ -230,8 +239,6 @@ public class MatchStatement extends AbstractStatementSequence {
 				Pattern p = Pattern.compile(pattern);
 				return p.matcher(target).find();
 			} catch (PatternSyntaxException e) {
-				// throw GamaRuntimeException.error(
-				// "The syntax of " + pattern + " is not a correct regular expression", scope);
 				return target.contains(pattern);
 			}
 		}

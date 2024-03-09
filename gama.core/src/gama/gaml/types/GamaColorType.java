@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaColorType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaColorType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -14,10 +13,10 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -110,11 +109,7 @@ public class GamaColorType extends GamaType<GamaColor> {
 							}
 						}
 					}
-					if (c == null) {
-						final GamaRuntimeException ex =
-								GamaRuntimeException.error("'" + s + "' is not a valid color name", scope);
-						throw ex;
-					}
+					if (c == null) throw GamaRuntimeException.error("'" + s + "' is not a valid color name", scope);
 				}
 				GamaColor.colors.put(s, c);
 			}

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * Exploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * Exploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -21,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -30,6 +27,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.exploration.sampling.LatinhypercubeSampling;
 import gama.core.kernel.batch.exploration.sampling.MorrisSampling;
@@ -38,9 +37,9 @@ import gama.core.kernel.batch.exploration.sampling.RandomSampling;
 import gama.core.kernel.batch.exploration.sampling.SaltelliSampling;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -242,8 +241,9 @@ public class Exploration extends AExplorationAlgorithm {
 					new ArrayList<>());
 			default -> buildParameterSets(scope, new ArrayList<>(), 0);
 		};
-		if (sets.isEmpty()) { sets.add(new ParametersSet()); }
-		else if(sample_size == 132) {sample_size = sets.size();}
+		if (sets.isEmpty()) {
+			sets.add(new ParametersSet());
+		} else if (sample_size == 132) { sample_size = sets.size(); }
 
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
 			currentExperiment.launchSimulationsWithSolution(sets);
@@ -274,24 +274,28 @@ public class Exploration extends AExplorationAlgorithm {
 		if (index == variables.size() - 1) return sets2;
 		return buildParameterSets(scope, sets2, index + 1);
 	}
-	
+
 	@Override
-	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
+	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
 		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
-				@Override public Object value() { return sample_size; }
+			@Override
+			public Object value() {
+				return sample_size;
+			}
 		});
 
 		exp.add(new ParameterAdapter("Sampling method", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
-			@Override public Object value() {
-				if (hasFacet(IKeyword.FROM)) { return FROM_FILE;}
-				if (hasFacet(IKeyword.WITH)) { return FROM_LIST;}
-				return hasFacet(Exploration.METHODS) ? 
-						Cast.asString(agent.getScope(), getFacet(METHODS).value(agent.getScope())) : "exhaustive";
+			@Override
+			public Object value() {
+				if (hasFacet(IKeyword.FROM)) return FROM_FILE;
+				if (hasFacet(IKeyword.WITH)) return FROM_LIST;
+				return hasFacet(Exploration.METHODS)
+						? Cast.asString(agent.getScope(), getFacet(METHODS).value(agent.getScope())) : "exhaustive";
 			}
 		});
-		
+
 	}
 
 	/**
@@ -307,9 +311,8 @@ public class Exploration extends AExplorationAlgorithm {
 	private List<ParametersSet> buildParameterFromMap(final IScope scope, final List<ParametersSet> sets,
 			final int index) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getDenotedType() != Types.LIST) { 
-			GamaRuntimeException.error("You cannot use "+IKeyword.WITH+" facet without input a list of maps as parameters inputs", scope); 
-		}
+		if (psexp.getDenotedType() != Types.LIST) throw GamaRuntimeException.error(
+				"You cannot use " + IKeyword.WITH + " facet without input a list of maps as parameters inputs", scope);
 		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
 
 		for (Map<String, Object> parameterSet : parameterSets) {

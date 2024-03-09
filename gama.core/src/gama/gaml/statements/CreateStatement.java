@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * CreateStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -19,14 +19,11 @@ import static gama.core.common.interfaces.IKeyword.NUMBER;
 import static gama.core.common.interfaces.IKeyword.RETURNS;
 import static gama.core.common.interfaces.IKeyword.SPECIES;
 import static gama.core.common.interfaces.IKeyword.WITH;
-import static gama.core.runtime.exceptions.GamaRuntimeException.error;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -34,6 +31,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.ICreateDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
@@ -477,11 +476,12 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 */
 	protected void checkPopulationValidity(final IPopulation pop, final IScope scope) throws GamaRuntimeException {
 		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
-			throw error("Simulations can only be created within experiments", scope);
+			throw GamaRuntimeException.error("Simulations can only be created within experiments", scope);
 		final SpeciesDescription sd = pop.getSpecies().getDescription();
 		final String error = sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : sd.isBuiltIn() ? "built-in"
 				: sd.isGrid() ? "a grid" : null;
-		if (error != null) throw error(sd.getName() + "is " + error + " and cannot be instantiated.", scope);
+		if (error != null)
+			throw GamaRuntimeException.error(sd.getName() + "is " + error + " and cannot be instantiated.", scope);
 	}
 
 	/**

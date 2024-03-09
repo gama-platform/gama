@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -254,9 +254,7 @@ public class ExperimentJob implements IExperimentJob {
 		// endCondition = GAML.getExpressionFactory().createExpr(untilCond, simulator.getModel().getDescription());
 		// // endCondition = GAML.compileExpression(untilCond, simulator.getSimulation(), true);
 		// }
-		// if (endCondition.getGamlType() != Types.BOOL)
-		// throw GamaRuntimeException.error("The until condition of the experiment should be a boolean",
-		// simulator.getSimulation().getScope());
+
 	}
 
 	/**

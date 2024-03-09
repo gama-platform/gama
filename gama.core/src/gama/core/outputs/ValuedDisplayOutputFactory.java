@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ValuedDisplayOutputFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -49,10 +49,8 @@ public class ValuedDisplayOutputFactory {
 			}
 			if (root == null) return;
 			final IMacroAgent realRoot = findRootOf(root, agents);
-			if (realRoot == null) {
-				GamaRuntimeException.error("Impossible to find a common host agent for " + agents, root.getScope());
-				return;
-			}
+			if (realRoot == null) throw GamaRuntimeException
+					.error("Impossible to find a common host agent for " + agents, root.getScope());
 			InspectDisplayOutput.browse(realRoot, agents, null).launch(realRoot.getScope());
 		}
 	}
@@ -95,13 +93,10 @@ public class ValuedDisplayOutputFactory {
 			return;
 		}
 		if (!root.getSpecies().getMicroSpecies().contains(species)) {
-			if (root instanceof ExperimentAgent) {
-				final IMacroAgent realRoot = ((ExperimentAgent) root).getSimulation();
-				browse(realRoot, species);
-			} else {
-				GamaRuntimeException.error("Agent " + root + " has no access to populations of " + species.getName(),
-						root.getScope());
-			}
+			if (!(root instanceof ExperimentAgent)) throw GamaRuntimeException
+					.error("Agent " + root + " has no access to populations of " + species.getName(), root.getScope());
+			final IMacroAgent realRoot = ((ExperimentAgent) root).getSimulation();
+			browse(realRoot, species);
 			return;
 		}
 		InspectDisplayOutput.browse(root, species, null).launch(root.getScope());
@@ -118,20 +113,14 @@ public class ValuedDisplayOutputFactory {
 	public static void browse(final IMacroAgent root, final IExpression expr, final IExpression attributes) {
 		final SpeciesDescription species = expr.getGamlType().isContainer()
 				? expr.getGamlType().getContentType().getSpecies() : expr.getGamlType().getSpecies();
-		if (species == null) {
-			GamaRuntimeException.error("Expression '" + expr.serializeToGaml(true) + "' does not reference agents",
-					root.getScope());
-			return;
-		}
+		if (species == null) throw GamaRuntimeException
+				.error("Expression '" + expr.serializeToGaml(true) + "' does not reference agents", root.getScope());
 		final ISpecies rootSpecies = root.getSpecies();
 		if (rootSpecies.getMicroSpecies(species.getName()) == null) {
-			if (root instanceof ExperimentAgent) {
-				final IMacroAgent realRoot = ((ExperimentAgent) root).getSimulation();
-				browse(realRoot, expr, attributes);
-			} else {
-				GamaRuntimeException.error("Agent " + root + " has no access to populations of " + species.getName(),
-						root.getScope());
-			}
+			if (!(root instanceof ExperimentAgent)) throw GamaRuntimeException
+					.error("Agent " + root + " has no access to populations of " + species.getName(), root.getScope());
+			final IMacroAgent realRoot = ((ExperimentAgent) root).getSimulation();
+			browse(realRoot, expr, attributes);
 			return;
 		}
 		InspectDisplayOutput.browse(root, expr, attributes).launch(root.getScope());

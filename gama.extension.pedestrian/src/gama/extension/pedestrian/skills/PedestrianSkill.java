@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * PedestrianSkill.java, in gaml.extensions.pedestrian, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PedestrianSkill.java, in gama.extension.pedestrian, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.pedestrian.skills;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -20,6 +19,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -1021,13 +1021,10 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@setter (PEDESTRIAN_MODEL)
 	public void setPedestrianModel(final IAgent agent, final String val) {
-		if ("advanced".equals(val) || "simple".equals(val)) {
-			agent.setAttribute(PEDESTRIAN_MODEL, val);
-		} else {
-			GamaRuntimeException.error(
-					"" + val + " is not a possible value for pedestrian model; possible values: ['simple', 'advanced']",
-					agent.getScope());
-		}
+		if (!"advanced".equals(val) && !"simple".equals(val)) throw GamaRuntimeException.error(
+				"" + val + " is not a possible value for pedestrian model; possible values: ['simple', 'advanced']",
+				agent.getScope());
+		agent.setAttribute(PEDESTRIAN_MODEL, val);
 	}
 
 	// ----------------------------------- //

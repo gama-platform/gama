@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,7 +11,6 @@ package gama.core.util.file;
 
 import static gama.core.common.geometry.Envelope3D.of;
 import static gama.core.metamodel.topology.projection.ProjectionFactory.getTargetCRSOrDefault;
-import static gama.core.runtime.exceptions.GamaRuntimeException.error;
 import static org.geotools.util.factory.Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM;
 
 import java.io.File;
@@ -48,10 +46,10 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
@@ -262,7 +260,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				privateCreateCoverage(scope, fis);
 			} catch (final Exception e) {
 				String name = getName(scope);
-				if (isTiff(scope)) throw error("The format of " + name + " seems incorrect: " + e.getMessage(), scope);
+				if (isTiff(scope)) throw GamaRuntimeException
+						.error("The format of " + name + " seems incorrect: " + e.getMessage(), scope);
 				// A problem appeared, likely related to the wrong format of the file (see Issue 412)
 				// reportError(scope, warning("Format of " + name + " seems incorrect. Trying to read it anyway.",
 				// scope),
@@ -366,8 +365,9 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 																									// lines above...
 						yCenter = doubleVal(line);
 					} else if (line.replace(" ", "").length() > 0) {
-						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0) throw error("The format of "
-								+ getName(scope) + " is not correct. Error: NCOLS and NROWS have to be defined", scope);
+						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0)
+							throw GamaRuntimeException.error("The format of " + getName(scope)
+									+ " is not correct. Error: NCOLS and NROWS have to be defined", scope);
 						if (xCenter != null && dX != null) {
 							xCorner = xCenter - nbCols * dX / 2.0;
 							ascInfo[2] = xCorner;
@@ -398,7 +398,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				}
 			}
 		} catch (final FileNotFoundException e2) {
-			throw error("The format of " + getName(scope) + " is not correct. Error: " + e2.getMessage(), scope);
+			throw GamaRuntimeException
+					.error("The format of " + getName(scope) + " is not correct. Error: " + e2.getMessage(), scope);
 		}
 
 	}
@@ -651,7 +652,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				}
 			}
 		} catch (final Exception e) {
-			throw error("The format of " + getName(scope) + " is not correct. Error: " + e.getMessage(), scope);
+			throw GamaRuntimeException
+					.error("The format of " + getName(scope) + " is not correct. Error: " + e.getMessage(), scope);
 		} finally {
 			scope.getGui().getStatus().endSubStatus(scope, "Reading file " + getName(scope));
 		}

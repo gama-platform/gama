@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * SobolExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -17,8 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -26,13 +24,15 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.experiment.BatchAgent;
+import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -142,9 +142,8 @@ public class SobolExploration extends AExplorationAlgorithm {
 	public void explore(final IScope scope) {
 		List<ParametersSet> solutions =
 				this.solutions == null ? buildParameterSets(scope, new ArrayList<>(), 0) : this.solutions;
-		if (solutions.size() != _sample) {
-			GamaRuntimeException.error("Saltelli sample should be " + _sample + " but is " + solutions.size(), scope);
-		}
+		if (solutions.size() != _sample) throw GamaRuntimeException
+				.error("Saltelli sample should be " + _sample + " but is " + solutions.size(), scope);
 
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
@@ -275,15 +274,18 @@ public class SobolExploration extends AExplorationAlgorithm {
 
 		return sets;
 	}
-	
+
 	@Override
-	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
+	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
 		exp.add(new ParameterAdapter("Saltelli sample", IKeyword.SOBOL, IType.STRING) {
-				@Override public Object value() { return _sample; }
+			@Override
+			public Object value() {
+				return _sample;
+			}
 		});
-		
+
 	}
 
 	/**

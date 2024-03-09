@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -26,14 +26,14 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.utils.IOUtils;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.metamodel.agent.IAgent;
@@ -161,42 +161,43 @@ public class Files {
 		return f.exists() && !f.isDirectory();
 	}
 
-//	/**
-//	 * Zip files.
-//	 *
-//	 * @param scope
-//	 *            the scope
-//	 * @param zipfile
-//	 *            the zipfile
-//	 * @param s
-//	 *            the s
-//	 * @return true, if successful
-//	 */
-//	@operator (
-//			value = "folder_exists",
-//			can_be_const = false,
-//			category = IOperatorCategory.FILE,
-//			concept = { IConcept.FILE })
-//	@doc (
-//			value = "Test whether the parameter is the path to an existing folder. False if it doesnt exist or if it is a file",
-//			examples = { @example (
-//					value = "string file_name <-\"../includes/\";",
-//					isExecutable = false),
-//					@example (
-//							value = "if folder_exists(file_name){",
-//							isExecutable = false),
-//					@example (
-//							value = "	write \"Folder exists in the computer\";",
-//							isExecutable = false),
-//					@example (
-//							value = "}",
-//							isExecutable = false) })
-//	@no_test
-//	public static boolean zip_files(final IScope scope, final String zipfile, final IList<String> s) {
-//		if (s == null || s.isEmpty() || scope == null) return false;
-//
-//		return true;
-//	}
+	// /**
+	// * Zip files.
+	// *
+	// * @param scope
+	// * the scope
+	// * @param zipfile
+	// * the zipfile
+	// * @param s
+	// * the s
+	// * @return true, if successful
+	// */
+	// @operator (
+	// value = "folder_exists",
+	// can_be_const = false,
+	// category = IOperatorCategory.FILE,
+	// concept = { IConcept.FILE })
+	// @doc (
+	// value = "Test whether the parameter is the path to an existing folder. False if it doesnt exist or if it is a
+	// file",
+	// examples = { @example (
+	// value = "string file_name <-\"../includes/\";",
+	// isExecutable = false),
+	// @example (
+	// value = "if folder_exists(file_name){",
+	// isExecutable = false),
+	// @example (
+	// value = " write \"Folder exists in the computer\";",
+	// isExecutable = false),
+	// @example (
+	// value = "}",
+	// isExecutable = false) })
+	// @no_test
+	// public static boolean zip_files(final IScope scope, final String zipfile, final IList<String> s) {
+	// if (s == null || s.isEmpty() || scope == null) return false;
+	//
+	// return true;
+	// }
 
 	/**
 	 * Extract folder.
@@ -254,7 +255,7 @@ public class Files {
 				}
 			}
 		} catch (Exception e) {
-			GamaRuntimeException.error("ERROR: " + e.getMessage(), scope);
+			throw GamaRuntimeException.error("ERROR: " + e.getMessage(), scope);
 		}
 
 	}
@@ -388,7 +389,7 @@ public class Files {
 					dest = java.nio.file.Files.copy(Paths.get(pathSource), Paths.get(pathDest));
 				}
 			} catch (IOException e) {
-				GamaRuntimeException.error("Error when copying the file " + e.getMessage(), scope);
+				throw GamaRuntimeException.error("Error when copying the file " + e.getMessage(), scope);
 			}
 			return dest != null && dest.toFile().exists();
 		}
@@ -406,7 +407,7 @@ public class Files {
 				}
 			});
 		} catch (IOException e) {
-			GamaRuntimeException.error("Error when copying the folder " + e.getMessage(), scope);
+			throw GamaRuntimeException.error("Error when copying the folder " + e.getMessage(), scope);
 		}
 		return !exist_folder(scope, destination);
 	}
@@ -519,7 +520,7 @@ public class Files {
 
 			}
 		} catch (IOException e) {
-			GamaRuntimeException.error(e.getMessage(), scope);
+			throw GamaRuntimeException.error(e.getMessage(), scope);
 		}
 		return true;
 	}

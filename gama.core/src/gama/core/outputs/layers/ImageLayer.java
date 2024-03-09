@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -8,8 +8,6 @@
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
-
-import static gama.core.runtime.exceptions.GamaRuntimeException.error;
 
 import java.awt.image.BufferedImage;
 
@@ -161,7 +159,7 @@ public class ImageLayer extends AbstractLayer {
 	private IImageProvider verifyFile(final IScope scope, final Object input) {
 		if (input == cachedImageProvider) return cachedImageProvider;
 		if (!(input instanceof IImageProvider result))
-			throw error("Not a provider of images: " + provider.serializeToGaml(false), scope);
+			throw GamaRuntimeException.error("Not a provider of images: " + provider.serializeToGaml(false), scope);
 		try {
 			result.getImage(scope, !getData().getRefresh());
 		} catch (final GamaRuntimeFileException ex) {

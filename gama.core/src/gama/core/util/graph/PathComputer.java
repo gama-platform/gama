@@ -588,11 +588,9 @@ public class PathComputer<V, E> {
 	 */
 	public IList<IPath<V, E, IGraph<V, E>>> computeKShortestPathsBetween(final IScope scope, final V source,
 			final V target, final int k) {
-		if (!graph.directed && ONLY_FOR_DIRECTED_GRAPH.contains(kPathFindingAlgo)) {
-			GamaRuntimeException.error(
-					kPathFindingAlgo.name() + " cannot be used for undirected graphs - use the Yen algorithm for that",
-					scope);
-		}
+		if (!graph.directed && ONLY_FOR_DIRECTED_GRAPH.contains(kPathFindingAlgo)) throw GamaRuntimeException.error(
+				kPathFindingAlgo.name() + " cannot be used for undirected graphs - use the Yen algorithm for that",
+				scope);
 		final IList<IList<E>> pathLists = computeKBestRoutesBetween(scope, source, target, k);
 		final IList<IPath<V, E, IGraph<V, E>>> paths = GamaListFactory.create(Types.PATH);
 

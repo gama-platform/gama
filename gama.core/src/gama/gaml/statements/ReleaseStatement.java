@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ReleaseStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -10,11 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import java.util.Collections;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,13 +19,14 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.FlowStatus;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -222,11 +220,8 @@ public class ReleaseStatement extends AbstractStatementSequence {
 	 */
 	private List<IAgent> releaseAgentPrototype(final IScope scope, final IAgent macroAgent,
 			final ISerialisedAgent saved) {
-		if (asExpr == null) {
-			GAMA.reportError(scope, GamaRuntimeException
-					.error("Cannot release agent as its destination species is not specified", scope), true);
-			return Collections.EMPTY_LIST;
-		}
+		if (asExpr == null)
+			throw GamaRuntimeException.error("Cannot release agent as its destination species is not specified", scope);
 		IMacroAgent targetAgent = null;
 		ISpecies microSpecies = null;
 		if (inExpr == null) {
@@ -241,19 +236,10 @@ public class ReleaseStatement extends AbstractStatementSequence {
 			targetAgent = (IMacroAgent) inExpr.value(scope);
 			microSpecies = (ISpecies) scope.evaluate(asExpr, targetAgent).getValue();
 		}
-		if (microSpecies == null) {
-			GAMA.reportError(scope,
-					GamaRuntimeException.error(
-							"Cannot release agent as " + asExpr + " cannot be interpreted as a destination population",
-							scope),
-					true);
-			return Collections.EMPTY_LIST;
-		}
-		if (targetAgent == null) {
-			GAMA.reportError(scope, GamaRuntimeException
-					.error("Cannot release agent as the host of its destination population is nil", scope), true);
-			return Collections.EMPTY_LIST;
-		}
+		if (microSpecies == null) throw GamaRuntimeException.error(
+				"Cannot release agent as " + asExpr + " cannot be interpreted as a destination population", scope);
+		if (targetAgent == null) throw GamaRuntimeException
+				.error("Cannot release agent as the host of its destination population is nil", scope);
 		final IPopulation<? extends IAgent> microSpeciesPopulation = macroAgent.getPopulationFor(microSpecies);
 		final IAgent released = saved.restoreInto(scope, microSpeciesPopulation);
 		return GamaListFactory.create(scope, Types.AGENT, released);

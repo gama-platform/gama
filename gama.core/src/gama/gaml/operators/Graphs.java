@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Graphs.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Graphs.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -2519,12 +2519,8 @@ public class Graphs {
 			throws GamaRuntimeException {
 		if (graph == null) throw GamaRuntimeException
 				.error("In the load_shortest_paths operator, the graph should not be null!", scope);
-		// final int n = graph.vertexSet().size();
 		graph.getPathComputer().loadShortestPaths(scope, matrix);
 		return graph;
-		// throw GamaRuntimeException.error("not implemented: loading from gama
-		// file");
-
 	}
 
 	/**
