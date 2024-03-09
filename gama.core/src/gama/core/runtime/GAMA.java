@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -287,8 +287,10 @@ public class GAMA {
 	 */
 	public static boolean reportError(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
-		final boolean shouldStop = (g.isWarning() && GamaPreferences.Runtime.CORE_WARNINGS.getValue()
-				|| !g.isWarning() && shouldStopSimulation) && GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue();
+		boolean warning = g.isWarning();
+		final boolean shouldStop =
+				(warning && GamaPreferences.Runtime.CORE_WARNINGS.getValue() || !warning && shouldStopSimulation)
+						&& GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue();
 
 		if (g.isReported()) return !shouldStop;
 		final IExperimentController controller = getFrontmostController();

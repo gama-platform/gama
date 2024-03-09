@@ -1,18 +1,18 @@
 /*******************************************************************************************************
  *
- * GamaHelper.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaHelper.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.compilation;
 
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.interfaces.INamed;
 
 /**
@@ -27,18 +27,20 @@ public class GamaHelper<T> implements IGamaHelper<T>, INamed {
 
 	/** The name. */
 	final String name;
-	
+
 	/** The skill class. */
 	final Class skillClass;
-	
+
 	/** The delegate. */
 	final IGamaHelper<T> delegate;
 
 	/**
 	 * Instantiates a new gama helper.
 	 *
-	 * @param clazz the clazz
-	 * @param delegate the delegate
+	 * @param clazz
+	 *            the clazz
+	 * @param delegate
+	 *            the delegate
 	 */
 	public GamaHelper(final Class clazz, final IGamaHelper<T> delegate) {
 		this(null, clazz, delegate);
@@ -47,9 +49,12 @@ public class GamaHelper<T> implements IGamaHelper<T>, INamed {
 	/**
 	 * Instantiates a new gama helper.
 	 *
-	 * @param name the name
-	 * @param clazz the clazz
-	 * @param delegate the delegate
+	 * @param name
+	 *            the name
+	 * @param clazz
+	 *            the clazz
+	 * @param delegate
+	 *            the delegate
 	 */
 	public GamaHelper(final String name, final Class clazz, final IGamaHelper<T> delegate) {
 		this.name = name;
@@ -58,17 +63,14 @@ public class GamaHelper<T> implements IGamaHelper<T>, INamed {
 	}
 
 	@Override
-	public Class getSkillClass() {
-		return skillClass;
-	}
+	public Class getSkillClass() { return skillClass; }
 
 	@Override
-	public String getName() {
-		return name;
-	}
+	public String getName() { return name; }
 
 	@Override
-	public T run(final IScope scope, final IAgent agent, final IVarAndActionSupport skill, final Object values) {
+	public T run(final IScope scope, final IAgent agent, final IVarAndActionSupport skill, final Object values)
+			throws GamaRuntimeException {
 		if (delegate == null) return null;
 		return delegate.run(scope, agent, skill, values);
 	}

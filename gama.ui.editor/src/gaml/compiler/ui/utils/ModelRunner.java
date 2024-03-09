@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ModelRunner.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelRunner.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,7 +12,6 @@ package gaml.compiler.ui.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -68,7 +67,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 	 */
 	private void editModelInternal(final Object eObject) {
 		if (eObject instanceof URI uri) {
-			final Injector injector = EditorActivator.getInstance().getInjector("gaml.compiler.gaml.Gaml");
+			final Injector injector = EditorActivator.getInstance().getInjector(EditorActivator.GAML_COMPILER_GAML);
 			final IURIEditorOpener opener = injector.getInstance(IURIEditorOpener.class);
 			opener.open(uri, true);
 		} else if (eObject instanceof EObject) {
