@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * Application.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -173,6 +173,7 @@ public class Application implements IApplication {
 		Display.setAppVersion(GAMA.VERSION_NUMBER);
 
 		Monitor primary = display.getPrimaryMonitor();
+
 		DEBUG.BANNER("GAMA", "Primary monitor resolution", "defined as",
 				"" + primary.getBounds().width + "x" + primary.getBounds().height);
 		DEBUG.BANNER("GAMA", "Primary monitor zoom ", "defined as", "" + primary.getZoom() + "%");
@@ -180,7 +181,7 @@ public class Application implements IApplication {
 		if (monitors.length > 1) {
 			int i = 0;
 			for (Monitor m : monitors) {
-				if (m == primary) { continue; }
+				if (m.equals(primary)) { continue; }
 				i++;
 				DEBUG.BANNER("GAMA", "Monitor #" + i + " resolution ", "defined as",
 						"" + m.getBounds().width + "x" + m.getBounds().height);

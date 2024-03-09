@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * OpenGLActivator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * OpenGLActivator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -30,6 +30,7 @@ import com.jogamp.opengl.GLOffscreenAutoDrawable;
 import com.jogamp.opengl.GLProfile;
 
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.kernel.root.SystemInfo;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
@@ -128,6 +129,11 @@ public class OpenGLActivator extends AbstractUIPlugin {
 			property = "Max texture size";
 			gl.glGetIntegerv(GL.GL_MAX_TEXTURE_SIZE, iresult, 0);
 			DEBUG.BANNER(prefix, property, "value", String.valueOf(iresult[0]) + "x" + String.valueOf(iresult[0]));
+			property = "Graphics card in use";
+			String graphicsCard = gl.glGetString(GL.GL_RENDERER) + " by " + gl.glGetString(GL.GL_VENDOR)
+					+ " (GL version: " + gl.glGetString(GL.GL_VERSION) + ")";
+			SystemInfo.setGraphicsCard(graphicsCard);
+			DEBUG.BANNER(prefix, property, "is", graphicsCard);
 		} catch (Exception e) {
 			// do not interrupt the thread if something goes wrong and simply report problem
 			DEBUG.BANNER(prefix, "Properties", "error on", property);

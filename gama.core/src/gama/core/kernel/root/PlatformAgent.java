@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -89,6 +89,12 @@ import one.util.streamex.StreamEx;
 						value = "Contains the absolute path to the workspace of GAMA. Can be used to list all the projects and files present in the platform",
 						comment = "Always terminated with a trailing separator",
 						see = { "workspace" })),
+		@variable (
+				name = "info",
+				type = IType.STRING,
+				constant = true,
+				doc = @doc (
+						value = "Returns information about GAMA, in a format suitable to be pasted into issues")),
 		@variable (
 				name = "version",
 				type = IType.STRING,
@@ -340,6 +346,16 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 		final BundleContext bc = FrameworkUtil.getBundle(getClass()).getBundleContext();
 		return StreamEx.of(bc.getBundles()).map(Bundle::getSymbolicName).toCollection(Containers.listOf(Types.STRING));
 	}
+
+	/**
+	 * Gets the version.
+	 *
+	 * @return the version
+	 */
+	@getter (
+			value = "info",
+			initializer = true)
+	public String getInfo() { return SystemInfo.getSystemInfo(); }
 
 	/**
 	 * Gets the version.

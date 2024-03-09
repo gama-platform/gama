@@ -12,6 +12,12 @@ package gama.gaml.compilation.kernel;
 
 import static gama.dev.DEBUG.TIMER;
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
+import static org.apache.commons.lang3.SystemUtils.JAVA_VM_NAME;
+import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VENDOR;
+import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VERSION;
+import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
+import static org.apache.commons.lang3.SystemUtils.OS_NAME;
+import static org.apache.commons.lang3.SystemUtils.OS_VERSION;
 
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
@@ -171,18 +177,6 @@ public class GamaBundleLoader {
 	/** The handled file extensions. */
 	public static final Set<String> HANDLED_FILE_EXTENSIONS = new LinkedHashSet<>();
 
-	/** The Constant SYS_ARCH. */
-	public static final String SYS_ARCH = Platform.getOSArch(); // System.getProperty("os.arch");
-
-	/** The Constant SYS_NAME. */
-	public static final String SYS_NAME = Platform.getOS();// System.getProperty("os.name");
-
-	/** The Constant SYS_VERS. */
-	public static final String SYS_VERS = System.getProperty("os.version");
-
-	/** The Constant SYS_JAVA. */
-	public static final String SYS_JAVA = System.getProperty("java.version");
-
 	/**
 	 * Pre build contributions.
 	 *
@@ -191,8 +185,8 @@ public class GamaBundleLoader {
 	 */
 	public static void preBuildContributions() throws Exception {
 
-		DEBUG.BANNER("GAMA", "version " + GAMA.VERSION_NUMBER, "loading on",
-				SYS_NAME + " " + SYS_VERS + ", " + SYS_ARCH + ", JDK " + SYS_JAVA);
+		DEBUG.BANNER("GAMA", "version " + GAMA.VERSION_NUMBER, "loading on", OS_NAME + " " + OS_VERSION + ", processor "
+				+ OS_ARCH + ", JDK " + JAVA_VM_NAME + " " + JAVA_VM_VENDOR + " version " + JAVA_VM_VERSION);
 
 		TIMER("GAML", "Plugins with language additions", "loaded in", () -> {
 			final IExtensionRegistry registry = Platform.getExtensionRegistry();
