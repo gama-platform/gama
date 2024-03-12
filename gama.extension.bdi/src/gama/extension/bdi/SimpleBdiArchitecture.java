@@ -1183,7 +1183,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 					if (highestPriority < currentPriority) {
 						highestPriority = currentPriority;
-						resultStatement = (Norm) Normstatement;
+						resultStatement = Normstatement;
 					}
 					// Norm normToChange = null;
 					// for(Norm tempNorm : getNorms(scope)){
@@ -1201,7 +1201,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 			if (isContextConditionSatisfied && isIntentionConditionSatisfied && thresholdSatisfied) {
 				if (is_probabilistic_choice) {
-					temp_norm.add((Norm) Normstatement);
+					temp_norm.add(Normstatement);
 				} else {
 					double currentPriority = 1.0;
 					if (statement.getFacet(SimpleBdiArchitecture.PRIORITY) != null) {
@@ -1211,7 +1211,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 					if (highestPriority < currentPriority) {
 						highestPriority = currentPriority;
-						resultStatement = (Norm) Normstatement;
+						resultStatement = Normstatement;
 					}
 				}
 			}
