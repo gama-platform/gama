@@ -453,8 +453,8 @@ public class Morris {
 		int number_of_groups = num_vars;
 		int num_trajectories;
 		int trajectory_size;
-		num_trajectories = Math.round(MySample.size() / (number_of_groups + 1));
-		trajectory_size = Math.round(MySample.size() / num_trajectories);
+		num_trajectories = (int) Math.round(MySample.size() / (number_of_groups + 1.0));
+		trajectory_size = (int) Math.round(MySample.size() / (double)num_trajectories);
 		List<Map<String, Double>> elementary_effects =
 				compute_elementary_effects(MySampleTemp, Outputs, trajectory_size, delta, ParametersNames, MySample);
 		Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, ParametersNames);
@@ -524,8 +524,8 @@ public class Morris {
 		int number_of_groups = num_vars;
 		int num_trajectories;
 		int trajectory_size;
-		num_trajectories = Math.round(MySample.size() / (number_of_groups + 1));
-		trajectory_size = Math.round(MySample.size() / num_trajectories);
+		num_trajectories = (int) Math.round(MySample.size() / (number_of_groups + 1.0));
+		trajectory_size = (int) Math.round(MySample.size() / (double)num_trajectories);
 		List<Map<String, Double>> elementary_effects =
 				compute_elementary_effects(MySampleTemp, Outputs, trajectory_size, delta, ParametersNames, MySample);
 		Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, ParametersNames);

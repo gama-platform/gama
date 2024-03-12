@@ -61,7 +61,7 @@ public abstract class SamplingUtils {
 			case IType.INT:
 				int intValue = Cast.asInt(scope, var.getMinValue(scope));
 				int maxIntValue = Cast.asInt(scope, var.getMaxValue(scope));
-				int sampleIValue = Math.round(Math.round(intValue + ValFromSampling * (maxIntValue - intValue)));
+				int sampleIValue = (int) Math.round(intValue + ValFromSampling * (maxIntValue - intValue));
 				set.put(var.getName(), sampleIValue);
 				return set;
 			case IType.FLOAT:
