@@ -284,8 +284,12 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void execute(final Runnable command) {
-		if (executor == null) { command.run(); }
-		executor.execute(command);
+		if (executor == null) { 
+			command.run(); 
+		}
+		else {
+			executor.execute(command);			
+		}
 	}
 
 	/**
