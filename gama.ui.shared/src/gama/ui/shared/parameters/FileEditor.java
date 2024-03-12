@@ -100,9 +100,9 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 	FileEditor(final IAgent agent, final IParameter param, final EditorListener l, final boolean isFolder) {
 		super(agent, param, l);
 		this.isFolder = isFolder;
-		this.isWorkspace = param != null && param.isWorkspace();
-		this.fileExtensions =
-				param == null ? null : param.getFileExtensions() == null || param.getFileExtensions().length == 0 ? null
+		this.isWorkspace = param.isWorkspace();
+		this.fileExtensions = param.getFileExtensions() == null || param.getFileExtensions().length == 0 
+						? null
 						: new HashSet(Arrays.asList(param.getFileExtensions()));
 	}
 
