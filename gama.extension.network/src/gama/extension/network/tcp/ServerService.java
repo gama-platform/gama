@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.network.tcp;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -57,8 +56,6 @@ public class ServerService extends Thread implements SocketService, IListener {
 	/** The sender. */
 	protected PrintWriter sender;
 
-	/** The receiver. */
-	BufferedReader receiver = null;
 
 	/** The connector. */
 	protected IConnector connector;
@@ -182,7 +179,6 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 		if (sender != null) { sender.close(); }
 		try {
-			if (receiver != null) { receiver.close(); }
 			if (serverSocket != null) { serverSocket.close(); }
 		} catch (final IOException e) {
 			e.printStackTrace();
