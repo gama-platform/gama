@@ -507,11 +507,14 @@ public class Stochanalysis {
 		
 		List<Double> currentES = new ArrayList<>();
 		// Starting from worst case deviation
-		currentES.add(dSample.stream().mapToDouble(d->d).min().getAsDouble());
-		currentES.add(dSample.stream().mapToDouble(d->d).max().getAsDouble());
+		currentES.add(Collections.min(dSample));
+		currentES.add(Collections.max(dSample));
 		dSample.removeAll(currentES);
 		// Sort according to deviation from the mean
-		dSample.stream().sorted((v1,v2) -> (v1==v2?0:(Math.abs(v1-mean)>Math.abs(v2-mean)?-1:1)));
+		dSample.stream().sorted((v1,v2) -> (	v1.equals(v2)
+											? 0
+											: (Math.abs(v1-mean) > Math.abs(v2-mean) ? -1 : 1)
+											));
 		for(Double n_incr : dSample) {
 			currentES.add(n_incr);
 			TDistribution td = new TDistribution(currentES.size()-1);

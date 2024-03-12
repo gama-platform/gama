@@ -6989,7 +6989,7 @@ public abstract class Spatial {
 
 				@Override
 				public int compareTo(final DistanceCalc other) {
-					if (this.dist == other.dist) return 0;
+					if (this.dist.equals(other.dist)) return 0;
 					if (this.dist > other.dist) return 1;
 					return -1;
 				}
