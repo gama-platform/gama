@@ -228,8 +228,8 @@ public class EnforcementStatement extends AbstractStatement {
 							}
 							tempNorm.sanctioned();
 						} else {
-							if (sanction != null/* && tempNorm.getNormStatement()==null) */ || sanction != null
-									&& tempNorm.getViolated()) {// &&
+							if (sanction != null/* && tempNorm.getNormStatement()==null) */ /*|| sanction != null
+									&& tempNorm.getViolated()*/) {// &&
 																// tempNorm.getNormStatement()!=null
 																// &&
 																// tempNorm.getObligation(scope)!=null
