@@ -756,7 +756,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 				for (final Norm tempNorm : listNorm) {
 					final NormStatement tempPlanStatement = tempNorm.getNormStatement();
-					if (((Predicate) tempPlanStatement.getIntentionExpression().value(scope))
+					if (	tempPlanStatement.getIntentionExpression() != null 
+						&& ((Predicate) tempPlanStatement.getIntentionExpression().value(scope))
 							.equalsIntentionPlan(tempDesire.getPredicate())) {
 						desireBaseTest.add(tempDesire);
 					}
@@ -913,6 +914,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				for (final MentalState tempObligation : getBase(scope, OBLIGATION_BASE)) {
 					for (final Norm tempNorm : listNorm) {
 						final NormStatement tempPlanStatement = tempNorm.getNormStatement();
+						if (tempPlanStatement == null || tempPlanStatement.getObligationExpression() == null) {
+							continue;
+						}
 						if (((Predicate) tempPlanStatement.getObligationExpression().value(scope))
 								.equalsIntentionPlan(tempObligation.getPredicate())) {
 							obligationBaseTest.add(tempObligation);
@@ -1067,8 +1071,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final IList priorities = GamaListFactory.create(Types.FLOAT);
 		final List<BDIPlan> plansCopy = new ArrayList(_plans);
 		scope.getRandom().shuffleInPlace(plansCopy);
-		for (final Object BDIPlanstatement : plansCopy) {
-			final SimpleBdiPlanStatement statement = ((BDIPlan) BDIPlanstatement).getPlanStatement();
+		for (final BDIPlan BDIPlanstatement : plansCopy) {
+			final SimpleBdiPlanStatement statement = BDIPlanstatement.getPlanStatement();
 			final boolean isContextConditionSatisfied = statement.getContextExpression() == null
 					|| gama.gaml.operators.Cast.asBool(scope, statement.getContextExpression().value(scope));
 			final boolean isIntentionConditionSatisfied = statement.getIntentionExpression() == null
@@ -1084,7 +1088,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			if (isContextConditionSatisfied && isIntentionConditionSatisfied && isEmotionConditionSatisfied
 					&& thresholdSatisfied) {
 				if (is_probabilistic_choice) {
-					temp_plan.add((BDIPlan) BDIPlanstatement);
+					temp_plan.add(BDIPlanstatement);
 				} else {
 					double currentPriority = 1.0;
 					if (statement.getFacet(SimpleBdiArchitecture.PRIORITY) != null) {
@@ -1094,17 +1098,16 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 					if (highestPriority < currentPriority) {
 						highestPriority = currentPriority;
-						resultStatement = (BDIPlan) BDIPlanstatement;
+						resultStatement = BDIPlanstatement;
 					}
 				}
 			}
 		}
 		if (is_probabilistic_choice) {
 			if (!temp_plan.isEmpty()) {
-				for (final Object statement : temp_plan) {
-					if (((BDIPlan) statement).getPlanStatement().hasFacet(PRIORITY)) {
-						priorities.add(gama.gaml.operators.Cast.asFloat(scope,
-								((BDIPlan) statement).getPlanStatement().getPriorityExpression().value(scope)));
+				for (final BDIPlan statement : temp_plan) {
+					if (statement.getPlanStatement().hasFacet(PRIORITY)) {
+						priorities.add(gama.gaml.operators.Cast.asFloat(scope, statement.getPlanStatement().getPriorityExpression().value(scope)));
 					} else {
 						priorities.add(1.0);
 					}
@@ -1149,8 +1152,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		}
 		final List<Norm> normsCopy = new ArrayList(_norms);
 		scope.getRandom().shuffleInPlace(normsCopy);
-		for (final Object Normstatement : normsCopy) {
-			final NormStatement statement = ((Norm) Normstatement).getNormStatement();
+		for (final Norm Normstatement : normsCopy) {
+			final NormStatement statement = Normstatement.getNormStatement();
 			final boolean isContextConditionSatisfied = statement.getContextExpression() == null
 					|| gama.gaml.operators.Cast.asBool(scope, statement.getContextExpression().value(scope));
 			boolean isIntentionConditionSatisfied = false;
@@ -1215,10 +1218,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		}
 		if (is_probabilistic_choice) {
 			if (!temp_norm.isEmpty()) {
-				for (final Object statement : temp_norm) {
-					if (((NormStatement) statement).hasFacet(PRIORITY)) {
-						priorities.add(gama.gaml.operators.Cast.asFloat(scope,
-								((SimpleBdiPlanStatement) statement).getPriorityExpression().value(scope)));
+				for (final Norm statement : temp_norm) {
+					if (statement.getNormStatement().hasFacet(PRIORITY)) {
+						priorities.add(gama.gaml.operators.Cast.asFloat(scope, statement.getNormStatement().getPriorityExpression().value(scope)));
 					} else {
 						priorities.add(1.0);
 					}
@@ -1494,23 +1496,21 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		if (intention.onHoldUntil == null) { return false; }
 		if (intention.getPredicate().getValues() != null) {
 			if (intention.getPredicate().getValues().containsKey("and")) {
-				final Object cond = intention.getPredicate().onHoldUntil;
-				if (cond instanceof ArrayList) {
-					if (((ArrayList) cond).size() == 0) {
+				final List<MentalState> cond = intention.getPredicate().onHoldUntil;
+				if (cond != null) {
+					if (cond.size() == 0) {
 						final IList desbase = getBase(scope, DESIRE_BASE);
 						final IList intentionbase = getBase(scope, INTENTION_BASE);
 						desbase.remove(intention);
 						intentionbase.remove(intention);
-						for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-							final List<MentalState> statementSubintention =
-									((MentalState) statement).getPredicate().getSubintentions();
+						for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+							final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 							if (statementSubintention != null) {
 								if (statementSubintention.contains(intention)) {
 									statementSubintention.remove(intention);
 								}
 							}
-							final List<MentalState> statementOnHoldUntil =
-									((MentalState) statement).getPredicate().getOnHoldUntil();
+							final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
 							if (statementOnHoldUntil != null) {
 								if (statementOnHoldUntil.contains(intention)) {
 									statementOnHoldUntil.remove(intention);
@@ -1524,27 +1524,25 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 			}
 			if (intention.getPredicate().getValues().containsKey("or")) {
-				final Object cond = intention.getPredicate().onHoldUntil;
-				if (cond instanceof ArrayList) {
-					if (((ArrayList) cond).size() <= 1) {
+				final List<MentalState> cond = intention.getPredicate().onHoldUntil;
+				if (cond != null) {
+					if (cond.size() <= 1) {
 						final IList desbase = getBase(scope, DESIRE_BASE);
 						final IList intentionbase = getBase(scope, INTENTION_BASE);
 						desbase.remove(intention);
 						intentionbase.remove(intention);
-						if (((ArrayList) cond).size() == 1) {
-							if (desbase.contains(((ArrayList) cond).get(0))) {
-								desbase.remove(((ArrayList) cond).get(0));
+						if (cond.size() == 1) {
+							if (desbase.contains(cond.get(0))) {
+								desbase.remove(cond.get(0));
 							}
-							for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-								final List<MentalState> statementSubintention =
-										((MentalState) statement).getPredicate().getSubintentions();
+							for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+								final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 								if (statementSubintention != null) {
 									if (statementSubintention.contains(intention)) {
 										statementSubintention.remove(intention);
 									}
 								}
-								final List<MentalState> statementOnHoldUntil =
-										((MentalState) statement).getPredicate().getOnHoldUntil();
+								final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
 								if (statementOnHoldUntil != null) {
 									if (statementOnHoldUntil.contains(intention)) {
 										statementOnHoldUntil.remove(intention);
@@ -1559,11 +1557,11 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 			}
 		}
-		final Object cond = intention.onHoldUntil;
+		final List<MentalState> cond = intention.onHoldUntil;
 		if (cond instanceof ArrayList) {
 			final IList desbase = getBase(scope, DESIRE_BASE);
 			if (desbase.isEmpty()) { return false; }
-			for (final Object subintention : (ArrayList) cond) {
+			for (final MentalState subintention : cond) {
 				if (desbase.contains(subintention)) { return true; }
 			}
 			addThoughts(scope, "no more subintention for" + intention);
@@ -1947,10 +1945,10 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			if (predTemp != null) {
 				removeFromBase(scope, predTemp, UNCERTAINTY_BASE);
 			}
-			for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
 				List<MentalState> statementSubintention = null;
-				if (((MentalState) statement).getPredicate() != null) {
-					statementSubintention = ((MentalState) statement).getSubintentions();
+				if (statement.getPredicate() != null) {
+					statementSubintention = statement.getSubintentions();
 				}
 				if (statementSubintention != null) {
 					if (statementSubintention.contains(predicateDirect)) {
@@ -1958,8 +1956,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					}
 				}
 				List<MentalState> statementOnHoldUntil = null;
-				if (((MentalState) statement).getPredicate() != null) {
-					statementOnHoldUntil = ((MentalState) statement).getOnHoldUntil();
+				if (statement.getPredicate() != null) {
+					statementOnHoldUntil = statement.getOnHoldUntil();
 				}
 				if (statementOnHoldUntil != null) {
 					if (statementOnHoldUntil.contains(predicateDirect)) {
@@ -3289,17 +3287,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			if (getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(new MentalState("Desire", newPredicate))) {
 				removeFromBase(scope, temp, DESIRE_BASE);
 			}
-			for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-				if (((MentalState) statement).getPredicate() != null) {
-					final List<MentalState> statementSubintention =
-							((MentalState) statement).getPredicate().getSubintentions();
+			for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+				if (statement.getPredicate() != null) {
+					final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 					if (statementSubintention != null) {
 						if (statementSubintention.contains(temp)) {
 							statementSubintention.remove(temp);
 						}
 					}
-					final List<MentalState> statementOnHoldUntil =
-							((MentalState) statement).getPredicate().getOnHoldUntil();
+					final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
 					if (statementOnHoldUntil != null) {
 						if (statementOnHoldUntil.contains(temp)) {
 							statementOnHoldUntil.remove(temp);
@@ -3322,17 +3318,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public static Boolean removeDesire(final IScope scope, final MentalState pred) {
 		getBase(scope, DESIRE_BASE).remove(pred);
 		getBase(scope, INTENTION_BASE).remove(pred);
-		for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-			if (((MentalState) statement).getPredicate() != null) {
-				final List<MentalState> statementSubintention =
-						((MentalState) statement).getPredicate().getSubintentions();
+		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			if (statement.getPredicate() != null) {
+				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null) {
 					if (statementSubintention.contains(pred)) {
 						statementSubintention.remove(pred);
 					}
 				}
-				final List<MentalState> statementOnHoldUntil =
-						((MentalState) statement).getPredicate().getOnHoldUntil();
+				final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
 				if (statementOnHoldUntil != null) {
 					if (statementOnHoldUntil.contains(pred)) {
 						statementOnHoldUntil.remove(pred);
@@ -3743,15 +3737,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	public static Boolean removeIntention(final IScope scope, final MentalState pred) {
 		getBase(scope, INTENTION_BASE).remove(pred);
-		for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-			if (((MentalState) statement).getPredicate() != null) {
-				final List<MentalState> statementSubintention = ((MentalState) statement).getSubintentions();
+		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			if (statement.getPredicate() != null) {
+				final List<MentalState> statementSubintention = statement.getSubintentions();
 				if (statementSubintention != null) {
 					if (statementSubintention.contains(pred)) {
 						statementSubintention.remove(pred);
 					}
 				}
-				final List<MentalState> statementOnHoldUntil = ((MentalState) statement).getOnHoldUntil();
+				final List<MentalState> statementOnHoldUntil = statement.getOnHoldUntil();
 				if (statementOnHoldUntil != null) {
 					if (statementOnHoldUntil.contains(pred)) {
 						statementOnHoldUntil.remove(pred);
@@ -3802,17 +3796,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				scope.getAgent().setAttribute(CURRENT_PLAN, null);
 				scope.getAgent().setAttribute(CURRENT_NORM, null);
 			}
-			for (final Object statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-				if (((MentalState) statement).getPredicate() != null) {
-					final List<MentalState> statementSubintention =
-							((MentalState) statement).getPredicate().getSubintentions();
+			for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+				if (statement.getPredicate() != null) {
+					final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 					if (statementSubintention != null) {
 						if (statementSubintention.contains(temp)) {
 							statementSubintention.remove(temp);
 						}
 					}
-					final List<MentalState> statementOnHoldUntil =
-							((MentalState) statement).getPredicate().getOnHoldUntil();
+					final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
 					if (statementOnHoldUntil != null) {
 						if (statementOnHoldUntil.contains(temp)) {
 							statementOnHoldUntil.remove(temp);
