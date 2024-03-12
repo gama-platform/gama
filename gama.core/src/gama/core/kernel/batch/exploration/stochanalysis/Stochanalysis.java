@@ -32,6 +32,7 @@ import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import gama.core.kernel.experiment.ParametersSet;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
@@ -258,12 +259,14 @@ public class Stochanalysis {
 			Map<String, List<Object>> res = outputs.get(ps);
 			int nbr = res.values().stream().findAny().get().size();
 			if (!res.values().stream().allMatch(r -> r.size()==nbr)) { 
-				GamaRuntimeException.warning("Not all sample of stochastic analysis have the same number of replicates", scope); 
+				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Not all sample of stochastic analysis have the same number of replicates", scope), false); 
 			}
-			for (int r = 0; r < nbr; r++) {
-				sb.append(linesep);
-				for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
-				for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
+			else {
+				for (int r = 0; r < nbr; r++) {
+					sb.append(linesep);
+					for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
+					for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
+				}				
 			}
 		}
 
