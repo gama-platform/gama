@@ -807,6 +807,9 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 			if (v instanceof IAgent && !this.getVertices().isEmpty() && ((IAgent) v).getSpecies() != vertexSpecies) {
 				vertexSpecies = null;
 			}
+			else {
+				vertexSpecies = ((IAgent) v).getSpecies();
+			}
 			addValue(graphScope, (gama.gaml.operators.Graphs.GraphObjectToAdd) v);
 			return ((gama.gaml.operators.Graphs.GraphObjectToAdd) v).getObject() != null;
 		}
