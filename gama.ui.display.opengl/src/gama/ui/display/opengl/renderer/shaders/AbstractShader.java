@@ -47,9 +47,9 @@ public abstract class AbstractShader {
 
 	/** The Constant UVMAPPING_ATTRIBUTE_IDX. */
 	public static final int UVMAPPING_ATTRIBUTE_IDX = 3;
-
-	/** The matrix buffer. */
-	private static FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
+//
+//	/** The matrix buffer. */
+//	private static FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
 
 	/**
 	 * Instantiates a new abstract shader.

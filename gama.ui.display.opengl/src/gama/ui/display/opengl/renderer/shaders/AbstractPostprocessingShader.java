@@ -17,8 +17,8 @@ import com.jogamp.opengl.GL2;
  */
 public abstract class AbstractPostprocessingShader extends AbstractShader {
 
-	/** The location texture. */
-	private int location_texture;
+//	/** The location texture. */
+//	private int location_texture;
 
 	/** The texture ID stored. */
 	private int textureIDStored = -1;
@@ -41,13 +41,13 @@ public abstract class AbstractPostprocessingShader extends AbstractShader {
 	}
 
 	/**
-	 * Load texture.
-	 *
-	 * @param textureId the texture id
-	 */
-	public void loadTexture(final int textureId) {
-		super.loadInt(location_texture, textureId);
-	}
+//	 * Load texture.
+//	 *
+//	 * @param textureId the texture id
+//	 */
+//	public void loadTexture(final int textureId) {
+//		super.loadInt(location_texture, textureId);
+//	}
 
 	@Override
 	public boolean useTexture() {

@@ -331,7 +331,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the shader program
 	 */
 	private void prepareShader(final AbstractPostprocessingShader shaderProgram) {
-		shaderProgram.loadTexture(0);
+	//	shaderProgram.loadTexture(0);
 		shaderProgram.storeTextureID(fboScene.getFBOTexture());
 	}
 
