@@ -1306,7 +1306,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			// Parse result
 			final String value = docAnnot.value();
 			final boolean masterDoc = docAnnot.masterDoc();
-			if (value != "") {
+			if (! "".equals(value)) {
 				if (docElt.getElementsByTagName(XMLElements.RESULT).getLength() != 0) {
 					final org.w3c.dom.Element resultElt =
 							(org.w3c.dom.Element) docElt.getElementsByTagName(XMLElements.RESULT).item(0);
@@ -1329,7 +1329,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			
 			// Parse returns
 			final String returns = docAnnot.returns();
-			if (returns != "") {
+			if ( ! "".equals(returns)) {
 				if (docElt.getElementsByTagName(XMLElements.RETURNS).getLength() != 0) {
 					final org.w3c.dom.Element returnstElt =
 							(org.w3c.dom.Element) docElt.getElementsByTagName(XMLElements.RETURNS).item(0);

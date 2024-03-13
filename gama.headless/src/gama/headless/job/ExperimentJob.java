@@ -402,7 +402,7 @@ public class ExperimentJob implements IExperimentJob {
 	protected Display2D writeImageInFile(final BufferedImage img, final String name, final String outputPath) {
 		final String fileName = name + this.getExperimentID() + "-" + step + ".png";
 		String fileFullName = Globals.IMAGES_PATH + "/" + fileName;
-		if (outputPath != "" && outputPath != null) {
+		if (!"".equals(outputPath)  && outputPath != null) {
 			// a specific output path has been specified with the "output_path"
 			// keyword in the xml
 			fileFullName = outputPath + "-" + step + ".png";

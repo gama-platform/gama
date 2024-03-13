@@ -631,7 +631,7 @@ public class ModelLibraryGenerator {
 			// extract the header properties
 			final MetadataStructure metaStruct = new MetadataStructure(header);
 
-			if (metaStruct.getName() != "") {
+			if ( ! "".equals(metaStruct.getName())) {
 				// search if there are some images linked
 				final ArrayList<File> listScreenshot = new ArrayList<>();
 				Utils.getFilesFromFolder(

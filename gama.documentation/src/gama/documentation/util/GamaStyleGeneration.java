@@ -131,7 +131,7 @@ public class GamaStyleGeneration {
 							out.write("morekeywords=[" + (i + 1) + "]{\n");
 						}
 						boolean firstWordWritten = false;
-						if (LIST_CATEGORY[i] == "statement") {
+						if ("statement".equals(LIST_CATEGORY[i])) {
 							for (final String undetectStatement : LIST_UNDETECTED_STATEMENT) {
 								if (firstWordWritten) {
 									out.write(", ");
@@ -140,7 +140,7 @@ public class GamaStyleGeneration {
 								out.write(undetectStatement);
 							}
 						}
-						if (LIST_CATEGORY[i] == "literal") {
+						if ("literal".equals(LIST_CATEGORY[i])) {
 							for (final String literal : LIST_LITERAL) {
 								if (firstWordWritten) {
 									out.write(", ");

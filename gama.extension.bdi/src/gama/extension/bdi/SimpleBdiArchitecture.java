@@ -7322,7 +7322,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		for (final MentalState predTest1 : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& predTest1.getMentalState().getModality() == "Belief") {
+					&& "Belief".equals(predTest1.getMentalState().getModality())) {
 				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
@@ -7338,7 +7338,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& predTest1.getMentalState().getModality() == "Desire") {
+					&& "Desire".equals(predTest1.getMentalState().getModality())) {
 				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
@@ -7354,7 +7354,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& predTest1.getMentalState().getModality() == "Uncertainty") {
+					&& "Uncertainty".equals(predTest1.getMentalState().getModality())) {
 				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
@@ -7370,7 +7370,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& predTest1.getMentalState().getModality() == "Ideal") {
+					&& "Ideal".equals(predTest1.getMentalState().getModality())) {
 				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.IDEAL_BASE)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {

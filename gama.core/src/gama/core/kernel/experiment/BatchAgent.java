@@ -231,7 +231,7 @@ public class BatchAgent extends ExperimentAgent {
 	 */
 	@Override
 	public boolean step(final IScope scope) {
-		// We run the exloration algorithm. The future steps will be called by the exploration algorithm through the
+		// We run the exploration algorithm. The future steps will be called by the exploration algorithm through the
 		// launchSimulationsWithSolution() method
 		getSpecies().getExplorationAlgorithm().run(scope);
 		// Once the algorithm has finished exploring the solutions, the agent is
@@ -482,7 +482,7 @@ public class BatchAgent extends ExperimentAgent {
 									+ pop.getNumberOfActiveThreads() + " threads)",
 							"overlays/small.exp.batch.white" + suffix);
 				}
-				suffix = suffix == "" ? "2" : "";
+				suffix = "".equals("") ? "2" : "";
 				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}
