@@ -803,13 +803,19 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
 	public boolean addVertex(final Object v) {
-		if (v instanceof gama.gaml.operators.Graphs.GraphObjectToAdd) {
-			if (v instanceof IAgent && !this.getVertices().isEmpty() && ((IAgent) v).getSpecies() != vertexSpecies) {
+		
+		// we set the vertex species with the species of the added agent
+		if (v instanceof IAgent agentVertex) { 
+			// if it's different than the previous species we switch it to null
+			if (!getVertices().isEmpty() && agentVertex.getSpecies() != vertexSpecies) {
 				vertexSpecies = null;
 			}
 			else {
-				vertexSpecies = ((IAgent) v).getSpecies();
+				vertexSpecies = agentVertex.getSpecies();
 			}
+		}
+		
+		if (v instanceof gama.gaml.operators.Graphs.GraphObjectToAdd) {
 			addValue(graphScope, (gama.gaml.operators.Graphs.GraphObjectToAdd) v);
 			return ((gama.gaml.operators.Graphs.GraphObjectToAdd) v).getObject() != null;
 		}
