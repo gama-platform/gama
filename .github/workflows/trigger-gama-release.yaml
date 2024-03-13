@@ -13,6 +13,11 @@ on:
         type: string
         required: true
         default: 2024.03.0
+      jdk:
+        description: "Choose a JDK version to embed inside GAMA release"
+        type: string
+        required: true
+        default: 17.0.8.1+1
 
 run-name: Building GAMA release
 
@@ -24,6 +29,7 @@ jobs:
       get_testing_compiled_archives: false
       get_all_archives_for_release: true
       new_release_tag: ${{ inputs.tag }}
+      jdk_embedded_version: ${{ inputs.jdk }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
@@ -73,6 +79,7 @@ jobs:
     uses: ./.github/workflows/travis-packaging.yaml
     with:
       RELEASE_VERSION: ${{ inputs.tag }}
+      jdk_embedded_version: ${{ inputs.jdk }}
     secrets:
       # === MacOS needs ===
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}

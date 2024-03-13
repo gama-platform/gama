@@ -132,8 +132,12 @@
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <property name="org.eclipse.update.reconcile" value="false" />
-      <property name="version" value="SNAPSHOT" />
       <property name="eclipse.buildId" value="${build.id}" />
+      <property name="gama.version" value="SNAPSHOT" />
+      <property name="gama.commit" value="SNAPSHOT" />
+      <property name="gama.branch" value="SNAPSHOT" />
+      <property name="gama.date" value="SNAPSHOT" />
+      <property name="gama.jdk" value="SNAPSHOT" />
    </configurations>
 
    <repositories>

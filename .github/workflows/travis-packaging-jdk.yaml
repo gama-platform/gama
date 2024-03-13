@@ -7,6 +7,9 @@ on:
         required: true
         default: 2024.03.0 
         type: string
+      jdk_embedded_version:
+        type: string
+        required: false
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: true
@@ -45,6 +48,7 @@ jobs:
           GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
           GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
           RUNNER_TMP: ${{ runner.temp }}
+          JDK_EMBEDDED_VERSION: ${{ inputs.jdk_embedded_version }}
 
       # cf https://github.com/actions/upload-artifact/issues/246
       - name: Move artefacts to root tree
