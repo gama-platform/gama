@@ -3,10 +3,11 @@
 # check if 2 param
 oldVersion="0.0.0"
 inputVersion=$1
-isSnapshot=true
 
-if [ $2 != '' ]
-	isSnapshot=false
+# Flip workflow bool parameter "isRelease" to "isSnapshot"
+isSnapshot=true
+if [ "$2" = true ]; then
+    flipped_value=false
 fi
 
 month=$(echo $inputVersion | awk -F'.' '{print $2}' | awk '{print int($1)}')

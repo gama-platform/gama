@@ -30,6 +30,7 @@ jobs:
       get_all_archives_for_release: true
       new_release_tag: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
+      IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
