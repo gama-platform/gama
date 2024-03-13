@@ -131,7 +131,7 @@ public class SqlUtils {
 	 *
 	 * @throws Exception
 	 */
-	public static Geometry InputStream2Geometry(final InputStream inputStream) throws Exception {
+	public static Geometry inputStream2Geometry(final InputStream inputStream) throws Exception {
 		Geometry dbGeometry = null;
 		if (inputStream != null) {
 			// convert the stream to a byte[] array

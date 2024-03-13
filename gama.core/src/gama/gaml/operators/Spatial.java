@@ -4672,7 +4672,7 @@ public abstract class Spatial {
 			}
 			if (keepMainGraph) {
 				IGraph graph = Graphs.spatialFromEdges(scope, results);
-				graph = Graphs.ReduceToMainconnectedComponentOf(scope, graph);
+				graph = Graphs.reduceToMainconnectedComponentOf(scope, graph);
 				return graph.getEdges();
 			}
 			return results;

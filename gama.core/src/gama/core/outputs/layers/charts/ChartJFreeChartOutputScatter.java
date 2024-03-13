@@ -72,7 +72,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	/**
 	 * The Class myXYErrorRenderer.
 	 */
-	public class myXYErrorRenderer extends XYErrorRenderer {
+	public class CustomXYErrorRenderer extends XYErrorRenderer {
 
 		/** The myoutput. */
 		ChartJFreeChartOutputScatter myoutput;
@@ -147,12 +147,12 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 * @return the scale
 	 */
 	double getScale(final String serie, final int col) {
-		if (MarkerScale.containsKey(serie)) return MarkerScale.get(serie).get(col);
+		if (markerScale.containsKey(serie)) return markerScale.get(serie).get(col);
 		return 1;
 	}
 
 	/** The Marker scale. */
-	HashMap<String, ArrayList<Double>> MarkerScale = new HashMap<>();
+	HashMap<String, ArrayList<Double>> markerScale = new HashMap<>();
 
 	/**
 	 * Instantiates a new chart J free chart output scatter.
@@ -275,9 +275,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			case IKeyword.STACK, IKeyword.RING, IKeyword.EXPLODED:
 			default: {
 				// newr = new FastXYItemRenderer();
-				newr = new myXYErrorRenderer();
-				((myXYErrorRenderer) newr).setMyid(serieid);
-				((myXYErrorRenderer) newr).setOutput(this);
+				newr = new CustomXYErrorRenderer();
+				((CustomXYErrorRenderer) newr).setMyid(serieid);
+				((CustomXYErrorRenderer) newr).setOutput(this);
 				break;
 
 			}
@@ -315,7 +315,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		newr.setSeriesStroke(0,
 				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
 
-		if (newr instanceof myXYErrorRenderer xy) {
+		if (newr instanceof CustomXYErrorRenderer xy) {
 			xy.setDrawYError(false);
 			xy.setDrawXError(false);
 			if (myserie.isUseYErrValues()) { xy.setDrawYError(true); }
@@ -447,9 +447,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		}
 		// resetAutorange(scope);
 		if (!sValues.isEmpty()) {
-			MarkerScale.remove(serieid);
+			markerScale.remove(serieid);
 			final ArrayList<Double> nscale = (ArrayList<Double>) sValues.clone();
-			MarkerScale.put(serieid, nscale);
+			markerScale.put(serieid, nscale);
 
 		}
 
@@ -699,15 +699,15 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	public void setUseSize(final IScope scope, final String name, final boolean b) {
 
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, name);
-		if (newr instanceof myXYErrorRenderer xy) { xy.setUseSize(scope, b); }
+		if (newr instanceof CustomXYErrorRenderer xy) { xy.setUseSize(scope, b); }
 
 	}
 
 	@Override
 	protected void initRenderer(final IScope scope) {
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
-		defaultrenderer = new myXYErrorRenderer();
-		plot.setRenderer((myXYErrorRenderer) defaultrenderer);
+		defaultrenderer = new CustomXYErrorRenderer();
+		plot.setRenderer((CustomXYErrorRenderer) defaultrenderer);
 
 	}
 

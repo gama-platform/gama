@@ -75,7 +75,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaHeadlessWebSocketServer StartForSecureHeadless(final int port, final ThreadPoolExecutor runner,
+	public static GamaHeadlessWebSocketServer startForSecureHeadless(final int port, final ThreadPoolExecutor runner,
 			final boolean ssl, final String jksPath, final String spwd, final String kpwd, final int pingInterval) {
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval);
@@ -101,7 +101,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaHeadlessWebSocketServer StartForHeadless(final int port, final ThreadPoolExecutor runner,
+	public static GamaHeadlessWebSocketServer startForHeadless(final int port, final ThreadPoolExecutor runner,
 			final int pingInterval) {
 		// try {
 		// ServerSocketChannel sserver = ServerSocketChannel.open();

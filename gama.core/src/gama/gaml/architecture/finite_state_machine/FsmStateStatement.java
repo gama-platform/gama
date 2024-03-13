@@ -155,7 +155,7 @@ import gama.gaml.types.IType;
 public class FsmStateStatement extends AbstractStatementSequence {
 
 	/** The Allowed architectures. */
-	static List<String> AllowedArchitectures = Arrays.asList(IKeyword.USER_CONTROLLED, IKeyword.USER_FIRST,
+	final static List<String> ALLOWED_ARCHITECTURES = Arrays.asList(IKeyword.USER_CONTROLLED, IKeyword.USER_FIRST,
 			IKeyword.USER_INIT, IKeyword.USER_LAST, IKeyword.USER_ONLY);
 
 	/**
@@ -182,7 +182,7 @@ public class FsmStateStatement extends AbstractStatementSequence {
 				}
 				if (control.getJavaBase() == FsmArchitecture.class) {
 					description.error("A " + description.getKeyword()
-							+ " can only be defined in a user-controlled species (one of" + AllowedArchitectures + ")",
+							+ " can only be defined in a user-controlled species (one of" + ALLOWED_ARCHITECTURES + ")",
 							IGamlIssue.WRONG_CONTEXT);
 					return;
 				}

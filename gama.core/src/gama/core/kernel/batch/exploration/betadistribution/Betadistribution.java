@@ -26,7 +26,9 @@ public class Betadistribution {
 	Map<ParametersSet,List<Double>> sample;
 	final EmpiricalDistribution Y;
 	
-	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, String obj) { this(sample,inputs,10,obj); }
+	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, String obj) { 
+		this(sample,inputs,10,obj); 
+	}
 	
 	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity, String obj) {
 		this.objective = obj;

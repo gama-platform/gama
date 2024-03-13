@@ -164,25 +164,25 @@ public class BetaExploration extends AExplorationAlgorithm {
 			case IKeyword.ORTHOGONAL -> throw GamaRuntimeException
 					.error("Beta d indicator should use a factorial sampling design", scope);
 
-			case IKeyword.SALTELLI -> SaltelliSampling.MakeSaltelliSampling(scope, sample_size, parameters);
+			case IKeyword.SALTELLI -> SaltelliSampling.makeSaltelliSampling(scope, sample_size, parameters);
 			case IKeyword.FACTORIAL -> {
 				List<ParametersSet> ps = null;
 				if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
 					int[] factors = Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
 							.mapToInt(o -> Integer.parseInt(o.toString())).toArray();
-					ps = RandomSampling.FactorialUniformSampling(scope, factors, params);
+					ps = RandomSampling.factorialUniformSampling(scope, factors, params);
 				} else {
-					ps = RandomSampling.FactorialUniformSampling(scope, sample_size, params);
+					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
 				}
 				yield ps;
 			}
-			case IKeyword.UNIFORM -> RandomSampling.UniformSampling(scope, sample_size, parameters);
+			case IKeyword.UNIFORM -> RandomSampling.uniformSampling(scope, sample_size, parameters);
 			default -> buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 
 		// == Launch simulations ==
 		currentExperiment.setSeeds(new Double[1]);
-		// TODO : why doesnt it take into account the value of 'keep_simulations:' ?
+		// TODO : why doesn't it take into account the value of 'keep_simulations:' ?
 		currentExperiment.setKeepSimulations(false);
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
 			res_outputs = currentExperiment.launchSimulationsWithSolution(sets);

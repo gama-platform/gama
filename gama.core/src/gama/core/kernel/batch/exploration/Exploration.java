@@ -216,22 +216,22 @@ public class Exploration extends AExplorationAlgorithm {
 		} else if (hasFacet(IKeyword.WITH)) { method = FROM_LIST; }
 
 		sets = switch (method) {
-			case IKeyword.MORRIS -> MorrisSampling.MakeMorrisSamplingOnly(nb_levels, sample_size, parameters, scope);
-			case IKeyword.SALTELLI -> SaltelliSampling.MakeSaltelliSampling(scope, sample_size, parameters);
-			case IKeyword.LHS -> LatinhypercubeSampling.LatinHypercubeSamples(sample_size, parameters,
+			case IKeyword.MORRIS -> MorrisSampling.makeMorrisSamplingOnly(nb_levels, sample_size, parameters, scope);
+			case IKeyword.SALTELLI -> SaltelliSampling.makeSaltelliSampling(scope, sample_size, parameters);
+			case IKeyword.LHS -> LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 					scope.getRandom().getGenerator(), scope);
-			case IKeyword.ORTHOGONAL -> OrthogonalSampling.OrthogonalSamples(sample_size, iterations, parameters,
+			case IKeyword.ORTHOGONAL -> OrthogonalSampling.orthogonalSamples(sample_size, iterations, parameters,
 					scope.getRandom().getGenerator(), scope);
-			case IKeyword.UNIFORM -> RandomSampling.UniformSampling(scope, sample_size, parameters);
+			case IKeyword.UNIFORM -> RandomSampling.uniformSampling(scope, sample_size, parameters);
 			case IKeyword.FACTORIAL -> {
 				List<ParametersSet> ps = null;
 				if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
 					@SuppressWarnings ("unchecked") int[] factors =
 							Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
 									.mapToInt(o -> Integer.parseInt(o.toString())).toArray();
-					ps = RandomSampling.FactorialUniformSampling(scope, factors, params);
+					ps = RandomSampling.factorialUniformSampling(scope, factors, params);
 				} else {
-					ps = RandomSampling.FactorialUniformSampling(scope, sample_size, params);
+					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
 				}
 				yield ps;
 			}

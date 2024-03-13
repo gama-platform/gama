@@ -119,7 +119,7 @@ public class Morris {
 	 * @param morris_coefficient
 	 *            the morris coefficient
 	 */
-	public static void WriteAndTellResult(final String name, final String path, final IScope scope,
+	public static void writeAndTellResult(final String name, final String path, final IScope scope,
 			final List<Map<String, Double>> morris_coefficient) {
 		Map<String, Double> mu = morris_coefficient.get(0);
 		Map<String, Double> mu_star = morris_coefficient.get(1);
@@ -427,7 +427,7 @@ public class Morris {
 	 *
 	 */
 
-	public static List<Map<String, Double>> MorrisAggregation(final int num_levels, final List<Double> Outputs,
+	public static List<Map<String, Double>> morrisAggregation(final int num_levels, final List<Double> Outputs,
 			final List<Map<String, Object>> sample) {
 		List<Map<String, Object>> MySample = sample;
 		List<String> ParametersNames = sample.get(0).keySet().stream().toList();
@@ -498,7 +498,7 @@ public class Morris {
 	 *            the sample
 	 * @return the list
 	 */
-	public static List<Map<String, Double>> MorrisAggregation_CSV(final int num_levels, final List<Double> Outputs,
+	public static List<Map<String, Double>> morrisAggregation_CSV(final int num_levels, final List<Double> Outputs,
 			final List<Map<String, Object>> sample) {
 		List<Map<String, Object>> MySample = sample;
 		List<String> ParametersNames = sample.get(0).keySet().stream().toList();

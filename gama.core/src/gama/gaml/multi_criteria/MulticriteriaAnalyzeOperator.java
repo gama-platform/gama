@@ -63,7 +63,7 @@ public class MulticriteriaAnalyzeOperator {
 					value = "weighted_means_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0],[\"name\"::\"price\", \"weight\" :: 1.0]])",
 					equals = "1") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer WeightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		final List<String> criteriaStr = new LinkedList<>();
@@ -146,7 +146,7 @@ public class MulticriteriaAnalyzeOperator {
 					value = "fuzzy_choquet_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [\"utility\", \"price\", \"size\"],[[\"utility\"]::0.5,[\"size\"]::0.1,[\"price\"]::0.4,[\"utility\", \"price\"]::0.55])",
 					equals = "0") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer FuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<String> criteria, final IMap criteriaWeights) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		final Map<String, Double> critWeight = new HashMap<>();
@@ -235,7 +235,7 @@ public class MulticriteriaAnalyzeOperator {
 					value = "promethee_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]])",
 					equals = "1") },
 			see = { "weighted_means_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer PrometheeDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer prometheeDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		int cpt = 0;

@@ -192,7 +192,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) {
 			final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
 			final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-			myServer = GamaGuiWebSocketServer.StartForGUI(port, ping);
+			myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
 		}
 		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> {
 			if (myServer != null) {
@@ -207,7 +207,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			if (newValue) {
 				final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
 				final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-				myServer = GamaGuiWebSocketServer.StartForGUI(port, ping);
+				myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
 			}
 		});
 	}

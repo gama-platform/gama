@@ -47,7 +47,7 @@ public class ChartDataSet {
 	/** The series. */
 	final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
 
-	/** The deletedseries. */
+	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
 
 	/** The Xcategories. */
@@ -471,7 +471,7 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	public void BackwardSim(final IScope scope, final int cycle) {
+	public void backwardSim(final IScope scope, final int cycle) {
 		int chartCycle = cycle + 1; // AD : why ? I have put this by pure chance and it works ...
 		// There is still a problem, though, as cycle 0 is never drawn. But at least the charts are
 		// synchronized...
@@ -527,7 +527,7 @@ public class ChartDataSet {
 
 		commonXindex++;
 		commonYindex++;
-		if (scope.getExperiment().isRecord() && didReload(scope, chartCycle)) { BackwardSim(scope, chartCycle); }
+		if (scope.getExperiment().isRecord() && didReload(scope, chartCycle)) { backwardSim(scope, chartCycle); }
 		updateXValues(scope, chartCycle);
 		updateYValues(scope, chartCycle);
 

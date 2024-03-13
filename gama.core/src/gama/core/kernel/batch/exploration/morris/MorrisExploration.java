@@ -142,8 +142,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	/** The nb levels. */
 	private int nb_levels;
 
-	/** The My samples. */
-	private List<Map<String, Object>> MySamples;
+	/** The samples. */
+	private List<Map<String, Object>> samples;
 
 	/**
 	 * Instantiates a new morris exploration.
@@ -197,7 +197,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
-		if (outsize == MySamples.size() && rebuilt_output.values().stream().findAny().get().size() == MySamples.size()) {
+		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
 		
 			List<String> output_names = rebuilt_output.keySet().stream().toList();
 			
@@ -210,8 +210,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			for (int i = 0; i < rebuilt_output.size(); i++) {
 				String tmp_name = output_names.get(i);
 				List<Map<String, Double>> morris_coefficient =
-						Morris.MorrisAggregation(nb_levels, rebuilt_output.get(tmp_name), MySamples);
-				Morris.WriteAndTellResult(tmp_name, fm.getAbsolutePath(), scope, morris_coefficient);
+						Morris.morrisAggregation(nb_levels, rebuilt_output.get(tmp_name), samples);
+				Morris.writeAndTellResult(tmp_name, fm.getAbsolutePath(), scope, morris_coefficient);
 			}
 			/* Save the simulation values in the provided .csv file (input and corresponding output) */
 			if (hasFacet(IKeyword.BATCH_OUTPUT)) {
@@ -238,8 +238,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
 		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
-		List<Object> morris_samplings = MorrisSampling.MakeMorrisSampling(nb_levels, this.sample, parameters, scope);
-		this.MySamples = Cast.asList(scope, morris_samplings.get(0));
+		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
+		this.samples = Cast.asList(scope, morris_samplings.get(0));
 		return Cast.asList(scope, morris_samplings.get(1));
 	}
 	
@@ -369,7 +369,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		} catch (IOException ioe) {
 			throw GamaRuntimeException.error("File " + path + " not found", scope);
 		}
-		MySamples = parameters;
+		samples = parameters;
 		// morris_analysis.ParametersNames=parameters.get(0).keySet().stream().toList();
 		for (Map<String, Object> parameterSet : parameters) {
 			ParametersSet p = new ParametersSet();

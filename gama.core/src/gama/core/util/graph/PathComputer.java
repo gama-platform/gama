@@ -86,7 +86,7 @@ public class PathComputer<V, E> {
 	/**
 	 * The Enum shortestPathAlgorithm.
 	 */
-	public enum shortestPathAlgorithm {
+	public enum ShortestPathAlgorithmEnum {
 
 		/** The Floyd warshall. */
 		FloydWarshall,
@@ -122,7 +122,7 @@ public class PathComputer<V, E> {
 	/**
 	 * The Enum kShortestPathAlgorithm.
 	 */
-	public enum kShortestPathAlgorithm {
+	public enum KShortestPathAlgorithmEnum {
 
 		/** The Yen. */
 		Yen,
@@ -140,14 +140,14 @@ public class PathComputer<V, E> {
 	protected GamaIntMatrix shortestPathMatrix = null;
 
 	/** The Constant ONLY_FOR_DIRECTED_GRAPH. */
-	public static final ImmutableList<PathComputer.kShortestPathAlgorithm> ONLY_FOR_DIRECTED_GRAPH =
-			ImmutableList.of(kShortestPathAlgorithm.Bhandari);
+	public static final ImmutableList<PathComputer.KShortestPathAlgorithmEnum> ONLY_FOR_DIRECTED_GRAPH =
+			ImmutableList.of(KShortestPathAlgorithmEnum.Bhandari);
 
 	/** The path finding algo. */
-	protected PathComputer.shortestPathAlgorithm pathFindingAlgo = shortestPathAlgorithm.BidirectionalDijkstra;
+	protected PathComputer.ShortestPathAlgorithmEnum pathFindingAlgo = ShortestPathAlgorithmEnum.BidirectionalDijkstra;
 
 	/** The k path finding algo. */
-	protected PathComputer.kShortestPathAlgorithm kPathFindingAlgo = kShortestPathAlgorithm.Yen;
+	protected PathComputer.KShortestPathAlgorithmEnum kPathFindingAlgo = KShortestPathAlgorithmEnum.Yen;
 
 	/** The optimizer. */
 	private FloydWarshallShortestPathsGAMA<V, E> optimizer;
@@ -214,7 +214,7 @@ public class PathComputer<V, E> {
 							nextVertice(scope, path.getEdgeList().get(0), v1, indexVertices, graph.directed));
 				}
 			}
-		} else if (shortestPathAlgorithm.FloydWarshall.equals(pathFindingAlgo)) {
+		} else if (ShortestPathAlgorithmEnum.FloydWarshall.equals(pathFindingAlgo)) {
 			optimizer = new FloydWarshallShortestPathsGAMA<>(graph);
 			optimizer.lazyCalculateMatrix();
 			for (int i = 0; i < graph.vertexMap.size(); i++) {
@@ -485,7 +485,7 @@ public class PathComputer<V, E> {
 			if (saveComputedShortestPaths) { saveShortestPaths(edges, source, target); }
 			return edges;
 		}
-		if (pathFindingAlgo == shortestPathAlgorithm.FloydWarshall) {
+		if (pathFindingAlgo == ShortestPathAlgorithmEnum.FloydWarshall) {
 			if (optimizer == null) { optimizer = new FloydWarshallShortestPathsGAMA<>(graph); }
 			final GraphPath<V, E> path = optimizer.getShortestPath(source, target);
 			if (path == null) return GamaListFactory.create(graph.getGamlType().getContentType());
@@ -495,38 +495,38 @@ public class PathComputer<V, E> {
 		if (saveComputedShortestPaths) { sp = shortestPathComputed.get(new Pair<>(source, target)); }
 		IList<E> spl = null;
 		if (sp == null || sp.isEmpty() || sp.get(0).isEmpty()) {
-			if (pathFindingAlgo == shortestPathAlgorithm.NBAStar) {
+			if (pathFindingAlgo == ShortestPathAlgorithmEnum.NBAStar) {
 				final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, false);
 				spl = p.search(source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.NBAStarApprox) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.NBAStarApprox) {
 				final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, true);
 				spl = p.search(source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.AStar) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.AStar) {
 				final AStar<V, E> astarAlgo = new AStar<>(graph, source, target);
 				spl = astarAlgo.compute();
-			} else if (pathFindingAlgo == shortestPathAlgorithm.Dijkstra) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.Dijkstra) {
 				spl = getShortestPath(scope, new DijkstraShortestPath<>(graph), source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.BellmannFord) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.BellmannFord) {
 				spl = getShortestPath(scope, new BellmanFordShortestPath<>(graph), source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.DeltaStepping) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.DeltaStepping) {
 				ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
 						.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
 				spl = getShortestPath(scope, new DeltaSteppingShortestPath<>(graph, executor), source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.TransitNodeRouting) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.TransitNodeRouting) {
 				if (transitNodeRouting == null) {
 					ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
 							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
 					transitNodeRouting = new TransitNodeRoutingShortestPath<>(graph, executor);
 				}
 				spl = getShortestPath(scope, transitNodeRouting, source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.CHBidirectionalDijkstra) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.CHBidirectionalDijkstra) {
 				if (contractionHierarchyBD == null) {
 					ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
 							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
 					contractionHierarchyBD = new ContractionHierarchyBidirectionalDijkstra<>(graph, executor);
 				}
 				spl = getShortestPath(scope, contractionHierarchyBD, source, target);
-			} else if (pathFindingAlgo == shortestPathAlgorithm.BidirectionalDijkstra) {
+			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.BidirectionalDijkstra) {
 				spl = getShortestPath(scope, new BidirectionalDijkstraShortestPath<>(graph), source, target);
 			}
 
@@ -668,9 +668,9 @@ public class PathComputer<V, E> {
 			return paths;
 		}
 		IList<IList<E>> paths = GamaListFactory.create(Types.LIST.of(graph.getGamlType().getContentType()));
-		if (kPathFindingAlgo == kShortestPathAlgorithm.Yen) {
+		if (kPathFindingAlgo == KShortestPathAlgorithmEnum.Yen) {
 			paths = geKtShortestPath(scope, new YenKShortestPath<>(graph), source, target, k, false);
-		} else if (kPathFindingAlgo == kShortestPathAlgorithm.Bhandari) {
+		} else if (kPathFindingAlgo == KShortestPathAlgorithmEnum.Bhandari) {
 			generateGraph();
 			paths = geKtShortestPath(scope, new BhandariKDisjointShortestPaths<>(linkedJGraph), source, target, k,
 					true);
@@ -711,7 +711,7 @@ public class PathComputer<V, E> {
 	 *            the new shortest path algorithm
 	 * @date 30 oct. 2023
 	 */
-	public void setShortestPathAlgorithm(final String s) { pathFindingAlgo = shortestPathAlgorithm.valueOf(s); }
+	public void setShortestPathAlgorithm(final String s) { pathFindingAlgo = ShortestPathAlgorithmEnum.valueOf(s); }
 
 	/**
 	 * Sets the k shortest path algorithm.
@@ -721,7 +721,7 @@ public class PathComputer<V, E> {
 	 *            the new k shortest path algorithm
 	 * @date 30 oct. 2023
 	 */
-	public void setKShortestPathAlgorithm(final String s) { kPathFindingAlgo = kShortestPathAlgorithm.valueOf(s); }
+	public void setKShortestPathAlgorithm(final String s) { kPathFindingAlgo = KShortestPathAlgorithmEnum.valueOf(s); }
 
 	/**
 	 * Gets the version.

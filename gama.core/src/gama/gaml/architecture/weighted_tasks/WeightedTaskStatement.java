@@ -68,7 +68,7 @@ import gama.gaml.types.IType;
 public class WeightedTaskStatement extends AbstractStatementSequence {
 
 	/** The Allowed architectures. */
-	static List<String> AllowedArchitectures =
+	final static List<String> ALLOWED_ARCHITECTURES =
 			Arrays.asList(SortedTasksArchitecture.ST, WeightedTasksArchitecture.WT, ProbabilisticTasksArchitecture.PT);
 
 	/**
@@ -89,7 +89,7 @@ public class WeightedTaskStatement extends AbstractStatementSequence {
 			final SkillDescription control = species.getControl();
 			if (!WeightedTasksArchitecture.class.isAssignableFrom(control.getJavaBase())) {
 				description.error("A " + description.getKeyword()
-						+ " can only be defined in a task-controlled species  (one of" + AllowedArchitectures + ")",
+						+ " can only be defined in a task-controlled species  (one of" + ALLOWED_ARCHITECTURES + ")",
 						IGamlIssue.WRONG_CONTEXT);
 			}
 		}

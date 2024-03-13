@@ -117,7 +117,7 @@ public class Stochanalysis {
 					IMap<Double, List<Integer>> res = GamaMapFactory.create();
 					for (Double thresh : STOCHThresholds) {
 						List<Integer> lres = new ArrayList<>();
-						for(ParametersSet ps : pso.keySet()) { lres.add(FindWithRelativeThreshold(pso.get(ps).get(method), thresh)); }
+						for(ParametersSet ps : pso.keySet()) { lres.add(findWithRelativeThreshold(pso.get(ps).get(method), thresh)); }
 						res.put(thresh, lres);
 					}
 					sb.append(method).append(RL);
@@ -223,7 +223,7 @@ public class Stochanalysis {
 	 * @param scope
 	 *            the scope
 	 */
-	public static void WriteAndTellReport(final File f, final Map<String, Map<ParametersSet, Map<String, List<Double>>>> outputs,
+	public static void writeAndTellReport(final File f, final Map<String, Map<ParametersSet, Map<String, List<Double>>>> outputs,
 			final int nbsample, final int nbreplicates, final IScope scope) {
 
 		try {
@@ -280,7 +280,7 @@ public class Stochanalysis {
 	 * @param Outputs
 	 * @param scope
 	 */
-	public static void WriteAndTellResult(final File f, final IMap<ParametersSet, Map<String, List<Object>>> outputs,
+	public static void writeAndTellResult(final File f, final IMap<ParametersSet, Map<String, List<Object>>> outputs,
 			final IScope scope) {
 		try (FileWriter fw = new FileWriter(f, false)) {
 			fw.write(buildSimulationCsv(outputs, scope));
@@ -356,7 +356,7 @@ public class Stochanalysis {
 	 *            : the coefficient of variation for each number of replicates
 	 * @return the minimum replicates size (or -1 if the threshold is not reached)
 	 */
-	private static int FindWithThreshold(final List<Double> CV, final double threshold) {
+	private static int findWithThreshold(final List<Double> CV, final double threshold) {
 		boolean thresh_ok = false;
 		int id_sample = 0;
 		for (int i = 0; i < CV.size() - 2; i++) {
@@ -381,7 +381,7 @@ public class Stochanalysis {
 	 *            : the statistic given to assess replicates effectiveness
 	 * @return the minimum replicates size to reach a given threshold of marginal benefit adding a new replicates
 	 */
-	private static int FindWithRelativeThreshold(final List<Double> Stat, final double threshold) {
+	private static int findWithRelativeThreshold(final List<Double> Stat, final double threshold) {
 		Double th = Collections.min(Stat) * threshold;
 		for (int i = 2; i < Stat.size(); i++) {
 			double delta = Stat.get(i-1) - Stat.get(i);
@@ -407,7 +407,7 @@ public class Stochanalysis {
 	 * TODO : also export the raw result of stochasticity measures
 	 *         
 	 */
-	public static IMap<ParametersSet, List<Double>> StochasticityAnalysis(final IMap<ParametersSet, List<Object>> sample,
+	public static IMap<ParametersSet, List<Double>> stochasticityAnalysis(final IMap<ParametersSet, List<Object>> sample,
 			final String method, final IScope scope) {
 		
 		IMap<ParametersSet,List<Double>> res = GamaMapFactory.create();
@@ -434,7 +434,7 @@ public class Stochanalysis {
 			}
 		}
 		case PT -> {
-			double effectSize = FTestEffectSize(sample.values(), scope);
+			double effectSize = fTestEffectSize(sample.values(), scope);
 			sample.getKeys().forEach(ps -> res.put(ps, List.of(
 					powerTestEffectSize(sample.values().size(), effectSize), effectSize
 					)));
@@ -539,7 +539,7 @@ public class Stochanalysis {
 	}
 	
 	// see : https://en.wikipedia.org/wiki/F-test
-	private static double FTestEffectSize(Collection<List<Object>> groups, final IScope scope) {
+	private static double fTestEffectSize(Collection<List<Object>> groups, final IScope scope) {
 		List<Double> groupMean = groups.stream()
 				.mapToDouble(group -> group.stream()
 						.mapToDouble(e -> Cast.asFloat(scope, e)).average().getAsDouble())
@@ -630,7 +630,7 @@ public class Stochanalysis {
 	 *            the s
 	 * @return the string
 	 */
-	private static String BuildString(final Map<String, Object> s) {
+	private static String buildString(final Map<String, Object> s) {
 		StringBuilder txt = new StringBuilder();
 		for (String name : s.keySet()) { txt.append(s.get(name).toString()).append("_"); }
 		return txt.toString();
@@ -651,9 +651,9 @@ public class Stochanalysis {
 	 *            the scope
 	 * @return the string
 	 */
-	// Need to be tested and change like the main method if it works
+	//TODO: Need to be tested and change like the main method if it works
 	@SuppressWarnings ("unchecked")
-	public static String StochasticityAnalysis_From_CSV(final int replicat, final double threshold,
+	public static String stochasticityAnalysis_From_CSV(final int replicat, final double threshold,
 			final String path_to_data, final int id_output, final IScope scope) {
 		List<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
 		List<Map<String, Object>> MySample = Cast.asList(scope, STO_simu.get(0));
@@ -662,7 +662,7 @@ public class Stochanalysis {
 		for (String name : Outputs.keySet()) {
 			Map<String, List<Object>> sample = new HashedMap<>();
 			for (Map<String, Object> m : MySample) {
-				String s = BuildString(m);
+				String s = buildString(m);
 				if (sample.containsKey(s)) {
 					List<Object> tmp_l = sample.get(s);
 					tmp_l.add(Outputs.get(name));
@@ -678,7 +678,7 @@ public class Stochanalysis {
 				List<Double> mean = computeMean(sample.get(ps), scope);
 				List<Double> std = computeSTD(mean, sample.get(ps), scope);
 				List<Double> cv = computeCV(std, mean);
-				tmp_replicat = tmp_replicat + FindWithThreshold(cv, threshold);
+				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
 			}
 			min_replicat = tmp_replicat / sample.size();
 		}

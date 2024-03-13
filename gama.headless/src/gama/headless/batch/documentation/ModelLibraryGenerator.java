@@ -704,7 +704,7 @@ public class ModelLibraryGenerator {
 					outputFileName.append(".md");
 					final File outputFile = new File(outputFileName.toString());
 
-					Utils.CreateFolder(outputFile.getParentFile());
+					Utils.createFolder(outputFile.getParentFile());
 					outputFile.createNewFile();
 					try (final FileOutputStream fileOut = new FileOutputStream(outputFile);) {
 
@@ -756,7 +756,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static void createSectionFile(final String pathToSectionFile) throws IOException {
 		final File outputFile = new File(pathToSectionFile);
-		Utils.CreateFolder(outputFile.getParentFile());
+		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
 		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
 
@@ -777,7 +777,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static void createSubSectionFile(final String pathToSubSectionFile) throws IOException {
 		final File outputFile = new File(pathToSubSectionFile);
-		Utils.CreateFolder(outputFile.getParentFile());
+		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
 		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
 

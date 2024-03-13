@@ -175,7 +175,7 @@ public class GamaSqlConnection extends GamaGisFile {
 	/*
 	 * Create a connection to database with current connection parameter of the GamaSqlConnection object
 	 */
-	public DataStore Connect(final IScope scope) throws Exception {
+	public DataStore connect(final IScope scope) throws Exception {
 		final Map<String, Object> connectionParameters = createConnectionParams(scope);
 		DataStore dStore;
 		dStore = DataStoreFinder.getDataStore(connectionParameters); // get

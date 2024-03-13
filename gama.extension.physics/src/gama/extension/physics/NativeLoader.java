@@ -49,7 +49,7 @@ public class NativeLoader {
 	public static final String LIN_NATIVE_LIBRARY_NAME = "Linux64ReleaseDp_libbulletjme.so";
 
 	/** The Load native library. */
-	public static boolean LoadNativeLibrary() {
+	public static boolean loadNativeLibrary() {
 		if (NATIVE_BULLET_LIBRARY_LOADED == null) {
 			NATIVE_BULLET_LIBRARY_LOADED = false;
 			if (LOAD_NATIVE_BULLET_LIBRARY) {

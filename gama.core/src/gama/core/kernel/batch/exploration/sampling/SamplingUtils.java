@@ -40,7 +40,7 @@ public abstract class SamplingUtils {
 	 * @param valFromSampling
 	 * @return
 	 */
-	private static ParametersSet ScaleSamplingAmongValue(IScope scope, ParametersSet set, Batch var, double valFromSampling) {
+	private static ParametersSet scaleSamplingAmongValue(IScope scope, ParametersSet set, Batch var, double valFromSampling) {
 		int size= var.getAmongValue(scope).size();
 		int idx = IntStream.range(1,size).filter(i -> valFromSampling <= 1d*i/size )
 				.findFirst().orElse(size);
@@ -56,7 +56,7 @@ public abstract class SamplingUtils {
 	 * @param ValFromSampling
 	 * @return
 	 */
-	private static ParametersSet ScaleSampling(IScope scope, ParametersSet set, Batch var, double ValFromSampling) {
+	private static ParametersSet scaleSampling(IScope scope, ParametersSet set, Batch var, double ValFromSampling) {
 		switch (var.getType().id()) {
 			case IType.INT:
 				int intValue = Cast.asInt(scope, var.getMinValue(scope));
@@ -107,15 +107,15 @@ public abstract class SamplingUtils {
 	 * @param SamplingData
 	 * @return
 	 */
-	public static List<ParametersSet> BuildParametersSetfromSample(IScope scope,List<Batch> parameters,List<Map<String,Double>> SamplingData){
+	public static List<ParametersSet> buildParametersSetfromSample(IScope scope,List<Batch> parameters,List<Map<String,Double>> SamplingData){
 		List<ParametersSet> ParameterSet=new ArrayList<>();
 		for(int i=0;i<SamplingData.size();i++) {
 			ParametersSet origi = new ParametersSet();
 			for(int y=0;y<parameters.size();y++) {
 				if(parameters.get(y).getAmongValue(scope)!=null) {
-					origi=ScaleSamplingAmongValue(scope,origi,parameters.get(y),SamplingData.get(i).get(parameters.get(y).getName()));
+					origi=scaleSamplingAmongValue(scope,origi,parameters.get(y),SamplingData.get(i).get(parameters.get(y).getName()));
 				}else {
-					origi=ScaleSampling(scope,origi,parameters.get(y),SamplingData.get(i).get(parameters.get(y).getName()));
+					origi=scaleSampling(scope,origi,parameters.get(y),SamplingData.get(i).get(parameters.get(y).getName()));
 				}
 			}
 			ParameterSet.add(origi);
