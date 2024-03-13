@@ -63,7 +63,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -396,7 +395,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *
 	 */
 	public ImportProjectWizardPage() {
-		this("wizardExternalProjectsPage", null, null); //$NON-NLS-1$
+		this("wizardExternalProjectsPage", null); //$NON-NLS-1$
 	}
 
 	/**
@@ -405,7 +404,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * @param pageName
 	 */
 	public ImportProjectWizardPage(final String pageName) { // NO_UCD (unused code)
-		this(pageName, null, null);
+		this(pageName, null);
 	}
 
 	/**
@@ -413,14 +412,11 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *
 	 * @param pageName
 	 * @param initialPath
-	 * @param currentSelection
 	 * @since 3.5
 	 */
-	public ImportProjectWizardPage(final String pageName, final String initialPath,
-			final IStructuredSelection currentSelection) {
+	public ImportProjectWizardPage(final String pageName, final String initialPath) {
 		super(pageName);
 		this.initialPath = initialPath;
-		// this.currentSelection = currentSelection;
 		setPageComplete(false);
 		setTitle("Import GAMA projects");
 		setMessage("Select a directory or an archive to search for existing GAMA projects.");
