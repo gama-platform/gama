@@ -77,12 +77,9 @@ public class CSVTableSorter extends ViewerComparator {
 		final String row1 = ((CSVRow) e1).getElementAt(propertyIndex);
 		final String row2 = ((CSVRow) e2).getElementAt(propertyIndex);
 
-		int rc = row1.compareTo(row2);
-
-		// If descending order, flip the direction
-		if (direction == DESCENDING) {
-			rc = -rc;
-		}
-		return rc;
+		
+		return 	  (direction == ASCENDING) 
+				? row1.compareTo(row2)
+				: row2.compareTo(row1);
 	}
 }
