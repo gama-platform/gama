@@ -28,34 +28,42 @@ public class MtlLoader {
 	/**
 	 * The Class mtl.
 	 */
-	public class mtl {
+	public record mtl (
 		
 		/** The name. */
-		public String name;
+		String name,
 		
 		/** The mtlnum. */
-		public int mtlnum;
+		int mtlnum,
 		
 		/** The d. */
-		public float d = 1f;
+		float d,
 		
 		/** The Ka. */
-		public float[] Ka = new float[3];
+		float[] Ka,
 		
 		/** The Kd. */
-		public float[] Kd = new float[3];
+		float[] Kd,
 		
 		/** The Ks. */
-		public float[] Ks = new float[3];
+		float[] Ks,
 		
 		/** The map kd. */
-		public String map_Kd;
+		String map_Kd,
 		
 		/** The map ka. */
-		public String map_Ka;
+		String map_Ka,
 		
 		/** The map d. */
-		public String map_d;
+		String map_d
+
+	){
+		public mtl{
+			d = 1f;
+			Ka = new float[3];
+			Kd = new float[3];
+			Ks = new float[3];
+		}
 
 	}
 
@@ -175,8 +183,18 @@ public class MtlLoader {
 
 			String newline;
 			boolean firstpass = true;
-			mtl matset = new mtl();
-			int mtlcounter = 0;
+			
+			// variables for the mtl records
+			String name = null;
+			int mtlCounter = 0;
+			int mtlnum = 0;
+			float[] Ka = new float[3];
+			float[] Kd = new float[3]; 
+			float[] Ks = new float[3];
+			float d = 1f;
+			String map_Ka = null; 
+			String map_Kd = null;
+			String map_d  = null;
 
 			while ((newline = br.readLine()) != null) {
 				linecounter++;
@@ -186,14 +204,23 @@ public class MtlLoader {
 						if (firstpass) {
 							firstpass = false;
 						} else {
-							Materials.add(matset);
-							matset = new mtl();
+							Materials.add(new mtl(name, mtlnum, d, Ka, Kd, Ks, map_Ka, map_Kd, map_d));
+							
+							//reinit record variables
+							name = null;
+							Ka = new float[3];
+							Kd = new float[3]; 
+							Ks = new float[3];
+							d = 1f;
+							map_Ka = null; 
+							map_Kd = null;
+							map_d = null;
 						}
 						String[] coordstext = new String[2];
 						coordstext = newline.split("\\s+");
-						matset.name = coordstext[1];
-						matset.mtlnum = mtlcounter;
-						mtlcounter++;
+						name = coordstext[1];
+						mtlnum = mtlCounter;
+						mtlCounter++;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'a') {
 						final float[] coords = new float[3];
 						String[] coordstext = new String[4];
@@ -201,7 +228,7 @@ public class MtlLoader {
 						for (int i = 1; i < coordstext.length; i++) {
 							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
 						}
-						matset.Ka = coords;
+						Ka = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'd') {
 						final float[] coords = new float[3];
 						String[] coordstext = new String[4];
@@ -209,7 +236,7 @@ public class MtlLoader {
 						for (int i = 1; i < coordstext.length; i++) {
 							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
 						}
-						matset.Kd = coords;
+						Kd = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 's') {
 						final float[] coords = new float[3];
 						String[] coordstext = new String[4];
@@ -217,32 +244,32 @@ public class MtlLoader {
 						for (int i = 1; i < coordstext.length; i++) {
 							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
 						}
-						matset.Ks = coords;
+						Ks = coords;
 					} else if (newline.charAt(0) == 'd') {
 						final String[] coordstext = newline.split("\\s+");
-						matset.d = Float.valueOf(coordstext[1]).floatValue();
+						d = Float.valueOf(coordstext[1]).floatValue();
 					} else if (newline.contains("map_Ka")) {
 						String texture = newline.replace("map_Ka ", "");
 						while (texture.startsWith(" ")) {
 							texture = texture.replaceFirst(" ", "");
 						}
-						matset.map_Ka = texture;
+						map_Ka = texture;
 					} else if (newline.contains("map_Kd")) {
 						String texture = newline.replace("map_Kd ", "");
 						while (texture.startsWith(" ")) {
 							texture = texture.replaceFirst(" ", "");
 						}
-						matset.map_Kd = texture;
+						map_Kd = texture;
 					} else if (newline.contains("map_d")) {
 						String texture = newline.replace("map_d ", "");
 						while (texture.startsWith(" ")) {
 							texture = texture.replaceFirst(" ", "");
 						}
-						matset.map_d = texture;
+						map_d = texture;
 					}
 				}
 			}
-			Materials.add(matset);
+			Materials.add(new mtl(name, mtlnum, d, Ka, Kd, Ks, map_Ka, map_Kd, map_d));
 
 		} catch (final IOException e) {
 			DEBUG.ERR("Failed to read file: " + br.toString());
