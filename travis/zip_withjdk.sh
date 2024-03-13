@@ -76,14 +76,13 @@ for targetPlatform in "linux.gtk.x86_64" "win32.win32.x86_64" "macosx.cocoa.x86_
 	fi
 	#
 	# Make GAMA use embedded JDK
-	echo "-vm" > Gama.ini
-	sed -i '1s/^/-vm/' $folderEclipse/Gama.ini
+	sed -i '1s/^/-vm\n/' $folderEclipse/Gama.ini
 	if [[ "$os" == "macosx"* ]]; then
-		sed -i '1,2s/^/..\/jdk\/Contents\/Home\/bin\/java/' $folderEclipse/Gama.ini
+		sed -i '2s/^/..\/jdk\/Contents\/Home\/bin\/java\n/' $folderEclipse/Gama.ini
 	elif [[ "$os" == "win32"* ]]; then
-		sed -i '1,2s/^/.\/jdk\/bin\/javaw/' $folderEclipse/Gama.ini
+		sed -i '2s/^/.\/jdk\/bin\/javaw\n/' $folderEclipse/Gama.ini
 	else
-		sed -i '1,2s/^/.\/jdk\/bin\/java/' $folderEclipse/Gama.ini
+		sed -i '2s/^/.\/jdk\/bin\/java\n/' $folderEclipse/Gama.ini
 	fi
 
 	#
