@@ -469,7 +469,9 @@ public class DocProcessor extends ElementProcessor<doc> {
 				if(elt.getKind().equals(ElementKind.CONSTRUCTOR)) {
 					Operands ops_file = new Operands(document, ((TypeElement) e).getQualifiedName().toString(), "", "file", "");
 					int arity = 0;
-					String op_name_usage = e.getAnnotation(file.class).name() + "_file(";
+					StringBuilder str = new StringBuilder();
+					str.append(e.getAnnotation(file.class).name());
+					str.append("_file(");
 					
 					// Define the various possible uses 
 					// Parse the constructor parameters
@@ -479,12 +481,13 @@ public class DocProcessor extends ElementProcessor<doc> {
 						if(!typeName.contains("IScope")) {
 							ops_file.addOperand(new Operand(document, operandName, arity, tc.getProperType(var.asType().toString())));	
 							arity++;		
-							op_name_usage = op_name_usage + tc.getProperType(var.asType().toString()) + ",";
+							str.append(tc.getProperType(var.asType().toString()));
+							str.append(",");
 						}						
 					}
 					op_file.addOperands(ops_file);	
 					
-					op_name_usage = op_name_usage.substring(0, op_name_usage.length()-1) + ")";
+					final String op_name_usage = str.substring(0, str.length()-1) + ")";
 					
 					// Create the documentation for each constructor as an usage
 					// when reading a @doc annotation:
@@ -1591,10 +1594,20 @@ public class DocProcessor extends ElementProcessor<doc> {
 		final String valCstStr = valCst == null ? "No Default Value" : valCst.toString();
 		constantElt.setAttribute(XMLElements.ATT_CST_VALUE, valCstStr);
 
-		String names = "";
+		StringBuilder str = new StringBuilder();
+		boolean first = true;
 		for (final String n : constant.altNames()) {
-			names = "".equals(names) ? PREFIX_CONSTANT + n : names + "," + PREFIX_CONSTANT + n;
+			if (first) {
+				first=false;
+			}
+			else {
+				str.append(",");
+			}
+			str.append(PREFIX_CONSTANT);
+			str.append(n); 
 		}
+		
+		final String names = str.toString();
 		if (!"".equals(names)) {
 			constantElt.setAttribute(XMLElements.ATT_CST_NAMES, names);
 		}
@@ -1636,10 +1649,16 @@ public class DocProcessor extends ElementProcessor<doc> {
 					varElt.appendChild(docEltVar);
 				}
 
-				String dependsOn = new String();
-				for (final String dependElement : v.depends_on()) {
-					dependsOn = ("".equals(dependsOn) ? "" : dependsOn + ",") + dependElement;
+
+				StringBuilder strBuilder = new StringBuilder();
+				for (int i = 0 ; i < v.depends_on().length; i++ ) {
+					final String dependElement = v.depends_on()[i];
+					strBuilder.append(dependElement);
+					if (i < v.depends_on().length - 1) {
+						strBuilder.append(",");
+					}
 				}
+				final String dependsOn = strBuilder.toString();				
 				varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
 				varsElt.appendChild(varElt);
 			}
@@ -1723,12 +1742,15 @@ public class DocProcessor extends ElementProcessor<doc> {
 				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
 				facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
 				if (f.values().length != 0) {
-					String valuesTaken = ", takes values in: {" + f.values()[0];
+					StringBuilder valuesTaken = new StringBuilder();
+					valuesTaken.append(", takes values in: {");
+					valuesTaken.append(f.values()[0]);
 					for (int i = 1; i < f.values().length; i++) {
-						valuesTaken += ", " + f.values()[i];
+						valuesTaken.append(", ");
+						valuesTaken.append(f.values()[i]);
 					}
-					valuesTaken += "}";
-					facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken);
+					valuesTaken.append("}");
+					facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken.toString());
 				}
 				facetElt.setAttribute(XMLElements.ATT_FACET_OMISSIBLE,
 						f.name().equals(facetsAnnot.omissible()) ? "true" : "false");
@@ -1842,7 +1864,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			}
 		}
 
-		// We had a particular category that is read from the iterator
+		// We add a particular category that is read from the iterator
 		if (e.getAnnotation(operator.class) != null && e.getAnnotation(operator.class).iterator()) {
 			final org.w3c.dom.Element catElt = doc.createElement(XMLElements.CATEGORY);
 			catElt.setAttribute(XMLElements.ATT_CAT_ID, IOperatorCategory.ITERATOR);

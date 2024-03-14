@@ -346,10 +346,21 @@ public class DocProcessorAnnotations {
 		final String valCstStr = valCst == null ? "No Default Value" : valCst.toString();
 		constantElt.setAttribute(XMLElements.ATT_CST_VALUE, valCstStr);
 
-		String names = "";
+		StringBuilder strBuilder = new StringBuilder();
+		boolean firstPass = true;
 		for (final String n : constant.altNames()) {
-			names = "".equals(names) ? PREFIX_CONSTANT + n : names + "," + PREFIX_CONSTANT + n;
+			
+			if (firstPass) {
+				firstPass = false;
+			}
+			else {
+				strBuilder.append(",");				
+			}
+			strBuilder.append(PREFIX_CONSTANT);
+			strBuilder.append(n);
 		}
+		final String names = strBuilder.toString();
+		
 		if (!"".equals(names))
 			constantElt.setAttribute(XMLElements.ATT_CST_NAMES, names);
 
@@ -390,10 +401,16 @@ public class DocProcessorAnnotations {
 					varElt.appendChild(docEltVar);
 				}
 
-				String dependsOn = new String();
-				for (final String dependElement : v.depends_on()) {
-					dependsOn = ("".equals(dependsOn) ? "" : dependsOn + ",") + dependElement;
+				StringBuilder strBuilder = new StringBuilder();
+				for (int i = 0 ; i < v.depends_on().length; i++ ) {
+					final String dependElement = v.depends_on()[i];
+					strBuilder.append(dependElement);
+					if (i < v.depends_on().length - 1) {
+						strBuilder.append(",");
+					}
 				}
+				
+				final String dependsOn = strBuilder.toString();
 				varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
 				varsElt.appendChild(varElt);
 			}
@@ -475,12 +492,15 @@ public class DocProcessorAnnotations {
 			facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
 			facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
 			if (f.values().length != 0) {
-				String valuesTaken = ", takes values in: {" + f.values()[0];
+				StringBuilder strBuilder = new StringBuilder();
+				strBuilder.append(", takes values in: {");
+				strBuilder.append(f.values()[0]);
 				for (int i = 1; i < f.values().length; i++) {
-					valuesTaken += ", " + f.values()[i];
+					strBuilder.append(", ");
+					strBuilder.append(f.values()[i]);
 				}
-				valuesTaken += "}";
-				facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken);
+				strBuilder.append("}");
+				facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, strBuilder.toString());
 			}
 			facetElt.setAttribute(XMLElements.ATT_FACET_OMISSIBLE,
 					f.name().equals(facetsAnnot.omissible()) ? "true" : "false");

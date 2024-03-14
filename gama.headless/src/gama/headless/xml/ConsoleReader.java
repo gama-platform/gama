@@ -37,7 +37,9 @@ public abstract class ConsoleReader {
 	 * @return the input stream
 	 */
 	public static InputStream readOnConsole() {
-		String entry = "";
+		
+		StringBuilder str = new StringBuilder();
+		String tmp = "";
 		final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		final String pp = new File(".").getAbsolutePath();
 		DEBUG.OUT("************************** CURRENT PATH **********************************\n"
@@ -46,14 +48,15 @@ public abstract class ConsoleReader {
 
 		do {
 			try {
-				entry = entry + br.readLine();
+				tmp = br.readLine();
+				str.append(tmp);
 			} catch (final IOException e) {
 				
 				e.printStackTrace();
 			}
-		} while (!entry.contains(END_OF_FILE));
+		} while (!tmp.contains(END_OF_FILE));
 
-		return new ByteArrayInputStream(entry.getBytes());
+		return new ByteArrayInputStream(str.toString().getBytes());
 
 	}
 

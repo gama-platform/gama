@@ -114,26 +114,38 @@ public class MetadataStructure {
 	 * @return the md header
 	 */
 	public String getMdHeader() {
-		String result = "";
+		
+		StringBuilder str = new StringBuilder();
+		
 		if (m_tags != null) {
 			for (int tagIdx = 0; tagIdx < m_tags.length; tagIdx++) {
 				// check if the concept exists in IConcept
 				if (ConceptManager.conceptIsPossibleToAdd(m_tags[tagIdx])) {
 					ConceptManager.addOccurrenceOfConcept(m_tags[tagIdx]);
-					result += "[//]: # (keyword|concept_" + m_tags[tagIdx] + ")\n";
+					str.append("[//]: # (keyword|concept_");
+					str.append(m_tags[tagIdx]);
+					str.append(")\n");
 				} else {
 					System.out.println("WARNING : the concept " + m_tags[tagIdx]
 							+ " does not exist in the list predefined concept tags ! (in model " + m_name + ")");
 				}
 			}
 		}
-		if (m_name != null && !m_name.isEmpty())
-			result += "# " + m_name + "\n\n\n";
-		if (m_author != null && !m_author.isEmpty())
-			result += "_Author : " + m_author + "_\n\n";
-		if (m_description != null && !m_description.isEmpty())
-			result += m_description + "\n\n";
-		return result;
+		if (m_name != null && !m_name.isEmpty()) {
+			str.append("# ");
+			str.append(m_name);
+			str.append("\n\n\n");			
+		}
+		if (m_author != null && !m_author.isEmpty()) {
+			str.append("_Author : ");
+			str.append(m_author);
+			str.append("_\n\n");		
+		}
+		if (m_description != null && !m_description.isEmpty()) {
+			str.append(m_description);
+			str.append("\n\n");		
+		}
+		return str.toString();
 	}
 
 	/**
