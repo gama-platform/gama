@@ -207,10 +207,10 @@ public class GamaServerExperimentJob extends ExperimentJob {
 
 					ByteBuffer byteBuffer = ByteBuffer.wrap(joinedArray);
 					if (!socket.isClosing() && !socket.isClosed()) { socket.send(byteBuffer); }
-					v.setValue(out.getValue(), out.getStep(), out.getType());
+					v.setValue(out.getValue(), out.getType());
 				}
 			} else {
-				v.setValue(null, this.step);
+				v.setValue(null);
 			}
 		}
 		// if (this.outputFile != null) {

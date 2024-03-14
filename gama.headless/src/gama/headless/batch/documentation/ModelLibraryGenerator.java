@@ -52,8 +52,6 @@ public class ModelLibraryGenerator {
 	/** The source folder. */
 	static String sourceFolder = "F:/Gama/GamaSource/";
 
-	/** The wiki folder on OVH. */
-	static String wikiFolderOnOVH = "http://vps226121.ovh.net/gm_wiki/";
 
 	/** The input path to model library. */
 	static String[] inputPathToModelLibrary =
@@ -71,8 +69,6 @@ public class ModelLibraryGenerator {
 	/** The input model screenshot. */
 	static String inputModelScreenshot = wikiFolder + "modelScreenshot.xml";
 
-	/** The headless bat path. */
-	static String headlessBatPath = wikiFolder + "headless.bat";
 
 	/** The list no screenshot. */
 	static String[] listNoScreenshot =
@@ -105,9 +101,7 @@ public class ModelLibraryGenerator {
 																// and
 																// if
 																// all
-	/** The images created path. */
-	// the experiments have been used.
-	static List<Path> imagesCreatedPath = new ArrayList<>();
+
 
 	/**
 	 * Update path.
@@ -117,7 +111,6 @@ public class ModelLibraryGenerator {
 		modelLibraryImagesPath = wikiFolder + "/resources/images/modelLibraryScreenshots";
 		inputFileForHeadlessExecution = wikiFolder + "/tempInputForHeadless.xml";
 		inputModelScreenshot = wikiFolder + "/modelScreenshot.xml";
-		headlessBatPath = wikiFolder + "/headless.bat";
 	}
 
 	/**

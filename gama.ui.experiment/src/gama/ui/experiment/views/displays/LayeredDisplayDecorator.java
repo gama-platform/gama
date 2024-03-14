@@ -86,8 +86,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	/** The normal parent of full screen control. */
 	protected Composite normalParentOfFullScreenControl, normalParentOfToolbar;
 
-	/** The side control weights. */
-	int[] sideControlWeights = { 30, 70 };
 
 	/** The full screen shell. */
 	protected Shell fullScreenShell;

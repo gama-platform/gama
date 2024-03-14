@@ -55,8 +55,6 @@ public class ListenedVariable {
 	/** The value. */
 	Object value;
 
-	/** The step. */
-	long step;
 
 	/** The path. */
 	String path;
@@ -115,9 +113,8 @@ public class ListenedVariable {
 	 * @param typ
 	 *            the typ
 	 */
-	public void setValue(final Object obj, final long st, final DataType typ) {
+	public void setValue(final Object obj,  final DataType typ) {
 		value = obj == null ? setNaValue() : obj;
-		this.step = st;
 		this.dataType = typ;
 	}
 
@@ -129,8 +126,8 @@ public class ListenedVariable {
 	 * @param st
 	 *            the st
 	 */
-	public void setValue(final Object obj, final long st) {
-		setValue(obj, st, this.dataType);
+	public void setValue(final Object obj) {
+		setValue(obj, this.dataType);
 	}
 
 	/**

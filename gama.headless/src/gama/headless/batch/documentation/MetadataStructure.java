@@ -19,19 +19,19 @@ import java.util.regex.Pattern;
 public class MetadataStructure {
 
 	/** The name regex. */
-	private final String NAME_REGEX = "\\* Name: (.*)";
+	private final static String NAME_REGEX = "\\* Name: (.*)";
 	
 	/** The author regex. */
-	private final String AUTHOR_REGEX = "\\* Author: (.*)";
+	private final static String AUTHOR_REGEX = "\\* Author: (.*)";
 	
 	/** The description regex. */
-	private final String DESCRIPTION_REGEX = "(?s)\\* Description: (.*)\\* Tags";
+	private final static String DESCRIPTION_REGEX = "(?s)\\* Description: (.*)\\* Tags";
 	
 	/** The tags regex. */
-	private final String TAGS_REGEX = "\\* Tags: (.*)";
+	private final static String TAGS_REGEX = "\\* Tags: (.*)";
 	
 	/** The tags separator. */
-	private final String TAGS_SEPARATOR = ",";
+	private final static String TAGS_SEPARATOR = ",";
 
 	/** The m name. */
 	private String m_name;

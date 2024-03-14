@@ -86,10 +86,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 	/** The nbr operators. */
 	// Statistic values
 	int nbrOperators;
-	
-	/** The nbr operators doc. */
-	int nbrOperatorsDoc;
-	
+		
 	/** The nbr skills. */
 	int nbrSkills;
 	
@@ -102,7 +99,6 @@ public class DocProcessor extends ElementProcessor<doc> {
 	public DocProcessor() {
 		// firstParsing = true;
 		nbrOperators = 0;
-		nbrOperatorsDoc = 0;
 		nbrSkills = 0;
 		nbrSymbols = 0;
 		tc = new TypeConverter();

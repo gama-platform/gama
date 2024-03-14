@@ -372,13 +372,12 @@ public class ExperimentJob implements IExperimentJob {
 			if (this.step % v.getFrameRate() == 0) {
 				final RichOutput out = simulator.getRichOutput(v);
 				if (out == null || out.getValue() == null) {} else if (out.getValue() instanceof BufferedImage) {
-					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), step,
-							out.getType());
+					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), out.getType());
 				} else {
-					v.setValue(out.getValue(), out.getStep(), out.getType());
+					v.setValue(out.getValue(), out.getType());
 				}
 			} else {
-				v.setValue(null, this.step);
+				v.setValue(null);
 			}
 		}
 		if (this.outputFile != null) { this.outputFile.writeResultStep(this.step, this.listenedVariables); }

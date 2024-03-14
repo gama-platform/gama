@@ -30,8 +30,6 @@ import gama.gaml.expressions.IExpression;
 
 public record Signature(IType[] list) implements Iterable<IType> {
 
-	/** The empty classes. */
-	static Class[] EMPTY_CLASSES = {};
 
 	/** The empty types. */
 	static IType[] EMPTY_TYPES = {};
