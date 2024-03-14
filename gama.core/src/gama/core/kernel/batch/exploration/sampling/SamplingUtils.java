@@ -91,7 +91,7 @@ public abstract class SamplingUtils {
 			case IType.STRING:
 				if (var.getAmongValue(scope).isEmpty()) { throw GamaRuntimeException.error("Trying to force a string variable in sampling without among facets", scope); }
 				int ms = var.getAmongValue(scope).size();
-				int sv = Math.round(Math.round(0 + ValFromSampling * (ms - 0)));
+				int sv = (int) Math.round(ValFromSampling * ms);
 				//System.out.println("La variable "+var.getAmongValue(scope).get(sv)+" a été tirée");
 				set.put(var.getName(), var.getAmongValue(scope).get(sv));
 				return set;
