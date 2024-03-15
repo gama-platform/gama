@@ -63,7 +63,7 @@ public class GamaIcon {
 	}
 
 	/** The icon cache. */
-	public static Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
+	public static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
 
 	/** The Constant MISSING. */
 	static final String MISSING = "gaml" + File.separator + "_unknown";

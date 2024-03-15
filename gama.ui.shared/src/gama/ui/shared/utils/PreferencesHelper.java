@@ -66,7 +66,7 @@ public class PreferencesHelper {
 	// .onChange(GamaFonts::setLabelFont);
 
 	/** The color menu sort. */
-	public static Pref<String> COLOR_MENU_SORT =
+	public static final Pref<String> COLOR_MENU_SORT =
 			create("pref_menu_colors_sort", "Sort colors menu by", "RGB value", IType.STRING, false)
 					.among(GamaColorMenu.SORT_NAMES).activates("menu.colors.reverse", "menu.colors.group")
 					.in(NAME, GamaPreferences.Interface.MENUS).onChange(pref -> {
@@ -82,13 +82,13 @@ public class PreferencesHelper {
 					});
 
 	/** The color menu reverse. */
-	public static Pref<Boolean> COLOR_MENU_REVERSE =
+	public static final Pref<Boolean> COLOR_MENU_REVERSE =
 			create("pref_menu_colors_reverse", "Reverse order", false, IType.BOOL, false)
 					.in(NAME, GamaPreferences.Interface.MENUS)
 					.onChange(pref -> GamaColorMenu.setReverse(pref ? -1 : 1));
 
 	/** The color menu group. */
-	public static Pref<Boolean> COLOR_MENU_GROUP =
+	public static final Pref<Boolean> COLOR_MENU_GROUP =
 			create("pref_menu_colors_group", "Group colors", false, IType.BOOL, false)
 					.in(NAME, GamaPreferences.Interface.MENUS).onChange(pref -> GamaColorMenu.breakdown = pref);
 

@@ -55,7 +55,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	}
 
 	/** The default label provider. */
-	public static ILabelProvider DEFAULT_LABEL_PROVIDER = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
+	public static final ILabelProvider DEFAULT_LABEL_PROVIDER = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
 
 	/** The Constant DESCRIPTORS. */
 	public static final Map<Integer, ImageDescriptor> DESCRIPTORS = new HashMap<>() {
@@ -92,7 +92,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	public static final int WEBLINK_BROKEN = -6;
 
 	/** The empty. */
-	public static Object[] EMPTY = {};
+	public static final Object[] EMPTY = {};
 
 	/** The root. */
 	private final P root;

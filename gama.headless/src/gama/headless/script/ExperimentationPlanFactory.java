@@ -35,16 +35,16 @@ import gama.headless.xml.XmlTAG;
 public class ExperimentationPlanFactory {
 
 	/** The default headless directory in workspace. */
-	public static String DEFAULT_HEADLESS_DIRECTORY_IN_WORKSPACE = ".headless";
+	public static final String DEFAULT_HEADLESS_DIRECTORY_IN_WORKSPACE = ".headless";
 
 	/** The default model directory in workspace. */
-	public static String DEFAULT_MODEL_DIRECTORY_IN_WORKSPACE = "models";
+	public static final String DEFAULT_MODEL_DIRECTORY_IN_WORKSPACE = "models";
 
 	/** The default seed. */
-	public static long DEFAULT_SEED = 1l;
+	public static final long DEFAULT_SEED = 1l;
 
 	/** The default final step. */
-	public static long DEFAULT_FINAL_STEP = 1000;
+	public static final long DEFAULT_FINAL_STEP = 1000;
 
 	// /**
 	// * Analyse workspace.

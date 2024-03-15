@@ -29,7 +29,7 @@ public abstract class ConsoleReader {
 	}
 	
 	/** The end of file. */
-	public static String END_OF_FILE = "</Experiment_plan>";
+	public static final String END_OF_FILE = "</Experiment_plan>";
 
 	/**
 	 * Read on console.

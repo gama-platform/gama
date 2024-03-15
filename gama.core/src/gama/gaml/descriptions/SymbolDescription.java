@@ -51,7 +51,7 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/** The type provider facets. */
-	protected static Set<String> typeProviderFacets = ImmutableSet
+	protected static final Set<String> typeProviderFacets = ImmutableSet
 			.copyOf(Arrays.asList(VALUE, TYPE, AS, SPECIES, OF, OVER, FROM, INDEX, FUNCTION, UPDATE, INIT, DEFAULT));
 
 	/** The state. */

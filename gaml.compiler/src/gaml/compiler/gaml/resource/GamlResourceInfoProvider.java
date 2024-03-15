@@ -49,20 +49,20 @@ public class GamlResourceInfoProvider implements IGamlResourceInfoProvider {
 	}
 
 	/** The find tags. */
-	public static Pattern findTags = Pattern.compile("Tags:\\s*(.*)");
+	public static final Pattern findTags = Pattern.compile("Tags:\\s*(.*)");
 
-	/** The find pragmes. */
-	public static Pattern findPragmas = Pattern.compile("^\\s*@([^\\s@]+)");
+	/** The find pragmas. */
+	public static final Pattern findPragmas = Pattern.compile("^\\s*@([^\\s@]+)");
 
 	/** The find strings. */
-	public static Pattern findStrings = Pattern.compile("('([^']*)')|(\"([^\"]*)\")");
+	public static final Pattern findStrings = Pattern.compile("('([^']*)')|(\"([^\"]*)\")");
 
 	/** The find experiments. */
 	public static Pattern findExperiments = Pattern.compile(
 			"^\\s*experiment\\s+(?:'([^']*)'|\"([^\"]*)\"|(\\w+))(?:\\s+type:\\s*(\\w+))?(?:\\s+virtual:\\s*(\\w+))?");
 
 	/** The instance. */
-	public static GamlResourceInfoProvider INSTANCE = new GamlResourceInfoProvider();
+	public static final GamlResourceInfoProvider INSTANCE = new GamlResourceInfoProvider();
 
 	/**
 	 * Gets the info.

@@ -34,22 +34,17 @@ import gama.extension.network.common.socket.SocketService;
 public class TCPConnector extends Connector {
 
 	/** The tcp server. */
-	public static String _TCP_SERVER = "__tcp_server";
-
-	/** The tcp socket. */
-	public static String _TCP_SOCKET = "__tcp_socket";
+	public static final String _TCP_SERVER = "__tcp_server";
 
 	/** The tcp client. */
-	public static String _TCP_CLIENT = "__tcp_client";
+	public static final String _TCP_CLIENT = "__tcp_client";
 
-	/** The tcp so timeout. */
-	public static Integer _TCP_SO_TIMEOUT = 100;
 
 	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
+	public static final String DEFAULT_HOST = "localhost";
 
 	/** The default port. */
-	public static String DEFAULT_PORT = "1988";
+	public static final String DEFAULT_PORT = "1988";
 
 	/** The socket. */
 	private SocketService socket;

@@ -19,16 +19,16 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 public class GamaNetworkException extends GamaRuntimeException {
 
 	/** The connection failure. */
-	public static String CONNECTION_FAILURE = "Network cannot be reached! Check that your server is connected.";
+	public static final String CONNECTION_FAILURE = "Network cannot be reached! Check that your server is connected.";
 	
 	/** The disconnection failure. */
-	public static String DISCONNECTION_FAILURE = "Cannot be disconnected!";
+	public static final String DISCONNECTION_FAILURE = "Cannot be disconnected!";
 	
 	/** The subscribe failure. */
-	public static String SUBSCRIBE_FAILURE = "Cannot subscribe to the expected topic!";
+	public static final String SUBSCRIBE_FAILURE = "Cannot subscribe to the expected topic!";
 	
 	/** The sending failure. */
-	public static String SENDING_FAILURE = "Cannot send the message to agent!";
+	public static final String SENDING_FAILURE = "Cannot send the message to agent!";
 
 	/**
 	 * Instantiates a new gama network exception.

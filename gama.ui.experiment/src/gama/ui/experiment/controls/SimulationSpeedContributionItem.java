@@ -69,7 +69,7 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	public final static int heightSize = 16;
 
 	/** The sliders. */
-	protected static List<SimpleSlider> sliders = new ArrayList<>();
+	protected final static List<SimpleSlider> sliders = new ArrayList<>();
 
 	/**
 	 *

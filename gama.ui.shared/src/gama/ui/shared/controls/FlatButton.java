@@ -43,7 +43,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	}
 
 	/** The menu image. */
-	static Image menuImage = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
+	static final Image menuImage = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
 
 	/**
 	 * Creates the.
@@ -190,10 +190,10 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	private boolean down = false;
 
 	/** The image left. */
-	public static int IMAGE_LEFT = 0;
+	public static final int IMAGE_LEFT = 0;
 
 	/** The image right. */
-	public static int IMAGE_RIGHT = 1;
+	public static final int IMAGE_RIGHT = 1;
 
 	/** The image style. */
 	private int imageStyle = IMAGE_LEFT;

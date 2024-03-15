@@ -25,7 +25,7 @@ import gama.gaml.expressions.IExpression;
 public class Arguments extends Facets {
 
 	/** The null. */
-	public static Arguments NULL = new Arguments();
+	public static final Arguments NULL = new Arguments();
 
 	/** The keys. */
 	List<String> keys;

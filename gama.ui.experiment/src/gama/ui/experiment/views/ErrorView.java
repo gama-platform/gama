@@ -47,7 +47,7 @@ import gama.ui.shared.views.ExpandableItemsView;
 public class ErrorView extends ExpandableItemsView<GamaRuntimeException> implements IGamaView.Error {
 
 	/** The id. */
-	public static String ID = IGui.ERROR_VIEW_ID;
+	public static final String ID = IGui.ERROR_VIEW_ID;
 
 	/** The number of displayed errors. */
 	int numberOfDisplayedErrors = GamaPreferences.Runtime.CORE_ERRORS_NUMBER.getValue();

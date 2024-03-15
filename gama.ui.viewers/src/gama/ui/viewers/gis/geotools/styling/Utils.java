@@ -48,12 +48,12 @@ public class Utils {
 	/**
 	 * The default StyleFactory to use.
 	 */
-	public static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
+	public static final StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
 
 	/**
 	 * The default FilterFactory to use.
 	 */
-	public static FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+	public static final FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
 
 	/**
 	 * Transform a swt Rectangle instance into an awt one.

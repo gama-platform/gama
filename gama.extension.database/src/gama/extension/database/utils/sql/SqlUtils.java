@@ -39,7 +39,7 @@ import gama.gaml.types.IType;
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class SqlUtils {
 
-	public static Map<String,ISqlConnector> externalConnectors = new HashMap<>();
+	public static final Map<String,ISqlConnector> externalConnectors = new HashMap<>();
 	
 	/**
 	 * Creates the connection object.
