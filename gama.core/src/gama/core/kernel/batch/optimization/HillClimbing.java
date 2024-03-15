@@ -165,6 +165,8 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 						neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
 					}
 					testedSolutions.put(neighborSol, neighborFitness);
+					//TODO: if the goal of this for loop was to find the best neighbor, we should break here
+					//also TODO: comment this code please
 					if (neighborSol.equals(bestSolution)) { bestNeighbor = neighborSol; }
 
 				}

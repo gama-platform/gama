@@ -51,27 +51,6 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 	/** The Constant TASK. */
 	private static final GamaIcon TASK = GamaIcon.named(IGamaIcons.MARKER_TASK);
 
-	/** The Constant fixables. */
-	private static final Map<String, GamaIcon> fixables = new HashMap() {
-
-		{
-			put(ERROR_ANNOTATION_TYPE, ERROR);
-			put(WARNING_ANNOTATION_TYPE, WARNING);
-			put(INFO_ANNOTATION_TYPE, INFO);
-			put("org.eclipse.ui.workbench.texteditor.task", TASK);
-		}
-	};
-
-	/** The Constant nonFixables. */
-	private static final Map<String, GamaIcon> nonFixables = new HashMap() {
-
-		{
-			put(ERROR_ANNOTATION_TYPE, ERROR);
-			put(WARNING_ANNOTATION_TYPE, WARNING);
-			put(INFO_ANNOTATION_TYPE, INFO);
-			put("org.eclipse.ui.workbench.texteditor.task", TASK);
-		}
-	};
 
 	/** The Constant deleted. */
 	private static final Map<String, GamaIcon> deleted = new HashMap() {

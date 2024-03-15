@@ -505,7 +505,7 @@ public class MulticriteriaAnalyzeOperator {
 				v2Contre = Cast.asFloat(scope, v2cr);
 			}
 			final Object max = critMap.get("maximize");
-			if (max != null && max instanceof Boolean) {
+			if (max instanceof Boolean) {
 				maximizeCrit.put(name, (Boolean) max);
 			}
 			final CritereFonctionsCroyances cfc =

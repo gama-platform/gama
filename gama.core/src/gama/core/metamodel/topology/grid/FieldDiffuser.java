@@ -42,7 +42,7 @@ public class FieldDiffuser {
 			CacheBuilder.newBuilder().build(new CacheLoader<SimulationAgent, FieldDiffuser>() {
 
 				@Override
-				public FieldDiffuser load(final SimulationAgent sim) throws Exception {
+				public FieldDiffuser load(final SimulationAgent sim) {
 					FieldDiffuser diffuser = new FieldDiffuser(sim.getScope());
 					DEBUG.OUT("Field Diffuser created for " + sim);
 					sim.postEndAction(s -> diffuser.diffuse());

@@ -91,7 +91,7 @@ public class TextSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave)
-			throws GamaRuntimeException, IOException {
+			throws GamaRuntimeException {
 		String toSave = Cast.asString(scope, item.value(scope));
 		char id = toSave.charAt(0);
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
