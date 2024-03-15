@@ -124,12 +124,15 @@ public class Reader {
 		final String name = getAttributeWithoutCase(e, XmlTAG.NAME_TAG);
 		final String id = getAttributeWithoutCase(e, XmlTAG.ID_TAG);
 		final String path = getAttributeWithoutCase(e, XmlTAG.OUTPUT_PATH);
-		final int width = Integer.valueOf(getAttributeWithoutCase(e, XmlTAG.WIDTH_TAG) != null
-				? getAttributeWithoutCase(e, XmlTAG.WIDTH_TAG) : "500");
-		final int height = Integer.valueOf(getAttributeWithoutCase(e, XmlTAG.HEIGHT_TAG) != null
-				? getAttributeWithoutCase(e, XmlTAG.HEIGHT_TAG) : "500");
-		final int framerate = Integer.valueOf(getAttributeWithoutCase(e, XmlTAG.FRAMERATE_TAG) != null
-				? getAttributeWithoutCase(e, XmlTAG.FRAMERATE_TAG) : "1");
+		final int width = Integer.parseInt(getAttributeWithoutCase(		e, XmlTAG.WIDTH_TAG) != null
+																	? getAttributeWithoutCase(e, XmlTAG.WIDTH_TAG) 
+																	: "500");
+		final int height = Integer.parseInt(getAttributeWithoutCase(		e, XmlTAG.HEIGHT_TAG) != null
+																	? getAttributeWithoutCase(e, XmlTAG.HEIGHT_TAG) 
+																			: "500");
+		final int framerate = Integer.parseInt(getAttributeWithoutCase(e, 	XmlTAG.FRAMERATE_TAG) != null
+																		? getAttributeWithoutCase(e, XmlTAG.FRAMERATE_TAG) 
+																		: "1");
 		return new Output(name, width, height, framerate, id, path);
 	}
 
@@ -235,7 +238,7 @@ public class Reader {
 		if (finalStep == null || "".equals(finalStep) || finalStep.toUpperCase().equals("INFINITY")) {
 			max = -1;
 		} else {
-			max = Integer.valueOf(finalStep);
+			max = Integer.parseInt(finalStep);
 			if (max < 0) {
 				DEBUG.ERR("WARNING: the headless simulation has no final step!");
 			}
@@ -248,7 +251,7 @@ public class Reader {
 		String sourcePath = getAttributeWithoutCase(e, XmlTAG.SOURCE_PATH_TAG);
 		final String experimentName = getAttributeWithoutCase(e, XmlTAG.EXPERIMENT_NAME_TAG);
 		final String seed = getAttributeWithoutCase(e, XmlTAG.SEED_TAG);
-		final double selectedSeed = seed == null || seed.length() == 0 ? 0l : Double.valueOf(seed).doubleValue();
+		final double selectedSeed = seed == null || seed.length() == 0 ? 0l : Double.parseDouble(seed);
 		if (sourcePath.charAt(0) != '/' && sourcePath.charAt(0) != '\\' && sourcePath.charAt(1) != ':') {
 			String pr;
 			if (fileName != null) {

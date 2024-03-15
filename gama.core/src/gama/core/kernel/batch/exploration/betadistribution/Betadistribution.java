@@ -34,7 +34,7 @@ public class Betadistribution {
 		this.objective = obj;
 		this.sample = new HashMap<>();
 		for (ParametersSet ps : sample.keySet()) { 
-			this.sample.put(ps, sample.get(ps).stream().mapToDouble(v -> Double.valueOf(v.toString())).boxed().toList());
+			this.sample.put(ps, sample.get(ps).stream().mapToDouble(v -> Double.parseDouble(v.toString())).boxed().toList());
 			double min = Collections.min(this.sample.get(ps));
 			double max = Collections.max(this.sample.get(ps));
 			if (min < this.objMin) {this.objMin=min;}

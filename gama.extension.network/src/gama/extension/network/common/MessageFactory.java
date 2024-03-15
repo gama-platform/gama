@@ -159,7 +159,7 @@ public final class MessageFactory {
 		final String headSplit[] = header.split(key);
 		final String from = headSplit[2];
 		final String to = headSplit[3];
-		final int command = Integer.valueOf(headSplit[4]).intValue();
+		final int command = Integer.parseInt(headSplit[4]);
 		final String content = data.substring(from.length() + to.length()+headSplit[4].length() + 5 * key.length());
 		return new CommandMessage(from, to,CommandType.values()[command], content);
 	}

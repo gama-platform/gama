@@ -97,7 +97,7 @@ public class TCPConnector extends Connector {
 		}
 
 		final String server = this.getConfigurationParameter(SERVER_URL);
-		final int port = Integer.valueOf(this.getConfigurationParameter(SERVER_PORT)).intValue();
+		final int port = Integer.parseInt(this.getConfigurationParameter(SERVER_PORT));
 		if (this.isServer) {
 			socket = new ServerService(agent, port, this);
 		} else {
