@@ -37,13 +37,13 @@ import java.net.http.HttpResponse;
 public class HTTPRequestConnector extends Connector {
 
 	/** The timeout. */
-	public static Integer DEFAULT_TIMEOUT = 5000;
+	public static final Integer DEFAULT_TIMEOUT = 5000;
 
 	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
+	public static final String DEFAULT_HOST = "localhost";
 
 	/** The default port. */
-	public static String DEFAULT_PORT = "80";
+	public static final String DEFAULT_PORT = "80";
 
 	/** The ss thread. */
 	// MultiThreadedArduinoReceiver ssThread;

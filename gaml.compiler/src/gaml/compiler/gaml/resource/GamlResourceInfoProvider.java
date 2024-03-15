@@ -58,7 +58,7 @@ public class GamlResourceInfoProvider implements IGamlResourceInfoProvider {
 	public static final Pattern findStrings = Pattern.compile("('([^']*)')|(\"([^\"]*)\")");
 
 	/** The find experiments. */
-	public static Pattern findExperiments = Pattern.compile(
+	public static final Pattern findExperiments = Pattern.compile(
 			"^\\s*experiment\\s+(?:'([^']*)'|\"([^\"]*)\"|(\\w+))(?:\\s+type:\\s*(\\w+))?(?:\\s+virtual:\\s*(\\w+))?");
 
 	/** The instance. */

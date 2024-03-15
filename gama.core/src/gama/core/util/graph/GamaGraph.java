@@ -120,7 +120,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	protected VertexRelationship vertexRelation;
 
 	/** The default node weight. */
-	protected static double DEFAULT_NODE_WEIGHT = 0.0;
+	protected static final double DEFAULT_NODE_WEIGHT = 0.0;
 
 	/** The edge species. */
 	protected ISpecies edgeSpecies;

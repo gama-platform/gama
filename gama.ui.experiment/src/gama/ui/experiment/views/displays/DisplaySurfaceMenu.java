@@ -67,7 +67,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class DisplaySurfaceMenu {
 
 	/** The layer images. */
-	public static Map<Class<? extends ILayer>, Image> layer_images = new LinkedHashMap<>();
+	public static final Map<Class<? extends ILayer>, Image> layer_images = new LinkedHashMap<>();
 
 	static {
 		layer_images.put(GridLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRID).image());

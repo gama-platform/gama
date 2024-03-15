@@ -61,7 +61,7 @@ public class CommandExecutor {
 	protected volatile LinkedBlockingQueue<Entry<WebSocket, IMap<String, Object>>> commandQueue;
 
 	/** The json encoder. */
-	protected static Json jsonEncoder = Json.getNew();
+	protected static final Json jsonEncoder = Json.getNew();
 
 	/** The command execution thread. */
 	// protected final Thread commandExecutionThread = new Thread(() -> {

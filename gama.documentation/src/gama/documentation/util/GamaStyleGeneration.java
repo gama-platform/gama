@@ -38,26 +38,26 @@ import gama.annotations.precompiler.doc.utils.XMLUtils;
 public class GamaStyleGeneration {
 
 	/** The keyword file. */
-	public static String KEYWORD_FILE = Constants.WIKI_FOLDER + "/keywords.xml";
+	public static final String KEYWORD_FILE = Constants.WIKI_FOLDER + "/keywords.xml";
 	
 	/** The gama style file. */
-	public static String GAMA_STYLE_FILE = "files/input/pandocPDF/gama_style.sty";
+	public static final String GAMA_STYLE_FILE = "files/input/pandocPDF/gama_style.sty";
 	
 	/** The list category. */
 	// BEWARE !! The order of the list_category is important !! The first one will be prioritary
-	public static String[] LIST_CATEGORY = { "statement", "type", "operator", "facet", "literal" };
+	public static final String[] LIST_CATEGORY = { "statement", "type", "operator", "facet", "literal" };
 	
 	/** The list forbidden char. */
-	public static String[] LIST_FORBIDDEN_CHAR = { "-", ":", "!", "?", "/", ".", "^", "@", "*", "+", "<", ">", "=" };
+	public static final String[] LIST_FORBIDDEN_CHAR = { "-", ":", "!", "?", "/", ".", "^", "@", "*", "+", "<", ">", "=" };
 	
 	/** The list undetected statement. */
-	public static String[] LIST_UNDETECTED_STATEMENT = { "species", "global", "grid", "model", "import", "output" };
+	public static final String[] LIST_UNDETECTED_STATEMENT = { "species", "global", "grid", "model", "import", "output" };
 	
 	/** The list literal. */
-	public static String[] LIST_LITERAL = { "true", "false", "unknown", "nil" };
+	public static final String[] LIST_LITERAL = { "true", "false", "unknown", "nil" };
 
 	/** The keyword map. */
-	private static Map<String, ArrayList<String>> keywordMap = new HashMap<>();
+	private static final Map<String, ArrayList<String>> keywordMap = new HashMap<>();
 
 	/**
 	 * Generate gama style.
