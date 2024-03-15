@@ -49,7 +49,7 @@ public class NavigatorSorter extends ViewerComparator {
 		}
 		if (e2 instanceof WrappedSyntacticContent) {
 			final WrappedSyntacticContent w = (WrappedSyntacticContent) e2;
-			if (w.element.isSpecies() && w.element.getKeyword().equals(IKeyword.GRID)) {
+			if (w.element.isSpecies() && IKeyword.GRID.equals(w.element.getKeyword())) {
 				return 0;
 			}
 			if (w.element.isSpecies()) {
@@ -58,7 +58,7 @@ public class NavigatorSorter extends ViewerComparator {
 			if (!w.element.hasChildren()) {
 				return 2;
 			}
-			if (w.element.hasChildren() && w.element.getKeyword().equals(IKeyword.ACTION)) {
+			if (w.element.hasChildren() && IKeyword.ACTION.equals(w.element.getKeyword())) {
 				return 3;
 			}
 			return 4;

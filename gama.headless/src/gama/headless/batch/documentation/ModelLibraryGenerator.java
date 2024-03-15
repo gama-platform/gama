@@ -234,8 +234,8 @@ public class ModelLibraryGenerator {
 				if (gamlFilePath.contains(sourceFolder + folderWithoutScreenshot)) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
-				if (gamlFilePath.split("/")[gamlFilePath.split("/").length - 2].compareTo("include") == 0
-						|| gamlFilePath.split("/")[gamlFilePath.split("/").length - 2].compareTo("includes") == 0) {
+				if (   "include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
+					|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
 			}

@@ -37,7 +37,7 @@ public class GamlQualifiedNameProvider extends IQualifiedNameProvider.AbstractIm
 
 		@Override
 		public String caseS_Reflex(final S_Reflex s) {
-			if (s.getKey().equals(IKeyword.ASPECT)) { return s.getName(); }
+			if (IKeyword.ASPECT.equals(s.getKey())) { return s.getName(); }
 			return NULL;
 		}
 

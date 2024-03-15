@@ -348,7 +348,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			///////////*****************
 			for( Element elt : ((TypeElement) e).getEnclosedElements()) {
 //				mes.printMessage(Kind.WARNING, ((TypeElement) e).getQualifiedName().toString() + " - " + elt.getSimpleName() + " - " + elt.getSimpleName().toString().equals("staticCast") + " - " + elt.getKind().equals(ElementKind.METHOD));
-				if(elt.getKind().equals(ElementKind.METHOD) &&  elt.getSimpleName().toString().equals(CAST_METHOD) ) {
+				if(ElementKind.METHOD.equals(elt.getKind()) &&  CAST_METHOD.equals(elt.getSimpleName().toString()) ) {
 					doc docMethod = elt.getAnnotation(doc.class);
 //					mes.printMessage(Kind.WARNING, "--------" + ((TypeElement) e).getQualifiedName().toString() + " - " + elt.getSimpleName() + " " + (docMethod));
 					

@@ -482,7 +482,7 @@ public class BatchAgent extends ExperimentAgent {
 									+ pop.getNumberOfActiveThreads() + " threads)",
 							"overlays/small.exp.batch.white" + suffix);
 				}
-				suffix = "".equals("") ? "2" : "";
+				suffix = "".equals(suffix) ? "2" : "";
 				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}

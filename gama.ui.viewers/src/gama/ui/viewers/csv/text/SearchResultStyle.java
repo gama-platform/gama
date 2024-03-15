@@ -40,7 +40,7 @@ public class SearchResultStyle {
 		// reset the StyleRange-Array for each new field
 		styleRange = new ArrayList<StyleRange>();
 		ranges = new ArrayList<Integer>(); // reset the ranges-array
-		if (searchTerm.equals("")) { return new int[] {}; }
+		if ("".equals(searchTerm)) { return new int[] {}; }
 
 		// determine all occurrences of the searchText and write the beginning
 		// and length of each occurrence into an array

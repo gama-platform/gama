@@ -1003,7 +1003,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		// first look for project description files
 		final String dotProject = IProjectDescription.DESCRIPTION_FILE_NAME;
 		for (final File file : contents) {
-			if (file.isFile() && file.getName().equals(dotProject)) {
+			if (file.isFile() && dotProject.equals(file.getName())) {
 				files.add(file);
 				if (!nestedProjects) {
 					// don't search sub-directories since we can't have nested
@@ -1016,7 +1016,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		// so recurse into sub-directories
 		for (final File content : contents) {
 			if (content.isDirectory()) {
-				if (!content.getName().equals(METADATA_FOLDER)) {
+				if (!METADATA_FOLDER.equals(content.getName())) {
 					try {
 						final String canonicalPath = content.getCanonicalPath();
 						if (!directoriesVisited.add(canonicalPath)) {
@@ -1060,7 +1060,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 				collectProjectFilesFromProvider(files, child, level + 1, monitor);
 			}
 			final String elementLabel = structureProvider.getLabel(child);
-			if (elementLabel.equals(IProjectDescription.DESCRIPTION_FILE_NAME)) {
+			if (IProjectDescription.DESCRIPTION_FILE_NAME.equals(elementLabel)) {
 				files.add(new ProjectRecord(child, entry, level));
 			}
 		}

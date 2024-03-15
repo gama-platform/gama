@@ -81,7 +81,7 @@ public class CheckConcepts {
 				final Element eElement = (Element) nNode;
 				final String category = eElement.getElementsByTagName("category").item(0).getTextContent();
 				final String conceptName = eElement.getElementsByTagName("name").item(0).getTextContent();
-				if (category.equals("concept")) {
+				if ("concept".equals(category)) {
 					if (ConceptManager.conceptIsPossibleToAdd(conceptName)) {
 						for (int i = 0; i < eElement.getElementsByTagName("associatedKeyword").getLength(); i++) {
 							ConceptManager.addOccurrenceOfConcept(conceptName,

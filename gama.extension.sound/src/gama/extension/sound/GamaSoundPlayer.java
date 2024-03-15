@@ -136,7 +136,7 @@ public class GamaSoundPlayer {
 				basicPlayer.open(soundFile);
 				basicPlayer.play();
 			} else if ((playerState == BasicPlayer.PLAYING || playerState == BasicPlayer.PAUSED)
-					&& playerMode.equals(OVERWRITE_MODE)) {
+					&& OVERWRITE_MODE.equals(playerMode)) {
 				basicPlayer.stop();
 
 				basicPlayer.open(soundFile);

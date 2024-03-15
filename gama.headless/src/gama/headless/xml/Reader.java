@@ -235,7 +235,7 @@ public class Reader {
 		final String finalStep = getAttributeWithoutCase(e, XmlTAG.FINAL_STEP_TAG);
 		int max;
 
-		if (finalStep == null || "".equals(finalStep) || finalStep.toUpperCase().equals("INFINITY")) {
+		if (finalStep == null || "".equals(finalStep) || "INFINITY".equals(finalStep.toUpperCase())) {
 			max = -1;
 		} else {
 			max = Integer.parseInt(finalStep);
