@@ -194,26 +194,20 @@ public class MtlLoader {
 						matset.mtlNum = mtlcounter;
 						mtlcounter++;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'a') {
-						final float[] coords = new float[3];
 						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.parseFloat(coordstext[i]);
+							matset.Ka[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Ka = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'd') {
-						final float[] coords = new float[3];
 						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.parseFloat(coordstext[i]);
+							matset.Kd[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Kd = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 's') {
-						final float[] coords = new float[3];
 						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.parseFloat(coordstext[i]);
+							matset.Ks[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Ks = coords;
 					} else if (newline.charAt(0) == 'd') {
 						final String[] coordstext = newline.split("\\s+");
 						matset.d = Float.parseFloat(coordstext[1]);
