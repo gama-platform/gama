@@ -1,16 +1,16 @@
 /*******************************************************************************************************
  *
  * IDisplayCreator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.display.NullDisplaySurface;
 import gama.gaml.compilation.GamlAddition;
 
@@ -64,7 +64,7 @@ public interface IDisplayCreator {
 		 *            the args
 		 * @return the i display surface
 		 */
-		public IDisplaySurface create(final IDisplayOutput output, final Object... args) {
+		public IDisplaySurface create(final IOutput output, final Object... args) {
 			final Object[] params = new Object[args.length + 1];
 			params[0] = output;
 			for (int i = 0; i < args.length; i++) { params[i + 1] = args[i]; }

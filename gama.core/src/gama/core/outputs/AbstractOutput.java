@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,10 +14,12 @@ import java.util.Collections;
 import java.util.List;
 
 import gama.annotations.precompiler.GamlAnnotations.inside;
+import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
@@ -53,6 +55,25 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	/** The refresh rate. */
 	private int refreshRate = 1;
 
+	/** The virtual. */
+	final boolean virtual;
+
+	/** The rendered. */
+	volatile boolean rendered;
+
+	/** The disposed. */
+	protected boolean disposed = false;
+
+	/** The view. */
+	protected IGamaView view;
+
+	/** The opener. */
+	final Runnable opener = () -> {
+		view = getScope().getGui().showView(getScope(), getViewId(), isUnique() ? null : getName(), 1); // IWorkbenchPage.VIEW_ACTIVATE
+		if (view == null) return;
+		view.addOutput(AbstractOutput.this);
+	};
+
 	/**
 	 * Instantiates a new abstract output.
 	 *
@@ -61,6 +82,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	 */
 	public AbstractOutput(final IDescription desc) {
 		super(desc);
+		virtual = IKeyword.TRUE.equals(getLiteral(IKeyword.VIRTUAL, null));
 		if (hasFacet(IKeyword.REFRESH)) {
 			refresh = this.getFacet(IKeyword.REFRESH);
 		} else {
@@ -98,6 +120,14 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		return true;
 	}
 
+	@Override
+	public void update() throws GamaRuntimeException {
+		if (view != null) {
+			// DEBUG.OUT("Output asking view to update");
+			view.update(this);
+		}
+	}
+
 	/**
 	 * Builds the scope from.
 	 *
@@ -125,6 +155,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	@Override
 	public void open() {
 		setOpen(true);
+		if (shouldOpenView()) { GAMA.getGui().run("Opening " + getName(), opener, false); }
 	}
 
 	// @Override
@@ -155,7 +186,10 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	void setOpen(final boolean open) { this.open = open; }
 
 	@Override
-	public void setPaused(final boolean suspended) { paused = suspended; }
+	public void setPaused(final boolean suspended) {
+		paused = suspended;
+		if (view != null) { view.updateToolbarState(); }
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
@@ -169,12 +203,13 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	 */
 	public List<? extends ISymbol> getChildren() { return Collections.EMPTY_LIST; }
 
-	// @Override
 	@Override
 	public String getId() {
-		if (!"".equals(this.getDescription().getModelDescription().getAlias())) return getName() + "#"
-				+ this.getDescription().getModelDescription().getAlias() + "#" + getScope().getExperiment().getName();
-		return getName(); // by default
+		IDescription desc = this.getDescription();
+		final String cName = desc == null ? null : desc.getModelDescription().getAlias();
+		if (cName != null && !"".equals(cName) && !getName().contains("#"))
+			return isUnique() ? getViewId() : getViewId() + getName() + "#" + cName;
+		return isUnique() ? getViewId() : getViewId() + getName();
 	}
 
 	/**
@@ -208,10 +243,12 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	/**
 	 * Sets the permanent.
 	 */
-	// @Override
 	void setPermanent() {
 		permanent = true;
 	}
+
+	@Override
+	public void setRendered(final boolean b) { rendered = b; }
 
 	/**
 	 * Checks if is permanent.
@@ -219,5 +256,41 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	 * @return true, if is permanent
 	 */
 	public boolean isPermanent() { return permanent; }
+
+	@Override
+	public boolean isUnique() { return false; }
+
+	@Override
+	public boolean isVirtual() { return virtual; }
+
+	/**
+	 * Should open view.
+	 *
+	 * @return true, if successful
+	 */
+	protected boolean shouldOpenView() {
+		return true;
+	}
+
+	@Override
+	public IGamaView getView() { return view; }
+
+	@Override
+	public boolean isRendered() {
+		if (view != null && !view.isVisible()) return true;
+		if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return true;
+		return rendered;
+	}
+
+	@Override
+	public void dispose() {
+		if (disposed) return;
+		disposed = true;
+		if (view != null) {
+			view.removeOutput(this);
+			view = null;
+		}
+		if (getScope() != null) { GAMA.releaseScope(getScope()); }
+	}
 
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * LayeredDisplayView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * LayeredDisplayView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,7 +38,7 @@ import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -140,7 +140,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	}
 
 	@Override
-	public void addOutput(final IDisplayOutput out) {
+	public void addOutput(final IOutput out) {
 
 		if (out == getOutput()) return; // Check if it is ok in terms of relaunch
 		// DEBUG.OUT("Adding Output " + out.getName());
@@ -354,8 +354,14 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		};
 	}
 
+	/**
+	 * Update.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void update(final IDisplayOutput output) {
+	public void update(final IOutput output) {
 		super.update(output);
 		updateSnapshot();
 	}
@@ -377,8 +383,14 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		return true;
 	}
 
+	/**
+	 * Removes the output.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void removeOutput(final IDisplayOutput output) {
+	public void removeOutput(final IOutput output) {
 		if (output == null) return;
 		if (output == getOutput() && isFullScreen()) { WorkbenchHelper.run(decorator::toggleFullScreen); }
 		output.dispose();

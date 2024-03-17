@@ -1,15 +1,15 @@
 /*******************************************************************************************************
  *
- * IOutput.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs;
 
+import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IScoped;
 import gama.core.common.interfaces.IStepable;
 import gama.core.runtime.IScope;
@@ -27,6 +27,7 @@ import gama.gaml.compilation.ISymbol;
  *
  * @author Alexis Drogoul, IRD
  * @revised in Dec. 2015 to simplify and document the interface of outputs
+ * @revised in Mar. 2024 to simplify the hierarchy of outputs (no more display outputs)
  */
 public interface IOutput extends ISymbol, IStepable, IScoped {
 
@@ -128,5 +129,58 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	 *            true if the user has created this output
 	 */
 	void setUserCreated(boolean b);
+
+	/**
+	 * If only one output of this kind is allowed in the UI (i.e. there can only be one instance of the corresponding
+	 * view), the output should return true
+	 *
+	 * @return true if only one view for this kind of output is possible, false otherwise
+	 */
+	boolean isUnique();
+
+	/**
+	 * Returns the identifier of the view to be opened in the UI. If this view should be unique, then this identifier
+	 * will be used to retrieve it (or create it if it is not yet instantiated). Otherwise, the identifier and the name
+	 * of the output are used in combination to create a new view.
+	 *
+	 * @return the identifier of the view that will be used as the concrete support for this output
+	 */
+	String getViewId();
+
+	/**
+	 * Returns whether the output has been described as 'virtual', i.e. not showable on screen and only used for display
+	 * inheritance.
+	 *
+	 * @return
+	 */
+	boolean isVirtual();
+
+	/**
+	 * Checks if is auto save.
+	 *
+	 * @return true, if is auto save
+	 */
+	default boolean isAutoSave() { return false; }
+
+	/**
+	 * Returns the GamaView associated with this output
+	 */
+
+	IGamaView getView();
+
+	/**
+	 * Checks if is rendered.
+	 *
+	 * @return true, if is rendered
+	 */
+	boolean isRendered();
+
+	/**
+	 * Sets the rendered.
+	 *
+	 * @param b
+	 *            the new rendered
+	 */
+	void setRendered(boolean b);
 
 }

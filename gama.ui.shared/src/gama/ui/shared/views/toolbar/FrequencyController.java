@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FrequencyController.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FrequencyController.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gama.ui.shared.views.toolbar;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.outputs.IDisplayOutput;
 import gama.core.outputs.IOutput;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -92,7 +91,7 @@ public class FrequencyController implements StateListener {
 	@Override
 	public void updateToReflectState() {
 		if (view == null) return;
-		final IDisplayOutput output = view.getOutput();
+		final IOutput output = view.getOutput();
 		if (output == null) return;
 
 		WorkbenchHelper.run(() -> {

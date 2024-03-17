@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelScene.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -44,7 +44,7 @@ import gama.ui.display.opengl.scene.layers.OverlayLayerObject;
 public class ModelScene {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The Constant AXES_KEY. */
@@ -70,11 +70,6 @@ public class ModelScene {
 
 	/** The current layer trace. */
 	private volatile int currentLayerTraceNumber;
-
-	// private volatile double zIncrement;
-
-	/** The max Z. */
-	// final double maxZ;
 
 	/**
 	 * Instantiates a new model scene.
@@ -125,8 +120,7 @@ public class ModelScene {
 		double maxZ = renderer.getMaxEnvDim() * 0.005;
 		// maxZ = gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber)
 		final double zIncrement = objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue() ? 0d
-               : maxZ / objectNumber * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
-
+				: maxZ / objectNumber * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
 
 		gl.push(GLMatrixFunc.GL_MODELVIEW);
 		gl.setZIncrement(renderer.getData().isOrtho() ? 0D : zIncrement);
@@ -157,20 +151,20 @@ public class ModelScene {
 		gl.pop(GLMatrixFunc.GL_MODELVIEW);
 	}
 
-//	/**
-//	 * Compute visual Z increment.
-//	 *
-//	 * @return the double
-//	 */
-//	private double computeVisualZIncrement(final OpenGL gl) {
-//		if (objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) return 0d;
-//		return gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber);
-//
-//		// The maximum visual z allowance between the object at the bottom and the one at the top
-//
-//		// The increment is simply
-//		// return maxZ / objectNumber;
-//	}
+	// /**
+	// * Compute visual Z increment.
+	// *
+	// * @return the double
+	// */
+	// private double computeVisualZIncrement(final OpenGL gl) {
+	// if (objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) return 0d;
+	// return gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber);
+	//
+	// // The maximum visual z allowance between the object at the bottom and the one at the top
+	//
+	// // The increment is simply
+	// // return maxZ / objectNumber;
+	// }
 
 	/**
 	 * Increment.

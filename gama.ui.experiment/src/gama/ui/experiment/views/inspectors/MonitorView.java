@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MonitorView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MonitorView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Text;
 import gama.core.common.interfaces.IValue;
 import gama.core.common.interfaces.ItemList;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
 import gama.core.runtime.IScope;
@@ -64,7 +64,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	}
 
 	@Override
-	public void addOutput(final IDisplayOutput output) {
+	public void addOutput(final IOutput output) {
 		super.addOutput(output);
 		addItem((MonitorOutput) output);
 	}

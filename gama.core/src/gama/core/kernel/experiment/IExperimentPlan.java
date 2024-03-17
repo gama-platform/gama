@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IExperimentPlan.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,6 @@ import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.outputs.FileOutput;
 import gama.core.outputs.IOutputManager;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -155,7 +154,7 @@ public interface IExperimentPlan extends ISpecies {
 	 *
 	 * @return the log
 	 */
-	FileOutput getLog();
+	// FileOutput getLog();
 
 	/**
 	 * Checks if is batch.

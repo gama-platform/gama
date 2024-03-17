@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * OutputPartsManager.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * OutputPartsManager.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
 import gama.core.common.interfaces.IGamaView;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.dev.DEBUG;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -51,9 +51,9 @@ public class OutputPartsManager {
 		@Override
 		public void partClosed(final IWorkbenchPartReference partRef) {
 			final IWorkbenchPart part = partRef.getPart(false);
-			if (part instanceof IGamaView) {
+			if (part instanceof IGamaView view) {
 				// DEBUG.LOG("Part Closed:" + part.getTitle());
-				final IDisplayOutput output = ((IGamaView) part).getOutput();
+				final IOutput output = view.getOutput();
 				if (output != null) {
 					output.setPaused(true);
 					output.close();
@@ -67,9 +67,9 @@ public class OutputPartsManager {
 		@Override
 		public void partOpened(final IWorkbenchPartReference partRef) {
 			final IWorkbenchPart part = partRef.getPart(false);
-			if (part instanceof IGamaView) {
+			if (part instanceof IGamaView view) {
 				// DEBUG.LOG("Part Opened:" + part.getTitle());
-				final IDisplayOutput output = ((IGamaView) part).getOutput();
+				final IOutput output = view.getOutput();
 				if (output != null && !output.isOpen()) {
 					output.open();
 					output.setPaused(false);

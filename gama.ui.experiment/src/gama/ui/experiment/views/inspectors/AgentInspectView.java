@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AgentInspectView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AgentInspectView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,7 +30,6 @@ import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.outputs.IDisplayOutput;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.runtime.IScope;
@@ -40,8 +39,8 @@ import gama.ui.experiment.parameters.AgentAttributesEditorsList;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gama.ui.shared.views.toolbar.Selector;
 
@@ -58,7 +57,7 @@ public class AgentInspectView extends AttributesEditorsView<IAgent>
 	public String firstPartName = null;
 
 	@Override
-	public void addOutput(final IDisplayOutput output) {
+	public void addOutput(final IOutput output) {
 
 		if (output == null) {
 			reset();
@@ -225,7 +224,7 @@ public class AgentInspectView extends AttributesEditorsView<IAgent>
 	@Override
 	public void removeItem(final IAgent a) {
 		InspectDisplayOutput found = null;
-		for (final IDisplayOutput out : outputs) {
+		for (final IOutput out : outputs) {
 			final InspectDisplayOutput output = (InspectDisplayOutput) out;
 			final IAgent[] agents = output.getLastValue();
 			if (agents != null && agents.length > 0 && agents[0] == a) {

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaViewPart.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaViewPart.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,7 +34,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.IOutputManager;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -58,7 +58,7 @@ public abstract class GamaViewPart extends ViewPart
 	}
 
 	/** The outputs. */
-	public final List<IDisplayOutput> outputs = new ArrayList<>();
+	public final List<IOutput> outputs = new ArrayList<>();
 
 	/** The parent. */
 	private Composite parent;
@@ -185,14 +185,14 @@ public abstract class GamaViewPart extends ViewPart
 			if (i != -1) { s_id = s_id.substring(0, i); }
 		}
 		final String id = site.getId() + (s_id == null ? "" : s_id);
-		IDisplayOutput out = null;
+		IOutput out = null;
 
 		final IExperimentPlan experiment = GAMA.getExperiment();
 
 		if (experiment != null) {
 			for (final IOutputManager manager : concat(
 					transform(GAMA.getControllers(), each -> each.getExperiment().getActiveOutputManagers()))) {
-				out = (IDisplayOutput) manager.getOutputWithId(id);
+				out = manager.getOutputWithId(id);
 				if (out != null) { break; }
 			}
 
@@ -209,7 +209,7 @@ public abstract class GamaViewPart extends ViewPart
 								final SimulationAgent spec = ((ExperimentAgent) expAgent).getSimulation();
 								if (spec != null) {
 									final IOutputManager manager = spec.getOutputManager();
-									if (manager != null) { out = (IDisplayOutput) manager.getOutputWithId(s_id); }
+									if (manager != null) { out = manager.getOutputWithId(s_id); }
 								}
 							}
 						}
@@ -297,8 +297,14 @@ public abstract class GamaViewPart extends ViewPart
 	 */
 	protected abstract Job createUpdateJob();
 
+	/**
+	 * Update.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void update(final IDisplayOutput output) {
+	public void update(final IOutput output) {
 		final Job job = getUpdateJob();
 		if (job != null) {
 			job.schedule();
@@ -313,13 +319,19 @@ public abstract class GamaViewPart extends ViewPart
 	}
 
 	@Override
-	public IDisplayOutput getOutput() {
+	public IOutput getOutput() {
 		if (outputs.isEmpty()) return null;
 		return outputs.get(0);
 	}
 
+	/**
+	 * Adds the output.
+	 *
+	 * @param out
+	 *            the out
+	 */
 	@Override
-	public void addOutput(final IDisplayOutput out) {
+	public void addOutput(final IOutput out) {
 		if (out == null) return;
 		if (!outputs.contains(out)) {
 			outputs.add(out);
@@ -376,8 +388,14 @@ public abstract class GamaViewPart extends ViewPart
 
 	}
 
+	/**
+	 * Removes the output.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void removeOutput(final IDisplayOutput output) {
+	public void removeOutput(final IOutput output) {
 		outputs.remove(output);
 		if (outputs.isEmpty()) { close(output.getScope()); }
 	}

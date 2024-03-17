@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PopulationInspectView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PopulationInspectView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -59,7 +59,7 @@ import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -227,7 +227,7 @@ public class PopulationInspectView extends GamaViewPart
 	public InspectDisplayOutput getOutput() { return (InspectDisplayOutput) super.getOutput(); }
 
 	@Override
-	public void addOutput(final IDisplayOutput output) {
+	public void addOutput(final IOutput output) {
 		// Either both are null or they are equal
 		if (getOutput() == output) return;
 		// super.addOutput(output);

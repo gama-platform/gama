@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -90,14 +90,6 @@ public interface IOutputManager extends IStepable, Iterable<IOutput> {
 	 * Forces all the outputs to update themselves whatever their refreshable state (see {@link IOutput#update()}
 	 */
 	void forceUpdateOutputs();
-
-	/**
-	 * Returns a collection of only the instances of IDisplayOutput among the outputs managed by this IOutputManager
-	 *
-	 * @return an iterable of IDisplayOutputs, which can be empty if the manager has no display outputs, but which will
-	 *         never be null
-	 */
-	Iterable<IDisplayOutput> getDisplayOutputs();
 
 	/**
 	 * Gets the monitors.

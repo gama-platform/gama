@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentPlan.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,13 +20,13 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.BatchOutput;
@@ -39,7 +39,6 @@ import gama.core.metamodel.population.GamaPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.topology.continuous.AmorphousTopology;
 import gama.core.outputs.ExperimentOutputManager;
-import gama.core.outputs.FileOutput;
 import gama.core.outputs.IOutputManager;
 import gama.core.outputs.LayoutStatement;
 import gama.core.outputs.SimulationOutputManager;
@@ -59,7 +58,6 @@ import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.GamlSpecies;
@@ -353,7 +351,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	protected IExploration exploration;
 
 	/** The log. */
-	private FileOutput log;
+	// private FileOutput log;
 
 	/** The is headless. */
 	private boolean isHeadless;
@@ -698,7 +696,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		IExpression data = output.getFacet(IKeyword.DATA);
 		if (data == null) { data = exploration.getOutputs(); }
 		final String dataString = data == null ? "time" : data.serializeToGaml(false);
-		log = new FileOutput(output.getLiteral(IKeyword.TO), dataString, new ArrayList(parameters.keySet()), this);
+		// log = new FileOutput(output.getLiteral(IKeyword.TO), dataString, new ArrayList(parameters.keySet()), this);
 	}
 
 	/**
@@ -1002,8 +1000,13 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	@Override
 	public IExploration getExplorationAlgorithm() { return exploration; }
 
-	@Override
-	public FileOutput getLog() { return log; }
+	/**
+	 * Gets the log.
+	 *
+	 * @return the log
+	 */
+	// @Override
+	// public FileOutput getLog() { return log; }
 
 	/**
 	 * Adds the explorable parameter.
