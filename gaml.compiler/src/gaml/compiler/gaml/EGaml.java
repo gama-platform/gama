@@ -1,11 +1,12 @@
 /*******************************************************************************************************
  *
- * EGaml.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation platform .
+ * EGaml.java, in gaml.compiler, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gaml.compiler.gaml;
 
@@ -24,47 +25,6 @@ import gama.dev.COUNTER;
 import gama.gaml.compilation.IGamlEcoreUtils;
 import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.descriptions.ModelDescription;
-import gaml.compiler.gaml.Access;
-import gaml.compiler.gaml.ActionDefinition;
-import gaml.compiler.gaml.ActionRef;
-import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.ArgumentPair;
-import gaml.compiler.gaml.Array;
-import gaml.compiler.gaml.BinaryOperator;
-import gaml.compiler.gaml.Block;
-import gaml.compiler.gaml.EquationDefinition;
-import gaml.compiler.gaml.EquationRef;
-import gaml.compiler.gaml.Expression;
-import gaml.compiler.gaml.Facet;
-import gaml.compiler.gaml.Function;
-import gaml.compiler.gaml.GamlDefinition;
-import gaml.compiler.gaml.GamlFactory;
-import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
-import gaml.compiler.gaml.If;
-import gaml.compiler.gaml.Model;
-import gaml.compiler.gaml.Parameter;
-import gaml.compiler.gaml.Point;
-import gaml.compiler.gaml.S_Action;
-import gaml.compiler.gaml.S_Assignment;
-import gaml.compiler.gaml.S_Definition;
-import gaml.compiler.gaml.S_DirectAssignment;
-import gaml.compiler.gaml.S_Display;
-import gaml.compiler.gaml.S_Equations;
-import gaml.compiler.gaml.S_If;
-import gaml.compiler.gaml.S_Reflex;
-import gaml.compiler.gaml.SkillFakeDefinition;
-import gaml.compiler.gaml.SkillRef;
-import gaml.compiler.gaml.Statement;
-import gaml.compiler.gaml.StringLiteral;
-import gaml.compiler.gaml.TerminalExpression;
-import gaml.compiler.gaml.TypeDefinition;
-import gaml.compiler.gaml.TypeRef;
-import gaml.compiler.gaml.Unary;
-import gaml.compiler.gaml.UnitFakeDefinition;
-import gaml.compiler.gaml.UnitName;
-import gaml.compiler.gaml.VarDefinition;
-import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.impl.ActionArgumentsImpl;
 import gaml.compiler.gaml.impl.BlockImpl;
 import gaml.compiler.gaml.impl.ExpressionListImpl;
@@ -496,7 +456,7 @@ public class EGaml implements IGamlEcoreUtils {
 			}
 		}
 
-		if (result.isBlank()) {
+		if (result == null || result.isBlank()) {
 			final ICompositeNode cc = NodeModelUtils.getNode(o);
 			if (cc != null) { result = NodeModelUtils.getTokenText(cc); }
 		}
