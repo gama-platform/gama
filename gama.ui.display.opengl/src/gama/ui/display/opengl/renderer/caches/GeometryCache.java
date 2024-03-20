@@ -61,7 +61,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 public class GeometryCache {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant PI_2. */
@@ -215,7 +215,7 @@ public class GeometryCache {
 	 * @return the integer
 	 */
 	public Integer get(final GamaGeometryFile file) {
-		DEBUG.OUT("Getting from cache: " + file);
+		// DEBUG.OUT("Getting from cache: " + file);
 		return fileCache.getUnchecked(file.getPath(scope));
 	}
 
