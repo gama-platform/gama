@@ -20,13 +20,13 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.BatchOutput;
@@ -59,7 +59,6 @@ import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.GamlSpecies;

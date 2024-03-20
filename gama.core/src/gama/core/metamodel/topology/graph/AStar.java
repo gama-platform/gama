@@ -56,8 +56,6 @@ public class AStar<V, E> {
 	/** The is spatial graph. */
 	protected boolean isSpatialGraph;
 	
-	/** The is path found. */
-	protected boolean isPathFound = false;
 
 	/**
 	 * Instantiates a new a star.
@@ -170,7 +168,6 @@ public class AStar<V, E> {
 		closedMap.clear();
 
 		result = null;
-		isPathFound = false;
 	}
 
 	/**
@@ -184,14 +181,12 @@ public class AStar<V, E> {
 		cleanAll();
 		openMap.put(sourceNode, new ASNode(sourceNode, null, null, 0, heuristic(sourceNode, targetNode)));
 
-		isPathFound = false;
 
 		while (!openMap.isEmpty()) {
 			final ASNode current = getNextBetterNode();
 			assert current != null;
 			if (current.node.equals(targetNode)) {
 				assert current.edge != null;
-				isPathFound = true;
 				result = buildPath(current);
 				return;
 			}

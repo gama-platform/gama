@@ -40,12 +40,6 @@ public class TCPConnector extends Connector {
 	public static final String _TCP_CLIENT = "__tcp_client";
 
 
-	/** The default host. */
-	public static final String DEFAULT_HOST = "localhost";
-
-	/** The default port. */
-	public static final String DEFAULT_PORT = "1988";
-
 	/** The socket. */
 	private SocketService socket;
 

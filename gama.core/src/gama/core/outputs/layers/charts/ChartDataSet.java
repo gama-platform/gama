@@ -120,9 +120,6 @@ public class ChartDataSet {
 	/** The use X labels. */
 	boolean useXLabels = false;
 
-	/** The use Y source. */
-	boolean useYSource = false;
-
 	/** The use Y labels. */
 	boolean useYLabels = false;
 

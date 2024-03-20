@@ -27,28 +27,14 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 public class MorrisSampling extends SamplingUtils {
 
 	public static class Trajectory {
-		List<Double> seed;
-		List<Integer> variableOrder;
-		List<Double> deltas;
 		List<List<Double>> points;
 
 		/**
 		 * Build a trajectory.
-		 *
-		 * @param seed
-		 *            : First value for each parameters
-		 * @param variableOrder
-		 *            : List of indices indicating the visit order of each parameters
-		 * @param deltas
-		 *            : the increase/decrease value for each parameters
 		 * @param points
 		 *            : Points that the trajectory visit.
 		 */
-		public Trajectory(final List<Double> seed, final List<Integer> variableOrder, final List<Double> deltas,
-				final List<List<Double>> points) {
-			this.seed = seed;
-			this.variableOrder = variableOrder;
-			this.deltas = deltas;
+		public Trajectory(final List<List<Double>> points) {
 			this.points = points;
 		}
 	}
@@ -126,11 +112,9 @@ public class MorrisSampling extends SamplingUtils {
 		Collections.shuffle(orderVariables);
 		List<Integer> directionVariables = new ArrayList<>();
 		IntStream.range(0, k).forEach(s -> directionVariables.add(rng.nextInt(2) * 2 - 1));
-		List<Integer> new_orderVariables = new ArrayList<>(orderVariables);
 		List<Object> List_p_d = trajectoryBuilder(delta, orderVariables, directionVariables, seed);
 		List<List<Double>> points = (List<List<Double>>) List_p_d.get(0);
-		List<Double> deltas = (List<Double>) List_p_d.get(1);
-		return new Trajectory(seed, new_orderVariables, deltas, points);
+		return new Trajectory(points);
 	}
 
 	/**

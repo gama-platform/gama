@@ -57,8 +57,6 @@ public abstract class SymbolDescription implements IDescription {
 	/** The state. */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
-	/** The order. */
-	// private final int order = COUNTER.GET_UNIQUE();
 
 	/** The facets. */
 	private Facets facets;

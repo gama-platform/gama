@@ -43,12 +43,6 @@ public class WebSocketConnector extends Connector {
 	/** The websocket so timeout. */
 	public static Integer _WEBSOCKET_SO_TIMEOUT = 100;
 
-	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
-	
-	/** The default port. */
-	public static String DEFAULT_PORT = "1988";
-
 	/** The socket. */
 	private SocketService socket;
 

@@ -19,7 +19,6 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.statements.ActionStatement;
 import gama.gaml.statements.Arguments;
 
@@ -34,9 +33,6 @@ public class GamaWizard extends Wizard{
 	
 	/** The title. */
 	protected String title;
-	
-	/** The exp. */
-	protected IExpression exp;
 	
 	/** The finish. */
 	protected ActionDescription finish;

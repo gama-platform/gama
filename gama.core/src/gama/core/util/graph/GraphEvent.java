@@ -18,10 +18,6 @@ import gama.core.runtime.IScope;
 @SuppressWarnings({ "rawtypes" })
 public final class GraphEvent {
 
-	/**
-	 * The corresponding graph
-	 */
-	public final IGraph graph;
 
 	/**
 	 * the timestep at which the event was sent
@@ -99,10 +95,9 @@ public final class GraphEvent {
 	 * @param vertex the vertex
 	 * @param eventType the event type
 	 */
-	public GraphEvent(final IScope scope, final IGraph graph, final Object sender, final Object edge,
+	public GraphEvent(final IScope scope, final Object sender, final Object edge,
 			final Object vertex, final GraphEventType eventType) {
 		super();
-		this.graph = graph;
 		this.sender = sender;
 		this.edge = edge;
 		this.vertex = vertex;

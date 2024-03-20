@@ -113,8 +113,6 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	/** The sample size. */
 	public int sample_size = 10;
 
-	/** The threshold. */
-	public double threshold = -1;
 	/** Theoretical inputs */
 	private List<Batch> parameters;
 	/** Theoretical outputs */
@@ -219,7 +217,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
 		if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+			String path_to = Cast.asString(scope, outputFilePath.value(scope));
 			final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parento = fo.getParentFile();
 			if (!parento.exists()) { parento.mkdirs(); }

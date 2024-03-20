@@ -14,7 +14,6 @@ import gama.core.util.IMap;
 
 public class Betadistribution {
 	
-	String objective;
 	double objMin = Double.MAX_VALUE; double objMax = Double.MIN_VALUE;
 	double[] empiricalCDFGranularity;
 	
@@ -31,7 +30,6 @@ public class Betadistribution {
 	}
 	
 	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity, String obj) {
-		this.objective = obj;
 		this.sample = new HashMap<>();
 		for (ParametersSet ps : sample.keySet()) { 
 			this.sample.put(ps, sample.get(ps).stream().mapToDouble(v -> Double.parseDouble(v.toString())).boxed().toList());

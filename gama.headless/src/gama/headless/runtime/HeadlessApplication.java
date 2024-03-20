@@ -167,9 +167,6 @@ public class HeadlessApplication implements IApplication {
 	/** The Constant WRITE_XMI. */
 	final public static String WRITE_XMI = "-write-xmi";
 
-	/** The head less simulation. */
-	public static boolean headLessSimulation = false;
-
 	/** The socket. */
 	public int socket = -1;
 
@@ -188,9 +185,6 @@ public class HeadlessApplication implements IApplication {
 
 	/** The processor queue. */
 	public final SimulationRuntime processorQueue = new SimulationRuntime();
-
-	/** The socket server. */
-	public GamaWebSocketServer socketServer;
 
 	/** The is server. */
 	static boolean isServer = false;

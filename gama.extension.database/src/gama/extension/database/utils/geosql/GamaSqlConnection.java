@@ -324,7 +324,9 @@ public class GamaSqlConnection extends GamaGisFile {
 
 			SimpleFeatureSource source = null;
 			SimpleFeatureCollection sfeatures = null; // Query data
-			final Map<String, String> attributes = new LinkedHashMap(); // Meta
+			
+			// removing metat data as it seems to not be used
+//			final Map<String, String> attributes = new LinkedHashMap(); // Meta
 																		// data
 			ReferencedEnvelope env = new ReferencedEnvelope();
 			CoordinateReferenceSystem crs = null;
@@ -347,17 +349,17 @@ public class GamaSqlConnection extends GamaGisFile {
 					} catch (final Exception e) {}
 				}
 				number = sfeatures.size(); // get number of records
-				// get meta data
-				final java.util.List<AttributeDescriptor> att_list = source.getSchema().getAttributeDescriptors();
-				for (final AttributeDescriptor desc : att_list) {
-					String type;
-					if (desc.getType() instanceof GeometryType) {
-						type = "geometry";
-					} else {
-						type = Types.get(desc.getType().getBinding()).toString();
-					}
-					attributes.put(desc.getName().getLocalPart(), type);
-				}
+//				// get meta data
+//				final java.util.List<AttributeDescriptor> att_list = source.getSchema().getAttributeDescriptors();
+//				for (final AttributeDescriptor desc : att_list) {
+//					String type;
+//					if (desc.getType() instanceof GeometryType) {
+//						type = "geometry";
+//					} else {
+//						type = Types.get(desc.getType().getBinding()).toString();
+//					}
+//					attributes.put(desc.getName().getLocalPart(), type);
+//				}
 			} catch (final Exception e) {
 				DEBUG.ERR("Error in reading metadata of " + tableName);
 

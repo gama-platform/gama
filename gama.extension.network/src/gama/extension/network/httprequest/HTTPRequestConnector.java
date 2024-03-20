@@ -36,8 +36,6 @@ import java.net.http.HttpResponse;
  */
 public class HTTPRequestConnector extends Connector {
 
-	/** The timeout. */
-	public static final Integer DEFAULT_TIMEOUT = 5000;
 
 	/** The default host. */
 	public static final String DEFAULT_HOST = "localhost";

@@ -95,11 +95,7 @@ import gama.gaml.types.IType;
 						type = IType.STRING,
 						optional = true,
 						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris sampling will be perform and saved in the corresponding file")),
-				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")) },
+				 },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",
@@ -215,7 +211,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			}
 			/* Save the simulation values in the provided .csv file (input and corresponding output) */
 			if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-				path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+				path_to = Cast.asString(scope, outputFilePath.value(scope));
 				final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 				final File parento = fo.getParentFile();
 				if (!parento.exists()) { parento.mkdirs(); }
@@ -297,7 +293,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 * @param scope
 	 *            the scope
 	 */
-	private void saveSimulation(final Map<String, List<Double>> rebuilt_output, final File file, final IScope scope) {
+	private void saveSimulation(final Map<String, List<Double>> rebuilt_output, final File file, final IScope scope) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildSimulationCsv(rebuilt_output));
 		} catch (Exception e) {
@@ -346,7 +342,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 * @return the list
 	 */
 	public List<ParametersSet> buildParameterSetsFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) {
+			final List<ParametersSet> sets) throws GamaRuntimeException{
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);

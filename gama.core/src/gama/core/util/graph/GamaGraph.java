@@ -766,7 +766,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( edge == null ) { return false; }
 		edgeMap.put((E) e, edge);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, e, null, GraphEventType.EDGE_ADDED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 
 	}
@@ -829,7 +829,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( vertex == null ) { return false; }
 		vertexMap.put((V) v, vertex);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, null, v, GraphEventType.VERTEX_ADDED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, null, v, GraphEventType.VERTEX_ADDED));
 		return true;
 
 	}
@@ -998,7 +998,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		edge.removeFromVerticesAs(e);
 		edgeMap.remove(e);
 		if (generatedEdges.contains(e)) { ((IAgent) e).dispose(); }
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, e, null, GraphEventType.EDGE_REMOVED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_REMOVED));
 		return true;
 	}
 
@@ -1021,7 +1021,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		for (final Object e : edges) { removeEdge(e); }
 
 		vertexMap.remove(v);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, null, v, GraphEventType.VERTEX_REMOVED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, null, v, GraphEventType.VERTEX_REMOVED));
 		return true;
 	}
 

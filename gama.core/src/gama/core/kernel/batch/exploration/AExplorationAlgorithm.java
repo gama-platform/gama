@@ -43,9 +43,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	/** The outputs expression. */
 	protected IExpression outputsExpression;
 	
-	/** The output variables. */
-	protected List<String> outputVariables;
-	
 	/** The automatic output batch file */
 	protected IExpression outputFilePath;
 	
