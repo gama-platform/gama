@@ -845,7 +845,7 @@ public class ModelLibraryGenerator {
 			String line = null;
 
 			// check if the file contains a header
-			if ((line = br.readLine()).startsWith("/**")) {
+			if ((line = br.readLine()) != null && line.startsWith("/**")) {
 				result.append(line).append("\n");
 				while ((line = br.readLine()) != null) {
 					result.append(line).append("\n");

@@ -54,7 +54,7 @@ public abstract class ConsoleReader {
 				
 				e.printStackTrace();
 			}
-		} while (!tmp.contains(END_OF_FILE));
+		} while (tmp != null && !tmp.contains(END_OF_FILE));
 
 		return new ByteArrayInputStream(str.toString().getBytes());
 

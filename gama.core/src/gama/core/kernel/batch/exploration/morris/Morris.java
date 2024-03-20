@@ -120,7 +120,7 @@ public class Morris {
 	 *            the morris coefficient
 	 */
 	public static void writeAndTellResult(final String name, final String path, final IScope scope,
-			final List<Map<String, Double>> morris_coefficient) {
+			final List<Map<String, Double>> morris_coefficient) throws GamaRuntimeException {
 		Map<String, Double> mu = morris_coefficient.get(0);
 		Map<String, Double> mu_star = morris_coefficient.get(1);
 		Map<String, Double> sigma = morris_coefficient.get(2);
@@ -142,7 +142,7 @@ public class Morris {
 	 *            id of the column of the first output
 	 * @return A List of Outputs' values
 	 */
-	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) {
+	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);

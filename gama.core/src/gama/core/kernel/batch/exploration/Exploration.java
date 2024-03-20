@@ -336,7 +336,7 @@ public class Exploration extends AExplorationAlgorithm {
 	 * @return
 	 */
 	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) {
+			final List<ParametersSet> sets) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
@@ -453,14 +453,9 @@ public class Exploration extends AExplorationAlgorithm {
 					increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
 
 					if (increment == null) {
-						Double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
-						if (d == null) {
-							GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Cannot retrieve steps "
-									+ var.getStepValue(scope) + " of paramter " + var.getName(), scope), true);
-						} else {
-							stepV = d;
-							increment = new GamaPoint(d, d, d);
-						}
+						double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
+						stepV = d;
+						increment = new GamaPoint(d, d, d);
 					} else {
 						stepV = (increment.x + increment.y + increment.z) / 3.0;
 

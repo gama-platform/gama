@@ -48,7 +48,7 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	}
 
 	/** The instance. */
-	private static SimulationSpeedContributionItem instance;
+	private static SimulationSpeedContributionItem INSTANCE;
 
 	/** The max. */
 	static double max = 1000;
@@ -104,7 +104,7 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	 * Instantiates a new simulation speed contribution item.
 	 */
 	public SimulationSpeedContributionItem() {
-		instance = this;
+		INSTANCE = this;
 	}
 
 	/**
@@ -213,6 +213,6 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	 *
 	 * @return single instance of SimulationSpeedContributionItem
 	 */
-	public static SimulationSpeedContributionItem getInstance() { return instance; }
+	public static SimulationSpeedContributionItem getInstance() { return INSTANCE; }
 
 }

@@ -156,7 +156,7 @@ public class ImageLayer extends AbstractLayer {
 	 *            the input
 	 * @return the gama image file
 	 */
-	private IImageProvider verifyFile(final IScope scope, final Object input) {
+	private IImageProvider verifyFile(final IScope scope, final Object input) throws GamaRuntimeFileException, GamaRuntimeException {
 		if (input == cachedImageProvider) return cachedImageProvider;
 		if (!(input instanceof IImageProvider result))
 			throw GamaRuntimeException.error("Not a provider of images: " + provider.serializeToGaml(false), scope);

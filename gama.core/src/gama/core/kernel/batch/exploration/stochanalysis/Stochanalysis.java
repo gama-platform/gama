@@ -224,11 +224,11 @@ public class Stochanalysis {
 	 *            the scope
 	 */
 	public static void writeAndTellReport(final File f, final Map<String, Map<ParametersSet, Map<String, List<Double>>>> outputs,
-			final int nbsample, final int nbreplicates, final IScope scope) {
+			final int nbsample, final int nbreplicates, final IScope scope) throws GamaRuntimeException {
 
 		try {
 			try (FileWriter fw = new FileWriter(f, false)) {
-				fw.write( FileNameUtils.getExtension(f.getPath()).equalsIgnoreCase("txt") ? 
+				fw.write("txt".equalsIgnoreCase(FileNameUtils.getExtension(f.getPath())) ? 
 						buildResultMap(outputs, nbsample, nbreplicates, scope) : 
 							buildStochMap(outputs, nbsample, nbreplicates, scope));
 				
@@ -281,7 +281,7 @@ public class Stochanalysis {
 	 * @param scope
 	 */
 	public static void writeAndTellResult(final File f, final IMap<ParametersSet, Map<String, List<Object>>> outputs,
-			final IScope scope) {
+			final IScope scope) throws GamaRuntimeException{
 		try (FileWriter fw = new FileWriter(f, false)) {
 			fw.write(buildSimulationCsv(outputs, scope));
 		} catch (Exception e) {
@@ -575,7 +575,7 @@ public class Stochanalysis {
 	 *            the scope
 	 * @return the list
 	 */
-	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) {
+	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) throws GamaRuntimeException{
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
@@ -651,7 +651,7 @@ public class Stochanalysis {
 	 *            the scope
 	 * @return the string
 	 */
-	//TODO: Need to be tested and change like the main method if it works
+	//TODO: Needs to be tested and change like the main method if it works
 	@SuppressWarnings ("unchecked")
 	public static String stochasticityAnalysis_From_CSV(final int replicat, final double threshold,
 			final String path_to_data, final int id_output, final IScope scope) {
