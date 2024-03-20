@@ -501,17 +501,18 @@ public class DocProcessor extends ElementProcessor<doc> {
 			}
 			
 			final String[] tabExtension = e.getAnnotation(file.class).extensions();
-			String listExtension = "";
+			StringBuilder listExtensions = new StringBuilder();
 			if (tabExtension.length > 0) {
-				listExtension = tabExtension[0];
+				listExtensions.append(tabExtension[0]);
 				if (tabExtension.length > 1) {
 					for (int i = 1; i < tabExtension.length; i++) {
-						listExtension = listExtension + ", " + tabExtension[i];
+						listExtensions.append(", ");
+						listExtensions.append(tabExtension[i]);
 					}
 				}
 			}
 			op_file.setDocumentation("Constructs a file of type " + e.getAnnotation(file.class).name()
-					+ ". Allowed extensions are limited to " + listExtension);
+					+ ". Allowed extensions are limited to " + listExtensions.toString());
 
 			op_file.addSeeAlso("is_" + e.getAnnotation(file.class).name());
 			op_is.addSeeAlso(e.getAnnotation(file.class).name() + "_file");

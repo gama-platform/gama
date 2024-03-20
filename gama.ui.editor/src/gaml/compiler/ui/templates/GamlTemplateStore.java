@@ -109,15 +109,23 @@ public class GamlTemplateStore extends XtextTemplateStore {
 	 * @return the new id from id
 	 */
 	public String getNewIdFromId(final String id) {
-		String newId = "";
+		StringBuilder newIdBuilder = new StringBuilder();
 		String[] strings = id.split("\\.");
 		final String last = strings[strings.length - 1];
 		Integer index;
+		final String newId;
 		if (Strings.isGamaNumber(last)) {
 			index = Integer.decode(last);
 			strings = Arrays.copyOf(strings, strings.length - 1);
-			for (final String s : strings) { newId += s + "."; }
-			newId = newId.substring(0, newId.length() - 1);
+			int i = 0;
+			for (final String s : strings) { 
+				newIdBuilder.append(s);
+				i++;
+				if (i < strings.length) {
+					newIdBuilder.append("."); 
+				}
+			}
+			newId = newIdBuilder.toString();
 			if (indexes.containsKey(newId)) { index = indexes.get(newId); }
 			indexes.put(newId, index + 1);
 		} else {
