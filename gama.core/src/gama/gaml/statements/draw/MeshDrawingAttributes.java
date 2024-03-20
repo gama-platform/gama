@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * MeshDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MeshDrawingAttributes.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
@@ -98,15 +98,14 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 */
 	@SuppressWarnings ("unchecked")
 	public static IMeshColorProvider computeColors(final Object colors, final boolean isGrayscale) {
-		if (colors instanceof GamaColor) return new ColorBasedMeshColorProvider((GamaColor) colors);
-		if (colors instanceof GamaPalette) return new PaletteBasedMeshColorProvider((GamaPalette) colors);
-		if (colors instanceof GamaScale)
-			return new ScaleBasedMeshColorProvider((GamaScale) colors);
-		else if (colors instanceof GamaGradient)
-			return new GradientBasedMeshColorProvider((GamaGradient) colors);
-		else if (colors instanceof IList) {
-			if (((IList) colors).get(0) instanceof GamaField) // We have bands
-				return new BandsBasedMeshColorProvider((List<GamaField>) colors);
+		if (colors instanceof GamaColor gc) return new ColorBasedMeshColorProvider(gc);
+		if (colors instanceof GamaPalette gp) return new PaletteBasedMeshColorProvider(gp);
+		if (colors instanceof GamaScale gs) return new ScaleBasedMeshColorProvider(gs);
+		if (colors instanceof GamaGradient gg)
+			return new GradientBasedMeshColorProvider(gg);
+		else if (colors instanceof IList list) {
+			if (list.get(0) instanceof GamaField gf) // We have bands
+				return new BandsBasedMeshColorProvider((List<GamaField>) gf);
 			else
 				return new ListBasedMeshColorProvider((IList<Color>) colors);
 		} else if (isGrayscale)
