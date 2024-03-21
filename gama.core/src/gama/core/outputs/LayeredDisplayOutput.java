@@ -624,7 +624,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 
 		super.update();
 		// See #3696
-		if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
+		// if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
 	}
 
 	@Override
@@ -752,7 +752,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		super.setPaused(paused);
 		if (surface == null) return;
 		if (getData().is3D()) { ((IDisplaySurface.OpenGL) surface).setPaused(paused); }
-		if (wasPaused && !paused) { surface.updateDisplay(false); }
+		if (wasPaused && !paused) { surface.updateDisplay(false, null); }
 	}
 
 	/**
@@ -763,25 +763,6 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	public LayeredDisplayData getData() {
 		return data; // .get();
 	}
-
-	// Keeping in sync the two implementations of synchronized, so that OpenGL
-	// objects can have an easy access to the value (and modify it). Also allows
-	// modelers to declare this property directly in the model.
-
-	// @Override
-	// public void setSynchronized(final boolean sync) {
-	// // getData().setSynchronized(sync);
-	// super.setSynchronized(sync);
-	//
-	// }
-
-	/**
-	 * Checks if is synchronized.
-	 *
-	 * @return true, if is synchronized
-	 */
-	// @Override
-	// public boolean isSynchronized() { return super.isSynchronized() && getData().isSynchronized(); }
 
 	/**
 	 * Gets the index.
@@ -853,4 +834,14 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		if (scope == null || surface == null) return;
 		scope.setGraphics(surface.getIGraphics());
 	}
+
+	// @Override
+	// public void setRendered(final boolean b) { rendered = b; }
+	//
+	// @Override
+	// public boolean isRendered() {
+	// if (view != null && !view.isVisible()) return true;
+	// if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return true;
+	// return rendered;
+	// }
 }

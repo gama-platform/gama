@@ -24,7 +24,6 @@ import org.jfree.data.statistics.Statistics;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.experiment;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IScopedStepable;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
 import gama.core.kernel.experiment.IParameter.Batch;
@@ -331,8 +330,7 @@ public class BatchAgent extends ExperimentAgent {
 		while (pop.hasScheduledSimulations() && !dead) {
 			// We step all the simulations
 			pop.step(getScope());
-			for (final IScopedStepable st : new ArrayList<>(pop.getActiveStepables())) {
-				final SimulationAgent agent = (SimulationAgent) st;
+			for (final SimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
 				ParametersSet ps = simToParameter.get(agent);
 				currentSolution = new ParametersSet(ps);
 

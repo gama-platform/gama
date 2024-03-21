@@ -42,9 +42,6 @@ public abstract class AbstractValuedDisplayOutput extends AbstractOutput {
 		expressionText = getValue() == null ? "" : getValue().serializeToGaml(false);
 	}
 
-	@Override
-	public boolean isRendered() { return true; }
-
 	/**
 	 * Gets the last value.
 	 *

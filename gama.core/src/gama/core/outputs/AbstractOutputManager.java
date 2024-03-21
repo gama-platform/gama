@@ -28,7 +28,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
@@ -63,7 +62,8 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	LayoutStatement layout;
 
 	/** The outputs. */
-	protected final Map<String, IOutput> outputs = GamaMapFactory.synchronizedOrderedMap();
+	protected final Map<String, IOutput> outputs = GamaMapFactory.create();
+	// GamaMapFactory.synchronizedOrderedMap();
 
 	// protected final IList<MonitorOutput> monitors = GamaListFactory.create();
 
@@ -118,12 +118,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 		hasMonitors |= output instanceof MonitorOutput;
 		if (output.isVirtual()) {
 			virtualOutputs.put(output.getId(), output);
-		}
-		// else if (output instanceof MonitorOutput monitor
-		// && GamaPreferences.Interface.CORE_MONITOR_PARAMETERS.getValue()) {
-		// monitors.add(monitor);
-		// }
-		else {
+		} else {
 			synchronized (outputs) {
 				outputs.put(output.getId(), output);
 			}
@@ -137,10 +132,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			// AD: explicit addition of an ArrayList to prevent dispose errors
 			// (when outputs remove themselves from the list)
 			GAMA.desynchronizeFrontmostExperiment();
-			synchronized (outputs) {
-				for (final IOutput output : new ArrayList<>(outputs.values())) { output.dispose(); }
-			}
-			// for (final IOutput output : new ArrayList<>(monitors)) { output.dispose(); }
+			// synchronized (outputs) {
+			for (final IOutput output : new ArrayList<>(outputs.values())) { output.dispose(); }
+			// }
 			clear();
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -303,27 +297,12 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean step(final IScope scope) {
-		getOutputs().forEach((n, each) -> { each.setRendered(false); });
 		outputs.forEach((name, each) -> {
 			if (each instanceof LayeredDisplayOutput ldo) { ldo.linkScopeWithGraphics(); }
 			if (each.isRefreshable() && each.getScope().step(each).passed()) { each.update(); }
 		});
-		if (GAMA.isSynchronized() && !inInitPhase) {
-			while (!allOutputsRendered()) {
-				THREADS.WAIT(20, "The outputs are not rendered yet", "AbstractOutputManager.step() interrupted");
-			}
-		}
-		evaluateAutoSave(scope);
-		return true;
-	}
 
-	/**
-	 * All outputs rendered.
-	 *
-	 * @return true, if successful
-	 */
-	protected boolean allOutputsRendered() {
-		for (IOutput each : outputs.values()) { if (!each.isRendered()) return false; }
+		evaluateAutoSave(scope);
 		return true;
 	}
 

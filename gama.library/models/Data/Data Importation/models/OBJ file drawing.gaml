@@ -20,8 +20,8 @@ species object skills: [moving]{
 	rgb color <- rgb(rnd(255),rnd(255),rnd(255));
 	int size <- rnd(10) + 1;
 	int rot <- 1000 + rnd(1000);
-	reflex m when: every(100#cycles) {
-		do wander amplitude: 30.0 speed: 0.001;
+	reflex m  {
+		do wander amplitude: 30.0 speed: 1;
 	}
 	aspect obj {
 		draw obj_file("../includes/teapot.obj") color: color size: size rotate: cycle/rot::{0,1,0} ;
@@ -29,7 +29,7 @@ species object skills: [moving]{
 }	
 
 experiment Display  type: gui {
-	output {
+	output synchronized: true{
 		display ComplexObject type: 3d background:#orange{
 			species object aspect:obj;				
 		}

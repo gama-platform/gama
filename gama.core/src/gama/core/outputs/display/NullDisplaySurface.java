@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * NullDisplaySurface.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +14,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
@@ -24,8 +25,8 @@ import gama.core.common.interfaces.ILayerManager;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.LayeredDisplayData.Changes;
+import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.util.IList;
@@ -66,7 +67,7 @@ public class NullDisplaySurface implements IDisplaySurface {
 	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay()
 	 */
 	@Override
-	public void updateDisplay(final boolean force) {}
+	public void updateDisplay(final boolean force, final Semaphore synchronizer) {}
 
 	/**
 	 * Method zoomIn()
@@ -135,7 +136,8 @@ public class NullDisplaySurface implements IDisplaySurface {
 	/**
 	 * Method initialize()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#initialize(double, double, gama.core.outputs.LayeredDisplayOutput)
+	 * @see gama.core.common.interfaces.IDisplaySurface#initialize(double, double,
+	 *      gama.core.outputs.LayeredDisplayOutput)
 	 */
 	@Override
 	public void outputReloaded() {}

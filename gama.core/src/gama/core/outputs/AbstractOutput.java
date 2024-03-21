@@ -41,7 +41,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	private IScope outputScope;
 
 	/** The permanent. */
-	boolean paused, open, permanent = false;
+	volatile boolean paused, open, permanent, disposed = false;
 
 	/** The is user created. */
 	private boolean isUserCreated = true;
@@ -57,12 +57,6 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 
 	/** The virtual. */
 	final boolean virtual;
-
-	/** The rendered. */
-	volatile boolean rendered;
-
-	/** The disposed. */
-	protected boolean disposed = false;
 
 	/** The view. */
 	protected IGamaView view;
@@ -247,9 +241,6 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		permanent = true;
 	}
 
-	@Override
-	public void setRendered(final boolean b) { rendered = b; }
-
 	/**
 	 * Checks if is permanent.
 	 *
@@ -274,13 +265,6 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 
 	@Override
 	public IGamaView getView() { return view; }
-
-	@Override
-	public boolean isRendered() {
-		if (view != null && !view.isVisible()) return true;
-		if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return true;
-		return rendered;
-	}
 
 	@Override
 	public void dispose() {

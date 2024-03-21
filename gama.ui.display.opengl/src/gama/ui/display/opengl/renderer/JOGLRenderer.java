@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -208,6 +209,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
+			if (synchronizer != null) { synchronizer.release(); }
 		}
 		//
 		// if (!visible) {
@@ -227,6 +229,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/** The first. */
 	boolean first = true;
 
+	/** The synchronizer. */
+	private Semaphore synchronizer;
+
 	@Override
 	public void reshape(final GLAutoDrawable drawable, final int arg1, final int arg2, final int w, final int h) {
 		int width = DPIHelper.autoScaleDown(getCanvas().getMonitor(), w),
@@ -240,7 +245,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
 		// sceneHelper.reshape(width, height);
-		surface.updateDisplay(true);
+		surface.updateDisplay(true, synchronizer);
 		getCanvas().updateVisibleStatus(getCanvas().isVisible());
 	}
 
@@ -253,6 +258,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		cameraHelper.dispose();
 		drawable.removeGLEventListener(this);
 		disposed = true;
+		// surface.getOutput().setRendered(true);
 	}
 
 	/**
@@ -536,6 +542,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public boolean hasDrawnOnce() {
 		return !first;
+	}
+
+	/**
+	 * Sets the synchronizer.
+	 *
+	 * @param synchronizer
+	 *            the new synchronizer
+	 */
+	public void setSynchronizer(final Semaphore synchronizer) {
+		if (synchronizer == null) return;
+		this.synchronizer = synchronizer;
+
 	}
 
 }

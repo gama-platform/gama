@@ -11,6 +11,7 @@
 package gama.ui.experiment.views.displays;
 
 import java.awt.Color;
+import java.util.concurrent.Semaphore;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -84,6 +85,12 @@ public abstract class LayeredDisplayView extends GamaViewPart
 
 	/** The central panel. */
 	protected CentralPanel centralPanel;
+
+	/**
+	 * The display semaphore. Acquired when the view is updating, supposed to be released when the actual surface has
+	 * been rendered
+	 */
+	protected Semaphore displaySemaphore = new Semaphore(1);
 
 	@Override
 	public void setIndex(final int index) { realIndex = index; }
@@ -344,7 +351,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 				final IDisplaySurface surface = getDisplaySurface();
 				if (surface != null && !disposed && !surface.isDisposed()) {
 					try {
-						surface.updateDisplay(false);
+						surface.updateDisplay(false, displaySemaphore);
 					} catch (Exception e) {
 						DEBUG.OUT("Error when updating " + getTitle() + ": " + e.getMessage());
 					}
@@ -362,7 +369,18 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	 */
 	@Override
 	public void update(final IOutput output) {
-		super.update(output);
+		final Job job = getUpdateJob();
+		job.schedule();
+		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
+			try {
+				// Shoyld We put a time out in case ?
+				// displaySemaphore.tryAcquire(5, TimeUnit.SECONDS);
+				displaySemaphore.acquire();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 		updateSnapshot();
 	}
 
@@ -425,6 +443,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	@Override
 	public void takeSnapshot(final GamaPoint customDimensions) {
 		GAMA.getSnapshotMaker().takeAndSaveSnapshot(getDisplaySurface(), customDimensions);
+
 	}
 
 	/**
@@ -450,6 +469,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 
 	@Override
 	public void dispose() {
+		displaySemaphore.release();
 		WorkbenchHelper.run(() -> {
 			if (getSite() != null) { getSite().getShell().removeControlListener(shellListener); }
 			super.dispose();

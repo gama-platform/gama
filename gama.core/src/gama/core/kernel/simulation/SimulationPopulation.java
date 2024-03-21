@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SimulationPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IScopedStepable;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.metamodel.agent.IAgent;
@@ -28,8 +27,9 @@ import gama.core.metamodel.topology.continuous.AmorphousTopology;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.concurrent.SimulationRunner;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
+import gama.core.runtime.concurrent.ISimulationRunner;
+import gama.core.runtime.concurrent.SimulationRunner;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
@@ -48,7 +48,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	private SimulationAgent currentSimulation;
 
 	/** The runner. */
-	private final SimulationRunner runner;
+	private final ISimulationRunner runner;
 
 	/**
 	 * Instantiates a new simulation population.
@@ -109,7 +109,8 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 
 	@Override
 	public void initializeFor(final IScope scope) {
-		super.initializeFor(scope);
+		computeTopology(scope);
+		if (topology != null) { topology.initialize(scope, this); }
 		this.currentAgentIndex = 0;
 	}
 
@@ -250,7 +251,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 *
 	 * @return the number of active stepables
 	 */
-	public Set<IScopedStepable> getActiveStepables() { return runner.getStepable(); }
+	public Set<SimulationAgent> getRunningSimulations() { return runner.getStepable(); }
 
 	/**
 	 * Gets the number of active threads.

@@ -147,7 +147,7 @@ public class ModelScene {
 
 		gl.setZIncrement(0);
 		rendered = true;
-		renderer.getSurface().getOutput().setRendered(true);
+		// renderer.getSurface().getOutput().setRendered(true);
 		gl.pop(GLMatrixFunc.GL_MODELVIEW);
 	}
 

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Java2DDisplaySurface.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -47,15 +47,15 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.LayeredDisplayData.Changes;
+import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.AWTDisplayGraphics;
 import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
 import gama.core.runtime.IScope.IGraphicsScope;
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
@@ -375,10 +375,27 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	@Override
-	public void updateDisplay(final boolean force) {
+	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
 		if (disposed) return;
 		rendered = false;
-		EventQueue.invokeLater(this::repaint);
+		Runnable toRun = () -> {
+			repaint();
+			if (synchronizer != null) { synchronizer.release(); }
+		};
+		if (GAMA.isSynchronized()) {
+
+			if (EventQueue.isDispatchThread()) {
+				toRun.run();
+			} else {
+				try {
+					EventQueue.invokeAndWait(toRun);
+				} catch (InvocationTargetException | InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			EventQueue.invokeLater(toRun);
+		}
 	}
 
 	@Override
@@ -510,7 +527,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		g2d.dispose();
 		frames++;
 		rendered = true;
-		getOutput().setRendered(true);
+		// getOutput().setRendered(true);
 	}
 
 	/**

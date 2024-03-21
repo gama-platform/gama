@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuEvent;
@@ -68,7 +69,6 @@ import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
 import gama.gaml.statements.draw.DrawingAttributes;
-import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.JOGLRenderer;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
@@ -98,7 +98,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	GLAnimatorControl animator;
 
 	/** The renderer. */
-	IOpenGLRenderer renderer;
+	JOGLRenderer renderer;
 
 	/** The zoom fit. */
 	protected boolean zoomFit = true;
@@ -160,7 +160,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 *
 	 * @return the i open GL renderer
 	 */
-	protected IOpenGLRenderer createRenderer() {
+	protected JOGLRenderer createRenderer() {
 		return new JOGLRenderer(this);
 	}
 
@@ -266,10 +266,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay(boolean)
 	 */
 	@Override
-	public void updateDisplay(final boolean force) {
+	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
 		if (alreadyUpdating) return;
 		try {
 			alreadyUpdating = true;
+			renderer.setSynchronizer(synchronizer);
 			layerManager.drawLayersOn(renderer);
 		} finally {
 			alreadyUpdating = false;
@@ -685,7 +686,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		this.renderer = null;
 		GAMA.releaseScope(getScope());
 		setDisplayScope(null);
-		if (getOutput() != null) { getOutput().setRendered(true); }
+		// if (getOutput() != null) { getOutput().setRendered(true); }
 	}
 
 	@Override
