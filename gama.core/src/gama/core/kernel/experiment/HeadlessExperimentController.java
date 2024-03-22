@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * HeadlessExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -63,26 +63,38 @@ public class HeadlessExperimentController implements IExperimentController {
 	}
 
 	@Override
-	public void processOpen(final boolean andWait) {}
+	public boolean processOpen(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processPause(final boolean andWait) {}
+	public boolean processPause(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processReload(final boolean andWait) {}
+	public boolean processReload(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processStep(final boolean andWait) {}
+	public boolean processStep(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processBack(final boolean andWait) {}
+	public boolean processBack(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processStartPause(final boolean andWait) {}
+	public boolean processStartPause(final boolean andWait) {
+		return true;
+	}
 
 	@Override
-	public void processStart(final boolean andWait) {
-		if (agent == null) return;
+	public boolean processStart(final boolean andWait) {
+		if (agent == null) return false;
 		IScope scope = agent.getScope();
 		try {
 			while (scope.step(agent).passed()) {}
@@ -90,7 +102,8 @@ public class HeadlessExperimentController implements IExperimentController {
 			if (!(e instanceof GamaRuntimeException)) {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
+			return false;
 		}
+		return true;
 	}
-
 }

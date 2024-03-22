@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LoadCommand.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -115,14 +115,17 @@ public class LoadCommand implements ISocketCommand {
 					"'" + argExperimentName + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
 					false);
 
-		selectedJob.controller.processOpen(true);
-		selectedJob.controller.getExperiment().setStopCondition(end);
+		if (selectedJob.controller.processOpen(true)) {
+			selectedJob.controller.getExperiment().setStopCondition(end);
+			gamaWebSocketServer.addExperiment(socketId, selectedJob.getExperimentID(),
+					selectedJob.controller.getExperiment());
+			gamaWebSocketServer.execute(selectedJob.controller.executionThread);
+			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully,
+					selectedJob.getExperimentID(), map, false);
+		}
+		return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, selectedJob.getExperimentID(), map,
+				false);
 
-		gamaWebSocketServer.addExperiment(socketId, selectedJob.getExperimentID(),
-				selectedJob.controller.getExperiment());
-		gamaWebSocketServer.execute(selectedJob.controller.executionThread);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, selectedJob.getExperimentID(),
-				map, false);
 	}
 
 }
