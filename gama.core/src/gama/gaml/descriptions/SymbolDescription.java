@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SymbolDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -422,7 +422,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, false, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)), data);
+		flagError(s, code, false, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+				data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
@@ -437,7 +438,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void info(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, false, true, this.getUnderlyingElement(facet, false), data);
+		flagError(s, code, false, true, this.getUnderlyingElement(facet, false),
+				data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
@@ -525,7 +527,7 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public EObject getUnderlyingElement(final Object facet, final boolean returnFacet) {
 		if (facet == null) return element;
-		if (facet instanceof EObject) return (EObject) facet;
+		if (facet instanceof EObject e) return e;
 		if (facet instanceof IExpressionDescription f) {
 			final EObject result = f.getTarget();
 			if (result != null) return result;
@@ -547,10 +549,8 @@ public abstract class SymbolDescription implements IDescription {
 				if (facetObject != null) return facetObject;
 			}
 			// Last chance if the expression is a constant (no information on EObjects), see Issue #2760)
-
 			final EObject facetExpr = GAML.getEcoreUtils().getExpressionAtKey(element, (String) facet);
 			if (facetExpr != null) return facetExpr;
-
 		}
 		return null;
 	}
