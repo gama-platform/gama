@@ -37,19 +37,6 @@ import gama.core.common.interfaces.ISkill;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class JavaUtils {
 
-	/** The null iterator. */
-	static Iterator NULL_ITERATOR = new UnmodifiableIterator<>() {
-
-		@Override
-		public boolean hasNext() {
-			return false;
-		}
-
-		@Override
-		public Object next() {
-			return null;
-		}
-	};
 
 	/** The Constant IMPLEMENTATION_CLASSES. */
 	public final static Map<Integer, List<Class>> IMPLEMENTATION_CLASSES = new HashMap();

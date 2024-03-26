@@ -2599,7 +2599,6 @@ public class Matrix3d implements java.io.Serializable, Cloneable {
 		double[] cosr = new double[2];
 		double[] sinl = new double[2];
 		double[] sinr = new double[2];
-		double[] m = new double[9];
 
 		double utemp, vtemp;
 		double f, g;
@@ -2688,16 +2687,6 @@ public class Matrix3d implements java.io.Serializable, Cloneable {
 			vtemp = v[7];
 			v[7] = cosr[1] * vtemp + sinr[1] * v[8];
 			v[8] = -sinr[1] * vtemp + cosr[1] * v[8];
-
-			m[0] = s[0];
-			m[1] = e[0];
-			m[2] = 0.0;
-			m[3] = 0.0;
-			m[4] = s[1];
-			m[5] = e[1];
-			m[6] = 0.0;
-			m[7] = 0.0;
-			m[8] = s[2];
 
 			if (Math.abs(e[1]) < CONVERGE_TOL || Math.abs(e[0]) < CONVERGE_TOL) { converged = true; }
 		}

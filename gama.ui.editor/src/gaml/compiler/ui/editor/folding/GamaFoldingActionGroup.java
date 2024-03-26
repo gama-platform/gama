@@ -82,7 +82,7 @@ class GamaFoldingActionGroup extends FoldingActionGroup {
 						final ProjectionAnnotation pa = (ProjectionAnnotation) next;
 						final Position position = model.getPosition(pa);
 						if (position instanceof TypedFoldedPosition) {
-							if (((TypedFoldedPosition) position).getType().equals("__comment")) {
+							if ("__comment".equals(((TypedFoldedPosition) position).getType())) {
 								pa.markCollapsed();
 								toCollapse.add(pa);
 							}

@@ -26,9 +26,6 @@ import gama.ui.shared.resources.GamaColors;
  */
 public class Tag extends VirtualContent<Tags> {
 
-	/** The search. */
-	private final boolean search;
-
 	/** The suffix. */
 	private final String suffix;
 
@@ -36,9 +33,8 @@ public class Tag extends VirtualContent<Tags> {
 	 * @param root
 	 * @param name
 	 */
-	public Tag(final Tags root, final String wrapped, final String suffix, final boolean search) {
+	public Tag(final Tags root, final String wrapped, final String suffix) {
 		super(root, wrapped);
-		this.search = search;
 		this.suffix = suffix;
 	}
 

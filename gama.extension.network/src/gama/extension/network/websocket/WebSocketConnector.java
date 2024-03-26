@@ -43,12 +43,6 @@ public class WebSocketConnector extends Connector {
 	/** The websocket so timeout. */
 	public static Integer _WEBSOCKET_SO_TIMEOUT = 100;
 
-	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
-	
-	/** The default port. */
-	public static String DEFAULT_PORT = "1988";
-
 	/** The socket. */
 	private SocketService socket;
 
@@ -95,7 +89,7 @@ public class WebSocketConnector extends Connector {
 		}
 
 		final String server = this.getConfigurationParameter(SERVER_URL);
-		final int port = Integer.valueOf(this.getConfigurationParameter(SERVER_PORT)).intValue();
+		final int port = Integer.parseInt(this.getConfigurationParameter(SERVER_PORT));
 		if (this.isServer) {
 			socket = new WebSocketServerService(agent, port, this);
 		} else {

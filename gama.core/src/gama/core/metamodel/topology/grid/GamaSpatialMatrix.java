@@ -308,7 +308,9 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		// if (ids.length > 0) { initCRS = ids[0].toString(); }
 
 		List<String> crsF = new ArrayList<>();
-		List<Envelope3D> envF = new ArrayList<>();
+
+		// commenting out envF as it seems to have no use 
+		//List<Envelope3D> envF = new ArrayList<>();
 
 		for (int j = 1; j < gfiles.size(); j++) {
 			String taCRS = null;
@@ -317,7 +319,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			ReferenceIdentifier[] ids = crs.getIdentifiers().toArray(new ReferenceIdentifier[0]);
 			if (ids.length > 0) { taCRS = ids[0].toString(); }
 			crsF.add(taCRS);
-			envF.add(gfiles.get(j).computeEnvelope(scope));
+			//envF.add(gfiles.get(j).computeEnvelope(scope));
 		}
 
 		for (int i = 0; i < matrix.length; i++) {

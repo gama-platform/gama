@@ -82,7 +82,7 @@ public class DrivingGraph extends GamaSpatialGraph {
 		}
 		// if ( edge == null ) { return false; }
 		edgeMap.put(e, edge);
-		dispatchEvent(scope, new GraphEvent(scope, this, this, e, null, GraphEventType.EDGE_ADDED));
+		dispatchEvent(scope, new GraphEvent(scope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 	}
 }

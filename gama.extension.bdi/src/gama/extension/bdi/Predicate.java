@@ -101,10 +101,6 @@ public class Predicate implements IValue {
 	/** The is true. */
 	boolean is_true = true;
 
-	/** The is updated. */
-	// int lifetime = -1;
-	boolean isUpdated = false;
-
 	/** The no agent cause. */
 	private boolean noAgentCause = true;
 

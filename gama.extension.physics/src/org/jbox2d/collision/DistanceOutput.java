@@ -38,6 +38,4 @@ public class DistanceOutput {
 	
 	public float distance;
 	
-	/** number of gjk iterations used */
-	public int iterations;
 }

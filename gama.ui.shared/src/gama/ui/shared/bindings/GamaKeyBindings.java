@@ -42,22 +42,22 @@ public class GamaKeyBindings implements Listener {
 	}
 
 	/** The command. */
-	public static int COMMAND = PlatformHelper.isMac() ? SWT.COMMAND : SWT.CTRL;
+	public static final int COMMAND = PlatformHelper.isMac() ? SWT.COMMAND : SWT.CTRL;
 
 	/** The search string. */
-	public static String SEARCH_STRING = format(COMMAND + SWT.SHIFT, 'H');
+	public static final String SEARCH_STRING = format(COMMAND + SWT.SHIFT, 'H');
 
 	/** The play string. */
-	public static String PLAY_STRING = format(COMMAND, 'P');
+	public static final String PLAY_STRING = format(COMMAND, 'P');
 
 	/** The step string. */
-	public static String STEP_STRING = format(COMMAND + SWT.SHIFT, 'P');
+	public static final String STEP_STRING = format(COMMAND + SWT.SHIFT, 'P');
 
 	/** The reload string. */
-	public static String RELOAD_STRING = format(COMMAND, 'R');
+	public static final String RELOAD_STRING = format(COMMAND, 'R');
 
 	/** The quit string. */
-	public static String QUIT_STRING = format(COMMAND + SWT.SHIFT, 'X');
+	public static final String QUIT_STRING = format(COMMAND + SWT.SHIFT, 'X');
 
 	/**
 	 * The Class PluggableBinding.

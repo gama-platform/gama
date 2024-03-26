@@ -63,7 +63,7 @@ public class GamaIcon {
 	}
 
 	/** The icon cache. */
-	public static Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
+	public static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
 
 	/** The Constant MISSING. */
 	static final String MISSING = "gaml" + File.separator + "_unknown";
@@ -78,13 +78,16 @@ public class GamaIcon {
 	public static final String COLORS = "colors" + File.separator;
 
 	/** The Constant PATH_TO_ICONS. */
-	public static Path PATH_TO_ICONS;
+	public static final Path PATH_TO_ICONS;
 
 	static {
+		// we need to use a tmp variable because PATH_TO_ICONS is final
+		Path tmp = null;
 		try {
 			URL pngFolderURL = toFileURL(Platform.getBundle(IGamaIcons.PLUGIN_ID).getEntry(IGamaIcons.ICONS_PATH));
-			PATH_TO_ICONS = Path.of(new URI(pngFolderURL.getProtocol(), pngFolderURL.getPath(), null).normalize());
+			tmp = Path.of(new URI(pngFolderURL.getProtocol(), pngFolderURL.getPath(), null).normalize());
 		} catch (Exception e) {}
+		PATH_TO_ICONS = tmp;
 	}
 
 	/**

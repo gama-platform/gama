@@ -194,7 +194,7 @@ public class EventLayerStatement extends AbstractLayerStatement {
 	private final IExpression type;
 
 	/** The delegates. */
-	public static List<IEventLayerDelegate> delegates = new ArrayList<>();
+	public static final List<IEventLayerDelegate> delegates = new ArrayList<>();
 
 	/** The action name. */
 	private String actionName;

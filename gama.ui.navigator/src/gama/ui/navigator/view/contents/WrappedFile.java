@@ -153,7 +153,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 						color = GamaColors.system(SWT.COLOR_DARK_RED);
 					}
 				});
-				final Tags wf = new Tags(this, tags, "Attributes", false);
+				final Tags wf = new Tags(this, tags, "Attributes");
 				if (wf.getNavigatorChildren().length > 0) { sub.add(wf); }
 			}
 			return sub.toArray();

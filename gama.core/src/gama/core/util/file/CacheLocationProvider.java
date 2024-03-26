@@ -21,7 +21,7 @@ import gama.core.common.util.FileUtils;
 public class CacheLocationProvider extends PathVariableResolver {
 
 	/** The name. */
-	public static String NAME = "CACHE_LOC";
+	public static final String NAME = "CACHE_LOC";
 
 	@Override
 	public String[] getVariableNames(final String variable, final IResource resource) {

@@ -53,7 +53,7 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	// }
 
 	/** The ignore case. */
-	protected static Comparator<String> IGNORE_CASE = (o1, o2) -> o1.compareToIgnoreCase(o2);
+	protected static final Comparator<String> IGNORE_CASE = (o1, o2) -> o1.compareToIgnoreCase(o2);
 
 	// private GamlEditor currentEditor;
 

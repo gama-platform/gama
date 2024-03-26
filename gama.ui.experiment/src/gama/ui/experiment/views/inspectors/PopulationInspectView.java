@@ -96,7 +96,7 @@ public class PopulationInspectView extends GamaViewPart
 		implements IToolbarDecoratedView.Sizable, IToolbarDecoratedView.Pausable {
 
 	/** The export folder. */
-	protected static String exportFolder = "exports";
+	protected static final String exportFolder = "exports";
 
 	/** The Constant ID. */
 	public static final String ID = IGui.TABLE_VIEW_ID;

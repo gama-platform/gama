@@ -467,8 +467,6 @@ public class MapComparison {
 		if (nb < 1) return 1;
 		similarities.clear();
 		final int nbCat = categories.size();
-		final double[] nbObs = new double[nbCat];
-		final double[] nbSim = new double[nbCat];
 		final double[] nbInit = new double[nbCat];
 		final double[][] nbInitObs = new double[nbCat][nbCat];
 		final double[][] nbInitSim = new double[nbCat][nbCat];
@@ -481,8 +479,6 @@ public class MapComparison {
 
 		for (int i = 0; i < nbCat; i++) {
 			nbInit[i] = 0;
-			nbObs[i] = 0;
-			nbSim[i] = 0;
 			for (int j = 0; j < nbCat; j++) {
 				nbInitObs[i][j] = 0;
 				nbInitSim[i][j] = 0;
@@ -498,8 +494,6 @@ public class MapComparison {
 			final int idCatObs = categoriesId.get(valsObs.get(i));
 			final int idCatSim = categoriesId.get(valsSim.get(i));
 			nbInit[idCatInit] += weight;
-			nbSim[idCatSim] += weight;
-			nbObs[idCatObs] += weight;
 			nbInitObs[idCatInit][idCatObs] += weight;
 			nbInitSim[idCatInit][idCatSim] += weight;
 		}

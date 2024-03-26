@@ -309,7 +309,7 @@ public class GamaPreferences {
 				true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS);
 
 		/** The operators menu sort. */
-		public static Pref<String> OPERATORS_MENU_SORT =
+		public static final Pref<String> OPERATORS_MENU_SORT =
 				create("pref_menu_operators_sort", "Sort operators menu by", "Category", IType.STRING, false)
 						.among("Name", "Category").in(Interface.NAME, Interface.MENUS);
 

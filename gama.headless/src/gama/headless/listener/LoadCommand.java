@@ -107,7 +107,7 @@ public class LoadCommand implements ISocketCommand {
 		if (parametersError != null) return parametersError;
 
 		selectedJob = new GamaServerExperimentJob(ff.getAbsoluteFile().toString(), argExperimentName,
-				gamaWebSocketServer, socket, params, end, console, status, dialog, runtime);
+						socket, params, end, console, status, dialog, runtime);
 		selectedJob.load();
 		// we check if the experiment is present in the file
 		if (selectedJob.simulator.getModel().getExperiment(argExperimentName) == null)

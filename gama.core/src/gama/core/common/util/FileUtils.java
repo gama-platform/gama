@@ -63,7 +63,7 @@ import gama.dev.DEBUG;
 public class FileUtils {
 
 	/** The web. */
-	public static ThreadLocal<Webb> WEB = ThreadLocal.withInitial(Webb::create);
+	public static final ThreadLocal<Webb> WEB = ThreadLocal.withInitial(Webb::create);
 
 	/** The Constant URL_SEPARATOR_REPLACEMENT. */
 	public static final String URL_SEPARATOR_REPLACEMENT = "+_+";
@@ -188,7 +188,7 @@ public class FileUtils {
 	 * @return the string
 	 */
 	static public String constructAbsoluteFilePathAlternate(final IScope scope, final String fp,
-			final boolean mustExist) {
+			final boolean mustExist) throws GamaRuntimeFileException {
 		if (scope == null) return fp;
 		String filePath = null;
 		Iterable<String> baseDirectories = null;

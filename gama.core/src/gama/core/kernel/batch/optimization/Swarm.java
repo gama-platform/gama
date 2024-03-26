@@ -275,24 +275,27 @@ public class Swarm extends AOptimizationAlgorithm {
 	 * @param particles
 	 *            the particles
 	 * @param soltTotest
-	 *            the solt totest
+	 *            the solution to test
 	 */
 	public void evaluation(final Particle[] particles, final Map<ParametersSet, List<Particle>> soltTotest) {
+		
 		BatchAgent batch = getCurrentExperiment();
+		
 		if (batch == null) return;
+		
+		
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch) && !batch.getParametersToExplore().isEmpty()) {
 			Map<ParametersSet, Double> res = testSolutions(soltTotest.keySet());
 			for (ParametersSet ps : res.keySet()) {
 				for (Particle particle : soltTotest.get(ps)) {
 					particle.updatePersonalBest();
-					// updateGlobalBest(particle);
 				}
 			}
 
 		} else {
 			for (int i = 0; i < numParticles; i++) {
 				Particle particle = particles[i];
-				particle.eval();
+				particle.currentVal = particle.eval();
 
 				particle.updatePersonalBest();
 				// updateGlobalBest(particle);

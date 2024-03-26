@@ -50,9 +50,7 @@ public class Box {
 	
 	/** The children. */
 	private List<Box> children;
-	
-	/** The data. */
-	public Object data;
+
 	
 	@Override
 	public String toString() {

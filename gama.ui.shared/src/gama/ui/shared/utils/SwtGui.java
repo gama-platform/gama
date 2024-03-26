@@ -317,7 +317,7 @@ public class SwtGui implements IGui {
 			String t = (String) l.get(IKeyword.TITLE);
 			String d = (String) l.get(IKeyword.DESCRIPTION);
 			@SuppressWarnings ("unchecked") List<IParameter> ps = (List<IParameter>) l.get(IKeyword.PARAMETERS);
-			wizardPages.add(new GamaWizardPage(scope, ps, t, d, f));
+			wizardPages.add(new GamaWizardPage(scope, ps, t, d));
 
 		}
 

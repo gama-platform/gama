@@ -52,8 +52,6 @@ public class ModelLibraryGenerator {
 	/** The source folder. */
 	static String sourceFolder = "F:/Gama/GamaSource/";
 
-	/** The wiki folder on OVH. */
-	static String wikiFolderOnOVH = "http://vps226121.ovh.net/gm_wiki/";
 
 	/** The input path to model library. */
 	static String[] inputPathToModelLibrary =
@@ -71,8 +69,6 @@ public class ModelLibraryGenerator {
 	/** The input model screenshot. */
 	static String inputModelScreenshot = wikiFolder + "modelScreenshot.xml";
 
-	/** The headless bat path. */
-	static String headlessBatPath = wikiFolder + "headless.bat";
 
 	/** The list no screenshot. */
 	static String[] listNoScreenshot =
@@ -105,9 +101,7 @@ public class ModelLibraryGenerator {
 																// and
 																// if
 																// all
-	/** The images created path. */
-	// the experiments have been used.
-	static List<Path> imagesCreatedPath = new ArrayList<>();
+
 
 	/**
 	 * Update path.
@@ -117,7 +111,6 @@ public class ModelLibraryGenerator {
 		modelLibraryImagesPath = wikiFolder + "/resources/images/modelLibraryScreenshots";
 		inputFileForHeadlessExecution = wikiFolder + "/tempInputForHeadless.xml";
 		inputModelScreenshot = wikiFolder + "/modelScreenshot.xml";
-		headlessBatPath = wikiFolder + "/headless.bat";
 	}
 
 	/**
@@ -241,8 +234,8 @@ public class ModelLibraryGenerator {
 				if (gamlFilePath.contains(sourceFolder + folderWithoutScreenshot)) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
-				if (gamlFilePath.split("/")[gamlFilePath.split("/").length - 2].compareTo("include") == 0
-						|| gamlFilePath.split("/")[gamlFilePath.split("/").length - 2].compareTo("includes") == 0) {
+				if (   "include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
+					|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
 			}
@@ -631,7 +624,7 @@ public class ModelLibraryGenerator {
 			// extract the header properties
 			final MetadataStructure metaStruct = new MetadataStructure(header);
 
-			if (metaStruct.getName() != "") {
+			if ( ! "".equals(metaStruct.getName())) {
 				// search if there are some images linked
 				final ArrayList<File> listScreenshot = new ArrayList<>();
 				Utils.getFilesFromFolder(
@@ -704,7 +697,7 @@ public class ModelLibraryGenerator {
 					outputFileName.append(".md");
 					final File outputFile = new File(outputFileName.toString());
 
-					Utils.CreateFolder(outputFile.getParentFile());
+					Utils.createFolder(outputFile.getParentFile());
 					outputFile.createNewFile();
 					try (final FileOutputStream fileOut = new FileOutputStream(outputFile);) {
 
@@ -756,7 +749,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static void createSectionFile(final String pathToSectionFile) throws IOException {
 		final File outputFile = new File(pathToSectionFile);
-		Utils.CreateFolder(outputFile.getParentFile());
+		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
 		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
 
@@ -777,7 +770,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static void createSubSectionFile(final String pathToSubSectionFile) throws IOException {
 		final File outputFile = new File(pathToSubSectionFile);
-		Utils.CreateFolder(outputFile.getParentFile());
+		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
 		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
 
@@ -852,7 +845,7 @@ public class ModelLibraryGenerator {
 			String line = null;
 
 			// check if the file contains a header
-			if ((line = br.readLine()).startsWith("/**")) {
+			if ((line = br.readLine()) != null && line.startsWith("/**")) {
 				result.append(line).append("\n");
 				while ((line = br.readLine()) != null) {
 					result.append(line).append("\n");

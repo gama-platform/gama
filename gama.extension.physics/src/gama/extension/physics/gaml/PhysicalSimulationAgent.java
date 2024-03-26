@@ -285,7 +285,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@getter (
 			value = USE_NATIVE)
 	public Boolean usesNativeLibrary(final IScope scope) {
-		if (useNativeLibrary == null) { useNativeLibrary = NativeLoader.LoadNativeLibrary(); }
+		if (useNativeLibrary == null) { useNativeLibrary = NativeLoader.loadNativeLibrary(); }
 		return useNativeLibrary;
 	}
 
@@ -300,7 +300,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@setter (USE_NATIVE)
 	public void useNativeLibrary(final IScope scope, final Boolean v) {
 		// If we have not successfully loaded the library, then the setting should remain false.
-		useNativeLibrary = v && NativeLoader.LoadNativeLibrary();
+		useNativeLibrary = v && NativeLoader.loadNativeLibrary();
 	}
 
 	/**

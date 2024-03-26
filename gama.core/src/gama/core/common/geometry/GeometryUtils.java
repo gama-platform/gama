@@ -848,7 +848,7 @@ public class GeometryUtils {
 			});
 		} catch (final LocateFailureException | ConstraintEnforcementException e) {
 			final IScope scope = GAMA.getRuntimeScope();
-			GamaRuntimeException.warning("Impossible to triangulate: " + new WKTWriter().write(polygon), scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Impossible to triangulate: " + new WKTWriter().write(polygon), scope), false);
 			iterateOverTriangles((Polygon) DouglasPeuckerSimplifier.simplify(polygon, 0.1), action);
 			return;
 		} finally {

@@ -754,7 +754,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		final int[] viewport = gl.viewport;
 		final double mvmatrix[] = gl.mvmatrix;
 		final double projmatrix[] = gl.projmatrix;
-		final int x = Math.round(mouse_x), y = Math.round(viewport[3] - mouse_y);
+		final int x = mouse_x;
+		final int y = viewport[3] - mouse_y;
 		pixelDepth.rewind();
 		gl.getGL().glReadPixels(x, y, 1, 1, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);

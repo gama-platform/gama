@@ -167,9 +167,6 @@ public class HeadlessApplication implements IApplication {
 	/** The Constant WRITE_XMI. */
 	final public static String WRITE_XMI = "-write-xmi";
 
-	/** The head less simulation. */
-	public static boolean headLessSimulation = false;
-
 	/** The socket. */
 	public int socket = -1;
 
@@ -188,9 +185,6 @@ public class HeadlessApplication implements IApplication {
 
 	/** The processor queue. */
 	public final SimulationRuntime processorQueue = new SimulationRuntime();
-
-	/** The socket server. */
-	public GamaWebSocketServer socketServer;
 
 	/** The is server. */
 	static boolean isServer = false;
@@ -411,12 +405,12 @@ public class HeadlessApplication implements IApplication {
 		} else if (args.contains(BUILD_XML_PARAMETER)) {
 			buildXML(args);
 		} else if (args.contains(SOCKET_PARAMETER)) {
-			GamaHeadlessWebSocketServer.StartForHeadless(socket, processorQueue, ping_interval);
+			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping_interval);
 		} else if (args.contains(SSOCKET_PARAMETER)) {
 			final String jks = args.contains(SSOCKET_PARAMETER_JKSPATH) ? after(args, SSOCKET_PARAMETER_JKSPATH) : "";
 			final String spwd = args.contains(SSOCKET_PARAMETER_SPWD) ? after(args, SSOCKET_PARAMETER_SPWD) : "";
 			final String kpwd = args.contains(SSOCKET_PARAMETER_KPWD) ? after(args, SSOCKET_PARAMETER_KPWD) : "";
-			GamaHeadlessWebSocketServer.StartForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd,
+			GamaHeadlessWebSocketServer.startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd,
 					ping_interval);
 		} else {
 			runSimulation(args);

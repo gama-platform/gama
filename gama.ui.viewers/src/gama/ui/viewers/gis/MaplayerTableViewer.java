@@ -130,7 +130,7 @@ public class MaplayerTableViewer extends TableViewer implements ISelectionChange
 					String title = p.getTitle();
 					if (title == null || title.length() == 0) {
 						@SuppressWarnings ("rawtypes") final FeatureSource featureSource = p.getFeatureSource();
-						if (featureSource != null) { title = featureSource.getName().getLocalPart().toString(); }
+						if (featureSource != null) { title = featureSource.getName().getLocalPart(); }
 					}
 					return title;
 				}

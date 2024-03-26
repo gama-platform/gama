@@ -39,7 +39,7 @@ import gama.gaml.types.GamaGeometryType;
 public class Envelope3D extends Envelope implements IDisposable, IIntersectable {
 
 	/** The Constant POOL. */
-	private final static PoolUtils.ObjectPool<Envelope3D> POOL =
+	private static final PoolUtils.ObjectPool<Envelope3D> POOL =
 			PoolUtils.create("Envelope 3D", true, Envelope3D::new, (from, to) -> to.set(from), null);
 
 	/** The Constant EMPTY. */

@@ -112,7 +112,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 				plot.setSeriesPaint(myrow, myserie.getMycolor());
 			}
 
-			if (this.series_label_position.equals("onchart")) {
+			if ("onchart".equals(series_label_position)) {
 				//// newr.setBaseItemLabelGenerator(new LabelGenerator());
 				// ItemLabelPosition itemlabelposition = new
 				//// ItemLabelPosition(ItemLabelAnchor.OUTSIDE12,
@@ -224,7 +224,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 
 	@Override
 	public void resetAxes(final IScope scope) {
-		if (this.series_label_position.equals("none")) {
+		if ("none".equals(series_label_position)) {
 			this.chart.getLegend().setVisible(false);
 		}
 
@@ -258,17 +258,17 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		// this.useSubAxis=false;
 		// switch (sty) {
 		// default: {
-		if (this.series_label_position.equals("default")) {
+		if ("default".equals(series_label_position)) {
 			this.series_label_position = "legend";
 		}
 		// break;
 		// }
 		// }
-		if (this.series_label_position.equals("xaxis")) {
+		if ("xaxis".equals(series_label_position)) {
 			// this.useSubAxis=true;
 		}
 
-		if (!this.series_label_position.equals("legend")) {
+		if (!"legend".equals(series_label_position)) {
 			chart.getLegend().setVisible(false);
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
@@ -282,17 +282,17 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		}
 
 		// if (ylabel != null && ylabel != "") {}
-		if (this.series_label_position.equals("yaxis")) {
+		if ("yaxis".equals(series_label_position)) {
 			// pp.getRangeAxis().setLabel(this.getChartdataset().getDataSeriesIds(scope).iterator().next());
 			chart.getLegend().setVisible(false);
 		}
 		chart.getLegend().setVisible(true);
 
-		if (xlabel != null && xlabel != "") {
+		if (xlabel != null && ! "".equals(xlabel) ) {
 			// pp.getDomainAxis().setLabel(xlabel);
 		}
 
-		if (this.series_label_position.equals("none")) {
+		if ("none".equals(series_label_position)) {
 			pp.setLabelPaint(this.backgroundColor);
 		}
 		if (this.useyrangeinterval) 

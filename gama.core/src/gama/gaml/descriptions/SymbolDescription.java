@@ -51,14 +51,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/** The type provider facets. */
-	protected static Set<String> typeProviderFacets = ImmutableSet
+	protected static final Set<String> typeProviderFacets = ImmutableSet
 			.copyOf(Arrays.asList(VALUE, TYPE, AS, SPECIES, OF, OVER, FROM, INDEX, FUNCTION, UPDATE, INIT, DEFAULT));
 
 	/** The state. */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
-	/** The order. */
-	// private final int order = COUNTER.GET_UNIQUE();
 
 	/** The facets. */
 	private Facets facets;

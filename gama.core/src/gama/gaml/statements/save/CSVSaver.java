@@ -80,7 +80,21 @@ public class CSVSaver extends AbstractSaver {
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave)
 			throws GamaRuntimeException, IOException {
-		save(scope, new FileWriter(file, true), addHeader, item);
+		
+		FileWriter fileWriter = null;
+		
+		try {
+			fileWriter =  new FileWriter(file, true);
+			save(scope, fileWriter, addHeader, item);
+		}catch(IOException ex) {
+			// cleanup in case of failure in the save
+			if (fileWriter != null) {
+				try {
+					fileWriter.close();					
+				} finally {}
+			}
+			throw ex;
+		}
 	}
 
 	/**

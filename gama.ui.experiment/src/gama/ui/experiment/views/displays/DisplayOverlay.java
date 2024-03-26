@@ -379,11 +379,7 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		return String.format("%dm", (int) real);
 	}
 
-	/** The do hide. */
-	Runnable doHide = this::hide;
 
-	/** The do display. */
-	Runnable doDisplay = this::display;
 
 	/** The listener. */
 	OverlayListener listener = new OverlayListener();

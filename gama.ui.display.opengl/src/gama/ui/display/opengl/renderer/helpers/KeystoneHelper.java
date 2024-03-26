@@ -331,7 +331,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the shader program
 	 */
 	private void prepareShader(final AbstractPostprocessingShader shaderProgram) {
-		shaderProgram.loadTexture(0);
+	//	shaderProgram.loadTexture(0);
 		shaderProgram.storeTextureID(fboScene.getFBOTexture());
 	}
 
@@ -442,11 +442,11 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 * @return the int
 	 */
 	public int cornerSelected(final GamaPoint mouse) {
-		if (mouse.x < getViewWidth() / 2) {
-			if (mouse.y < getViewHeight() / 2) return 1;
+		if (mouse.x < getViewWidth() / 2d) {
+			if (mouse.y < getViewHeight() / 2d) return 1;
 			return 0;
 		}
-		if (mouse.y < getViewHeight() / 2) return 2;
+		if (mouse.y < getViewHeight() / 2d) return 2;
 		return 3;
 	}
 
@@ -458,11 +458,11 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 * @return the int
 	 */
 	public int cornerHovered(final GamaPoint mouse) {
-		if (mouse.x < getViewWidth() / 2) {
-			if (mouse.y < getViewHeight() / 2) return 1;
+		if (mouse.x < getViewWidth() / 2d) {
+			if (mouse.y < getViewHeight() / 2d) return 1;
 			return 0;
 		}
-		if (mouse.y < getViewHeight() / 2) return 2;
+		if (mouse.y < getViewHeight() / 2d) return 2;
 		return 3;
 	}
 

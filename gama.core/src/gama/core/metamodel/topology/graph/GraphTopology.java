@@ -891,7 +891,7 @@ public class GraphTopology extends AbstractTopology {
 	}
 
 	@Override
-	public IList KpathsBetween(final IScope scope, final IShape source, final IShape target, final int k) {
+	public IList kPathsBetween(final IScope scope, final IShape source, final IShape target, final int k) {
 		final ISpatialGraph graph = getPlaces();
 		if (source == target) return GamaListFactory.create();
 		final boolean sourceNode = graph.containsVertex(source);
@@ -952,9 +952,9 @@ public class GraphTopology extends AbstractTopology {
 	}
 
 	@Override
-	public IList<GamaSpatialPath> KpathsBetween(final IScope scope, final GamaPoint source, final GamaPoint target,
+	public IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaPoint source, final GamaPoint target,
 			final int k) {
-		return KpathsBetween(scope, source.getGeometry(), target.getGeometry(), k);
+		return kPathsBetween(scope, source.getGeometry(), target.getGeometry(), k);
 	}
 
 	/**

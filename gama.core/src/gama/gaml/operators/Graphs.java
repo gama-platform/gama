@@ -764,7 +764,7 @@ public class Graphs {
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),"
 			+ "edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r\n"
 			+ "(g edge_between ({10,5}::{20,3})) = g.edges[0]")
-	public static Object EdgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key) && graph.containsVertex(verticePair.value))
 			return graph.getEdge(verticePair.key, verticePair.value);
@@ -1023,7 +1023,7 @@ public class Graphs {
 			see = { "connected_components_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " length(main_connected_component(g)) = 5")
-	public static IGraph ReduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
+	public static IGraph reduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IList<IList> cc = connectedComponentOf(scope, graph);
@@ -2137,8 +2137,8 @@ public class Graphs {
 	@no_test
 	public static IGraph setKShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.kShortestPathAlgorithm.values()).stream()
-				.map(PathComputer.kShortestPathAlgorithm::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(PathComputer.KShortestPathAlgorithmEnum.values()).stream()
+				.map(PathComputer.KShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The K shortest paths algorithm "
 				+ shortestpathAlgo + " does not exist. Possible K shortest paths algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setKShortestPathAlgorithm(shortestpathAlgo);
@@ -2172,8 +2172,8 @@ public class Graphs {
 	@no_test
 	public static IGraph setShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.shortestPathAlgorithm.values()).stream()
-				.map(PathComputer.shortestPathAlgorithm::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(PathComputer.ShortestPathAlgorithmEnum.values()).stream()
+				.map(PathComputer.ShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The shortest path algorithm "
 				+ shortestpathAlgo + " does not exist. Possible shortest path algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setShortestPathAlgorithm(shortestpathAlgo);
@@ -2417,7 +2417,7 @@ public class Graphs {
 	public static IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaGraph graph,
 			final GamaPair sourTarg, final int k) throws GamaRuntimeException {
 
-		return Cast.asTopology(scope, graph).KpathsBetween(scope, (IShape) sourTarg.key, (IShape) sourTarg.value, k);
+		return Cast.asTopology(scope, graph).kPathsBetween(scope, (IShape) sourTarg.key, (IShape) sourTarg.value, k);
 	}
 
 	/**
@@ -2862,7 +2862,7 @@ public class Graphs {
 		if (graph == null || graph.isEmpty(scope)) return results;
 
 		IGraph g = graph.getConnected() ? asDirectedGraph(graph)
-				: asDirectedGraph(ReduceToMainconnectedComponentOf(scope, graph));
+				: asDirectedGraph(reduceToMainconnectedComponentOf(scope, graph));
 		if (g.hasCycle()) throw GamaRuntimeException
 				.error("Strahler number can only be computed for Tree (connected graph with no cycle)!", scope);
 
@@ -4194,7 +4194,7 @@ public class Graphs {
 			value = "The Girvan�Newman algorithm is a hierarchical method used to detect communities. It detects communities by progressively removing edges from the original network."
 					+ "It returns a list of list of vertices and takes as operand the graph and the number of clusters")
 	@no_test
-	public static IList GirvanNewmanClustering(final IScope scope, final IGraph graph, final int numCLusters) {
+	public static IList girvanNewmanClustering(final IScope scope, final IGraph graph, final int numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));
@@ -4268,7 +4268,7 @@ public class Graphs {
 					+ " * community structures in large-scale networks. Physical review E, 76(3), 036106."
 					+ "It returns a list of list of vertices and takes as operand the graph and maximal number of iteration")
 	@no_test
-	public static IList LabelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
+	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));

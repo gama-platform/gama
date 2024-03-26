@@ -19,7 +19,9 @@ import java.util.Set;
 
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -55,10 +57,22 @@ public class ASCSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
+		
 		if (file.exists()) { file.delete(); }
+		
+		FileWriter fileWriter = null;
+		
 		try {
-			save(scope, item, new FileWriter(file));
-		} finally {
+			fileWriter =  new FileWriter(file);
+			save(scope, item, fileWriter);
+		}finally {
+			// cleanup in case of failure in the save
+			if (fileWriter != null) {
+				try {
+					fileWriter.close();					
+				} finally {}
+			}
+			
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, file.getAbsolutePath());
 		}
 	}

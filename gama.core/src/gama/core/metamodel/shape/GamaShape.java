@@ -369,15 +369,25 @@ public class GamaShape implements IShape {
 		if (isPoint()) return getLocation().serializeToGaml(includingBuiltIn) + " as geometry";
 		if (isMultiple()) return getGeometries().serializeToGaml(includingBuiltIn) + " as geometry";
 		final IList<GamaShape> holes = getHoles();
-		String result = "";
+		//String result = "";
+		StringBuilder strBuilder = new StringBuilder();
 		if (getInnerGeometry() instanceof LineString) {
-			result = "polyline (" + getPoints().serializeToGaml(includingBuiltIn) + ")";
+			strBuilder.append("polyline (");
 		} else {
-			result = "polygon (" + getPoints().serializeToGaml(includingBuiltIn) + ")";
+			strBuilder.append("polygon (");
 		}
-		if (holes.isEmpty()) return result;
-		for (final GamaShape g : holes) { result = "(" + result + ") - (" + g.serializeToGaml(includingBuiltIn) + ")"; }
-		return result;
+		strBuilder.append(getPoints().serializeToGaml(includingBuiltIn));
+		strBuilder.append(")");
+		
+		if (holes.isEmpty()) return strBuilder.toString();
+		
+		for (final GamaShape g : holes) { 
+			strBuilder.insert(0, "("); //TODO: this is weird, are we sure this is the way we want to output this ?
+			strBuilder.append(") - (");
+			strBuilder.append(g.serializeToGaml(includingBuiltIn));
+			strBuilder.append(")"); 
+		}
+		return strBuilder.toString();
 	}
 
 	@Override

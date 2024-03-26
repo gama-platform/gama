@@ -79,9 +79,6 @@ public class ChartDataSourceList extends ChartDataSource {
 		if (getValue() != null) { o = getValue().value(scope); }
 		// type_val = get_data_type(scope, o);
 
-		if (o == null) {
-			// lastvalue??
-		} else // TODO Matrix case
 		if (o instanceof IList) {
 			final IList<?> lval = Cast.asList(scope, o);
 

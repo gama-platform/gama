@@ -59,9 +59,13 @@ public class ArduinoConnector extends Connector {
 			PORT=this.getConfigurationParameter(SERVER_URL);
 		}
 		try {
-		arduino = new MyArduino(PORT,BAUD);
-		}catch(Exception ex) {}
-		if(arduino==null) {
+			arduino = new MyArduino(PORT,BAUD);
+		}catch(Exception ex) {
+			GAMA.reportError(agent.getScope(), GamaRuntimeException.warning("Cannot connect Arduino to Port: " + PORT + " exception: " + ex.getMessage(), agent.getScope()), false);
+			return;
+		}
+		
+		if(arduino==null) {// TODO: probably useless now that the exception is caught but I cannot test properly
 			GAMA.reportError(agent.getScope(), GamaRuntimeException.warning("Cannot connect Arduino to Port: " + PORT, agent.getScope()), false);
 			return;
 		}else

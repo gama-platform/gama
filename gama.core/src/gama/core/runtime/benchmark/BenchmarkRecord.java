@@ -20,7 +20,7 @@ import gama.core.common.interfaces.IBenchmarkable;
 public class BenchmarkRecord {
 
 	/** The null. */
-	public static BenchmarkRecord NULL = new BenchmarkRecord(() -> "unknown");
+	public static final BenchmarkRecord NULL = new BenchmarkRecord(() -> "unknown");
 	
 	/** The times. */
 	public final LongAdder milliseconds = new LongAdder(), times = new LongAdder();

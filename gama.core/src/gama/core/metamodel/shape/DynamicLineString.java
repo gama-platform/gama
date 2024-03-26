@@ -31,7 +31,7 @@ import org.locationtech.jts.geom.Point;
  * @author drogoul
  *
  */
-public class DynamicLineString extends LineString {
+public class DynamicLineString extends LineString implements Cloneable {
 
 	// static {
 	// try {

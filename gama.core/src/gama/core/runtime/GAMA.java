@@ -205,7 +205,7 @@ public class GAMA {
 	public static void closeAllExperiments(final boolean andOpenModelingPerspective, final boolean immediately) {
 		for (final IExperimentController controller : new ArrayList<>(controllers)) { closeController(controller); }
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
-		PoolUtils.WriteStats();
+		PoolUtils.writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 

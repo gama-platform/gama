@@ -427,8 +427,8 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			final String nature = root.getNature();
 			final WrappedProject p = (WrappedProject) wrap(root, project);
 			post(() -> {
-				WorkspaceModelsManager.instance.setValuesProjectDescription(project, nature == BUILTIN_NATURE,
-						nature == PLUGIN_NATURE, nature == TEST_NATURE, null);
+				WorkspaceModelsManager.instance.setValuesProjectDescription(project, BUILTIN_NATURE.equals(nature),
+						PLUGIN_NATURE.equals(nature), TEST_NATURE.equals(nature), null);
 				root.initializeChildren();
 				refreshResource(root);
 				reveal(p);

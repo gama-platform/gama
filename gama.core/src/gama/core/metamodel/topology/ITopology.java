@@ -413,7 +413,7 @@ public interface ITopology extends IValue {
 	 *            the k
 	 * @return the i list
 	 */
-	IList<GamaSpatialPath> KpathsBetween(IScope scope, IShape source, IShape target, int k);
+	IList<GamaSpatialPath> kPathsBetween(IScope scope, IShape source, IShape target, int k);
 
 	/**
 	 * Kpaths between.
@@ -428,7 +428,7 @@ public interface ITopology extends IValue {
 	 *            the k
 	 * @return the i list
 	 */
-	IList<GamaSpatialPath> KpathsBetween(IScope scope, GamaPoint source, GamaPoint target, int k);
+	IList<GamaSpatialPath> kPathsBetween(IScope scope, GamaPoint source, GamaPoint target, int k);
 
 	/**
 	 * Sets the root.

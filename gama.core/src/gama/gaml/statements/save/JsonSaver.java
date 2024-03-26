@@ -32,7 +32,7 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave)
-			throws GamaRuntimeException, IOException {
+			throws GamaRuntimeException {
 		try (Writer fw = new FileWriter(file, true)) {
 			Json.getNew().valueOf(item.value(scope)).writeTo(fw, WriterConfig.PRETTY_PRINT);
 		} catch (final GamaRuntimeException e) {

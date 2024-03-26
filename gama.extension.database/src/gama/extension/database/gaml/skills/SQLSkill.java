@@ -310,7 +310,7 @@ public class SQLSkill extends Skill {
 					examples = {
 							@example ("list<list> t <- list<list> (select(PARAMS, \"SELECT * FROM registration\"));\r\n"
 									+ "write list2Matrix(t, true, true);") }))
-	public IMatrix List2matrix(final IScope scope) throws GamaRuntimeException {
+	public IMatrix list2Matrix(final IScope scope) throws GamaRuntimeException {
 		try {
 			final boolean getName = scope.hasArg("getName") ? (Boolean) scope.getArg("getName", IType.BOOL) : true;
 			final boolean getType = scope.hasArg("getType") ? (Boolean) scope.getArg("getType", IType.BOOL) : false;

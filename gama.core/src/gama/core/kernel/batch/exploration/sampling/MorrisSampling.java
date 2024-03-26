@@ -27,28 +27,14 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 public class MorrisSampling extends SamplingUtils {
 
 	public static class Trajectory {
-		List<Double> seed;
-		List<Integer> variableOrder;
-		List<Double> deltas;
 		List<List<Double>> points;
 
 		/**
 		 * Build a trajectory.
-		 *
-		 * @param seed
-		 *            : First value for each parameters
-		 * @param variableOrder
-		 *            : List of indices indicating the visit order of each parameters
-		 * @param deltas
-		 *            : the increase/decrease value for each parameters
 		 * @param points
 		 *            : Points that the trajectory visit.
 		 */
-		public Trajectory(final List<Double> seed, final List<Integer> variableOrder, final List<Double> deltas,
-				final List<List<Double>> points) {
-			this.seed = seed;
-			this.variableOrder = variableOrder;
-			this.deltas = deltas;
+		public Trajectory(final List<List<Double>> points) {
 			this.points = points;
 		}
 	}
@@ -66,7 +52,7 @@ public class MorrisSampling extends SamplingUtils {
 	/**
 	 * Build a trajectory (2nd function)
 	 */
-	private static List<Object> TrajectoryBuilder(final double delta, final List<Integer> order, final List<Integer> direction,
+	private static List<Object> trajectoryBuilder(final double delta, final List<Integer> order, final List<Integer> direction,
 			final List<Double> seed, final List<List<Double>> accPoints, final List<Double> accdelta, final int index) {
 		if (order.isEmpty()) {
 			List<Object> trajectory = new ArrayList<>();
@@ -83,13 +69,13 @@ public class MorrisSampling extends SamplingUtils {
 		direction.remove(0);
 		accPoints.add(new_seed);
 		accdelta.add(deltaOriented);
-		return TrajectoryBuilder(delta, order, direction, new_seed, accPoints, accdelta, index + 1);
+		return trajectoryBuilder(delta, order, direction, new_seed, accPoints, accdelta, index + 1);
 	}
 
 	/**
 	 * Build a trajectory (1st function)
 	 */
-	private static List<Object> TrajectoryBuilder(final double delta, final List<Integer> order, final List<Integer> direction,
+	private static List<Object> trajectoryBuilder(final double delta, final List<Integer> order, final List<Integer> direction,
 			final List<Double> seed) {
 		List<List<Double>> accPoints = new ArrayList<>();
 		List<Double> accDelta = new ArrayList<>();
@@ -109,7 +95,7 @@ public class MorrisSampling extends SamplingUtils {
 		direction.remove(0);
 		accPoints.add(new_seed);
 		accDelta.add(deltaOriented);
-		return TrajectoryBuilder(delta, order, direction, new_seed, accPoints, accDelta, 1);
+		return trajectoryBuilder(delta, order, direction, new_seed, accPoints, accDelta, 1);
 
 	}
 
@@ -126,11 +112,9 @@ public class MorrisSampling extends SamplingUtils {
 		Collections.shuffle(orderVariables);
 		List<Integer> directionVariables = new ArrayList<>();
 		IntStream.range(0, k).forEach(s -> directionVariables.add(rng.nextInt(2) * 2 - 1));
-		List<Integer> new_orderVariables = new ArrayList<>(orderVariables);
-		List<Object> List_p_d = TrajectoryBuilder(delta, orderVariables, directionVariables, seed);
+		List<Object> List_p_d = trajectoryBuilder(delta, orderVariables, directionVariables, seed);
 		List<List<Double>> points = (List<List<Double>>) List_p_d.get(0);
-		List<Double> deltas = (List<Double>) List_p_d.get(1);
-		return new Trajectory(seed, new_orderVariables, deltas, points);
+		return new Trajectory(points);
 	}
 
 	/**
@@ -146,7 +130,7 @@ public class MorrisSampling extends SamplingUtils {
 	/**
 	 * Generates r independent trajectories for k variables sampled with p levels.
 	 */
-	private static List<Trajectory> MorrisTrajectories(final int k, final int p, final int r, final Random rng) {
+	private static List<Trajectory> morrisTrajectories(final int k, final int p, final int r, final Random rng) {
 		List<Trajectory> acc = new ArrayList<>();
 		if (r == 0)
 			// Probably never used
@@ -168,12 +152,12 @@ public class MorrisSampling extends SamplingUtils {
 	 * @param scope
 	 * @return samples for simulations. Size: nb_sample * inputs.size()
 	 */
-	public static List<Object> MakeMorrisSampling(final int nb_levels, final int nb_sample,
+	public static List<Object> makeMorrisSampling(final int nb_levels, final int nb_sample,
 			final List<Batch> parameters, final IScope scope) {
 		if (nb_levels % 2 != 0) throw GamaRuntimeException.error("The number of value should be even", scope);
 		int nb_attributes = parameters.size();
 		List<Trajectory> trajectories =
-				MorrisTrajectories(nb_attributes, nb_levels, nb_sample, scope.getRandom().getGenerator());
+				morrisTrajectories(nb_attributes, nb_levels, nb_sample, scope.getRandom().getGenerator());
 		List<String> nameInputs = new ArrayList<>();
 		for (int i = 0; i < parameters.size(); i++) { nameInputs.add(parameters.get(i).getName()); }
 		List<Map<String, Double>> MorrisSamples = new ArrayList<>();
@@ -187,7 +171,7 @@ public class MorrisSampling extends SamplingUtils {
 		});
 		List<Object> result=new ArrayList<>();
 		result.add(MorrisSamples);
-		result.add(BuildParametersSetfromSample(scope, parameters, MorrisSamples));
+		result.add(buildParametersSetfromSample(scope, parameters, MorrisSamples));
 		return result;
 	}
 	
@@ -203,12 +187,12 @@ public class MorrisSampling extends SamplingUtils {
 	 * @param scope
 	 * @return
 	 */
-	public static List<ParametersSet> MakeMorrisSamplingOnly(final int nb_levels, final int nb_sample,
+	public static List<ParametersSet> makeMorrisSamplingOnly(final int nb_levels, final int nb_sample,
 			final List<Batch> parameters, final IScope scope) {
 		if (nb_levels % 2 != 0) throw GamaRuntimeException.error("The number of value should be even", scope);
 		int nb_attributes = parameters.size();
 		List<Trajectory> trajectories =
-				MorrisTrajectories(nb_attributes, nb_levels, nb_sample, scope.getRandom().getGenerator());
+				morrisTrajectories(nb_attributes, nb_levels, nb_sample, scope.getRandom().getGenerator());
 		List<String> nameInputs = new ArrayList<>();
 		for (int i = 0; i < parameters.size(); i++) { nameInputs.add(parameters.get(i).getName()); }
 		List<Map<String, Double>> MorrisSamples = new ArrayList<>();
@@ -219,6 +203,6 @@ public class MorrisSampling extends SamplingUtils {
 				MorrisSamples.add(tmpMap);
 			});
 		});
-		return BuildParametersSetfromSample(scope, parameters, MorrisSamples);
+		return buildParametersSetfromSample(scope, parameters, MorrisSamples);
 	}
 }

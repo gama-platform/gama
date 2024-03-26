@@ -12,10 +12,8 @@ package gama.extension.maths.ode.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -25,6 +23,9 @@ import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -209,11 +210,10 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 	}
 
 	/** The Constant Fixed_Step_Integrators. */
-	final static List<String> Fixed_Step_Integrators = Arrays.asList(Euler, ThreeEighthes, Midpoint, Gill, Luther, rk4);
+	final static Set<String> Fixed_Step_Integrators = Set.of(Euler, ThreeEighthes, Midpoint, Gill, Luther, rk4);
 
 	/** The Constant Adaptive_Stepsize_Integrators. */
-	final static List<String> Adaptive_Stepsize_Integrators =
-			Arrays.asList(dp853, AdamsBashforth, AdamsMoulton, DormandPrince54, GraggBulirschStoer, HighamHall54);
+	final static Set<String> Adaptive_Stepsize_Integrators = Set.of(dp853, AdamsBashforth, AdamsMoulton, DormandPrince54, GraggBulirschStoer, HighamHall54);
 
 	/** The equation name. */
 	final String equationName;

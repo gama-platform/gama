@@ -124,7 +124,7 @@ public class MySqlConnection extends SqlConnection {
 				final IList<Object> rowList = GamaListFactory.create();
 				for (int j = 1; j <= nbCol; j++) {
 					if (geoColumn.contains(j)) {
-						rowList.add(SqlUtils.InputStream2Geometry(rs.getBinaryStream(j)));
+						rowList.add(SqlUtils.inputStream2Geometry(rs.getBinaryStream(j)));
 					} else {
 						rowList.add(rs.getObject(j));
 					}

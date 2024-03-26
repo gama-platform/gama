@@ -43,13 +43,13 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 		Map<String, ISerialisedPopulation> innerPopulations) implements ISerialisedAgent {
 
 	/** All the attributes that are not interesting to serialise for regular agents */
-	public static Set<String> NON_SERIALISABLE = Set.of(IKeyword.MEMBERS, IKeyword.AGENTS, IKeyword.LOCATION,
+	public static final Set<String> NON_SERIALISABLE = Set.of(IKeyword.MEMBERS, IKeyword.AGENTS, IKeyword.LOCATION,
 			IKeyword.HOST, IKeyword.PEERS, IKeyword.EXPERIMENT, IKeyword.WORLD_AGENT_NAME, SimulationAgent.TIME,
 			PlatformAgent.MACHINE_TIME, SimulationAgent.DURATION, SimulationAgent.AVERAGE_DURATION,
 			SimulationAgent.TOTAL_DURATION, IKeyword.INDEX);
 
 	/** All the attributes that are not interesting to serialise for grid agents */
-	public static Set<String> GRID_NON_SERIALISABLE = Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
+	public static final Set<String> GRID_NON_SERIALISABLE = Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
 
 	/** The Constant KEY. */
 	public static final String HISTORY_KEY = "**history**";

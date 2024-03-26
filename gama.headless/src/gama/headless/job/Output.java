@@ -55,7 +55,7 @@ public class Output {
 	 * @param o the o
 	 */
 	public Output(final Output o) {
-		this.id = new Integer(Output.generateID()).toString();
+		this.id = Integer.toString(Output.generateID());
 		this.width = o.width;
 		this.height = o.height;
 		this.frameRate = o.frameRate;
@@ -89,7 +89,7 @@ public class Output {
 	 */
 	public static Output loadAndBuildOutput(final IDescription exp) {
 		final String name = exp.getLitteral(IKeyword.NAME);
-		final Output res = new Output(name, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FRAME_RATE, new Integer(OUTPUT_ID).toString(), null);
+		final Output res = new Output(name, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FRAME_RATE, Integer.toString(OUTPUT_ID), null);
 		return res;
 	}
 

@@ -31,8 +31,6 @@ public class ImportProjectWizard extends Wizard implements IImportWizard {
 	/** The main page. */
 	private ImportProjectWizardPage mainPage;
 
-	/** The current selection. */
-	private final IStructuredSelection currentSelection = null;
 
 	/** The initial path. */
 	private String initialPath = null;
@@ -84,7 +82,7 @@ public class ImportProjectWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public void addPages() {
-		mainPage = new ImportProjectWizardPage("wizardExternalProjectsPage", initialPath, currentSelection); //$NON-NLS-1$
+		mainPage = new ImportProjectWizardPage("wizardExternalProjectsPage", initialPath); //$NON-NLS-1$
 		addPage(mainPage);
 	}
 

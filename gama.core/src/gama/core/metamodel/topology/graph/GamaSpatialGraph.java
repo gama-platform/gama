@@ -427,7 +427,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 			throw e1;
 		}
 		edgeMap.put(e, edge);
-		dispatchEvent(scope, new GraphEvent(scope, this, this, e, null, GraphEventType.EDGE_ADDED));
+		dispatchEvent(scope, new GraphEvent(scope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 	}
 

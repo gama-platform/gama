@@ -71,8 +71,6 @@ public class SimulationPopupMenu2 extends PopupDialog {
 	/** The hide. */
 	final Listener hide = event -> hide();
 
-	/** The display. */
-	final Runnable display = () -> WorkbenchHelper.asyncRun(this::display);
 
 	/** The provider. */
 	private final StatusControlContribution status;

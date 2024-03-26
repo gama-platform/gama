@@ -22,7 +22,7 @@ import gama.core.common.preferences.GamaPreferences;
 public abstract class AbstractCSVManipulator implements Closeable {
 
 	/** The replacements. */
-	public static Map<Character, Character> REPLACEMENTS =
+	public static final Map<Character, Character> REPLACEMENTS =
 			Map.of(';', ',', ',', ';', ' ', ';', '|', ';', ':', ';', '\t', ';');
 
 	/** The Constant MAX_BUFFER_SIZE. */

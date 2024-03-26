@@ -13,12 +13,12 @@ package gama.core.outputs.layers.charts;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -57,8 +57,6 @@ public class Distribution {
 		int len = lvaluex.length(scope);
 		final int leny = lvaluey.length(scope);
 		len = Math.min(len, leny);
-		final double[] doublelistx = new double[len];
-		final double[] doublelisty = new double[len];
 		final double[] doublelistorx = new double[len];
 		final double[] doublelistory = new double[len];
 		final int[][] distribInts = new int[nbBarresx][nbBarresy];
@@ -75,7 +73,6 @@ public class Distribution {
 		// x
 
 		for (int i = 0; i < len; i++) {
-			doublelistx[i] = Cast.asFloat(scope, lvaluex.get(i));
 			doublelistorx[i] = Cast.asFloat(scope, lvaluex.get(i));
 		}
 
@@ -88,7 +85,6 @@ public class Distribution {
 		// y
 
 		for (int i = 0; i < len; i++) {
-			doublelisty[i] = Cast.asFloat(scope, lvaluey.get(i));
 			doublelistory[i] = Cast.asFloat(scope, lvaluey.get(i));
 		}
 

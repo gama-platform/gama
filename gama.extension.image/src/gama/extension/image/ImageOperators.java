@@ -447,7 +447,7 @@ public class ImageOperators implements ImageConstants {
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 		g2.setRenderingHints(HINTS);
 		g2.translate((newWidth - w) / 2, (newHeight - h) / 2);
-		g2.rotate(rads, w / 2, h / 2);
+		g2.rotate(rads, w / 2d, h / 2d);
 		g2.drawImage(image, 0, 0, null);
 		g2.dispose();
 		rotated.setId(image.getId() + "rotated" + angleInDegrees);

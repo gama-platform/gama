@@ -34,22 +34,11 @@ import gama.extension.network.common.socket.SocketService;
 public class TCPConnector extends Connector {
 
 	/** The tcp server. */
-	public static String _TCP_SERVER = "__tcp_server";
-
-	/** The tcp socket. */
-	public static String _TCP_SOCKET = "__tcp_socket";
+	public static final String _TCP_SERVER = "__tcp_server";
 
 	/** The tcp client. */
-	public static String _TCP_CLIENT = "__tcp_client";
+	public static final String _TCP_CLIENT = "__tcp_client";
 
-	/** The tcp so timeout. */
-	public static Integer _TCP_SO_TIMEOUT = 100;
-
-	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
-
-	/** The default port. */
-	public static String DEFAULT_PORT = "1988";
 
 	/** The socket. */
 	private SocketService socket;
@@ -97,7 +86,7 @@ public class TCPConnector extends Connector {
 		}
 
 		final String server = this.getConfigurationParameter(SERVER_URL);
-		final int port = Integer.valueOf(this.getConfigurationParameter(SERVER_PORT)).intValue();
+		final int port = Integer.parseInt(this.getConfigurationParameter(SERVER_PORT));
 		if (this.isServer) {
 			socket = new ServerService(agent, port, this);
 		} else {

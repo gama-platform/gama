@@ -41,7 +41,7 @@ import one.util.streamex.StreamEx;
 public record AgentReference(String[] species, Integer[] index, String cached_ref) implements IJsonable {
 
 	/** The null. */
-	public static AgentReference NULL = new AgentReference(new String[0], new Integer[0], null);
+	public static final AgentReference NULL = new AgentReference(new String[0], new Integer[0], null);
 	
 	/**
 	 * Of.

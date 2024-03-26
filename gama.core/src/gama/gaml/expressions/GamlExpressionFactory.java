@@ -260,7 +260,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public IExpression createOperator(final String op, final IDescription context, final EObject eObject,
 			final IExpression... args) {
 		if (args == null || args.length == 0 || !GAML.OPERATORS.containsKey(op))
-			return emitError(op, context, eObject, args);
+			return emitError(op, context, eObject, args == null ? new IExpression[0] : args);
 		for (final IExpression exp : args) { if (exp == null) return emitError(op, context, eObject, args); }
 		// if (!hasOperator(op, userSignature)) return emitError(op, context, eObject, args);
 		// We get the possible sets of types registered in OPERATORS

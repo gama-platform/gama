@@ -113,8 +113,6 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	/** The sample size. */
 	public int sample_size = 10;
 
-	/** The threshold. */
-	public double threshold = -1;
 	/** Theoretical inputs */
 	private List<Batch> parameters;
 	/** Theoretical outputs */
@@ -151,12 +149,12 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 			method = Cast.asString(scope, getFacet(Exploration.METHODS).value(scope));
 		}
 		sets = switch (method) {
-			case IKeyword.LHS -> LatinhypercubeSampling.LatinHypercubeSamples(sample_size, parameters,
+			case IKeyword.LHS -> LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 					scope.getRandom().getGenerator(), scope);
 			case IKeyword.ORTHOGONAL -> {
 				int iterations = hasFacet(Exploration.ITERATIONS)
 						? Cast.asInt(scope, getFacet(Exploration.ITERATIONS).value(scope)) : 5;
-				yield OrthogonalSampling.OrthogonalSamples(sample_size, iterations, parameters,
+				yield OrthogonalSampling.orthogonalSamples(sample_size, iterations, parameters,
 						scope.getRandom().getGenerator(), scope);
 			}
 			case IKeyword.FACTORIAL -> {
@@ -165,14 +163,14 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 					@SuppressWarnings ("unchecked") int[] factors =
 							Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
 									.mapToInt(o -> Integer.parseInt(o.toString())).toArray();
-					ps = RandomSampling.FactorialUniformSampling(scope, factors, params);
+					ps = RandomSampling.factorialUniformSampling(scope, factors, params);
 				} else {
-					ps = RandomSampling.FactorialUniformSampling(scope, sample_size, params);
+					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
 				}
 
 				yield ps;
 			}
-			default -> RandomSampling.UniformSampling(scope, sample_size, params);
+			default -> RandomSampling.uniformSampling(scope, sample_size, params);
 		};
 
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
@@ -194,7 +192,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 			
 			Map<ParametersSet, Map<String, List<Double>>> res_val = GamaMapFactory.create();
 			for (String m : Stochanalysis.SA) {
-				Map<ParametersSet,List<Double>> stoch = Stochanalysis.StochasticityAnalysis(sp, m, scope); 
+				Map<ParametersSet,List<Double>> stoch = Stochanalysis.stochasticityAnalysis(sp, m, scope); 
 				for (ParametersSet p : sp.keySet() ) {
 					if (!res_val.containsKey(p)) { 
 						res_val.put(p, 
@@ -215,16 +213,16 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		final File parent = f.getParentFile();
 		if (!parent.exists()) { parent.mkdirs(); }
 		if (f.exists()) { f.delete(); }
-		Stochanalysis.WriteAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
+		Stochanalysis.writeAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
 		
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
 		if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+			String path_to = Cast.asString(scope, outputFilePath.value(scope));
 			final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parento = fo.getParentFile();
 			if (!parento.exists()) { parento.mkdirs(); }
 			if (fo.exists()) { fo.delete(); }
-			Stochanalysis.WriteAndTellResult(fo, res_outputs, scope);
+			Stochanalysis.writeAndTellResult(fo, res_outputs, scope);
 		}
 	}
 

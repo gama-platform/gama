@@ -86,8 +86,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	/** The normal parent of full screen control. */
 	protected Composite normalParentOfFullScreenControl, normalParentOfToolbar;
 
-	/** The side control weights. */
-	int[] sideControlWeights = { 30, 70 };
 
 	/** The full screen shell. */
 	protected Shell fullScreenShell;
@@ -653,12 +651,12 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	public void updateStateTo(final IExperimentPlan experiment, final State state) {
 		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
 
-		if (IExperimentStateListener.State.PAUSED.name().equals(state)) {
+		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {
 			WorkbenchHelper.asyncRun(() -> {
 				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.EXPERIMENT_RUN).image());
 				toolbar.update();
 			});
-		} else if (IExperimentStateListener.State.RUNNING.name().equals(state)) {
+		} else if (IExperimentStateListener.State.RUNNING.name().equals(state.name())) {
 			WorkbenchHelper.asyncRun(() -> {
 				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.MENU_PAUSE_ACTION).image());
 				toolbar.update();

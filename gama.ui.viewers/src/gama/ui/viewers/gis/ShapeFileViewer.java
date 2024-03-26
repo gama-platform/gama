@@ -294,11 +294,11 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 		} else if (SLDs.isPoint(schema)) {
 			return Mode.POINT;
 		} else { // default
-			if (def.equals("Polygon")) {
+			if ("Polygon".equals(def)) {
 				return Mode.POLYGON;
-			} else if (def.equals("Line")) {
+			} else if ("Line".equals(def)) {
 				return Mode.LINE;
-			} else if (def.equals("Point")) { return Mode.POINT; }
+			} else if ("Point".equals(def)) { return Mode.POINT; }
 		}
 		return Mode.ALL; // we are a generic geometry
 	}

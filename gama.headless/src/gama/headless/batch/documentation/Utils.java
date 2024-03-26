@@ -118,7 +118,7 @@ public class Utils {
 	 * @param list the list
 	 * @return true, if successful
 	 */
-	public static boolean IsInList(final String element, final String[] list) {
+	public static boolean isInList(final String element, final String[] list) {
 		boolean result = false;
 		for (final String str : list) {
 			if (element.equals(str)) {
@@ -133,9 +133,9 @@ public class Utils {
 	 *
 	 * @param file the file
 	 */
-	public static void CreateFolder(final File file) {
+	public static void createFolder(final File file) {
 		if (!file.mkdir() && !file.exists()) {
-			CreateFolder(file.getParentFile());
+			createFolder(file.getParentFile());
 			file.mkdir();
 		}
 		return;

@@ -774,7 +774,7 @@ public class FSTObjectInput implements ObjectInput {
 		}
 		if (newObj == null) throw new IOException(referencee.getDesc() + ":Failed to instantiate '" + c.getName()
 				+ "'. Register a custom serializer implementing instantiate or define empty constructor..");
-		if (newObj == FSTObjectSerializer.REALLY_NULL) {
+		if (FSTObjectSerializer.REALLY_NULL.equals(newObj)) {
 			newObj = null;
 		} else {
 			if (newObj.getClass() != c) {

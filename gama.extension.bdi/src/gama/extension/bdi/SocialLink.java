@@ -368,8 +368,14 @@ public class SocialLink implements IValue {
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final SocialLink other = (SocialLink) obj;
-		if ((agent != null || other.getAgent() != null) && !agent.equals(other.getAgent())) return false;
-		return true;
+		if (agent != null) {
+			return agent.equals(other.getAgent());
+		}
+		else {
+			// Here we know that agent is null
+			// so equalsInAgent will return true only if other.getAgent() is null too
+			return agent == other.getAgent(); 			
+		}
 	}
 
 }

@@ -118,7 +118,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 					isExecutable = false) })
 	public GamaDXFFile(final IScope scope, final String pathName, final Double unit) throws GamaRuntimeException {
 		super(scope, pathName);
-		if (unit <= 0) throw GamaRuntimeException.error("the unity given has to be higher than 0", scope);
+		if (unit <= 0) throw GamaRuntimeException.error("the unit given has to be higher than 0", scope);
 		this.unit = unit;
 	}
 

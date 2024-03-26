@@ -48,10 +48,10 @@ import javazoom.spi.PropertiesContainer;
 public class BasicPlayer implements BasicController, Runnable {
 
 	/** The external buffer size. */
-	public static int EXTERNAL_BUFFER_SIZE = 4000 * 4;
+	public static final int EXTERNAL_BUFFER_SIZE = 4000 * 4;
 
 	/** The skip inaccuracy size. */
-	public static int SKIP_INACCURACY_SIZE = 1200;
+	public static final int SKIP_INACCURACY_SIZE = 1200;
 
 	/** The m thread. */
 	protected Thread m_thread = null;

@@ -35,7 +35,7 @@ import gama.gaml.operators.Cast;
 public class UDPConnector extends Connector {
 
 	/** The udp server. */
-	public static String _UDP_SERVER = "__udp_server";
+	public static final String _UDP_SERVER = "__udp_server";
 
 	/** The is server. */
 	private boolean is_server = false;

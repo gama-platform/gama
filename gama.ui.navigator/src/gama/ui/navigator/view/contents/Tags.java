@@ -34,18 +34,14 @@ public class Tags extends VirtualContent<WrappedFile> {
 	/** The tags. */
 	final Map<String, String> tags;
 
-	/** The search. */
-	final boolean search;
 
 	/**
 	 * @param root
 	 * @param name
 	 */
-	public Tags(final WrappedFile root, final Map<String, String> object, final String name,
-			final boolean doubleClickForSearching) {
+	public Tags(final WrappedFile root, final Map<String, String> object, final String name) {
 		super(root, name);
 		tags = object;
-		search = doubleClickForSearching;
 	}
 
 	/**
@@ -66,7 +62,7 @@ public class Tags extends VirtualContent<WrappedFile> {
 	@Override
 	public Object[] getNavigatorChildren() {
 		if (tags.isEmpty()) return EMPTY;
-		return StreamEx.ofKeys(tags).map(each -> new Tag(this, each, tags.get(each), search)).toArray();
+		return StreamEx.ofKeys(tags).map(each -> new Tag(this, each, tags.get(each))).toArray();
 	}
 
 	/**

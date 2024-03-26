@@ -57,7 +57,7 @@ public class GamaListFactory {
 	public static final IList EMPTY_LIST = wrap(Types.NO_TYPE, Collections.EMPTY_LIST);
 
 	/** The ch. */
-	static Set<Collector.Characteristics> CH =
+	static final Set<Collector.Characteristics> CH =
 			ImmutableSet.<Collector.Characteristics> of(Collector.Characteristics.IDENTITY_FINISH);
 
 	/**
@@ -101,7 +101,7 @@ public class GamaListFactory {
 	}
 
 	/** The to gama list. */
-	public static Collector<Object, IList<Object>, IList<Object>> TO_GAMA_LIST = toGamaList();
+	public static final Collector<Object, IList<Object>, IList<Object>> TO_GAMA_LIST = toGamaList();
 
 	/**
 	 * The Class GamaListSupplier.

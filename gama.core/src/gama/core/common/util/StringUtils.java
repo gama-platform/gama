@@ -52,8 +52,6 @@ public class StringUtils {
 		DEFAULT_DECIMAL_FORMAT = new DecimalFormat("##0.0################", SYMBOLS);
 	}
 
-	/** The gama string pattern. */
-	static Predicate<String> GAMA_STRING_PATTERN = Pattern.compile("^'.*'$").asMatchPredicate();
 
 	/**
 	 * To gaml string.

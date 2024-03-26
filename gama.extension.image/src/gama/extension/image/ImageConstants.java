@@ -75,7 +75,7 @@ public interface ImageConstants {
 	ColorConvertOp OP_GRAYSCALE = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
 
 	/** The descriptions. */
-	Map<BufferedImageOp, String> DESCRIPTIONS = Map.of(OP_DARKER, "darker", OP_ANTIALIAS, "antialiased", OP_BRIGHTER,
+	final static Map<BufferedImageOp, String> DESCRIPTIONS = Map.of(OP_DARKER, "darker", OP_ANTIALIAS, "antialiased", OP_BRIGHTER,
 			"brighter", OP_SHARPEN, "sharpened", OP_BLUR, "blurred", OP_GRAYSCALE, "grayscaled");
 
 }

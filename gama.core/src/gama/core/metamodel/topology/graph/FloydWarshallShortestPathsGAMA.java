@@ -278,7 +278,7 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 					edges.add(ed);
 					if (prev != v_b) {
 						prev = v_a;
-						v_a = matrix.get(GAMA.getRuntimeScope(), v_b, v_a);
+						// redundant: v_a = matrix.get(GAMA.getRuntimeScope(), v_b, v_a);
 					}
 				}
 			}

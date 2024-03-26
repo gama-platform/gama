@@ -85,7 +85,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 
 	/** The accept null. */
 	// Properties
-	protected boolean noScope = false, acceptNull = true;
+	protected boolean acceptNull = true;
 
 	/** The is sub parameter. */
 	protected /* almost final */ boolean isSubParameter;

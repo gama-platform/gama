@@ -40,7 +40,7 @@ public class PoolUtils {
 	/**
 	 * Write stats.
 	 */
-	public static void WriteStats() {
+	public static void writeStats() {
 		if (!DEBUG.IS_ON()) return;
 		DEBUG.SECTION("Pool statistics");
 		POOLS.forEach(p -> {

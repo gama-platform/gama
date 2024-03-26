@@ -211,14 +211,14 @@ public class ConceptManager {
 			if (websitePart.equals(WebsitePart.GAML_REFERENCES.toString())) {
 				oldValue = m_occurrence_of_concept_in_gaml_ref.get(concept);
 				m_occurrence_of_concept_in_gaml_ref.put(concept, ++oldValue);
-				if (Utils.IsInList(concept, CONCEPTS_NOT_FOR_GAML_REF)) {
+				if (Utils.isInList(concept, CONCEPTS_NOT_FOR_GAML_REF)) {
 					System.out.println("WARNING : The concept "+concept+" is not supposed to be for GAML References !!");
 				}
 			}
 			if (websitePart.equals(WebsitePart.MODEL_LIBRARY.toString())) {
 				oldValue = m_occurrence_of_concept_in_model_library.get(concept);
 				m_occurrence_of_concept_in_model_library.put(concept, ++oldValue);
-				if (Utils.IsInList(concept, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
+				if (Utils.isInList(concept, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
 					System.out.println("WARNING : The concept "+concept+" is not supposed to be for the model library !!");
 				}
 			}
@@ -277,8 +277,8 @@ public class ConceptManager {
 		result += "**List of concepts to use for model library (except Syntax):**\n\n";
 		boolean isFirstElement = true;
 		for (String concept : m_concepts) {
-			if (!Utils.IsInList(concept,CONCEPTS_DEDICATED_TO_SYNTAX)
-				&& !Utils.IsInList(concept, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
+			if (!Utils.isInList(concept,CONCEPTS_DEDICATED_TO_SYNTAX)
+				&& !Utils.isInList(concept, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
 				if (isFirstElement) {
 					result += concept;
 					isFirstElement = false;
@@ -293,7 +293,7 @@ public class ConceptManager {
 		result += "**List of concepts to use exclusively in Syntax models:**\n\n";
 		isFirstElement = true;
 		for (String concept : m_concepts) {
-			if (Utils.IsInList(concept,CONCEPTS_DEDICATED_TO_SYNTAX)) {
+			if (Utils.isInList(concept,CONCEPTS_DEDICATED_TO_SYNTAX)) {
 				if (isFirstElement) {
 					result += concept;
 					isFirstElement = false;
@@ -308,7 +308,7 @@ public class ConceptManager {
 		result += "**List of concepts to use for GAML worlds:**\n\n";
 		isFirstElement = true;
 		for (String concept : m_concepts) {
-			if (!Utils.IsInList(concept,CONCEPTS_NOT_FOR_GAML_REF)) {
+			if (!Utils.isInList(concept,CONCEPTS_NOT_FOR_GAML_REF)) {
 				if (isFirstElement) {
 					result += concept;
 					isFirstElement = false;
@@ -328,11 +328,11 @@ public class ConceptManager {
 			String number_of_occurrences_total = Integer.toString(m_occurrence_of_concept.get(id));
 			String number_of_occurrences_in_doc = Integer.toString(m_occurrence_of_concept_in_documentation.get(id));
 			String number_of_occurrences_in_ref = Integer.toString(m_occurrence_of_concept_in_gaml_ref.get(id));
-			if (Utils.IsInList(id, CONCEPTS_NOT_FOR_GAML_REF)) {
+			if (Utils.isInList(id, CONCEPTS_NOT_FOR_GAML_REF)) {
 				number_of_occurrences_in_ref = "_";
 			}
 			String number_of_occurrences_in_model = Integer.toString(m_occurrence_of_concept_in_model_library.get(id));
-			if (Utils.IsInList(id, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
+			if (Utils.isInList(id, CONCEPTS_NOT_FOR_MODEL_LIBRARY)) {
 				number_of_occurrences_in_model = "_";
 			}
 			result += "| "+id+" | "+number_of_occurrences_in_doc+" | "+number_of_occurrences_in_ref+" | "+number_of_occurrences_in_model+" | "+number_of_occurrences_total+" |\n";

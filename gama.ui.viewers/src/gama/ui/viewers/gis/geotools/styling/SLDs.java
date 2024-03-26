@@ -204,7 +204,7 @@ public class SLDs extends SLD {
 		if (graphic == null) { return null; }
 
 		for (final GraphicalSymbol gs : graphic.graphicalSymbols()) {
-			if (gs != null && gs instanceof Mark) {
+			if (gs instanceof Mark) {
 				final Mark mark = (Mark) gs;
 				final Fill fill = mark.getFill();
 				if (fill != null) {
