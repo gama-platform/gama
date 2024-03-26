@@ -165,7 +165,6 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	/**
 	 * Begin render to texture.
 	 */
-	@SuppressWarnings ("restriction")
 	public void beginRenderToTexture() {
 		final GL2 gl = getGL();
 		gl.glClearColor(0, 0, 0, 1.0f);

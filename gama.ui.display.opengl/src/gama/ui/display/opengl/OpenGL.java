@@ -366,7 +366,6 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param yRatio
 	 *            the y ratio
 	 */
-	@SuppressWarnings ("restriction")
 	private void debugSizes(final int width, final int height, final double initialEnvWidth,
 			final double initialEnvHeight, final double envWidth, final double envHeight, final double zoomLevel,
 			final double xRatio, final double yRatio) {
@@ -948,25 +947,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		endDrawing();
 	}
 
-	/**
-	 * Draw the vertices using the style provided and uses the double[] parameter to determine the texture coordinates
-	 * associated with each vertex
-	 *
-	 * @param glQuads
-	 * @param yNegatedVertices
-	 * @param i
-	 * @param b
-	 * @param texCoords
-	 */
-	public void drawVertices(final int style, final ICoordinates yNegatedVertices, final int number,
-			final boolean clockwise, final double[] texCoords) {
-		beginDrawing(style);
-		yNegatedVertices.visit((index, x, y, z) -> {
-			outputTexCoord(texCoords[index * 2], texCoords[index * 2 + 1]);
-			outputVertex(x, y, z);
-		}, number, clockwise);
-		endDrawing();
-	}
+
 
 	/**
 	 * Replaces the current color by the parameter, sets the alpha of the parameter to be the one of the current color,
@@ -1485,7 +1466,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param object
 	 *            the object
 	 */
-	public void beginObject(final AbstractObject object, final boolean isPicking) {
+	public void beginObject(final AbstractObject<?,?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
 		DrawingAttributes att = object.getAttributes();
 		if (isPicking) { registerForSelection(att.getIndex()); }
@@ -1508,7 +1489,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param object
 	 *            the object
 	 */
-	public void endObject(final AbstractObject object, final boolean isPicking) {
+	public void endObject(final AbstractObject<?,?> object, final boolean isPicking) {
 		disableTextures();
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		translateByZIncrement();

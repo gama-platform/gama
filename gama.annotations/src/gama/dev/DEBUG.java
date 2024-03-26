@@ -37,7 +37,7 @@ public class DEBUG {
 	/**
 	 * A custom security manager that exposes the getClassContext() information
 	 */
-	static class MySecurityManager extends SecurityManager {
+	static private class MySecurityManager extends SecurityManager {
 
 		/**
 		 * Gets the caller class name.

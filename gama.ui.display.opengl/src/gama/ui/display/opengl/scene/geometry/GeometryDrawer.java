@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.geometry;
 
-import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
 import static gama.core.common.geometry.GeometryUtils.applyToInnerGeometries;
 import static gama.core.common.geometry.GeometryUtils.getContourCoordinates;
 import static gama.core.common.geometry.GeometryUtils.getHolesNumber;
@@ -25,10 +24,11 @@ import org.locationtech.jts.geom.Polygon;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaGeometryFactory;
 import gama.core.common.geometry.ICoordinates;
 import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.UnboundedCoordinateSequence;
 import gama.core.common.geometry.Scaling3D.Heterogeneous;
+import gama.core.common.geometry.UnboundedCoordinateSequence;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.shape.IShape.Type;
@@ -71,7 +71,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	final Heterogeneous _scale = new Heterogeneous(1, 1, 1);
 
 	/** The quadvertices. */
-	final ICoordinates _quadvertices = GEOMETRY_FACTORY.COORDINATES_FACTORY.create(5, 3);
+	final ICoordinates _quadvertices = GamaGeometryFactory.COORDINATES_FACTORY.create(5, 3);
 
 	/** The vertices. */
 	final UnboundedCoordinateSequence _vertices = new UnboundedCoordinateSequence();

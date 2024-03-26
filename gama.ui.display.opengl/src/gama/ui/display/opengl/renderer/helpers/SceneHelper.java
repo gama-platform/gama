@@ -44,9 +44,6 @@ public class SceneHelper extends AbstractRendererHelper {
 	/** The front scene. */
 	volatile ModelScene frontScene;
 
-	/** The index. */
-	int index;
-
 	/** The garbage. */
 	private final Queue<ModelScene> garbage = new ConcurrentLinkedQueue<>();
 

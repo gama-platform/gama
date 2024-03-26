@@ -207,9 +207,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parent = f.getParentFile();
-			if (!parent.exists()) { parent.mkdirs(); }
-			if (f.exists()) { f.delete(); }
 			try (FileWriter fw = new FileWriter(f, false)) {
+				if (!parent.exists()) { parent.mkdirs(); }
+				if (f.exists()) { f.delete(); }
 				fw.write(this.buildReportString(res));
 			} catch (Exception e) {
 				throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);

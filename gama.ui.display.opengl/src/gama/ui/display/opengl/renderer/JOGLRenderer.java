@@ -64,7 +64,6 @@ import gama.ui.shared.utils.WorkbenchHelper;
 /**
  * The Class JOGLRenderer.
  */
-@SuppressWarnings ({ "rawtypes", "unchecked" })
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
 
 	static {
@@ -261,10 +260,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 *
 	 */
 
-	// @Override
-	public boolean cannotDraw() {
-		return sceneHelper.getSceneToUpdate() == null;
-	}
 
 	@Override
 	public Rectangle2D drawAsset(final IAsset file, final DrawingAttributes attributes) {
@@ -438,7 +433,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 *
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getWidth()
 	 */
-	@SuppressWarnings ("restriction")
 	@Override
 	public final double getWidth() {
 		// DEBUG.OUT(

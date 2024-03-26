@@ -46,7 +46,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 *            the is picking
 	 */
 	@SuppressWarnings ("unchecked")
-	public final void draw(final AbstractObject object, final boolean isPicking) {
+	public final void draw(final AbstractObject<?,?> object, final boolean isPicking) {
 		gl.beginObject(object, isPicking);
 		_draw((T) object);
 		gl.endObject(object, isPicking);

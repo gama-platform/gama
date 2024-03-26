@@ -60,8 +60,6 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	/** The canvas. */
 	final Control canvas;
 
-	/** The surface. */
-	SWTOpenGLDisplaySurface surface;
 
 	/** The drawable. */
 	final GLWindow drawable;

@@ -1608,14 +1608,13 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 * @param scope the scope
 	 * @return the plan
 	 */
-	// faire des actions get_plan("name") et is_current_plan("name")
 	@action (
 			name = "get_plan",
 			args = { @arg (
 					name = "name",
 					type = IType.STRING,
 					optional = false,
-					doc = @doc ("the name of the planto get")) },
+					doc = @doc ("the name of the plan to get")) },
 			doc = @doc (
 					value = "get the first plan with the given name",
 					returns = "a BDIPlan",
