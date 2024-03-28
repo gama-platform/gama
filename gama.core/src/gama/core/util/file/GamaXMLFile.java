@@ -27,6 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -46,7 +47,7 @@ import gama.gaml.types.Types;
  *
  */
 @file (
-		name = "xml",
+		name = IKeyword.XML,
 		extensions = "xml",
 		buffer_type = IType.MAP,
 		concept = { IConcept.FILE, IConcept.XML },

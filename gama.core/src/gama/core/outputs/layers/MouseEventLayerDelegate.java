@@ -29,59 +29,59 @@ public class MouseEventLayerDelegate implements IEventLayerDelegate {
 
 	/** The Constant MOUSE_DOWN. */
 	@constant (
-			value = "mouse_down",
+			value = IKeyword.MOUSE_DOWN,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user presses the mouse button")) final static public String MOUSE_DOWN =
-					"mouse_down";
+					IKeyword.MOUSE_DOWN;
 
 	/** The Constant MOUSE_UP. */
 	@constant (
-			value = "mouse_up",
+			value = IKeyword.MOUSE_UP,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user releases the mouse button")) final static public String MOUSE_UP =
-					"mouse_up";
+					IKeyword.MOUSE_UP;
 
 	/** The Constant MOUSE_MOVED. */
 	@constant (
-			value = "mouse_move",
+			value = IKeyword.MOUSE_MOVE,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user moves the mouse")) final static public String MOUSE_MOVED =
-					"mouse_move";
+					IKeyword.MOUSE_MOVE;
 
 	/** The Constant MOUSE_CLICKED. */
 	@constant (
-			value = "mouse_click",
+			value = IKeyword.MOUSE_CLICK,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user presses and releases the mouse button immediately")) final static public String MOUSE_CLICKED =
-					"mouse_click";
+					IKeyword.MOUSE_CLICK;
 
 	/** The Constant MOUSE_ENTERED. */
 	@constant (
-			value = "mouse_enter",
+			value = IKeyword.MOUSE_ENTER,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the mouse enters the display")) final static public String MOUSE_ENTERED =
-					"mouse_enter";
+					IKeyword.MOUSE_ENTER;
 
 	/** The Constant MOUSE_EXITED. */
 	@constant (
-			value = "mouse_exit",
+			value = IKeyword.MOUSE_EXIT,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the mouse leaves the display")) final static public String MOUSE_EXITED =
-					"mouse_exit";
+					IKeyword.MOUSE_EXIT;
 
 	/** The Constant MOUSE_MENU. */
 	@constant (
-			value = "mouse_menu",
+			value = IKeyword.MOUSE_MENU,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user invokes the contextual menu")) final static public String MOUSE_MENU =
-					"mouse_menu";
+					IKeyword.MOUSE_MENU;
 
 	/** The Constant MOUSE_DRAGGED. */
 	@constant (
-			value = "mouse_drag",
+			value = IKeyword.MOUSE_DRAG,
 			category = IOperatorCategory.USER_CONTROL,
 			doc = @doc ("Represents an event emitted when the user drags the mouse, i.e. when he moves it with a button pressed.")) final static public String MOUSE_DRAGGED =
-					"mouse_drag";
+					IKeyword.MOUSE_DRAG;
 
 	/** The Constant EVENTS. */
 	public static final Set<String> EVENTS =

@@ -92,13 +92,13 @@ import gama.gaml.types.Types;
 								deprecated = "do not work anymore, use S[], I[] or any variable of the equations instead; it is automatically updated.",
 								value = "list of variables's value inside integration process")),
 				@facet (
-						name = "t0",
+						name = IKeyword.TIME_INITIAL,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
 								value = "the first bound of the integration interval (defaut value: cycle*step, the time at the begining of the current cycle.)")),
 				@facet (
-						name = "tf",
+						name = IKeyword.TIME_FINAL,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
@@ -248,8 +248,8 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 		maxStepExp = getFacet("max_step");
 		absTolerExp = getFacet("scalAbsoluteTolerance");
 		relTolerExp = getFacet("scalRelativeTolerance");
-		timeInitExp = getFacet("t0");
-		timeFinalExp = getFacet("tf");
+		timeInitExp = getFacet(IKeyword.TIME_INITIAL);
+		timeFinalExp = getFacet(IKeyword.TIME_FINAL);
 	}
 
 	/**

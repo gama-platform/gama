@@ -266,7 +266,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = "range",
+				value = IKeyword.RANGE,
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
@@ -292,7 +292,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = { "range", "to" },
+				value = { IKeyword.RANGE, "to" },
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
@@ -324,7 +324,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = "range",
+				value = IKeyword.RANGE,
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)

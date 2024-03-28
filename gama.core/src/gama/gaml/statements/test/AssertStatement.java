@@ -51,7 +51,7 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("a string displayed instead of the failed expression in order to customize the error or warning if the assertion is false")),
 				@facet (
-						name = "warning",
+						name = IKeyword.WARNING,
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("if set to true, makes the assertion emit a warning instead of an error")) },
@@ -87,7 +87,7 @@ public class AssertStatement extends AbstractStatement implements WithTestSummar
 	public AssertStatement(final IDescription desc) {
 		super(desc);
 		value = getFacet(IKeyword.VALUE);
-		warn = getFacet("warning");
+		warn = getFacet(IKeyword.WARNING);
 		label = getFacet("label");
 		summary = new AssertionSummary(this);
 	}

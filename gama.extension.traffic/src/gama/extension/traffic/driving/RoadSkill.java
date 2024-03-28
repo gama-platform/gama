@@ -29,6 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
@@ -481,9 +482,9 @@ public class RoadSkill extends Skill {
 	 *             the gama runtime exception
 	 */
 	@action (
-			name = "register",
+			name = IKeyword.REGISTER,
 			args = { @arg (
-					name = "agent",
+					name = IKeyword.AGENT,
 					type = IType.AGENT,
 					optional = false,
 					doc = @doc ("the agent to register on the road.")),
@@ -497,7 +498,7 @@ public class RoadSkill extends Skill {
 					examples = { @example ("do register agent: the_driver lane: 0;") }))
 	public boolean primRegister(final IScope scope) throws GamaRuntimeException {
 		final IAgent road = getCurrentAgent(scope);
-		final IAgent driver = (IAgent) scope.getArg("agent", IType.AGENT);
+		final IAgent driver = (IAgent) scope.getArg(IKeyword.AGENT, IType.AGENT);
 		int lane = scope.getIntArg("lane");
 
 		return register(scope, driver, road, lane);
@@ -555,7 +556,7 @@ public class RoadSkill extends Skill {
 	@action (
 			name = "unregister",
 			args = { @arg (
-					name = "agent",
+					name = IKeyword.AGENT,
 					type = IType.AGENT,
 					optional = false,
 					doc = @doc ("the agent to unregister on the road.")) },
@@ -565,7 +566,7 @@ public class RoadSkill extends Skill {
 					deprecated = "use the `unregister` action in advanced_driving skill instead"))
 	@Deprecated
 	public boolean primUnregister(final IScope scope) throws GamaRuntimeException {
-		IAgent driver = (IAgent) scope.getArg("agent", IType.AGENT);
+		IAgent driver = (IAgent) scope.getArg(IKeyword.AGENT, IType.AGENT);
 		return DrivingSkill.unregister(scope, driver);
 	}
 }

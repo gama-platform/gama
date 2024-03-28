@@ -444,27 +444,6 @@ public final class GamlAnnotations {
 		doc[] doc() default {};
 	}
 
-	// /**
-	// * The Interface args. Describes the names of the arguments passed to an action.
-	// *
-	// * @deprecated use action.args() instead
-	// * @see action
-	// */
-	// @Retention (RetentionPolicy.RUNTIME)
-	// @Target (ElementType.METHOD)
-	// @Deprecated
-	// public static @interface args {
-	//
-	// /**
-	// * Value.
-	// *
-	// *
-	// * @return an Array of strings, each representing an argument that can be passed to a action. Used to tag the
-	// * method that will implement the action.
-	// */
-	// String[] names();
-	//
-	// }
 
 	/**
 	 *

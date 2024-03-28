@@ -582,12 +582,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartOutput.setUseXLabels(scope, expval);
 		}
 
-		/*
-		 * expr = getFacet(IKeyword.Y_SERIE); if (expr!=null) { IExpression expval =
-		 * getFacet(IKeyword.Y_SERIE).resolveAgainst(scope); chartdataset.setYSource(scope,expval);
-		 * chartoutput.setUseYSource(scope,expval); }
-		 */
-		// will be added with 3d charts
 
 		expr = getFacet(IKeyword.Y_LABELS);
 		if (expr != null) {

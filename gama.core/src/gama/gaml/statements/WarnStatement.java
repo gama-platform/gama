@@ -37,7 +37,7 @@ import gama.gaml.types.IType;
  */
 
 @symbol (
-		name = IKeyword.WARNING,
+		name = IKeyword.WARN,
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.SYSTEM })
