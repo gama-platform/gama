@@ -107,7 +107,7 @@ species base_vehicle skills: [driving] {
 		// Shifts the position of the vehicle perpendicularly to the road,
 		// in order to visualize different lanes
 		if (current_road != nil) {
-			float dist <- (road(current_road).num_lanes - current_lane -
+			float dist <- (road(current_road).num_lanes - lowest_lane -
 				mean(range(num_lanes_occupied - 1)) - 0.5) * lane_width;
 			if violating_oneway {
 				dist <- -dist;
