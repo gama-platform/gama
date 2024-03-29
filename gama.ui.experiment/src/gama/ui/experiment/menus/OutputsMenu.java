@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * OutputsMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * OutputsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,12 +18,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import com.google.common.collect.Iterables;
-
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.IOutputManager;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
@@ -96,12 +94,12 @@ public class OutputsMenu extends ContributionItem {
 	 *            the manager
 	 */
 	public void managementSubMenu(final Menu main, final IScope scope, final IOutputManager manager) {
-		if (Iterables.isEmpty(manager.getDisplayOutputs())) return;
+		if (manager.getOutputs().isEmpty()) return;
 		final MenuItem item = new MenuItem(main, SWT.CASCADE);
 		item.setText(manager.toString());
 		final Menu sub = new Menu(item);
 		item.setMenu(sub);
-		for (final IDisplayOutput output : manager.getDisplayOutputs()) { outputSubMenu(sub, scope, manager, output); }
+		for (final IOutput output : manager.getOutputs().values()) { outputSubMenu(sub, scope, manager, output); }
 	}
 
 	/**
@@ -116,8 +114,7 @@ public class OutputsMenu extends ContributionItem {
 	 * @param output
 	 *            the output
 	 */
-	public void outputSubMenu(final Menu main, final IScope scope, final IOutputManager manager,
-			final IDisplayOutput output) {
+	public void outputSubMenu(final Menu main, final IScope scope, final IOutputManager manager, final IOutput output) {
 		final MenuItem item = new MenuItem(main, SWT.CASCADE);
 		item.setText(output.getOriginalName());
 		final Menu sub = new Menu(item);

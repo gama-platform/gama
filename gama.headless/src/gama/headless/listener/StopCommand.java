@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * StopCommand.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,8 +36,11 @@ public class StopCommand implements ISocketCommand {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		plan.getController().processPause(true);
-		plan.getController().dispose();
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		if (plan.getController().processPause(true)) {
+			plan.getController().dispose();
+			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		}
+		return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, "Controller is full", map, false);
+
 	}
 }

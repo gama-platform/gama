@@ -47,11 +47,6 @@ import gama.gaml.types.Types;
  * The Class RoadSkill.
  */
 @vars ({ @variable (
-		name = RoadSkill.AGENTS_ON,
-		type = IType.LIST,
-		of = IType.LIST,
-		doc = @doc ("for each lane of the road, the list of agents for each segment")),
-		@variable (
 				name = RoadSkill.ALL_AGENTS,
 				type = IType.LIST,
 				of = IType.AGENT,
@@ -117,9 +112,6 @@ public class RoadSkill extends Skill {
 	// TODO: rename these two lists?
 	public static final String ALL_AGENTS = "all_agents";
 
-	/** The Constant AGENTS_ON. */
-	public static final String AGENTS_ON = "agents_on";
-
 	/** The Constant SOURCE_NODE. */
 	public static final String SOURCE_NODE = "source_node";
 
@@ -145,31 +137,7 @@ public class RoadSkill extends Skill {
 	/** The Constant VEHICLE_ORDERING. */
 	public static final String VEHICLE_ORDERING = "vehicle_ordering";
 
-	/**
-	 * Gets the agents on.
-	 *
-	 * @param agent
-	 *            the agent
-	 * @return the agents on
-	 */
-	@getter (AGENTS_ON)
-	public static List getAgentsOn(final IAgent agent) {
-		return (List) agent.getAttribute(AGENTS_ON);
-	}
-
-	/**
-	 * Sets the agents on.
-	 *
-	 * @param agent
-	 *            the agent
-	 * @param agents
-	 *            the agents
-	 */
-	@setter (AGENTS_ON)
-	public static void setAgentsOn(final IAgent agent, final List agents) {
-		agent.setAttribute(AGENTS_ON, agents);
-	}
-
+	
 	/**
 	 * Gets the agents.
 	 *
@@ -541,6 +509,5 @@ public class RoadSkill extends Skill {
 		DrivingSkill.setSegmentIndex(vehicle, segmentIdx);
 		return true;
 	}
-
 
 }

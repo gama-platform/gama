@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayeredDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,9 +17,6 @@ import java.util.List;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -27,13 +24,16 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.GamlProperties;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
+import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGamaView;
+import gama.core.common.interfaces.IGamaView.Display;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IOverlayProvider;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IGamaView.Display;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput.DisplaySerializer;
 import gama.core.outputs.LayeredDisplayOutput.DisplayValidator;
@@ -351,7 +351,7 @@ import gama.gaml.types.IType;
 								@example (
 										value = "}",
 										isExecutable = false) }) })
-public class LayeredDisplayOutput extends AbstractDisplayOutput {
+public class LayeredDisplayOutput extends AbstractOutput {
 
 	static {
 		DEBUG.ON();
@@ -624,7 +624,7 @@ public class LayeredDisplayOutput extends AbstractDisplayOutput {
 
 		super.update();
 		// See #3696
-		if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
+		// if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
 	}
 
 	@Override
@@ -752,7 +752,7 @@ public class LayeredDisplayOutput extends AbstractDisplayOutput {
 		super.setPaused(paused);
 		if (surface == null) return;
 		if (getData().is3D()) { ((IDisplaySurface.OpenGL) surface).setPaused(paused); }
-		if (wasPaused && !paused) { surface.updateDisplay(false); }
+		if (wasPaused && !paused) { surface.updateDisplay(false, null); }
 	}
 
 	/**
@@ -763,25 +763,6 @@ public class LayeredDisplayOutput extends AbstractDisplayOutput {
 	public LayeredDisplayData getData() {
 		return data; // .get();
 	}
-
-	// Keeping in sync the two implementations of synchronized, so that OpenGL
-	// objects can have an easy access to the value (and modify it). Also allows
-	// modelers to declare this property directly in the model.
-
-	// @Override
-	// public void setSynchronized(final boolean sync) {
-	// // getData().setSynchronized(sync);
-	// super.setSynchronized(sync);
-	//
-	// }
-
-	/**
-	 * Checks if is synchronized.
-	 *
-	 * @return true, if is synchronized
-	 */
-	// @Override
-	// public boolean isSynchronized() { return super.isSynchronized() && getData().isSynchronized(); }
 
 	/**
 	 * Gets the index.
@@ -853,4 +834,14 @@ public class LayeredDisplayOutput extends AbstractDisplayOutput {
 		if (scope == null || surface == null) return;
 		scope.setGraphics(surface.getIGraphics());
 	}
+
+	// @Override
+	// public void setRendered(final boolean b) { rendered = b; }
+	//
+	// @Override
+	// public boolean isRendered() {
+	// if (view != null && !view.isVisible()) return true;
+	// if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return true;
+	// return rendered;
+	// }
 }

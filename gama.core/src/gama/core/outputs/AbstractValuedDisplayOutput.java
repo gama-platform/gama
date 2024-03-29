@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractValuedDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,7 @@ import gama.gaml.expressions.IExpression;
 /**
  * The Class AbstractValuedDisplayOutput.
  */
-public abstract class AbstractValuedDisplayOutput extends AbstractDisplayOutput {
+public abstract class AbstractValuedDisplayOutput extends AbstractOutput {
 
 	/** The expression text. */
 	protected String expressionText = "";
@@ -41,9 +41,6 @@ public abstract class AbstractValuedDisplayOutput extends AbstractDisplayOutput 
 		setValue(getFacet(IKeyword.VALUE));
 		expressionText = getValue() == null ? "" : getValue().serializeToGaml(false);
 	}
-
-	@Override
-	public boolean isRendered() { return true; }
 
 	/**
 	 * Gets the last value.

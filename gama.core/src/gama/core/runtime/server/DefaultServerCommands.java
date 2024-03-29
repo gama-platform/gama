@@ -1,15 +1,19 @@
 /*******************************************************************************************************
  *
  * DefaultServerCommands.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
+import static gama.core.runtime.server.GamaServerMessage.Type.CommandExecutedSuccessfully;
+import static gama.core.runtime.server.GamaServerMessage.Type.GamaServerError;
+import static gama.core.runtime.server.GamaServerMessage.Type.MalformedRequest;
+import static gama.core.runtime.server.GamaServerMessage.Type.UnableToExecuteRequest;
 import static gama.core.runtime.server.ISocketCommand.ARGS;
 import static gama.core.runtime.server.ISocketCommand.ESCAPED;
 import static gama.core.runtime.server.ISocketCommand.EVALUATE;
@@ -79,12 +83,12 @@ public class DefaultServerCommands {
 			final IMap<String, Object> map) {
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
-		if (modelPath == null || experiment == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (modelPath == null || experiment == null) return new CommandResponse(MalformedRequest,
 				"For 'load', mandatory parameters are: 'model' and 'experiment'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		String nameOfExperiment = experiment.toString().trim();
 		File ff = new File(pathToModel);
-		if (!ff.exists()) return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
 				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
@@ -94,16 +98,15 @@ public class DefaultServerCommands {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
 		} catch (IllegalArgumentException | IOException e) {
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
-		if (!model.getDescription().hasExperiment(nameOfExperiment))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
-					"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
-					false);
+		if (!model.getDescription().hasExperiment(nameOfExperiment)) return new CommandResponse(UnableToExecuteRequest,
+				"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
+				false);
 		final IModel mm = model;
 		GAMA.getGui().run("openExp", () -> GAMA.runGuiExperiment(nameOfExperiment, mm), false);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, nameOfExperiment, map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
 	}
 
 	/**
@@ -119,8 +122,9 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage PLAY(final GamaWebSocketServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		GAMA.startFrontmostExperiment(true);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		if (!GAMA.startFrontmostExperiment(true))
+			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
@@ -142,8 +146,9 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		plan.getController().processPause(true);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		return new CommandResponse(
+				plan.getController().processPause(true) ? CommandExecutedSuccessfully : UnableToExecuteRequest, "", map,
+				false);
 	}
 
 	/**
@@ -168,20 +173,20 @@ public class DefaultServerCommands {
 		final int nb_step;
 		if (map.get(NB_STEP) != null && !"".equals(("" + map.get(NB_STEP)).trim())) {
 			nb_step = Integer.parseInt("" + map.get(NB_STEP));
-		}
-		else {
+		} else {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		for (int i = 0; i < nb_step; i++) {
 			try {
-				plan.getController().processStep(sync);
+				if (!plan.getController().processStep(sync))
+					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(GamaServerMessage.Type.GamaServerError, e, map, false);
+				return new CommandResponse(GamaServerError, e, map, false);
 			}
 		}
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
@@ -212,13 +217,14 @@ public class DefaultServerCommands {
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		for (int i = 0; i < nb_step; i++) {
 			try {
-				plan.getController().processBack(sync);
+				if (!plan.getController().processBack(sync))
+					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
 				return new CommandResponse(GamaServerMessage.Type.GamaServerError, e, map, false);
 			}
 		}
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
@@ -235,7 +241,7 @@ public class DefaultServerCommands {
 	public static GamaServerMessage STOP(final GamaWebSocketServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		GAMA.closeAllExperiments(true, false);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
@@ -264,8 +270,9 @@ public class DefaultServerCommands {
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
-		plan.getController().processReload(true);
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		if (!plan.getController().processReload(true))
+			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
@@ -288,7 +295,7 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final Object expr = map.get(EXPR);
-		if (expr == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (expr == null) return new CommandResponse(MalformedRequest,
 				"For " + EVALUATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		String res = null;
@@ -310,9 +317,9 @@ public class DefaultServerCommands {
 			}
 		}
 		if (res == null || res.length() == 0 || res.startsWith("> Error: "))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, res, map, false);
+			return new CommandResponse(UnableToExecuteRequest, res, map, false);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, res, map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, escaped);
 	}
 
 	/**
@@ -337,10 +344,9 @@ public class DefaultServerCommands {
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		List<String> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty())
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, errors, map, false);
+		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, errors, map, false);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, entered, map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
 	}
 
 	/**
@@ -369,10 +375,10 @@ public class DefaultServerCommands {
 		final ExperimentAgent exp = plan.getAgent();
 		IScope scope = exp.getScope();
 		final IAgent agent = ref == null ? exp : AgentReference.of(ref).getReferencedAgent(scope);
-		if (agent == null) return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
-				"Agent does not exist: " + ref, map, false);
+		if (agent == null)
+			return new CommandResponse(UnableToExecuteRequest, "Agent does not exist: " + ref, map, false);
 		final IExecutable exec = agent.getSpecies().getAction(action);
-		if (exec == null) return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+		if (exec == null) return new CommandResponse(UnableToExecuteRequest,
 				"Action " + action + " does not exist in agent " + ref, map, false);
 		// TODO Verify that it is not a JSON string...Otherwise, use Json.getNew().parse(...)
 		String json = (String) map.get(ARGS);
@@ -383,15 +389,15 @@ public class DefaultServerCommands {
 		try {
 			er = newScope.execute(exec, agent, new Arguments(args));
 		} catch (GamaRuntimeException e) {
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, e.getMessage(), map, false);
+			return new CommandResponse(UnableToExecuteRequest, e.getMessage(), map, false);
 		} finally {
 			GAMA.releaseScope(newScope);
 		}
-		if (!er.passed()) return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
-				"Error in the execution of " + action, map, false);
+		if (!er.passed())
+			return new CommandResponse(UnableToExecuteRequest, "Error in the execution of " + action, map, false);
 		final boolean escaped = map.get(ISocketCommand.ESCAPED) == null ? false
 				: Boolean.parseBoolean("" + map.get(ISocketCommand.ESCAPED));
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, escaped);
 	}
 
 	/**
@@ -417,11 +423,10 @@ public class DefaultServerCommands {
 			String line;
 			// read all the lines
 			while ((line = br.readLine()) != null) { sc.append(line).append("\n"); }
-			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, sc.toString(), map, false);
+			return new CommandResponse(CommandExecutedSuccessfully, sc.toString(), map, false);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, "Unable to download file", map,
-					false);
+			return new CommandResponse(UnableToExecuteRequest, "Unable to download file", map, false);
 		}
 	}
 

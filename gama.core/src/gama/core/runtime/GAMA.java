@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -350,52 +350,67 @@ public class GAMA {
 	/**
 	 * Start pause frontmost experiment.
 	 */
-	public static void startPauseFrontmostExperiment(final boolean andWait) {
-		for (final IExperimentController controller : controllers) { controller.processStartPause(andWait); }
+	public static boolean startPauseFrontmostExperiment(final boolean andWait) {
+		for (final IExperimentController controller : controllers) {
+			if (!controller.processStartPause(andWait)) return false;
+		}
+		return true;
 	}
 
 	/**
 	 * Step frontmost experiment.
 	 */
-	public static void stepFrontmostExperiment(final boolean andWait) {
-		for (final IExperimentController controller : controllers) { controller.processStep(andWait); }
+	public static boolean stepFrontmostExperiment(final boolean andWait) {
+		for (final IExperimentController controller : controllers) {
+			if (!controller.processStep(andWait)) return false;
+		}
+		return true;
 	}
 
 	/**
 	 * Step back frontmost experiment.
 	 */
-	public static void stepBackFrontmostExperiment(final boolean andWait) {
-		for (final IExperimentController controller : controllers) { controller.processBack(andWait); }
+	public static boolean stepBackFrontmostExperiment(final boolean andWait) {
+		for (final IExperimentController controller : controllers) {
+			if (!controller.processBack(andWait)) return false;
+		}
+		return true;
 	}
 
 	/**
 	 * Pause frontmost experiment.
 	 */
-	public static void pauseFrontmostExperiment(final boolean andWait) {
-		for (final IExperimentController controller : controllers) { controller.processPause(andWait); }
+	public static boolean pauseFrontmostExperiment(final boolean andWait) {
+		for (final IExperimentController controller : controllers) {
+			if (!controller.processPause(andWait)) return false;
+		}
+		return true;
 	}
 
 	/**
 	 * Resume frontmost experiment.
 	 */
-	public static void resumeFrontmostExperiment(final boolean andWait) {
-		for (final IExperimentController controller : controllers) { controller.processStart(andWait); }
+	public static boolean resumeFrontmostExperiment(final boolean andWait) {
+		for (final IExperimentController controller : controllers) {
+			if (!controller.processStart(andWait)) return false;
+		}
+		return true;
 	}
 
 	/**
 	 * Reload frontmost experiment.
 	 */
-	public static void reloadFrontmostExperiment(final boolean andWait) {
+	public static boolean reloadFrontmostExperiment(final boolean andWait) {
 		final IExperimentController controller = getFrontmostController();
-		if (controller != null) { controller.processReload(andWait); }
+		return controller != null && controller.processReload(andWait);
 	}
 
 	/**
 	 * Start frontmost experiment.
 	 */
-	public static void startFrontmostExperiment(final boolean andWait) {
+	public static boolean startFrontmostExperiment(final boolean andWait) {
 		final IExperimentController controller = getFrontmostController();
-		if (controller != null) { controller.processStart(andWait); }
+		return controller != null && controller.processStart(andWait);
 	}
 
 	/**

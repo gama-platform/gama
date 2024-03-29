@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * UnaryOperator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * UnaryOperator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -84,7 +83,6 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	 *            the child
 	 */
 	public UnaryOperator(final OperatorProto proto, final IDescription context, final IExpression... child) {
-		// setName(proto.getName());
 		this.child = child[0];
 		this.prototype = proto;
 		if (proto != null) {
@@ -103,8 +101,6 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 			e1.addContext("when applying the " + literalValue() + " operator on " + childValue);
 			throw e1;
 		} catch (final Throwable e) {
-			// DEBUG.LOG(e + " when applying the " + literalValue() + "
-			// operator on " + childValue);
 			final GamaRuntimeException ee = GamaRuntimeException.create(e, scope);
 			ee.addContext("when applying the " + literalValue() + " operator on " + childValue);
 			throw ee;

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ILayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,7 @@ package gama.core.outputs.layers;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStepable;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
@@ -108,7 +108,7 @@ public interface ILayerStatement extends IStepable, ISymbol, Comparable<ILayerSt
 	 * @param output
 	 *            the new display output
 	 */
-	void setDisplayOutput(IDisplayOutput output);
+	void setDisplayOutput(IOutput output);
 
 	/**
 	 * Gets the refresh facet.

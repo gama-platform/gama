@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SceneHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -85,7 +85,7 @@ public class SceneHelper extends AbstractRendererHelper {
 		// endUpdatingScene)
 		// TODO AD Is it still necessary ?
 		// while (GAMA.isSynchronized() && backScene != null) {
-		// if (!DEBUG.WAIT(20, "Internal synchronisation of ModelScene")) return false;
+		// if (!THREADS.WAIT(20, "Internal synchronisation of ModelScene")) return false;
 		// }
 		// If we are not synchronized (or if the wait is over), we verify that
 		// backScene is null and create a new one

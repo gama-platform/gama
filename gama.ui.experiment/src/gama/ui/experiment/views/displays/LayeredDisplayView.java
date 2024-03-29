@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * LayeredDisplayView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * LayeredDisplayView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,6 +11,7 @@
 package gama.ui.experiment.views.displays;
 
 import java.awt.Color;
+import java.util.concurrent.Semaphore;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -38,7 +39,7 @@ import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -84,6 +85,12 @@ public abstract class LayeredDisplayView extends GamaViewPart
 
 	/** The central panel. */
 	protected CentralPanel centralPanel;
+
+	/**
+	 * The display semaphore. Acquired when the view is updating, supposed to be released when the actual surface has
+	 * been rendered
+	 */
+	protected Semaphore displaySemaphore = new Semaphore(1);
 
 	@Override
 	public void setIndex(final int index) { realIndex = index; }
@@ -140,7 +147,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	}
 
 	@Override
-	public void addOutput(final IDisplayOutput out) {
+	public void addOutput(final IOutput out) {
 
 		if (out == getOutput()) return; // Check if it is ok in terms of relaunch
 		// DEBUG.OUT("Adding Output " + out.getName());
@@ -344,7 +351,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 				final IDisplaySurface surface = getDisplaySurface();
 				if (surface != null && !disposed && !surface.isDisposed()) {
 					try {
-						surface.updateDisplay(false);
+						surface.updateDisplay(false, displaySemaphore);
 					} catch (Exception e) {
 						DEBUG.OUT("Error when updating " + getTitle() + ": " + e.getMessage());
 					}
@@ -354,9 +361,26 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		};
 	}
 
+	/**
+	 * Update.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void update(final IDisplayOutput output) {
-		super.update(output);
+	public void update(final IOutput output) {
+		final Job job = getUpdateJob();
+		job.schedule();
+		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
+			try {
+				// Shoyld We put a time out in case ?
+				// displaySemaphore.tryAcquire(5, TimeUnit.SECONDS);
+				displaySemaphore.acquire();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 		updateSnapshot();
 	}
 
@@ -377,8 +401,14 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		return true;
 	}
 
+	/**
+	 * Removes the output.
+	 *
+	 * @param output
+	 *            the output
+	 */
 	@Override
-	public void removeOutput(final IDisplayOutput output) {
+	public void removeOutput(final IOutput output) {
 		if (output == null) return;
 		if (output == getOutput() && isFullScreen()) { WorkbenchHelper.run(decorator::toggleFullScreen); }
 		output.dispose();
@@ -413,6 +443,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	@Override
 	public void takeSnapshot(final GamaPoint customDimensions) {
 		GAMA.getSnapshotMaker().takeAndSaveSnapshot(getDisplaySurface(), customDimensions);
+
 	}
 
 	/**
@@ -438,6 +469,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 
 	@Override
 	public void dispose() {
+		displaySemaphore.release();
 		WorkbenchHelper.run(() -> {
 			if (getSite() != null) { getSite().getShell().removeControlListener(shellListener); }
 			super.dispose();

@@ -22,6 +22,11 @@ on:
         type: string
         required: false
         default: "2024.03.0"
+      jdk_embedded_version:
+        type: string
+        required: false
+      IS_STABLE_RELEASE: 
+        type: boolean
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
@@ -62,7 +67,9 @@ jobs:
       - name: Tag GAMA with new release 
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
-          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} 
+          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} ${{ inputs.IS_STABLE_RELEASE }}
+        env:
+          JDK_EMBEDDED_VERSION: ${{ inputs.jdk_embedded_version }}
 
       - name: Import & Prepare JAR signing
         if: "${{ inputs.get_all_archives_for_release }}"

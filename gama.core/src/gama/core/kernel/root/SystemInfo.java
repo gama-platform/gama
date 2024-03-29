@@ -144,7 +144,8 @@ public class SystemInfo {
 		}
 		INFO = new ArrayList<>();
 		INFO.add("\n");
-		INFO.add(STRINGS.PAD("GAMA VERSION:", 20) + System.getProperty("gama.commit", GAMA.VERSION_NUMBER) + " commit "
+		INFO.add(STRINGS.PAD("GAMA VERSION:", 20)
+				+ System.getProperty("gama.version", GAMA.VERSION_NUMBER).replace("-SNAPSHOT", "") + " commit "
 				+ System.getProperty("gama.commit", "Not available"));
 		INFO.add(STRINGS.PAD("COMPUTER:", 20) + SystemUtils.OS_NAME + " " + SystemUtils.OS_VERSION + " on "
 				+ SystemUtils.OS_ARCH + " (" + Runtime.getRuntime().availableProcessors() + " cores, " + physicalMemory

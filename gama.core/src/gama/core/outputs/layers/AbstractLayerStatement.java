@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AbstractLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import com.google.common.primitives.Ints;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.IScope;
@@ -135,7 +135,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	protected abstract boolean _init(IScope scope);
 
 	@Override
-	public void setDisplayOutput(final IDisplayOutput out) { output = (LayeredDisplayOutput) out; }
+	public void setDisplayOutput(final IOutput out) { output = (LayeredDisplayOutput) out; }
 
 	/**
 	 * Gets the display output.

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GeometryCache.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GeometryCache.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -61,7 +61,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 public class GeometryCache {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant PI_2. */
@@ -192,9 +192,9 @@ public class GeometryCache {
 	public GeometryCache(final IOpenGLRenderer renderer) {
 		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
 		this.drawer = g -> renderer.getOpenGLHelper().getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
-		envelopes = newBuilder().expireAfterAccess(10, MINUTES).build();
+		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
-		fileCache = newBuilder().expireAfterAccess(10, MINUTES).initialCapacity(10).removalListener(notif -> {
+		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
 			renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
 
@@ -215,6 +215,7 @@ public class GeometryCache {
 	 * @return the integer
 	 */
 	public Integer get(final GamaGeometryFile file) {
+		// DEBUG.OUT("Getting from cache: " + file);
 		return fileCache.getUnchecked(file.getPath(scope));
 	}
 
@@ -239,7 +240,7 @@ public class GeometryCache {
 	 * @return the integer
 	 */
 	Integer buildList(final OpenGL gl, final String name) {
-		// DEBUG.OUT("Bulding OpenGL list for " + name);
+		DEBUG.OUT("Bulding OpenGL list for " + name);
 		final GamaGeometryFile file = fileMap.get(name);
 		// We generate the list first
 

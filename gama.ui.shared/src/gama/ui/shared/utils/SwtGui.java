@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -51,7 +51,7 @@ import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.AbstractDisplayGraphics;
@@ -605,7 +605,7 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public void updateViewTitle(final IDisplayOutput out, final SimulationAgent agent) {
+	public void updateViewTitle(final IOutput out, final SimulationAgent agent) {
 		WorkbenchHelper.run(() -> {
 			final IViewPart part = ViewsHelper.findView(out.getViewId(), out.isUnique() ? null : out.getName(), true);
 			if (part instanceof IGamaView) { ((IGamaView) part).changePartNameWithSimulation(agent); }

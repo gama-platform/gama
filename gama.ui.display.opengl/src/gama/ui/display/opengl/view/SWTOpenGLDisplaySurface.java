@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SWTOpenGLDisplaySurface.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SWTOpenGLDisplaySurface.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuEvent;
@@ -56,19 +57,18 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.Different;
 import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.LayeredDisplayData.Changes;
+import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
 import gama.core.runtime.IScope.IGraphicsScope;
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
 import gama.gaml.statements.draw.DrawingAttributes;
-import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.JOGLRenderer;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
@@ -98,7 +98,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	GLAnimatorControl animator;
 
 	/** The renderer. */
-	IOpenGLRenderer renderer;
+	JOGLRenderer renderer;
 
 	/** The zoom fit. */
 	protected boolean zoomFit = true;
@@ -158,7 +158,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 *
 	 * @return the i open GL renderer
 	 */
-	protected IOpenGLRenderer createRenderer() {
+	protected JOGLRenderer createRenderer() {
 		return new JOGLRenderer(this);
 	}
 
@@ -264,10 +264,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay(boolean)
 	 */
 	@Override
-	public void updateDisplay(final boolean force) {
+	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
 		if (alreadyUpdating) return;
 		try {
 			alreadyUpdating = true;
+			renderer.setSynchronizer(synchronizer);
 			layerManager.drawLayersOn(renderer);
 		} finally {
 			alreadyUpdating = false;
@@ -507,7 +508,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getModelCoordinatesFrom()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getModelCoordinatesFrom(int, int, java.awt.Point, java.awt.Point)
+	 * @see gama.core.common.interfaces.IDisplaySurface#getModelCoordinatesFrom(int, int, java.awt.Point,
+	 *      java.awt.Point)
 	 */
 	@Override
 	public GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
@@ -682,10 +684,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		this.renderer = null;
 		GAMA.releaseScope(getScope());
 		setDisplayScope(null);
-		if (getOutput() != null) {
-			getOutput().setRendered(true);
-			// if (synchronizer != null) { synchronizer.signalRenderingIsFinished(); }
-		}
+		// if (getOutput() != null) { getOutput().setRendered(true); }
 	}
 
 	@Override

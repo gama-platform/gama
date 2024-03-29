@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * BatchAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * BatchAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,6 @@ import org.jfree.data.statistics.Statistics;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.experiment;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IScopedStepable;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
 import gama.core.kernel.experiment.IParameter.Batch;
@@ -33,7 +32,6 @@ import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.outputs.FileOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
@@ -197,8 +195,8 @@ public class BatchAgent extends ExperimentAgent {
 				if (memorize) { fitnessValues.add(lastFitnessValue); }
 			}
 			out.put(IKeyword.FITNESS, lastFitnessValue);
-			final FileOutput output = getSpecies().getLog();
-			if (output != null) { getSpecies().getLog().doRefreshWriteAndClose(sol, out); }
+			// final FileOutput output = getSpecies().getLog();
+			// if (output != null) { getSpecies().getLog().doRefreshWriteAndClose(sol, out); }
 		} else {
 			AExplorationAlgorithm exp = (AExplorationAlgorithm) getSpecies().getExplorationAlgorithm();
 			final IExpression outputs = exp.getOutputs();
@@ -210,11 +208,11 @@ public class BatchAgent extends ExperimentAgent {
 					trackedValues.put(s, v);
 					out.put(s, v);
 				}
-				final FileOutput output = getSpecies().getLog();
-				if (output != null) {
-					getSpecies().getLog().doRefreshWriteAndClose(sol, out);
-					if (!"".equals(exp.getReport())) { getSpecies().getLog().doWriteReportAndClose(exp.getReport()); }
-				}
+				// final FileOutput output = getSpecies().getLog();
+				// if (output != null) {
+				// getSpecies().getLog().doRefreshWriteAndClose(sol, out);
+				// if (!"".equals(exp.getReport())) { getSpecies().getLog().doWriteReportAndClose(exp.getReport()); }
+				// }
 			}
 		}
 
@@ -332,8 +330,7 @@ public class BatchAgent extends ExperimentAgent {
 		while (pop.hasScheduledSimulations() && !dead) {
 			// We step all the simulations
 			pop.step(getScope());
-			for (final IScopedStepable st : new ArrayList<>(pop.getActiveStepables())) {
-				final SimulationAgent agent = (SimulationAgent) st;
+			for (final SimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
 				ParametersSet ps = simToParameter.get(agent);
 				currentSolution = new ParametersSet(ps);
 

@@ -305,9 +305,9 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 							IGamlIssue.CONFLICTING_FACETS, ATTRIBUTES, WITH);
 				}
 
-				if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) || format != null
-						&& !"shp".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
-					desc.warning("Attributes can only be defined for shape or json files", IGamlIssue.WRONG_TYPE,
+				if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext) || format != null
+						&& !"shp".equals(format.literalValue()) && !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
+					desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
 							ATTRIBUTES);
 				}
 

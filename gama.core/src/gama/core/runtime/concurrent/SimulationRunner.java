@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SimulationRunner.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,43 +11,44 @@
 package gama.core.runtime.concurrent;
 
 import static gama.core.runtime.concurrent.GamaExecutorService.EXCEPTION_HANDLER;
-import static gama.core.runtime.concurrent.GamaExecutorService.THREADS_NUMBER;
 import static gama.core.runtime.concurrent.GamaExecutorService.getParallelism;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 
-import gama.core.common.interfaces.IScopedStepable;
 import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
+import gama.dev.DEBUG;
 
 /**
  * The Class SimulationRunner.
  */
-public class SimulationRunner {
+public class SimulationRunner implements ISimulationRunner {
 
-	/** The executor. */
-	public volatile ExecutorService executor;
+	static {
+		DEBUG.OFF();
+	}
 
 	/** The runnables. */
-	final Map<IScopedStepable, Callable<Boolean>> runnables;
+	final Map<SimulationAgent, Thread> runnables;
 
+	/** The simulationsSemaphore. */
+	final Object lock = new Object();
+
+	/** The simulationsSemaphore. */
+	final Semaphore simulationsSemaphore = new Semaphore(0);
+
+	/** The experiment semaphore. */
+	final Semaphore experimentSemaphore = new Semaphore(0);
 	/** The concurrency. */
 	final int concurrency;
 
-	/** The active threads. */
-	volatile int activeThreads;
+	/** The shutdown. */
+	volatile boolean shutdown = false;
 
 	/**
 	 * Of.
@@ -64,17 +65,6 @@ public class SimulationRunner {
 		} else {
 			concurrency = getParallelism(pop.getHost().getScope(), plan.getConcurrency(), Caller.SIMULATION);
 		}
-		return withConcurrency(concurrency);
-	}
-
-	/**
-	 * With concurrency.
-	 *
-	 * @param concurrency
-	 *            the concurrency
-	 * @return the simulation runner
-	 */
-	public static SimulationRunner withConcurrency(final int concurrency) {
 		return new SimulationRunner(concurrency < 0 ? 1 : concurrency);
 	}
 
@@ -95,7 +85,8 @@ public class SimulationRunner {
 	 * @param agent
 	 *            the agent
 	 */
-	public void remove(final IScopedStepable agent) {
+	@Override
+	public void remove(final SimulationAgent agent) {
 		runnables.remove(agent);
 	}
 
@@ -105,63 +96,68 @@ public class SimulationRunner {
 	 * @param agent
 	 *            the agent
 	 */
-	public void add(final IScopedStepable agent) {
-		add(agent, () -> {
-			activeThreads = computeNumberOfThreads();
-			return agent.step();
-		});
-	}
+	@Override
+	public void add(final SimulationAgent agent) {
+		DEBUG.OUT("Adding " + agent);
+		Thread t = new Thread("Thread of " + agent.getName()) {
+			@Override
+			public void run() {
+				DEBUG.OUT("Launching " + agent + " shutdown = " + shutdown);
+				while (!shutdown) {
 
-	/**
-	 * Adds the.
-	 *
-	 * @param agent
-	 *            the agent
-	 * @param callable
-	 *            the callable
-	 */
-	public void add(final IScopedStepable agent, final Callable<Boolean> callable) {
-		runnables.put(agent, callable);
+					// synchronized (lock) {
+					try {
+						DEBUG.OUT("Waiting for " + agent);
+						// lock.wait();
+						simulationsSemaphore.acquire();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					// }
+					try {
+						agent.step();
+						experimentSemaphore.release();
+					} catch (Throwable tg) {
+						EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+					}
+				}
+			}
+		};
+		t.start();
+		runnables.put(agent, t);
+
 	}
 
 	/**
 	 * Step.
 	 */
+	@Override
 	public void step() {
+		// synchronized (lock) {
+		DEBUG.OUT("Releasing to all simulations");
+		int nb = getActiveThreads();
+		simulationsSemaphore.release(nb);
 		try {
-			getExecutor().invokeAll(runnables.values());
-		} catch (final InterruptedException e) {
-
+			experimentSemaphore.acquire(nb);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
-	}
-
-	/**
-	 * Compute number of threads.
-	 *
-	 * @return the int
-	 */
-	private int computeNumberOfThreads() {
-		return getExecutor() instanceof ThreadPoolExecutor tpe ? Math.min(concurrency, tpe.getActiveCount()) : 1;
-	}
-
-	/**
-	 * Gets the executor.
-	 *
-	 * @return the executor
-	 */
-	protected ExecutorService getExecutor() {
-		return executor == null
-				? executor = concurrency == 0 ? newSingleThreadExecutor() : new Executor(THREADS_NUMBER.getValue())
-				: executor;
+		// lock.notifyAll();
+		// }
 	}
 
 	/**
 	 * Dispose.
 	 */
+	@Override
 	public void dispose() {
+		shutdown = true;
+		int nb = runnables.size();
 		runnables.clear();
-		if (executor != null) { executor.shutdownNow(); }
+		DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
+		experimentSemaphore.release(nb);
+		simulationsSemaphore.release(nb);
 	}
 
 	/**
@@ -169,58 +165,25 @@ public class SimulationRunner {
 	 *
 	 * @return the active stepables
 	 */
-	public Set<IScopedStepable> getStepable() { return runnables.keySet(); }
+	@Override
+	public Set<SimulationAgent> getStepable() { return runnables.keySet(); }
 
 	/**
 	 * Gets the active threads.
 	 *
 	 * @return the active threads
 	 */
-	public int getActiveThreads() { return activeThreads; }
+	@Override
+	public int getActiveThreads() { return runnables.size(); }
 
 	/**
 	 * Checks for simulations.
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean hasSimulations() {
 		return runnables.size() > 0;
-	}
-
-	/**
-	 * The Class Executor.
-	 */
-	static class Executor extends ThreadPoolExecutor {
-
-		/**
-		 * Instantiates a new executor.
-		 *
-		 * @param nb
-		 *            the nb
-		 */
-		Executor(final int nb) {
-			super(nb, nb, 0L, MILLISECONDS, new LinkedBlockingQueue<>());
-		}
-
-		@Override
-		protected void afterExecute(final Runnable r, final Throwable exception) {
-			Throwable t = exception;
-			super.afterExecute(r, t);
-			if (t == null && r instanceof Future<?>) {
-				try {
-					final Future<?> future = (Future<?>) r;
-					if (future.isDone()) { future.get(); }
-				} catch (final CancellationException ce) {
-					t = ce;
-				} catch (final ExecutionException ee) {
-					t = ee.getCause();
-				} catch (final InterruptedException ie) {
-					Thread.currentThread().interrupt(); // ignore/reset
-				}
-			}
-			if (t != null) { EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), t); }
-		}
-
 	}
 
 }

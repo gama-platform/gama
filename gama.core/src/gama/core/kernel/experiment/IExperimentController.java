@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -89,7 +89,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	void processOpen(final boolean andWait);
+	boolean processOpen(final boolean andWait);
 
 	/**
 	 * Process pause.
@@ -99,7 +99,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	void processPause(final boolean andWait);
+	boolean processPause(final boolean andWait);
 
 	/**
 	 * Process reload.
@@ -109,7 +109,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	void processReload(final boolean andWait);
+	boolean processReload(final boolean andWait);
 
 	/**
 	 * Process step.
@@ -119,7 +119,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	void processStep(final boolean andWait);
+	boolean processStep(final boolean andWait);
 
 	/**
 	 * Process back.
@@ -129,7 +129,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	void processBack(final boolean andWait);
+	boolean processBack(final boolean andWait);
 
 	/**
 	 * Process start pause.
@@ -139,12 +139,8 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 24 oct. 2023
 	 */
-	default void processStartPause(final boolean andWait) {
-		if (isPaused()) {
-			processStart(andWait);
-		} else {
-			processPause(andWait);
-		}
+	default boolean processStartPause(final boolean andWait) {
+		return isPaused() ? processStart(andWait) : processPause(andWait);
 	}
 
 	/**
@@ -155,7 +151,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 24 oct. 2023
 	 */
-	void processStart(final boolean andWait);
+	boolean processStart(final boolean andWait);
 
 	/**
 	 * Close.Getting rid of the IO execption inherited from Closeable

@@ -1,15 +1,15 @@
 /*******************************************************************************************************
  *
- * IOutput.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs;
 
+import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IScoped;
 import gama.core.common.interfaces.IStepable;
 import gama.core.runtime.IScope;
@@ -18,7 +18,7 @@ import gama.gaml.compilation.ISymbol;
 
 /**
  * This interface represents the objects, declared in a model, which perform various types of computations and return
- * information supposed to be displayed or saved during simulations. Outputs are not in charge of displaying/outputting
+ * information supposed to be displayed during simulations. Outputs are not in charge of displaying/outputting
  * information on a concrete support, only computing it. They however control whatever concrete support they represent
  * (opening, closing, pausing, updating and refreshing it).
  *
@@ -27,6 +27,7 @@ import gama.gaml.compilation.ISymbol;
  *
  * @author Alexis Drogoul, IRD
  * @revised in Dec. 2015 to simplify and document the interface of outputs
+ * @revised in Mar. 2024 to simplify the hierarchy of outputs (no more display outputs)
  */
 public interface IOutput extends ISymbol, IStepable, IScoped {
 
@@ -47,8 +48,8 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	boolean isPaused();
 
 	/**
-	 * In response to this message, the output is supposed to open its concrete support, whether it is a view or a file.
-	 * Sending open() to an already opened output should not have any effect.
+	 * In response to this message, the output is supposed to open its concrete support. Sending open() to an already
+	 * opened output should not have any effect.
 	 */
 	void open();
 
@@ -60,8 +61,8 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	boolean isOpen();
 
 	/**
-	 * In response to this message, the output is supposed to close its concrete support, whether it is a view or a
-	 * file. A closed output cannot resume its operations unless 'open()' is called again.
+	 * In response to this message, the output is supposed to close its concrete support. A closed output cannot resume
+	 * its operations unless 'open()' is called again.
 	 */
 	void close();
 
@@ -99,7 +100,7 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 
 	/**
 	 * Returns the original name of the output (as it has been declared by the modeler). This name can be changed later
-	 * to accomoadate different display configuration in the UI
+	 * to accomodate different display configuration in the UI
 	 *
 	 * @return the string representing the original (unaltered) name of the output as defined by the modeler
 	 */
@@ -108,7 +109,7 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	/**
 	 * Returns the identifier (should be unique) of this output
 	 *
-	 * @return a string representing the unique identifier of this output (especially important for UI outputs)
+	 * @return a string representing the unique identifier of this output
 	 */
 	String getId();
 
@@ -128,5 +129,60 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	 *            true if the user has created this output
 	 */
 	void setUserCreated(boolean b);
+
+	/**
+	 * If only one output of this kind is allowed (i.e. there can only be one instance of the corresponding concrete
+	 * support), the output should return true
+	 *
+	 * @return true if only one view for this kind of output is possible, false otherwise
+	 */
+	boolean isUnique();
+
+	/**
+	 * Returns the identifier of the view to be opened in the UI. If this view should be unique, then this identifier
+	 * will be used to retrieve it (or create it if it is not yet instantiated). Otherwise, the identifier and the name
+	 * of the output are used in combination to create a new view.
+	 *
+	 * @return the identifier of the view that will be used as the concrete support for this output
+	 */
+	String getViewId();
+
+	/**
+	 * Returns whether the output has been described as 'virtual', i.e. not showable on screen and only used for display
+	 * inheritance.
+	 *
+	 * @return
+	 */
+	boolean isVirtual();
+
+	/**
+	 * Checks if is auto save. This default method always returns false.
+	 *
+	 * @return true, if is auto save
+	 */
+	default boolean isAutoSave() { return false; }
+
+	/**
+	 * Returns the GamaView associated with this output, if any
+	 *
+	 * @return an instance of IGamaView or null if no view is associated to this output
+	 */
+
+	IGamaView getView();
+	//
+	// /**
+	// * Checks if this output has been rendered. This default method always returns true.
+	// *
+	// * @return true, if is rendered
+	// */
+	// default boolean isRendered() { return true; }
+	//
+	// /**
+	// * Sent by the view or any other representation of this output, to say whether it has been rendered already or not
+	// *
+	// * @param b
+	// * the new rendered
+	// */
+	// default void setRendered(final boolean b) {}
 
 }

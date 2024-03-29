@@ -1,21 +1,23 @@
 #!/bin/bash
 
-#
-#	SCRIPT watchdog
-#
-
 # check if 2 param
 oldVersion="0.0.0"
 inputVersion=$1
 
+# Flip workflow bool parameter "isRelease" to "isSnapshot"
+isSnapshot=true
+if [ "$2" = true ]; then
+    flipped_value=false
+fi
+
 month=$(echo $inputVersion | awk -F'.' '{print $2}' | awk '{print int($1)}')
 id=$(echo $inputVersion | awk -F'.' '{print $3}' | awk '{print int($1)}')
-newVersion=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2=month; $3=id; print}' | sed 's/\ /\./g') # Remove leading zero(s) after dot character, enforcing OSGi version format
+versionToTag=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2=month; $3=id; print}' | sed 's/\ /\./g') # Remove leading zero(s) after dot character, enforcing OSGi version format
 
 # Set path
 path="$( dirname $( realpath "${BASH_SOURCE[0]}" ) )/.."
 
-echo "Tagging GAMA packages release as $newVersion"
+echo "[SNAPSHOT: $isSnapshot] Tagging GAMA packages release as $versionToTag"
 
 #
 #	Should I clean maven ?
@@ -30,20 +32,32 @@ cd $path/gama.parent && mvn clean -B
 #
 
 echo "Update .qualifier"
+newVersion=$versionToTag
+if [ $isSnapshot ]; then
+	newVersion="$versionToTag.qualifier"
+fi
 find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
 find $path -type f -name "*.product" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
+find $path -type f -name "*.product" -exec sed -i "s/$oldVersion.qualifier/$versionToTag/g" {} \;
 find $path -type f -name "MANIFEST.MF" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
+
 echo "Update -SNAPSHOT"
+newVersion=$versionToTag
+if [ $isSnapshot ]; then
+	newVersion="$versionToTag-SNAPSHOT"
+fi
 find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
 
 echo "Finish updating meta-data from .product"
 find $path -type f -name "*.product" -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
-find $path -type f -name "*.product" -exec sed -i "s/$oldVersion/$newVersion/g" {} \;
 
 echo "Update sites url"
 find $path -type f -name "feature.xml" -exec sed -i "s/$oldVersion Update/$newVersion Update/g" {} \;
-find $path -type f -name "feature.xml" -exec sed -i "s/org\/$oldVersion/org\/$newVersion/g" {} \;
-find $path -type f -name "pom.xml" -exec sed -i "s/$oldVersion<\/url>/$newVersion<\/url>/g" {} \;
+
+if [ ! $isSnapshot ]; then
+	find $path -type f -name "feature.xml" -exec sed -i "s/org\/$oldVersion/org\/$versionToTag/g" {} \;
+	find $path -type f -name "pom.xml" -exec sed -i "s/$oldVersion<\/url>/$versionToTag<\/url>/g" {} \;
+fi
 
 #
 #	UPDATING JAVA HEADERS
@@ -67,3 +81,14 @@ sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.core/src/gama/core/runt
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.annotations/src/gama/annotations/precompiler/doc/utils/Constants.java
 
 sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist
+
+#
+#	Meta-Data generator
+#
+
+echo "Set GAMA meta-data in config.ini"
+sed -i "s/gama.version\" value=\"SNAPSHOT/gama.version\" value=\"$newVersion/g" $path/gama.product/gama.product
+sed -i "s/gama.commit\" value=\"SNAPSHOT/gama.commit\" value=\"$(git rev-parse HEAD)/g" $path/gama.product/gama.product
+sed -i "s/gama.branch\" value=\"SNAPSHOT/gama.branch\" value=\"$(git rev-parse --abbrev-ref HEAD)/g" $path/gama.product/gama.product
+sed -i "s/gama.date\" value=\"SNAPSHOT/gama.date\" value=\"$(date)/g" $path/gama.product/gama.product
+sed -i "s/gama.jdk\" value=\"SNAPSHOT/gama.jdk\" value=\"$JDK_EMBEDDED_VERSION/g" $path/gama.product/gama.product

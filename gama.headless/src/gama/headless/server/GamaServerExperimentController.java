@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -129,7 +129,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 *            the command
 	 */
 	@Override
-	protected void processUserCommand(final ExperimentCommand command) {
+	protected boolean processUserCommand(final ExperimentCommand command) {
 		switch (command) {
 			case _OPEN:
 				try {
@@ -137,71 +137,44 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				} catch (IOException | GamaHeadlessException e) {
 					DEBUG.OUT(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
-					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
+					return false;
 				}
-				break;
+				return true;
 			case _START:
 				paused = false;
 				lock.release();
-				break;
+				return true;
 			case _PAUSE:
 				paused = true;
-				break;
+				return true;
 			case _STEP:
 				paused = true;
 				lock.release();
-				break;
+				return true;
 			case _BACK:
 				paused = true;
 				experiment.getAgent().backward(getScope());
-				break;
+				return true;
 			case _RELOAD:
-
 				try {
 					experiment.reload();
-//					experiment.dispose();
-//					_job.simulator.dispose();
-//
-//					_job.loadAndBuildWithJson(parameters, stopCondition);
-//					executionThread = null;
-//					commandThread.interrupt();
-//					commandThread = null;
-//					executionThread = new MyRunnable(_job);
-//					commandThread = new Thread(() -> {
-//						while (acceptingCommands) {
-//							try {
-//								processUserCommand(commands.take());
-//							} catch (final Exception e) {}
-//						}
-//					}, "Front end controller");
-//					commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-//					try {
-//						lock.acquire();
-//					} catch (final InterruptedException e) {}
-//					experimentAlive = true;
-//					acceptingCommands = true;
-//					disposing = false;
-//					commandThread.start();
-//					_job.server.execute(executionThread);
-
 				} catch (final GamaRuntimeException e) {
 					e.printStackTrace();
 					closeExperiment(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
-					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
+					return false;
 				} catch (final Throwable e) {
 					closeExperiment(GamaRuntimeException.create(e, scope));
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
-					// socket.send(Jsoner.serialize(new GamaServerMessage(GamaServerMessageType.SimulationError, e)));
-
+					return false;
 				} finally {
 					// scope.getGui().updateExperimentState(scope);
 				}
-				break;
+				return true;
 			case _CLOSE:
-				break;
+				return true;
 			default:
-				break;
+				return true;
 		}
 	}
 
@@ -291,23 +264,23 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	}
 
 	@Override
-	public void processStep(final boolean andWait) {
+	public boolean processStep(final boolean andWait) {
 		paused = true;
 		if (andWait) {
 			_job.doStep();
-		} else {
-			super.processStep(andWait);
+			return true;
 		}
+		return super.processStep(andWait);
 	}
 
 	@Override
-	public void processBack(final boolean andWait) {
+	public boolean processBack(final boolean andWait) {
 		paused = true;
 		if (andWait) {
 			_job.doBackStep();
-		} else {
-			super.processBack(andWait);
+			return true;
 		}
+		return super.processBack(andWait);
 	}
 
 }

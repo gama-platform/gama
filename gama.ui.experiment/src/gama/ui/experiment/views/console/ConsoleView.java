@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ConsoleView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ConsoleView.java, in gama.ui.experiment, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.ui.experiment.views.console;
 
@@ -32,9 +32,9 @@ import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.GamaViewPart;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -140,7 +140,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	@Override
 	public void append(final String text, final ITopLevelAgent agent, final GamaColor color) {
 		// DEBUG.OUT("Agent " + agent + " asking to display in the console ");
-		append(text, agent, color == null ? null : GamaColors.get(color));
+		append(text, agent, GamaColors.get(color));
 	}
 
 	/**
@@ -267,7 +267,6 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	protected boolean needsOutput() {
 		return false;
 	}
-
 
 	@Override
 	public String getContents() { return viewer.getDocument().get(); }

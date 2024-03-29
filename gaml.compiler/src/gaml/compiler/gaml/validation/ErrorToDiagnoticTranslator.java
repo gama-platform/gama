@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ErrorToDiagnoticTranslator.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * ErrorToDiagnoticTranslator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,17 +25,19 @@ import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.descriptions.ValidationContext;
-import gaml.compiler.gaml.resource.GamlResource;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.ExperimentFileStructure;
+import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.impl.StatementImpl;
+import gaml.compiler.gaml.resource.GamlResource;
+import gaml.compiler.gaml.resource.GamlResourceServices;
 
 /**
  * The Class ErrorToDiagnoticTranslator.
@@ -95,7 +97,10 @@ public class ErrorToDiagnoticTranslator {
 		}
 		EStructuralFeature feature = null;
 		final EObject object = e.getStatement();
-		if (object instanceof Statement) {
+		String[] data = e.getData();
+		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
+			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
+		} else if (object instanceof Statement) {
 			final StatementImpl s = (StatementImpl) object;
 			if (s.eIsSet(GamlPackage.Literals.STATEMENT__KEY)) {
 				feature = GamlPackage.Literals.STATEMENT__KEY;

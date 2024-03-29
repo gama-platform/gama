@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ImageDisplaySurface.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,6 +16,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
@@ -140,8 +141,9 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	}
 
 	@Override
-	public void updateDisplay(final boolean force) {
+	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
 		drawAllDisplays();
+		if (synchronizer != null) synchronizer.release();
 	}
 
 	/**

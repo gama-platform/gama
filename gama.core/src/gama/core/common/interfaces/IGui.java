@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,7 @@ import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.IDisplayOutput;
+import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -496,7 +496,7 @@ public interface IGui {
 	 * @param agent
 	 *            the agent
 	 */
-	default void updateViewTitle(final IDisplayOutput output, final SimulationAgent agent) {}
+	default void updateViewTitle(final IOutput output, final SimulationAgent agent) {}
 
 	/**
 	 * Open welcome page.

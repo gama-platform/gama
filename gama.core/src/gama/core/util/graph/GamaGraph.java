@@ -299,7 +299,18 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		for (DefaultEdge e : graph.edgeSet()) {
 			Object s = graph.getEdgeSource(e);
+			
 			Object t = graph.getEdgeTarget(e);
+			
+			if (nodeS != null) {
+				if (s instanceof String) {
+					s = verticesAg.get(s);
+				}
+				if (t instanceof String) {
+					t = verticesAg.get(t);
+				}
+				
+			}
 
 			if (edgeS == null) {
 				if (nodeS == null) {

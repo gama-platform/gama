@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IDisplaySurface.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
+import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
@@ -23,8 +24,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
+import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.gaml.statements.draw.DrawingAttributes;
@@ -108,9 +109,19 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	BufferedImage getImage(int width, int height);
 
 	/**
-	 * Asks the surface to update its display, optionnaly forcing it to do so (if it is paused, for instance)
+	 * Asks the surface to update its display, optionnaly forcing it to do so (if it is paused, for instance). A
+	 * synchronizer (possibly null) is passed, that needs to be released when the physical display is done
 	 **/
-	void updateDisplay(boolean force);
+	void updateDisplay(boolean force, Semaphore synchronizer);
+
+	/**
+	 * Update display.
+	 *
+	 * @param force the force
+	 */
+	default void updateDisplay(final boolean force) {
+		updateDisplay(force, null);
+	}
 
 	/**
 	 * Sets a concrete menu manager to be used for displaying menus on this surface
@@ -324,16 +335,6 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 * @return the fps
 	 */
 	int getFPS();
-
-	/**
-	 * @return true if the surface is considered as "realized" (i.e. displayed on the UI)
-	 */
-	// boolean isRealized();
-
-	/**
-	 * @return true if the surface has been "rendered" (i.e. all the layers have been displayed)
-	 */
-	// boolean isRendered();
 
 	/**
 	 * @return true if the surface has been 'disposed' already

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
@@ -63,7 +62,8 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	LayoutStatement layout;
 
 	/** The outputs. */
-	protected final Map<String, IOutput> outputs = GamaMapFactory.synchronizedOrderedMap();
+	protected final Map<String, IOutput> outputs = GamaMapFactory.create();
+	// GamaMapFactory.synchronizedOrderedMap();
 
 	// protected final IList<MonitorOutput> monitors = GamaListFactory.create();
 
@@ -116,14 +116,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	@Override
 	public void add(final IOutput output) {
 		hasMonitors |= output instanceof MonitorOutput;
-		if (output instanceof IDisplayOutput && ((IDisplayOutput) output).isVirtual()) {
+		if (output.isVirtual()) {
 			virtualOutputs.put(output.getId(), output);
-		}
-		// else if (output instanceof MonitorOutput monitor
-		// && GamaPreferences.Interface.CORE_MONITOR_PARAMETERS.getValue()) {
-		// monitors.add(monitor);
-		// }
-		else {
+		} else {
 			synchronized (outputs) {
 				outputs.put(output.getId(), output);
 			}
@@ -137,10 +132,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			// AD: explicit addition of an ArrayList to prevent dispose errors
 			// (when outputs remove themselves from the list)
 			GAMA.desynchronizeFrontmostExperiment();
-			synchronized (outputs) {
-				for (final IOutput output : new ArrayList<>(outputs.values())) { output.dispose(); }
-			}
-			// for (final IOutput output : new ArrayList<>(monitors)) { output.dispose(); }
+			// synchronized (outputs) {
+			for (final IOutput output : new ArrayList<>(outputs.values())) { output.dispose(); }
+			// }
 			clear();
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -174,40 +168,32 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			if (s instanceof LayoutStatement) {
 				layout = (LayoutStatement) s;
 			} else if (s instanceof IOutput o) {
-				if (o instanceof IDisplayOutput && ((IDisplayOutput) o).isAutoSave()) {
-					GAMA.synchronizeFrontmostExperiment();
-				}
+				if (o.isAutoSave()) { GAMA.synchronizeFrontmostExperiment(); }
 				add(o);
 				o.setUserCreated(false);
 				if (o instanceof LayeredDisplayOutput ldo) { ldo.setIndex(displayIndex++); }
-
 			}
 		}
 	}
 
 	@Override
 	public void forceUpdateOutputs() {
-		for (final IDisplayOutput o : getDisplayOutputs()) { o.update(); }
+		outputs.forEach((n, o) -> o.update());
 	}
 
 	@Override
 	public void pause() {
-		for (final IDisplayOutput o : getDisplayOutputs()) { o.setPaused(true); }
+		outputs.forEach((n, o) -> o.setPaused(true));
 	}
 
 	@Override
 	public void resume() {
-		for (final IDisplayOutput o : getDisplayOutputs()) { o.setPaused(false); }
+		outputs.forEach((n, o) -> o.setPaused(false));
 	}
 
 	@Override
 	public void close() {
-		for (final IDisplayOutput o : getDisplayOutputs()) { o.close(); }
-	}
-
-	@Override
-	public Iterable<IDisplayOutput> getDisplayOutputs() {
-		return Iterables.filter(outputs.values(), IDisplayOutput.class);
+		outputs.forEach((n, o) -> o.close());
 	}
 
 	@Override
@@ -311,27 +297,12 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean step(final IScope scope) {
-		getDisplayOutputs().forEach(each -> { each.setRendered(false); });
 		outputs.forEach((name, each) -> {
 			if (each instanceof LayeredDisplayOutput ldo) { ldo.linkScopeWithGraphics(); }
 			if (each.isRefreshable() && each.getScope().step(each).passed()) { each.update(); }
 		});
-		if (GAMA.isSynchronized() && !inInitPhase) {
-			while (!allOutputsRendered()) {
-				THREADS.WAIT(20, "The outputs are not rendered yet", "AbstractOutputManager.step() interrupted");
-			}
-		}
-		evaluateAutoSave(scope);
-		return true;
-	}
 
-	/**
-	 * All outputs rendered.
-	 *
-	 * @return true, if successful
-	 */
-	protected boolean allOutputsRendered() {
-		for (IDisplayOutput each : this.getDisplayOutputs()) { if (!each.isRendered()) return false; }
+		evaluateAutoSave(scope);
 		return true;
 	}
 

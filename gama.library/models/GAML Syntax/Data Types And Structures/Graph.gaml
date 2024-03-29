@@ -308,7 +308,8 @@ global {
 		write first(10, sp);
 		g_graph <- load_shortest_paths(g_graph, sp);
 		geometry node1 <- any(g_graph.vertices);
-		geometry node2 <- any(g_graph.vertices);
+		geometry node2 <- any(g_graph.vertices - node1);
+		 
 		map<int, geometry> mfb <- map<int, geometry>(g_graph max_flow_between (node1, node2));
 		write "Find a path between two nodes: 'graph path_between (node1, node2)'";
 		the_path <- g_graph path_between (node1, node2);

@@ -11,10 +11,10 @@ archivePath="$GITHUB_WORKSPACE/gama.application"
 #	Download latest JDK
 #
 echo "=== Download latest JDK"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.8.1+1 | grep "/OpenJDK17U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-17.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.8.1+1 | grep "/OpenJDK17U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-17.zip"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.8.1+1 | grep "/OpenJDK17U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-17.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.8.1+1 | grep "/OpenJDK17U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-17.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK17U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-17.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK17U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-17.zip"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK17U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-17.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK17U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-17.tar.gz"
 
 #
 #	Prepare downloaded JDK
@@ -76,14 +76,13 @@ for targetPlatform in "linux.gtk.x86_64" "win32.win32.x86_64" "macosx.cocoa.x86_
 	fi
 	#
 	# Make GAMA use embedded JDK
-	echo "-vm" > Gama.ini
-	sed -i '1s/^/-vm/' $folderEclipse/Gama.ini
+	sed -i '1s/^/-vm\n/' $folderEclipse/Gama.ini
 	if [[ "$os" == "macosx"* ]]; then
-		sed -i '1,2s/^/..\/jdk\/Contents\/Home\/bin\/java/' $folderEclipse/Gama.ini
+		sed -i '2s/^/..\/jdk\/Contents\/Home\/bin\/java\n/' $folderEclipse/Gama.ini
 	elif [[ "$os" == "win32"* ]]; then
-		sed -i '1,2s/^/.\/jdk\/bin\/javaw/' $folderEclipse/Gama.ini
+		sed -i '2s/^/.\/jdk\/bin\/javaw\n/' $folderEclipse/Gama.ini
 	else
-		sed -i '1,2s/^/.\/jdk\/bin\/java/' $folderEclipse/Gama.ini
+		sed -i '2s/^/.\/jdk\/bin\/java\n/' $folderEclipse/Gama.ini
 	fi
 
 	#

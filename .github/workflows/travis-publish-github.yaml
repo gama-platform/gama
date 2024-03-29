@@ -141,14 +141,15 @@ jobs:
         if: "${{ !inputs.IS_STABLE_RELEASE }}"
         with:
           body: |
-            Alpha release for GAMA ${{ inputs.RELEASE_VERSION }}. Please test and report issues
+            Alpha release for GAMA ${{ inputs.RELEASE_VERSION }}. Please test and report issues.
             Last updated on ${{ steps.setup_new_release_data.outputs.date }}.
+            It has been built on the commit ${{ inputs.COMMIT_SHA }}.
           file: ${{ runner.temp }}/files/*
           file_glob: true
           make_latest: false
           promote: false
           prerelease: true
-          release_name: Alpha Version ${{ inputs.RELEASE_VERSION }} (${{ inputs.COMMIT_SHA }})
+          release_name: Alpha Version ${{ inputs.RELEASE_VERSION }}
           tag: ${{ inputs.RELEASE_VERSION }}
           repo_token: ${{ secrets.BOT_TOKEN }}
 

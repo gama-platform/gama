@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DefaultExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -60,16 +60,17 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the command
 	 */
 	@Override
-	protected void processUserCommand(final ExperimentCommand command) {
+	protected boolean processUserCommand(final ExperimentCommand command) {
 		final IScope scope = getScope();
 		switch (command) {
 			case _CLOSE:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
-				break;
+				return true;
 			case _OPEN:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
 					experiment.open();
+					return true;
 					// Following a comment made here: #3925 and in
 					// https://github.com/gama-platform/gama/commit/8068457d11d25289bf001bb6f29553e4037f1cda#r130876638,
 					// removes the thread
@@ -77,32 +78,33 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				} catch (final Exception e) {
 					DEBUG.ERR("Error when opening the experiment: " + e.getMessage());
 					closeExperiment(e);
+					return false;
 				}
-				break;
 			case _START:
 				try {
 					paused = false;
 					lock.release();
+					return true;
 				} catch (final GamaRuntimeException e) {
 					closeExperiment(e);
+					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment, IExperimentStateListener.State.RUNNING);
 				}
-				break;
 			case _PAUSE:
 				paused = true;
 				if (!disposing) { GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED); }
-				break;
+				return true;
 			case _STEP:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release();
-				break;
+				return true;
 			case _BACK:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				experiment.getAgent().backward(getScope());// ?? scopes[0]);
-				break;
+				return true;
 			case _RELOAD:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
@@ -110,20 +112,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					paused = true;
 					scope.getGui().getStatus().waitStatus(scope, "Reloading...");
 					experiment.reload();
-					if (wasRunning) {
-						processUserCommand(ExperimentCommand._START);
-					} else {
-						scope.getGui().getStatus().informStatus(scope, "Experiment reloaded");
-					}
+					if (wasRunning) return processUserCommand(ExperimentCommand._START);
+					scope.getGui().getStatus().informStatus(scope, "Experiment reloaded");
+					return true;
 				} catch (final GamaRuntimeException e) {
 					closeExperiment(e);
+					return false;
 				} catch (final Throwable e) {
 					closeExperiment(GamaRuntimeException.create(e, scope));
+					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment);
 				}
-				break;
 		}
+		return false;
 	}
 
 	@Override
@@ -142,7 +144,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				acceptingCommands = false;
 				experimentAlive = false;
 				lock.release();
-				if (commandThread != null && commandThread.isAlive()) { commands.offer(ExperimentCommand._CLOSE); }
+				if (commandThread != null && commandThread.isAlive()) {
+					// Disposing, so no need to pay attention to the result of offer()
+					commands.offer(ExperimentCommand._CLOSE);
+				}
 			}
 		}
 	}
@@ -185,8 +190,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		this.agent = agent;
 		scope = agent.getScope();
 		serverConfiguration = GAMA.getPlatformAgent().getServer() != null
-				? GAMA.getPlatformAgent().getServer().obtainGuiServerConfiguration()
-				: null;
+				? GAMA.getPlatformAgent().getServer().obtainGuiServerConfiguration() : null;
 		scope.setServerConfiguration(serverConfiguration);
 		try {
 			if (!scope.init(agent).passed()) {

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SimulationOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SimulationOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,8 +13,6 @@ package gama.core.outputs;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,6 +20,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
@@ -88,7 +88,7 @@ import gama.gaml.types.IType;
 						@example (
 								value = "}",
 								isExecutable = false) }) },
-		see = { IKeyword.DISPLAY, IKeyword.MONITOR, IKeyword.INSPECT, IKeyword.OUTPUT_FILE, IKeyword.LAYOUT })
+		see = { IKeyword.DISPLAY, IKeyword.MONITOR, IKeyword.INSPECT, IKeyword.LAYOUT })
 @validator (SimulationOutputValidator.class)
 public class SimulationOutputManager extends AbstractOutputManager {
 
@@ -162,10 +162,7 @@ public class SimulationOutputManager extends AbstractOutputManager {
 	 *            the agent
 	 */
 	public void updateDisplayOutputsName(final SimulationAgent agent) {
-		for (final IOutput out : this) {
-			if (out instanceof IDisplayOutput display) { GAMA.getGui().updateViewTitle(display, agent); }
-		}
-
+		for (final IOutput out : this) { GAMA.getGui().updateViewTitle(out, agent); }
 	}
 
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlSyntacticConverter.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlSyntacticConverter.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,6 @@ import static gama.core.common.interfaces.IKeyword.EQUATION_LEFT;
 import static gama.core.common.interfaces.IKeyword.EQUATION_OP;
 import static gama.core.common.interfaces.IKeyword.EQUATION_RIGHT;
 import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
-import static gama.core.common.interfaces.IKeyword.FILE;
 import static gama.core.common.interfaces.IKeyword.FROM;
 import static gama.core.common.interfaces.IKeyword.FUNCTION;
 import static gama.core.common.interfaces.IKeyword.GRID;
@@ -38,8 +37,6 @@ import static gama.core.common.interfaces.IKeyword.LET;
 import static gama.core.common.interfaces.IKeyword.METHOD;
 import static gama.core.common.interfaces.IKeyword.MODEL;
 import static gama.core.common.interfaces.IKeyword.NAME;
-import static gama.core.common.interfaces.IKeyword.OUTPUT;
-import static gama.core.common.interfaces.IKeyword.OUTPUT_FILE;
 import static gama.core.common.interfaces.IKeyword.PUT;
 import static gama.core.common.interfaces.IKeyword.REMOVE;
 import static gama.core.common.interfaces.IKeyword.SAVE;
@@ -73,6 +70,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
+import gama.dev.DEBUG;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;
@@ -85,13 +83,11 @@ import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
-import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.expression.ExpressionDescriptionBuilder;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Block;
+import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
@@ -115,7 +111,9 @@ import gaml.compiler.gaml.StandaloneBlock;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.TypeRef;
 import gaml.compiler.gaml.VariableRef;
+import gaml.compiler.gaml.expression.ExpressionDescriptionBuilder;
 import gaml.compiler.gaml.impl.ModelImpl;
+import gaml.compiler.gaml.resource.GamlResourceServices;
 
 /**
  *
@@ -127,6 +125,10 @@ import gaml.compiler.gaml.impl.ModelImpl;
  *
  */
 public class GamlSyntacticConverter {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The builder of proto-expressions (not yet compiled). */
 	final static ExpressionDescriptionBuilder builder = new ExpressionDescriptionBuilder();
@@ -735,8 +737,6 @@ public class GamlSyntacticConverter {
 		String keyword = k;
 		if ((BATCH.equals(upper) || EXPERIMENT.equals(upper)) && SAVE.equals(keyword)) {
 			keyword = SAVE_BATCH;
-		} else if (OUTPUT.equals(upper) && FILE.equals(keyword)) {
-			keyword = OUTPUT_FILE;
 		} else if (DISPLAY.equals(upper) || SPECIES_LAYER.equals(upper)) {
 			if (SPECIES.equals(keyword)) {
 				keyword = SPECIES_LAYER;

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * JOGLRenderer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -41,12 +42,12 @@ import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
 import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl.renderer.helpers.LightHelper;
 import gama.ui.display.opengl.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl.renderer.helpers.SceneHelper;
-import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass;
 import gama.ui.display.opengl.scene.ModelScene;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
@@ -207,6 +208,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
+			if (synchronizer != null) { synchronizer.release(); }
 		}
 		//
 		// if (!visible) {
@@ -226,6 +228,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/** The first. */
 	boolean first = true;
 
+	/** The synchronizer. */
+	private Semaphore synchronizer;
+
 	@Override
 	public void reshape(final GLAutoDrawable drawable, final int arg1, final int arg2, final int w, final int h) {
 		int width = DPIHelper.autoScaleDown(getCanvas().getMonitor(), w),
@@ -239,7 +244,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
 		// sceneHelper.reshape(width, height);
-		surface.updateDisplay(true);
+		surface.updateDisplay(true, synchronizer);
 		getCanvas().updateVisibleStatus(getCanvas().isVisible());
 	}
 
@@ -252,6 +257,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		cameraHelper.dispose();
 		drawable.removeGLEventListener(this);
 		disposed = true;
+		// surface.getOutput().setRendered(true);
 	}
 
 	/**
@@ -530,6 +536,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public boolean hasDrawnOnce() {
 		return !first;
+	}
+
+	/**
+	 * Sets the synchronizer.
+	 *
+	 * @param synchronizer
+	 *            the new synchronizer
+	 */
+	public void setSynchronizer(final Semaphore synchronizer) {
+		if (synchronizer == null) return;
+		this.synchronizer = synchronizer;
+
 	}
 
 }
