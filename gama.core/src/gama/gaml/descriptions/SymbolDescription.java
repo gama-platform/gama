@@ -410,9 +410,12 @@ public abstract class SymbolDescription implements IDescription {
 		error(message, IGamlIssue.GENERAL);
 	}
 
+	/** The Constant EMPTY_DATA. */
+	final static String[] EMPTY_DATA = {};
+
 	@Override
 	public void error(final String message, final String code) {
-		flagError(message, code, false, false, getUnderlyingElement(), (String[]) null);
+		flagError(message, code, false, false, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
@@ -423,12 +426,12 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
 		flagError(s, code, false, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
-				data.length == 0 ? new String[] { facet } : data);
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void info(final String message, final String code) {
-		flagError(message, code, false, true, getUnderlyingElement(), (String[]) null);
+		flagError(message, code, false, true, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
@@ -439,12 +442,12 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public void info(final String s, final String code, final String facet, final String... data) {
 		flagError(s, code, false, true, this.getUnderlyingElement(facet, false),
-				data.length == 0 ? new String[] { facet } : data);
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void warning(final String message, final String code) {
-		flagError(message, code, true, false, null, (String[]) null);
+		flagError(message, code, true, false, null, EMPTY_DATA);
 	}
 
 	@Override

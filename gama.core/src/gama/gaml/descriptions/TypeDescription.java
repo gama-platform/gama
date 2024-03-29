@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * TypeDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TypeDescription.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
@@ -25,6 +25,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Iterables;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
@@ -675,7 +676,7 @@ public abstract class TypeDescription extends SymbolDescription {
 						}
 					} else {
 						userDeclared.info("Action '" + actionName + "' supersedes the one defined in  "
-								+ inheritedAction.getOriginName(), IGamlIssue.REDEFINES);
+								+ inheritedAction.getOriginName(), IGamlIssue.REDEFINES, IKeyword.NAME);
 					}
 				}
 			} else if (inheritedAction.isAbstract()) {
