@@ -233,6 +233,7 @@ public abstract class ChartOutput {
 	 */
 	public ChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		final String t = typeexp == null ? IKeyword.SERIES : Cast.asString(scope, typeexp.value(scope));
+		//TODO: heatmap is not taken into account here and it will be considered as a XY_CHART, is that normal ?
 		type = IKeyword.SERIES.equals(t) ? SERIES_CHART : IKeyword.HISTOGRAM.equals(t) ? HISTOGRAM_CHART
 				: IKeyword.RADAR.equals(t) ? RADAR_CHART : IKeyword.PIE.equals(t) ? PIE_CHART
 				: IKeyword.BOX_WHISKER.equals(t) ? BOX_WHISKER_CHART : IKeyword.SCATTER.equals(t) ? SCATTER_CHART

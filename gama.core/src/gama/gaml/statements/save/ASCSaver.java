@@ -19,9 +19,7 @@ import java.util.Set;
 
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;

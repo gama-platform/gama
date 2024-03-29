@@ -42,9 +42,6 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	/** The dimensions. */
 	GamaPoint dimensions;
 
-	/** The cell size. */
-	GamaPoint cellSize;
-
 	/** The scale. */
 	Double scale;
 

@@ -133,27 +133,6 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 
 	}
 
-	/**
-	 * The Class LabelGenerator.
-	 */
-	static class LabelGenerator extends StandardCategoryItemLabelGenerator {
-		/**
-		 * Generates an item label.
-		 *
-		 * @param dataset
-		 *            the dataset.
-		 * @param series
-		 *            the series index.
-		 * @param category
-		 *            the category index.
-		 *
-		 * @return the label.
-		 */
-		@Override
-		public String generateLabel(final CategoryDataset dataset, final int series, final int category) {
-			return dataset.getRowKey(series).toString();
-		}
-	}
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {

@@ -431,11 +431,6 @@ public class GamaPreferences {
 				create("pref_experiment_ask_closing", "Ask to close the previous experiment when launching a new one",
 						true, IType.BOOL, true).in(NAME, EXECUTION);
 
-		/** The Constant CORE_ASK_FULLSCREEN. */
-		public static final Pref<Boolean> CORE_ASK_FULLSCREEN =
-				create("pref_experiment_ask_fullscreen", "Ask before entering fullscreen mode", false, IType.BOOL, true)
-						.in(NAME, EXECUTION).hidden();
-
 		/** The Constant CORE_SLIDER_TYPE. */
 		public static final Pref<Boolean> CORE_SLIDER_TYPE = create("pref_experiment_type_slider",
 				"Set the step duration slider incrementation to linear. If false set to logarithmic", true, IType.BOOL,
@@ -941,11 +936,6 @@ public class GamaPreferences {
 		public static final Pref<Boolean> REQUIRED_PLUGINS = create("pref_required_plugins",
 				"Automatically add the plugins required to compile and run a model when editing it", false, IType.BOOL,
 				false).in(NAME, CATEGORY);
-
-		/** The Constant MISSING_PLUGINS. */
-		public static final Pref<Boolean> MISSING_PLUGINS =
-				create("pref_missing_plugins", "Verify that the required plugins are present before compiling a model",
-						false, IType.BOOL, false).in(NAME, CATEGORY);
 
 		/** The Constant QUADTREE_OPTIMIZATION. */
 		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",

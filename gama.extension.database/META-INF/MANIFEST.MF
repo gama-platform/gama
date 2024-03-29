@@ -9,7 +9,6 @@ Require-Bundle: gama.dependencies,
 Export-Package: gama.extension.database.gaml.skills,
  gama.extension.database.gaml.species,
  gama.extension.database.utils,
- gama.extension.database.utils.geosql,
  gama.extension.database.utils.sql
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

@@ -95,7 +95,12 @@ import gama.gaml.types.IType;
 						type = IType.STRING,
 						optional = true,
 						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris sampling will be perform and saved in the corresponding file")),
-				 },
+				@facet (
+						name = IKeyword.BATCH_OUTPUT,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the automatic batch report will be written")) 
+		},
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",

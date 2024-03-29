@@ -121,8 +121,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/** The scope. */
 	IGraphicsScope scope;
 
-	/** The synchronizer. */
-	// public IDisplaySynchronizer synchronizer;
 
 	/** The parent. */
 	final Composite parent;
@@ -818,8 +816,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	}
 
-	// @Override
-	// public void setDisplaySynchronizer(final IDisplaySynchronizer s) { synchronizer = s; }
 
 	@Override
 	public boolean isVisible() {

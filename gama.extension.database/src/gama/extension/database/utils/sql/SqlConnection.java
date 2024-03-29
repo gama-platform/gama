@@ -82,14 +82,10 @@ public abstract class SqlConnection implements AutoCloseable {
 	/** The Constant NULLVALUE. */
 	protected static final String NULLVALUE = "NULL";
 
-//	/** The Constant MYSQLDriver. */
-//	static final String MYSQLDriver = "com.mysql.cj.jdbc.Driver";
 	
 	/** The Constant SQLITEDriver. */
 	protected static final String SQLITEDriver = "org.sqlite.JDBC";
 	
-//	/** The Constant POSTGRESDriver. */
-//	protected static final String POSTGRESDriver = "org.postgresql.Driver";
 
 	/** The vender. */
 	protected String vender = "";

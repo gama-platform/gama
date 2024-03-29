@@ -418,14 +418,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 		return !getManager().hasMouseMenuEventLayer();
 	}
 
-	/**
-	 * Sets the display synchronizer.
-	 *
-	 * @param layeredDisplaySynchronizer
-	 *            the new display synchronizer
-	 */
-	// default void setDisplaySynchronizer(final IDisplaySynchronizer layeredDisplaySynchronizer) {}
-
+	
 	/**
 	 * Gets the scope.
 	 *

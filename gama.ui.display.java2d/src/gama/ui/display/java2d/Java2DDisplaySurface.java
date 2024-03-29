@@ -109,12 +109,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	/** The menu manager. */
 	protected DisplaySurfaceMenu menuManager;
 
-	// /** The temp focus. */
-	// protected IExpression temp_focus;
-
-	/** The render lock. */
-	Semaphore renderLock = new Semaphore(1);
-
 	/** The previous panel size. */
 	protected Dimension previousPanelSize;
 
@@ -132,9 +126,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	/** The frames. */
 	int frames;
-
-	/** The synchronizer. */
-	// private IDisplaySynchronizer synchronizer;
 
 	/** The rendered. */
 	private volatile boolean rendered = false;

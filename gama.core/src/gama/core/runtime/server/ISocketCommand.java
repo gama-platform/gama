@@ -57,12 +57,6 @@ public interface ISocketCommand {
 
 	}
 
-	/** The socket. */
-	String SOCKET = "socket";
-
-	/** The file. */
-	String FILE = "file";
-
 	/** The Constant ESCAPED. */
 	String ESCAPED = "escaped";
 
@@ -77,9 +71,6 @@ public interface ISocketCommand {
 
 	/** The Constant UNTIL. */
 	String UNTIL = IKeyword.UNTIL;
-
-	/** The Constant SERVER. */
-	String SERVER = "server";
 
 	/** The Constant SYNC. */
 	String SYNC = "sync";
