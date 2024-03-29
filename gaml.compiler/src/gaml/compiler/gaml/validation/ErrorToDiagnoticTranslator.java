@@ -97,7 +97,8 @@ public class ErrorToDiagnoticTranslator {
 		}
 		EStructuralFeature feature = null;
 		final EObject object = e.getStatement();
-		if (object instanceof GamlDefinition && e.getData().length > 0 && IKeyword.NAME.equals(e.getData()[0])) {
+		String[] data = e.getData();
+		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
 			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
 		} else if (object instanceof Statement) {
 			final StatementImpl s = (StatementImpl) object;
