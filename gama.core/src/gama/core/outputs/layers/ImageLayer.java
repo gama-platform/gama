@@ -21,14 +21,11 @@ import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
 import gama.core.util.file.IGamaFile;
-import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IMatrix;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.types.GamaFileType;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -45,22 +42,14 @@ public class ImageLayer extends AbstractLayer {
 	/** The cached file. */
 	IImageProvider cachedImageProvider;
 
-	/** The file. */
+	/** The provider. */
 	IExpression provider;
 
-	/** The matrix. */
-	IExpression matrix;
-
 	/** The is potentially variable. */
-	boolean isFilePotentiallyVariable;
-
-	/** The is potentially variable. */
-	boolean isMatrixPotentiallyVariable;
+	boolean isProviderPotentiallyVariable;
 
 	/** The is file. */
 	boolean isImageProvider;
-
-	/** whether it's a matrix or not **/
 
 	/** cached copy to avoid reloading **/
 	BufferedImage cachedBufferedImage;
@@ -75,31 +64,25 @@ public class ImageLayer extends AbstractLayer {
 	 */
 	public ImageLayer(final IScope scope, final ILayerStatement layer) {
 		super(layer);
-		provider = ((ImageLayerStatement) definition).file;
+		provider = ((ImageLayerStatement) definition).imageExpression;
 		isImageProvider = isImageProvider();
-		isFilePotentiallyVariable = !provider.isContextIndependant();
-		matrix = ((ImageLayerStatement) definition).matrix;
-		isMatrixPotentiallyVariable = matrix == null ? false : !matrix.isContextIndependant();
-		if (matrix == null) {
-			if (!isImageProvider) {
-				if (provider.isConst() || !isFilePotentiallyVariable) {
-					Object value = provider.value(scope);
-					if (value instanceof String s) {
-						cachedImageProvider = createFileFromString(scope, s);
-					} else if (value instanceof IImageProvider p) {
-						cachedImageProvider = p;
-					} else {
-						final String s = Cast.asString(scope, value);
-						cachedImageProvider = createFileFromString(scope, s);
-					}
-					isImageProvider = true;
+		isProviderPotentiallyVariable = !provider.isContextIndependant();
+		if (!isImageProvider) {
+			if (provider.isConst() || !isProviderPotentiallyVariable) {
+				Object value = provider.value(scope);
+				if (value instanceof String s) {
+					cachedImageProvider = createFileFromString(scope, s);
+				} else if (value instanceof IImageProvider p) {
+					cachedImageProvider = p;
+				} else {
+					final String s = Cast.asString(scope, value);
+					cachedImageProvider = createFileFromString(scope, s);
 				}
-			} else if (!isFilePotentiallyVariable) {
-				cachedImageProvider = createImageProviderFromFileExpression(scope);
 				isImageProvider = true;
 			}
-		} else {
-			cachedBufferedImage = GamaIntMatrix.from(scope, Cast.asMatrix(scope, matrix.value(scope))).getImage(scope);
+		} else if (!isProviderPotentiallyVariable) {
+			cachedImageProvider = createImageProviderFromFileExpression(scope);
+			isImageProvider = true;
 		}
 
 	}
@@ -110,11 +93,8 @@ public class ImageLayer extends AbstractLayer {
 	 * @return true, if is image provider
 	 */
 	private boolean isImageProvider() {
-		IType providerType = provider.getGamlType();
-		if (IImageProvider.class.isAssignableFrom(providerType.toClass())
-				|| IMatrix.class.isAssignableFrom(providerType.toClass()) && providerType.getContentType() == Types.INT)
-			return true;
-		return false;
+		IType<?> providerType = provider.getGamlType();
+		return IImageProvider.class.isAssignableFrom(providerType.toClass());
 	}
 
 	@Override
@@ -143,7 +123,7 @@ public class ImageLayer extends AbstractLayer {
 	 * @return the gama image file
 	 */
 	private IImageProvider createFileFromString(final IScope scope, final String imageFileName) {
-		final IGamaFile result = GamaFileType.createFile(scope, imageFileName, false, null);
+		final IGamaFile<?, ?> result = GamaFileType.createFile(scope, imageFileName, false, null);
 		return verifyFile(scope, result);
 	}
 
@@ -194,22 +174,11 @@ public class ImageLayer extends AbstractLayer {
 	 * @return the gama image file
 	 */
 	protected IImageProvider buildImage(final IScope scope) {
-		if (!isFilePotentiallyVariable) return cachedImageProvider;
+		if (!isProviderPotentiallyVariable) return cachedImageProvider;
 		return isImageProvider ? createImageProviderFromFileExpression(scope)
 				: createFileFromString(scope, Cast.asString(scope, provider.value(scope)));
 	}
 
-	/**
-	 * Builds the image from matrix.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the buffered image
-	 */
-	protected BufferedImage buildImageFromMatrix(final IScope scope) {
-		if (!isMatrixPotentiallyVariable) return cachedBufferedImage;
-		return GamaIntMatrix.from(scope, Cast.asMatrix(scope, matrix.value(scope))).getImage(scope);
-	}
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
@@ -231,10 +200,10 @@ public class ImageLayer extends AbstractLayer {
 		}
 
 		if (file != null) {
-			dg.drawAsset(file, attributes);
-		} else {
-			final BufferedImage img = buildImageFromMatrix(scope);
-			if (img != null) { dg.drawImage(img, attributes); }
+			dg.drawAsset(file, attributes);				
+		}
+		else {
+			//TODO: should probably raise some kind of error/warning
 		}
 	}
 

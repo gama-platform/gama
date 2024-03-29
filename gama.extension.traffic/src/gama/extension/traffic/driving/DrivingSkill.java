@@ -67,13 +67,6 @@ import gama.gaml.types.Types;
 		init = "0.0",
 		doc = @doc ("the speed of the agent (in meter/second)")),
 		@variable (
-				name = IKeyword.REAL_SPEED,
-				type = IType.FLOAT,
-				init = "0.0",
-				doc = @doc (
-						value = "the actual speed of the agent (in meter/second)",
-						deprecated = "there is now only one speed value, which is located in `speed`")),
-		@variable (
 				name = DrivingSkill.ACCELERATION,
 				type = IType.FLOAT,
 				init = "0.0",
@@ -99,43 +92,16 @@ import gama.gaml.types.Types;
 				init = "0",
 				doc = @doc ("the index of the current edge (road) in the path")),
 		@variable (
-				name = DrivingSkill.TARGETS,
-				type = IType.LIST,
-				of = IType.POINT,
-				init = "[]",
-				doc = @doc (
-						value = "the current list of points that the agent has to reach (path)",
-						deprecated = "this can be accessed using current_path.vertices")),
-		@variable (
-				name = DrivingSkill.SECURITY_DISTANCE_COEFF,
-				type = IType.FLOAT,
-				init = "1.0",
-				doc = @doc (
-						deprecated = "use safety_distance_coeff instead",
-						value = "the coefficient for the computation of the the min distance between two vehicles (according to the vehicle speed - safety_distance =max(min_safety_distance, safety_distance_coeff `*` min(self.real_speed, other.real_speed) )")),
-		@variable (
 				name = DrivingSkill.SAFETY_DISTANCE_COEFF,
 				type = IType.FLOAT,
 				init = "1.0",
 				doc = @doc ("the coefficient for the computation of the the min distance between two vehicles (according to the vehicle speed - security_distance =max(min_security_distance, security_distance_coeff `*` min(self.real_speed, other.real_speed) )")),
-		@variable (
-				name = DrivingSkill.MIN_SECURITY_DISTANCE,
-				type = IType.FLOAT,
-				init = "0.5",
-				doc = @doc (
-						deprecated = "use min_safety_distance instead",
-						value = "the minimal distance to another vehicle")),
 		@variable (
 				name = DrivingSkill.MIN_SAFETY_DISTANCE,
 				type = IType.FLOAT,
 				init = "0.5",
 				doc = @doc ("the minimum distance of the vehicle's front bumper to the leading vehicle's rear bumper, "
 						+ "known as the parameter s0 in the Intelligent Driver Model")),
-		@variable (
-				name = DrivingSkill.CURRENT_LANE,
-				type = IType.INT,
-				init = "0",
-				doc = @doc ("the current lane on which the agent is")),
 		@variable (
 				name = DrivingSkill.LOWEST_LANE,
 				type = IType.INT,
@@ -242,13 +208,6 @@ import gama.gaml.types.Types;
 				init = "nil",
 				doc = @doc ("the road which the vehicle will enter next")),
 		@variable (
-				name = DrivingSkill.ON_LINKED_ROAD,
-				type = IType.BOOL,
-				init = "false",
-				doc = @doc (
-						deprecated = "use using_linked_road instead",
-						value = "is the agent on the linked road?")),
-		@variable (
 				name = DrivingSkill.USING_LINKED_ROAD,
 				type = IType.BOOL,
 				init = "false",
@@ -268,20 +227,6 @@ import gama.gaml.types.Types;
 				type = IType.INT,
 				init = "1",
 				doc = @doc ("the maximum number of lanes that the vehicle can change during a simulation step")),
-		@variable (
-				name = DrivingSkill.PROBA_LANE_CHANGE_UP,
-				type = IType.FLOAT,
-				init = "1.0",
-				doc = @doc (
-						value = "probability to change to a upper lane (left lane if right side driving) to gain acceleration, within one second",
-						deprecated = "use MOBIL parameters to control this instead")),
-		@variable (
-				name = DrivingSkill.PROBA_LANE_CHANGE_DOWN,
-				type = IType.FLOAT,
-				init = "1.0",
-				doc = @doc (
-						value = "probability to change to a lower lane (right lane if right side driving) to gain acceleration, within one second",
-						deprecated = "use MOBIL parameters to control this instead")),
 		@variable (
 				name = DrivingSkill.PROBA_USE_LINKED_ROAD,
 				type = IType.FLOAT,
@@ -344,12 +289,6 @@ import gama.gaml.types.Types;
 				type = IType.AGENT,
 				init = "nil",
 				doc = @doc ("the vehicle following this vehicle")) })
-@skill (
-		name = DrivingSkill.ADVANCED_DRIVING,
-		concept = { IConcept.TRANSPORT, IConcept.SKILL },
-		doc = @doc (
-				value = "A skill that provides driving primitives and operators",
-				deprecated = "please use the name `driving` instead"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class DrivingSkill extends MovingSkill {
 
@@ -369,15 +308,8 @@ public class DrivingSkill extends MovingSkill {
 	/** The Constant ADVANCED_DRIVING. */
 	public static final String ADVANCED_DRIVING = "advanced_driving";
 
-	/** The Constant SECURITY_DISTANCE_COEFF. */
-	// Attributes' names
-	@Deprecated public static final String SECURITY_DISTANCE_COEFF = "security_distance_coeff";
-
 	/** The Constant SAFETY_DISTANCE_COEFF. */
 	public static final String SAFETY_DISTANCE_COEFF = "safety_distance_coeff";
-
-	/** The Constant MIN_SECURITY_DISTANCE. */
-	@Deprecated public static final String MIN_SECURITY_DISTANCE = "min_security_distance";
 
 	/** The Constant MIN_SAFETY_DISTANCE. */
 	public static final String MIN_SAFETY_DISTANCE = "min_safety_distance";
@@ -387,9 +319,6 @@ public class DrivingSkill extends MovingSkill {
 
 	/** The Constant NEXT_ROAD. */
 	public static final String NEXT_ROAD = "next_road";
-
-	/** The Constant CURRENT_LANE. */
-	@Deprecated public static final String CURRENT_LANE = "current_lane";
 
 	/** The Constant LOWEST_LANE. */
 	public static final String LOWEST_LANE = "lowest_lane";
@@ -402,12 +331,6 @@ public class DrivingSkill extends MovingSkill {
 
 	/** The Constant VEHICLE_LENGTH. */
 	public static final String VEHICLE_LENGTH = "vehicle_length";
-
-	/** The Constant PROBA_LANE_CHANGE_UP. */
-	@Deprecated public static final String PROBA_LANE_CHANGE_UP = "proba_lane_change_up";
-
-	/** The Constant PROBA_LANE_CHANGE_DOWN. */
-	@Deprecated public static final String PROBA_LANE_CHANGE_DOWN = "proba_lane_change_down";
 
 	/** The Constant PROBA_RESPECT_PRIORITIES. */
 	public static final String PROBA_RESPECT_PRIORITIES = "proba_respect_priorities";
@@ -441,9 +364,6 @@ public class DrivingSkill extends MovingSkill {
 
 	/** The Constant ALLOWED_LANES. */
 	public static final String ALLOWED_LANES = "allowed_lanes";
-
-	/** The Constant TARGETS. */
-	@Deprecated public static final String TARGETS = "targets";
 
 	/** The Constant CURRENT_TARGET. */
 	public static final String CURRENT_TARGET = "current_target";
@@ -554,32 +474,6 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(IKeyword.SPEED, speed);
 	}
 
-	/**
-	 * Gets the real speed.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the real speed
-	 */
-	@getter (IKeyword.REAL_SPEED)
-	@Deprecated
-	public static double getRealSpeed(final IAgent vehicle) {
-		return getSpeed(vehicle);
-	}
-
-	/**
-	 * Sets the real speed.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param speed
-	 *            the speed
-	 */
-	@setter (IKeyword.REAL_SPEED)
-	@Deprecated
-	public static void setRealSpeed(final IAgent vehicle, final double speed) {
-		setSpeed(vehicle, speed);
-	}
 
 	/**
 	 * Sets the acceleration read only.
@@ -963,19 +857,6 @@ public class DrivingSkill extends MovingSkill {
 	}
 
 	/**
-	 * Sets the targets.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param points
-	 *            the points
-	 */
-	@setter (TARGETS)
-	public static void setTargets(final IAgent vehicle, final List<IAgent> points) {
-		// read-only
-	}
-
-	/**
 	 * Gets the proba use linked road.
 	 *
 	 * @param vehicle
@@ -1000,59 +881,6 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(PROBA_USE_LINKED_ROAD, proba);
 	}
 
-	/**
-	 * Gets the proba lane change down.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the proba lane change down
-	 */
-	@getter (PROBA_LANE_CHANGE_DOWN)
-	@Deprecated
-	public static double getProbaLaneChangeDown(final IAgent vehicle) {
-		return (Double) vehicle.getAttribute(PROBA_LANE_CHANGE_DOWN);
-	}
-
-	/**
-	 * Sets the proba lane change down.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param proba
-	 *            the proba
-	 */
-	@setter (PROBA_LANE_CHANGE_DOWN)
-	@Deprecated
-	public static void setProbaLaneChangeDown(final IAgent vehicle, final Double proba) {
-		vehicle.setAttribute(PROBA_LANE_CHANGE_DOWN, proba);
-	}
-
-	/**
-	 * Gets the proba lane change up.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the proba lane change up
-	 */
-	@getter (PROBA_LANE_CHANGE_UP)
-	@Deprecated
-	public static double getProbaLaneChangeUp(final IAgent vehicle) {
-		return (Double) vehicle.getAttribute(PROBA_LANE_CHANGE_UP);
-	}
-
-	/**
-	 * Sets the proba lane change up.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param proba
-	 *            the proba
-	 */
-	@setter (PROBA_LANE_CHANGE_UP)
-	@Deprecated
-	public static void setProbaLaneChangeUp(final IAgent vehicle, final Double proba) {
-		vehicle.setAttribute(PROBA_LANE_CHANGE_UP, proba);
-	}
 
 	/**
 	 * Gets the proba respect priorities.
@@ -1129,32 +957,6 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(PROBA_RESPECT_STOPS, probas);
 	}
 
-	/**
-	 * Gets the on linked road.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the on linked road
-	 */
-	@Deprecated
-	@getter (ON_LINKED_ROAD)
-	public static boolean getOnLinkedRoad(final IAgent vehicle) {
-		return isUsingLinkedRoad(vehicle);
-	}
-
-	/**
-	 * Sets the on linked road.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param onLinkedRoad
-	 *            the on linked road
-	 */
-	@Deprecated
-	@setter (ON_LINKED_ROAD)
-	public static void setOnLinkedRoad(final IAgent vehicle, final Boolean onLinkedRoad) {
-		// read-only
-	}
 
 	/**
 	 * Checks if is using linked road.
@@ -1299,33 +1101,6 @@ public class DrivingSkill extends MovingSkill {
 	}
 
 	/**
-	 * Gets the security distance coeff.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the security distance coeff
-	 */
-	@Deprecated
-	@getter (SECURITY_DISTANCE_COEFF)
-	public static double getSecurityDistanceCoeff(final IAgent vehicle) {
-		return (Double) vehicle.getAttribute(SECURITY_DISTANCE_COEFF);
-	}
-
-	/**
-	 * Sets the security distance coeff.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param ls
-	 *            the ls
-	 */
-	@Deprecated
-	@setter (SECURITY_DISTANCE_COEFF)
-	public static void setSecurityDistanceCoeff(final IAgent vehicle, final double ls) {
-		vehicle.setAttribute(SECURITY_DISTANCE_COEFF, ls);
-	}
-
-	/**
 	 * Gets the safety distance coeff.
 	 *
 	 * @param vehicle
@@ -1412,32 +1187,6 @@ public class DrivingSkill extends MovingSkill {
 		return (Double) vehicle.getAttribute(VEHICLE_LENGTH);
 	}
 
-	/**
-	 * Gets the current lane.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the current lane
-	 */
-	@Deprecated
-	@getter (CURRENT_LANE)
-	public static int getCurrentLane(final IAgent vehicle) {
-		return getLowestLane(vehicle);
-	}
-
-	/**
-	 * Sets the current lane.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param newLane
-	 *            the new lane
-	 */
-	@Deprecated
-	@setter (CURRENT_LANE)
-	public static void setCurrentLane(final IAgent vehicle, final int newLane) {
-		setLowestLane(vehicle, newLane);
-	}
 
 	/**
 	 * Gets the lowest lane.
@@ -1501,30 +1250,6 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(DISTANCE_TO_CURRENT_TARGET, dist);
 	}
 
-	/**
-	 * Gets the min security distance.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @return the min security distance
-	 */
-	@getter (MIN_SECURITY_DISTANCE)
-	public static double getMinSecurityDistance(final IAgent vehicle) {
-		return (Double) vehicle.getAttribute(MIN_SECURITY_DISTANCE);
-	}
-
-	/**
-	 * Sets the min sec distance.
-	 *
-	 * @param vehicle
-	 *            the vehicle
-	 * @param msd
-	 *            the msd
-	 */
-	@setter (MIN_SECURITY_DISTANCE)
-	public static void setMinSecDistance(final IAgent vehicle, final double msd) {
-		vehicle.setAttribute(MIN_SECURITY_DISTANCE, msd);
-	}
 
 	/**
 	 * Gets the min safety distance.
@@ -1704,50 +1429,6 @@ public class DrivingSkill extends MovingSkill {
 	}
 
 	/**
-	 * Prim advanced follow.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the double
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "advanced_follow_driving",
-			args = { @arg (
-					name = "path",
-					type = IType.PATH,
-					optional = false,
-					doc = @doc ("a path to be followed.")),
-					@arg (
-							name = "target",
-							type = IType.POINT,
-							optional = true,
-							doc = @doc ("the target to reach")),
-					@arg (
-							name = IKeyword.SPEED,
-							type = IType.FLOAT,
-							optional = true,
-							doc = @doc ("the speed to use for this move (replaces the current value of speed)")),
-					@arg (
-							name = "time",
-							type = IType.FLOAT,
-							optional = true,
-							doc = @doc ("time to travel")) },
-			doc = @doc (
-					deprecated = "apparently this action does not do what is described in the documentation",
-					value = "moves the agent towards along the path passed in the arguments while considering the other agents in the network (only for graph topology)",
-					returns = "the remaining time",
-					examples = { @example ("do osm_follow path: the_path on: road_network;") }))
-	@Deprecated
-	public Double primAdvancedFollow(final IScope scope) throws GamaRuntimeException {
-		// Double t = scope.hasArg("time") ? scope.getFloatArg("time") : scope.getClock().getStepInSeconds();
-		// GamaPath path = scope.hasArg("path") ? (GamaPath) scope.getArg("path", IType.NONE) : null;
-		// return moveToNextLocAlongPathOSM(scope, t, path);
-		return 0.0;
-	}
-
-	/**
 	 * Prim ready to cross.
 	 *
 	 * @param scope
@@ -1873,8 +1554,7 @@ public class DrivingSkill extends MovingSkill {
 
 			// Why is 0.5 a lower bound??
 			double speed = Math.max(0.5, getSpeed(vehicle));
-			double safetyDistCoeff = vehicle.hasAttribute(SAFETY_DISTANCE_COEFF) ? getSafetyDistanceCoeff(vehicle)
-					: getSecurityDistanceCoeff(vehicle);
+			double safetyDistCoeff = getSafetyDistanceCoeff(vehicle);
 			double distToNode = getDistanceToCurrentTarget(vehicle);
 			List<IAgent> roadsIn = (List) node.getAttribute(RoadNodeSkill.ROADS_IN);
 			for (IAgent otherInRoad : roadsIn) {
@@ -1994,50 +1674,6 @@ public class DrivingSkill extends MovingSkill {
 		}
 		clearDrivingStates(scope);
 		return null;
-	}
-
-	/**
-	 * Prim compute path from nodes.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the i path
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "path_from_nodes",
-			args = { @arg (
-					name = "graph",
-					type = IType.GRAPH,
-					optional = false,
-					doc = @doc ("the graph representing the road network")),
-					@arg (
-							name = "nodes",
-							type = IType.LIST,
-							optional = false,
-							doc = @doc ("the list of nodes composing the path")) },
-			doc = @doc (
-					value = "action to compute a path from a list of nodes according to a given graph",
-					returns = "the computed path, return nil if no path can be taken",
-					deprecated = "use compute_path with the facet `nodes` instead",
-					examples = {
-							@example ("do compute_path_from_nodes graph: road_network nodes: [node1, node5, node10];") }))
-	@Deprecated
-	public IPath primComputePathFromNodes(final IScope scope) throws GamaRuntimeException {
-		GamaGraph graph = (GamaGraph) scope.getArg("graph", IType.GRAPH);
-		IList<IAgent> nodes = (IList) scope.getArg("nodes", IType.LIST);
-
-		IAgent vehicle = getCurrentAgent(scope);
-		ISpecies context = vehicle.getSpecies();
-
-		IStatement.WithArgs actionComputePath = context.getAction("compute_path");
-		Arguments args = new Arguments();
-		args.put("graph", ConstantExpressionDescription.create(graph));
-		args.put("nodes", ConstantExpressionDescription.create(nodes));
-		actionComputePath.setRuntimeArgs(scope, args);
-
-		return (IPath) actionComputePath.executeOn(scope);
 	}
 
 	/**
@@ -2171,58 +1807,6 @@ public class DrivingSkill extends MovingSkill {
 	public boolean primUnregister(final IScope scope) throws GamaRuntimeException {
 		IAgent vehicle = getCurrentAgent(scope);
 		return unregister(scope, vehicle);
-	}
-
-	/**
-	 * Prim speed choice.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the double
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "speed_choice",
-			args = { @arg (
-					name = "new_road",
-					type = IType.AGENT,
-					optional = false,
-					doc = @doc ("the road on which to choose the speed")) },
-			doc = @doc (
-					value = "action to choose a speed",
-					returns = "the chosen speed",
-					examples = { @example ("do speed_choice new_road: the_road;") },
-					deprecated = "There's no apparent use case for overriding this, since Intelligent Driving Model was implemented"))
-	@Deprecated
-	public Double primSpeedChoice(final IScope scope) throws GamaRuntimeException {
-		return 0.0;
-	}
-
-	/**
-	 * Prim lane choice.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the integer
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "lane_choice",
-			args = { @arg (
-					name = "new_road",
-					type = IType.AGENT,
-					optional = false,
-					doc = @doc ("the road on which to choose the lane")) },
-			doc = @doc (
-					value = "action to choose a lane",
-					returns = "the chosen lane, return -1 if no lane can be taken",
-					examples = { @example ("do lane_choice new_road: a_road;") },
-					deprecated = "Use `choose_lane` instead"))
-	@Deprecated
-	public Integer primLaneChoice(final IScope scope) throws GamaRuntimeException {
-		return -1;
 	}
 
 	/**

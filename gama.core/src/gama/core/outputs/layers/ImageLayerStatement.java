@@ -46,13 +46,7 @@ import gama.gaml.types.IType;
 		concept = { IConcept.DISPLAY, IConcept.FILE, IConcept.LOAD_FILE })
 
 @facets (
-		value = { @facet (
-				name = IKeyword.FILE,
-				type = { IType.NONE },
-				optional = true,
-				doc = @doc (
-						deprecated = "Directly pass the name or the file itself to the default facet",
-						value = "the name/path of the image (in the case of a raster image), a matrix of int, an image file")),
+		value = {
 				@facet (
 						name = IKeyword.ROTATE,
 						type = { IType.FLOAT },
@@ -93,13 +87,6 @@ import gama.gaml.types.IType;
 						type = IType.COLOR,
 						optional = true,
 						doc = @doc ("in the case of a shapefile, this the color used to fill in geometries of the shapefile. In the case of an image, it is used to tint the image")),
-				@facet (
-						name = IKeyword.MATRIX,
-						type = { IType.MATRIX },
-						optional = true,
-						doc = @doc (
-								value = "the matrix containing the values of each pixel as integer following ARGB format",
-								deprecated = "Use a 'field' and a 'mesh' layer instead, or simply pass the matrix to the default facet")),
 				@facet (
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
@@ -183,23 +170,18 @@ public class ImageLayerStatement extends AbstractLayerStatement {
 		@Override
 		public void validate(final StatementDescription description) {
 			if (!description.hasFacet(GIS)) {
-				if (!description.hasFacet(NAME) && !description.hasFacet(FILE) && !description.hasFacet(MATRIX)) {
+				if (!description.hasFacet(NAME)) {
 					description.error(
-							"Missing facets " + IKeyword.NAME + " or " + IKeyword.FILE + " or " + IKeyword.MATRIX,
+							"Missing facet " + IKeyword.NAME,
 							IGamlIssue.MISSING_FACET, description.getUnderlyingElement(), FILE, "\"\"");
 				}
-			} else if (description.hasFacet(FILE)) {
-				description.error("gis: and file: cannot be defined at the same time", IGamlIssue.CONFLICTING_FACETS);
 			}
 		}
 
 	}
 
-	/** The file. */
-	IExpression file;
-
-	/** The matrix. */
-	IExpression matrix;
+	/** The expression to get the image (file or matrix) */
+	IExpression imageExpression;
 
 	/**
 	 * Instantiates a new image layer statement.
@@ -211,8 +193,7 @@ public class ImageLayerStatement extends AbstractLayerStatement {
 	 */
 	public ImageLayerStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
-		file = getFacet(IKeyword.FILE, IKeyword.NAME);
-		matrix = file == null ? getFacet(IKeyword.MATRIX, IKeyword.NAME) : null;
+		imageExpression = getFacet(IKeyword.NAME);
 	}
 
 	/**
@@ -234,10 +215,10 @@ public class ImageLayerStatement extends AbstractLayerStatement {
 	// FIXME Use GamaImageFile
 	@Override
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
-		if (file.isConst()) {
-			setName(Cast.asString(scope, file.value(scope)));
+		if (imageExpression.isConst()) {
+			setName(Cast.asString(scope, imageExpression.value(scope)));
 		} else {
-			setName(file.serializeToGaml(false));
+			setName(imageExpression.serializeToGaml(false));
 		}
 		return true;
 	}

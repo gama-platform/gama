@@ -26,18 +26,6 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  */
 public abstract class MoleSimulationLoader {
 
-	/**
-	 *
-	 * @param modelPath
-	 * @return a compiled model
-	 * @throws IOException
-	 * @throws GamaHeadlessException
-	 * @deprecated use loadModel(File, List<GamlCompilationError>) instead
-	 */
-	@Deprecated
-	public static IModel loadModel(final File modelPath) throws IOException, GamaHeadlessException {
-		return loadModel(modelPath, null);
-	}
 
 	/**
 	 * Load model.

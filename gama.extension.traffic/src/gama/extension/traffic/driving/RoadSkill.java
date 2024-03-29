@@ -133,9 +133,6 @@ public class RoadSkill extends Skill {
 	/** The Constant LINKED_ROAD. */
 	public static final String LINKED_ROAD = "linked_road";
 
-	/** The Constant LANES. */
-	@Deprecated public static final String LANES = "lanes";
-
 	/** The Constant NUM_LANES. */
 	public static final String NUM_LANES = "num_lanes";
 
@@ -545,28 +542,5 @@ public class RoadSkill extends Skill {
 		return true;
 	}
 
-	/**
-	 * Prim unregister.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "unregister",
-			args = { @arg (
-					name = IKeyword.AGENT,
-					type = IType.AGENT,
-					optional = false,
-					doc = @doc ("the agent to unregister on the road.")) },
-			doc = @doc (
-					value = "unregister the agent on the road",
-					examples = { @example ("do unregister agent: the_driver;") },
-					deprecated = "use the `unregister` action in advanced_driving skill instead"))
-	@Deprecated
-	public boolean primUnregister(final IScope scope) throws GamaRuntimeException {
-		IAgent driver = (IAgent) scope.getArg(IKeyword.AGENT, IType.AGENT);
-		return DrivingSkill.unregister(scope, driver);
-	}
+
 }

@@ -147,13 +147,6 @@ import gama.gaml.types.IType;
 				type = IType.STRING,
 				doc = @doc ("Returns a string containing the average duration, in milliseconds, of a simulation cycle.")),
 		@variable (
-				name = PlatformAgent.MACHINE_TIME,
-				type = IType.FLOAT,
-				doc = @doc (
-						deprecated = "Use 'gama.machine_time' instead",
-						value = "Returns the current system time in milliseconds",
-						comment = "The return value is a float number")),
-		@variable (
 				name = SimulationAgent.CURRENT_DATE,
 				depends_on = SimulationAgent.STARTING_DATE,
 				type = IType.DATE,
@@ -683,27 +676,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	public String getAverageDuration() { return Double.toString(getClock().getAverageDuration()); }
 
 	/**
-	 * Gets the machine time.
-	 *
-	 * @return the machine time
-	 */
-	@getter (PlatformAgent.MACHINE_TIME)
-	public Double getMachineTime() { return GAMA.getPlatformAgent().getMachineTime(); }
-
-	/**
-	 * Sets the machine time.
-	 *
-	 * @param t
-	 *            the new machine time
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@setter (PlatformAgent.MACHINE_TIME)
-	public void setMachineTime(final Double t) throws GamaRuntimeException {
-		// NOTHING
-	}
-
-	/**
 	 * Sets the current date.
 	 *
 	 * @param d
@@ -782,24 +754,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		// if (GAMA.isPaused()) { GAMA.resumeFrontmostExperiment(); }
 		final IExperimentController controller = scope.getExperiment().getSpecies().getController();
 		if (controller != null && controller.isPaused()) { controller.processStart(false); }
-		return null;
-	}
-
-	/**
-	 * Halt.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the object
-	 */
-	@action (
-			name = "halt",
-			doc = @doc (
-					deprecated = "It is preferable to use 'die' instead to kill a simulation, or 'pause' to stop it temporarily",
-					value = "Allows to stop the current simulation so that cannot be continued after. All the behaviors and updates are stopped. "))
-
-	public Object halt(final IScope scope) {
-		getExperiment().closeSimulation(this);
 		return null;
 	}
 

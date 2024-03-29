@@ -17,7 +17,6 @@ import static gama.core.common.interfaces.IKeyword.BORDER;
 import static gama.core.common.interfaces.IKeyword.COLOR;
 import static gama.core.common.interfaces.IKeyword.DEPTH;
 import static gama.core.common.interfaces.IKeyword.DRAW;
-import static gama.core.common.interfaces.IKeyword.EMPTY;
 import static gama.core.common.interfaces.IKeyword.FONT;
 import static gama.core.common.interfaces.IKeyword.PERSPECTIVE;
 import static gama.core.common.interfaces.IKeyword.ROTATE;
@@ -30,9 +29,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -40,6 +38,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IDrawDelegate;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -59,8 +59,6 @@ import gama.gaml.statements.AbstractStatementSequence;
 import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
-
-import java.util.WeakHashMap;
 
 // A command that is used to draw shapes, figures, text on the display
 
@@ -86,13 +84,6 @@ import java.util.WeakHashMap;
 						type = { IType.NONE },
 						optional = true,
 						doc = @doc ("the texture(s) that should be applied to the geometry. Either a path to a file or a list of paths")),
-				@facet (
-						name = EMPTY,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use 'wireframe' instead",
-								value = "a condition specifying whether the geometry is empty or full")),
 				@facet (
 						name = IKeyword.WIREFRAME,
 						type = IType.BOOL,
@@ -258,11 +249,6 @@ public class DrawStatement extends AbstractStatementSequence {
 		 */
 		@Override
 		public void validate(final StatementDescription description) {
-			final IExpressionDescription empty = description.getFacet(IKeyword.EMPTY);
-			if (empty != null) {
-				description.setFacetExprDescription(IKeyword.WIREFRAME, empty);
-				description.removeFacets(EMPTY);
-			}
 			final IExpressionDescription persp = description.getFacet("bitmap");
 			if (persp != null) {
 				if (description.getFacet(PERSPECTIVE) != null) {

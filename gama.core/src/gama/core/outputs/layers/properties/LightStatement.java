@@ -54,13 +54,6 @@ import gama.gaml.types.IType;
 						+ "Using the special constant #ambient will allow to redefine or control the ambient light intensity and presence"
 						+ "Using the special constant #default will replace the default directional light of the surrounding display")),
 				@facet (
-						name = IKeyword.POSITION,
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use 'location:' instead",
-								value = "")),
-				@facet (
 						name = IKeyword.LOCATION,
 						type = IType.POINT,
 						optional = true,
@@ -75,34 +68,6 @@ import gama.gaml.types.IType;
 						type = IType.POINT,
 						optional = true,
 						doc = @doc ("the direction of the light (only for direction and spot light). (default value : {0.5,0.5,-1})")),
-				@facet (
-						name = "spot_angle",
-						type = IType.FLOAT,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'angle:' instead",
-								value = "")),
-				@facet (
-						name = IKeyword.COLOR,
-						type = { IType.INT, IType.COLOR },
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'intensity:' instead",
-								value = "")),
-				@facet (
-						name = "draw_light",
-						type = { IType.BOOL },
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'show:' instead",
-								value = "")),
-				@facet (
-						name = IKeyword.UPDATE,
-						type = { IType.BOOL },
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'dynamic:' instead",
-								value = "")),
 				@facet (
 						name = "angle",
 						type = IType.FLOAT,
@@ -147,7 +112,7 @@ import gama.gaml.types.IType;
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
-						value = "light 1 type:point location:{20,20,20} color:255, linear_attenuation:0.01 quadratic_attenuation:0.0001 draw_light:true update:false;",
+						value = "light 1 type:point location:{20,20,20} color:255, linear_attenuation:0.01 quadratic_attenuation:0.0001 show:true dynamic:false;",
 						isExecutable = false),
 						@example (
 								value = "light 'spot1' type: #spot location:{20,20,20} direction:{0,0,-1} color:255 angle:25 linear_attenuation:0.01 quadratic_attenuation:0.0001 draw:true dynamic: false;",
@@ -172,12 +137,6 @@ public class LightStatement extends AbstractLayerStatement {
 		@Override
 		public void validate(final StatementDescription desc) {
 			super.validate(desc);
-			// Taking care of deprecations
-			swap(desc, IKeyword.POSITION, IKeyword.LOCATION);
-			swap(desc, IKeyword.COLOR, "intensity");
-			swap(desc, "spot_angle", IKeyword.ANGLE);
-			swap(desc, IKeyword.UPDATE, IKeyword.DYNAMIC);
-			swap(desc, "draw_light", "show");
 
 			final IExpressionDescription position = desc.getFacet(IKeyword.LOCATION);
 			final IExpressionDescription direction = desc.getFacet(IKeyword.DIRECTION);

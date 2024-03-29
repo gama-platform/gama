@@ -297,13 +297,7 @@ public interface IKeyword {
 	/** The else. */
 	String ELSE = "else";
 
-	/** The empty. */
-	String EMPTY = "empty";
-
 	/** The enables. */
-	/*
-	 *
-	 */
 	String ENABLES = "enables";
 
 	/** The enter. */
@@ -584,9 +578,6 @@ public interface IKeyword {
 
 	/** The linear attenuation. */
 	String LINEAR_ATTENUATION = "linear_attenuation";
-
-	/** The lines. */
-	String LINES = "lines";
 
 	/**
 	 * TYPES
