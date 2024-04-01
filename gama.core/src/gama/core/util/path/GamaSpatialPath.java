@@ -473,21 +473,21 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		double distance = 0;
 		int index = 0;
 		int indexSegment = 0;
-		GamaPoint currentLocation = source.getLocation().copy(scope);
+		GamaPoint currentLocation = null;// source.getLocation().copy(scope);
 		final int nb = segments.size();
 		if (!keepSource) {
 			double distanceS = Double.MAX_VALUE;
 			IShape line = null;
 			for (int i = 0; i < nb; i++) {
 				line = segments.get(i);
-				final double distS = line.euclidianDistanceTo(currentLocation);
+				final double distS = line.euclidianDistanceTo(source);
 				if (distS < distanceS) {
 					distanceS = distS;
 					index = i;
 				}
 			}
 			line = segments.get(index);
-			currentLocation = Punctal._closest_point_to(currentLocation, line);
+			currentLocation = Punctal._closest_point_to(source, line);
 			final Point pointGeom = (Point) currentLocation.getInnerGeometry();
 			if (line.getInnerGeometry().getNumPoints() >= 3) {
 				distanceS = Double.MAX_VALUE;
@@ -508,7 +508,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		}
 		final IShape lineEnd = segments.get(nb - 1);
 		int endIndexSegment = lineEnd.getInnerGeometry().getNumPoints();
-		GamaPoint falseTarget = target.getLocation();
+		GamaPoint falseTarget = null;//target.getLocation();
 		if (!keepTarget) {
 			falseTarget = Punctal._closest_point_to(getEndVertex(), lineEnd);
 			endIndexSegment = 1;
@@ -530,13 +530,15 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 				}
 			}
 		}
+		
 		for (int i = index; i < nb; i++) {
 			final IShape line = segments.get(i);
 			final Coordinate coords[] = line.getInnerGeometry().getCoordinates();
 			IShape edge = this.getRealObject(line);
 			double w = this.getGraph().getEdgeWeight(edge);
 
-			double coeff = line.getPerimeter() * w / edge.getPerimeter();
+			//fixes issue #149 - distance using a graph is x100 / x1000 bigger than distance using continuous space / remove line.getPerimeter() from the coeff computation
+			double coeff =  w / edge.getPerimeter();
 
 			for (int j = indexSegment; j < coords.length; j++) {
 				GamaPoint pt = null;
