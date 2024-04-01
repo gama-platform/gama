@@ -767,21 +767,6 @@ public class GVector implements java.io.Serializable, Cloneable {
 		return Math.acos(this.dot(v1) / (this.norm() * v1.norm()));
 	}
 
-	/**
-	 * @deprecated Use interpolate(GVector, GVector, double) instead
-	 */
-	@Deprecated
-	public final void interpolate(final GVector v1, final GVector v2, final float alpha) {
-		interpolate(v1, v2, (double) alpha);
-	}
-
-	/**
-	 * @deprecated Use interpolate(GVector, double) instead
-	 */
-	@Deprecated
-	public final void interpolate(final GVector v1, final float alpha) {
-		interpolate(v1, (double) alpha);
-	}
 
 	/**
 	 * Linearly interpolates between vectors v1 and v2 and places the result into this tuple: this = (1-alpha)*v1 +

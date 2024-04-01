@@ -107,14 +107,7 @@ import gama.gaml.types.Types;
 				type = IType.FLOAT,
 				init = "0.0",
 				doc = @doc ("Represents the actual speed of the agent (in meter/second)")),
-
-		@variable (
-				name = IKeyword.DESTINATION,
-				type = IType.POINT,
-				depends_on = { IKeyword.SPEED, IKeyword.HEADING, IKeyword.LOCATION },
-				doc = @doc (
-						deprecated = "This attribute is going to be removed in a future version of GAMA",
-						value = "Represents the next location of the agent if it keeps its current speed and heading (read-only). ** Only correct in continuous topologies and may return nil values if the destination is outside the environment **")) })
+		})
 @skill (
 		name = IKeyword.MOVING_SKILL,
 		concept = { IConcept.SKILL, IConcept.AGENT_MOVEMENT })

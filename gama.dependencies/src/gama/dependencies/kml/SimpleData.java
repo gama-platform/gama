@@ -89,14 +89,6 @@ public class SimpleData implements Cloneable
         this.name = name;
     }
 
-    /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private SimpleData() {
-        super();
-    }
 
     /**
      * @see value

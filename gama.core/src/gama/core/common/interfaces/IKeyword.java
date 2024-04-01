@@ -375,9 +375,6 @@ public interface IKeyword {
 	/** The float. */
 	String FLOAT = "float";
 
-	/** The focus. */
-	String FOCUS = "focus";
-
 	/** The focus on. */
 	String FOCUS_ON = "focus_on";
 
@@ -707,9 +704,6 @@ public interface IKeyword {
 	/** The neighbors. */
 	String NEIGHBORS = "neighbors";
 
-	/** The neighbours. */
-	String NEIGHBOURS = "neighbours";
-
 	/** The node. */
 	String NODE = "node";
 
@@ -871,9 +865,6 @@ public interface IKeyword {
 
 	/** The refresh. */
 	String REFRESH = "refresh";
-
-	/** The refresh every. */
-	String REFRESH_EVERY = "refresh_every";
 
 	/** The register. */
 	String REGISTER = "register";

@@ -22,7 +22,7 @@ global {
 
 	int num_dead <- 0;
 	init {
-		float t <- machine_time;
+		float t <- gama.machine_time;
 		create people number: number_people ;
         ask (number_I among people) {
         	is_infected <- true;

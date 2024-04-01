@@ -13,16 +13,13 @@ package gama.core.outputs;
 import static gama.core.common.interfaces.IKeyword.LAYOUT;
 import static gama.core.common.preferences.GamaPreferences.Displays.CORE_DISPLAY_LAYOUT;
 import static gama.core.common.preferences.GamaPreferences.Displays.LAYOUTS;
-
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.GAMA;
@@ -31,7 +28,6 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.types.IType;
 
 /**
  * The Class OutputManager.
@@ -44,37 +40,6 @@ import gama.gaml.types.IType;
 		with_sequence = true,
 		unique_in_context = true,
 		concept = { IConcept.BATCH, IConcept.DISPLAY })
-
-@facets (
-		omissible = LAYOUT,
-		value = { @facet (
-				name = LAYOUT,
-				type = IType.NONE,
-				optional = true,
-				doc = @doc (
-						deprecated = "Use the layout statement inside 'output' or 'permanent'",
-						value = "Either #none, to indicate that no layout will be imposed, or one of the four possible predefined layouts: #stack, #split, #horizontal or #vertical. This layout will be applied to both experiment and simulation display views. In addition, it is possible to define a custom layout using the horizontal() and vertical() operators")),
-				@facet (
-						name = "synchronized",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								value = "Indicates whether the displays that compose this output should be synchronized with the simulation cycles")),
-				@facet (
-						name = "toolbars",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use the layout statement inside 'output' or 'permanent'",
-								value = "Whether the displays should show their toolbar or not")),
-				@facet (
-						name = "tabs",
-						type = IType.BOOL,
-						optional = true,
-
-						doc = @doc (
-								deprecated = "Use the layout statement inside 'output' or 'permanent'",
-								value = "Whether the displays should show their tab or not")) })
 
 @inside (
 		kinds = { ISymbolKind.EXPERIMENT })
@@ -130,9 +95,6 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 
 	@Override
 	public boolean init(final IScope scope) {
-		// add(new ParameterDisplayOutput());
-
-		// DEBUG.OUT("ExperimentOutputManager init");
 		final Symbol layoutDefinition = layout == null ? this : layout;
 		final String definitionFacet = layout == null ? LAYOUT : IKeyword.VALUE;
 		final Object layoutObject =
@@ -150,7 +112,7 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 		return true;
 	}
 
-	// We dont allow permanent outputs for batch experiments to do their first step (to fix Issue
+	// We don't allow permanent outputs for batch experiments to do their first step (to fix Issue
 	// #1273) -- Conflicts with Issue #2204
 	@Override
 	protected boolean initialStep(final IScope scope, final IOutput output) {

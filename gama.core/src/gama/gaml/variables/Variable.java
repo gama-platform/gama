@@ -112,14 +112,6 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("The initial value of the attribute. Same as init:")),
 				@facet (
-						name = IKeyword.VALUE,
-						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
-						type = IType.NONE,
-						optional = true,
-						doc = @doc (
-								value = "",
-								deprecated = "Use 'update' instead")),
-				@facet (
 						name = IKeyword.UPDATE,
 						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
 						type = IType.NONE,
@@ -150,16 +142,6 @@ import gama.gaml.types.Types;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Indicates whether this attribute can be subsequently modified or not")),
-				@facet (
-						name = IKeyword.CATEGORY,
-						type = { IType.STRING },
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
-				@facet (
-						name = IKeyword.PARAMETER,
-						type = { IType.STRING, IType.BOOL },
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
 				@facet (
 						name = IKeyword.AMONG,
 						type = IType.LIST,
@@ -225,7 +207,7 @@ public class Variable extends Symbol implements IVariable {
 				// time-dependent units. Should be done, actually, for any
 				// variable that manipulates time-dependent units
 				// May 2019: a warning is emitted instead (see why in #2574)
-				if (STEP.equals(name) && cd.hasFacet(INIT) && !cd.hasFacet(UPDATE) && !cd.hasFacet(VALUE)) {
+				if (STEP.equals(name) && cd.hasFacet(INIT) && !cd.hasFacet(UPDATE)) {
 					final IExpression expr = cd.getFacetExpr(INIT);
 					if (expr.findAny(e -> e instanceof TimeUnitConstantExpression tu && !tu.isConst())) {
 						cd.warning(
@@ -240,7 +222,7 @@ public class Variable extends Symbol implements IVariable {
 			// Verifying that 'function' is not used in conjunction with other
 			// "value" facets
 			if (cd.hasFacet(FUNCTION)
-					&& (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(VALUE) || cd.hasFacet(ON_CHANGE))) {
+					&& (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {
 				cd.error("A function cannot have an 'init', 'on_change' or 'update' facet", IGamlIssue.REMOVE_VALUE,
 						FUNCTION);
 				return;
@@ -249,7 +231,7 @@ public class Variable extends Symbol implements IVariable {
 			// Verifying that a constant has not 'update' or 'function' facet
 			// and is not a parameter
 			if (TRUE.equals(cd.getLitteral(CONST))) {
-				if (cd.hasFacet(VALUE) || cd.hasFacet(UPDATE)) {
+				if (cd.hasFacet(UPDATE)) {
 					cd.warning("A constant attribute cannot have an update value (use init or <- instead)",
 							IGamlIssue.REMOVE_CONST, UPDATE);
 				} else if (cd.hasFacet(FUNCTION)) {
@@ -481,9 +463,9 @@ public class Variable extends Symbol implements IVariable {
 			// IGamlIssue.NOT_CONST, INIT);
 			// return;
 			// }
-			if (cd.hasFacet(UPDATE) || cd.hasFacet(VALUE) || cd.isFunction()) {
+			if (cd.hasFacet(UPDATE) || cd.isFunction()) {
 				final String p = "Parameter '" + cd.getParameterName() + "' ";
-				cd.error(p + "cannot have an 'update', 'value' or 'function' facet", IGamlIssue.REMOVE_VALUE);
+				cd.error(p + "cannot have an 'update' or 'function' facet", IGamlIssue.REMOVE_VALUE);
 			}
 
 		}
@@ -531,9 +513,9 @@ public class Variable extends Symbol implements IVariable {
 		super(sd);
 		final VariableDescription desc = (VariableDescription) sd;
 		setName(sd.getName());
-		parameter = desc.getParameterName();
-		category = getLiteral(IKeyword.CATEGORY, null);
-		updateExpression = getFacet(IKeyword.VALUE, IKeyword.UPDATE);
+		parameter = null;
+		category = null;
+		updateExpression = getFacet(IKeyword.UPDATE);
 		functionExpression = getFacet(IKeyword.FUNCTION);
 		initExpression = getFacet(IKeyword.INIT);
 		amongExpression = getFacet(IKeyword.AMONG);

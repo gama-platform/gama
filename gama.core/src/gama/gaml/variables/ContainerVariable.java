@@ -55,13 +55,6 @@ import gama.gaml.variables.ContainerVariable.ContainerVarValidator;
 						optional = true,
 						doc = @doc ("The initial value of the attribute. Same as init:")),
 				@facet (
-						name = IKeyword.VALUE,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc (
-								value = "",
-								deprecated = "Use 'update' instead")),
-				@facet (
 						name = IKeyword.UPDATE,
 						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
 						type = IType.NONE,
@@ -85,23 +78,6 @@ import gama.gaml.variables.ContainerVariable.ContainerVarValidator;
 						optional = true,
 						doc = @doc ("Indicates whether this attribute can be subsequently modified or not")),
 				@facet (
-						name = IKeyword.CATEGORY,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
-				@facet (
-						name = IKeyword.PARAMETER,
-						type = { IType.STRING, IType.BOOL },
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
-				@facet (
-						name = IKeyword.SIZE,
-						type = { IType.INT, IType.POINT },
-						optional = true,
-						doc = @doc (
-								value = "",
-								deprecated = "Use the operator matrix_with(size, fill_with) or list_with(size, fill_with) instead")),
-				@facet (
 						name = IKeyword.ON_CHANGE,
 						type = IType.NONE,
 						optional = true,
@@ -116,14 +92,8 @@ import gama.gaml.variables.ContainerVariable.ContainerVarValidator;
 						name = IKeyword.INDEX,
 						type = IType.TYPE_ID,
 						optional = true,
-						doc = @doc ("The type of the key used to retrieve the contents of this attribute")),
-				@facet (
-						name = IKeyword.FILL_WITH,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc (
-								value = "",
-								deprecated = "Use the operator matrix_with(size, fill_with) or list_with(size, fill_with) instead")) },
+						doc = @doc ("The type of the key used to retrieve the contents of this attribute")), 
+		},
 		omissible = IKeyword.NAME)
 @symbol (
 		kind = ISymbolKind.Variable.CONTAINER,
@@ -147,42 +117,6 @@ public class ContainerVariable extends Variable {
 		 */
 		@Override
 		public void validate(final IDescription vd) {
-			// Replaces the size: and fill_with: facets with an operator
-			// depending on the type of the container
-			if (vd.hasFacet(SIZE)) {
-				final IExpression size = vd.getFacetExpr(SIZE);
-				IExpression fill = vd.getFacetExpr(FILL_WITH);
-				if (fill == null) { fill = IExpressionFactory.NIL_EXPR; }
-				final IType<?> type = vd.getGamlType();
-				switch (type.id()) {
-					case IType.LIST:
-						if (size.getGamlType().id() != IType.INT) {
-							vd.error("Facet 'size:' must be of type int", IGamlIssue.WRONG_TYPE, SIZE, "int");
-							return;
-						}
-						IExpression init =
-								GAML.getExpressionFactory().createOperator("list_with", vd, null, size, fill);
-						vd.setFacet(INIT, init);
-						break;
-					case IType.MATRIX:
-						if (size.getGamlType().id() != IType.POINT) {
-							vd.error("Facet 'size:' must be of type point", IGamlIssue.WRONG_TYPE, SIZE, "point");
-							return;
-						}
-
-						init = GAML.getExpressionFactory().createOperator("matrix_with", vd, null, size, fill);
-						vd.setFacet(INIT, init);
-						break;
-					default:
-						vd.error("Facet 'size:' can only be used for lists and matrices", IGamlIssue.UNKNOWN_FACET,
-								SIZE);
-						return;
-				}
-			} else if (vd.hasFacet(FILL_WITH)) {
-				vd.error("Facet 'size:' missing. A container cannot be filled if no size is provided",
-						IGamlIssue.MISSING_FACET, vd.getUnderlyingElement(), SIZE, "0");
-				return;
-			}
 			super.validate(vd);
 		}
 	}

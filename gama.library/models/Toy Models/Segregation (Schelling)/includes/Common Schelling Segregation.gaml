@@ -2,27 +2,27 @@ model segregation_base
 
 global {
 	//Different colors for the group
-	rgb color_1 <- rgb ("yellow") parameter: "Color of group 1:" category: "User interface";
-	rgb color_2 <- rgb ("red") parameter: "Color of group 2:" category: "User interface";
-	rgb color_3 <- rgb ("blue") parameter: "Color of group 3:" category: "User interface";
-	rgb color_4 <- rgb ("orange") parameter: "Color of group 4:" category: "User interface";
-	rgb color_5 <- rgb ("green") parameter: "Color of group 5:" category: "User interface";
-	rgb color_6 <- rgb ("pink") parameter: "Color of group 6:" category: "User interface";   
-	rgb color_7 <- rgb ("magenta") parameter: "Color of group 7:" category: "User interface";
-	rgb color_8 <- rgb ("cyan") parameter: "Color of group 8:" category: "User interface";
+	rgb color_1 <- rgb ("yellow");
+	rgb color_2 <- rgb ("red");
+	rgb color_3 <- rgb ("blue");
+	rgb color_4 <- rgb ("orange");
+	rgb color_5 <- rgb ("green");
+	rgb color_6 <- rgb ("pink");   
+	rgb color_7 <- rgb ("magenta");
+	rgb color_8 <- rgb ("cyan");
     list colors <- [color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8] of: rgb;
 
 	
 	//Number of groups
-	int number_of_groups <- 2 max: 8 parameter: "Number of groups:" category: "Population";
+	int number_of_groups <- 2 max: 8;
 	//Density of the people
-	float density_of_people <- 0.7 parameter: "Density of people:" category: "Population" min: 0.01 max: 0.99;
+	float density_of_people <- 0.7 min: 0.01 max: 0.99;
 	//Percentage of similar wanted for segregation
-	float percent_similar_wanted <- 0.5 min: float (0) max: float (1) parameter: "Desired percentage of similarity:" category: "Population";
+	float percent_similar_wanted <- 0.5 min: float (0) max: float (1);
 	//Dimension of the grid
-	int dimensions <- 40 max: 200 min: 10 parameter: "Width and height of the environment:" category: "Environment";
+	int dimensions <- 40 max: 200 min: 10;
 	//Neighbours distance for the perception of the agents
-	int neighbours_distance <- 2 max: 10 min: 1 parameter: "Distance of perception:" category: "Population";
+	int neighbours_distance <- 2 max: 10 min: 1;
 	//Number of people agents
 	int number_of_people <- 0;
 	//Number of happy people
@@ -76,4 +76,25 @@ species base {
 	//Boolean to know if the agent is happy or not
 	bool is_happy -> similar_nearby >= (percent_similar_wanted * total_nearby ) ;
 }
+
+experiment base_exp {
+	
+	parameter "Color of group 1:" category: "User interface" var:color_1;
+	parameter "Color of group 2:" category: "User interface" var:color_2;
+	parameter "Color of group 3:" category: "User interface" var:color_3;
+	parameter "Color of group 4:" category: "User interface" var:color_4;
+	parameter "Color of group 5:" category: "User interface" var:color_5;
+	parameter "Color of group 6:" category: "User interface" var:color_6;
+	parameter "Color of group 7:" category: "User interface" var:color_7;
+	parameter "Color of group 8:" category: "User interface" var:color_8;	
+	
+	parameter "Number of groups:" var:number_of_groups category: "Population";
+	parameter "Density of people:" var:density_of_people category: "Population";
+	parameter "Desired percentage of similarity:" var:percent_similar_wanted category: "Population";
+	parameter "Width and height of the environment:" var:dimensions category: "Environment";
+	parameter "Distance of perception:" var:neighbours_distance category: "Population";
+
+}
+
+
 

@@ -20,7 +20,6 @@ import static gama.core.common.interfaces.IKeyword.DRAW;
 import static gama.core.common.interfaces.IKeyword.FONT;
 import static gama.core.common.interfaces.IKeyword.PERSPECTIVE;
 import static gama.core.common.interfaces.IKeyword.ROTATE;
-import static gama.core.common.interfaces.IKeyword.ROUNDED;
 import static gama.core.common.interfaces.IKeyword.SIZE;
 import static gama.core.common.interfaces.IKeyword.TEXTURE;
 
@@ -95,13 +94,6 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("if used with a color, represents the color of the geometry border. If set to false, expresses that no border should be drawn. If not set, the borders will be drawn using the color of the geometry.")),
 				@facet (
-						name = ROUNDED,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								value = "specify whether the geometry have to be rounded (e.g. for squares)",
-								deprecated = "Use the squircle operator to draw rounded squares")),
-				@facet (
 						name = AT,
 						type = IType.POINT,
 						optional = true,
@@ -174,14 +166,8 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc (
 								value = "The line width to use for drawing this object. In OpenGL displays, this attribute is considered as optional and not implemented by all gaphic card vendors. "
-										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")),
-				@facet (
-						name = "bitmap",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'perspective' instead.",
-								value = "Whether to render the text in 3D or not")) },
+										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), 
+				},
 
 		omissible = IKeyword.GEOMETRY)
 @inside (
@@ -249,17 +235,6 @@ public class DrawStatement extends AbstractStatementSequence {
 		 */
 		@Override
 		public void validate(final StatementDescription description) {
-			final IExpressionDescription persp = description.getFacet("bitmap");
-			if (persp != null) {
-				if (description.getFacet(PERSPECTIVE) != null) {
-					description.removeFacets("bitmap");
-				} else {
-					final IExpression e = persp.getExpression();
-					final IExpression newExp =
-							GAML.getExpressionFactory().createOperator("not", description, persp.getTarget(), e);
-					description.setFacet(PERSPECTIVE, newExp);
-				}
-			}
 
 			final IExpressionDescription geom = description.getFacet(GEOMETRY);
 			if (geom != null) {

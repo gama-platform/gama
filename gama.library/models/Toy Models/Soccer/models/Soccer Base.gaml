@@ -37,7 +37,6 @@ species soccer_game {
 			previous_pos <- init_pos;
 		}
 		ball.location <- world.location;
-		ball.destination <- world.location;
 		ball.speed <- 0.0;
 	}
 }
@@ -208,7 +207,6 @@ species base_player skills:[moving] {
 		}
 		possess_ball <- true;
 		ball.speed <- 0.0;
-		ball.destination <- ball.location;
 		team.called_player <- nil;
 		team.player_with_ball <- self;
 		team.possess_ball <- true;

@@ -32,7 +32,6 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;

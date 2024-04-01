@@ -1376,13 +1376,6 @@ public class GMatrix implements java.io.Serializable, Cloneable {
 		}
 	}
 
-	/**
-	 * @deprecated Use epsilonEquals(GMatrix, double) instead
-	 */
-	@Deprecated
-	public boolean epsilonEquals(final GMatrix m1, final float epsilon) {
-		return epsilonEquals(m1, (double) epsilon);
-	}
 
 	/**
 	 * Returns true if the L-infinite distance between this matrix and matrix m1 is less than or equal to the epsilon

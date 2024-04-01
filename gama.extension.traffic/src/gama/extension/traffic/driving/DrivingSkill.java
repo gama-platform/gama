@@ -95,7 +95,7 @@ import gama.gaml.types.Types;
 				name = DrivingSkill.SAFETY_DISTANCE_COEFF,
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("the coefficient for the computation of the the min distance between two vehicles (according to the vehicle speed - security_distance =max(min_security_distance, security_distance_coeff `*` min(self.real_speed, other.real_speed) )")),
+				doc = @doc ("the coefficient for the computation of the the min distance between two vehicles (according to the vehicle speed - security_distance = max(min_security_distance, security_distance_coeff `*` min(self.speed, other.speed) )")),
 		@variable (
 				name = DrivingSkill.MIN_SAFETY_DISTANCE,
 				type = IType.FLOAT,

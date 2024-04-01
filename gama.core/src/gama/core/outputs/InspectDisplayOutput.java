@@ -68,13 +68,6 @@ import gama.gaml.types.Types;
 				optional = false,
 				doc = @doc ("the identifier of the inspector")),
 				@facet (
-						name = IKeyword.REFRESH_EVERY,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								value = "Allows to refresh the inspector every n time steps (default is 1)",
-								deprecated = "Use refresh: every(n) instead")),
-				@facet (
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,

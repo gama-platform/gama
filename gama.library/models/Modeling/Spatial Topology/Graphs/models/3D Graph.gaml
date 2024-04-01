@@ -11,11 +11,11 @@
 model graph3D
 
 global {
-	int number_of_agents parameter: 'Number of Agents' min: 1 <- 200 category: 'Initialization';
-	int width_and_height_of_environment parameter: 'Dimensions' min: 100 <- 500 category: 'Initialization';
+	int number_of_agents min: 1 <- 200;
+	int width_and_height_of_environment min: 100 <- 500;
 	
 	//Distance to know if a sphere is adjacent or not with an other
-	int distance parameter: 'distance ' min: 1 <- 100;
+	int distance min: 1 <- 100;
 	
 	
 	int degreeMax <- 1;
@@ -83,6 +83,11 @@ species node_agent skills: [moving3D] {
 }
 
 experiment Display type: gui {
+	 
+	parameter 'Number of Agents' var:number_of_agents category: 'Initialization';
+	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
+	parameter 'distance ' var:distance;
+	
 	output {
 		display WanderingSphere type: 3d { 
 			camera 'default' location: {-709.2414,1192.6439,463.0556} target: {250.0,250.0,0.0};			

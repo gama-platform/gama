@@ -186,17 +186,6 @@ public class AABB {
   }
 
   /**
-   * @deprecated please use {@link #raycast(RayCastOutput, RayCastInput, IWorldPool)} for better
-   *             performance
-   * @param output
-   * @param input
-   * @return
-   */
-  public final boolean raycast(final RayCastOutput output, final RayCastInput input) {
-    return raycast(output, input, new DefaultWorldPool(4, 4));
-  }
-
-  /**
    * From Real-time Collision Detection, p179.
    * 
    * @param output

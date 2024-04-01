@@ -55,26 +55,14 @@ import gama.gaml.types.IType;
 				name = RoadNodeSkill.BLOCK,
 				type = IType.MAP,
 				doc = @doc ("define the list of agents blocking the node, and for each agent, the list of concerned roads")) })
+
 @skill (
-		name = RoadNodeSkill.SKILL_ROAD_NODE,
+		name = "intersection_skill",
 		concept = { IConcept.TRANSPORT, IConcept.SKILL },
-		doc = @doc (
-				value = "A skill for agents representing intersections on roads",
-				deprecated = "please use the name `intersection_skill` instead"))
+		doc = @doc ("A skill for agents representing intersections on roads"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class RoadNodeSkill extends Skill {
 
-	/**
-	 * The Class NewRoadNodeSkill.
-	 */
-	@skill (
-			name = "intersection_skill",
-			concept = { IConcept.TRANSPORT, IConcept.SKILL },
-			doc = @doc ("A skill for agents representing intersections on roads"))
-	public static class NewRoadNodeSkill extends RoadNodeSkill {}
-
-	/** The Constant SKILL_ROAD_NODE. */
-	public static final String SKILL_ROAD_NODE = "skill_road_node";
 
 	/** The Constant ROADS_IN. */
 	public static final String ROADS_IN = "roads_in";

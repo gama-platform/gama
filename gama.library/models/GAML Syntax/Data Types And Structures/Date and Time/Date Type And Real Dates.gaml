@@ -117,7 +117,7 @@ global {
 		  starting_date <- #now;
 		  
 		 // Consistency with existing variables in enforced.  For instance, machine_time can now be obtained in the following way:
-		 write "Machine time value = " + sample(machine_time);
+		 write "Machine time value = " + sample(gama.machine_time);
 		 write "Other way to obtain the same value = " + sample(milliseconds_between(#epoch, #now));
 		 
 		 // This allows precise computations of hours, minutes, seconds, etc. 

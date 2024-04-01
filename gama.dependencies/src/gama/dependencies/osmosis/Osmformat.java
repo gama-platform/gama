@@ -12508,13 +12508,6 @@ public final class Osmformat {
 				return value;
 			}
 
-			/**
-			 * @deprecated Use {@link #forNumber(int)} instead.
-			 */
-			@Deprecated
-			public static MemberType valueOf(final int value) {
-				return forNumber(value);
-			}
 
 			public static MemberType forNumber(final int value) {
 				switch (value) {

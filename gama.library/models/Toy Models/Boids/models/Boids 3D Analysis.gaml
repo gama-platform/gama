@@ -12,37 +12,37 @@ model boids
 
 global torus: torus_environment {
 //Number of boids to represent
-	int number_of_agents parameter: 'Number of agents' <- 10 min: 1 max: 500;
+	int number_of_agents <- 10 min: 1 max: 500;
 	//Number of obstacles to represent
-	int number_of_obstacles parameter: 'Number of obstacles' <- 4 min: 0;
+	int number_of_obstacles <- 4 min: 0;
 	//Size of the boids
-	int boids_size parameter: 'Boids size' <- 20 min: 1;
+	int boids_size <- 20 min: 1;
 	//Maximal speed allowed for the boids
-	float maximal_speed parameter: 'Maximal speed' <- 15.0 min: 0.1 max: 15.0;
+	float maximal_speed <- 15.0 min: 0.1 max: 15.0;
 	//Speed radius
-	float radius_speed parameter: 'radius speed' <- 0.5 min: 0.1;
+	float radius_speed <- 0.5 min: 0.1;
 	//Cohesion factor of the boid group  in the range of a boid agent
-	int cohesion_factor parameter: 'Cohesion Factor' <- 200;
+	int cohesion_factor <- 200;
 	//Alignment factor used for the boid group in the range of a boid agent
-	int alignment_factor parameter: 'Alignment Factor' <- 100;
+	int alignment_factor <- 100;
 	//Minimal distance to move
-	float minimal_distance parameter: 'Minimal Distance' <- 30.0;
+	float minimal_distance <- 30.0;
 	//Maximal turn done by the boids
-	int maximal_turn parameter: 'Maximal Turn' <- 45 min: 0 max: 359;
+	int maximal_turn <- 45 min: 0 max: 359;
 
 	//Parameters of the environment and the simulations
-	int width_and_height_of_environment parameter: 'Width/Height of the Environment' <- 800;
-	bool torus_environment parameter: 'Toroidal Environment ?' <- false;
-	bool apply_cohesion <- true parameter: 'Apply Cohesion ?';
-	bool apply_alignment <- true parameter: 'Apply Alignment ?';
-	bool apply_separation <- true parameter: 'Apply Separation ?';
-	bool apply_goal <- true parameter: 'Follow Goal ?';
-	bool apply_avoid <- true parameter: 'Apply Avoidance ?';
-	bool apply_wind <- true parameter: 'Apply Wind ?';
-	bool moving_obstacles <- false parameter: 'Moving Obstacles ?';
+	int width_and_height_of_environment <- 800;
+	bool torus_environment <- false;
+	bool apply_cohesion <- true;
+	bool apply_alignment <- true;
+	bool apply_separation <- true;
+	bool apply_goal <- true;
+	bool apply_avoid <- true;
+	bool apply_wind <- true;
+	bool moving_obstacles <- false;
 	int bounds <- int(width_and_height_of_environment / 20);
 	//Wind vector 
-	point wind_vector <- {0, 0} parameter: 'Direction of the wind';
+	point wind_vector <- {0, 0};
 	int goal_duration <- 30 update: (goal_duration - 1);
 	//Goal location
 	point goal <- {rnd(width_and_height_of_environment - 2) + 1, rnd(width_and_height_of_environment - 2) + 1};
@@ -366,7 +366,31 @@ species obstacle skills: [moving] {
 
 }
 
-experiment "Simple" type: gui {
+experiment base {
+	
+	parameter 'Number of agents'  var:number_of_agents;
+	parameter 'Number of obstacles' var:number_of_obstacles;
+	parameter 'Boids size' var:boids_size;
+	parameter 'Maximal speed' var:maximal_speed;
+	parameter 'radius speed' var:radius_speed;
+	parameter 'Cohesion Factor' var:cohesion_factor;
+	parameter 'Alignment Factor' var:alignment_factor;
+	parameter 'Minimal Distance' var:minimal_distance;
+	parameter 'Maximal Turn' var:maximal_turn;
+	parameter 'Width/Height of the Environment' var:width_and_height_of_environment;
+	parameter 'Direction of the wind' var:wind_vector;
+	parameter 'Toroidal Environment ?' var:torus_environment;
+	parameter 'Apply Cohesion ?' var:apply_cohesion;
+	parameter 'Apply Alignment ?' var:apply_alignment;
+	parameter 'Apply Separation ?' var:apply_separation;
+	parameter 'Follow Goal ?' var:apply_goal;
+	parameter 'Apply Avoidance ?' var:apply_avoid;
+	parameter 'Apply Wind ?' var:apply_wind;
+	parameter 'Moving Obstacles ?' var:moving_obstacles;
+	
+}
+
+experiment "Simple" type: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		display RealBoids type: 3d {
@@ -380,7 +404,7 @@ experiment "Simple" type: gui {
 
 }
 
-experiment "Trajectory Analysis" type: gui {
+experiment "Trajectory Analysis" type: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		layout #split;
@@ -401,7 +425,7 @@ experiment "Trajectory Analysis" type: gui {
 
 }
 
-experiment "Space & Time Cube" type: gui {
+experiment "Space & Time Cube" type: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		layout #split;
@@ -441,7 +465,7 @@ experiment "Space & Time Cube" type: gui {
 
 }
 
-experiment "Multiple views" type: gui {
+experiment "Multiple views" type: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output synchronized: true {
 		layout #split;

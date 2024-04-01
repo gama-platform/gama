@@ -83,13 +83,6 @@ import one.util.streamex.StreamEx;
 						optional = true,
 						doc = @doc ("(grid only), the height of the cells of the grid")),
 				@facet (
-						name = IKeyword.NEIGHBOURS,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								value = "(grid only), the chosen neighborhood (4, 6 or 8)",
-								deprecated = "use 'neighbors' instead")),
-				@facet (
 						name = IKeyword.NEIGHBORS,
 						type = IType.INT,
 						optional = true,
@@ -297,14 +290,10 @@ public class GamlSpecies extends AbstractSpecies {
 		 * @return the i expression
 		 */
 		private IExpression processNeighbors(final SpeciesDescription sd) {
-			if (sd.hasFacet(IKeyword.NEIGHBORS) && sd.hasFacet(IKeyword.NEIGHBOURS)) {
-				sd.error("'neighbours' and 'neighbors' cannot be defined at the same time",
-						IGamlIssue.CONFLICTING_FACETS, NEIGHBOURS);
-			}
-			final IExpression neighbours = sd.getFacetExpr(IKeyword.NEIGHBOURS, IKeyword.NEIGHBORS);
+
+			final IExpression neighbours = sd.getFacetExpr(IKeyword.NEIGHBORS);
 			if (neighbours != null) {
 				sd.setFacet(NEIGHBORS, neighbours);
-				sd.removeFacets(NEIGHBOURS);
 			}
 			return neighbours;
 		}

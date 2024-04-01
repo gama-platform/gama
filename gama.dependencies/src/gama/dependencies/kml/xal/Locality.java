@@ -94,15 +94,6 @@ public class Locality implements Cloneable
     }
 
     /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private Locality() {
-        super();
-    }
-
-    /**
      * 
      */
     public List<AddressLine> getAddressLine() {

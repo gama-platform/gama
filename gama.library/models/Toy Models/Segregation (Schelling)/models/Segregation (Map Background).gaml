@@ -27,7 +27,7 @@ global {
 	//List of all the available places
 	list<space> available_places ;
 	//Image file to load
-	file bitmap_file_name <- file<unknown, int>("../images/hanoi.png") parameter: "Name of image file to load:" category: "Environment" ;
+	file bitmap_file_name <- file<unknown, int>("../images/hanoi.png");
 	matrix<int> map_colors;
  
  	//Action to initialize the people agents
@@ -75,7 +75,11 @@ species people parent: base  {
 }
 
 
-experiment schelling type: gui {	
+experiment schelling type: gui parent:base_exp{
+	
+		
+	 parameter "Name of image file to load:" var:bitmap_file_name category: "Environment";
+	
 	output {
 		display Segregation type:2d{
 			image bitmap_file_name.path ;

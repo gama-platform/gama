@@ -105,15 +105,6 @@ public class Premise implements Cloneable
     }
 
     /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private Premise() {
-        super();
-    }
-
-    /**
      * 
      */
     public List<AddressLine> getAddressLine() {
@@ -1723,15 +1714,6 @@ public class Premise implements Cloneable
         }
 
         /**
-         * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-         * 
-         */
-        @Deprecated
-        private PremiseNumberRange() {
-            super();
-        }
-
-        /**
          * 
          * @return
          *     possible object is
@@ -2166,15 +2148,6 @@ public class Premise implements Cloneable
             }
 
             /**
-             * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-             * 
-             */
-            @Deprecated
-            private PremiseNumberRangeFrom() {
-                super();
-            }
-
-            /**
              * 
              */
             public List<AddressLine> getAddressLine() {
@@ -2534,15 +2507,6 @@ public class Premise implements Cloneable
             public PremiseNumberRangeTo(final List<PremiseNumber> premiseNumber) {
                 super();
                 this.premiseNumber = premiseNumber;
-            }
-
-            /**
-             * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-             * 
-             */
-            @Deprecated
-            private PremiseNumberRangeTo() {
-                super();
             }
 
             /**

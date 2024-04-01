@@ -79,15 +79,6 @@ public class AdministrativeArea implements Cloneable
     }
 
     /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private AdministrativeArea() {
-        super();
-    }
-
-    /**
      * 
      */
     public List<AddressLine> getAddressLine() {
@@ -955,15 +946,6 @@ public class AdministrativeArea implements Cloneable
             this.locality = locality;
             this.postOffice = postOffice;
             this.postalCode = postalCode;
-        }
-
-        /**
-         * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-         * 
-         */
-        @Deprecated
-        private SubAdministrativeArea() {
-            super();
         }
 
         /**

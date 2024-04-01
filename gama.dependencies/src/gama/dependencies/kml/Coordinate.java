@@ -23,14 +23,7 @@ public class Coordinate implements Cloneable
     protected double latitude;
 
     protected double altitude;
-
-    /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private Coordinate() {
-    }
+    
 
     public Coordinate(final double longitude, final double latitude) {
         this.longitude = longitude;

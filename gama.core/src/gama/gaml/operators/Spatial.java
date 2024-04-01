@@ -2917,40 +2917,6 @@ public abstract class Spatial {
 			return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(bounds), true);
 		}
 
-		/**
-		 * Enlarged by.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param g
-		 *            the g
-		 * @param parameters
-		 *            the parameters
-		 * @return the i shape
-		 */
-		@operator (
-				value = { IKeyword.PLUS, "buffer", "enlarged_by" },
-				category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
-				concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
-		@doc (
-				value = "",
-				deprecated = "Please use +(distance, number_of_segments) or +(distance, number_of_segments, end_cap) instead",
-				usages = @usage (
-						value = "if the left-hand operand is a geometry and the right-hand operand a map (with [distance::float, quadrantSegments:: int (the number of line segments used to represent a quadrant of a circle), endCapStyle::int (1: (default) a semi-circle, 2: a straight line perpendicular to the end segment, 3: a half-square)]), returns a geometry corresponding to the left-hand operand (geometry, agent, point) enlarged considering the right-hand operand parameters",
-						examples = @example (
-								value = "shape + [\"distance\"::5.0, \"quadrantSegments\"::4, \"endCapStyle\":: 2]",
-								equals = "a geometry corresponding to the geometry of the agent applying the operator enlarged by a distance of 5, with 4 segments to represent a quadrant of a circle and a straight line perpendicular to the end segment",
-								test = false)))
-		@no_test (Reason.DEPRECATED)
-		public static IShape enlarged_by(final IScope scope, final IShape g, final IMap parameters) {
-			final Double distance = Cast.asFloat(scope, parameters.get("distance"));
-			final Integer quadrantSegments = Cast.asInt(scope, parameters.get("quadrantSegments"));
-			final Integer endCapStyle = Cast.asInt(scope, parameters.get("endCapStyle"));
-			if (endCapStyle == null) return GamaShapeFactory
-					.createFrom(g.getInnerGeometry().buffer(distance, quadrantSegments)).withAttributesOf(g);
-			return GamaShapeFactory.createFrom(g.getInnerGeometry().buffer(distance, quadrantSegments, endCapStyle))
-					.withAttributesOf(g);
-		}
 
 		/**
 		 * Enlarged by.
@@ -7414,63 +7380,6 @@ public abstract class Spatial {
 			return geom;
 		}
 
-		/**
-		 * Checks if is clockwise.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param shape
-		 *            the shape
-		 * @return the boolean
-		 */
-		@operator (
-				value = "is_clockwise",
-				type = IType.BOOL,
-				category = { IOperatorCategory.SPATIAL, IOperatorCategory.THREED },
-				concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.THREED })
-		@doc (
-				value = "returns true if the geometry is defined clockwise ",
-				deprecated = "Always returns true as all geometries are defined clockwise",
-				examples = { @example (
-						value = "is_clockwise(circle(10))",
-						equals = "true",
-						isExecutable = true) },
-				see = { "change_clockwise" })
-		public static Boolean isClockwise(final IScope scope, final IShape shape) {
-			return true;
-			// final IShape sp = Cast.asGeometry(scope, shape);
-			// if (sp == null) { return true; }
-			// return GeometryUtils.isClockwise(sp.getInnerGeometry());
-		}
-
-		/**
-		 * Change clockwise.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param shape
-		 *            the shape
-		 * @return the i shape
-		 */
-		@operator (
-				value = "change_clockwise",
-				type = IType.GEOMETRY,
-				category = { IOperatorCategory.SPATIAL, IOperatorCategory.THREED },
-				concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.THREED })
-		@doc (
-				value = "Returns a new geometry defined clockwise ",
-				deprecated = "All geometries are now defined clockwise in GAMA",
-				examples = { @example (
-						value = "is_clockwise(circle(10))",
-						equals = "true",
-						isExecutable = true) },
-				see = { "is_clockwise" })
-		public static IShape changeClockwise(final IScope scope, final IShape shape) {
-			return GamaShapeFactory.createFrom(shape);
-			// final IShape sp = Cast.asGeometry(scope, shape);
-			// if (sp == null) { return null; }
-			// return GamaShapeFactory.createFrom(GeometryUtils.changeClockwise(sp.getInnerGeometry()));
-		}
 
 	}
 

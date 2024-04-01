@@ -2180,36 +2180,6 @@ public class Graphs {
 		return graph;
 	}
 
-	/**
-	 * Sets the optimize type.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param graph
-	 *            the graph
-	 * @param optimizerType
-	 *            the optimizer type
-	 * @return the i graph
-	 */
-	@operator (
-			value = "with_optimizer_type",
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
-			category = { IOperatorCategory.GRAPH },
-			concept = { IConcept.GRAPH, IConcept.SHORTEST_PATH, IConcept.GRAPH_WEIGHT, IConcept.OPTIMIZATION,
-					IConcept.ALGORITHM })
-	@doc (
-			value = "changes the shortest path computation method of the given graph",
-			deprecated = "with_shortestpath_algorithm instead",
-			comment = "the right-hand operand can be Djikstra, BidirectionalDijkstra, BellmannFord, FloydWarshall, Astar, NBAStar, NBAStarApprox, DeltaStepping, CHBidirectionalDijkstra, TransitNodeRouting to use the associated algorithm. ",
-			examples = @example (
-					value = "road_network <- road_network with_optimizer_type TransitNodeRouting;",
-					isExecutable = false),
-			see = "set_verbose")
-	@no_test (Reason.DEPRECATED)
-	public static IGraph setOptimizeType(final IScope scope, final IGraph graph, final String optimizerType) {
-		return setShortestPathAlgorithm(scope, graph, optimizerType);
-	}
 
 	/**
 	 * Adds the node.

@@ -3068,14 +3068,6 @@ public class Matrix4d implements java.io.Serializable, Cloneable {
 	}
 
 	/**
-	 * @deprecated Use epsilonEquals(Matrix4d,double) instead
-	 */
-	@Deprecated
-	public boolean epsilonEquals(final Matrix4d m1, final float epsilon) {
-		return epsilonEquals(m1, (double) epsilon);
-	}
-
-	/**
 	 * Returns true if the L-infinite distance between this matrix and matrix m1 is less than or equal to the epsilon
 	 * parameter, otherwise returns false. The L-infinite distance is equal to MAX[i=0,1,2,3 ; j=0,1,2,3 ;
 	 * abs(this.m(i,j) - m1.m(i,j)]

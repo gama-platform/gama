@@ -287,13 +287,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 		this.z = s * t1.z + t2.z;
 	}
 
-	/**
-	 * @deprecated Use scaleAdd(double,Tuple3d) instead
-	 */
-	@Deprecated
-	public final void scaleAdd(final double s, final Tuple3f t1) {
-		scaleAdd(s, new Point3d(t1));
-	}
 
 	/**
 	 * Sets the value of this tuple to the scalar multiplication of itself and then adds tuple t1 (this = s*this + t1).
@@ -398,13 +391,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 
 	}
 
-	/**
-	 * @deprecated Use clamp(double,double,Tuple3d) instead
-	 */
-	@Deprecated
-	public final void clamp(final float min, final float max, final Tuple3d t) {
-		clamp((double) min, (double) max, t);
-	}
 
 	/**
 	 * Clamps the tuple parameter to the range [low, high] and places the values into this tuple.
@@ -443,13 +429,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 
 	}
 
-	/**
-	 * @deprecated Use clampMin(double,Tuple3d) instead
-	 */
-	@Deprecated
-	public final void clampMin(final float min, final Tuple3d t) {
-		clampMin((double) min, t);
-	}
 
 	/**
 	 * Clamps the minimum value of the tuple parameter to the min parameter and places the values into this tuple.
@@ -478,14 +457,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 			z = t.z;
 		}
 
-	}
-
-	/**
-	 * @deprecated Use clampMax(double,Tuple3d) instead
-	 */
-	@Deprecated
-	public final void clampMax(final float max, final Tuple3d t) {
-		clampMax((double) max, t);
 	}
 
 	/**
@@ -531,14 +502,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 	}
 
 	/**
-	 * @deprecated Use clamp(double,double) instead
-	 */
-	@Deprecated
-	public final void clamp(final float min, final float max) {
-		clamp((double) min, (double) max);
-	}
-
-	/**
 	 * Clamps this tuple to the range [low, high].
 	 *
 	 * @param min
@@ -562,14 +525,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 	}
 
 	/**
-	 * @deprecated Use clampMin(double) instead
-	 */
-	@Deprecated
-	public final void clampMin(final float min) {
-		clampMin((double) min);
-	}
-
-	/**
 	 * Clamps the minimum value of this tuple to the min parameter.
 	 *
 	 * @param min
@@ -580,14 +535,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 		if (y < min) { y = min; }
 		if (z < min) { z = min; }
 
-	}
-
-	/**
-	 * @deprecated Use clampMax(double) instead
-	 */
-	@Deprecated
-	public final void clampMax(final float max) {
-		clampMax((double) max);
 	}
 
 	/**
@@ -612,14 +559,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 	}
 
 	/**
-	 * @deprecated Use interpolate(Tuple3d,Tuple3d,double) instead
-	 */
-	@Deprecated
-	public final void interpolate(final Tuple3d t1, final Tuple3d t2, final float alpha) {
-		interpolate(t1, t2, (double) alpha);
-	}
-
-	/**
 	 * Linearly interpolates between tuples t1 and t2 and places the result into this tuple: this = (1-alpha)*t1 +
 	 * alpha*t2.
 	 *
@@ -634,14 +573,6 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 		this.x = (1 - alpha) * t1.x + alpha * t2.x;
 		this.y = (1 - alpha) * t1.y + alpha * t2.y;
 		this.z = (1 - alpha) * t1.z + alpha * t2.z;
-	}
-
-	/**
-	 * @deprecated Use interpolate(Tuple3d,double) instead
-	 */
-	@Deprecated
-	public final void interpolate(final Tuple3d t1, final float alpha) {
-		interpolate(t1, (double) alpha);
 	}
 
 	/**

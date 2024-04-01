@@ -1421,28 +1421,5 @@ public class System {
 		return type.copyFromClipboard(scope);
 	}
 
-	// @operator(value = "eval_java", can_be_const = false)
-	// @doc(value = "evaluates the given java code string.", deprecated = "Does
-	// not work", see = { "eval_gaml",
-	// "evaluate_with" })
-	// public static Object opEvalJava(final IScope scope, final String code) {
-	// try {
-	// final ScriptEvaluator se = new ScriptEvaluator();
-	// se.setReturnType(Object.class);
-	// se.cook(code);
-	// // Evaluate script with actual parameter values.
-	// return se.evaluate(new Object[0]);
-	//
-	// // Version sans arguments pour l'instant.
-	// } catch (final Exception e) {
-	// scope.getGui().informConsole("Error in evaluating Java code : '" + code +
-	// "' in " + scope.getAgentScope() +
-	// java.lang.System.getProperty("line.separator") + "Reason: " +
-	// e.getMessage());
-	// return null;
-	// }
-	// }
-
-	// private static final String[] gamaDefaultImports = new String[] {};
 
 }
