@@ -9,7 +9,7 @@ model statetransition
 
 global {
 	
-	int number_of_dummy parameter:true init:10;
+	int number_of_dummy init:10;
 	
 	init {
 		create dummy number:number_of_dummy;
@@ -131,6 +131,7 @@ species dummy skills:[moving] control:fsm {
 }
 
 experiment dummy_xp {
+	parameter var:number_of_dummy;
 	output {
 		display friendship {
 			species dummy;

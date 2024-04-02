@@ -8,42 +8,43 @@
 model pedestrian_simple_environment
 
 global {
-	float environment_size <- 50.0 parameter: true;
+	
+	float environment_size <- 50.0;
 	float margin <- 2.0;
-	int nb_obstacles <- 0 parameter: true;
+	int nb_obstacles <- 0 ;
 	int nb_people <- 100;
 	string scenario <- "frontal crossing" among: ["big crowd", "frontal crossing", "perpendicular crossing"] ;
 		
-	bool display_free_space <- false parameter: true;
-	bool display_force <- false parameter: true;
-	bool display_circle_min_dist <- true parameter: true;
+	bool display_free_space <- false;
+	bool display_force <- false;
+	bool display_circle_min_dist <- true ;
 	
-	float P_shoulder_length <- 0.45 parameter: true;
-	float P_proba_detour <- 1.0 parameter: true ;
-	bool P_avoid_other <- true parameter: true ;
-	float P_obstacle_consideration_distance <- 5.0 parameter: true ;
-	float P_pedestrian_consideration_distance <- 5.0 parameter: true ;
-	float P_tolerance_waypoint <- 0.1 parameter: true;
-	bool P_use_geometry_waypoint <- true parameter: true;
+	float P_shoulder_length <- 0.45 ;
+	float P_proba_detour <- 1.0 ;
+	bool P_avoid_other <- true;
+	float P_obstacle_consideration_distance <- 5.0;
+	float P_pedestrian_consideration_distance <- 5.0;
+	float P_tolerance_waypoint <- 0.1;
+	bool P_use_geometry_waypoint <- true;
 	
-	string P_model_type <- "simple" among: ["simple", "advanced"] parameter: true ; 
+	string P_model_type <- "simple" among: ["simple", "advanced"]; 
 	
-	float P_A_pedestrian_SFM_advanced parameter: true <- 25.0 category: "SFM advanced" ;
-	float P_A_obstacles_SFM_advanced parameter: true <- 25.0 category: "SFM advanced" ;
-	float P_B_pedestrian_SFM_advanced parameter: true <- 0.5 category: "SFM advanced" ;
-	float P_B_obstacles_SFM_advanced parameter: true <- 0.1 category: "SFM advanced" ;
-	float P_relaxion_SFM_advanced  parameter: true <- 0.1 category: "SFM advanced" ;
-	float P_gama_SFM_advanced parameter: true <- 0.35 category: "SFM advanced" ;
-	float P_lambda_SFM_advanced <- 0.1 parameter: true category: "SFM advanced" ;
-	float P_minimal_distance_advanced <- 0.5 parameter: true category: "SFM advanced" ;
+	float P_A_pedestrian_SFM_advanced <- 25.0 ;
+	float P_A_obstacles_SFM_advanced <- 25.0 ;
+	float P_B_pedestrian_SFM_advanced <- 0.5;
+	float P_B_obstacles_SFM_advanced <- 0.1 ;
+	float P_relaxion_SFM_advanced <- 0.1 ;
+	float P_gama_SFM_advanced <- 0.35;
+	float P_lambda_SFM_advanced <- 0.1 ;
+	float P_minimal_distance_advanced <- 0.5;
 	
 	
-	float P_n_prime_SFM_simple parameter: true <- 3.0 category: "SFM simple" ;
-	float P_n_SFM_simple parameter: true <- 2.0 category: "SFM simple" ;
-	float P_lambda_SFM_simple <- 2.0 parameter: true category: "SFM simple" ;
-	float P_gama_SFM_simple parameter: true <- 0.35 category: "SFM simple" ;
-	float P_relaxion_SFM_simple parameter: true <- 0.54 category: "SFM simple" ;
-	float P_A_pedestrian_SFM_simple parameter: true <- 4.5category: "SFM simple" ;
+	float P_n_prime_SFM_simple <- 3.0;
+	float P_n_SFM_simple <- 2.0;
+	float P_lambda_SFM_simple <- 2.0 ;
+	float P_gama_SFM_simple <- 0.35;
+	float P_relaxion_SFM_simple <- 0.54;
+	float P_A_pedestrian_SFM_simple <- 4.5;
 	
 	geometry shape <- square(environment_size);
 	geometry free_space <- copy(shape);
@@ -166,6 +167,34 @@ species obstacle {
 	}
 }
 experiment big_crowd type: gui {
+	
+	parameter var:display_free_space;
+	parameter var:display_force;
+	parameter var:display_circle_min_dist;
+	parameter var:P_shoulder_length;
+	parameter var:P_proba_detour;
+	parameter var:P_avoid_other;
+	parameter var:P_obstacle_consideration_distance;
+	parameter var:P_pedestrian_consideration_distance;
+	parameter var:P_tolerance_waypoint;
+	parameter var:P_use_geometry_waypoint;
+	parameter var:P_model_type;
+	parameter var:P_A_pedestrian_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_A_obstacles_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_B_pedestrian_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_B_obstacles_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_relaxion_SFM_advanced  category: "SFM advanced" ;
+	parameter var:P_gama_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_lambda_SFM_advanced category: "SFM advanced" ;
+	parameter var:P_minimal_distance_advanced category: "SFM advanced" ;
+	parameter var:P_n_prime_SFM_simple category: "SFM simple" ;
+	parameter var:P_n_SFM_simple category: "SFM simple" ;
+	parameter var:P_lambda_SFM_simple category: "SFM simple" ;
+	parameter var:P_gama_SFM_simple category: "SFM simple" ;
+	parameter var:P_relaxion_SFM_simple category: "SFM simple" ;
+	parameter var:P_A_pedestrian_SFM_simple category: "SFM simple" ;
+	
+	
 	float minimum_cycle_duration <- 0.02;
 	action _init_ {
 		create simulation with: [scenario :: "big crowd", nb_people::500];

@@ -16,11 +16,12 @@ global {
 	*      - BF : Breadth First Search. Should only be used for Von Neumann (4) neighborhood. An introduction to BF: http://www.redblobgames.com/pathfinding/a-star/introduction.html
 	*/
 	
-	string scenario <- "wall" among: ["random", "wall"] parameter: true;
-	string algorithm <- "A*" among: ["A*", "Dijkstra", "JPS", "BF"] parameter: true;
-	int neighborhood_type <- 8 among:[4,8] parameter: true;
-	float obstacle_rate <- 0.1 min: 0.0 max: 0.9 parameter: true;
-	int grid_size <- 50 min: 5 max: 100 parameter: true;
+	string scenario <- "wall" among: ["random", "wall"];
+	string algorithm <- "A*" among: ["A*", "Dijkstra", "JPS", "BF"];
+	int neighborhood_type <- 8 among:[4,8];
+	float obstacle_rate <- 0.1 min: 0.0 max: 0.9;
+	int grid_size <- 50 min: 5 max: 100;
+	
 	point source;
 	point goal;
 	path the_path;
@@ -63,6 +64,13 @@ grid cell width: grid_size height: grid_size neighbors: neighborhood_type optimi
 	
 
 experiment goto_grid type: gui {
+	
+	parameter var:scenario;
+	parameter var:algorithm;
+	parameter var:neighborhood_type;
+	parameter var:obstacle_rate;
+	parameter var:grid_size;
+	
 	output {
 		display objects_display type: 2d antialias:false{
 			grid cell border: #black;
