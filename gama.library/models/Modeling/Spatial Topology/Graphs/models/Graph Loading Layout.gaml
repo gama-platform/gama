@@ -65,8 +65,8 @@ experiment loadgraph type: gui {
 	parameter "Force coefficient" category: "Force"var:coeff_force;
 	parameter "Decreasing coefficient of the temperature" category: "Force" var:cooling_coefficient; 
 	parameter "Coefficient for the number of places to locate the vertices" category:"Grid" var:coeff_nb_places; 
-	parameter "Coefficient for the number of places to locate the vertices" category: "Force_FR" var:normalizationFactor; 
-	parameter "Coefficient for the number of places to locate the vertices" category:"Force_FR_indexed" var:theta; 
+	parameter "Normalization factor" category: "Force_FR" var:normalizationFactor; 
+	parameter "Theta" category:"Force_FR_indexed" var:theta; 
 	parameter "Layout type" var: layout_type among:["Force FR","Force FR Indexed" , "Force", "Circular", "Grid"] init:"Force FR";
 	output {
 		display map type: 3d{

@@ -58,7 +58,7 @@ grid cell file: dem neighbors: neighborhood_type optimizer: algorithm;
 experiment goto_grid type: gui {
 	
 	
-	parameter var:algorithm ;
+	parameter var:algorithm;
 	parameter var:neighborhood_type;
 	
 	float minimum_cycle_duration <- 300 #msec;

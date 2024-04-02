@@ -115,7 +115,7 @@ public class ExperimentDescription extends SpeciesDescription {
 		md.visitAllAttributes(d -> {
 			VariableDescription vd = (VariableDescription) d;
 			if (vName.equals(vd.getParameterName())) {
-				// Possibily different resources
+				// Possibly different resources
 				final Resource newResource =
 						var.getUnderlyingElement() == null ? null : var.getUnderlyingElement().eResource();
 				final Resource existingResource =
