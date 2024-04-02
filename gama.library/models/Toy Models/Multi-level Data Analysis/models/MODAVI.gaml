@@ -17,20 +17,20 @@ global {
 	graph<node_agent,edge_agent> my_graph ;
 	
 	//Number of agents to create
-	int nbAgent parameter: 'Number of Agents' min: 1 <- 100 category: 'Model';
+	int nbAgent min: 1 <- 100;
 	//Number of value per class
-	int nbValuePerClass parameter: 'Number of value per class' min: 1 max:100 <- 15 category: 'Model';
+	int nbValuePerClass min: 1 max:100 <- 15;
 	//Boolean to know if we display a spatial graph or not
-	bool spatialGraph parameter: 'Spatial Graph' <- true category: 'Model';
+	bool spatialGraph <- true;
 	//Distance to link two node agents
-	float distance parameter: 'Distance' min: 1.0<- 10.0 category: 'Model';
+	float distance min: 1.0 <- 10.0;
 	//Threshold
-	int threshold parameter: 'Threshold' min: 0 <- 0 category: 'Model';
+	int threshold min: 0 <- 0;
 
 	//Size of a node agent
-	int nodeSize parameter: 'Node size' min: 1 <- 1 category: 'Aspect';
+	int nodeSize min: 1 <- 1;
 	//Size of a macro node agent
-	int macroNodeSize parameter: 'Macro Node size' min: 1 <- 2 category: 'Aspect';
+	int macroNodeSize min: 1 <- 2;
 	
 	//Number of type of class
 	int nbTypeOfClass <-1;
@@ -110,142 +110,142 @@ global {
 }
 
 
-	//Species to represent the node_agent
-	species node_agent  {
-		//Color of the node agent
-		rgb color;
-		//List of the class
-		list<int> classVector <- list_with (nbTypeOfClass,0);
-		//List of the position
-		list<point> posVector <- list_with (nbTypeOfClass,{0,0});
-		//List of the color
-		list<rgb> colorList <- list_with (nbTypeOfClass, rgb(0,0,0));
-								
-		//Shuffle the classes of the node_agent
-		reflex shuffleClass{
-			loop i from:0 to: nbTypeOfClass-1{
-				classVector[i] <- rnd(nbValuePerClass-1)+1;
-			}	
-		}
- 		
-		aspect real {			 
-			draw sphere(nodeSize) color: colorList[0];
-		} 
-								
-		aspect coloredByClass{
-			loop i from:0 to: nbTypeOfClass-1{
-			    colorList[i]<- hsb (classVector[i]/nbValuePerClass,1.0,1.0);					
-			    posVector[i] <- {(location.x+i*110)*(1/zoomFactor),(location.y)*(1/zoomFactor),0};  
-			    draw sphere(nodeSize/zoomFactor) color: colorList[i] at: posVector[i] ;   
-			}
-		}
-	
-	}
-	
-	//Species edge_agent to represent the edge of the graph
-	species edge_agent { 
-		rgb color;
-		//Source of the edge
-		node_agent src;
-		//Target of the edge
-		node_agent dest;
-			 
-		aspect base {
-			draw shape color: rgb(125,125,125);
+//Species to represent the node_agent
+species node_agent  {
+	//Color of the node agent
+	rgb color;
+	//List of the class
+	list<int> classVector <- list_with (nbTypeOfClass,0);
+	//List of the position
+	list<point> posVector <- list_with (nbTypeOfClass,{0,0});
+	//List of the color
+	list<rgb> colorList <- list_with (nbTypeOfClass, rgb(0,0,0));
+							
+	//Shuffle the classes of the node_agent
+	reflex shuffleClass{
+		loop i from:0 to: nbTypeOfClass-1{
+			classVector[i] <- rnd(nbValuePerClass-1)+1;
 		}	
-		
-		aspect edgeGenericSpatialized{
-			loop i from:0 to: nbTypeOfClass-1{
-			  if ((src != nil) and (dest !=nil) ){
-				draw line( [ (src.posVector[i]) , (dest.posVector[i])] ) color:rgb(125,125,125);
-			  }
-			}
-		}
-	}
-	//Species representing the macro node agents
-	species macroNode{
-		rgb color;
-		int class;
-		//List of all the aggregated nodes
-		list<int> nbAggregatedNodes <- list_with(nbTypeOfClass,0);
-		//List of all the position
-		list<point> posVector <-list_with(nbTypeOfClass,{0,0});
-		 
-		//Update the nodes of the agents
-		reflex update{
-			do updatemyNodes;
-		}
-		//For each classes, find all the nodes with the same classes
-		action updatemyNodes{
-			loop i from:0 to: nbTypeOfClass-1{			
-				nbAggregatedNodes[i]<-0;
-				ask node_agent as list{
-				  if	(classVector[i] = myself.class) {
-					myself.nbAggregatedNodes[i] <- myself.nbAggregatedNodes[i]+1;
-				  }	 
-			    }
-		    }	    
-		} 
-		
-		aspect sphere{
-			draw sphere((nbAggregatedNodes[0]/10)*macroNodeSize) color: color at: point([location.x,location.y]) ;
-		}
-		
-		aspect Generic{
-			loop i from:0 to: nbTypeOfClass-1
-			{
-			posVector[i] <- {(location.x+i*150)*(1/zoomFactor),(location.y)*(1/zoomFactor),0};	
-			draw sphere((nbAggregatedNodes[i]/10)*macroNodeSize*(1/zoomFactor)) color: color at: posVector[i] ;
-			}
-		}
-		
-		//This action only works when having nbTypeOfClass=1
-		action removeMicroNode{
-			ask node_agent as list{
-				  if	(classVector[0] = myself.class) {
-				      do die;
-				  }	 
-	         }
-		}
-		
-		user_command "Remove all micro node" action: removeMicroNode;
 	}
 	
-	//Species macroEdge representing the macro edges agents
-	species macroEdge  { 
-		rgb color <- #black;
-		//Source of the macroedge
-		macroNode src;
-		//Destination of the macroedge
-		macroNode dest;
-		//List of all the aggregated links
-		list<int> nbAggregatedLinkList <- list_with(nbTypeOfClass,0);
-		
-		aspect base {
-			loop i from:0 to: nbTypeOfClass-1{
-				if(nbAggregatedLinkList[i]>threshold){
-				draw (line([src.posVector[i],dest.posVector[i]]) buffer ((nbAggregatedLinkList[i])/((length(edge_agent)))*nbEdgeMax)) color: rgb(125,125,125) border:rgb(125,125,125); 	
-				}
-			}
+	aspect real {			 
+		draw sphere(nodeSize) color: colorList[0];
+	} 
+							
+	aspect coloredByClass{
+		loop i from:0 to: nbTypeOfClass-1{
+		    colorList[i]<- hsb (classVector[i]/nbValuePerClass,1.0,1.0);					
+		    posVector[i] <- {(location.x+i*110)*(1/zoomFactor),(location.y)*(1/zoomFactor),0};  
+		    draw sphere(nodeSize/zoomFactor) color: colorList[i] at: posVector[i] ;   
 		}
-		
-		//Action to remove a micro edge
-		action removeMicroEdge{
-			ask edge_agent as list{
-				  if	((self.src.classVector[0] =  myself.src.class) and (self.dest.classVector[0] =  myself.dest.class)) {
-				      do die;
-				  }	 
-	         }
-		}
-		
-		user_command "Remove all micro edge" action: removeMicroEdge;	
 	}
-	
-	//Species macroGraph representing the macro graph composed of macroNode and macroEdge
-	species macroGraph {
-		
 
-  	//Reflex to update the graph by killing all the previous edges first 
+}
+
+//Species edge_agent to represent the edge of the graph
+species edge_agent { 
+	rgb color;
+	//Source of the edge
+	node_agent src;
+	//Target of the edge
+	node_agent dest;
+		 
+	aspect base {
+		draw shape color: rgb(125,125,125);
+	}	
+	
+	aspect edgeGenericSpatialized{
+		loop i from:0 to: nbTypeOfClass-1{
+		  if ((src != nil) and (dest !=nil) ){
+			draw line( [ (src.posVector[i]) , (dest.posVector[i])] ) color:rgb(125,125,125);
+		  }
+		}
+	}
+}
+//Species representing the macro node agents
+species macroNode{
+	rgb color;
+	int class;
+	//List of all the aggregated nodes
+	list<int> nbAggregatedNodes <- list_with(nbTypeOfClass,0);
+	//List of all the position
+	list<point> posVector <-list_with(nbTypeOfClass,{0,0});
+	 
+	//Update the nodes of the agents
+	reflex update{
+		do updatemyNodes;
+	}
+	//For each classes, find all the nodes with the same classes
+	action updatemyNodes{
+		loop i from:0 to: nbTypeOfClass-1{			
+			nbAggregatedNodes[i]<-0;
+			ask node_agent as list{
+			  if	(classVector[i] = myself.class) {
+				myself.nbAggregatedNodes[i] <- myself.nbAggregatedNodes[i]+1;
+			  }	 
+		    }
+	    }	    
+	} 
+	
+	aspect sphere{
+		draw sphere((nbAggregatedNodes[0]/10)*macroNodeSize) color: color at: point([location.x,location.y]) ;
+	}
+	
+	aspect Generic{
+		loop i from:0 to: nbTypeOfClass-1
+		{
+		posVector[i] <- {(location.x+i*150)*(1/zoomFactor),(location.y)*(1/zoomFactor),0};	
+		draw sphere((nbAggregatedNodes[i]/10)*macroNodeSize*(1/zoomFactor)) color: color at: posVector[i] ;
+		}
+	}
+	
+	//This action only works when having nbTypeOfClass=1
+	action removeMicroNode{
+		ask node_agent as list{
+			  if	(classVector[0] = myself.class) {
+			      do die;
+			  }	 
+         }
+	}
+	
+	user_command "Remove all micro node" action: removeMicroNode;
+}
+
+//Species macroEdge representing the macro edges agents
+species macroEdge  { 
+	rgb color <- #black;
+	//Source of the macroedge
+	macroNode src;
+	//Destination of the macroedge
+	macroNode dest;
+	//List of all the aggregated links
+	list<int> nbAggregatedLinkList <- list_with(nbTypeOfClass,0);
+	
+	aspect base {
+		loop i from:0 to: nbTypeOfClass-1{
+			if(nbAggregatedLinkList[i]>threshold){
+			draw (line([src.posVector[i],dest.posVector[i]]) buffer ((nbAggregatedLinkList[i])/((length(edge_agent)))*nbEdgeMax)) color: rgb(125,125,125) border:rgb(125,125,125); 	
+			}
+		}
+	}
+	
+	//Action to remove a micro edge
+	action removeMicroEdge{
+		ask edge_agent as list{
+			  if	((self.src.classVector[0] =  myself.src.class) and (self.dest.classVector[0] =  myself.dest.class)) {
+			      do die;
+			  }	 
+         }
+	}
+	
+	user_command "Remove all micro edge" action: removeMicroEdge;	
+}
+
+//Species macroGraph representing the macro graph composed of macroNode and macroEdge
+species macroGraph {
+	
+
+//Reflex to update the graph by killing all the previous edges first 
    reflex updateAllMacroEdge {	
 	 	ask macroEdge as list{
 	 		do die;
@@ -268,16 +268,26 @@ global {
 	    }
   	}
   	//Reflex to initialize the matrix
-  	reflex initMatrix{
-  		loop i from:0 to:nbTypeOfClass-1{
-  		  interactionMatrix[i] <- 0 as_matrix({nbValuePerClass,nbValuePerClass});	
-  		}	
-	  }	
-	}
+reflex initMatrix{
+	loop i from:0 to:nbTypeOfClass-1{
+	  interactionMatrix[i] <- 0 as_matrix({nbValuePerClass,nbValuePerClass});	
+	}	
+  }	
+}
 
 
 
 experiment MODAVI type: gui {
+	
+	parameter 'Number of Agents' var:nbAgent category: 'Model';
+	parameter 'Number of value per class' var:nbValuePerClass category: 'Model';
+	parameter 'Spatial Graph' var:spatialGraph  category: 'Model';
+	parameter 'Distance' var:distance category: 'Model';
+	parameter 'Threshold' var:threshold category: 'Model';
+	parameter 'Node size' var:nodeSize category: 'Aspect';
+	parameter 'Macro Node size' var:macroNodeSize category: 'Aspect';
+	
+	
 	output synchronized: true {			
 		display MODAVI type:3d axes:false {
 			camera #default location:{world.shape.width*1.5, world.shape.height,world.shape.width*4} target:{world.shape.width*1.5, world.shape.height,0};

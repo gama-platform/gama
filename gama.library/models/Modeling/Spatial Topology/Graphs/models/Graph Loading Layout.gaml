@@ -12,12 +12,12 @@ global {
 	string barabasi_file <- "../includes/simple.graphml";
 	geometry shape <- rectangle(500,500);
 	string layout_type;
-	int layout_time <- 1000 min: 0 max: 10000 parameter: "Max number of iterations" ;
-	float coeff_force <- 0.8 min: 0.1 max: 1.0 parameter: "Force coefficient" category: "Force";
-	float cooling_coefficient <- 0.1 min: 0.01 max: 0.5 parameter: "Decreasing coefficient of the temperature" category: "Force"; 
-	float coeff_nb_places <- 1.2 min: 0.0 max: 2.0 parameter: "Coefficient for the number of places to locate the vertices" category: "Grid"; 
-	float normalizationFactor <- 0.5 min: 0.1 max: 2.0 parameter: "Coefficient for the number of places to locate the vertices" category: "Force_FR"; 
-	float theta <- 0.5 min: 0.1 max: 2.0 parameter: "Coefficient for the number of places to locate the vertices" category: "Force_FR_indexed"; 
+	int layout_time <- 1000 min: 0 max: 10000;
+	float coeff_force <- 0.8 min: 0.1 max: 1.0;
+	float cooling_coefficient <- 0.1 min: 0.01 max: 0.5; 
+	float coeff_nb_places <- 1.2 min: 0.0 max: 2.0; 
+	float normalizationFactor <- 0.5 min: 0.1 max: 2.0; 
+	float theta <- 0.5 min: 0.1 max: 2.0; 
 	
 	
 	//The operator load_graph_from_file generates the graph from the file, and chose the vertices as agents of node_agent 
@@ -61,6 +61,12 @@ species node_agent {
 }
 
 experiment loadgraph type: gui {
+	parameter "Max number of iterations" var:layout_time;
+	parameter "Force coefficient" category: "Force"var:coeff_force;
+	parameter "Decreasing coefficient of the temperature" category: "Force" var:cooling_coefficient; 
+	parameter "Coefficient for the number of places to locate the vertices" category:"Grid" var:coeff_nb_places; 
+	parameter "Coefficient for the number of places to locate the vertices" category: "Force_FR" var:normalizationFactor; 
+	parameter "Coefficient for the number of places to locate the vertices" category:"Force_FR_indexed" var:theta; 
 	parameter "Layout type" var: layout_type among:["Force FR","Force FR Indexed" , "Force", "Circular", "Grid"] init:"Force FR";
 	output {
 		display map type: 3d{

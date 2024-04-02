@@ -9,13 +9,12 @@ model Parameters
 
 
 global {
-	// This direct definition builds a parameter that targets this attribute in the simulation
-	int attribute_0 <- 1000 parameter: "Simulation attribute directly declared as parameter";
+
 	int attribute_3 <- 10000;
 }
 
 experiment "Show Parameters" {
-	
+
 	int attribute_1 <- 100 on_change: {write attribute_1;};
 	
 	// This direct definition builds a parameter that targets this attribute in experiment

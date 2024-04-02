@@ -16,8 +16,8 @@ global {
 	*      - BF : Breadth First Search. Should only be used for Von Neumann (4) neighborhood. An introduction to BF: http://www.redblobgames.com/pathfinding/a-star/introduction.html
 	*/
 	
-	string algorithm <- "A*" among: ["A*", "Dijkstra", "JPS", "BF"] parameter: true;
-	int neighborhood_type <- 8 among:[4,8] parameter: true;
+	string algorithm <- "A*" among: ["A*", "Dijkstra", "JPS", "BF"];
+	int neighborhood_type <- 8 among:[4,8];
 	
 
 	init {    
@@ -67,6 +67,11 @@ species people skills: [moving] {
 }
 
 experiment goto_grid type: gui {
+	
+	parameter var:algorithm;
+	parameter var:neighborhood_type;
+	float minimum_cycle_duration <- 0.1;
+	
 	output {
 		display objects_display type:2d antialias:false{
 			grid cell border: #black;

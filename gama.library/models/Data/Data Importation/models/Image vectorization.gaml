@@ -12,7 +12,7 @@ global {
 	/*
 	 * How precise the vectorization is
 	 */
-	float resolution_factor <- 0.2 parameter:true max:1.0;
+	float resolution_factor <- 0.2max:1.0;
 	 
 	/*
 	 * Import the image to vectorize
@@ -45,7 +45,7 @@ global {
 	];
 	
 	init {
-		float t <- machine_time;
+		float t <- gama.machine_time;
 		
 		write "START CREATION OF THE ENVIRONMENT";
 		
@@ -111,7 +111,7 @@ global {
 				}
 			}
 		}
-		write "END - TIME ELAPSE: "+((machine_time-t)/1000)+"sec";
+		write "END - TIME ELAPSE: "+((gama.machine_time-t)/1000)+"sec";
 		
 		write "EXPORT TO FILES";
 		save water to:"../results/water_body.shp" ;
@@ -158,6 +158,8 @@ species tree {
 }
 
 experiment Vectorize type: gui {
+	parameter var:resolution_factor;
+	
 	output {
 		display map_vector type:3d axes:false{
 			species water;

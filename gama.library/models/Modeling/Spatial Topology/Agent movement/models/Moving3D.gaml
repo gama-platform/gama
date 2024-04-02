@@ -10,11 +10,11 @@
 model Moving3DModel   
 
 global {
-	int number_of_agents parameter: 'Number of Agents' min: 1 <- 250 step:10 category: 'Initialization'; 
+	int number_of_agents min: 1 <- 250 step:10; 
 	int envSize <-100; //max:100;
 	int mazeSize <-10;
-	int radius parameter: 'Radius' min: 1 <- 1 ;
-	int directionSize parameter: 'direction size' min: 1 <- 10 ;
+	int radius min: 1 <- 1 ;
+	int directionSize min: 1 <- 10 ;
 	string effectType <-"blob";// among:["","firework", "blob","direction"];
 	string movingType <-"move";
 	graph mazeGraph;
@@ -137,8 +137,16 @@ species edge_agent schedules:[]{
 	}
 }
 	
+	
+experiment base{
+	parameter 'Number of Agents' var:number_of_agents category: 'Initialization'; 
+	parameter var:envSize; 
+	parameter var:mazeSize;
+	parameter 'Radius' var:radius;
+	parameter 'direction size'var:directionSize;
+}
 
-experiment Moving  type: gui {
+experiment Moving  type: gui parent:base{
 	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "move";
 	parameter "Agent Aspect" var:agentAspect <- "direction";
@@ -150,7 +158,7 @@ experiment Moving  type: gui {
 	}
 }
 
-experiment Wandering  type: gui {
+experiment Wandering  type: gui parent:base{
 	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "wander";
 	parameter "Agent Aspect" var:agentAspect <- "direction";
@@ -161,7 +169,7 @@ experiment Wandering  type: gui {
 	}
 }
 
-experiment Goto  type: gui {
+experiment Goto  type: gui parent:base{
 	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "goto";
 	parameter "Agent Aspect" var:agentAspect <- "direction";
@@ -173,7 +181,7 @@ experiment Goto  type: gui {
 	}
 }
 
-experiment GotoOnNetwork  type: gui {
+experiment GotoOnNetwork  type: gui parent:base{
 	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "gotoOnNetwork";
 	parameter "Agent Aspect" var:agentAspect <- "direction";
@@ -187,7 +195,7 @@ experiment GotoOnNetwork  type: gui {
 	}
 }
 
-experiment Complete  type: gui {
+experiment Complete  type: gui parent:base{
 	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "complete";
 	parameter "Agent Aspect" var:agentAspect <- "direction";

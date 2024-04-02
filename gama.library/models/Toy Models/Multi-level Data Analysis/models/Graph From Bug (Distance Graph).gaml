@@ -16,7 +16,7 @@ global {
 	//Graph that will be computed at each step linking the bug agents according to their distance
 	graph myGraph;
 	//Minimal distance to consider two nodes agents (ie the bug) as connected
-	float distance parameter: 'Distance' min: 1.0 <- 10.0 category: 'Model';
+	float distance min: 1.0 <- 10.0;
 	
 	//Reflex to update the graph when cycle is greater than 0. Important because the mirroring has one step late from
 	//the original species, and at step 0, the mirroring species aren't created
@@ -45,8 +45,11 @@ species edge_agent {
 }
 
 experiment spatialGraph type: gui {
+	
+	parameter 'Distance' var:distance  min: 1.0 <- 10.0 category: 'Model';
+	
 	output {	
-	 display graph_view type: 3d {
+		display graph_view type: 3d {
 	 	    species bug aspect:base;
 			species node_agent aspect: base position:{0,0,0.1};
 			species edge_agent aspect: base position:{0,0,0.1};

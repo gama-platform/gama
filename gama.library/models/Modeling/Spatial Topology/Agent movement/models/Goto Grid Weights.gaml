@@ -16,8 +16,8 @@ global {
 	
 	file dem <- file("../includes/vulcano_50.asc");
 	geometry shape <- envelope(dem);
-	string algorithm <- "A*" among: ["A*", "Dijkstra"] parameter: true;
-	int neighborhood_type <- 8 among:[4,8] parameter: true;
+	string algorithm <- "A*" among: ["A*", "Dijkstra"];
+	int neighborhood_type <- 8 among:[4,8];
 	map<cell,float> cell_weights;
 
 	init {    
@@ -74,6 +74,12 @@ species people skills: [moving] {
 }
 
 experiment goto_grid type: gui {
+	
+	
+	parameter var:algorithm among: ["A*", "Dijkstra"];
+	parameter var:neighborhood_type among:[4,8];
+	float minimum_cycle_duration <- 0.1;
+	
 	output {
 		display objects_display type:2d antialias:false{
 			grid cell border: #black;

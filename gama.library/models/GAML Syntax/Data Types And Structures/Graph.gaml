@@ -7,17 +7,17 @@
 model graph
 
 global {
-	int init_nb_nodes <- 1 parameter: true min: 1;
-	int nb_nodes <- 10 parameter: true min: 1;
-	int av_degree <- 4 parameter: true;
-	bool node_species_only <- false parameter:true;
-	bool no_species <- false parameter:true;
-	bool directed_graph <- false parameter:true;
+	int init_nb_nodes <- 1 min: 1;
+	int nb_nodes <- 10 min: 1;
+	int av_degree <- 4;
+	bool node_species_only <- false;
+	bool no_species <- false;
+	bool directed_graph <- false;
 	int x_cells <- 10;
 	int y_cells <- 10;
 	graph g_graph;
-	string the_layout parameter: true init: "Circle" among: ["Circle", "Forced", "Grid"];
-	string graph_generator parameter: true init: "Complete" among: ["Random","Scall-free", "Small-world", "Complete", "Distance", "Intersection", "Grid"];
+	string the_layout init: "Circle" among: ["Circle", "Forced", "Grid"];
+	string graph_generator init: "Complete" among: ["Random","Scall-free", "Small-world", "Complete", "Distance", "Intersection", "Grid"];
 
 	init {
 		write "- Using dedicated agent that extends 'graph_node' =>  'species my_node parent: graph_node edge_species: my_edge' with my_edge parent: base_edge";
@@ -350,6 +350,17 @@ grid cell8 width: x_cells height: y_cells neighbors: 8 {
 }
 
 experiment Graph type: gui {
+	
+	parameter var:init_nb_nodes;
+	parameter var:nb_nodes;
+	parameter var:av_degree;
+	parameter var:node_species_only;
+	parameter var:no_species;
+	parameter var:directed_graph;
+	parameter var:the_layout;
+	parameter var:graph_generator;
+	
+	
 	float minimum_cycle_duration <- 1#s;
 	text "You have to play the simulation model in order to build and play with network";
 	user_command "Accessing/modifying graphs" {

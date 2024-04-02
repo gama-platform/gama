@@ -13,17 +13,17 @@ global {
 	geometry shape <- rectangle(10.0, 5);
 	float step <- 0.1;
 	pedestrian focus;
-	bool display_field_vision <- false parameter: true;
+	bool display_field_vision <- false;
 	geometry east ;
 	geometry west; 
 	
-	float P_v0_mean <- 1.3 #m/#s parameter: "desired speed";
-	float P_v0_std <- 0.2 #m/#s parameter: "desired speed";
-	float P_teta0 <- 90.0 parameter: "max angle of vision"; //degrees
-	float P_disc_factor <- 10.0 parameter: "discretisation factor for the vision angle";
-	float P_tau <- 0.5 #s parameter: "reaction time";
-	float P_dmax <- 8.0 #m parameter: "distance of vision";
-	float P_k <- 1.0 * 10^3 parameter: "repulsion strength";
+	float P_v0_mean <- 1.3 #m/#s;
+	float P_v0_std <- 0.2 #m/#s ;
+	float P_teta0 <- 90.0; //degrees
+	float P_disc_factor <- 10.0;
+	float P_tau <- 0.5 #s;
+	float P_dmax <- 8.0 #m ;
+	float P_k <- 1.0 * 10^3;
 	int num_data <- 10 ;
 	
 	int new_arrving_per_s <- 2;
@@ -313,6 +313,16 @@ species wall {
 
 
 experiment corridor_xp type: gui {
+	
+	parameter var:display_field_vision;
+	parameter "desired speed mean" var:P_v0_mean ;
+	parameter "desired speed standard deviation" var:P_v0_std ;
+	parameter "max angle of vision" var:P_teta0; //degree var:P_teta0 s
+	parameter "discretisation factor for the vision angle" var:P_disc_factor ;
+	parameter "reaction time" var:P_tau ;
+	parameter "distance of vision" var:P_dmax ;
+	parameter "repulsion strength" var:P_k ;
+	
 	float minimum_cycle_duration <- 0.02;
 	output {
 		display map type: 3d axes: false{

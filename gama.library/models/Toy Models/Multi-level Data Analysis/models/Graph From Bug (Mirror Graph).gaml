@@ -16,9 +16,9 @@ import '../includes/Common Bug Species.gaml'
 
 global {
 	//Distance to link two bugs
-	int distance parameter: 'Distance' min: 1 <- 25 category: 'Model';
+	int distance min: 1 <- 25;
 	//variable to start the animation of the model
-	int startAnimation parameter: 'Start Animation ' min: 1 <- 25 category: 'Animation View';
+	int startAnimation min: 1 <- 25;
 	//Variable to save the time animation
 	int timeAnim <- 0;
 	//Reflex to update the time of animation
@@ -70,13 +70,19 @@ species edge_agent parent: base_edge {
 }
 
 experiment AdvancedView type: gui {
+	
+	
+	parameter 'Distance' var:distance category: 'Model';
+	parameter 'Start Animation ' var:startAnimation category: 'Animation View';
+	
 	output {
-		display graph_plus_bug_layered type: 3d { 
-		  species bug aspect: base;
-		  species node_agent aspect: base position: { 0, 0, 0.2 };
-		  species edge_agent aspect: base position: { 0, 0, 0.2 };
-		  species node_agent aspect: dynamic position: { 0, 0, 0.4 };
-		  species edge_agent aspect: dynamic position: { 0, 0, 0.4 };
+		display graph_plus_bug_layered type: 3d {
+			camera 'default' location: {-9.2599,157.3601,111.6399} target: {52.0223,44.4922,0.0}; 
+			species bug aspect: base;
+			species node_agent aspect: base position: { 0, 0, 0.2 };
+			species edge_agent aspect: base position: { 0, 0, 0.2 };
+			species node_agent aspect: dynamic position: { 0, 0, 0.4 };
+			species edge_agent aspect: dynamic position: { 0, 0, 0.4 };
 		}
 	}
 }

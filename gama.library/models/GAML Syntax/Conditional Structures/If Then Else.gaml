@@ -11,8 +11,8 @@ model IfthenelseNewModel
 
 global {
 	
-	bool condition1 parameter:true init:true;
-	bool condition2 parameter:true init:true;
+	bool condition1 init:true;
+	bool condition2 init:true;
 	
 	init {
 		
@@ -106,6 +106,9 @@ global {
 }
 
 experiment my_xp type:gui {
+	parameter var:condition1;
+	parameter var:condition2;
+	
 	output {
 		
 	}

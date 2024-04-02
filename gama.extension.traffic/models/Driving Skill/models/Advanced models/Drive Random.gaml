@@ -11,7 +11,7 @@ import "Traffic.gaml"
 
 global {
 	float seed <- 42.0;
-	float traffic_light_interval parameter: 'Traffic light interval' init: 60#s;
+	float traffic_light_interval init: 60#s;
 	float step <- 0.2#s;
 
 	string map_name;
@@ -109,7 +109,13 @@ species car_random parent: vehicle_random {
 	}
 }
 
+
+
+
 experiment ring type: gui {
+
+	parameter 'Traffic light interval' var:traffic_light_interval;
+	
 	action _init_{ 
 		create simulation with:[
 			map_name::"ring",

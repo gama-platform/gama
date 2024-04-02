@@ -23,9 +23,9 @@ global torus: true {
 	int y_road <- 4;
 	car sample_car;
 	
-	int nb_cars <- 25 parameter: true;
-	float acceleration <- 0.0045 min: 0.0 max: 0.01 parameter: true;
-	float deceleration <- 0.026 min: 0.0 max: 0.1 parameter: true;	
+	int nb_cars <- 25;
+	float acceleration <- 0.0045 min: 0.0 max: 0.01;
+	float deceleration <- 0.026 min: 0.0 max: 0.1;	
 	
 	float max_speed <- 50.0;
 	
@@ -109,6 +109,12 @@ species car skills: [moving] {
 }
 
 experiment NetlogoTrafficmodel type: gui {
+	
+		
+	parameter var:nb_cars;
+	parameter var:acceleration;
+	parameter var:deceleration;
+	
 	float minimum_cycle_duration <- 0.01;
 	
 	output {
