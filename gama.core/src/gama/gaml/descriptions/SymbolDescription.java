@@ -457,7 +457,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, true, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)), data);
+		flagError(s, code, true, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
@@ -546,10 +547,10 @@ public abstract class SymbolDescription implements IDescription {
 			}
 			final IExpressionDescription f = getFacet((String) facet);
 			if (f != null) {
-				final EObject result = f.getTarget();
-				if (result != null) return result;
 				final EObject facetObject = GAML.getEcoreUtils().getFacetsMapOf(element).get(facet);
 				if (facetObject != null) return facetObject;
+				final EObject result = f.getTarget();
+				if (result != null) return result;
 			}
 			// Last chance if the expression is a constant (no information on EObjects), see Issue #2760)
 			final EObject facetExpr = GAML.getEcoreUtils().getExpressionAtKey(element, (String) facet);
