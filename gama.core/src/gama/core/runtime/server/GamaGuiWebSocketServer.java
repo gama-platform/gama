@@ -13,6 +13,7 @@ package gama.core.runtime.server;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
@@ -98,7 +99,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
 		currentServerConfig = currentServerConfig.withSocket(socket);
-		GAMA.getGui().getConsole().addConsoleListener(console);
+		if (GamaPreferences.Runtime.CORE_SERVER_GUI_CONSOLE_LISTENER.getValue())
+			GAMA.getGui().getConsole().addConsoleListener(console);
 		super.onOpen(socket, handshake);
 	}
 

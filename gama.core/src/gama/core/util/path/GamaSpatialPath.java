@@ -473,7 +473,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		double distance = 0;
 		int index = 0;
 		int indexSegment = 0;
-		GamaPoint currentLocation = null;// source.getLocation().copy(scope);
+		GamaPoint currentLocation = null;
 		final int nb = segments.size();
 		if (!keepSource) {
 			double distanceS = Double.MAX_VALUE;

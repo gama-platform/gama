@@ -559,7 +559,7 @@ public class GamaPreferences {
 		/** The Constant CORE_SERVER_MODE. */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
 				create("pref_enable_server", "Enables GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
-						.activates("pref_server_port", "pref_server_ping");
+						.activates("pref_server_port", "pref_server_ping", "pref_server_gui_console_listener");
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
@@ -570,6 +570,11 @@ public class GamaPreferences {
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
 						.in(NAME, SERVER);
+		
+		public static final Pref<Boolean> CORE_SERVER_GUI_CONSOLE_LISTENER =
+				create("pref_server_gui_console_listener", "Enables GAMA GUI server mode to send the console output to the client", true, IType.BOOL, true)
+						.in(NAME, SERVER);
+	
 	}
 
 	/**
