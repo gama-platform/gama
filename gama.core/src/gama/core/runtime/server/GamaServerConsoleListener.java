@@ -1,16 +1,17 @@
 /*******************************************************************************************************
  *
- * GamaServerConsoleListener.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaServerConsoleListener.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
 import gama.core.common.interfaces.IConsoleListener;
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.util.GamaColor;
@@ -35,6 +36,7 @@ public final class GamaServerConsoleListener extends GamaServerMessager implemen
 	 */
 	@Override
 	public boolean canSendMessage(final IExperimentAgent exp) {
+		if (!GamaPreferences.Runtime.CORE_SERVER_CONSOLE.getValue()) return false;
 		var scope = exp.getScope();
 		return scope != null && scope.getServerConfiguration().console();
 	}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaGuiWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaGuiWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,14 +13,12 @@ package gama.core.runtime.server;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
-import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
-import gama.dev.DEBUG;
 
 /**
  * The Class GamaWebSocketServer.
@@ -99,8 +97,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
 		currentServerConfig = currentServerConfig.withSocket(socket);
-		if (GamaPreferences.Runtime.CORE_SERVER_GUI_CONSOLE_LISTENER.getValue())
-			GAMA.getGui().getConsole().addConsoleListener(console);
+		GAMA.getGui().getConsole().addConsoleListener(console);
 		super.onOpen(socket, handshake);
 	}
 
@@ -121,7 +118,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onStart() {
 		super.onStart();
-		GAMA.addExperimentStateListener(this); 
+		GAMA.addExperimentStateListener(this);
 	}
 
 	@Override
