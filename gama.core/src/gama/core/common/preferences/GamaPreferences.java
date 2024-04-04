@@ -1,11 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaPreferences.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.common.preferences;
 
@@ -554,7 +555,7 @@ public class GamaPreferences {
 		/** The Constant CORE_SERVER_MODE. */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
 				create("pref_enable_server", "Enables GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
-						.activates("pref_server_port", "pref_server_ping");
+						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
@@ -565,6 +566,12 @@ public class GamaPreferences {
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
 						.in(NAME, SERVER);
+
+		/** The Constant CORE_SERVER_CONSOLE. */
+		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
+				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true).in(NAME,
+						SERVER);
+
 	}
 
 	/**

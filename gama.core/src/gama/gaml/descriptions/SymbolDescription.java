@@ -408,9 +408,12 @@ public abstract class SymbolDescription implements IDescription {
 		error(message, IGamlIssue.GENERAL);
 	}
 
+	/** The Constant EMPTY_DATA. */
+	final static String[] EMPTY_DATA = {};
+
 	@Override
 	public void error(final String message, final String code) {
-		flagError(message, code, false, false, getUnderlyingElement(), (String[]) null);
+		flagError(message, code, false, false, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
@@ -421,12 +424,12 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
 		flagError(s, code, false, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
-				data.length == 0 ? new String[] { facet } : data);
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void info(final String message, final String code) {
-		flagError(message, code, false, true, getUnderlyingElement(), (String[]) null);
+		flagError(message, code, false, true, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
@@ -437,12 +440,12 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public void info(final String s, final String code, final String facet, final String... data) {
 		flagError(s, code, false, true, this.getUnderlyingElement(facet, false),
-				data.length == 0 ? new String[] { facet } : data);
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void warning(final String message, final String code) {
-		flagError(message, code, true, false, null, (String[]) null);
+		flagError(message, code, true, false, null, EMPTY_DATA);
 	}
 
 	@Override
@@ -452,7 +455,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, true, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)), data);
+		flagError(s, code, true, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
@@ -541,10 +545,10 @@ public abstract class SymbolDescription implements IDescription {
 			}
 			final IExpressionDescription f = getFacet((String) facet);
 			if (f != null) {
-				final EObject result = f.getTarget();
-				if (result != null) return result;
 				final EObject facetObject = GAML.getEcoreUtils().getFacetsMapOf(element).get(facet);
 				if (facetObject != null) return facetObject;
+				final EObject result = f.getTarget();
+				if (result != null) return result;
 			}
 			// Last chance if the expression is a constant (no information on EObjects), see Issue #2760)
 			final EObject facetExpr = GAML.getEcoreUtils().getExpressionAtKey(element, (String) facet);

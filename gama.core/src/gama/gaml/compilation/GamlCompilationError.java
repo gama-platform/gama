@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlCompilationError.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlCompilationError.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.compilation;
 
@@ -31,7 +31,7 @@ public class GamlCompilationError {
 	protected String code;
 
 	/** The data. */
-	protected String[] data;
+	protected final String[] data;
 
 	/** The source. */
 	protected EObject source;
