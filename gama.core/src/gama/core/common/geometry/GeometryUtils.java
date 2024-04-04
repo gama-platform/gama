@@ -74,8 +74,8 @@ import gama.dev.DEBUG;
 import gama.gaml.operators.Files;
 import gama.gaml.operators.Graphs;
 import gama.gaml.operators.Random;
-import gama.gaml.operators.Spatial.Operators;
-import gama.gaml.operators.Spatial.ThreeD;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialThreeD;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.Types;
@@ -633,13 +633,13 @@ public class GeometryUtils {
 		final double zVal = geom.getLocation().getZ();
 		final IList<IShape> rects = discretization(geom.getInnerGeometry(), x_size, y_size, true);
 		for (final IShape shape : rects) {
-			final IShape gg = Operators.inter(null, shape, geom);
+			final IShape gg = SpatialOperators.inter(null, shape, geom);
 			if (gg != null && !gg.getInnerGeometry().isEmpty()) {
 				final GamaShape sp = GamaShapeFactory.createFrom(gg);
 				final GamaPoint[] pts = getPointsOf(sp);
 				for (int i = 0; i < pts.length; i++) {
 					final GamaPoint gp = pts[i];
-					if (zVal != gp.getZ()) { ThreeD.set_z(null, sp, i, zVal); }
+					if (zVal != gp.getZ()) { SpatialThreeD.set_z(null, sp, i, zVal); }
 				}
 				geoms.add(sp);
 			}

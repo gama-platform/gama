@@ -52,7 +52,6 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
@@ -88,6 +87,10 @@ import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaMatrix;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.IPath;
+import gama.gaml.operators.spatial.SpatialProperties;
+import gama.gaml.operators.spatial.SpatialPunctal;
+import gama.gaml.operators.spatial.SpatialRelations;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGraphType;
 import gama.gaml.types.GamaPathType;
@@ -124,9 +127,9 @@ public class Graphs {
 
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			return Spatial.Properties.intersects(
-					Spatial.Transformations.enlarged_by(scope, p1.getGeometry(), tolerance),
-					Spatial.Transformations.enlarged_by(scope, p2.getGeometry(), tolerance));
+			return SpatialProperties.intersects(
+					SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
+					SpatialTransformations.enlarged_by(scope, p2.getGeometry(), tolerance));
 		}
 
 		@Override
@@ -248,7 +251,7 @@ public class Graphs {
 		@Override
 		public boolean related(final IScope scope, final IShape g1, final IShape g2) {
 			if (g1 == null || g2 == null) return false;
-			return Spatial.Relations.distance_to(scope, g1.getGeometry(), g2.getGeometry()) <= distance;
+			return SpatialRelations.distance_to(scope, g1.getGeometry(), g2.getGeometry()) <= distance;
 		}
 
 		/**
@@ -1896,7 +1899,7 @@ public class Graphs {
 		Map<Object, IShape> map = GamaMapFactory.create(Types.NO_TYPE, Types.GEOMETRY);
 		IShape world = scope.getSimulation().getGeometry();
 		graph.vertexSet().forEach(v -> {
-			IShape newV = v instanceof IShape ? (IShape) v : Spatial.Punctal.any_location_in(scope, world);
+			IShape newV = v instanceof IShape ? (IShape) v : SpatialPunctal.any_location_in(scope, world);
 			newV.setAttribute(IKeyword.VALUE, v);
 			map.put(v, newV);
 			result.addVertex(newV);

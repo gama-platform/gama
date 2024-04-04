@@ -61,11 +61,10 @@ import gama.core.util.matrix.IMatrix;
 import gama.core.util.path.IPath;
 import gama.core.util.path.PathFactory;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Strings;
 import gama.gaml.operators.Graphs.EdgeToAdd;
 import gama.gaml.operators.Graphs.GraphObjectToAdd;
-import gama.gaml.operators.Spatial.Creation;
+import gama.gaml.operators.Strings;
+import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaListType;
 import gama.gaml.types.GamaPairType;
@@ -250,7 +249,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 				IList<IShape> points = GamaListFactory.create();
 				points.add(sg.getLocation());
 				points.add(tg.getLocation());
-				IShape eg = Creation.line(scope, points);
+				IShape eg = SpatialCreation.line(scope, points);
 				setEdgeWeight(eg, graph.getEdgeWeight(e));
 				addEdge(sg, tg, eg);
 			}
@@ -340,7 +339,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 					IAgent n1 = verticesAg.get(s.toString());
 					IAgent n2 = verticesAg.get(t.toString());
 					addEdge(n1, n2, ag);
-					ag.setGeometry(Spatial.Creation.link(scope, n1, n2));
+					ag.setGeometry(SpatialCreation.link(scope, n1, n2));
 				} else {
 					addEdge(s, t, ag);
 				}
@@ -389,7 +388,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 				Object n1 = verticesAg.get(s.toString());
 				Object n2 = verticesAg.get(t.toString());
 				addEdge(n1, n2, ag);
-				if (n1 instanceof IShape) { ag.setGeometry(Spatial.Creation.link(scope, (IShape) n1, (IShape) n2)); }
+				if (n1 instanceof IShape) { ag.setGeometry(SpatialCreation.link(scope, (IShape) n1, (IShape) n2)); }
 
 				setEdgeWeight(ag, graph.getEdgeWeight(e));
 			}
@@ -730,7 +729,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		final List initVal = new ArrayList<>();
 		map.put(IKeyword.SOURCE, v1);
 		map.put(IKeyword.TARGET, v2);
-		map.put(IKeyword.SHAPE, Creation.link(graphScope, (IShape) v1, (IShape) v2));
+		map.put(IKeyword.SHAPE, SpatialCreation.link(graphScope, (IShape) v1, (IShape) v2));
 		initVal.add(map);
 		return generateEdgeAgent(initVal);
 	}

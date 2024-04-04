@@ -65,8 +65,9 @@ import gama.core.util.path.PathFactory;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Projections;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialProjections;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.GamaMatrixType;
@@ -331,7 +332,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				GamaPoint loc = matrix[i].getLocation();
 				// See #3306 : initCRS was never used to compute the location
 				if (/* initCRS != null && */ taCRS != null) {
-					loc = Projections.transform_CRS(scope, loc, taCRS).getLocation();
+					loc = SpatialProjections.transform_CRS(scope, loc, taCRS).getLocation();
 				}
 				final Double v = gfile2.valueOf(scope, loc);
 				vals.add(v);
@@ -502,7 +503,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		for (int l = 0; l < numRows; l = l + 2) {
 			for (int c = 0; c < numCols; c++) {
 				i = c + numCols * l;
-				final IShape poly = Spatial.Transformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
+				final IShape poly = SpatialTransformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
 						cellWidth, new GamaPoint(xmin + c * cellWidth, ymin + l * cellHeight * 0.75)), 90.0);
 
 				// if (gbg.covers(poly)) {
@@ -519,7 +520,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			for (int c = 0; c < numCols; c++) {
 				i = c + numCols * l;
 
-				final IShape poly = Spatial.Transformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
+				final IShape poly = SpatialTransformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
 						cellWidth, new GamaPoint(xmin * 2 + c * cellWidth, ymin + l * cellHeight * 0.75)), 90.0);
 
 				// if (gbg.covers(poly)) {
@@ -548,7 +549,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final GamaPoint origin =
 				new GamaPoint(environmentFrame.getEnvelope().getMinX(), environmentFrame.getEnvelope().getMinY());
 
-		final IShape translatedReferenceFrame = Spatial.Transformations.translated_by(scope, environmentFrame, origin);
+		final IShape translatedReferenceFrame = SpatialTransformations.translated_by(scope, environmentFrame, origin);
 		final GamaPoint[][] xs = new GamaPoint[numCols + 1][numRows + 1];
 		for (int i = 0; i < numCols + 1; i++) {
 			for (int j = 0; j < numRows + 1; j++) {
@@ -575,7 +576,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			}
 			boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
 			if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
-				rect.setGeometry(Spatial.Operators.inter(scope, rect, translatedReferenceFrame));
+				rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
 				ok = true;
 			}
 			if (ok) {

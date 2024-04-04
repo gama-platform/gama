@@ -46,7 +46,7 @@ import gama.dependencies.kml.Placemark;
 import gama.dependencies.kml.Scale;
 import gama.dependencies.kml.Style;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Spatial;
+import gama.gaml.operators.spatial.SpatialProjections;
 
 /**
  * The Class GamaKmlExport.
@@ -424,7 +424,7 @@ public class GamaKmlExport {
 			final gama.dependencies.kml.Point ls = placemark.createAndSetPoint();
 			ls.setExtrude(true);
 			ls.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
-			final GamaPoint locTM = Spatial.Projections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
+			final GamaPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
 
 			ls.addToCoordinates(locTM.x, locTM.y, locTM.z);
 			placemark.setName(name);
@@ -456,7 +456,7 @@ public class GamaKmlExport {
 			placemark.createAndSetTimeSpan().withBegin(beginDate).withEnd(endDate);
 			final Model model = placemark.createAndSetModel();
 			model.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
-			final GamaPoint locTM = Spatial.Projections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
+			final GamaPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
 			final Location locKML = new Location();
 			locKML.setLongitude(locTM.x);
 			locKML.setLatitude(locTM.y);
@@ -489,7 +489,7 @@ public class GamaKmlExport {
 			placemark.setName(label);
 			placemark.createAndSetTimeSpan().withBegin(beginDate).withEnd(endDate);
 
-			final IShape shapeTM = Spatial.Projections.transform_CRS(scope, shape, EPSG_4326);
+			final IShape shapeTM = SpatialProjections.transform_CRS(scope, shape, EPSG_4326);
 			final Geometry geom = shapeTM.getInnerGeometry();
 
 			if (geom instanceof Point p) {

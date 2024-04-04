@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -29,6 +28,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -37,7 +37,6 @@ import gama.core.kernel.experiment.ActionExecuter;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentController;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.root.PlatformAgent;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
@@ -56,8 +55,8 @@ import gama.core.runtime.ExecutionScope;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
+import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaDate;
@@ -67,7 +66,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Spatial.Transformations;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.GamaGeometryType;
@@ -503,7 +502,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		((WorldProjection) getProjectionFactory().getWorld()).updateTranslations(env);
 		((WorldProjection) getProjectionFactory().getWorld()).updateUnit(getProjectionFactory().getUnitConverter());
 		final GamaPoint p = new GamaPoint(-env.getMinX(), -env.getMinY(), -env.getMinZ());
-		geometry.setGeometry(Transformations.translated_by(scope, geom, p));
+		geometry.setGeometry(SpatialTransformations.translated_by(scope, geom, p));
 		if (getProjectionFactory().getUnitConverter() != null) {
 			((WorldProjection) getProjectionFactory().getWorld()).convertUnit(geometry.getInnerGeometry());
 

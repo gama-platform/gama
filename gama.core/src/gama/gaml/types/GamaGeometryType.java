@@ -43,10 +43,10 @@ import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.locationtech.jts.util.AssertionFailedException;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.geometry.GamaGeometryFactory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
@@ -67,7 +67,8 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Spatial;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 
 /**
@@ -1012,10 +1013,10 @@ public class GamaGeometryType extends GamaType<IShape> {
 		IShape line2 = GamaGeometryType.buildLine(new GamaPoint(location.x - val, location.y + val),
 				new GamaPoint(location.x + val, location.y - val));
 		if (width != null && width > 0) {
-			line1 = Spatial.Transformations.enlarged_by(null, line1, width);
-			line2 = Spatial.Transformations.enlarged_by(null, line2, width);
+			line1 = SpatialTransformations.enlarged_by(null, line1, width);
+			line2 = SpatialTransformations.enlarged_by(null, line2, width);
 		}
-		return Spatial.Operators.union(null, line1, line2);
+		return SpatialOperators.union(null, line1, line2);
 	}
 
 }

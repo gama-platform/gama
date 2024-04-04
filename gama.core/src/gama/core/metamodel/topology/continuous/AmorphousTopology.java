@@ -35,7 +35,7 @@ import gama.core.util.IList;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.PathFactory;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Spatial;
+import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -82,7 +82,7 @@ public class AmorphousTopology implements ITopology {
 	@Override
 	public void updateAgent(final Envelope3D previous, final IAgent agent) {
 		final IShape ng =
-				Spatial.Operators.union(agent.getScope(), expandableEnvironment.getGeometry(), agent.getGeometry());
+				SpatialOperators.union(agent.getScope(), expandableEnvironment.getGeometry(), agent.getGeometry());
 		expandableEnvironment.setGeometry(GamaShapeFactory.createFrom(ng.getInnerGeometry().getEnvelope()));
 	}
 

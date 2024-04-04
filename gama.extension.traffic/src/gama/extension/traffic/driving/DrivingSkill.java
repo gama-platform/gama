@@ -22,7 +22,6 @@ import org.apache.commons.collections4.OrderedBidiMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -32,6 +31,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -50,7 +50,7 @@ import gama.extension.traffic.driving.carfollowing.MOBIL;
 import gama.extension.traffic.driving.carfollowing.Utils;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.operators.Random;
-import gama.gaml.operators.Spatial.Queries;
+import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.skills.MovingSkill;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.Arguments;
@@ -1648,7 +1648,7 @@ public class DrivingSkill extends MovingSkill {
 				throw GamaRuntimeException.error(target.getName() + " must be a vertex in the given graph", scope);
 
 			if (source == null) {
-				source = (IAgent) Queries.closest_to(scope, graph.getVertices(), vehicle);
+				source = (IAgent) SpatialQueries.closest_to(scope, graph.getVertices(), vehicle);
 			} else if (!graph.vertexSet().contains(source))
 				throw GamaRuntimeException.error(source.getName() + " must be a vertex in the given graph", scope);
 			path = graph.getPathComputer().computeShortestPathBetween(scope, source, target);
@@ -1709,7 +1709,7 @@ public class DrivingSkill extends MovingSkill {
 		// initialize starting location
 		if (getCurrentRoad(vehicle) == null) {
 			IList<IShape> nodes = graph.getVertices();
-			IShape shape = Queries.closest_to(scope, nodes, vehicle);
+			IShape shape = SpatialQueries.closest_to(scope, nodes, vehicle);
 			initNode = shape.getAgent();
 			setLocation(vehicle, initNode.getLocation());
 			setCurrentTarget(vehicle, initNode);

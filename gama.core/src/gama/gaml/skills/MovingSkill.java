@@ -61,8 +61,9 @@ import gama.core.util.path.PathFactory;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Punctal;
+import gama.gaml.operators.spatial.SpatialCreation;
+import gama.gaml.operators.spatial.SpatialPunctal;
+import gama.gaml.operators.spatial.SpatialRelations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
@@ -972,7 +973,7 @@ public class MovingSkill extends Skill {
 						currentLocation = new GamaPoint(currentLocation);
 						indexSegment = indexOf(points, currentLocation) + 1;
 					} else {
-						currentLocation = Punctal._closest_point_to(currentLocation, line);
+						currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
 						if (points.length >= 3) {
 							distanceS = Double.MAX_VALUE;
 							final int nbSp = points.length;
@@ -1002,7 +1003,7 @@ public class MovingSkill extends Skill {
 					falseTarget = new GamaPoint(end);
 					endIndexSegment = indexOf(points, end) + 1;
 				} else {
-					falseTarget = Punctal._closest_point_to(end, lineEnd);
+					falseTarget = SpatialPunctal._closest_point_to(end, lineEnd);
 					endIndexSegment = 1;
 					if (points.length >= 3) {
 						double distanceT = Double.MAX_VALUE;
@@ -1107,7 +1108,7 @@ public class MovingSkill extends Skill {
 						currentLocation = new GamaPoint(currentLocation);
 						indexSegment = indexOf(points, currentLocation) + 1;
 					} else {
-						currentLocation = Punctal._closest_point_to(currentLocation, line);
+						currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
 						if (points.length >= 3) {
 							Double distanceS = Double.MAX_VALUE;
 							for (int i = 0; i < points.length - 1; i++) {
@@ -1176,7 +1177,7 @@ public class MovingSkill extends Skill {
 				final GamaPoint pt = new GamaPoint(coords[j]);
 				final double dis = pt.distance3D(currentLocation);
 				final double dist = weight * dis;
-				computedHeading = Spatial.Relations.towards(scope, currentLocation, pt);
+				computedHeading = SpatialRelations.towards(scope, currentLocation, pt);
 
 				if (distance < dist) {
 					final double ratio = distance / dist;
@@ -1306,7 +1307,7 @@ public class MovingSkill extends Skill {
 				}
 				final double dis = pt.distance3D(currentLocation);
 				final double dist = weight * dis;
-				computedHeading = Spatial.Relations.towards(scope, currentLocation, pt);
+				computedHeading = SpatialRelations.towards(scope, currentLocation, pt);
 
 				if (distance < dist) {
 					final double ratio = distance / dist;
@@ -1432,7 +1433,7 @@ public class MovingSkill extends Skill {
 				}
 				final double dis = pt.distance3D(currentLocation);
 				final double dist = weight * dis;
-				computedHeading = Spatial.Relations.towards(scope, currentLocation, pt);
+				computedHeading = SpatialRelations.towards(scope, currentLocation, pt);
 
 				if (distance < dist) {
 					final GamaPoint pto = currentLocation.copy(scope);
@@ -1533,7 +1534,7 @@ public class MovingSkill extends Skill {
 		final IList pts = GamaListFactory.create(Types.POINT);
 		pts.add(scope.getAgent().getLocation(scope));
 		pts.add(loc);
-		final IShape line = Spatial.Creation.line(scope, pts);
+		final IShape line = SpatialCreation.line(scope, pts);
 		// line = Spatial.Operators.inter(scope, line, geom);
 
 		if (line == null) return getCurrentAgent(scope).getLocation(scope);
@@ -1541,7 +1542,7 @@ public class MovingSkill extends Skill {
 
 		// final GamaPoint computedPt = line.getPoints().lastValue(scope);
 
-		final GamaPoint computedPt = Spatial.Punctal.closest_points_with(line, geom.getExteriorRing(scope)).get(0);
+		final GamaPoint computedPt = SpatialPunctal.closest_points_with(line, geom.getExteriorRing(scope)).get(0);
 		if (computedPt != null && computedPt.intersects(geom)) return computedPt;
 		return getCurrentAgent(scope).getLocation(scope);
 	}

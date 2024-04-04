@@ -26,10 +26,11 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.dev.DEBUG;
 import gama.extension.pedestrian.skills.PedestrianRoadSkill;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Creation;
-import gama.gaml.operators.Spatial.Operators;
-import gama.gaml.operators.Spatial.Transformations;
+import gama.gaml.operators.spatial.SpatialCreation;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialPunctal;
+import gama.gaml.operators.spatial.SpatialQueries;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.Types;
 
 /**
@@ -73,14 +74,14 @@ public class PedestrianNetwork {
 		if (bounds == null || bounds.isEmpty(scope)) {
 			walking_area = false;
 		} else {
-			walking_shape = Spatial.Operators.union(scope, (IContainer<?, IShape>) bounds).copy(scope);
+			walking_shape = SpatialOperators.union(scope, (IContainer<?, IShape>) bounds).copy(scope);
 		}
 		IShape area = walking_shape.copy(scope);
 		double t1 = System.currentTimeMillis();
 		DEBUG.OUT("Processing walking area: " + (t1 - t));
 
 		IList<IShape> decomp =
-				sizeSquare > 0.0 ? Spatial.Transformations.toSquares(scope, area, sizeSquare, true) : null;
+				sizeSquare > 0.0 ? SpatialTransformations.toSquares(scope, area, sizeSquare, true) : null;
 
 		double t1a = System.currentTimeMillis();
 		DEBUG.OUT("|==> Processing squarification : " + (t1a - t1) / 1000);
@@ -88,11 +89,11 @@ public class PedestrianNetwork {
 		for (IContainer<?, ? extends IShape> shp : obst) {
 			for (IShape obs : shp.iterable(scope)) {
 				if (decomp == null) {
-					area = Operators.minus(scope, area, obs);
+					area = SpatialOperators.minus(scope, area, obs);
 				} else {
-					IList<? extends IShape> geoms = Spatial.Queries.overlapping(scope, decomp, obs);
+					IList<? extends IShape> geoms = SpatialQueries.overlapping(scope, decomp, obs);
 					for (IShape a : geoms) {
-						IShape b = Operators.minus(scope, a, obs);
+						IShape b = SpatialOperators.minus(scope, a, obs);
 						if (b != null) {
 							decomp.remove(a);
 							decomp.add(b);
@@ -102,7 +103,7 @@ public class PedestrianNetwork {
 				}
 			}
 		}
-		if (decomp != null) { area = Spatial.Operators.union(scope, decomp); }
+		if (decomp != null) { area = SpatialOperators.union(scope, decomp); }
 
 		double t1b = System.currentTimeMillis();
 		DEBUG.OUT("|==> Remove obstacle from area : " + (t1b - t1a) / 1000);
@@ -122,7 +123,7 @@ public class PedestrianNetwork {
 		double valTolClip = toleranceClip;
 		double valTolTri = toleranceTriang;
 
-		IList<IShape> lines = Transformations.skeletonize(scope, area, valTolClip, valTolTri, false);
+		IList<IShape> lines = SpatialTransformations.skeletonize(scope, area, valTolClip, valTolTri, false);
 
 		double t4 = System.currentTimeMillis();
 		DEBUG.OUT("Skeletonization : " + (t4 - t3));
@@ -144,8 +145,8 @@ public class PedestrianNetwork {
 		double t6 = System.currentTimeMillis();
 		DEBUG.OUT("Processing bi network : " + (t6 - t5));
 
-		IShape unionL = Operators.union(scope, lines);
-		lines = Transformations.clean(scope, (IList<IShape>) unionL.getGeometries(), 0.0, true, cleanNetwork);
+		IShape unionL = SpatialOperators.union(scope, lines);
+		lines = SpatialTransformations.clean(scope, (IList<IShape>) unionL.getGeometries(), 0.0, true, cleanNetwork);
 
 		double t7 = System.currentTimeMillis();
 		DEBUG.OUT("Clean final network : " + (t7 - t6));
@@ -153,7 +154,7 @@ public class PedestrianNetwork {
 		IList<IShape> segments = GamaListFactory.create();
 
 		for (IShape g : lines) {
-			if (simplicationDistance > 0) { g = Transformations.simplification(scope, g, simplicationDistance); }
+			if (simplicationDistance > 0) { g = SpatialTransformations.simplification(scope, g, simplicationDistance); }
 			if (g.getPoints().size() == 2) {
 				segments.add(g);
 			} else if (g.getPoints().size() > 2) {
@@ -161,7 +162,7 @@ public class PedestrianNetwork {
 					IList<IShape> coords = GamaListFactory.create();
 					coords.add(g.getPoints().get(i));
 					coords.add(g.getPoints().get(i + 1));
-					IShape line = Creation.line(scope, coords);
+					IShape line = SpatialCreation.line(scope, coords);
 					segments.add(line);
 				}
 			}
@@ -210,7 +211,7 @@ public class PedestrianNetwork {
 	public static IShape managementOpenArea(final IScope scope, IShape area, final boolean randomDist,
 			final double valDistForOpenArea, final double valDensityOpenArea) {
 
-		IShape areaTmp = Spatial.Transformations.reduced_by(scope, area, valDistForOpenArea);
+		IShape areaTmp = SpatialTransformations.reduced_by(scope, area, valDistForOpenArea);
 		if (areaTmp != null) {
 			List<GamaPoint> pts = GamaListFactory.create(Types.GEOMETRY);
 			for (IShape g : areaTmp.getGeometries()) {
@@ -218,15 +219,15 @@ public class PedestrianNetwork {
 				long nbPoints = Math.round(g.getArea() * valDensityOpenArea);
 				if (nbPoints == 0) { continue; }
 				if (randomDist) {
-					for (int i = 0; i < nbPoints; i++) { pts.add(Spatial.Punctal.any_location_in(scope, g)); }
+					for (int i = 0; i < nbPoints; i++) { pts.add(SpatialPunctal.any_location_in(scope, g)); }
 				} else {
 					double dimension = Math.sqrt(g.getArea() / nbPoints);
-					List<IShape> squares = Spatial.Transformations.toSquares(scope, g, dimension);
+					List<IShape> squares = SpatialTransformations.toSquares(scope, g, dimension);
 					for (IShape sq : squares) { pts.add(sq.getCentroid()); }
 				}
 			}
 			for (GamaPoint pt : pts) {
-				area = Operators.minus(scope, area, Spatial.Transformations.enlarged_by(scope, pt, 0.01, 5));
+				area = SpatialOperators.minus(scope, area, SpatialTransformations.enlarged_by(scope, pt, 0.01, 5));
 			}
 		}
 		return area;
@@ -262,10 +263,10 @@ public class PedestrianNetwork {
 
 		DEBUG.OUT("Clean regular and pedestrian network");
 
-		IList<IShape> rNetwork = Transformations.clean(scope,
-				(IList<IShape>) Operators.union(scope, regularNetwork).getGeometries(), 0.0, true, false);
-		IList<IShape> pNetwork = Transformations.clean(scope,
-				(IList<IShape>) Operators.union(scope, pedestrianNetwork).getGeometries(), 0.0, true, true);
+		IList<IShape> rNetwork = SpatialTransformations.clean(scope,
+				(IList<IShape>) SpatialOperators.union(scope, regularNetwork).getGeometries(), 0.0, true, false);
+		IList<IShape> pNetwork = SpatialTransformations.clean(scope,
+				(IList<IShape>) SpatialOperators.union(scope, pedestrianNetwork).getGeometries(), 0.0, true, true);
 
 		DEBUG.OUT("Remove edges within pedestrian area from regular network");
 
@@ -279,7 +280,7 @@ public class PedestrianNetwork {
 					currentLines.add(e);
 					// For road sections that cross walking area, cut it with open area and find connecting point
 				} else {
-					IShape s = Operators.minus(scope, e, pedestrianArea);
+					IShape s = SpatialOperators.minus(scope, e, pedestrianArea);
 					s.setAttribute(PedestrianRoadSkill.PEDESTRIAN_ROAD_STATUS, PedestrianRoadSkill.SIMPLE_STATUS);
 					currentLines.add(s);
 
@@ -303,7 +304,7 @@ public class PedestrianNetwork {
 			for (IShape obs : shp.iterable(scope)) { obstacles.add(obs); }
 		}
 
-		IShape o = Operators.union(scope, obstacles);
+		IShape o = SpatialOperators.union(scope, obstacles);
 
 		DEBUG.OUT("Iterate over potential connecting points (corridor that cross the pedestrian area boundaries)");
 
@@ -318,7 +319,7 @@ public class PedestrianNetwork {
 
 			if (newLinks.isEmpty()) {
 				IShape cn = Collections.min(candidateNodes.entrySet(), Comparator.comparing(Entry::getValue)).getKey();
-				newLinks.add(Creation.link(scope, cn, pt));
+				newLinks.add(SpatialCreation.link(scope, cn, pt));
 			}
 
 			for (IShape connection : newLinks.stream().filter(link -> !link.crosses(o)).toList()) {

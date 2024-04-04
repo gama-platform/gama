@@ -33,10 +33,10 @@ import org.opengis.referencing.FactoryException;
 
 import com.google.common.io.Files;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.metamodel.shape.GamaPoint;
@@ -54,7 +54,7 @@ import gama.core.util.file.IGamaFile;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IField;
 import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Spatial.Projections;
+import gama.gaml.operators.spatial.SpatialProjections;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaMatrixType;
 import gama.gaml.types.IContainerType;
@@ -529,8 +529,8 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 
 			}
 
-			minCorner = Projections.to_GAMA_CRS(scope, minCorner, crs).getLocation();
-			maxCorner = Projections.to_GAMA_CRS(scope, maxCorner, crs).getLocation();
+			minCorner = SpatialProjections.to_GAMA_CRS(scope, minCorner, crs).getLocation();
+			maxCorner = SpatialProjections.to_GAMA_CRS(scope, maxCorner, crs).getLocation();
 		}
 
 		return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);

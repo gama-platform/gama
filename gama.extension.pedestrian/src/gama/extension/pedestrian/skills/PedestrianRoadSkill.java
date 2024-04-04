@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -25,6 +24,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -36,10 +36,12 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Operators;
-import gama.gaml.operators.Spatial.Punctal;
-import gama.gaml.operators.Spatial.Transformations;
+import gama.extension.pedestrian.operator.Operators;
+import gama.gaml.operators.spatial.SpatialCreation;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialPunctal;
+import gama.gaml.operators.spatial.SpatialQueries;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.skills.Skill;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaIntegerType;
@@ -343,7 +345,7 @@ public class PedestrianRoadSkill extends Skill {
 		setPedestrianRoadStatus(agent, status);
 		double distAdd = scope.hasArg("distance_extremity") ? scope.getFloatArg("distance_extremity") : 0.0;
 		IShape freeSpace = agent.getGeometry().copy(scope);
-		freeSpace = Transformations.scaled_by(scope, freeSpace,
+		freeSpace = SpatialTransformations.scaled_by(scope, freeSpace,
 				(freeSpace.getPerimeter() + distAdd) / freeSpace.getPerimeter());
 
 		if (status == COMPLEX_STATUS) {
@@ -351,17 +353,17 @@ public class PedestrianRoadSkill extends Skill {
 			setDistance(agent, dist);
 
 			if (dist > 0) {
-				freeSpace = Spatial.Transformations.enlarged_by(scope, freeSpace, dist,
+				freeSpace = SpatialTransformations.enlarged_by(scope, freeSpace, dist,
 						BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
 			}
 
 			if (scope.hasArg("obstacles")) {
 				IContainer obstaclesLC = (IContainer) scope.getArg("obstacles", IType.CONTAINER);
 				if (obstaclesLC instanceof ISpecies) {
-					IContainer<?, IShape> obstacles = Spatial.Queries.overlapping(scope, obstaclesLC, freeSpace);
-					IShape obstGeom = Spatial.Operators.union(scope, obstacles);
-					obstGeom = Spatial.Transformations.enlarged_by(scope, obstGeom, dist / 1000.0);
-					freeSpace = Spatial.Operators.minus(scope, freeSpace, obstGeom);
+					IContainer<?, IShape> obstacles = SpatialQueries.overlapping(scope, obstaclesLC, freeSpace);
+					IShape obstGeom = SpatialOperators.union(scope, obstacles);
+					obstGeom = SpatialTransformations.enlarged_by(scope, obstGeom, dist / 1000.0);
+					freeSpace = SpatialOperators.minus(scope, freeSpace, obstGeom);
 				} else {
 					IList obstaclesL = obstaclesLC.listValue(scope, Types.NO_TYPE, false);
 					if (!obstaclesL.isEmpty()) {
@@ -369,10 +371,10 @@ public class PedestrianRoadSkill extends Skill {
 						if (speciesList != null) {
 							for (ISpecies species : speciesList) {
 								IContainer<?, IShape> obstacles =
-										(IContainer<?, IShape>) Spatial.Queries.overlapping(scope, species, freeSpace);
-								IShape obstGeom = Spatial.Operators.union(scope, obstacles);
-								obstGeom = Spatial.Transformations.enlarged_by(scope, obstGeom, dist / 1000.0);
-								freeSpace = Spatial.Operators.minus(scope, freeSpace, obstGeom);
+										(IContainer<?, IShape>) SpatialQueries.overlapping(scope, species, freeSpace);
+								IShape obstGeom = SpatialOperators.union(scope, obstacles);
+								obstGeom = SpatialTransformations.enlarged_by(scope, obstGeom, dist / 1000.0);
+								freeSpace = SpatialOperators.minus(scope, freeSpace, obstGeom);
 							}
 						} else {
 							IList<IShape> obstaclesS = GamaListFactory.create();
@@ -380,10 +382,10 @@ public class PedestrianRoadSkill extends Skill {
 								if (obj instanceof IShape) { obstaclesS.add((IShape) obj); }
 							}
 							IContainer<?, IShape> obstacles =
-									(IContainer<?, IShape>) Spatial.Queries.overlapping(scope, obstaclesS, freeSpace);
-							IShape obstGeom = Spatial.Operators.union(scope, obstacles);
-							obstGeom = Spatial.Transformations.enlarged_by(scope, obstGeom, dist / 1000.0);
-							freeSpace = Spatial.Operators.minus(scope, freeSpace, obstGeom);
+									(IContainer<?, IShape>) SpatialQueries.overlapping(scope, obstaclesS, freeSpace);
+							IShape obstGeom = SpatialOperators.union(scope, obstacles);
+							obstGeom = SpatialTransformations.enlarged_by(scope, obstGeom, dist / 1000.0);
+							freeSpace = SpatialOperators.minus(scope, freeSpace, obstGeom);
 
 						}
 					}
@@ -392,8 +394,8 @@ public class PedestrianRoadSkill extends Skill {
 
 			IContainer bounds = scope.hasArg("bounds") ? (IContainer) scope.getArg("bounds", IType.CONTAINER) : null;
 			if (bounds != null) {
-				IShape bds = Spatial.Operators.union(scope, bounds);
-				IShape g = Spatial.Operators.inter(scope, freeSpace, bds);
+				IShape bds = SpatialOperators.union(scope, bounds);
+				IShape g = SpatialOperators.inter(scope, freeSpace, bds);
 				if (g != null) { freeSpace = g; }
 			}
 			if (freeSpace == null) return false;
@@ -410,7 +412,7 @@ public class PedestrianRoadSkill extends Skill {
 				IContainer maskedbyLC = (IContainer) scope.getArg("masked_by", IType.CONTAINER);
 				Integer prec = scope.hasArg("masked_by_precision") ? scope.getIntArg("masked_by_precision") : null;
 				if (maskedbyLC instanceof ISpecies) {
-					freeSpace = Operators.masked_by(scope, freeSpace, maskedbyLC, prec);
+					freeSpace = SpatialOperators.masked_by(scope, freeSpace, maskedbyLC, prec);
 				} else {
 					IList maskedbyL = maskedbyLC.listValue(scope, Types.NO_TYPE, false);
 					if (!maskedbyL.isEmpty()) {
@@ -423,7 +425,7 @@ public class PedestrianRoadSkill extends Skill {
 						} else {
 							for (Object obj : maskedbyL) { if (obj instanceof IShape) { obstacles.add((IShape) obj); } }
 						}
-						freeSpace = Operators.masked_by(scope, freeSpace, obstacles, prec);
+						freeSpace = SpatialOperators.masked_by(scope, freeSpace, obstacles, prec);
 					}
 				}
 			}
@@ -462,20 +464,20 @@ public class PedestrianRoadSkill extends Skill {
 		IList<IAgent> connectedRoads = getLinkedPedestrianRoads(agent);
 		for (Object obj : graph.outgoingEdgesOf(source)) {
 			IAgent ag = (IAgent) obj;
-			connectedComp.put(ag, Spatial.Operators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
+			connectedComp.put(ag, SpatialOperators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
 		}
 		for (Object obj : graph.incomingEdgesOf(source)) {
 			IAgent ag = (IAgent) obj;
-			connectedComp.put(ag, Spatial.Operators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
+			connectedComp.put(ag, SpatialOperators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
 		}
 
 		for (Object obj : graph.outgoingEdgesOf(target)) {
 			IAgent ag = (IAgent) obj;
-			connectedComp.put(ag, Spatial.Operators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
+			connectedComp.put(ag, SpatialOperators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
 		}
 		for (Object obj : graph.incomingEdgesOf(target)) {
 			IAgent ag = (IAgent) obj;
-			connectedComp.put(ag, Spatial.Operators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
+			connectedComp.put(ag, SpatialOperators.inter(scope, g, PedestrianRoadSkill.getFreeSpace(ag)));
 		}
 
 		connectedComp.remove(agent);
@@ -519,7 +521,7 @@ public class PedestrianRoadSkill extends Skill {
 
 		final Double dist = scope.getFloatArg("distance_between_targets");
 		@SuppressWarnings ("unchecked") IMap<GamaPoint, IList<GamaPoint>> exitHub = GamaMapFactory.create();
-		IShape bounds = Spatial.Transformations.reduced_by(scope, getFreeSpace(agent), dist);
+		IShape bounds = SpatialTransformations.reduced_by(scope, getFreeSpace(agent), dist);
 		if (getRoadStatus(scope, agent) == SIMPLE_STATUS) {
 			// AD Note: getPoints() can be a very costly operation. It'd be better to call it once.
 			for (GamaPoint p : agent.getPoints()) {
@@ -590,7 +592,7 @@ public class PedestrianRoadSkill extends Skill {
 	public static void register(final IScope scope, final IAgent road, final IAgent pedestrian) {
 		((IList<IAgent>) road.getAttribute(AGENTS_ON)).add(pedestrian);
 		if (!pedestrian.getLocation().intersects(getFreeSpace(road))) {
-			pedestrian.setLocation(Punctal._closest_point_to(pedestrian.getLocation(), getFreeSpace(road)));
+			pedestrian.setLocation(SpatialPunctal._closest_point_to(pedestrian.getLocation(), getFreeSpace(road)));
 		}
 		pedestrian.setAttribute("current_edge", road);
 	}
@@ -653,10 +655,10 @@ public class PedestrianRoadSkill extends Skill {
 		points.add(lp.minus(n));
 		points.add(lp.add(n));
 
-		IShape hole = Spatial.Creation.line(scope, points);
+		IShape hole = SpatialCreation.line(scope, points);
 		if (hole == null || hole.getPerimeter() <= dist) return exitConnections;
 
-		IList<GamaPoint> pts = Spatial.Punctal.points_on(hole, dist);
+		IList<GamaPoint> pts = SpatialPunctal.points_on(hole, dist);
 		pts.removeIf(p -> p == null || !bounds.intersects(p));
 		exitConnections.addAll(pts);
 

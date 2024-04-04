@@ -13,8 +13,6 @@ package gama.extension.bdi;
 
 import java.util.Iterator;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,6 +20,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaShape;
@@ -37,6 +37,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.statements.AbstractStatementSequence;
 import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.IType;
@@ -214,7 +215,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 						IList temp = GamaListFactory.create();
 						final double dist = Cast.asFloat(scope, inArg);
 						if (obj instanceof IContainer) {
-							temp = gama.gaml.operators.Spatial.Queries.at_distance(scope, (IContainer) obj,
+							temp = SpatialQueries.at_distance(scope, (IContainer) obj,
 									Cast.asFloat(scope, inArg));
 						} else if (obj instanceof IAgent && ag.euclidianDistanceTo((IAgent) obj) <= dist) {
 							temp.add(obj);
@@ -227,7 +228,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 						IList temp = GamaListFactory.create();
 						final IShape geom = Cast.asGeometry(scope, inArg);
 						if (obj instanceof IContainer) {
-							temp = gama.gaml.operators.Spatial.Queries.overlapping(scope, (IContainer) obj,
+							temp = SpatialQueries.overlapping(scope, (IContainer) obj,
 									Cast.asGeometry(scope, inArg));
 						} else if (obj instanceof IAgent && geom.intersects((IShape) obj)) { temp.add(obj); }
 						GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);

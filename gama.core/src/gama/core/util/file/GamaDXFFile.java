@@ -42,8 +42,8 @@ import gama.dependencies.kabeja.dxf.DXFVertex;
 import gama.dependencies.kabeja.parser.DXFParser;
 import gama.dependencies.kabeja.parser.Parser;
 import gama.dependencies.kabeja.parser.ParserBuilder;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Creation;
+import gama.gaml.operators.spatial.SpatialCreation;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -146,7 +146,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 		if (pts.isEmpty()) return null;
 		final IShape shape = GamaGeometryType.buildPolyline(pts);
 		if (shape != null) {
-			if (size != null) return Spatial.Transformations.scaled_to(scope, shape, size);
+			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
 		}
 		return null;
@@ -165,7 +165,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 		if (pts.isEmpty()) return null;
 		final IShape shape = GamaGeometryType.buildPolygon(pts);
 		if (shape != null) {
-			if (size != null) return Spatial.Transformations.scaled_to(scope, shape, size);
+			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
 		}
 		return null;
@@ -185,7 +185,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	public IShape createCircle(final IScope scope, final GamaPoint location, final double radius) {
 		IShape shape = GamaGeometryType.buildCircle(radius, location).getExteriorRing(scope);
 		if (shape != null) {
-			if (size != null) return Spatial.Transformations.scaled_to(scope, shape, size);
+			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
 		}
 		return null;
@@ -319,7 +319,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 			double s = start.getBulge() * l / 2;
 
-			IShape c = Creation.EllipticalArc(scope, startPt, endPt, s, 20);
+			IShape c = SpatialCreation.EllipticalArc(scope, startPt, endPt, s, 20);
 			list.addAll(c.getPoints());
 		}
 
