@@ -131,7 +131,7 @@ public interface Constants {
 
 	/** The explicit imports. */
 	String[] EXPLICIT_IMPORTS = { "gama.gaml.operators.Random", "gama.gaml.operators.Maths",
-			"gama.gaml.operators.Points", "gama.gaml.operators.Spatial.Properties", "gama.gaml.operators.System" };
+			"gama.gaml.operators.Points", "gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
 
 	/** The ss 1. */
 	List<String> ss1 = Arrays.asList("const", "true", "false", "name", "type");
