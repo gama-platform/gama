@@ -82,14 +82,8 @@ public class Emotion implements IValue {
 	/** The owner. */
 	IAgent owner;
 
-	/** The no agent cause. */
-	private boolean noAgentCause = true;
-
 	/** The no intensity. */
-	private boolean noIntensity = true;
-
-	/** The no about. */
-	private boolean noAbout = true;
+	private boolean hasIntensity = false;
 
 	/**
 	 * Gets the name.
@@ -144,7 +138,7 @@ public class Emotion implements IValue {
 	 *
 	 * @return the no intensity
 	 */
-	public boolean getNoIntensity() { return this.noIntensity; }
+	public boolean hasIntensity() { return this.hasIntensity; }
 
 	/**
 	 * Sets the name.
@@ -162,7 +156,7 @@ public class Emotion implements IValue {
 	 */
 	public void setIntensity(final double intens) {
 		this.intensity = intens;
-		this.noIntensity = false;
+		this.hasIntensity = true;
 	}
 
 	/**
@@ -173,7 +167,6 @@ public class Emotion implements IValue {
 	 */
 	public void setAbout(final Predicate ab) {
 		this.about = ab;
-		this.noAbout = false;
 	}
 
 	/**
@@ -192,7 +185,6 @@ public class Emotion implements IValue {
 	 */
 	public void setAgentCause(final IAgent ag) {
 		this.agentCause = ag;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -240,7 +232,7 @@ public class Emotion implements IValue {
 		this.about = null;
 		this.agentCause = null;
 		this.owner = null;
-		this.noIntensity = false;
+		this.hasIntensity = true;
 	}
 
 	/**
@@ -256,7 +248,6 @@ public class Emotion implements IValue {
 		this.about = ab;
 		this.agentCause = null;
 		this.owner = null;
-		this.noAbout = false;
 	}
 
 	/**
@@ -272,7 +263,6 @@ public class Emotion implements IValue {
 		this.about = null;
 		this.agentCause = ag;
 		this.owner = null;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -287,13 +277,12 @@ public class Emotion implements IValue {
 	 */
 	public Emotion(final String name, final double intens, final double de) {
 		this.name = name;
-		this.intensity = intens;
 		this.about = null;
 		this.agentCause = null;
 		this.owner = null;
 		this.decay = de;
-		this.noIntensity = false;
-		this.noAbout = false;
+		this.intensity = intens;
+		this.hasIntensity = true;
 	}
 
 	/**
@@ -308,12 +297,11 @@ public class Emotion implements IValue {
 	 */
 	public Emotion(final String name, final double intens, final Predicate ab) {
 		this.name = name;
-		this.intensity = intens;
 		this.about = ab;
 		this.agentCause = null;
 		this.owner = null;
-		this.noIntensity = false;
-		this.noAbout = false;
+		this.intensity = intens;
+		this.hasIntensity = true;
 	}
 
 	/**
@@ -331,8 +319,6 @@ public class Emotion implements IValue {
 		this.about = ab;
 		this.agentCause = ag;
 		this.owner = null;
-		this.noAbout = false;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -347,12 +333,11 @@ public class Emotion implements IValue {
 	 */
 	public Emotion(final String name, final double intens, final IAgent ag) {
 		this.name = name;
-		this.intensity = intens;
 		this.about = null;
-		this.agentCause = ag;
 		this.owner = null;
-		this.noIntensity = false;
-		this.noAgentCause = ag == null;
+		this.intensity = intens;
+		this.hasIntensity = true;
+		this.agentCause = ag;
 	}
 
 	/**
@@ -370,12 +355,11 @@ public class Emotion implements IValue {
 	public Emotion(final String name, final double intens, final Predicate ab, final double de) {
 		this.name = name;
 		this.intensity = intens;
+		this.hasIntensity = true;
 		this.about = ab;
 		this.agentCause = null;
 		this.owner = null;
 		this.decay = de;
-		this.noIntensity = false;
-		this.noAbout = false;
 	}
 
 	/**
@@ -391,14 +375,13 @@ public class Emotion implements IValue {
 	 *            the ag
 	 */
 	public Emotion(final String name, final double intens, final double de, final IAgent ag) {
-		this.name = name;
-		this.intensity = intens;
 		this.about = null;
-		this.agentCause = ag;
 		this.owner = null;
+		this.name = name;
 		this.decay = de;
-		this.noIntensity = false;
-		this.noAgentCause = ag == null;
+		this.intensity = intens;
+		this.hasIntensity = true;
+		this.agentCause = ag;
 	}
 
 	/**
@@ -415,13 +398,11 @@ public class Emotion implements IValue {
 	 */
 	public Emotion(final String name, final double intens, final Predicate ab, final IAgent ag) {
 		this.name = name;
-		this.intensity = intens;
-		this.about = ab;
-		this.agentCause = ag;
 		this.owner = null;
-		this.noIntensity = false;
-		this.noAgentCause = ag == null;
-		this.noAbout = false;
+		this.intensity = intens;
+		this.hasIntensity = true;
+		this.agentCause = ag;
+		this.about = ab;
 	}
 
 	/**
@@ -440,14 +421,12 @@ public class Emotion implements IValue {
 	 */
 	public Emotion(final String name, final double intens, final Predicate ab, final double de, final IAgent ag) {
 		this.name = name;
-		this.intensity = intens;
-		this.about = ab;
-		this.agentCause = ag;
 		this.owner = null;
 		this.decay = de;
-		this.noIntensity = false;
-		this.noAbout = false;
-		this.noAgentCause = ag == null;
+		this.about = ab;
+		this.intensity = intens;
+		this.hasIntensity = true;
+		this.agentCause = ag;
 	}
 
 	/**
@@ -485,18 +464,9 @@ public class Emotion implements IValue {
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final Emotion other = (Emotion) obj;
 		if (!Objects.equals(name, other.name)) return false;
-		if (noAbout && noAgentCause || other.noAbout && other.noAgentCause) return true;
-		/*
-		 * if(about==null){ if(other.about!=null){return false;} }else
-		 */if (about != null && other.about != null && !about.equalsEmotions(other.about)) return false;
-		/*
-		 * if(agentCause==null){ if(other.agentCause!=null){return false;} }else
-		 */
-		/*
-		 * if (agentCause != null && other.agentCause != null && !agentCause.equals(other.agentCause)) { return false; }
-		 */
-		if (owner != null && other.owner != null && !owner.equals(other.owner)) return false;
-		return true;
+		if (about != null && (other.about == null || !about.equalsEmotions(other.about)) || about == null && other.about != null) return false;
+		if (! Objects.equals(owner, other.owner)) return false;
+		return true;//TODO: agentCause is not tested here, in the previous normal it did return true if both didn't have an agentCause but would continue otherwise
 	}
 
 	@Override

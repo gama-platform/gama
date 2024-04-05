@@ -147,35 +147,35 @@ public class SocialLink implements IValue {
 	 *
 	 * @return the no liking
 	 */
-	public boolean getHasLiking() { return hasLiking; }
+	public boolean hasLiking() { return hasLiking; }
 
 	/**
 	 * Gets the no dominance.
 	 *
 	 * @return the no dominance
 	 */
-	public boolean getHasDominance() { return hasDominance; }
+	public boolean hasDominance() { return hasDominance; }
 
 	/**
 	 * Gets the no solidarity.
 	 *
 	 * @return the no solidarity
 	 */
-	public boolean getHasSolidarity() { return hasSolidarity; }
+	public boolean hasSolidarity() { return hasSolidarity; }
 
 	/**
 	 * Gets the no familiarity.
 	 *
 	 * @return the no familiarity
 	 */
-	public boolean getHasFamiliarity() { return hasFamiliarity; }
+	public boolean hasFamiliarity() { return hasFamiliarity; }
 
 	/**
 	 * Gets the no trust.
 	 *
 	 * @return the no trust
 	 */
-	public boolean getHasTrust() { return hasTrust; }
+	public boolean hasTrust() { return hasTrust; }
 
 	/**
 	 * Sets the agent.
@@ -349,11 +349,11 @@ public class SocialLink implements IValue {
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final SocialLink other = (SocialLink) obj;
 		if (agent != null && (other.getAgent() == null || !agent.equals(other.getAgent()))) return false;
-		if (hasLiking && (!other.getHasLiking() || liking != other.getLiking())) return false;
-		if (hasDominance && (!other.getHasDominance() || dominance != other.getDominance())) return false;
-		if (hasSolidarity && (!other.getHasSolidarity() || solidarity != other.getSolidarity())) return false;
-		if (hasFamiliarity && (!other.getHasFamiliarity() || familiarity != other.getFamiliarity())) return false;
-		if (hasTrust && (!other.getHasTrust() || trust != other.getTrust())) return false;
+		if (hasLiking && (!other.hasLiking() || liking != other.getLiking())) return false;
+		if (hasDominance && (!other.hasDominance() || dominance != other.getDominance())) return false;
+		if (hasSolidarity && (!other.hasSolidarity() || solidarity != other.getSolidarity())) return false;
+		if (hasFamiliarity && (!other.hasFamiliarity() || familiarity != other.getFamiliarity())) return false;
+		if (hasTrust && (!other.hasTrust() || trust != other.getTrust())) return false;
 		return true;
 	}
 

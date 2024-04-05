@@ -213,7 +213,7 @@ public class EmotionalContagion extends AbstractStatement {
 					final Emotion tempEmo =
 							SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotionDetected.value(scope));
 					Emotion temp;
-					if (!tempEmo.getNoIntensity()) {
+					if (tempEmo.hasIntensity()) {
 						temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
 								tempEmo.getAbout(), tempEmo.getDecay());
 					} else {

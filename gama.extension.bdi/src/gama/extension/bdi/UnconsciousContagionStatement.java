@@ -166,7 +166,7 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 				if (charismaValue * receptivityValue >= thresholdValue) {
 					final Emotion tempEmo = SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotion.value(scope));
 					Emotion temp;
-					if (!tempEmo.getNoIntensity()) {
+					if (tempEmo.hasIntensity()) {
 						temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
 								tempEmo.getAbout(), tempEmo.getDecay());
 					} else {

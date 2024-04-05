@@ -69,11 +69,6 @@ import gama.gaml.types.Types;
 				init = "false",
 				doc = @doc ("indicates if the personnality is used")),
 		@variable (
-				name = SimpleBdiArchitecture.USE_NORMS,
-				type = IType.BOOL,
-				init = "false",
-				doc = @doc ("indicates if the normative engine is used")),
-		@variable (
 				name = SimpleBdiArchitecture.USE_PERSISTENCE,
 				type = IType.BOOL,
 				init = "false",
@@ -240,8 +235,6 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	/** The Constant USE_PERSISTENCE. */
 	public static final String USE_PERSISTENCE = "use_persistence";
 	
-	/** The Constant USE_NORMS. */
-	public static final String USE_NORMS = "use_norms";
 	
 	/** The Constant OBEDIENCE. */
 	public static final String OBEDIENCE = "obedience";
@@ -4188,7 +4181,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Emotion satisfaction = null;
 						Emotion joy = null;
 						final IAgent agentTest = emo.getAgentCause();
-						if (emo.getNoIntensity()) {
+						if (!emo.hasIntensity()) {
 							satisfaction = new Emotion("satisfaction", emo.getAbout());
 							if (agentTest != null) {
 								satisfaction.setAgentCause(agentTest);
@@ -4225,7 +4218,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Emotion disappointment = null;
 						Emotion sadness = null;
 						final IAgent agentTest = emo.getAgentCause();
-						if (emo.getNoIntensity()) {
+						if (!emo.hasIntensity()) {
 							disappointment = new Emotion("disappointment", emo.getAbout());
 							if (agentTest != null) {
 								disappointment.setAgentCause(agentTest);
@@ -4265,7 +4258,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Emotion fearConfirmed = null;
 						Emotion sadness = null;
 						final IAgent agentTest = emo.getAgentCause();
-						if (emo.getNoIntensity()) {
+						if (!emo.hasIntensity()) {
 							fearConfirmed = new Emotion("fear_confirmed", emo.getAbout());
 							if (agentTest != null) {
 								fearConfirmed.setAgentCause(agentTest);
@@ -4303,7 +4296,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Emotion relief = null;
 						Emotion joy = null;
 						final IAgent agentTest = emo.getAgentCause();
-						if (emo.getNoIntensity()) {
+						if (!emo.hasIntensity()) {
 							relief = new Emotion("relief", emo.getAbout());
 							if (agentTest != null) {
 								relief.setAgentCause(agentTest);
@@ -4683,7 +4676,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						if (use_personality) {
 							// update intensity and decay
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);
-							if (!emo.getNoIntensity() && !emoTemp.getNoIntensity()) {
+							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
 								intensity = emo.getIntensity() * emoTemp.getIntensity();
 							}
 							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
@@ -4706,7 +4699,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);
-							if (!emo.getNoIntensity() && !emoTemp.getNoIntensity()) {
+							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
 								intensity = emo.getIntensity() * emoTemp.getIntensity();
 							}
 							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
@@ -4742,7 +4735,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);
-							if (!emo.getNoIntensity() && !emoTemp.getNoIntensity()) {
+							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
 								intensity = emo.getIntensity() * emoTemp.getIntensity();
 							}
 							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
@@ -4765,7 +4758,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);
-							if (!emo.getNoIntensity() && !emoTemp.getNoIntensity()) {
+							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
 								intensity = emo.getIntensity() * emoTemp.getIntensity();
 							}
 							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
@@ -4828,18 +4821,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	public static boolean addEmotion(final IScope scope, final Emotion emo) {
 		Emotion newEmo = emo;
-		if (!emo.getNoIntensity() && hasEmotion(scope, emo)) {
+		if (emo.hasIntensity() && hasEmotion(scope, emo)) {
 			final Emotion oldEmo = getEmotion(scope, emo);
-			if (!oldEmo.getNoIntensity()) {
-				newEmo = new Emotion(emo.getName(), emo.getIntensity() + oldEmo.getIntensity(), emo.getAbout(),
+			if (oldEmo.hasIntensity()) {
+				newEmo = new Emotion(emo.getName(), Math.min(1.0, emo.getIntensity() + oldEmo.getIntensity()), emo.getAbout(),
 						/* Math.min(emo.getDecay(), oldEmo.getDecay()), */ emo.getAgentCause());
 				if (oldEmo.getIntensity() >= emo.getIntensity()) {
 					newEmo.setDecay(oldEmo.getDecay());
 				} else {
 					newEmo.setDecay(emo.getDecay());
-				}
-				if (newEmo.getIntensity() > 1.0) {
-					newEmo.setIntensity(1.0);
 				}
 			}
 		}
@@ -4966,7 +4956,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	}
 
 	/**
-	 * Gets the emotion.
+	 * Gets the emotion from the emotion base that is equal to the one passed as an argument
 	 *
 	 * @param scope the scope
 	 * @param emotionDirect the emotion direct

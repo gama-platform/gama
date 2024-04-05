@@ -99,14 +99,8 @@ public class Predicate implements IValue {
 	/** The agent cause. */
 	IAgent agentCause;
 
-	/** The every possible values. */
-	boolean everyPossibleValues = false;
-
 	/** The is true. */
 	boolean is_true = true;
-
-	/** The no agent cause. */
-	private boolean noAgentCause = true;
 
 	/**
 	 * Gets the name.
@@ -196,7 +190,6 @@ public class Predicate implements IValue {
 	 */
 	public void setValues(final IMap<String, Object> values) {
 		this.values = values;
-		everyPossibleValues = values == null;
 	}
 
 	/**
@@ -236,7 +229,6 @@ public class Predicate implements IValue {
 	@setter(SimpleBdiArchitecture.AGENT_CAUSE)
 	public void setAgentCause(final IAgent ag) {
 		this.agentCause = ag;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -244,7 +236,6 @@ public class Predicate implements IValue {
 	 */
 	public Predicate() {
 		this.name = "";
-		everyPossibleValues = true;
 		this.agentCause = null;
 	}
 
@@ -256,7 +247,6 @@ public class Predicate implements IValue {
 	 */
 	public Predicate(final String name) {
 		this.name = name;
-		everyPossibleValues = true;
 		this.agentCause = null;
 	}
 
@@ -270,7 +260,6 @@ public class Predicate implements IValue {
 	 */
 	public Predicate(final String name, final boolean ist) {
 		this.name = name;
-		everyPossibleValues = true;
 		is_true = ist;
 		this.agentCause = null;
 	}
@@ -286,7 +275,6 @@ public class Predicate implements IValue {
 	public Predicate(final String name, final IMap<String, Object> values) {
 		this.name = name;
 		this.values = values;
-		everyPossibleValues = values == null;
 		this.agentCause = null;
 	}
 
@@ -301,8 +289,6 @@ public class Predicate implements IValue {
 	public Predicate(final String name, final IAgent ag) {
 		this.name = name;
 		this.agentCause = ag;
-		this.noAgentCause = ag == null;
-		everyPossibleValues = true;
 	}
 
 	/**
@@ -319,7 +305,6 @@ public class Predicate implements IValue {
 		this.name = name;
 		this.values = values;
 		this.is_true = truth;
-		everyPossibleValues = values == null;
 		this.agentCause = null;
 	}
 
@@ -336,9 +321,7 @@ public class Predicate implements IValue {
 	public Predicate(final String name, final IMap<String, Object> values, final IAgent ag) {
 		this.name = name;
 		this.values = values;
-		everyPossibleValues = values == null;
 		this.agentCause = ag;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -357,9 +340,7 @@ public class Predicate implements IValue {
 		this.name = name;
 		this.values = values;
 		this.is_true = truth;
-		everyPossibleValues = values == null;
 		this.agentCause = ag;
-		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -408,18 +389,6 @@ public class Predicate implements IValue {
 		return new Predicate(name);
 	}
 
-	/**
-	 * Checks if is similar name.
-	 *
-	 * @param other
-	 *            the other
-	 * @return true, if is similar name
-	 */
-	public boolean isSimilarName(final Predicate other) {
-		if (this == other) return true;
-		if (other == null || !Objects.equals(name, other.name)) return false;
-		return true;
-	}
 
 	@Override
 	public int hashCode() {
@@ -432,7 +401,7 @@ public class Predicate implements IValue {
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final Predicate other = (Predicate) obj;
 		if (!Objects.equals(name, other.name) || is_true != other.is_true) return false;
-		if (everyPossibleValues && noAgentCause || other.everyPossibleValues && other.noAgentCause) return true;
+		if (values == null && agentCause == null || other.values == null && other.agentCause == null) return true; //TODO: this is a weird condition for equality
 		if (values != null && other.values != null && !values.isEmpty() && !other.values.isEmpty()) {
 			final Set<String> keys = values.keySet();
 			keys.retainAll(other.values.keySet());
@@ -457,24 +426,7 @@ public class Predicate implements IValue {
 	 */
 	public boolean equalsIntentionPlan(final Object obj) {
 		// Only test case where the parameter is not null
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		final Predicate other = (Predicate) obj;
-		if (!Objects.equals(name, other.name) || is_true != other.is_true) return false;
-		if (everyPossibleValues && noAgentCause || other.everyPossibleValues && other.noAgentCause) return true;
-		if (values != null && other.values != null && !values.isEmpty() && !other.values.isEmpty()) {
-			final Set<String> keys = values.keySet();
-			keys.retainAll(other.values.keySet());
-			for (final String k : keys) {
-				if (this.values.get(k) == null && other.values.get(k) != null
-						|| !values.get(k).equals(other.values.get(k)))
-					return false;
-			}
-			return true;
-		}
-		if (agentCause != null && other.agentCause != null && !agentCause.equals(other.agentCause)) return false;
-
-		return true;
+		return equals(obj);//TODO doing this for now because they are exactly the same, but should investigate if there's a need for a different equality operator
 	}
 
 	/**
@@ -489,20 +441,23 @@ public class Predicate implements IValue {
 		// other
 		// Doesn't check the lifetime value
 		// Used in emotions
-		if (obj == null || getClass() != obj.getClass()) return false;
-		final Predicate other = (Predicate) obj;
-		if (!Objects.equals(name, other.name) || is_true == other.is_true) return false;
-		if (everyPossibleValues && noAgentCause || other.everyPossibleValues && other.noAgentCause) return true;
-		if (values != null && other.values != null && !values.isEmpty() && !other.values.isEmpty()) {
-			final Set<String> keys = values.keySet();
-			keys.retainAll(other.values.keySet());
-			for (final String k : keys) {
-				if (this.values.get(k) == null && other.values.get(k) != null
-						|| !values.get(k).equals(other.values.get(k)))
-					return false;
+		if (obj == this) return false; // is_true must be different
+		if (obj instanceof Predicate other) {
+			if (!Objects.equals(name, other.name) || is_true == other.is_true) return false;
+			if (agentCause == null|| other.agentCause == null) return true; //TODO: this is a weird condition for equality
+			if (values != null && other.values != null) {
+				final Set<String> keys = values.keySet();
+				keys.retainAll(other.values.keySet());
+				for (final String k : keys) {
+					if (this.values.get(k) == null && other.values.get(k) != null
+							|| !values.get(k).equals(other.values.get(k)))
+						return false;
+				}
 			}
+			//TODO: why don't we compare agentCause ?
+			return true;			
 		}
-		return true;
+		return false;
 	}
 
 	/**
@@ -518,8 +473,7 @@ public class Predicate implements IValue {
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final Predicate other = (Predicate) obj;
 		if (!Objects.equals(name, other.name) || is_true != other.is_true) return false;
-		if (everyPossibleValues && noAgentCause || other.everyPossibleValues && other.noAgentCause) return true;
-		if (values != null && other.values != null && !values.isEmpty() && !other.values.isEmpty()) {
+		if (values != null && other.values != null) {
 			final Set<String> keys = values.keySet();
 			keys.retainAll(other.values.keySet());
 			for (final String k : keys) {
