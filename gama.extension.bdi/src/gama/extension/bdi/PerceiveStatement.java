@@ -210,7 +210,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 			if (_in != null) { inArg = _in.value(scope); }
 			if (emotion == null || SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
 				if (threshold == null || emotion != null && threshold != null && SimpleBdiArchitecture.getEmotion(scope,
-						(Emotion) emotion.value(scope)).intensity >= (Double) threshold.value(scope)) {
+						(Emotion) emotion.value(scope)).intensity >= (double) threshold.value(scope)) {
 					if (inArg instanceof Float || inArg instanceof Integer || inArg instanceof Double) {
 						IList temp = GamaListFactory.create();
 						final double dist = Cast.asFloat(scope, inArg);

@@ -16,8 +16,10 @@ import java.util.Set;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
+import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -42,7 +44,7 @@ import gama.gaml.types.Types;
 				type = IType.BOOL,
 				doc = @doc ("the truth value of the predicate")),
 		@variable (
-				name = "values",
+				name = IKeyword.VALUES,
 				type = IType.MAP,
 				doc = @doc ("the values attached to the predicate")),
 		@variable (
@@ -50,19 +52,19 @@ import gama.gaml.types.Types;
 				type = IType.FLOAT,
 				doc = @doc ("the date of the predicate")),
 		@variable (
-				name = "subintentions",
+				name = SimpleBdiArchitecture.SUBINTENTIONS,
 				type = IType.LIST,
 				doc = @doc ("the subintentions of the predicate")),
 		@variable (
-				name = "on_hold_until",
-				type = IType.NONE,
+				name = SimpleBdiArchitecture.ON_HOLD_UNTIL,
+				type = IType.LIST,
 				doc = @doc ("the list of intention that must be fullfiled before resuming to an intention related to this predicate")),
 		@variable (
-				name = "super_intention",
+				name = SimpleBdiArchitecture.SUPERINTENTION,
 				type = IType.NONE,
 				doc = @doc ("the super-intention of the predicate")),
 		@variable (
-				name = "agentCause",
+				name = SimpleBdiArchitecture.AGENT_CAUSE,
 				type = IType.AGENT,
 				doc = @doc ("the agent causing the predicate")) })
 public class Predicate implements IValue {
@@ -70,8 +72,10 @@ public class Predicate implements IValue {
 	@Override
 	public JsonValue serializeToJson(final Json json) {
 		return json.typedObject(getGamlType(), "name", name, "is_true", is_true, "values", values, "date", date)
-				.add("subintentions", subintentions).add("on_hold_until", onHoldUntil)
-				.add("super_intention", superIntention).add("cause", agentCause);
+				.add(SimpleBdiArchitecture.SUBINTENTIONS, subintentions)
+				.add(SimpleBdiArchitecture.ON_HOLD_UNTIL, onHoldUntil)
+				.add(SimpleBdiArchitecture.SUPERINTENTION, superIntention)
+				.add(SimpleBdiArchitecture.AGENT_CAUSE, agentCause);
 	}
 
 	/** The name. */
@@ -141,7 +145,7 @@ public class Predicate implements IValue {
 	 *
 	 * @return the subintentions
 	 */
-	@getter ("subintentions")
+	@getter (SimpleBdiArchitecture.SUBINTENTIONS)
 	public List<MentalState> getSubintentions() { return subintentions; }
 
 	/**
@@ -149,7 +153,7 @@ public class Predicate implements IValue {
 	 *
 	 * @return the super intention
 	 */
-	@getter ("superIntention")
+	@getter (SimpleBdiArchitecture.SUPERINTENTION)
 	public MentalState getSuperIntention() { return superIntention; }
 
 	/**
@@ -157,7 +161,7 @@ public class Predicate implements IValue {
 	 *
 	 * @return the agent cause
 	 */
-	@getter ("agentCause")
+	@getter (SimpleBdiArchitecture.AGENT_CAUSE)
 	public IAgent getAgentCause() { return agentCause; }
 
 	/**
@@ -167,9 +171,6 @@ public class Predicate implements IValue {
 	 */
 	public List<MentalState> getOnHoldUntil() { return onHoldUntil; }
 
-	// public int getLifetime() {
-	// return lifetime;
-	// }
 
 	/**
 	 * Sets the super intention.
@@ -232,9 +233,10 @@ public class Predicate implements IValue {
 	 * @param ag
 	 *            the new agent cause
 	 */
+	@setter(SimpleBdiArchitecture.AGENT_CAUSE)
 	public void setAgentCause(final IAgent ag) {
 		this.agentCause = ag;
-		this.noAgentCause = false;
+		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -373,19 +375,18 @@ public class Predicate implements IValue {
 
 	@Override
 	public String toString() {
-		return serializeToGaml(true);
+		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause)
+				+ "," + is_true + ")";
 	}
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause)
-				+ "," + is_true + ")";
+		return toString();
 	}
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause)
-				+ "," + is_true + ")";
+		return toString();
 	}
 
 	@Override

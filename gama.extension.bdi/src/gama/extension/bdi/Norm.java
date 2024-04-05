@@ -44,8 +44,8 @@ import gama.gaml.types.Types;
 				type = IType.STRING,
 				doc = @doc ("represents the condition when a norm is finished")),
 		@variable (
-				name = SimpleBdiArchitecture.INSTANTANEAOUS,
-				type = IType.STRING,
+				name = SimpleBdiArchitecture.INSTANTANEOUS,
+				type = IType.BOOL,
 				doc = @doc ("indicates if the norm is instantaneous")),
 		@variable (
 				name = NormStatement.LIFETIME,
@@ -151,11 +151,9 @@ public class Norm implements IValue {
 	 *
 	 * @return the instantaneous
 	 */
-	@getter (SimpleBdiArchitecture.INSTANTANEAOUS)
-	public String getInstantaneous() {
-		if (this.normStatement != null && this.normStatement._instantaneous != null)
-			return this.normStatement._instantaneous.serializeToGaml(true);
-		return null;
+	@getter (SimpleBdiArchitecture.INSTANTANEOUS)
+	public boolean getInstantaneous(final IScope scope) {
+		return normStatement._instantaneous == null ? false : gama.gaml.operators.Cast.asBool(scope, normStatement._instantaneous.value(scope)); 
 	}
 
 	/**
@@ -186,16 +184,6 @@ public class Norm implements IValue {
 	 */
 	public Boolean getSanctioned() { return this.isSanctioned; }
 
-	/**
-	 * Instantiates a new norm.
-	 */
-	public Norm() {
-		this.isViolated = false;
-		this.isApplied = false;
-		this.lifetimeViolation = -1;
-		this.noLifetime = true;
-		this.isSanctioned = false;
-	}
 
 	/**
 	 * Instantiates a new norm.

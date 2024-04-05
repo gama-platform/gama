@@ -167,21 +167,6 @@ public class Operators {
 		return new Predicate(name, values, truth);
 	}
 
-	// @operator (
-	// value = "new_predicate",
-	// can_be_const = true,
-	// category = { "BDI" },
-	// concept = { IConcept.BDI })
-	// @doc (
-	// value = "a new predicate with the given properties (name, values, lifetime)",
-	// examples = @example (
-	// value = "predicate(\"people to meet\", [\"time\"::10], true)",
-	// isExecutable = false))
-	// @no_test
-	// public static Predicate newPredicate(final String name, final IMap values, final int lifetime)
-	// throws GamaRuntimeException {
-	// return new Predicate(name, values, lifetime);
-	// }
 
 	/**
 	 * New predicate.
@@ -202,7 +187,7 @@ public class Operators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "a new predicate with the given properties (name, values, agentCause)",
+			value = "a new predicate with the given properties (name, values, agent_cause)",
 			examples = @example (
 					value = "new_predicate(\"people to meet\", [\"time\"::10], agentA)",
 					isExecutable = false))
@@ -233,7 +218,7 @@ public class Operators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "a new predicate with the given properties (name, values, is_true, agentCause)",
+			value = "a new predicate with the given properties (name, values, is_true, agent_cause)",
 			examples = @example (
 					value = "new_predicate(\"people to meet\", [\"time\"::10], true, agentA)",
 					isExecutable = false))
@@ -241,33 +226,6 @@ public class Operators {
 	public static Predicate newPredicate(final String name, final IMap values, final Boolean truth, final IAgent agent)
 			throws GamaRuntimeException {
 		return new Predicate(name, values, truth, agent);
-	}
-
-	/**
-	 * With agent cause.
-	 *
-	 * @param predicate
-	 *            the predicate
-	 * @param agent
-	 *            the agent
-	 * @return the predicate
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@operator (
-			value = "set_agent_cause",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "change the agentCause value of the given predicate",
-			examples = @example (
-					value = "predicate set_agent_cause agentA",
-					isExecutable = false))
-	@no_test
-	public static Predicate withAgentCause(final Predicate predicate, final IAgent agent) throws GamaRuntimeException {
-		predicate.setAgentCause(agent);
-		return predicate;
 	}
 
 	/**
@@ -282,14 +240,14 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_truth",
+			value = "with_truth",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the is_true value of the given predicate",
 			examples = @example (
-					value = "predicate set_truth false",
+					value = "predicate with_truth false",
 					isExecutable = false))
 	@no_test
 	public static Predicate withTruth(final Predicate predicate, final Boolean truth) throws GamaRuntimeException {
@@ -349,11 +307,6 @@ public class Operators {
 	public static Predicate addValues(final Predicate predicate, final IMap values) throws GamaRuntimeException {
 		if (values != null && predicate != null) { predicate.getValues().putAll(values); }
 		return predicate;
-		/*
-		 * final Predicate temp = predicate.copy(); final Map<String, Object> tempValues = predicate.getValues(); final
-		 * Set<String> keys = values.keySet(); for (final String k : keys) { tempValues.put(k, values.get(k)); }
-		 * temp.setValues(tempValues); return temp;
-		 */
 	}
 
 	/**
@@ -472,97 +425,6 @@ public class Operators {
 				|| gama.gaml.operators.Cast.asBool(scope, plan.getPlanStatement().getContextExpression().value(scope));
 	}
 
-	/**
-	 * Gets the super intention.
-	 *
-	 * @param pred1
-	 *            the pred 1
-	 * @return the super intention
-	 */
-	@operator (
-			value = "get_super_intention",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the super intention linked to a mental state",
-			examples = @example (
-					value = "get_super_intention(get_belief(pred1))",
-					isExecutable = false))
-	@no_test
-	public static MentalState getSuperIntention(final Predicate pred1) {
-		if (pred1.getSuperIntention() != null) return pred1.getSuperIntention();
-		return null;
-	}
-
-	/**
-	 * Gets the truth.
-	 *
-	 * @param pred
-	 *            the pred
-	 * @return the truth
-	 */
-	@operator (
-			value = "get_truth",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "evaluate the truth value of a predicate",
-			examples = @example (
-					value = "get_truth(pred1)",
-					isExecutable = false))
-	@test ("get_truth(new_predicate('test1'))=true")
-	public static Boolean getTruth(final Predicate pred) {
-		if (pred != null) return pred.is_true;
-		return null;
-	}
-
-	/**
-	 * Gets the agent cause.
-	 *
-	 * @param pred
-	 *            the pred
-	 * @return the agent cause
-	 */
-	@operator (
-			value = "get_agent_cause",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "evaluate the agent_cause value of a predicate",
-			examples = @example (
-					value = "get_agent_cause(pred1)",
-					isExecutable = false))
-	@no_test
-	public static IAgent getAgentCause(final Predicate pred) {
-		if (pred != null) return pred.getAgentCause();
-		return null;
-	}
-
-	/**
-	 * Gets the values.
-	 *
-	 * @param pred
-	 *            the pred
-	 * @return the values
-	 */
-	@operator (
-			value = "get_values",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "return the map values of a predicate",
-			examples = @example (
-					value = "get_values(pred1)",
-					isExecutable = false))
-	@no_test
-	public static IMap<String, Object> getValues(final Predicate pred) {
-		if (pred != null) return pred.getValues();
-		return null;
-	}
 
 	/**
 	 * New emotion.
@@ -934,14 +796,14 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_agent_cause",
+			value = "with_agent_cause",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the agentCause value of the given emotion",
 			examples = @example (
-					value = "new_emotion set_agent_cause agentA",
+					value = "new_emotion with_agent_cause agentA",
 					isExecutable = false))
 	@no_test
 	public static Emotion withAgentCause(final Emotion emotion, final IAgent agent) throws GamaRuntimeException {
@@ -961,17 +823,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_intensity",
+			value = "with_intensity",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the intensity value of the given emotion",
 			examples = @example (
-					value = "emotion set_intensity 12",
+					value = "emotion with_intensity 12",
 					isExecutable = false))
 	@no_test
-	public static Emotion setIntensity(final Emotion emotion, final Double intensity) throws GamaRuntimeException {
+	public static Emotion withIntensity(final Emotion emotion, final double intensity) throws GamaRuntimeException {
 		emotion.intensity = intensity;
 		return emotion;
 	}
@@ -988,17 +850,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_decay",
+			value = "with_decay",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the decay value of the given emotion",
 			examples = @example (
-					value = "emotion set_decay 12",
+					value = "emotion with_decay 12",
 					isExecutable = false))
 	@no_test
-	public static Emotion setDecay(final Emotion emotion, final Double decay) throws GamaRuntimeException {
+	public static Emotion withDecay(final Emotion emotion, final double decay) throws GamaRuntimeException {
 		emotion.decay = decay;
 		return emotion;
 	}
@@ -1015,122 +877,21 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_about",
+			value = "with_about",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the about value of the given emotion",
 			examples = @example (
-					value = "emotion set_about predicate1",
+					value = "emotion with_about predicate1",
 					isExecutable = false))
 	@no_test
-	public static Emotion setAbout(final Emotion emotion, final Predicate about) throws GamaRuntimeException {
+	public static Emotion withAbout(final Emotion emotion, final Predicate about) throws GamaRuntimeException {
 		emotion.about = about;
 		return emotion;
 	}
-
-	/**
-	 * Gets the intensity.
-	 *
-	 * @param emotion
-	 *            the emotion
-	 * @return the intensity
-	 */
-	@operator (
-			value = "get_intensity",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the intensity value of the given emotion",
-			examples = @example (
-					value = "get_intensity(emo1)",
-					isExecutable = false))
-	@test ("get_intensity(new_emotion('joy',1.0))=1.0")
-	@test ("get_intensity(new_emotion('joy',1.0,0.5))=1.0")
-	public static Double getIntensity(final Emotion emotion) {
-		if (emotion != null) return emotion.intensity;
-		return null;
-	}
-
-	/**
-	 * Gets the decay.
-	 *
-	 * @param emotion
-	 *            the emotion
-	 * @return the decay
-	 */
-	@operator (
-			value = "get_decay",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the decay value of the given emotion",
-			examples = @example (
-					value = "get_decay(emotion)",
-					isExecutable = false))
-	@test ("get_decay(new_emotion('joy',1.0,0.5))=0.5")
-	public static Double getDecay(final Emotion emotion) {
-		if (emotion != null) return emotion.decay;
-		return null;
-	}
-
-	/**
-	 * Gets the about.
-	 *
-	 * @param emotion
-	 *            the emotion
-	 * @return the about
-	 */
-	@operator (
-			value = "get_about",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the about value of the given emotion",
-			examples = @example (
-					value = "get_about(emotion)",
-					isExecutable = false))
-	@no_test
-	public static Predicate getAbout(final Emotion emotion) {
-		if (emotion != null) return emotion.about;
-		return null;
-	}
-
-	/**
-	 * Gets the agent.
-	 *
-	 * @param emotion
-	 *            the emotion
-	 * @return the agent
-	 */
-	@operator (
-			value = "get_agent_cause",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the agent cause value of the given emotion",
-			examples = @example (
-					value = "get_agent_cause(emotion)",
-					isExecutable = false))
-	@no_test
-	public static IAgent getAgent(final Emotion emotion) {
-		if (emotion != null) return emotion.getAgentCause();
-		return null;
-	}
-
-	// @operator(value = "new_social_link", can_be_const = true, category = {
-	// "BDI" },
-	// concept = { IConcept.BDI })
-	// @doc(value = "a new social link",
-	// examples = @example(value = "new_social_link()", isExecutable = false))
-	// public static SocialLink newSocialLink() throws GamaRuntimeException {
-	// return new SocialLink();
-	// }
+	
 
 	/**
 	 * New social link.
@@ -1185,8 +946,8 @@ public class Operators {
 					value = "new_social_link(agentA,0.0,-0.1,0.2,0.1)",
 					isExecutable = false))
 	@no_test
-	public static SocialLink newSocialLink(final IAgent agent, final Double appreciation, final Double dominance,
-			final Double solidarity, final Double familiarity) throws GamaRuntimeException {
+	public static SocialLink newSocialLink(final IAgent agent, final double appreciation, final double dominance,
+			final double solidarity, final double familiarity) throws GamaRuntimeException {
 		return new SocialLink(agent, appreciation, dominance, solidarity, familiarity);
 	}
 
@@ -1200,17 +961,17 @@ public class Operators {
 	 * @return the social link
 	 */
 	@operator (
-			value = "set_agent",
+			value = "with_agent",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the agent value of the given social link",
 			examples = @example (
-					value = "social_link set_agent agentA",
+					value = "social_link with_agent agentA",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setAgent(final SocialLink social, final IAgent agent) {
+	public static SocialLink withAgent(final SocialLink social, final IAgent agent) {
 		social.setAgent(agent);
 		return social;
 	}
@@ -1227,17 +988,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_liking",
+			value = "with_liking",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the liking value of the given social link",
 			examples = @example (
-					value = "social_link set_liking 0.4",
+					value = "social_link with_liking 0.4",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setLiking(final SocialLink social, final Double appreciation) throws GamaRuntimeException {
+	public static SocialLink withLiking(final SocialLink social, final double appreciation) throws GamaRuntimeException {
 		if (appreciation >= -1.0 && appreciation <= 1.0) { social.setLiking(appreciation); }
 		return social;
 	}
@@ -1254,17 +1015,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_dominance",
+			value = "with_dominance",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the dominance value of the given social link",
 			examples = @example (
-					value = "social_link set_dominance 0.4",
+					value = "social_link with_dominance 0.4",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setDominance(final SocialLink social, final Double dominance) throws GamaRuntimeException {
+	public static SocialLink withDominance(final SocialLink social, final double dominance) throws GamaRuntimeException {
 		if (dominance >= -1.0 && dominance < 1.0) { social.setDominance(dominance); }
 		return social;
 	}
@@ -1281,17 +1042,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_solidarity",
+			value = "with_solidarity",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the solidarity value of the given social link",
 			examples = @example (
-					value = "social_link set_solidarity 0.4",
+					value = "social_link with_solidarity 0.4",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setSolidarity(final SocialLink social, final Double solidarity)
+	public static SocialLink withSolidarity(final SocialLink social, final double solidarity)
 			throws GamaRuntimeException {
 		if (solidarity >= 0.0 && solidarity <= 1.0) { social.setSolidarity(solidarity); }
 		return social;
@@ -1309,17 +1070,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_familiarity",
+			value = "with_familiarity",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the familiarity value of the given social link",
 			examples = @example (
-					value = "social_link set_familiarity 0.4",
+					value = "social_link with_familiarity 0.4",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setFamiliarity(final SocialLink social, final Double familiarity)
+	public static SocialLink withFamiliarity(final SocialLink social, final double familiarity)
 			throws GamaRuntimeException {
 		if (familiarity >= 0.0 && familiarity <= 1.0) { social.setFamiliarity(familiarity); }
 		return social;
@@ -1337,17 +1098,17 @@ public class Operators {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "set_trust",
+			value = "with_trust",
 			can_be_const = true,
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
 			value = "change the trust value of the given social link",
 			examples = @example (
-					value = "social_link set_familiarity 0.4",
+					value = "social_link with_trust 0.4",
 					isExecutable = false))
 	@no_test
-	public static SocialLink setTrust(final SocialLink social, final Double trust) throws GamaRuntimeException {
+	public static SocialLink withTrust(final SocialLink social, final double trust) throws GamaRuntimeException {
 		if (trust >= -1.0 && trust <= 1.0) { social.setTrust(trust); }
 		return social;
 	}
@@ -1372,121 +1133,6 @@ public class Operators {
 	@no_test
 	public static IAgent getAgent(final SocialLink social) {
 		if (social != null) return social.getAgent();
-		return null;
-	}
-
-	/**
-	 * Gets the likink.
-	 *
-	 * @param social
-	 *            the social
-	 * @return the likink
-	 */
-	@operator (
-			value = "get_liking",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the liking value of the given social link",
-			examples = @example (
-					value = "get_liking(social_link1)",
-					isExecutable = false))
-	@no_test
-	public static Double getLikink(final SocialLink social) {
-		if (social != null) return social.getLiking();
-		return null;
-	}
-
-	/**
-	 * Gets the dominance.
-	 *
-	 * @param social
-	 *            the social
-	 * @return the dominance
-	 */
-	@operator (
-			value = "get_dominance",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the dominance value of the given social link",
-			examples = @example (
-					value = "get_dominance(social_link1)",
-					isExecutable = false))
-	@no_test
-	public static Double getDominance(final SocialLink social) {
-		if (social != null) return social.getDominance();
-		return null;
-	}
-
-	/**
-	 * Gets the solidarity.
-	 *
-	 * @param social
-	 *            the social
-	 * @return the solidarity
-	 */
-	@operator (
-			value = "get_solidarity",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the solidarity value of the given social link",
-			examples = @example (
-					value = "get_solidarity(social_link1)",
-					isExecutable = false))
-	@no_test
-	public static Double getSolidarity(final SocialLink social) {
-		if (social != null) return social.getSolidarity();
-		return null;
-	}
-
-	/**
-	 * Gets the trust.
-	 *
-	 * @param social
-	 *            the social
-	 * @return the trust
-	 */
-	@operator (
-			value = "get_familiarity",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the familiarity value of the given social link",
-			examples = @example (
-					value = "get_familiarity(social_link1)",
-					isExecutable = false))
-	@no_test
-	public static Double getTrust(final SocialLink social) {
-		if (social != null) return social.getTrust();
-		return null;
-	}
-
-	/**
-	 * Gets the familiarity.
-	 *
-	 * @param social
-	 *            the social
-	 * @return the familiarity
-	 */
-	@operator (
-			value = "get_trust",
-			can_be_const = true,
-			category = { "BDI" },
-			concept = { IConcept.BDI })
-	@doc (
-			value = "get the familiarity value of the given social link",
-			examples = @example (
-					value = "get_familiarity(social_link1)",
-					isExecutable = false))
-	@no_test
-	public static Double getFamiliarity(final SocialLink social) {
-		if (social != null) return social.getFamiliarity();
 		return null;
 	}
 

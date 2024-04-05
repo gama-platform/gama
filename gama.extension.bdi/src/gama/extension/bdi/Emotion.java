@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
+import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IValue;
@@ -45,7 +46,7 @@ import gama.gaml.types.Types;
 				type = IType.FLOAT,
 				doc = @doc ("the decay value of the emotion")),
 		@variable (
-				name = "agentCause",
+				name = SimpleBdiArchitecture.AGENT_CAUSE,
 				type = IType.AGENT,
 				doc = @doc ("the agent causing the emotion")),
 		@variable (
@@ -59,20 +60,21 @@ public class Emotion implements IValue {
 		return json
 				.typedObject(getGamlType(), "name", name, "intensity", intensity, "about",
 						about == null ? null : about.getName(), "decay", decay)
-				.add("cause", agentCause).add("owner", owner);
+				.add(SimpleBdiArchitecture.AGENT_CAUSE, agentCause)
+				.add("owner", owner);
 	}
 
 	/** The name. */
 	String name;
 
 	/** The intensity. */
-	Double intensity = -1.0;
+	double intensity = -1.0;
 
 	/** The about. */
 	Predicate about;
 
 	/** The decay. */
-	Double decay = 0.0;
+	double decay = 0.0;
 
 	/** The agent cause. */
 	IAgent agentCause;
@@ -126,7 +128,7 @@ public class Emotion implements IValue {
 	 *
 	 * @return the agent cause
 	 */
-	@getter ("agentCause")
+	@getter (SimpleBdiArchitecture.AGENT_CAUSE)
 	public IAgent getAgentCause() { return agentCause; }
 
 	/**
@@ -158,7 +160,7 @@ public class Emotion implements IValue {
 	 * @param intens
 	 *            the new intensity
 	 */
-	public void setIntensity(final Double intens) {
+	public void setIntensity(final double intens) {
 		this.intensity = intens;
 		this.noIntensity = false;
 	}
@@ -180,7 +182,7 @@ public class Emotion implements IValue {
 	 * @param de
 	 *            the new decay
 	 */
-	public void setDecay(final Double de) { this.decay = de; }
+	public void setDecay(final double de) { this.decay = de; }
 
 	/**
 	 * Sets the agent cause.
@@ -190,7 +192,7 @@ public class Emotion implements IValue {
 	 */
 	public void setAgentCause(final IAgent ag) {
 		this.agentCause = ag;
-		this.noAgentCause = false;
+		this.noAgentCause = ag == null;
 	}
 
 	/**
@@ -232,7 +234,7 @@ public class Emotion implements IValue {
 	 * @param intensity2
 	 *            the intensity 2
 	 */
-	public Emotion(final String name, final Double intensity2) {
+	public Emotion(final String name, final double intensity2) {
 		this.name = name;
 		this.intensity = intensity2;
 		this.about = null;
@@ -283,7 +285,7 @@ public class Emotion implements IValue {
 	 * @param de
 	 *            the de
 	 */
-	public Emotion(final String name, final Double intens, final Double de) {
+	public Emotion(final String name, final double intens, final double de) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = null;
@@ -304,7 +306,7 @@ public class Emotion implements IValue {
 	 * @param ab
 	 *            the ab
 	 */
-	public Emotion(final String name, final Double intens, final Predicate ab) {
+	public Emotion(final String name, final double intens, final Predicate ab) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = ab;
@@ -343,7 +345,7 @@ public class Emotion implements IValue {
 	 * @param ag
 	 *            the ag
 	 */
-	public Emotion(final String name, final Double intens, final IAgent ag) {
+	public Emotion(final String name, final double intens, final IAgent ag) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = null;
@@ -365,7 +367,7 @@ public class Emotion implements IValue {
 	 * @param de
 	 *            the de
 	 */
-	public Emotion(final String name, final Double intens, final Predicate ab, final Double de) {
+	public Emotion(final String name, final double intens, final Predicate ab, final double de) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = ab;
@@ -388,7 +390,7 @@ public class Emotion implements IValue {
 	 * @param ag
 	 *            the ag
 	 */
-	public Emotion(final String name, final Double intens, final Double de, final IAgent ag) {
+	public Emotion(final String name, final double intens, final double de, final IAgent ag) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = null;
@@ -411,7 +413,7 @@ public class Emotion implements IValue {
 	 * @param ag
 	 *            the ag
 	 */
-	public Emotion(final String name, final Double intens, final Predicate ab, final IAgent ag) {
+	public Emotion(final String name, final double intens, final Predicate ab, final IAgent ag) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = ab;
@@ -436,7 +438,7 @@ public class Emotion implements IValue {
 	 * @param ag
 	 *            the ag
 	 */
-	public Emotion(final String name, final Double intens, final Predicate ab, final Double de, final IAgent ag) {
+	public Emotion(final String name, final double intens, final Predicate ab, final double de, final IAgent ag) {
 		this.name = name;
 		this.intensity = intens;
 		this.about = ab;
@@ -452,7 +454,7 @@ public class Emotion implements IValue {
 	 * Decay intensity.
 	 */
 	public void decayIntensity() {
-		this.intensity = this.intensity - this.decay;
+		intensity -= decay;
 	}
 
 	@Override

@@ -611,7 +611,7 @@ public class CopingStatement extends AbstractStatementSequence{
 																	&& threshold != null
 																	&& SimpleBdiArchitecture.getEmotion(scope,
 																			(Emotion) emotion.value(
-																					scope)).intensity >= (Double) threshold
+																					scope)).intensity >= (double) threshold
 																							.value(scope)) {
 																if (newDesire != null) {
 																	final Predicate newDes =

@@ -658,7 +658,7 @@ public class RuleStatement extends AbstractStatement {
 													if (threshold == null || emotion != null && threshold != null
 															&& SimpleBdiArchitecture.getEmotion(scope,
 																	(Emotion) emotion.value(
-																			scope)).intensity >= (Double) threshold
+																			scope)).intensity >= (double) threshold
 																					.value(scope)) {
 														if (newDesire != null) {
 															if (allVal) {

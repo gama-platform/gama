@@ -40,7 +40,7 @@ import gama.gaml.types.IType;
 		@facet(name = NormStatement.OBLIGATION, type = PredicateType.id, optional = true, doc = @doc("the obligation triggering of the norm")),
 		@facet(name = NormStatement.THRESHOLD, type = IType.FLOAT, optional = true, doc = @doc("the threshold to trigger the norm")),
 		@facet(name = NormStatement.LIFETIME, type = IType.INT, optional = true, doc = @doc("the lifetime of the norm")),
-		@facet(name = SimpleBdiArchitecture.INSTANTANEAOUS, type = IType.BOOL, optional = true, doc = @doc("indicates if the norm is instananeous")) }, omissible = IKeyword.NAME)
+		@facet(name = SimpleBdiArchitecture.INSTANTANEOUS, type = IType.BOOL, optional = true, doc = @doc("indicates if the norm is instananeous")) }, omissible = IKeyword.NAME)
 @doc("a norm indicates what action the agent has to do in a certain context and with and obedience value higher than the threshold")
 
 public class NormStatement extends AbstractStatementSequence{
@@ -157,7 +157,7 @@ public class NormStatement extends AbstractStatementSequence{
 		_when = getFacet(IKeyword.WHEN);
 		_priority = getFacet(SimpleBdiArchitecture.PRIORITY);
 		_executedwhen = getFacet(SimpleBdiArchitecture.FINISHEDWHEN);
-		_instantaneous = getFacet(SimpleBdiArchitecture.INSTANTANEAOUS);
+		_instantaneous = getFacet(SimpleBdiArchitecture.INSTANTANEOUS);
 		_intention = getFacet(NormStatement.INTENTION);
 		_obligation = getFacet(NormStatement.OBLIGATION);
 		_threshold = getFacet(NormStatement.THRESHOLD);

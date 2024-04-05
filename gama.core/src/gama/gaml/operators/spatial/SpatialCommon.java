@@ -13,13 +13,12 @@ import gama.core.runtime.IScope;
 import gama.gaml.expressions.IExpression;
 
 /**
- * The class Spatial.
+ * The class SpatialCommon.
  *
  * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
  * @since 29 nov. 2011
  *
  */
-
 public class SpatialCommon {
 
 	/**

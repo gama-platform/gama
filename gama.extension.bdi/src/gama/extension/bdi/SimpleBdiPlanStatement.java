@@ -46,7 +46,7 @@ import gama.gaml.types.IType;
 		@facet(name = SimpleBdiPlanStatement.INTENTION, type = PredicateType.id, optional = true),
 		@facet(name = SimpleBdiPlanStatement.EMOTION, type = EmotionType.EMOTIONTYPE_ID, optional = true),
 		@facet(name = SimpleBdiPlanStatement.THRESHOLD, type = IType.FLOAT, optional = true),
-		@facet(name = SimpleBdiArchitecture.INSTANTANEAOUS, type = IType.BOOL, optional = true) }, omissible = IKeyword.NAME)
+		@facet(name = SimpleBdiArchitecture.INSTANTANEOUS, type = IType.BOOL, optional = true) }, omissible = IKeyword.NAME)
 @validator(SimpleBdiPlanValidator.class)
 @doc("define an action plan performed by an agent using the BDI engine")
 public class SimpleBdiPlanStatement extends AbstractStatementSequence {
@@ -177,7 +177,7 @@ public class SimpleBdiPlanStatement extends AbstractStatementSequence {
 		_when = getFacet(IKeyword.WHEN);
 		_priority = getFacet(SimpleBdiArchitecture.PRIORITY);
 		_executedwhen = getFacet(SimpleBdiArchitecture.FINISHEDWHEN);
-		_instantaneous = getFacet(SimpleBdiArchitecture.INSTANTANEAOUS);
+		_instantaneous = getFacet(SimpleBdiArchitecture.INSTANTANEOUS);
 		_intention = getFacet(SimpleBdiPlanStatement.INTENTION);
 		_emotion = getFacet(SimpleBdiPlanStatement.EMOTION);
 		_threshold = getFacet(SimpleBdiPlanStatement.THRESHOLD);

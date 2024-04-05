@@ -160,7 +160,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the subintentions
 	 */
-	@getter ("subintentions")
+	@getter (SimpleBdiArchitecture.SUBINTENTIONS)
 	public List<MentalState> getSubintentions() { return subintentions; }
 
 	/**

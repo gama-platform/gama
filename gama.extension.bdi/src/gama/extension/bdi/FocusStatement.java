@@ -80,7 +80,7 @@ import gama.gaml.types.Types;
 						name = FocusStatement.AGENTCAUSE,
 						type = IType.AGENT,
 						optional = true,
-						doc = @doc ("the agentCause value of the created belief (can be nil")),
+						doc = @doc ("the value of the agent causing the created belief (can be nil")),
 				@facet (
 						name = FocusStatement.BELIEF,
 						type = PredicateType.id,
