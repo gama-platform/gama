@@ -2269,8 +2269,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "the belief about the predicate if it is in the base.",
 					examples = { @example ("get_belief(new_predicate(\"has_water\", true))") }))
 	public MentalState getBelief(final IScope scope) throws GamaRuntimeException {
-		final Predicate predicateDirect =
-				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
+		final Predicate predicateDirect = scope.getTypedArgIfExists(PREDICATE, PredicateType.id);
 		if (predicateDirect != null) {
 			for (final MentalState mental : getBase(scope, BELIEF_BASE)) {
 				if (mental.getPredicate() != null) {
@@ -2303,18 +2302,37 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "the belief about the mental state if it is in the base.",
 					examples = { @example ("get_belief(new_mental_state(\"Desire\", predicate1))") }))
 	public MentalState getBeliefMentalState(final IScope scope) throws GamaRuntimeException {
-		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
+		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
+		return getBeliefMentalStateFromBase(scope, predicateDirect);
+	}
+	
+	public static MentalState getBeliefMentalStateFromBase(final IScope scope, MentalState predicateDirect) {
 		if (predicateDirect != null) {
 			for (final MentalState mental : getBase(scope, BELIEF_BASE)) {
 				if (mental.getMentalState() != null) {
-					if (predicateDirect.equals(mental.getMentalState())) { return mental; }
+					if (predicateDirect.equals(mental.getMentalState())) { 
+						return mental; 
+					}
 				}
 			}
-
 		}
 		return null;
-
 	}
+	
+	public static List<MentalState> getBeliefMentalStateListFromBase(final IScope scope, MentalState predicateDirect) {
+		List r = new ArrayList<MentalState>();
+		if (predicateDirect != null) {
+			for (final MentalState mental : getBase(scope, BELIEF_BASE)) {
+				if (mental.getMentalState() != null) {
+					if (predicateDirect.equals(mental.getMentalState())) { 
+						r.add(mental);
+					}
+				}
+			}
+		}
+		return r;
+	}
+	
 
 	/**
 	 * Gets the belief emotion.
@@ -2663,7 +2681,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			predicate = currentIntention(scope);
 		}
 		if (predicate != null) {
-			final Object until = scope.getArgIfExists("until");
+			final Predicate until = scope.getTypedArgIfExists("until", PredicateType.id);
 			if (until == null) {
 				final List<MentalState> subintention = predicate.subintentions;
 				if (subintention != null && !subintention.isEmpty()) {
@@ -2677,7 +2695,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					predicate.subintentions = GamaListFactory.create(Types.get(MentalStateType.id));
 				}
 				final MentalState tempState = new MentalState("Intention", predicate.getPredicate());
-				final MentalState tempUntil = new MentalState("Desire", (Predicate) until);
+				final MentalState tempUntil = new MentalState("Desire", until);
 				tempUntil.setSuperIntention(tempState);
 				predicate.onHoldUntil.add(tempUntil);
 				predicate.getSubintentions().add(tempUntil);
