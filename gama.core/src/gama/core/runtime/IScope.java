@@ -584,6 +584,18 @@ public interface IScope extends Closeable, IBenchmarkable {
 	default Object getArg(final String string) {
 		return getArg(string, IType.NONE);
 	}
+	
+	/**
+	 * Check if the arg is present or not, if so returns it, else returns null
+	 * @param string
+	 * @return
+	 */
+	default Object getArgIfExists(final String string) {
+		if (hasArg(string)) {
+			return getArg(string);
+		}
+		return null;
+	}
 
 	/**
 	 * Gets the arg with a cast
@@ -598,6 +610,83 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 */
 	Object getArg(String string, int type) throws GamaRuntimeException;
 
+	
+	/**
+	 * Checks if the arg is present or not, if so casts it into the T type and returns it, else returns null
+	 * @param <T> the type to cast the return value to
+	 * @param string the name of the argument to check for
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> T getTypedArgIfExists(final String string) {
+		if (hasArg(string)) {
+			return (T)getArg(string);
+		}
+		return null;
+	}
+	
+	/**
+	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method, else returns null
+	 * @param string
+	 * @return
+	 */
+	default Object getArgIfExists(final String string, int type) {
+		if (hasArg(string)) {
+			return getArg(string, type);
+		}
+		return null;
+	}
+	
+	/**
+	 * get the arg and casts it into the asked type
+	 * @param <T> the type to cast the arg to
+	 * @param string the arg to get
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> T getTypedArg(final String string) {
+		return (T) getArg(string);
+	}
+	
+	/**
+	 * get the arg and casts it into the asked type
+	 * @param <T> the type to cast the arg to
+	 * @param string the arg to get
+	 * @param type the type to use in getArg
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> T getTypedArg(final String string, int type) {
+		return (T) getArg(string, type);
+	}
+	
+	/**
+	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns null
+	 * @param <T> the return type
+	 * @param string the argument to check for
+	 * @param type the type_id to use in the getArg function
+	 * @return
+	 */
+	default <T> T getTypedArgIfExists(final String string, int type) {
+		return getTypedArgIfExists(string, type, null);
+	}
+	
+	/**
+	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns the default value given
+	 * @param <T> the return type
+	 * @param string the argument to check
+	 * @param type the type_id to use in the getArg function
+	 * @param defaultValue the value to return in case the string is not found
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> T getTypedArgIfExists(final String string, int type, T defaultValue) {
+		if (hasArg(string)) {
+			return (T) getArg(string, type);
+		}
+		return defaultValue;
+	}
+	
 	/**
 	 * Gets the int arg.
 	 *
