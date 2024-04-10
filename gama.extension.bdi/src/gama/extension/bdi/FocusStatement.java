@@ -226,7 +226,6 @@ public class FocusStatement extends AbstractStatement {
 		isUncertain = getFacet(FocusStatement.ISUNCERTAIN);
 	}
 
-	@SuppressWarnings ("rawtypes")
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		if (when == null || Cast.asBool(scope, when.value(scope))) {
@@ -242,23 +241,15 @@ public class FocusStatement extends AbstractStatement {
 				// Pour la liste, faire un truc générique dans un premier temps
 				// avec un nom des variables du genre test_i, sans chercher à
 				// récupérer le nom précis des variables.
-				if (variable.value(scope) instanceof IContainer) {
-					String namePred;
-					if (nameExpression != null) {
-						namePred = (String) nameExpression.value(scope);
-					} else {
-						namePred = variable.getName() + "_" + scope.getAgent().getSpeciesName();
-					}
-					String nameVarTemp;
+				if (variable.value(scope) instanceof IContainer varValue) {
+					
 					final IMap<String, Object> tempValues = GamaMapFactory.create(Types.STRING, Types.NO_TYPE, 1);
-					final IList<?> variablesTemp =
-							((IContainer<?, ?>) variable.value(scope)).listValue(scope, null, true);
+					final IList<?> variablesTemp = varValue.listValue(scope, null, true);
 					for (int temp = 0; temp < variablesTemp.length(scope); temp++) {
-						final Object temp2 = variablesTemp.get(temp);
-						nameVarTemp = "test" + temp;
-						tempValues.put(nameVarTemp + "_value", Cast.asInt(scope, temp2));
+						tempValues.put("test" + temp + "_value", Cast.asInt(scope, variablesTemp.get(temp)));
 					}
-					tempPred = new Predicate(namePred, tempValues.copy(scope));
+					tempPred = new Predicate((nameExpression != null) ? (String) nameExpression.value(scope) : variable.getName() + "_" + scope.getAgent().getSpeciesName(), 
+												tempValues.copy(scope));
 					if (truth != null) {
 						tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
 					}
@@ -270,8 +261,7 @@ public class FocusStatement extends AbstractStatement {
 					MentalState tempBelief;
 					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
 						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
+							tempBelief = new MentalState("Uncertainty", tempPred, Cast.asFloat(scope, strength.value(scope)));
 						} else {
 							tempBelief = new MentalState("Uncertainty", tempPred);
 						}
@@ -321,8 +311,7 @@ public class FocusStatement extends AbstractStatement {
 					MentalState tempBelief;
 					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
 						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
+							tempBelief = new MentalState("Uncertainty", tempPred, Cast.asFloat(scope, strength.value(scope)));
 						} else {
 							tempBelief = new MentalState("Uncertainty", tempPred);
 						}
@@ -334,8 +323,7 @@ public class FocusStatement extends AbstractStatement {
 						}
 					} else {
 						if (strength != null) {
-							tempBelief =
-									new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
+							tempBelief = new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
 						} else {
 							tempBelief = new MentalState("Belief", tempPred);
 						}
@@ -560,8 +548,7 @@ public class FocusStatement extends AbstractStatement {
 						}
 					}
 				}
-				if (variable == null && belief == null && desire == null && uncertainty == null && ideal == null
-						&& emotion == null && expression == null) {
+				if (belief == null && desire == null && uncertainty == null && ideal == null && emotion == null && expression == null) {
 					String namePred = null;
 					if (nameExpression != null) {
 						namePred = (String) nameExpression.value(scope);

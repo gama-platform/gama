@@ -50,7 +50,7 @@ import gama.gaml.types.Types;
 		name = { PerceiveStatement.PERCEIVE },
 		kind = ISymbolKind.BEHAVIOR,
 		with_sequence = true,
-		breakable = true, // ?
+		breakable = true, // ?//TODO:really ?
 		remote_context = true,
 		concept = { IConcept.BDI })
 @inside (
@@ -202,50 +202,59 @@ public class PerceiveStatement extends AbstractStatementSequence {
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		
+		if (_when != null && ! Cast.asBool(scope, _when.value(scope))){
+			return null;
+		}
+		if (emotion != null && !SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+			return null;
+		}
+		if (threshold != null && (emotion == null || SimpleBdiArchitecture.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
+			return null;
+		}
+		
+		
+		final Object obj = target.value(scope);
+		Object inArg = null;
+		final IAgent ag = scope.getAgent();
+		if (_in != null) { 
+			inArg = _in.value(scope); 
+		}
 
-		if (_when == null || Cast.asBool(scope, _when.value(scope))) {
-			final Object obj = target.value(scope);
-			Object inArg = null;
-			final IAgent ag = scope.getAgent();
-			if (_in != null) { inArg = _in.value(scope); }
-			if (emotion == null || SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
-				if (threshold == null || emotion != null && threshold != null && SimpleBdiArchitecture.getEmotion(scope,
-						(Emotion) emotion.value(scope)).intensity >= (double) threshold.value(scope)) {
-					if (inArg instanceof Float || inArg instanceof Integer || inArg instanceof Double) {
-						IList temp = GamaListFactory.create();
-						final double dist = Cast.asFloat(scope, inArg);
-						if (obj instanceof IContainer) {
-							temp = SpatialQueries.at_distance(scope, (IContainer) obj,
-									Cast.asFloat(scope, inArg));
-						} else if (obj instanceof IAgent && ag.euclidianDistanceTo((IAgent) obj) <= dist) {
-							temp.add(obj);
-						}
-						GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
-						return this;
+		if (inArg instanceof Number n) {
+			IList temp = GamaListFactory.create();
+			final double dist = Cast.asFloat(scope, n);
+			if (obj instanceof IContainer container) {
+				temp = SpatialQueries.at_distance(scope, container, Cast.asFloat(scope, inArg));
+			} else if (obj instanceof IAgent agent && ag.euclidianDistanceTo(agent) <= dist) {
+				temp.add(obj);
+			}
+			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
+			return this;
 
-					}
-					if (inArg instanceof gama.gaml.types.GamaGeometryType || inArg instanceof GamaShape) {
-						IList temp = GamaListFactory.create();
-						final IShape geom = Cast.asGeometry(scope, inArg);
-						if (obj instanceof IContainer) {
-							temp = SpatialQueries.overlapping(scope, (IContainer) obj,
-									Cast.asGeometry(scope, inArg));
-						} else if (obj instanceof IAgent && geom.intersects((IShape) obj)) { temp.add(obj); }
-						GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
-						return this;
-					}
-					ExecutionResult result = null;
-					final Iterator<IAgent> runners =
-							obj instanceof IContainer ? ((IContainer) obj).iterable(scope).iterator()
-									: obj instanceof IAgent ? transformAgentToList((IAgent) obj, scope) : null;
-					if (runners != null) {
-						while (runners.hasNext()
-								&& (result = scope.execute(sequence, runners.next(), null)).passed()) {}
-					}
-					if (result != null) return result.getValue();
-				}
+		}
+		if (inArg instanceof gama.gaml.types.GamaGeometryType || inArg instanceof GamaShape) {
+			IList temp = GamaListFactory.create();
+			final IShape geom = Cast.asGeometry(scope, inArg);
+			if (obj instanceof IContainer container) {
+				temp = SpatialQueries.overlapping(scope, container, geom);
+			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { 
+				temp.add(obj); 
+			}
+			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
+			return this;
+		}
+		ExecutionResult result = null;
+		final Iterator<IAgent> runners =	obj instanceof IContainer c 
+										? c.iterable(scope).iterator()
+										: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
+		if (runners != null) {
+			while (		runners.hasNext()
+					&& (result = scope.execute(sequence, runners.next(), null)).passed()) {
+				
 			}
 		}
+		if (result != null) return result.getValue();
 
 		return null;
 

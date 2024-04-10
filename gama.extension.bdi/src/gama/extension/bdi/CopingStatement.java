@@ -14,14 +14,14 @@ package gama.extension.bdi;
 
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -562,16 +562,18 @@ public class CopingStatement extends AbstractStatementSequence{
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
-		if (newBelief == null && newDesire == null && newEmotion == null && newUncertainty == null
+		if 			(newBelief == null && newDesire == null && newEmotion == null && newUncertainty == null
 				&& removeBelief == null && removeDesire == null && removeIntention == null && removeEmotion == null
 				&& removeUncertainty == null && newBeliefs == null && newDesires == null && newEmotions == null
 				&& newUncertainties == null && removeBeliefs == null && removeDesires == null && removeEmotions == null
-				&& removeUncertainties == null)
+				&& removeUncertainties == null) {
 			return null;
+		}
+		
 		if (when == null || Cast.asBool(scope, when.value(scope))) {
 			final MentalState tempBelief = new MentalState("Belief");
 			if (belief != null) {
-			tempBelief.setPredicate((Predicate) belief.value(scope));
+				tempBelief.setPredicate((Predicate) belief.value(scope));
 			}
 			if (belief == null || SimpleBdiArchitecture.hasBelief(scope, tempBelief)) {
 				final MentalState tempDesire = new MentalState("Desire");
@@ -586,312 +588,30 @@ public class CopingStatement extends AbstractStatementSequence{
 					if (uncertainty == null || SimpleBdiArchitecture.hasUncertainty(scope, tempUncertainty)) {
 						final MentalState tempIdeal = new MentalState("Ideal");
 						if (ideal != null) {
-						tempIdeal.setPredicate((Predicate) ideal.value(scope));
+							tempIdeal.setPredicate((Predicate) ideal.value(scope));
 						}
 						if (ideal == null || SimpleBdiArchitecture.hasIdeal(scope, tempIdeal)) {
 							final MentalState tempObligation = new MentalState("Obligation");
 							if (obligation != null) {
 								tempObligation.setPredicate((Predicate) obligation.value(scope));
 							}
-							if (obligation == null || SimpleBdiArchitecture.hasObligation(scope, tempUncertainty)) {
-								if (emotion == null
-										|| SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
-									if (beliefs == null || hasBeliefs(scope, (List<Predicate>) beliefs.value(scope))) {
-										if (desires == null
-												|| hasDesires(scope, (List<Predicate>) desires.value(scope))) {
-											if (uncertainties == null || hasUncertainties(scope,
-													(List<Predicate>) uncertainties.value(scope))) {
-												if (ideals == null
-														|| hasIdeals(scope, (List<Predicate>) ideals.value(scope))) {
-													if (obligations == null || hasObligations(scope,
-															(List<Predicate>) obligations.value(scope))) {
-														if (emotions == null || hasEmotions(scope,
-																(List<Emotion>) emotions.value(scope))) {
-															if (threshold == null || emotion != null
-																	&& threshold != null
-																	&& SimpleBdiArchitecture.getEmotion(scope,
-																			(Emotion) emotion.value(
-																					scope)).intensity >= (double) threshold
-																							.value(scope)) {
-																if (newDesire != null) {
-																	final Predicate newDes =
-																			(Predicate) newDesire.value(scope);
-																	final MentalState tempNewDesire =
-																			new MentalState("Desire", newDes);
-																	if (strength != null) {
-																		tempNewDesire.setStrength(Cast.asFloat(
-																				scope, strength.value(scope)));
-																	}
-																	if (lifetime != null) {
-																		tempNewDesire.setLifeTime(Cast.asInt(scope,
-																				lifetime.value(scope)));
-																	}
-																	SimpleBdiArchitecture.addDesire(scope, null,
-																			tempNewDesire);
-																}
-																if (newBelief != null) {
-																	final Predicate newBel =
-																			(Predicate) newBelief.value(scope);
-																	final MentalState tempNewBelief =
-																			new MentalState("Belief", newBel);
-																	if (strength != null) {
-																		tempNewBelief.setStrength(Cast.asFloat(
-																				scope, strength.value(scope)));
-																	}
-																	if (lifetime != null) {
-																		tempNewBelief.setLifeTime(Cast.asInt(scope,
-																				lifetime.value(scope)));
-																	}
-																	SimpleBdiArchitecture.addBelief(scope,
-																			tempNewBelief);
-																}
-																if (newEmotion != null) {
-																	final Emotion newEmo =
-																			(Emotion) newEmotion.value(scope);
-																	SimpleBdiArchitecture.addEmotion(scope, newEmo);
-																}
-																if (newUncertainty != null) {
-																	final Predicate newUncert =
-																			(Predicate) newUncertainty.value(scope);
-																	final MentalState tempNewUncertainty =
-																			new MentalState("Uncertainty",
-																					newUncert);
-																	if (strength != null) {
-																		tempNewUncertainty.setStrength(Cast.asFloat(
-																				scope, strength.value(scope)));
-																	}
-																	if (lifetime != null) {
-																		tempNewUncertainty.setLifeTime(Cast.asInt(
-																				scope, lifetime.value(scope)));
-																	}
-																	SimpleBdiArchitecture.addUncertainty(scope,
-																			tempNewUncertainty);
-																}
-																if (newIdeal != null) {
-																	final Predicate newIde =
-																			(Predicate) newIdeal.value(scope);
-																	final MentalState tempNewIdeal =
-																			new MentalState("Ideal", newIde);
-																	if (strength != null) {
-																		tempNewIdeal.setStrength(Cast.asFloat(scope,
-																				strength.value(scope)));
-																	}
-																	if (lifetime != null) {
-																		tempNewIdeal.setLifeTime(Cast.asInt(scope,
-																				lifetime.value(scope)));
-																	}
-																	SimpleBdiArchitecture.addIdeal(scope,
-																			tempNewIdeal);
-																}
-																if (removeBelief != null) {
-																	final Predicate removBel =
-																			(Predicate) removeBelief.value(scope);
-																	final MentalState tempRemoveBelief =
-																			new MentalState("Belief", removBel);
-																	SimpleBdiArchitecture.removeBelief(scope,
-																			tempRemoveBelief);
-																}
-																if (removeDesire != null) {
-																	final Predicate removeDes =
-																			(Predicate) removeDesire.value(scope);
-																	final MentalState tempRemoveDesire =
-																			new MentalState("Desire", removeDes);
-																	SimpleBdiArchitecture.removeDesire(scope,
-																			tempRemoveDesire);
-																}
-																if (removeIntention != null) {
-																	final Predicate removeInt =
-																			(Predicate) removeIntention.value(scope);
-																	final MentalState tempRemoveIntention =
-																			new MentalState("Intention", removeInt);
-																	SimpleBdiArchitecture.removeIntention(scope,
-																			tempRemoveIntention);
-																}
-																if (removeEmotion != null) {
-																	final Emotion removeEmo =
-																			(Emotion) removeEmotion.value(scope);
-																	SimpleBdiArchitecture.removeEmotion(scope,
-																			removeEmo);
-																}
-																if (removeUncertainty != null) {
-																	final Predicate removUncert =
-																			(Predicate) removeUncertainty
-																					.value(scope);
-																	final MentalState tempRemoveUncertainty =
-																			new MentalState("Uncertainty",
-																					removUncert);
-																	SimpleBdiArchitecture.removeUncertainty(scope,
-																			tempRemoveUncertainty);
-																}
-																if (removeIdeal != null) {
-																	final Predicate removeIde =
-																			(Predicate) removeIdeal.value(scope);
-																	final MentalState tempRemoveIde =
-																			new MentalState("Ideal", removeIde);
-																	SimpleBdiArchitecture.removeIdeal(scope,
-																			tempRemoveIde);
-																}
-																if (removeObligation != null) {
-																	final Predicate removeObl =
-																			(Predicate) removeObligation
-																					.value(scope);
-																	final MentalState tempRemoveObl =
-																			new MentalState("Obligation",
-																					removeObl);
-																	SimpleBdiArchitecture.removeObligation(scope,
-																			tempRemoveObl);
-																}
-																if (newDesires != null) {
-																	final List<Predicate> newDess =
-																			(List<Predicate>) newDesires.value(scope);
-																	for (final Predicate newDes : newDess) {
-																		final MentalState tempDesires =
-																				new MentalState("Desire", newDes);
-																		if (strength != null) {
-																			tempDesires.setStrength(Cast.asFloat(scope,
-																					strength.value(scope)));
-																		}
-																		if (lifetime != null) {
-																			tempDesires.setLifeTime(Cast.asInt(scope,
-																					lifetime.value(scope)));
-																		}
-																		SimpleBdiArchitecture.addDesire(scope, null,
-																				tempDesires);
-																	}
-																}
-																if (newBeliefs != null) {
-																	final List<Predicate> newBels =
-																			(List<Predicate>) newBeliefs.value(scope);
-																	for (final Predicate newBel : newBels) {
-																		final MentalState tempBeliefs =
-																				new MentalState("Belief", newBel);
-																		if (strength != null) {
-																			tempBeliefs.setStrength(Cast.asFloat(scope,
-																					strength.value(scope)));
-																		}
-																		if (lifetime != null) {
-																			tempBeliefs.setLifeTime(Cast.asInt(scope,
-																					lifetime.value(scope)));
-																		}
-																		SimpleBdiArchitecture.addBelief(scope,
-																				tempBeliefs);
-																	}
-																}
-																if (newEmotions != null) {
-																	final List<Emotion> newEmos =
-																			(List<Emotion>) newEmotions.value(scope);
-																	for (final Emotion newEmo : newEmos)
-																		SimpleBdiArchitecture.addEmotion(scope, newEmo);
-																}
-																if (newUncertainties != null) {
-																	final List<Predicate> newUncerts =
-																			(List<Predicate>) newUncertainties
-																					.value(scope);
-																	for (final Predicate newUncert : newUncerts) {
-																		final MentalState tempUncertainties =
-																				new MentalState("Uncertainty",
-																						newUncert);
-																		if (strength != null) {
-																			tempUncertainties.setStrength(Cast.asFloat(
-																					scope, strength.value(scope)));
-																		}
-																		if (lifetime != null) {
-																			tempUncertainties.setLifeTime(Cast.asInt(
-																					scope, lifetime.value(scope)));
-																		}
-																		SimpleBdiArchitecture.addUncertainty(scope,
-																				tempUncertainties);
-																	}
-																}
-																if (newIdeals != null) {
-																	final List<Predicate> newIdes =
-																			(List<Predicate>) newIdeals.value(scope);
-																	for (final Predicate newIde : newIdes) {
-																		final MentalState tempIdeals =
-																				new MentalState("Ideal", newIde);
-																		if (strength != null) {
-																			tempIdeals.setStrength(Cast.asFloat(scope,
-																					strength.value(scope)));
-																		}
-																		if (lifetime != null) {
-																			tempIdeals.setLifeTime(Cast.asInt(scope,
-																					lifetime.value(scope)));
-																		}
-																		SimpleBdiArchitecture.addIdeal(scope,
-																				tempIdeals);
-																	}
-																}
-																if (removeBeliefs != null) {
-																	final List<Predicate> removBels =
-																			(List<Predicate>) removeBeliefs
-																					.value(scope);
-																	for (final Predicate removBel : removBels) {
-																		final MentalState tempRemoveBeliefs =
-																				new MentalState("Belief", removBel);
-																		SimpleBdiArchitecture.removeBelief(scope,
-																				tempRemoveBeliefs);
-																	}
-																}
-																if (removeDesires != null) {
-																	final List<Predicate> removeDess =
-																			(List<Predicate>) removeDesires
-																					.value(scope);
-																	for (final Predicate removeDes : removeDess) {
-																		final MentalState tempRemoveDesires =
-																				new MentalState("Desire", removeDes);
-																		SimpleBdiArchitecture.removeDesire(scope,
-																				tempRemoveDesires);
-																	}
-																}
-																if (removeEmotions != null) {
-																	final List<Emotion> removeEmos =
-																			(List<Emotion>) removeEmotions.value(scope);
-																	for (final Emotion removeEmo : removeEmos)
-																		SimpleBdiArchitecture.removeEmotion(scope,
-																				removeEmo);
-																}
-																if (removeUncertainties != null) {
-																	final List<Predicate> removUncerts =
-																			(List<Predicate>) removeUncertainties
-																					.value(scope);
-																	for (final Predicate removUncert : removUncerts) {
-																		final MentalState tempRemoveUncertainties =
-																				new MentalState("Uncertainty",
-																						removUncert);
-																		SimpleBdiArchitecture.removeUncertainty(scope,
-																				tempRemoveUncertainties);
-																	}
-																}
-																if (removeIdeals != null) {
-																	final List<Predicate> removeIdes =
-																			(List<Predicate>) removeIdeals.value(scope);
-																	for (final Predicate removeIde : removeIdes) {
-																		final MentalState tempRemoveIdeals =
-																				new MentalState("Ideal", removeIde);
-																		SimpleBdiArchitecture.removeIdeal(scope,
-																				tempRemoveIdeals);
-																	}
-																}
-																if (removeObligations != null) {
-																	final List<Predicate> removeObls =
-																			(List<Predicate>) removeObligations
-																					.value(scope);
-																	for (final Predicate removeObl : removeObls) {
-																		final MentalState tempRemoveObligations =
-																				new MentalState("Obligation",
-																						removeObl);
-																		SimpleBdiArchitecture.removeObligation(scope,
-																				tempRemoveObligations);
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
+							if 		((obligation == null || SimpleBdiArchitecture.hasObligation(scope, tempUncertainty)) 
+								&&	(emotion == null || SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) 
+								&& 	(beliefs == null || hasBeliefs(scope, (List<Predicate>) beliefs.value(scope))) 
+								&& 	(desires == null || hasDesires(scope, (List<Predicate>) desires.value(scope))) 
+								&&	(uncertainties == null || hasUncertainties(scope, (List<Predicate>) uncertainties.value(scope))) 
+								&&	(ideals == null || hasIdeals(scope, (List<Predicate>) ideals.value(scope))) 
+								&&	(obligations == null || hasObligations(scope,(List<Predicate>) obligations.value(scope))) 
+								&&	(emotions == null || hasEmotions(scope,(List<Emotion>) emotions.value(scope))) 
+								&&	(threshold == null || emotion != null && SimpleBdiArchitecture.getEmotion(scope,(Emotion) emotion.value(scope)).intensity >= (double) threshold.value(scope))){ 
+								
+								addNewPredicates(scope);
+								
+								removePredicates(scope);
+								
+								addNewPredicateLists(scope);
+								
+								removePredicateLists(scope);
 							}
 						}
 					}
@@ -899,8 +619,221 @@ public class CopingStatement extends AbstractStatementSequence{
 			}
 		}
 		return super.privateExecuteIn(scope);
-//		return null;
 	}
+	
+	
+	/**
+	 * Adds the lists of predicates described in variables new_desires, new_beliefs, new_emotions, new_uncertainties and new_ideals 
+	 * into the SimpleBdiArchitecture's base
+	 * @param scope
+	 */
+	@SuppressWarnings("unchecked")
+	private void addNewPredicateLists(IScope scope) {
+		
+		if (newDesires != null) {
+			final List<Predicate> newDess = (List<Predicate>) newDesires.value(scope);
+			for (final Predicate newDes : newDess) {
+				final MentalState tempDesires = new MentalState("Desire", newDes);
+				if (strength != null) {
+					tempDesires.setStrength(Cast.asFloat(scope,strength.value(scope)));
+				}
+				if (lifetime != null) {
+					tempDesires.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+				}
+				SimpleBdiArchitecture.addDesire(scope, null,tempDesires);
+			}
+		}
+		if (newBeliefs != null) {
+			final List<Predicate> newBels = (List<Predicate>) newBeliefs.value(scope);
+			for (final Predicate newBel : newBels) {
+				final MentalState tempBeliefs = new MentalState("Belief", newBel);
+				if (strength != null) {
+					tempBeliefs.setStrength(Cast.asFloat(scope,strength.value(scope)));
+				}
+				if (lifetime != null) {
+					tempBeliefs.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+				}
+				SimpleBdiArchitecture.addBelief(scope,tempBeliefs);
+			}
+		}
+		if (newEmotions != null) {
+			final List<Emotion> newEmos = (List<Emotion>) newEmotions.value(scope);
+			for (final Emotion newEmo : newEmos) {
+				SimpleBdiArchitecture.addEmotion(scope, newEmo);
+			}
+		}
+		if (newUncertainties != null) {
+			final List<Predicate> newUncerts = (List<Predicate>) newUncertainties.value(scope);
+			for (final Predicate newUncert : newUncerts) {
+				final MentalState tempUncertainties = new MentalState("Uncertainty", newUncert);
+				if (strength != null) {
+					tempUncertainties.setStrength(Cast.asFloat(scope, strength.value(scope)));
+				}
+				if (lifetime != null) {
+					tempUncertainties.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
+				}
+				SimpleBdiArchitecture.addUncertainty(scope,tempUncertainties);
+			}
+		}
+		if (newIdeals != null) {
+			final List<Predicate> newIdes = (List<Predicate>) newIdeals.value(scope);
+			for (final Predicate newIde : newIdes) {
+				final MentalState tempIdeals = new MentalState("Ideal", newIde);
+				if (strength != null) {
+					tempIdeals.setStrength(Cast.asFloat(scope,strength.value(scope)));
+				}
+				if (lifetime != null) {
+					tempIdeals.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+				}
+				SimpleBdiArchitecture.addIdeal(scope,tempIdeals);
+			}
+		}
+	}
+	
+	/**
+	 * Adds the predicates described in variables new_desire, new_belief, new_emotion, new_uncertainty and new_ideal 
+	 * into the SimpleBdiArchitecture's base
+	 * @param scope
+	 */
+	private void addNewPredicates(IScope scope) {
+		
+		if	(newDesire != null) {
+			final Predicate newDes = (Predicate) newDesire.value(scope);
+			final MentalState tempNewDesire = new MentalState("Desire", newDes);
+			if (strength != null) {
+				tempNewDesire.setStrength(Cast.asFloat(scope, strength.value(scope)));
+			}
+			if (lifetime != null) {
+				tempNewDesire.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+			}
+			SimpleBdiArchitecture.addDesire(scope, null,tempNewDesire);
+		}
+		if (newBelief != null) {
+			final Predicate newBel =(Predicate) newBelief.value(scope);
+			final MentalState tempNewBelief = new MentalState("Belief", newBel);
+			if (strength != null) {
+				tempNewBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
+			}
+			if (lifetime != null) {
+				tempNewBelief.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+			}
+			SimpleBdiArchitecture.addBelief(scope,tempNewBelief);
+		}
+		if (newEmotion != null) {
+			final Emotion newEmo = (Emotion) newEmotion.value(scope);
+			SimpleBdiArchitecture.addEmotion(scope, newEmo);
+		}
+		if (newUncertainty != null) {
+			final Predicate newUncert = (Predicate) newUncertainty.value(scope);
+			final MentalState tempNewUncertainty = new MentalState("Uncertainty",newUncert);
+			if (strength != null) {
+				tempNewUncertainty.setStrength(Cast.asFloat(scope, strength.value(scope)));
+			}
+			if (lifetime != null) {
+				tempNewUncertainty.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
+			}
+			SimpleBdiArchitecture.addUncertainty(scope,tempNewUncertainty);
+		}
+		if (newIdeal != null) {
+			final Predicate newIde = (Predicate) newIdeal.value(scope);
+			final MentalState tempNewIdeal = new MentalState("Ideal", newIde);
+			if (strength != null) {
+				tempNewIdeal.setStrength(Cast.asFloat(scope, strength.value(scope)));
+			}
+			if (lifetime != null) {
+				tempNewIdeal.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
+			}
+			SimpleBdiArchitecture.addIdeal(scope,tempNewIdeal);
+		}
+	}
+	
+	/**
+	 * Removes the predicates given in the variables: remove_belief, remove_desire, remove_emotion,
+	 * remove_uncertaintie, remove_ideal and remove_obligation from the base in SimpleBdiArchitecture
+	 * @param scope
+	 */
+	private void removePredicates(IScope scope) {
+
+		if (removeBelief != null) {
+			final Predicate removBel = (Predicate) removeBelief.value(scope);
+			final MentalState tempRemoveBelief = new MentalState("Belief", removBel);
+			SimpleBdiArchitecture.removeBelief(scope,tempRemoveBelief);
+		}
+		if (removeDesire != null) {
+			final Predicate removeDes = (Predicate) removeDesire.value(scope);
+			final MentalState tempRemoveDesire = new MentalState("Desire", removeDes);
+			SimpleBdiArchitecture.removeDesire(scope,tempRemoveDesire);
+		}
+		if (removeIntention != null) {
+			final Predicate removeInt = (Predicate) removeIntention.value(scope);
+			final MentalState tempRemoveIntention = new MentalState("Intention", removeInt);
+			SimpleBdiArchitecture.removeIntention(scope,tempRemoveIntention);
+		}
+		if (removeEmotion != null) {
+			final Emotion removeEmo = (Emotion) removeEmotion.value(scope);
+			SimpleBdiArchitecture.removeEmotion(scope, removeEmo);
+		}
+		if (removeUncertainty != null) {
+			final Predicate removUncert = (Predicate) removeUncertainty.value(scope);
+			final MentalState tempRemoveUncertainty = new MentalState("Uncertainty",removUncert);
+			SimpleBdiArchitecture.removeUncertainty(scope,tempRemoveUncertainty);
+		}
+		if (removeIdeal != null) {
+			final Predicate removeIde = (Predicate) removeIdeal.value(scope);
+			final MentalState tempRemoveIde = new MentalState("Ideal", removeIde);
+			SimpleBdiArchitecture.removeIdeal(scope,tempRemoveIde);
+		}
+		if (removeObligation != null) {
+			final Predicate removeObl = (Predicate) removeObligation.value(scope);
+			final MentalState tempRemoveObl = new MentalState("Obligation",removeObl);
+			SimpleBdiArchitecture.removeObligation(scope,tempRemoveObl);
+		}
+	}
+	
+	/**
+	 * Removes the predicates given in the lists of predicates: remove_beliefs, remove_desires, remove_emotions,
+	 * remove_uncertainties, remove_ideals and remove_obligations from the base in SimpleBdiArchitecture
+	 * @param scope
+	 */
+	@SuppressWarnings("unchecked")
+	private void removePredicateLists(IScope scope) {
+
+		final List<Predicate> removBels = removeBeliefs != null ? (List<Predicate>) removeBeliefs.value(scope) : List.of();
+		for (final Predicate removBel : removBels) {
+			final MentalState tempRemoveBeliefs = new MentalState("Belief", removBel);
+			SimpleBdiArchitecture.removeBelief(scope,tempRemoveBeliefs);
+		}
+
+		final List<Predicate> removeDess = removeDesires != null ? (List<Predicate>) removeDesires.value(scope) : List.of();
+		for (final Predicate removeDes : removeDess) {
+			final MentalState tempRemoveDesires = new MentalState("Desire", removeDes);
+			SimpleBdiArchitecture.removeDesire(scope,tempRemoveDesires);
+		}
+
+		final List<Emotion> removeEmos = removeEmotions != null ? (List<Emotion>) removeEmotions.value(scope) : List.of();
+		for (final Emotion removeEmo : removeEmos) {
+			SimpleBdiArchitecture.removeEmotion(scope,removeEmo);
+		}
+		
+		final List<Predicate> removUncerts = removeUncertainties != null ? (List<Predicate>) removeUncertainties.value(scope) : List.of();
+		for (final Predicate removUncert : removUncerts) {
+			final MentalState tempRemoveUncertainties = new MentalState("Uncertainty",removUncert);
+			SimpleBdiArchitecture.removeUncertainty(scope,tempRemoveUncertainties);
+		}
+	
+		final List<Predicate> removeIdes = removeIdeals != null ? (List<Predicate>) removeIdeals.value(scope) : List.of();
+		for (final Predicate removeIde : removeIdes) {
+			final MentalState tempRemoveIdeals = new MentalState("Ideal", removeIde);
+			SimpleBdiArchitecture.removeIdeal(scope,tempRemoveIdeals);
+		}
+		
+		final List<Predicate> removeObls = removeObligation != null ? (List<Predicate>)removeObligations.value(scope) : List.of();
+		for (final Predicate removeObl : removeObls) {
+			final MentalState tempRemoveObligations = new MentalState("Obligation",removeObl);
+			SimpleBdiArchitecture.removeObligation(scope,tempRemoveObligations);
+		}
+	}
+	
 	
 	/**
 	 * Checks for beliefs.

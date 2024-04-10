@@ -356,8 +356,7 @@ public class Predicate implements IValue {
 
 	@Override
 	public String toString() {
-		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause)
-				+ "," + is_true + ")";
+		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause) + "," + is_true + ")";
 	}
 
 	@Override
@@ -383,9 +382,12 @@ public class Predicate implements IValue {
 	 *             the gama runtime exception
 	 */
 	public Predicate copy() throws GamaRuntimeException {
-		if (values != null && agentCause != null) return new Predicate(name,
-				((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()), is_true, agentCause);
-		if (values != null) return new Predicate(name, ((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()));
+		if (values != null && agentCause != null) { 
+			return new Predicate(name,((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()), is_true, agentCause);
+		}
+		if (values != null) {
+			return new Predicate(name, ((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()));
+		}
 		return new Predicate(name);
 	}
 

@@ -148,16 +148,12 @@ public class BDIPlan implements IValue {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "BDIPlan(" + planstatement.getName()
-		// +(values == null ? "" : "," + values) +
-				+ ")";
+		return "BDIPlan(" + planstatement.getName() + ")";
 	}
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return "BDIPlan(" + planstatement.getName() + ")"
-		// +(values == null ? "" : "," + values)
-		;
+		return serializeToGaml(true);
 	}
 
 	@Override

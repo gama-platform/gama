@@ -14,9 +14,9 @@ import java.util.Objects;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -34,15 +34,15 @@ import gama.gaml.types.Types;
 		type = IType.STRING,
 		doc = @doc ("the name of the emotion")),
 		@variable (
-				name = "intensity",
+				name = IKeyword.INTENSITY,
 				type = IType.FLOAT,
-				doc = @doc ("the intensity of the emotion")),
+				doc = @doc ("the intensity of the emotion (between 0 and 1)")),
 		@variable (
-				name = "about",
+				name = Emotion.ABOUT,
 				type = PredicateType.id,
 				doc = @doc ("the predicate about which is the emotion")),
 		@variable (
-				name = "decay",
+				name = Emotion.DECAY,
 				type = IType.FLOAT,
 				doc = @doc ("the decay value of the emotion")),
 		@variable (
@@ -50,18 +50,25 @@ import gama.gaml.types.Types;
 				type = IType.AGENT,
 				doc = @doc ("the agent causing the emotion")),
 		@variable (
-				name = "owner",
+				name = SimpleBdiArchitecture.OWNER,
 				type = IType.AGENT,
 				doc = @doc ("the agent owning the emotion")) })
 public class Emotion implements IValue {
+	
+
+	/** The Constant DECAY. */
+	public static final String DECAY = "decay";
+
+	public static final String ABOUT = "about";
+	
 
 	@Override
 	public JsonValue serializeToJson(final Json json) {
 		return json
-				.typedObject(getGamlType(), "name", name, "intensity", intensity, "about",
+				.typedObject(getGamlType(), "name", name, IKeyword.INTENSITY, intensity, ABOUT,
 						about == null ? null : about.getName(), "decay", decay)
 				.add(SimpleBdiArchitecture.AGENT_CAUSE, agentCause)
-				.add("owner", owner);
+				.add(SimpleBdiArchitecture.OWNER, owner);
 	}
 
 	/** The name. */
@@ -106,7 +113,7 @@ public class Emotion implements IValue {
 	 *
 	 * @return the about
 	 */
-	@getter ("about")
+	@getter (ABOUT)
 	public Predicate getAbout() { return about; }
 
 	/**
@@ -130,7 +137,7 @@ public class Emotion implements IValue {
 	 *
 	 * @return the owner
 	 */
-	@getter ("owner")
+	@getter (SimpleBdiArchitecture.OWNER)
 	public IAgent getOwner() { return owner; }
 
 	/**
@@ -443,8 +450,8 @@ public class Emotion implements IValue {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		if (intensity > 0) return "emotion(" + name + "," + intensity + "," + about + "," + decay + "," + agentCause
-				+ "," + owner + ")";
+		if (intensity > 0) 
+			return "emotion(" + name + "," + intensity + "," + about + "," + decay + "," + agentCause + "," + owner + ")";
 		return "emotion(" + name + "," + about + "," + decay + "," + agentCause + "," + owner + ")";
 	}
 

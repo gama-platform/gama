@@ -22,9 +22,8 @@ import gama.gaml.types.IType;
 /**
  * The Class MentalStateType.
  */
-@SuppressWarnings ("unchecked")
 @type (
-		name = "mental_state",
+		name = SimpleBdiArchitecture.MENTAL_STATE,
 		id = MentalStateType.id,
 		wraps = { MentalState.class },
 		concept = { IConcept.TYPE, IConcept.BDI })
@@ -39,7 +38,6 @@ public class MentalStateType extends GamaType<MentalState> {
 		return true;
 	}
 
-	@SuppressWarnings ({ "rawtypes" })
 	@Override
 	@doc ("cast an object as a mental state if it is an instance o a mental state")
 	public MentalState cast(final IScope scope, final Object obj, final Object val, final boolean copy)

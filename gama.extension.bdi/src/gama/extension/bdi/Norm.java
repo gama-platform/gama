@@ -16,6 +16,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -103,7 +104,7 @@ public class Norm implements IValue {
 	 *
 	 * @return the when
 	 */
-	@getter ("when")
+	@getter (IKeyword.WHEN)
 	public String getWhen() { return this.normStatement._when.serializeToGaml(true); }
 
 	/**

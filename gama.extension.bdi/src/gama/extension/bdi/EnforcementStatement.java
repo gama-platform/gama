@@ -80,7 +80,7 @@ import gama.gaml.types.IType;
 		examples = {
 				@example ("focus var:speed; //where speed is a variable from a species that is being perceived") })
 
-// statement servant à controler les normes pour appliquer des sanctions, sur le moodèle du focus
+// statement servant à controler les normes pour appliquer des sanctions, sur le modèle du focus
 public class EnforcementStatement extends AbstractStatement {
 
 	/** The Constant ENFORCEMENT. */
@@ -150,172 +150,119 @@ public class EnforcementStatement extends AbstractStatement {
 				scopeMySelf.push(mySelfAgent);
 			}
 			if (norm != null) {
-				// on recherche la norme avec le même nom chez l'autre et on regarde si elle est violée
-				Norm normToTest = null;
-				// Améliorable en temps de calcul
+				// getting the norm object from the name
 				for (final Norm tempNorm : SimpleBdiArchitecture.getNorms(scope)) {
 					if (tempNorm.getName().equals(norm.value(scopeMySelf))) {
-						normToTest = tempNorm;
-					}
-				}
-				if (normToTest != null) {
-					if (normToTest.getViolated() && sanction != null) {
-						// On applique la sanction
-						Sanction sanctionToExecute = null;
-						// Améliorable en temps de calcul
-						for (final Sanction tempSanction : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
-							if (tempSanction.getName().equals(sanction.value(scopeMySelf))) {
-								sanctionToExecute = tempSanction;
-							}
+						//if the norm has been violated we try to apply the sanction
+						//otherwise if the norm is respected we apply a reward 
+						final Object toExecute;
+						if (tempNorm.getViolated() && sanction != null) {
+							toExecute = sanction.value(scopeMySelf);
 						}
-						// Ici, la sanction est exécutée dans le contexte de l'agent controleur car la sanction est
-						// indirecte contre une norme sociale
-						// return sanctionToExecute.getSanctionStatement().executeOn(scopeMySelf);
-						if (sanctionToExecute != null) {
-							retour = sanctionToExecute.getSanctionStatement().executeOn(scopeMySelf);
+						else if (tempNorm.getApplied() && reward != null) {
+							toExecute = reward.value(scopeMySelf);
 						}
-					} else if (normToTest.getApplied() && reward != null) {
-						// on applique le reward
-						Sanction rewardToExecute = null;
-						// Améliorable en temps de calcul
-						for (final Sanction tempReward : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
-							if (tempReward.getName().equals(reward.value(scopeMySelf))) {
-								rewardToExecute = tempReward;
-							}
+						else {
+							continue;
 						}
-						// Ici, le reward est exécuté dans le contexte de l'agent controleur car la sanction est
-						// indirecte contre une norme sociale
-						// return rewardToExecute.getSanctionStatement().executeOn(scopeMySelf);
-						if (rewardToExecute != null) {
-							retour = rewardToExecute.getSanctionStatement().executeOn(scopeMySelf);
+						// Both sanctions and rewards are stored in the sanction base
+						var firstSanction = SimpleBdiArchitecture.getSanctions(scopeMySelf).stream().filter(sanc -> toExecute.equals(sanc.getName())).findFirst();
+						if (firstSanction.isPresent()) {
+							// The sanction or reward are executed on the controller agent's context 
+							// because they are indirect against a social norm
+							retour = firstSanction.get().getSanctionStatement().executeOn(scopeMySelf);	
+							break;
 						}
 					}
 				}
 			}
+			
 			if (obligation != null) {
 				// on regarde si la base des obligations de l'autre est vide, si non, on regarde s'il a appliqué une
 				// norme portant sur l'obligation à vérifiée.
-				// Les sanctions et rewards seront ici appliquées dans le cadre de l'agent controlé car directe
+				// Les sanctions et rewards seront ici appliqués dans le cadre de l'agent controlé car directe
+				//TODO: last remark is not applied in the code, idk if the problem is the remark or the code
 				final MentalState tempObligation = new MentalState("obligation", (Predicate) obligation.value(scope));
 				if (SimpleBdiArchitecture.hasObligation(scope, tempObligation)) {
-					// si ma norme en cours répond à l'obligation , reward, sinon punition.
-					Norm tempNorm = null;// new Norm ((NormStatement)scope.getAgent().getAttribute("CURRENT_NORM"));
+					// si la norme en cours répond à l'obligation , reward, sinon punition.
 					for (final Norm testNorm : SimpleBdiArchitecture.getNorms(scope)) {
-						if (testNorm.getObligation(scope) != null
-								&& testNorm.getObligation(scope).equals(tempObligation.getPredicate())) {
-							tempNorm = testNorm;
-						}
-					}
-					if (tempNorm != null && !tempNorm.getSanctioned()) {
-						if (reward != null && tempNorm.getApplied()) {// &&
-																		// tempNorm.getNormStatement()!=null
-																		// &&
-																		// tempNorm.getObligation(scope)!=null
-																		// &&
-																		// tempNorm.getObligation(scope).equals(tempObligation.getPredicate())){
-							Sanction rewardToExecute = null;
-							// Améliorable en temps de calcul
-							for (final Sanction tempReward : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
-								if (tempReward.getName().equals(reward.value(scopeMySelf))) {
-									rewardToExecute = tempReward;
-								}
+						if (tempObligation.getPredicate().equals(testNorm.getObligation(scope)) && !testNorm.getSanctioned()) {
+							final Object toExecute;
+							if (testNorm.getApplied() && reward != null) {
+								toExecute = reward.value(scopeMySelf);
 							}
-							// Ici, le reward est exécuté dans le contexte de l'agent controleur car la sanction est
-							// indirecte contre une norme sociale
-							// return rewardToExecute.getSanctionStatement().executeOn(scopeMySelf);
-							if (rewardToExecute != null) {
-								retour = rewardToExecute.getSanctionStatement().executeOn(scopeMySelf);
+							else if (/*testNorm.getViolated() && */ sanction != null) { 
+								//commented getViolated according to comment above, but I'm not sure
+								//TODO: if it has to be restored then we can refactor with the norm block above
+								toExecute = sanction.value(scopeMySelf);
 							}
-							tempNorm.sanctioned();
-						} else {
-							if (sanction != null/* && tempNorm.getNormStatement()==null) */ /*|| sanction != null
-									&& tempNorm.getViolated()*/) {// &&
-																// tempNorm.getNormStatement()!=null
-																// &&
-																// tempNorm.getObligation(scope)!=null
-																// &&
-																// !tempNorm.getObligation(scope).equals(tempObligation.getPredicate()))){
-								Sanction sanctionToExecute = null;
-								// Améliorable en temps de calcul
-								for (final Sanction tempSanction : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
-									if (tempSanction.getName().equals(sanction.value(scopeMySelf))) {
-										sanctionToExecute = tempSanction;
-									}
-								}
-								// Ici, le reward est exécuté dans le contexte de l'agent controleur car la sanction est
-								// indirecte contre une norme sociale
-								// return sanctionToExecute.getSanctionStatement().executeOn(scopeMySelf);
-								if (sanctionToExecute != null) {
-									retour = sanctionToExecute.getSanctionStatement().executeOn(scopeMySelf);
-								}
-								tempNorm.sanctioned();
+							else {
+								continue;
 							}
+							
+							// Both sanctions and rewards are stored in the sanction base
+							var firstSanction = SimpleBdiArchitecture.getSanctions(scopeMySelf).stream().filter(sanc -> toExecute.equals(sanc.getName())).findFirst();
+							if (firstSanction.isPresent()) {
+								// The sanction or reward are executed on the controller agent's context 
+								// because they are indirect against a social norm
+								retour = firstSanction.get().getSanctionStatement().executeOn(scopeMySelf);	
+								break;
+							}
+
+							testNorm.sanctioned();						
 						}
 					}
 				}
 			}
+			// If there's a law we look up for it in the base and check if it's been violated
 			if (law != null) {
-				// on recherche la norme avec le même nom chez l'autre et on regarde si elle est violée
-				LawStatement lawToTest = null;
-				Double obedienceValue = (Double) scope.getAgent().getAttribute("obedience");
-				Boolean isViolated = true;
-				// Améliorable en temps de calcul
+				double obedienceValue = (double) scope.getAgent().getAttribute("obedience");
 				for (final LawStatement tempLaw : SimpleBdiArchitecture.getLaws(scope)) {
 					if (tempLaw.getName().equals(law.value(scopeMySelf))) {
-						lawToTest = tempLaw;
+						retour = applySanctionOrReward(scope, scopeMySelf, tempLaw, obedienceValue);
+						break;
 					}
 				}
-				if (lawToTest != null) {
-					if (lawToTest.getContextExpression() == null
-							|| gama.gaml.operators.Cast.asBool(scope, lawToTest.getContextExpression().value(scope))) {
-						if (lawToTest.getBeliefExpression() == null
-								|| lawToTest.getBeliefExpression().value(scope) == null
-								|| SimpleBdiArchitecture.hasBelief(scope, new MentalState("Belief",
-										(Predicate) lawToTest.getBeliefExpression().value(scope)))) {
-							if (lawToTest.getObligationExpression() == null
-									|| lawToTest.getObligationExpression().value(scope) == null
-									|| SimpleBdiArchitecture.hasObligation(scope, new MentalState("Obligation",
-											(Predicate) lawToTest.getObligationExpression().value(scope)))) {
-								if(lawToTest.getThreshold() == null
-										|| lawToTest.getThreshold().value(scope) == null
-										|| obedienceValue>= (Double) lawToTest.getThreshold().value(scope)) {
-									isViolated = false;
-								if (reward != null) {
-									Sanction rewardToExecute = null;
-									// Améliorable en temps de calcul
-									for (final Sanction tempReward : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
-										if (tempReward.getName().equals(reward.value(scopeMySelf))) {
-											rewardToExecute = tempReward;
-										}
-									}
-									if (rewardToExecute != null) {
-										retour = rewardToExecute.getSanctionStatement().executeOn(scopeMySelf);
-									}
-								}
-							} 
-						}
-					} 
-					} if(isViolated) {
-								if (sanction != null) {
-									Sanction sanctionToExecute = null;
-									// Améliorable en temps de calcul
-									for (final Sanction tempSanction : SimpleBdiArchitecture
-											.getSanctions(scopeMySelf)) {
-										if (tempSanction.getName().equals(sanction.value(scopeMySelf))) {
-											sanctionToExecute = tempSanction;
-										}
-									}
-									if (sanctionToExecute != null) {
-										retour = sanctionToExecute.getSanctionStatement().executeOn(scopeMySelf);
-									}
-								}
-							}
-				}
+				
 			}
 		
 			GAMA.releaseScope(scopeMySelf);
 		}
 		return retour;
+	}
+	
+	
+	
+
+	private Object applySanctionOrReward(IScope scope, IScope scopeMySelf, LawStatement tempLaw, double obedience) {
+		if 	(		(tempLaw.getContextExpression() == null 
+				|| gama.gaml.operators.Cast.asBool(scope, tempLaw.getContextExpression().value(scope))) 
+			&& (	tempLaw.getBeliefExpression() == null
+				|| tempLaw.getBeliefExpression().value(scope) == null
+				|| SimpleBdiArchitecture.hasBelief(scope, new MentalState("Belief",(Predicate) tempLaw.getBeliefExpression().value(scope)))) 
+			&& (	tempLaw.getObligationExpression() == null
+				|| tempLaw.getObligationExpression().value(scope) == null
+				|| SimpleBdiArchitecture.hasObligation(scope, new MentalState("Obligation", (Predicate) tempLaw.getObligationExpression().value(scope)))) 
+			&&(		tempLaw.getThreshold() == null
+				|| tempLaw.getThreshold().value(scope) == null
+				|| obedience >= (double) tempLaw.getThreshold().value(scope))) {
+			
+			if (reward != null) {
+				for (final Sanction tempReward : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
+					if (tempReward.getName().equals(reward.value(scopeMySelf))) {
+						return tempReward.getSanctionStatement().executeOn(scopeMySelf);
+					}
+				}
+			}
+		} 
+		else if (sanction != null) {
+			for (final Sanction tempSanction : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {
+				if (tempSanction.getName().equals(sanction.value(scopeMySelf))) {
+					return tempSanction.getSanctionStatement().executeOn(scopeMySelf);
+				}
+			}
+		}
+		return null;
 	}
 
 }
