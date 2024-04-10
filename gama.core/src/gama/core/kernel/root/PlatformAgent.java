@@ -513,9 +513,12 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			name = "send",
 			args = @arg (
 					name = IKeyword.MESSAGE,
-					optional = false))
+					optional = false,
+					doc = @doc ( value = "The message to send")
+					)
+			)
 	public Object sendMessageThroughServer(final IScope scope) {
-		Object message = scope.getArg(IKeyword.MESSAGE);
+		Object message = scope.getArg(IKeyword.MESSAGE, IType.NONE);
 		sendMessage(scope, message);
 		return message;
 	}

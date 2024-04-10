@@ -569,33 +569,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 */
 	void addVarWithValue(String varName, Object val);
 
-	/**
-	 * Access to arguments (of actions).
-	 *
-	 * @param string
-	 *            the string
-	 * @param type
-	 *            the type
-	 * @return the arg
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-
-	default Object getArg(final String string) {
-		return getArg(string, IType.NONE);
-	}
-	
-	/**
-	 * Check if the arg is present or not, if so returns it, else returns null
-	 * @param string
-	 * @return
-	 */
-	default Object getArgIfExists(final String string) {
-		if (hasArg(string)) {
-			return getArg(string);
-		}
-		return null;
-	}
 
 	/**
 	 * Gets the arg with a cast
@@ -612,20 +585,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 
 	
 	/**
-	 * Checks if the arg is present or not, if so casts it into the T type and returns it, else returns null
-	 * @param <T> the type to cast the return value to
-	 * @param string the name of the argument to check for
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	default <T> T getTypedArgIfExists(final String string) {
-		if (hasArg(string)) {
-			return (T)getArg(string);
-		}
-		return null;
-	}
-	
-	/**
 	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method, else returns null
 	 * @param string
 	 * @return
@@ -638,18 +597,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	}
 	
 	/**
-	 * get the arg and casts it into the asked type
-	 * @param <T> the type to cast the arg to
-	 * @param string the arg to get
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	default <T> T getTypedArg(final String string) {
-		return (T) getArg(string);
-	}
-	
-	/**
-	 * get the arg and casts it into the asked type
+	 * get the argument of an action and casts it into the asked type
 	 * @param <T> the type to cast the arg to
 	 * @param string the arg to get
 	 * @param type the type to use in getArg
@@ -661,7 +609,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	}
 	
 	/**
-	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns null
+	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns null
 	 * @param <T> the return type
 	 * @param string the argument to check for
 	 * @param type the type_id to use in the getArg function
@@ -672,7 +620,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	}
 	
 	/**
-	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns the default value given
+	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns the default value given
 	 * @param <T> the return type
 	 * @param string the argument to check
 	 * @param type the type_id to use in the getArg function

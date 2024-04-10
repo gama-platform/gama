@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Objects;
-
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
