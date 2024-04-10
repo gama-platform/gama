@@ -509,6 +509,8 @@ public interface IKeyword {
 
 	/** The int. */
 	String INT = "int";
+	
+	String INTENSITY = "intensity";
 
 	/** The internal. */
 	String INTERNAL = "_internal_";

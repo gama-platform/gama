@@ -89,7 +89,7 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("a boolean expression telling if the light is on or off. (default value if not specified : true)")),
 				@facet (
-						name = "intensity",
+						name = IKeyword.INTENSITY,
 						type = { IType.INT, IType.COLOR },
 						optional = true,
 						doc = @doc ("an int / rgb / rgba value to specify either the color+intensity of the light or simply its intensity. (default value if not specified can be set in the Preferences. If not, it is equal to: (160,160,160,255) ).")),

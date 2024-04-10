@@ -77,7 +77,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		drawAttribute = create("show", Types.BOOL, false);
 		activeAttribute = create("active", Types.BOOL, true);
 		Integer i = GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue();
-		intensityAttribute = create("intensity", (scope, exp) -> {
+		intensityAttribute = create(IKeyword.INTENSITY, (scope, exp) -> {
 			if (exp.getGamlType() == Types.INT) {
 				int v = Cast.asInt(scope, exp.value(scope));
 				return GamaColor.get(v, v, v, 255);
