@@ -479,8 +479,8 @@ public class Predicate implements IValue {
 			final Set<String> keys = values.keySet();
 			keys.retainAll(other.values.keySet());
 			for (final String k : keys) {
-				if (this.values.get(k) == null && other.values.get(k) != null
-						|| !values.get(k).equals(other.values.get(k)))
+				if (	values.get(k) == null && other.values.get(k) != null
+					|| !values.get(k).equals(other.values.get(k)))
 					return false;
 			}
 		}
