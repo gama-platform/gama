@@ -691,6 +691,18 @@ public interface IScope extends Closeable, IBenchmarkable {
 	Boolean getBoolArg(String string) throws GamaRuntimeException;
 
 	/**
+	 * Returns the argument using getBoolArg if it exists, else returns ifNotExist value
+	 * @param string
+	 * @param ifNotExist
+	 * @return
+	 */
+	default boolean getBoolArgIfExists(String string, boolean ifNotExist) {
+		if (hasArg(string)) {
+			return getBoolArg(string);
+		}
+		return ifNotExist;
+	}
+	/**
 	 * Checks for arg.
 	 *
 	 * @param string
