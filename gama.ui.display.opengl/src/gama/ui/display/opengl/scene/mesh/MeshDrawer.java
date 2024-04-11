@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * MeshDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -371,10 +371,15 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 *            the y
 	 */
 	private void setColor(final double z, final int x0, final int y0) {
-		var x = x0 < 0 ? 0 : x0 > cols - 1 ? cols - 1 : x0;
-		var y = y0 < 0 ? 0 : y0 > rows - 1 ? rows - 1 : y0;
+		var x = x0 < 0 ? 0 : x0 > cols ? cols : x0;
+		var y = y0 < 0 ? 0 : y0 > rows ? rows : y0;
 		// Outputs either a texture coordinate or the color of the vertex or both
-		if (outputsTextures) { texBuffer.put((double) x / (double) (cols - 1)).put((double) y / (double) (rows - 1)); }
+		if (outputsTextures) {
+			// See Issue #144 : cols - 1 and rows - 1 replaced by cols and rows.
+			// DEBUG.OUT("Texture coordinates added to the buffer = " + (double) x / (double) cols + " x "
+			// + (double) y / (double) rows + " for vertex " + x0 + " x " + y0);
+			texBuffer.put((double) x / (double) cols).put((double) y / (double) rows);
+		}
 		if (outputsColors) {
 			if (above != MeshLayerData.ABOVE && z < above) {
 				colorBuffer.put(TRANSPARENT, 0, 4);
