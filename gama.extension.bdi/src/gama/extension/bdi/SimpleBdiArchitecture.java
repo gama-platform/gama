@@ -31,6 +31,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -749,6 +750,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	protected final boolean selectMentalStateWithHighestPriority(final IScope scope, final String base, boolean testListPlans, Function<NormStatement, Predicate> getExpression) {
 		final IAgent agent = getCurrentAgent(scope);
 		final Boolean is_probabilistic_choice = scope.getBoolArgIfExists(PROBABILISTIC_CHOICE, (Boolean) agent.getAttribute(PROBABILISTIC_CHOICE));
+		
 		final List<BDIPlan> listPlans = getPlans(scope) == null ? Collections.emptyList() : getPlans(scope);
 		final List<Norm> listNorm = getNorms(scope);
 
@@ -766,15 +768,16 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				return false;
 			}
 
-			for (final MentalState tempMentalState : getBase(scope, base)) {
+			for (final MentalState tempMentalState : mentalStateBase) {
 				final Predicate predicate = tempMentalState.getPredicate();
-				//TODO: I guess we stop at the first item found and the previous code was wrong/forgot to break when one is found						
-				if (	testListPlans && listPlans.stream().anyMatch(p -> ((Predicate)p.getPlanStatement().getIntentionExpression().value(scope)).equalsIntentionPlan(predicate))) {
-					listMentalStatesTest.add(tempMentalState); 
+				//TODO: this code looks a lot like addMentalStatesWithMatchingIntentions but a bit less strict, probably an error somewhere
+				//TODO: This code adds tempMentalState as many times as there are matching plans and norms, which seems weird but that's how it was written initialy
+				if (testListPlans) {
+					listPlans.stream().filter(p -> ((Predicate)p.getPlanStatement().getIntentionExpression().value(scope)).equalsIntentionPlan(predicate))
+							.forEach(i -> listMentalStatesTest.add(tempMentalState)); 
 				}
-				if (listNorm.stream().anyMatch(p -> getExpression.apply(p.getNormStatement()).equalsIntentionPlan(predicate))) {
-					listMentalStatesTest.add(tempMentalState);					
-				}
+				listNorm.stream().filter(p -> getExpression.apply(p.getNormStatement()).equalsIntentionPlan(predicate)) 
+						.forEach(i -> listMentalStatesTest.add(tempMentalState));					
 			}
 			MentalState newIntention = mentalStateBase.getFirst();
 			double newIntStrength;
@@ -792,51 +795,11 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					newIntStrength = listMentalStatesTest.get(index_choice2).getStrength();
 				}
 			}
-			MentalState newIntentionState = null;
-			if (newIntention.getPredicate() != null) {
-				newIntentionState = new MentalState("Intention", newIntention.getPredicate(), newIntStrength,
-						newIntention.getLifeTime(), scope.getAgent());
-			}
-			if (newIntention.getMentalState() != null) {
-				newIntentionState = new MentalState("Intention", newIntention.getMentalState(), newIntStrength,
-						newIntention.getLifeTime(), scope.getAgent());
-			}
-			if (newIntention.getPredicate() != null && newIntention.getPredicate().getSubintentions() == null && !intentionBase.contains(newIntentionState)) {
-				intentionBase.addValue(scope, newIntentionState);
-				return true;
-			} else if (newIntention.getPredicate() != null) {
-				for (int i = 0; i < newIntention.getPredicate().getSubintentions().size(); i++) {
-					if (!mentalStateBase.contains(newIntention.getPredicate().getSubintentions().get(i))) {
-						mentalStateBase.addValue(scope, newIntention.getPredicate().getSubintentions().get(i));
-					}
-				}
-				newIntention.getPredicate().setOnHoldUntil(newIntention.getPredicate().getSubintentions());
-				if (!intentionBase.contains(newIntentionState)) {
-					intentionBase.addValue(scope, newIntentionState);
-					return true;
-				}
-			}
+			return addInMentalStateBase(scope, newIntention, newIntStrength, base);
 		} else {
 
 			scope.getRandom().shuffleInPlace(mentalStateBase);//TODO:why ?
-			for (final MentalState tempMentalState : mentalStateBase) {
-				//TODO: this is just rewriting the old method but it feels like this should be refactored and it was probably partially wrong
-				if (testListPlans && listPlans.stream().filter(p -> p != null && p.getPlanStatement() != null)
-							.map(p -> p.getPlanStatement().getIntentionExpression())
-							.anyMatch(i -> i == null || i.value(scope) == null || ((Predicate)i.value(scope)).equalsIntentionPlan(tempMentalState.getPredicate()))
-					|| listNorm.stream().map(n -> n.getNormStatement().getIntentionExpression())
-						.anyMatch(i -> i != null && ((Predicate)i.value(scope)).equalsIntentionPlan(tempMentalState.predicate))) {
-						listMentalStatesTest.add(tempMentalState);
-				}
-				//TODO: could an item in the list really be null ? probably useless condition
-				else if (listNorm.stream().filter(n -> n != null && n.getNormStatement() != null)
-						.map(n -> n.getNormStatement())
-						.anyMatch(s ->  s.getIntentionExpression() == null || s.getIntentionExpression().value(scope) == null
-							|| (s.getObligationExpression() != null && ((Predicate)s.getObligationExpression().value(scope)).equalsIntentionPlan(tempMentalState)))){
-					listMentalStatesTest.add(tempMentalState);						
-				}
-			}
-			final IList<MentalState> statesBase = getBase(scope, base);//TODO:why do we get those again ?
+			addMentalStatesWithMatchingIntentions(scope, mentalStateBase, listMentalStatesTest, testListPlans);
 
 			double maxpriority = Double.MIN_VALUE;
 			if (listMentalStatesTest.isEmpty() || intentionBase == null) {
@@ -855,24 +818,54 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				return false;
 			}
 			
-			MentalState newIntentionState = null;
-			final Predicate predicate = newIntention.getPredicate();
-			int lifetime = newIntention.getLifeTime();
-			if (predicate != null) {
-				newIntentionState = new MentalState("Intention", predicate, maxpriority, lifetime, scope.getAgent());
+			return addInMentalStateBase(scope, newIntention, maxpriority, base);
+		}
+
+	}
+
+	
+	private void addMentalStatesWithMatchingIntentions(final IScope scope, final IList<MentalState> mentalStateBase, List<MentalState> listMentalStatesTest, boolean testListPlans) {
+		
+		final List<BDIPlan> listPlans = getPlans(scope) == null ? Collections.emptyList() : getPlans(scope);
+		final List<Norm> listNorm = getNorms(scope);
+		for (final MentalState tempMentalState : mentalStateBase) {
+			//TODO: this is just rewriting the old method but it feels like this should be refactored and it was probably partially wrong
+			//TODO: could an item in the lists really be null ? probably useless conditions
+			//TODO: This code adds tempMentalState as many times as there are matching plans and norms, which seems weird but that's how it was written initialy
+			if (testListPlans) {
+				listPlans.stream().filter(p -> p != null && p.getPlanStatement() != null)
+								.map(p -> p.getPlanStatement().getIntentionExpression())
+						.filter(i -> i == null || i.value(scope) == null || ((Predicate)i.value(scope)).equalsIntentionPlan(tempMentalState.getPredicate()))
+						.forEach(i -> listMentalStatesTest.add(tempMentalState));		
 			}
-			if (newIntention.getMentalState() != null) {
-				newIntentionState = new MentalState("Intention", newIntention.getMentalState(), maxpriority, lifetime, scope.getAgent());
-			}
-			if (predicate != null && predicate.getSubintentions() == null && !intentionBase.contains(newIntentionState)) {
+			listNorm.stream().filter(n -> n != null && n.getNormStatement() != null)
+				.map(n -> n.getNormStatement())
+				.filter(s ->  	s.getIntentionExpression() == null || s.getIntentionExpression().value(scope) == null
+							|| (s.getObligationExpression() != null && ((Predicate)s.getObligationExpression().value(scope)).equalsIntentionPlan(tempMentalState)))
+				.forEach(s -> listMentalStatesTest.add(tempMentalState));						
+		}
+	}
+
+	private boolean addInMentalStateBase(final IScope scope, MentalState newIntention, double maxpriority, String base) {
+		MentalState newIntentionState = null;
+		var intentionBase = getBase(scope, INTENTION_BASE);
+		var mentalStateBase = getBase(scope, base);
+		final Predicate predicate = newIntention.getPredicate();
+		int lifetime = newIntention.getLifeTime();
+		if (predicate != null) {
+			newIntentionState = new MentalState("Intention", predicate, maxpriority, lifetime, scope.getAgent());
+		}
+		if (newIntention.getMentalState() != null) {
+			newIntentionState = new MentalState("Intention", newIntention.getMentalState(), maxpriority, lifetime, scope.getAgent());
+		}
+		if (predicate != null) {
+			if (predicate.getSubintentions() == null && !intentionBase.contains(newIntentionState)) {
 				intentionBase.addValue(scope, newIntentionState);
 				return true;
-			} else if (predicate != null) {
-				for (int i = 0; i < predicate.getSubintentions().size(); i++) {
-					if (!statesBase.contains(predicate.getSubintentions().get(i))) {
-						statesBase.addValue(scope, predicate.getSubintentions().get(i));
-					}
-				}
+			} else {
+				//add into the base all the mentalstates that were subintentions of the predicate but not in the base yet
+				predicate.getSubintentions().stream().filter(s -> !mentalStateBase.contains(s)).forEach(i -> mentalStateBase.addValue(scope, i));
+
 				predicate.setOnHoldUntil(predicate.getSubintentions());
 				if (!intentionBase.contains(newIntentionState)) {
 					intentionBase.addValue(scope, newIntentionState);
@@ -880,11 +873,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 			}
 		}
-
 		return false;
 	}
 
-	
 	/**
 	 * Select desire with highest priority.
 	 *

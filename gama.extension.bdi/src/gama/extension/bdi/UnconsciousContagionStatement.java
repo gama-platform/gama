@@ -143,11 +143,10 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final IAgent[] stack = scope.getAgentsStack();
 		final IAgent mySelfAgent = stack[stack.length - 2];
-		Double charismaValue = 1.0;
-		Double receptivityValue = 1.0;
-		Double thresholdValue = 0.25;
+		double charismaValue = 1.0;
+		double receptivityValue = 1.0;
+		double thresholdValue = 0.25;
 		IScope scopeMySelf = null;
-		Double decayValue = 0.0;
 		if (mySelfAgent != null) {
 			scopeMySelf = mySelfAgent.getScope().copy("in UnconsciousContagionStatement");
 			scopeMySelf.push(mySelfAgent);
@@ -159,18 +158,13 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 		}
 		
 		if (SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
-			if (charisma != null) {
-				charismaValue = (Double) charisma.value(scope);
-			} else {
-				charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
-			}
-			if (receptivity != null) {
-				receptivityValue = (Double) receptivity.value(scopeMySelf);
-			} else if (mySelfAgent != null) { 
-				receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY); 
-			}
+			
+			charismaValue = (double) (charisma != null ? charisma.value(scope) : scope.getAgent().getAttribute(CHARISMA));
+			
+			receptivityValue = (double) (receptivity != null ? receptivity.value(scopeMySelf) : mySelfAgent.getAttribute(RECEPTIVITY));
+
 			if (threshold != null) { 
-				thresholdValue = (Double) threshold.value(scopeMySelf); 
+				thresholdValue = (double) threshold.value(scopeMySelf); 
 			}
 			if (charismaValue * receptivityValue >= thresholdValue) {
 				final Emotion tempEmo = SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotion.value(scope));
@@ -183,8 +177,7 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 				}
 				temp.setAgentCause(scope.getAgent());
 				if (decay != null) {
-					decayValue = Math.clamp((Double) decay.value(scopeMySelf),0 ,1);
-					temp.setDecay(decayValue);
+					temp.setDecay(Math.clamp((Double) decay.value(scopeMySelf),0 ,1));
 				}
 				SimpleBdiArchitecture.addEmotion(scopeMySelf, temp);
 			}

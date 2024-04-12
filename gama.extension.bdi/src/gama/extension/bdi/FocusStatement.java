@@ -268,34 +268,34 @@ public class FocusStatement extends AbstractStatement {
 			MentalState temporaryBelief = new MentalState("Belief");
 			temporaryBelief.setPredicate((Predicate) belief.value(scope));
 			if (SimpleBdiArchitecture.hasBelief(scope, temporaryBelief)) {
-				AddMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+				addMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (desire != null) {
 			MentalState temporaryBelief = new MentalState("Desire");
 			temporaryBelief.setPredicate((Predicate) desire.value(scope));
 			if (SimpleBdiArchitecture.hasDesire(scope, temporaryBelief)) {
-				AddMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+				addMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (uncertainty != null) {
 			MentalState temporaryBelief = new MentalState("Uncertainty");
 			temporaryBelief.setPredicate((Predicate) uncertainty.value(scope));
 			if (SimpleBdiArchitecture.hasUncertainty(scope, temporaryBelief)) {
-				AddMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+				addMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (ideal != null) {
 			MentalState temporaryBelief = new MentalState("Ideal");
 			temporaryBelief.setPredicate((Predicate) ideal.value(scope));
 			if (SimpleBdiArchitecture.hasIdeal(scope, temporaryBelief)) {
-				AddMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+				addMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (emotion != null) {
 			Emotion temporaryEmotion = (Emotion) emotion.value(scope);
 			if (SimpleBdiArchitecture.hasEmotion(scope, temporaryEmotion)) {
-				AddMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE), temporaryEmotion, (MentalState belief, Emotion temp) -> belief.setEmotion(temp));
+				addMentalState(scope, scopeMySelf, scope, SimpleBdiArchitecture.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE), temporaryEmotion, (MentalState belief, Emotion temp) -> belief.setEmotion(temp));
 			}
 		}
 		if (expression != null) {
@@ -321,7 +321,7 @@ public class FocusStatement extends AbstractStatement {
 		}
 	}
 	//TODO: forced to do this to refactor but actually what should be refactored is the class Hierarchy, and it would simplify all the BDI code base
-	private <T> void AddMentalState(IScope scope, IScope scopeMySelf, IScope scopeLifetime, List<T> base, T temporary, BiConsumer<MentalState, T> setPred) {
+	private <T> void addMentalState(IScope scope, IScope scopeMySelf, IScope scopeLifetime, List<T> base, T temporary, BiConsumer<MentalState, T> setPred) {
 		MentalState tempBelief = null;
 		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
 			tempBelief = new MentalState("Uncertainty");
