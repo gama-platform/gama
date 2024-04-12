@@ -827,7 +827,6 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					|| listNorm.stream().map(n -> n.getNormStatement().getIntentionExpression())
 						.anyMatch(i -> i != null && ((Predicate)i.value(scope)).equalsIntentionPlan(tempMentalState.predicate))) {
 						listMentalStatesTest.add(tempMentalState);
-					}
 				}
 				//TODO: could an item in the list really be null ? probably useless condition
 				else if (listNorm.stream().filter(n -> n != null && n.getNormStatement() != null)
