@@ -115,44 +115,45 @@ public class SocializeStatement extends AbstractStatement{
 
 	@Override
 	protected Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
-		if (when == null || Cast.asBool(scope, when.value(scope))) {
-			final IAgent[] stack = scope.getAgentsStack();
-			final IAgent mySelfAgent = stack[stack.length - 2];
-			IScope scopeMySelf = null;
-			if (mySelfAgent != null) {
-				scopeMySelf = mySelfAgent.getScope().copy("in SocializeStatement");
-				scopeMySelf.push(mySelfAgent);
-			}
-			if(!scope.getAgent().equals(mySelfAgent)){
-				SocialLink tempSocial = new SocialLink(scope.getAgent());
-				if(!SimpleBdiArchitecture.hasSocialLink(scopeMySelf, tempSocial)){
-					if (appreciation != null) {
-						tempSocial.setLiking(Cast.asFloat(scopeMySelf, appreciation.value(scopeMySelf)));;
-					}
-					if (dominance != null){
-						tempSocial.setDominance(Cast.asFloat(scopeMySelf, dominance.value(scopeMySelf)));
-					}
-					if (solidarity != null){
-						tempSocial.setSolidarity(Cast.asFloat(scopeMySelf, solidarity.value(scopeMySelf)));
-					}
-					if (familiarity != null){
-						tempSocial.setFamiliarity(Cast.asFloat(scopeMySelf, familiarity.value(scopeMySelf)));
-					}
-					if (trust != null){
-						tempSocial.setTrust(Cast.asFloat(scopeMySelf, trust.value(scopeMySelf)));
-					}
-					if (agent != null){
-						tempSocial.setAgent((IAgent)agent.value(scopeMySelf));
-					}
-					SimpleBdiArchitecture.addSocialLink(scopeMySelf, tempSocial);
-				} else{
-					/*update le social link.*/
-					tempSocial = SimpleBdiArchitecture.getSocialLink(scopeMySelf, tempSocial);
-					SimpleBdiArchitecture.updateSocialLink(scopeMySelf, tempSocial);
-				}
-			}
-			GAMA.releaseScope(scopeMySelf);
+		if (when != null && !Cast.asBool(scope, when.value(scope))) {
+			return null;
 		}
+		final IAgent[] stack = scope.getAgentsStack();
+		final IAgent mySelfAgent = stack[stack.length - 2];
+		IScope scopeMySelf = null;
+		if (mySelfAgent != null) {
+			scopeMySelf = mySelfAgent.getScope().copy("in SocializeStatement");
+			scopeMySelf.push(mySelfAgent);
+		}
+		if(!scope.getAgent().equals(mySelfAgent)){
+			SocialLink tempSocial = new SocialLink(scope.getAgent());
+			if(!SimpleBdiArchitecture.hasSocialLink(scopeMySelf, tempSocial)){
+				if (appreciation != null) {
+					tempSocial.setLiking(Cast.asFloat(scopeMySelf, appreciation.value(scopeMySelf)));;
+				}
+				if (dominance != null){
+					tempSocial.setDominance(Cast.asFloat(scopeMySelf, dominance.value(scopeMySelf)));
+				}
+				if (solidarity != null){
+					tempSocial.setSolidarity(Cast.asFloat(scopeMySelf, solidarity.value(scopeMySelf)));
+				}
+				if (familiarity != null){
+					tempSocial.setFamiliarity(Cast.asFloat(scopeMySelf, familiarity.value(scopeMySelf)));
+				}
+				if (trust != null){
+					tempSocial.setTrust(Cast.asFloat(scopeMySelf, trust.value(scopeMySelf)));
+				}
+				if (agent != null){
+					tempSocial.setAgent((IAgent)agent.value(scopeMySelf));
+				}
+				SimpleBdiArchitecture.addSocialLink(scopeMySelf, tempSocial);
+			} else{
+				/*update the social link.*/
+				tempSocial = SimpleBdiArchitecture.getSocialLink(scopeMySelf, tempSocial);
+				SimpleBdiArchitecture.updateSocialLink(scopeMySelf, tempSocial);
+			}
+		}
+		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 
