@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -381,7 +382,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public Object _init_(final IScope scope) {
 		if (scope.interrupted()) return null;
-		if (automaticallyCreateFirstSimulation()) { createSimulation(getParameterValues(), scheduled); }
+		if (automaticallyCreateFirstSimulation()) { createSimulation(ParametersSet.EMPTY, scheduled); }
 		// We execute any behavior defined in GAML.
 		super._init_(scope);
 		tryToRecordSimulations();
@@ -504,7 +505,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		final IPopulation<? extends IAgent> pop = getSimulationPopulation();
 		if (pop == null) return null;
 		final ParametersSet ps = getParameterValues();
-		ps.putAll(parameters);
+		if (parameters != null) { ps.putAll(parameters); }
 		final IList<Map<String, Object>> list = GamaListFactory.create(Types.MAP);
 		list.add(ps);
 		final IList<? extends IAgent> c = pop.createAgents(ownScope, 1, list, false, scheduleIt);
