@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResource.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlResource.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -221,7 +221,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		} finally {
 			// make sure to get rid of the model only after its documentation has been produced
 			if (GamlResourceServices.isEdited(this.getURI())) {
-				GamlResourceServices.getResourceDocumenter().addDocumentationTask(d -> model.dispose());
+				GamlResourceServices.getResourceDocumenter().addDocumentationTask(getURI(), () -> model.dispose());
 			} else {
 				model.dispose();
 			}

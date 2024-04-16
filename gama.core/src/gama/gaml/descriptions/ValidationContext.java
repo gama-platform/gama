@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
  * ValidationContext.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +13,13 @@ package gama.gaml.descriptions;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -68,7 +69,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> {
 	private final IDocManager docDelegate;
 
 	/** The expressions to document. */
-	private final Map<EObject, IGamlDescription> expressionsToDocument = Collections.synchronizedMap(new HashMap<>());
+	private final Map<EObject, IGamlDescription> expressionsToDocument = new ConcurrentHashMap<>();
 
 	/**
 	 * Instantiates a new validation context.
