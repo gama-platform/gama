@@ -223,7 +223,7 @@ public class SqlUtils {
 				final IList<Object> rec_old = (IList<Object>) records.get(i);
 				final IList<Object> rec_new = GamaListFactory.create();
 				for (int j = 0; j < columnSize; j++) {
-					if (((String) columnTypes.get(j)).equalsIgnoreCase(SqlConnection.GEOMETRYTYPE)) {
+					if (SqlConnection.GEOMETRYTYPE.equalsIgnoreCase((String) columnTypes.get(j))) {
 						Geometry geo2 = (Geometry) rec_old.get(j);
 						if (fromAbsoluteToGis) {
 							geo2 = gis.inverseTransform(geo2);

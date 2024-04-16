@@ -204,21 +204,20 @@ public class SLDs extends SLD {
 		if (graphic == null) { return null; }
 
 		for (final GraphicalSymbol gs : graphic.graphicalSymbols()) {
-			if (gs instanceof Mark) {
-				final Mark mark = (Mark) gs;
+			if (gs instanceof Mark mark) {
 				final Fill fill = mark.getFill();
-				if (fill != null) {
-					Color colour = color(fill.getColor());
-					if (colour == null) { return null; }
-					Expression opacity = fill.getOpacity();
-					if (opacity == null) {
-						opacity = ff.literal(1.0);
-					}
-					final float alpha = (float) Filters.asDouble(opacity);
-					colour = new Color(colour.getRed() / 255f, colour.getGreen() / 255f, colour.getBlue() / 255f,
-							alpha);
-					return colour;
+				if (fill == null) {
+					continue;
 				}
+				Color colour = color(fill.getColor());
+				if (colour == null) { return null; }
+				Expression opacity = fill.getOpacity();
+				if (opacity == null) {
+					opacity = ff.literal(1.0);
+				}
+				final float alpha = (float) Filters.asDouble(opacity);
+				colour = new Color(colour.getRed() / 255f, colour.getGreen() / 255f, colour.getBlue() / 255f, alpha);
+				return colour;
 			}
 		}
 

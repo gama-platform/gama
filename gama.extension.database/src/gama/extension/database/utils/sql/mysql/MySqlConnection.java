@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,28 +139,17 @@ public class MySqlConnection extends SqlConnection {
 	}
 
 	@Override
-	protected List<Integer> getGeometryColumns(final ResultSetMetaData rsmd) throws SQLException {
-		final int numberOfColumns = rsmd.getColumnCount();
-		final List<Integer> geoColumn = new ArrayList<>();
-		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (vender.equalsIgnoreCase(MYSQL) && rsmd.getColumnType(i) == -2
-					|| vender.equalsIgnoreCase(MYSQL) && rsmd.getColumnType(i) == -4) {
-				geoColumn.add(i);
-			}
-		}
-		return geoColumn;
-
+	protected boolean colIsGeometryType(final ResultSetMetaData rsmd, int colNb) throws SQLException {
+		return MYSQL.equalsIgnoreCase(vender) && (rsmd.getColumnType(colNb) == -2 || rsmd.getColumnType(colNb) == -4);
 	}
+	
 
 	@Override
 	protected IList<Object> getColumnTypeName(final ResultSetMetaData rsmd) throws SQLException {
 		final int numberOfColumns = rsmd.getColumnCount();
 		final IList<Object> columnType = GamaListFactory.create();
 		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (vender.equalsIgnoreCase(MYSQL) && rsmd.getColumnType(i) == -2
-					|| vender.equalsIgnoreCase(MYSQL) && rsmd.getColumnType(i) == -4) {
+			if (colIsGeometryType(rsmd, i)) {
 				columnType.add(GEOMETRYTYPE);
 			} else {
 				columnType.add(rsmd.getColumnTypeName(i).toUpperCase());
@@ -218,7 +206,7 @@ public class MySqlConnection extends SqlConnection {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
 					valueStr = valueStr + NULLVALUE;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(GEOMETRYTYPE)) {
+				} else if (GEOMETRYTYPE.equalsIgnoreCase((String) col_Types.get(i))) {
 
 					// 23/Jul/2013 - Transform GAMA GIS TO NORMAL
 					final WKTReader wkt = new WKTReader();
@@ -229,10 +217,7 @@ public class MySqlConnection extends SqlConnection {
 					}
 					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
 
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(CHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(VARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(NVARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(TEXT)) { // for
+				} else if (isTextType((String)col_Types.get(i))) { // for
 																					// String
 																					// type
 					// Correct error string
@@ -240,17 +225,17 @@ public class MySqlConnection extends SqlConnection {
 					temp = temp.replaceAll("'", "''");
 					// Add to value:
 					valueStr = valueStr + "'" + temp + "'";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(TIMESTAMP)) {
+				} else if (TIMESTAMP.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + "TIMESTAMP('" + values.get(i).toString() + "')";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(YEAR)) {
+				} else if (YEAR.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + "YEAR('" + values.get(i).toString() + "')";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(DATETIME)) {
+				} else if (DATETIME.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + DATETIME
 							+ SUPFIX_TIMESTAMP;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(DATE)) {
+				} else if (DATE.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + DATE
 							+ SUPFIX_TIMESTAMP;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(TIME)) {
+				} else if (TIME.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + TIME
 							+ SUPFIX_TIMESTAMP;
 				} else { // For other type
@@ -309,7 +294,7 @@ public class MySqlConnection extends SqlConnection {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
 					valueStr = valueStr + NULLVALUE;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(GEOMETRYTYPE)) { // for
+				} else if (GEOMETRYTYPE.equalsIgnoreCase((String) col_Types.get(i))) { // for
 					// 23/Jul/2013 - Transform GAMA GIS TO NORMAL
 					final WKTReader wkt = new WKTReader();
 					Geometry geo = wkt.read(values.get(i).toString());
@@ -318,20 +303,20 @@ public class MySqlConnection extends SqlConnection {
 					}
 					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
 
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(CHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(VARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(NVARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(TEXT)) {
+				} else if (CHAR.equalsIgnoreCase((String) col_Types.get(i))
+						|| VARCHAR.equalsIgnoreCase((String) col_Types.get(i))
+						|| NVARCHAR.equalsIgnoreCase((String) col_Types.get(i))
+						|| TEXT.equalsIgnoreCase((String) col_Types.get(i))) {
 
 					String temp = values.get(i).toString();
 					temp = temp.replaceAll("'", "''");
 					// Add to value:
 					valueStr = valueStr + "'" + temp + "'";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(TIMESTAMP)) {
+				} else if (TIMESTAMP.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + "TIMESTAMP('" + values.get(i).toString() + "')";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(YEAR)) {
+				} else if (YEAR.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + "YEAR('" + values.get(i).toString() + "')";
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(DATETIME)) {
+				} else if (DATETIME.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + DATETIME
 							+ SUPFIX_TIMESTAMP;
 				} else if (((String) col_Types.get(i)).equalsIgnoreCase(DATE)) {

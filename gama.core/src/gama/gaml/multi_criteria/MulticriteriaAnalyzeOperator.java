@@ -271,9 +271,9 @@ public class MulticriteriaAnalyzeOperator {
 				sf = Cast.asFloat(scope, s);
 			}
 
-			if (typeFct.equals("type_5")) {
+			if ("type_5".equals(typeFct)) {
 				fctPrefCrit.put(name, new PreferenceType5(qf, pf));
-			} else if (typeFct.equals("type_6")) {
+			} else if ("type_6".equals(typeFct)) {
 				fctPrefCrit.put(name, new PreferenceType6(sf));
 			}
 

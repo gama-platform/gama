@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,42 +130,14 @@ public class PostgresConnection extends SqlConnection {
 		return repRequest;
 
 	}
+	
 
 	@Override
-	protected List<Integer> getGeometryColumns(final ResultSetMetaData rsmd) throws SQLException {
-		final int numberOfColumns = rsmd.getColumnCount();
-		final List<Integer> geoColumn = new ArrayList<>();
-		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (vender.equalsIgnoreCase(POSTGRES) && rsmd.getColumnType(i) == 1111
-					|| vender.equalsIgnoreCase(POSTGRES) && rsmd.getColumnType(i) == -2
-					|| vender.equalsIgnoreCase(POSTGIS) && rsmd.getColumnType(i) == 1111
-					|| vender.equalsIgnoreCase(POSTGIS) && rsmd.getColumnType(i) == -2) {
-				geoColumn.add(i);
-			}
-		}
-		return geoColumn;
-
+	protected boolean colIsGeometryType(ResultSetMetaData rsmd, int colNb) throws SQLException {
+		return 		(POSTGRES.equalsIgnoreCase(vender) || POSTGIS.equalsIgnoreCase(vender)) 
+				&& 	(rsmd.getColumnType(colNb) == 1111 || rsmd.getColumnType(colNb) == -2);
 	}
 
-	@Override
-	protected IList<Object> getColumnTypeName(final ResultSetMetaData rsmd) throws SQLException {
-		final int numberOfColumns = rsmd.getColumnCount();
-		final IList<Object> columnType = GamaListFactory.create();
-		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (vender.equalsIgnoreCase(POSTGRES) && rsmd.getColumnType(i) == 1111
-					|| vender.equalsIgnoreCase(POSTGRES) && rsmd.getColumnType(i) == -2
-					|| vender.equalsIgnoreCase(POSTGIS) && rsmd.getColumnType(i) == 1111
-					|| vender.equalsIgnoreCase(POSTGIS) && rsmd.getColumnType(i) == -2) {
-				columnType.add(GEOMETRYTYPE);
-			} else {
-				columnType.add(rsmd.getColumnTypeName(i).toUpperCase());
-			}
-		}
-		return columnType;
-
-	}
 
 	@Override
 	protected String getInsertString(final IScope scope, final Connection conn, final String table_name,
@@ -174,18 +145,16 @@ public class PostgresConnection extends SqlConnection {
 		final int col_no = cols.size();
 		String insertStr = "INSERT INTO ";
 		String selectStr = "SELECT ";
-		String colStr = "";
-		String valueStr = "";
+		StringBuilder colStr = new StringBuilder();
 		// Check size of parameters
 		if (values.size() != col_no) {
 			throw new IndexOutOfBoundsException("Size of columns list and values list are not equal");
 		}
 		// Get column name
 		for (int i = 0; i < col_no; i++) {
-			if (i == col_no - 1) {
-				colStr = colStr + (String) cols.get(i);
-			} else {
-				colStr = colStr + (String) cols.get(i) + ",";
+			colStr.append(cols.get(i));
+			if (i < col_no - 1) {
+				colStr.append(",");
 			}
 		}
 		// create SELECT statement string
@@ -209,13 +178,13 @@ public class PostgresConnection extends SqlConnection {
 			}
 			// Insert command
 			// set parameter value
-			valueStr = "";
+			StringBuilder valueStr = new StringBuilder(0);
 			final IProjection saveProj = getSavingGisProjection(scope);
 			for (int i = 0; i < col_no; i++) {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
-					valueStr = valueStr + NULLVALUE;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(GEOMETRYTYPE)) {
+					valueStr.append(NULLVALUE);
+				} else if (GEOMETRYTYPE.equalsIgnoreCase((String) col_Types.get(i))) {
 
 					// 23/Jul/2013 - Transform GAMA GIS TO NORMAL
 					final WKTReader wkt = new WKTReader();
@@ -225,24 +194,26 @@ public class PostgresConnection extends SqlConnection {
 						geo = saveProj.inverseTransform(geo); // have problem
 																// here
 					}
-					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
+					valueStr.append(WKT2GEO);
+					valueStr.append("('");
+					valueStr.append(geo);
+					valueStr.append("')");
 
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(CHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(VARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(NVARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(TEXT)) { // for
+				} else if (isTextType((String) col_Types.get(i))) { // for
 																					// String
 																					// type
 					// Correct error string
 					String temp = values.get(i).toString();
 					temp = temp.replaceAll("'", "''");
 					// Add to value:
-					valueStr = valueStr + "'" + temp + "'";
+					valueStr.append("'");
+					valueStr.append(temp);
+					valueStr.append("'");
 				} else { // For other type
-					valueStr = valueStr + values.get(i).toString();
+					valueStr.append(values.get(i));
 				}
 				if (i != col_no - 1) { // Add delimiter of each value
-					valueStr = valueStr + ",";
+					valueStr.append(",");
 				}
 				// Value list
 				// end--------------------------------------------------------
@@ -270,8 +241,6 @@ public class PostgresConnection extends SqlConnection {
 			final IList<Object> values) throws GamaRuntimeException {
 		String insertStr = "INSERT INTO ";
 		String selectStr = "SELECT ";
-		String colStr = "";
-		String valueStr = "";
 
 		// Get column name
 		// create SELECT statement string
@@ -296,13 +265,13 @@ public class PostgresConnection extends SqlConnection {
 
 			// Insert command
 			// set parameter value
-			colStr = "";
-			valueStr = "";
+			StringBuilder colStr = new StringBuilder();
+			StringBuilder valueStr = new StringBuilder();
 			for (int i = 0; i < col_no; i++) {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
-					valueStr = valueStr + NULLVALUE;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(GEOMETRYTYPE)) {
+					valueStr.append(NULLVALUE);
+				} else if (GEOMETRYTYPE.equalsIgnoreCase((String) col_Types.get(i))) {
 					// 23/Jul/2013 - Transform GAMA GIS TO NORMAL
 					final WKTReader wkt = new WKTReader();
 					Geometry geo = wkt.read(values.get(i).toString());
@@ -311,27 +280,29 @@ public class PostgresConnection extends SqlConnection {
 						geo = getSavingGisProjection(scope).inverseTransform(geo);
 					}
 					// DEBUG.LOG(geo.toString());
-					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
+					valueStr.append(WKT2GEO);
+					valueStr.append("('");
+					valueStr.append(geo);
+					valueStr.append("')");
 
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(CHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(VARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(NVARCHAR)
-						|| ((String) col_Types.get(i)).equalsIgnoreCase(TEXT)) {
+				} else if (isTextType((String) col_Types.get(i))) {
 					String temp = values.get(i).toString();
 					temp = temp.replaceAll("'", "''");
 					// Add to value:
-					valueStr = valueStr + "'" + temp + "'";
+					valueStr.append("'");
+					valueStr.append(temp);
+					valueStr.append("'");
 				} else { // For other type
-					valueStr = valueStr + values.get(i).toString();
+					valueStr.append(values.get(i));
 				}
 				// Value list
 				// end--------------------------------------------------------
 				// column list
-				colStr = colStr + col_Names.get(i).toString();
+				colStr.append(col_Names.get(i));
 
 				if (i != col_no - 1) { // Add delimiter of each value
-					colStr = colStr + ",";
-					valueStr = valueStr + ",";
+					colStr.append(",");
+					valueStr.append(",");
 				}
 			}
 
