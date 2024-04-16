@@ -387,36 +387,36 @@ public class DocProcessorAnnotations {
 	 */
 	public static org.w3c.dom.Element getVarsElt(final vars varsAnnot, final Document doc, final Messager mes,
 			final String skillName, final TypeConverter tc) {
-		if (varsAnnot != null) {
-			final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
-			for (final variable v : varsAnnot.value()) {
-				final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
-				varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
-				varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
-				varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
-
-				final org.w3c.dom.Element docEltVar = DocProcessorAnnotations.getDocElt(v.doc(), doc, mes,
-						"Var " + v.name() + " from " + skillName, tc, null);
-				if (docEltVar != null) {
-					varElt.appendChild(docEltVar);
-				}
-
-				StringBuilder strBuilder = new StringBuilder();
-				for (int i = 0 ; i < v.depends_on().length; i++ ) {
-					final String dependElement = v.depends_on()[i];
-					strBuilder.append(dependElement);
-					if (i < v.depends_on().length - 1) {
-						strBuilder.append(",");
-					}
-				}
-				
-				final String dependsOn = strBuilder.toString();
-				varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
-				varsElt.appendChild(varElt);
-			}
-			return varsElt;
+		if (varsAnnot == null) {
+			return null;
 		}
-		return null;
+		final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
+		for (final variable v : varsAnnot.value()) {
+			final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
+			varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
+			varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
+			varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
+
+			final org.w3c.dom.Element docEltVar = DocProcessorAnnotations.getDocElt(v.doc(), doc, mes,
+					"Var " + v.name() + " from " + skillName, tc, null);
+			if (docEltVar != null) {
+				varElt.appendChild(docEltVar);
+			}
+
+			StringBuilder strBuilder = new StringBuilder();
+			for (int i = 0 ; i < v.depends_on().length; i++ ) {
+				final String dependElement = v.depends_on()[i];
+				strBuilder.append(dependElement);
+				if (i < v.depends_on().length - 1) {
+					strBuilder.append(",");
+				}
+			}
+			
+			final String dependsOn = strBuilder.toString();
+			varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
+			varsElt.appendChild(varElt);
+		}
+		return varsElt;
 	}
 
 	/**

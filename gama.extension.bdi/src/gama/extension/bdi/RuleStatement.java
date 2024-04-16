@@ -12,6 +12,7 @@
 package gama.extension.bdi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -864,46 +865,40 @@ public class RuleStatement extends AbstractStatement {
 
     @SuppressWarnings("unchecked")
 	private void removePredicateLists(IScope scope) {
-    	if (removeBeliefs != null) {
-            final List<Predicate> removBels = (List<Predicate>) removeBeliefs.value(scope);
-            for (final Predicate removBel : removBels) {
-                final MentalState tempRemoveBeliefs = new MentalState("Belief", removBel);
-                SimpleBdiArchitecture.removeBelief(scope, tempRemoveBeliefs);
-            }
+
+        final List<Predicate> removBels = removeBeliefs != null ? (List<Predicate>) removeBeliefs.value(scope) : Collections.emptyList();
+        for (final Predicate removBel : removBels) {
+            final MentalState tempRemoveBeliefs = new MentalState("Belief", removBel);
+            SimpleBdiArchitecture.removeBelief(scope, tempRemoveBeliefs);
         }
-        if (removeDesires != null) {
-            final List<Predicate> removeDess = (List<Predicate>) removeDesires.value(scope);
-            for (final Predicate removeDes : removeDess) {
-                final MentalState tempRemoveDesires = new MentalState("Desire", removeDes);
-                SimpleBdiArchitecture.removeDesire(scope, tempRemoveDesires);
-            }
+        
+    	final List<Predicate> removeDess = removeDesires != null ? (List<Predicate>) removeDesires.value(scope) : Collections.emptyList();
+        for (final Predicate removeDes : removeDess) {
+            final MentalState tempRemoveDesires = new MentalState("Desire", removeDes);
+            SimpleBdiArchitecture.removeDesire(scope, tempRemoveDesires);
         }
-        if (removeEmotions != null) {
-            final List<Emotion> removeEmos = (List<Emotion>) removeEmotions.value(scope);
-            for (final Emotion removeEmo : removeEmos) {
-                SimpleBdiArchitecture.removeEmotion(scope, removeEmo);
-            }
+
+        final List<Emotion> removeEmos = removeEmotions != null ? (List<Emotion>) removeEmotions.value(scope) : Collections.emptyList();
+        for (final Emotion removeEmo : removeEmos) {
+            SimpleBdiArchitecture.removeEmotion(scope, removeEmo);
         }
-        if (removeUncertainties != null) {
-            final List<Predicate> removUncerts = (List<Predicate>) removeUncertainties.value(scope);
-            for (final Predicate removUncert : removUncerts) {
-                final MentalState tempRemoveUncertainties = new MentalState("Uncertainty", removUncert);
-                SimpleBdiArchitecture.removeUncertainty(scope, tempRemoveUncertainties);
-            }
+
+        final List<Predicate> removUncerts = removeUncertainties != null ? (List<Predicate>) removeUncertainties.value(scope) : Collections.emptyList();
+        for (final Predicate removUncert : removUncerts) {
+            final MentalState tempRemoveUncertainties = new MentalState("Uncertainty", removUncert);
+            SimpleBdiArchitecture.removeUncertainty(scope, tempRemoveUncertainties);
         }
-        if (removeIdeals != null) {
-            final List<Predicate> removeIdes = (List<Predicate>) removeIdeals.value(scope);
-            for (final Predicate removeIde : removeIdes) {
-                final MentalState tempRemoveIdeals = new MentalState("Ideal", removeIde);
-                SimpleBdiArchitecture.removeIdeal(scope, tempRemoveIdeals);
-            }
+        
+        final List<Predicate> removeIdes = removeIdeals != null ? (List<Predicate>) removeIdeals.value(scope) : Collections.emptyList();
+        for (final Predicate removeIde : removeIdes) {
+            final MentalState tempRemoveIdeals = new MentalState("Ideal", removeIde);
+            SimpleBdiArchitecture.removeIdeal(scope, tempRemoveIdeals);
         }
-        if (removeObligations != null) {
-            final List<Predicate> removeObls = (List<Predicate>) removeObligations.value(scope);
-            for (final Predicate removeObl : removeObls) {
-                final MentalState tempRemoveObligations = new MentalState("Obligation", removeObl);
-                SimpleBdiArchitecture.removeObligation(scope, tempRemoveObligations);
-            }
+
+        final List<Predicate> removeObls = removeObligations != null ? (List<Predicate>) removeObligations.value(scope) : Collections.emptyList();
+        for (final Predicate removeObl : removeObls) {
+            final MentalState tempRemoveObligations = new MentalState("Obligation", removeObl);
+            SimpleBdiArchitecture.removeObligation(scope, tempRemoveObligations);
         }
 		
 	}
@@ -941,18 +936,10 @@ public class RuleStatement extends AbstractStatement {
         for (final Predicate pred : predList) {
             final MentalState state = new MentalState(mentalStateName, pred);
             if (strength != null) {
-                if (strength.value(scope) instanceof Number n) {
-                    state.setStrength(Cast.asFloat(scope, n));
-                } else {
-                    state.setStrength(Cast.asFloat(scope, ((List<Float>) strength.value(scope)).get(i)));
-                }
+            	state.setStrength(Cast.asFloat(scope,strength.value(scope) instanceof Number n ?  n : ((List<Float>) strength.value(scope)).get(i)));
             }
             if (lifetime != null) {
-                if (lifetime.value(scope) instanceof List) {
-                    state.setLifeTime(Cast.asInt(scope,((List<Integer>) lifetime.value(scope)).get(i)));
-                } else {
-                    state.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-                }
+            	state.setLifeTime(Cast.asInt(scope, lifetime.value(scope) instanceof List l ? l.get(i) : lifetime.value(scope)));
             }
             addInBaseFunction.accept(state);
             i++;

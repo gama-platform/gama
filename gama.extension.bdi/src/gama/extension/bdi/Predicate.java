@@ -444,22 +444,24 @@ public class Predicate implements IValue {
 		// Doesn't check the lifetime value
 		// Used in emotions
 		if (obj == this) return false; // is_true must be different
-		if (obj instanceof Predicate other) {
-			if (!Objects.equals(name, other.name) || is_true == other.is_true) return false;
-			if (agentCause == null|| other.agentCause == null) return true; //TODO: this is a weird condition for equality
-			if (values != null && other.values != null) {
-				final Set<String> keys = values.keySet();
-				keys.retainAll(other.values.keySet());
-				for (final String k : keys) {
-					if (this.values.get(k) == null && other.values.get(k) != null
-							|| !values.get(k).equals(other.values.get(k)))
-						return false;
-				}
+		if (!(obj instanceof Predicate)) return false;
+		
+		Predicate other = (Predicate)obj;
+		
+		if (!Objects.equals(name, other.name) || is_true == other.is_true) return false;
+		if (agentCause == null || other.agentCause == null) return true; //TODO: this is a weird condition for equality
+		if (values == null || other.values == null) return true;
+		
+		final Set<String> keys = values.keySet();
+		keys.retainAll(other.values.keySet());
+		for (final String k : keys) {
+			if (values.get(k) == null && other.values.get(k) != null || !values.get(k).equals(other.values.get(k))) {
+				return false;					
 			}
-			//TODO: why don't we compare agentCause ?
-			return true;			
 		}
-		return false;
+		
+		//TODO: why don't we compare agentCause ?
+		return true;
 	}
 
 	/**

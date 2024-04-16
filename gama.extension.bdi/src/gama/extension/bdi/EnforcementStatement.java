@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.extension.bdi;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -235,17 +235,20 @@ public class EnforcementStatement extends AbstractStatement {
 	
 
 	private Object applySanctionOrReward(IScope scope, IScope scopeMySelf, LawStatement tempLaw, double obedience) {
-		if 	(		(tempLaw.getContextExpression() == null 
-				|| gama.gaml.operators.Cast.asBool(scope, tempLaw.getContextExpression().value(scope))) 
-			&& (	tempLaw.getBeliefExpression() == null
-				|| tempLaw.getBeliefExpression().value(scope) == null
-				|| SimpleBdiArchitecture.hasBelief(scope, new MentalState("Belief",(Predicate) tempLaw.getBeliefExpression().value(scope)))) 
-			&& (	tempLaw.getObligationExpression() == null
-				|| tempLaw.getObligationExpression().value(scope) == null
-				|| SimpleBdiArchitecture.hasObligation(scope, new MentalState("Obligation", (Predicate) tempLaw.getObligationExpression().value(scope)))) 
-			&&(		tempLaw.getThreshold() == null
-				|| tempLaw.getThreshold().value(scope) == null
-				|| obedience >= (double) tempLaw.getThreshold().value(scope))) {
+		
+		
+		boolean context = tempLaw.getContextExpression() == null || Cast.asBool(scope, tempLaw.getContextExpression().value(scope));
+		boolean givenBeliefRegistered = tempLaw.getBeliefExpression() == null
+									|| tempLaw.getBeliefExpression().value(scope) == null
+									|| SimpleBdiArchitecture.hasBelief(scope, new MentalState("Belief",(Predicate) tempLaw.getBeliefExpression().value(scope)));
+		boolean givenObligationRegistered = tempLaw.getObligationExpression() == null
+										|| tempLaw.getObligationExpression().value(scope) == null
+										|| SimpleBdiArchitecture.hasObligation(scope, new MentalState("Obligation", (Predicate) tempLaw.getObligationExpression().value(scope)));
+		boolean thresholdRespected = tempLaw.getThreshold() == null || tempLaw.getThreshold().value(scope) == null
+									|| obedience >= (double) tempLaw.getThreshold().value(scope);
+		boolean preconditionsMet = context && givenBeliefRegistered && givenObligationRegistered && thresholdRespected;
+		
+		if 	(preconditionsMet) {
 			
 			if (reward != null) {
 				for (final Sanction tempReward : SimpleBdiArchitecture.getSanctions(scopeMySelf)) {

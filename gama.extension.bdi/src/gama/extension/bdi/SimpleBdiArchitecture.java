@@ -31,7 +31,6 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
 import gama.gaml.compilation.ISymbol;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -1689,7 +1688,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			createSatisfactionFromMentalState(scope, predicateDirect); // satisfaction, disapointment, relief,
 																		// fear_confirmed
 			createPrideFromMentalState(scope, predicateDirect); // pride, shame, admiration, reproach
-			createHappyForFromMentalState(scope, predicateDirect); // (seulement si le prédicat est sur une
+			createHappyForFromMentalState(scope, predicateDirect); // (seulement si le prédicat est sur une	
 																	// émotion).
 		}
 		for (final MentalState predTest : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {

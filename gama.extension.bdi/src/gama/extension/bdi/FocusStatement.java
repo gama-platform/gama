@@ -299,25 +299,16 @@ public class FocusStatement extends AbstractStatement {
 			}
 		}
 		if (expression != null) {
-			String namePred;
-			if (nameExpression != null) {
-				namePred = (String) nameExpression.value(scope);
-			} else {
-				namePred = "expression" + "_" + scope.getAgent().getSpeciesName();
-			}
-			final String nameVar = "expression";
+			final String namePred = 	nameExpression != null 
+									? (String)nameExpression.value(scope) 
+									: "expression" + "_" + scope.getAgent().getSpeciesName();
 			final IMap<String, Object> tempValues = GamaMapFactory.create(Types.NO_TYPE, Types.NO_TYPE, 1);
-			tempValues.put(nameVar + "_value", expression.value(scope));
+			tempValues.put("expression_value", expression.value(scope));
 			Predicate tempPred = new Predicate(namePred, tempValues);
 			if (truth != null) {
 				tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
 			}
-			if (agentCause != null) {
-				tempPred.setAgentCause((IAgent) agentCause.value(scope));
-			} else {
-				tempPred.setAgentCause(scope.getAgent());
-			}
-			addBelief(scopeMySelf, scopeMySelf, scope, tempPred);
+			tempPred.setAgentCause(agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
 		}
 	}
 	//TODO: forced to do this to refactor but actually what should be refactored is the class Hierarchy, and it would simplify all the BDI code base
@@ -361,11 +352,8 @@ public class FocusStatement extends AbstractStatement {
 		if (truth != null) {
 			tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
 		}
-		if (agentCause != null) {
-			tempPred.setAgentCause((IAgent) agentCause.value(scope));
-		} else {
-			tempPred.setAgentCause(scope.getAgent());
-		}
+		tempPred.setAgentCause(agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
+		
 		addBelief(scopeMySelf, scopeMySelf, scope, tempPred);
 	}
 
