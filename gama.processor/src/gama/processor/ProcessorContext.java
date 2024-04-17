@@ -411,7 +411,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 		sb.append(e1.getMessage());
 		for (final StackTraceElement t : e1.getStackTrace()) {
 			sb.append("\n");
-			sb.append(t.toString());
+			sb.append(t);
 		}
 		emit(kind, sb.toString(), element);
 	}

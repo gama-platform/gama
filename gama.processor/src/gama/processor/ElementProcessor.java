@@ -534,7 +534,8 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	static String rawNameOf(final ProcessorContext context, final TypeMirror t) {
 		if (TypeKind.VOID.equals(t.getKind())) return "void";
 		final String key = t.toString();
-		if (NAME_CACHE.containsKey(key)) return NAME_CACHE.get(key);
+		String cachedName = NAME_CACHE.get(key);
+		if (cachedName != null) return cachedName;
 		String type = context.getTypeUtils().erasure(t).toString();
 		// As a workaround for ECJ/javac discrepancies regarding erasure
 		type = CLASS_PARAM.matcher(type).replaceAll("");

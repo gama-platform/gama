@@ -10,7 +10,6 @@
 package gama.core.kernel.experiment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -389,7 +388,7 @@ public class BatchAgent extends ExperimentAgent {
 							: fitnessCombination == AOptimizationAlgorithm.C_MIN ? fit.min().getAsDouble()
 							: fit.average().getAsDouble();
 				}
-				res.get(p).put(IKeyword.FITNESS, Arrays.asList(lastFitness));
+				res.get(p).put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
 				// we update the best solution found so far
 				oAlgo.updateBestFitness(lastSolution, lastFitness);
 

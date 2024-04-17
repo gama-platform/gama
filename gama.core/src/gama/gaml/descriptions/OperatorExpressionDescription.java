@@ -65,7 +65,7 @@ public class OperatorExpressionDescription extends BasicExpressionDescription {
 			if (i > 0) {
 				str.append(",");
 			}
-			str.append(args[i].toString());
+			str.append(args[i]);
 		}
 		str.append(")");
 		return str.toString();

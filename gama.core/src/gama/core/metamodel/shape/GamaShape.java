@@ -588,15 +588,16 @@ public class GamaShape implements IShape {
 	@Override
 	public Type getGeometricalType() {
 		final ShapeData data = getData(false);
-		Type type = data == null ? null : data.type;
+		if (data != null && data.type != null) {
+			return data.type;			
+		}
+		final String tt = getInnerGeometry().getGeometryType();
+		Type type = JTS_TYPES.get(tt);
 		if (type == null) {
-			final String tt = getInnerGeometry().getGeometryType();
-			if (JTS_TYPES.containsKey(tt)) {
-				type = JTS_TYPES.get(tt);
-			} else {
-				type = Type.NULL;
-			}
-			if (data != null) { data.type = type; }
+			type = Type.NULL;
+		}
+		if (data != null) { 
+			data.type = type; 
 		}
 		return type;
 	}

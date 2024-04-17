@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.processor;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class TypeProcessor extends ElementProcessor<type> {
 			try {
 				types = ex.getTypeMirrors();
 			} catch (final MirroredTypeException ex2) {
-				types = Arrays.asList(ex2.getTypeMirror());
+				types = Collections.singletonList(ex2.getTypeMirror());
 			}
 		}
 		verifyDoc(context, e, "type " + t.name(), t);

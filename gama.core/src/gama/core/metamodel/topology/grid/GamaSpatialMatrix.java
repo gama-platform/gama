@@ -1180,8 +1180,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 					}
 				});
 				open[next.getIndex()] = false;
-
-				if (!costSoFar.containsKey(next) || nextCost < costSoFar.get(next)) {
+				Double nextCostSoFar = costSoFar.get(next);
+				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
 					costSoFar.put(next, nextCost);
 					cameFrom.put(next, current);
 				}
@@ -1248,7 +1248,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				final double dist = current.getLocation().euclidianDistanceTo(next.getLocation());
 				final double nextCost = cost + (!weighted ? dist
 						: Cast.asFloat(scope, onWithWeight.get(next)) + (dist > maxDim ? Double.MIN_VALUE : 0.0));
-				if (!costSoFar.containsKey(next) || nextCost < costSoFar.get(next)) {
+				Double nextCostSoFar = costSoFar.get(next);
+				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
 					costSoFar.put(next, nextCost);
 					frontier.add(new ArrayList() {
 						{
@@ -1315,7 +1316,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				final IAgent jumpt = jump(scope, next, current, open, endAg);
 				final IAgent ne = jumpt == null ? next : jumpt;
 				final double nextCost = cost + current.getLocation().euclidianDistanceTo(ne.getLocation());
-				if (!costSoFar.containsKey(ne) || nextCost < costSoFar.get(ne)) {
+				Double neCostSoFar = costSoFar.get(ne);
+				if (neCostSoFar == null || nextCost < neCostSoFar) {
 					costSoFar.put(ne, nextCost);
 					frontier.add(new ArrayList() {
 						{

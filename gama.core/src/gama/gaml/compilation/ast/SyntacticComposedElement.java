@@ -54,7 +54,7 @@ public class SyntacticComposedElement extends AbstractSyntacticElement {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		visitAllChildren(c -> sb.append(Strings.LN).append(Strings.TAB).append(c.toString()));
+		visitAllChildren(c -> sb.append(Strings.LN).append(Strings.TAB).append(c));
 		return super.toString() + sb;
 	}
 

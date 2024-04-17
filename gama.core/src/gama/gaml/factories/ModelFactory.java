@@ -41,20 +41,20 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;
 import gama.gaml.compilation.ast.SyntacticSpeciesElement;
-import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.descriptions.ValidationContext;
-import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.Types;
@@ -340,7 +340,10 @@ public class ModelFactory extends SymbolFactory {
 		ModelDescription parent = ROOT;
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
-			if (BUILT_IN_MODELS.containsKey(parentModel)) { parent = BUILT_IN_MODELS.get(parentModel); }
+			ModelDescription parentBuiltInModels = BUILT_IN_MODELS.get(parentModel);
+			if (parentBuiltInModels != null){ 
+				parent = parentBuiltInModels;
+			}
 		}
 		final ModelDescription model =
 				new ModelDescription(modelName, null, projectPath, modelPath, source.getElement(), null, parent, null,
@@ -438,12 +441,13 @@ public class ModelFactory extends SymbolFactory {
 		final Map<String, List<String>> pragmas = source.getPragmas();
 		collector.resetInfoAndWarning();
 		if (pragmas != null) {
+			List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
 			if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
 			if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
 			if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
 			if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
-					&& pragmas.containsKey(IKeyword.PRAGMA_REQUIRES)
-					&& !collector.verifyPlugins(pragmas.get(IKeyword.PRAGMA_REQUIRES)))
+					&& requiresList != null
+					&& !collector.verifyPlugins(requiresList))
 				return false;
 		}
 		return true;
@@ -528,8 +532,9 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> experimentNodes) {
 		// First we verify that this experiment has not been declared previously
 		final String experimentName = element.getName();
-		if (experimentNodes.containsKey(experimentName)) {
-			EObject object = experimentNodes.get(experimentName).getElement();
+		ISyntacticElement elm = experimentNodes.get(experimentName); 
+		if (elm != null) {
+			EObject object = elm.getElement();
 			if (object != null && object.eResource() != null) {
 				URI other = object.eResource().getURI();
 				URI myself = collector.getURI();
@@ -586,11 +591,12 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> speciesNodes) {
 		if (!(sse instanceof SyntacticSpeciesElement element)) return;
 		final String name = element.getName();
-		if (speciesNodes.containsKey(name)) {
+		ISyntacticElement node = speciesNodes.get(name);
+		if (node != null) {
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
 					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, false));
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
-					IGamlIssue.DUPLICATE_DEFINITION, speciesNodes.get(name).getElement(), false, false));
+					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), false, false));
 		}
 		speciesNodes.put(name, element);
 	}

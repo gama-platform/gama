@@ -267,7 +267,7 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	public String toString() {
 		StringBuilder s = new StringBuilder().append(list.length < 2 ? "type " : "types [");
 		for (int i = 0; i < list.length; i++) {
-			s.append(list[i].toString());
+			s.append(list[i]);
 			if (i != list.length - 1) { s.append(", "); }
 		}
 		if (list.length >= 2) { s.append("]"); }

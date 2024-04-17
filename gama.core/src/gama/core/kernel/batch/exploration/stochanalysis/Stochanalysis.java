@@ -632,7 +632,7 @@ public class Stochanalysis {
 	 */
 	private static String buildString(final Map<String, Object> s) {
 		StringBuilder txt = new StringBuilder();
-		for (String name : s.keySet()) { txt.append(s.get(name).toString()).append("_"); }
+		for (String name : s.keySet()) { txt.append(s.get(name)).append("_"); }
 		return txt.toString();
 	}
 
@@ -663,12 +663,12 @@ public class Stochanalysis {
 			Map<String, List<Object>> sample = new HashedMap<>();
 			for (Map<String, Object> m : MySample) {
 				String s = buildString(m);
-				if (sample.containsKey(s)) {
-					List<Object> tmp_l = sample.get(s);
+				List<Object> tmp_l = sample.get(s);
+				if (tmp_l != null) {
 					tmp_l.add(Outputs.get(name));
 					m.replace(s, tmp_l);
 				} else {
-					List<Object> tmp_l = new ArrayList<>();
+					tmp_l = new ArrayList<>();
 					tmp_l.add(Outputs.get(name));
 					m.put(s, tmp_l);
 				}

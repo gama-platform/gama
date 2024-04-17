@@ -162,16 +162,18 @@ public final class NBAStarPathfinder<V, E> {
 						: eg.getTarget().equals(currentNode) ? eg.getSource() : eg.getTarget());
 				if (CLOSED.contains(childNode)) { continue; }
 				final double tentativeDistance = DISTANCEA.get(currentNode) + eg.getWeight();
-				if (!DISTANCEA.containsKey(childNode) || DISTANCEA.get(childNode) > tentativeDistance) {
+				Double distanceAChild = DISTANCEA.get(childNode);
+				if (distanceAChild == null || distanceAChild > tentativeDistance) {
 
 					DISTANCEA.put(childNode, tentativeDistance);
 					PARENTSA.put(childNode, currentNode);
 					final HeapEntry<V> e = new HeapEntry<>(childNode,
 							tentativeDistance + estimateDistanceBetween(childNode, targetNode));
 					OPENA.add(e);
-
-					if (DISTANCEB.containsKey(childNode)) {
-						final double pathLength = tentativeDistance + DISTANCEB.get(childNode);
+					
+					Double distanceBChild = DISTANCEB.get(childNode);
+					if (distanceBChild != null) {
+						final double pathLength = tentativeDistance + distanceBChild;
 						if (bestPathLength > pathLength) {
 							bestPathLength = pathLength;
 							touchNode = childNode;
@@ -219,15 +221,17 @@ public final class NBAStarPathfinder<V, E> {
 				if (CLOSED.contains(parentNode)) { continue; }
 
 				final double tentativeDistance = DISTANCEB.get(currentNode) + eg.getWeight();
-				if (!DISTANCEB.containsKey(parentNode) || DISTANCEB.get(parentNode) > tentativeDistance) {
+				Double distanceBParent = DISTANCEB.get(parentNode);
+				if (distanceBParent == null ||  distanceBParent> tentativeDistance) {
 					DISTANCEB.put(parentNode, tentativeDistance);
 					PARENTSB.put(parentNode, currentNode);
 					final HeapEntry<V> e = new HeapEntry<>(parentNode,
 							tentativeDistance + estimateDistanceBetween(parentNode, sourceNode));
 					OPENB.add(e);
-
-					if (DISTANCEA.containsKey(parentNode)) {
-						final double pathLength = tentativeDistance + DISTANCEA.get(parentNode);
+					
+					Double distanceAParent = DISTANCEA.get(parentNode);
+					if (distanceAParent != null) {
+						final double pathLength = tentativeDistance + distanceAParent;
 
 						if (bestPathLength > pathLength) {
 							bestPathLength = pathLength;

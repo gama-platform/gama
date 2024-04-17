@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.core.kernel.simulation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -188,7 +187,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 			sim.updateWith(scope, sa);
 		} else {
 			sim.setExternalInits(firstInitValues);
-			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Arrays.asList(firstInitValues));
+			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Collections.singletonList(firstInitValues));
 		}
 
 		if (toBeScheduled) {

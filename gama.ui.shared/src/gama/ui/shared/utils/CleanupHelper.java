@@ -376,23 +376,18 @@ public class CleanupHelper {
 		 *            the menu
 		 */
 		private static void processItems(final IMenuManager menu) {
-			// final StringBuilder sb = new StringBuilder();
-			// sb.append("Menu ").append(menu.getId()).append(" :: ");
 			for (final IContributionItem item : menu.getItems()) {
 				final String name = item.getId();
-				// DEBUG.LOG(name);
 				if (MENU_ITEMS_TO_REMOVE.contains(name)) {
 					item.setVisible(false);
 					continue;
 				}
 				if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) { continue; }
-				if (MENU_IMAGES.containsKey(name)) {
-					changeIcon(menu, item, GamaIcon.named(MENU_IMAGES.get(name)).descriptor());
+				String imageName = MENU_IMAGES.get(name);
+				if (imageName != null) {
+					changeIcon(menu, item, GamaIcon.named(imageName).descriptor());
 				}
-				// sb.append(Strings.LN).append(Strings.TAB);
-				// sb.append(name).append('[').append(item.getClass().getSimpleName()).append("]:: ");
 			}
-			// DEBUG.LOG(sb.toString());
 		}
 
 		/**

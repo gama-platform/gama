@@ -50,8 +50,11 @@ public class PredicateType extends GamaType<Predicate> {
 		if (obj instanceof String s) return new Predicate(s);
 		if (obj instanceof Map) {
 			final Map<String, Object> map = (Map<String, Object>) obj;
-			final String nm = (String) (map.containsKey("name") ? map.get("name") : SimpleBdiArchitecture.PREDICATE);
-			final IMap values = (IMap) (map.containsKey("values") ? map.get("values") : null);
+			String nm = (String) map.get("name");
+			if (nm == null) {
+				nm = SimpleBdiArchitecture.PREDICATE;
+			}
+			final IMap values = (IMap) map.get("values");
 			return new Predicate(nm, values);
 		}
 		return null;

@@ -313,12 +313,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan) {
-		Map<String, IExperimentPlan> exps = launchedExperiments.get(socketId);
-		if (exps == null) {
-			exps = new ConcurrentHashMap<>();
-			launchedExperiments.put(socketId, exps);
-		}
-		exps.put(experimentId, plan);
+		launchedExperiments.putIfAbsent(socketId,  new ConcurrentHashMap<>());
+		launchedExperiments.get(socketId).put(experimentId, plan);
 	}
 
 	/**

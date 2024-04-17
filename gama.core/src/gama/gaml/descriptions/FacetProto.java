@@ -182,7 +182,7 @@ public class FacetProto implements IGamlDescription, Comparable<FacetProto> {
 				default:
 					// TODO AD 2/16 Document the types with the new possibility to
 					// include of and index
-					s.append(types[i].toString());
+					s.append(types[i]);
 			}
 			if (i != types.length - 1) { s.append(", "); }
 		}

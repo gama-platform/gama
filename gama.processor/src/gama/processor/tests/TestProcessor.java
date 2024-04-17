@@ -226,8 +226,9 @@ public class TestProcessor extends ElementProcessor<tests> {
 	 */
 	private String getTestName(final String name) {
 		String result = name;
-		if (namesAlreadyUsed.containsKey(name)) {
-			final int number = namesAlreadyUsed.get(name) + 1;
+		Integer number = namesAlreadyUsed.get(name);
+		if (number != null) {
+			number++;
 			namesAlreadyUsed.put(name, number);
 			result = name + " (" + number + ")";
 		} else {

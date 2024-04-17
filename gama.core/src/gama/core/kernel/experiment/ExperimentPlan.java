@@ -11,7 +11,6 @@
 package gama.core.kernel.experiment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -565,7 +564,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		final IScope scope = getExperimentScope();
 		pop.initializeFor(scope);
 		final List<Map<String, Object>> params =
-				seed == null ? Collections.EMPTY_LIST : Arrays.asList(new HashMap<String, Object>() {
+				seed == null ? Collections.EMPTY_LIST : Collections.singletonList(new HashMap<String, Object>() {
 					{
 						put(IKeyword.SEED, seed);
 					}
@@ -574,11 +573,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		addDefaultParameters();
 	}
 
-	/*
-	 * public void createAgent() { final ExperimentPopulation pop = new ExperimentPopulation(this); final IScope scope =
-	 * getExperimentScope(); pop.initializeFor(scope); agent = (ExperimentAgent) pop.createAgents(scope, 1,
-	 * Collections.EMPTY_LIST, false, true).get(0); addDefaultParameters(); }
-	 */
+
 	@Override
 	public IModel getModel() { return model; }
 
@@ -1103,7 +1098,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	@Override
 	public Iterable<IOutputManager> getActiveOutputManagers() {
 		if (agent == null) return Collections.EMPTY_LIST;
-		return Iterables.concat(agent.getAllSimulationOutputs(), Arrays.asList(experimentOutputs));
+		return Iterables.concat(agent.getAllSimulationOutputs(), Collections.singletonList(experimentOutputs));
 
 	}
 

@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IGraphics;
@@ -51,7 +51,7 @@ public class MeshLayer extends AbstractLayer {
 		attributes.setGrayscaled(data.isGrayScaled());
 		attributes.setEmpty(data.isWireframe());
 		attributes.setBorder(data.drawLines() ? data.getLineColor() : null);
-		if (textureFile != null) { attributes.setTextures(Arrays.asList(textureFile)); }
+		if (textureFile != null) { attributes.setTextures(Collections.singletonList(textureFile)); }
 		attributes.setLocation(data.getPosition());
 		attributes.setTriangulated(data.isTriangulated());
 		attributes.setWithText(data.isShowText());

@@ -50,8 +50,8 @@ public class SpatialThreeD {
 		if (geom == null) return null;
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;
-		if (index < 0 || index > g.getNumPoints() - 1) throw GamaRuntimeException
-				.warning("Trying to modify a point outside the bounds of the geometry", scope);
+		if (index < 0 || index > g.getNumPoints() - 1) 
+			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
 		g.apply(new CoordinateSequenceFilter() {
 
 			boolean done = false;
@@ -101,8 +101,8 @@ public class SpatialThreeD {
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;
 		if (coords == null || coords.isEmpty(scope)) return null;
-		if (coords.length(scope) > g.getNumPoints()) throw GamaRuntimeException
-				.warning("Trying to modify a point outside the bounds of the geometry", scope);
+		if (coords.length(scope) > g.getNumPoints()) 
+			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
 		final Double[] zs = coords.listValue(scope, Types.FLOAT, false).toArray(new Double[0]);
 		g.apply(new CoordinateSequenceFilter() {
 

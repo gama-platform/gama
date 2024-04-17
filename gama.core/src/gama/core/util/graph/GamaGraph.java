@@ -479,14 +479,14 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 		// display the list of verticies
 		sb.append("graph { \nvertices (").append(vertexSet().size()).append("): ").append("[");
-		for (final Object v : vertexSet()) { sb.append(v.toString()).append(","); }
+		for (final Object v : vertexSet()) { sb.append(v).append(","); }
 		sb.append("]").append(Strings.LN);
 		sb.append("edges (").append(edgeSet().size()).append("): [").append(Strings.LN);
 		// display each edge
 		for (final Entry<E, _Edge<V, E>> entry : edgeMap.entrySet()) {
 			final E e = entry.getKey();
 			final _Edge<V, E> v = entry.getValue();
-			sb.append(e.toString()).append(Strings.TAB).append("(").append(v.toString()).append("),")
+			sb.append(e).append(Strings.TAB).append("(").append(v).append("),")
 					.append(Strings.LN);
 		}
 		sb.append("]\n}");

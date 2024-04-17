@@ -11,7 +11,7 @@
 package gama.gaml.statements.draw;
 
 import java.awt.Color;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -230,7 +230,7 @@ public class DrawingAttributes {
 		if (o == null) {
 			setTextures(null);
 		} else {
-			setTextures(Arrays.asList(o));
+			setTextures(Collections.singletonList(o));
 		}
 	}
 

@@ -289,7 +289,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 		if (currentException != null) {
 			result.append(currentException.getMessage());
 		} else if (!isOK(value)) {
-			result.append("The current value should be of type ").append(expectedType.toString());
+			result.append("The current value should be of type ").append(expectedType);
 		}
 		return result.toString();
 	}

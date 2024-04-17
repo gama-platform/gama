@@ -612,7 +612,7 @@ public class Variable extends Symbol implements IVariable {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder().append(isNotModifiable() ? IKeyword.CONST : IKeyword.VAR);
-		result.append(" ").append(type.toString()).append("[").append(getName()).append("]");
+		result.append(" ").append(type).append("[").append(getName()).append("]");
 		return result.toString();
 	}
 

@@ -86,48 +86,9 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 
 		DEBUG.SECTION("SUMMARY");
 
-		// code[1] = code[0];
-		// code[0] = 0;
-		// count[0] = 0;
-		// final Multimap<Bundle, String> tests = GamaBundleLoader.getPluginsWithTests();
-		// allURLs = new ArrayList<>();
-		// for (final Bundle bundle : tests.keySet()) {
-		// for (final String entry : tests.get(bundle)) {
-		// final Enumeration<URL> urls = bundle.findEntries(entry, "*", true);
-		// if (urls != null)
-		// while (urls.hasMoreElements()) {
-		// final URL url = urls.nextElement();
-		// if (isModel(url)) {
-		// final URL resolvedFileURL = FileLocator.toFileURL(url);
-		// allURLs.add(resolvedFileURL);
-		// }
-		// }
-		// }
-		// }
-		// builder.loadURLs(allURLs);
-		//
-		// allURLs.forEach(u -> validate(builder, count, code, u));
-		//
-		// DEBUG.OUT("" + count[0] + " GAMA tests compiled in built-in library and plugins. " + code[0]
-		// + " compilation errors found");
-		//
-		// DEBUG.OUT(code[0] + code[1]);
 		return code[0] + code[1];
 	}
 
-	// private void validate(GamlModelBuilder builder, final int[] countOfModelsValidated, final int[] returnCode,
-	// final URL pathToModel) {
-	// final List<GamlCompilationError> errors = new ArrayList<>();
-	//// log("Compiling " + pathToModel.getFile());
-	// builder.compile(pathToModel, errors);
-	// countOfModelsValidated[0]++;
-	// errors.stream().filter(e -> e.isError()).forEach(e -> {
-	//// log("Error in " + e.getURI().lastSegment() + ": " + e);
-	// DEBUG.OUT(
-	// "Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
-	// returnCode[0]++;
-	// });
-	// }
 
 	/**
 	 * Validate and run.
