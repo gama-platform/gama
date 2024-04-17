@@ -13,18 +13,14 @@ package gama.extension.network.websocket;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import gama.core.messaging.GamaMessage;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.extension.network.common.CommandMessage;
+import gama.extension.network.common.CommandMessage.CommandType;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;
 import gama.extension.network.common.MessageFactory;
-import gama.extension.network.common.CommandMessage.CommandType;
-import gama.extension.network.common.MessageFactory.MessageType;
 import gama.extension.network.common.socket.SocketService;
-import gama.extension.network.tcp.ClientService;
-import gama.extension.network.tcp.ServerService;
 
 /**
  * The Class TCPConnection.

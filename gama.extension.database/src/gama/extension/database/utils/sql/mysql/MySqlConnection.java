@@ -319,10 +319,10 @@ public class MySqlConnection extends SqlConnection {
 				} else if (DATETIME.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + DATETIME
 							+ SUPFIX_TIMESTAMP;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(DATE)) {
+				} else if (DATE.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + DATE
 							+ SUPFIX_TIMESTAMP;
-				} else if (((String) col_Types.get(i)).equalsIgnoreCase(TIME)) {
+				} else if (TIME.equalsIgnoreCase((String) col_Types.get(i))) {
 					valueStr = valueStr + PREFIX_TIMESTAMP + values.get(i).toString() + MID_TIMESTAMP + TIME
 							+ SUPFIX_TIMESTAMP;
 				} else { // For other type

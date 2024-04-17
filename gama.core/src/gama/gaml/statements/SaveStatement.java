@@ -302,7 +302,7 @@ public class SaveStatement extends AbstractStatementSequence{
 			if (species == null) {
 				if (isMap) {
 					desc.error("Attributes of geometries can only be specified with a list of attribute names",
-							IGamlIssue.UNKNOWN_FACET, att == null ? WITH : ATTRIBUTES);
+							IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
 				}
 				// Error deactivated for fixing #2982.
 				// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,

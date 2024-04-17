@@ -945,9 +945,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		final ModelDescription main = this.getModel().getDescription();
 		if (main.getMicroModel(micro.getAlias()) == null) return sim.getPopulationFor(species.getName());
 		return sim.getPopulationFor(species);
-
-		// return sim.getPopulationFor(species.getName());
-
 	}
 
 	/**

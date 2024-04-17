@@ -256,24 +256,27 @@ public class SpatialRelations {
 		final int n = nodes.length(scope);
 		final IShape source = nodes.firstValue(scope);
 		if (n == 1) {
-			if (topo instanceof GridTopology)
-				return ((GridTopology) topo).pathBetween(scope, source, source, cells);
+			if (topo instanceof GridTopology gt)
+				return gt.pathBetween(scope, source, source, cells);
 			return scope.getTopology().pathBetween(scope, source, source);
 		}
 		final IShape target = nodes.lastValue(scope);
 		if (n == 2) {
-			if (topo instanceof GridTopology)
-				return ((GridTopology) topo).pathBetween(scope, source, target, cells);
+			if (topo instanceof GridTopology gt)
+				return gt.pathBetween(scope, source, target, cells);
 			return scope.getTopology().pathBetween(scope, source, target);
 		}
 		final IList<IShape> edges = GamaListFactory.create(Types.GEOMETRY);
 		IShape previous = null;
+		double weight = 0;
 		for (final IShape gg : nodes.iterable(scope)) {
 			if (previous != null) {
 				// TODO Take the case of GamaPoint
-				if (topo instanceof GridTopology) {
-					final GamaSpatialPath path = ((GridTopology) topo).pathBetween(scope, previous, gg, cells);
+				if (topo instanceof GridTopology gt) {
+					final GamaSpatialPath path = gt.pathBetween(scope, previous, gg, cells);
 					edges.addAll(path.getEdgeList());
+					weight += path.getWeight();
+
 				} else {
 					edges.addAll(scope.getTopology().pathBetween(scope, previous, gg).getEdgeList());
 				}
@@ -282,7 +285,7 @@ public class SpatialRelations {
 		}
 		final GamaSpatialPath path = PathFactory.newInstance(scope,
 				topo instanceof GridTopology ? topo : scope.getTopology(), source, target, edges);
-		path.setWeight(path.getVertexList().size());
+		path.setWeight(topo instanceof GridTopology ? weight : path.getVertexList().size());
 		return path;
 	}
 
@@ -315,38 +318,7 @@ public class SpatialRelations {
 	public static IPath path_between(final IScope scope, final IMap<IAgent, Object> cells,
 			final IContainer<?, IShape> nodes) throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty() || nodes.isEmpty(scope)) return null;
-		final ITopology topo = cells.getKeys().get(0).getTopology();
-
-		final int n = nodes.length(scope);
-		final IShape source = nodes.firstValue(scope);
-		if (n == 1) {
-			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, source, cells);
-			return scope.getTopology().pathBetween(scope, source, source);
-		}
-		final IShape target = nodes.lastValue(scope);
-		if (n == 2) {
-			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, target, cells);
-			return scope.getTopology().pathBetween(scope, source, target);
-		}
-		double weight = 0;
-		final IList<IShape> edges = GamaListFactory.create(Types.GEOMETRY);
-		IShape previous = null;
-		for (final IShape gg : nodes.iterable(scope)) {
-			if (previous != null) {
-				if (topo instanceof GridTopology gt) {
-					final GamaSpatialPath path = gt.pathBetween(scope, previous, gg, cells);
-					edges.addAll(path.getEdgeList());
-					weight += path.getWeight();
-				} else {
-					edges.addAll(scope.getTopology().pathBetween(scope, previous, gg).getEdgeList());
-				}
-			}
-			previous = gg;
-		}
-		final GamaSpatialPath path = PathFactory.newInstance(scope,
-				topo instanceof GridTopology ? topo : scope.getTopology(), source, target, edges);
-		path.setWeight(topo instanceof GridTopology ? weight : path.getVertexList().size());
-		return path;
+		return path_between(scope, cells.getKeys(), nodes);
 	}
 
 	/**
@@ -381,7 +353,7 @@ public class SpatialRelations {
 			final IShape target) throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty() || source == null || target == null) return null;
 		final ITopology topo = cells.get(0).getTopology();
-		if (topo instanceof GridTopology) return ((GridTopology) topo).pathBetween(scope, source, target, cells);
+		if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, target, cells);
 		return scope.getTopology().pathBetween(scope, source, target);
 	}
 
@@ -416,9 +388,7 @@ public class SpatialRelations {
 	public static IPath path_between(final IScope scope, final IMap<IAgent, Object> cells, final IShape source,
 			final IShape target) throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty()) return null;
-		final ITopology topo = cells.getKeys().get(0).getTopology();
-		if (topo instanceof GridTopology) return ((GridTopology) topo).pathBetween(scope, source, target, cells);
-		return scope.getTopology().pathBetween(scope, source, target);
+		return path_between(scope, cells.getKeys(), source, target);
 	}
 
 	/**
