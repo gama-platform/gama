@@ -267,7 +267,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> {
 	public void setGamlDocumentation(final EObject e, final IGamlDescription d) {
 		// Called by SymbolDescription to document individual expressions -- they are kept in a Map<EObject,
 		// IGamlDescription> and done when the whole model is documented
-		if (shouldDocument) { expressionsToDocument.put(e, d); }
+		if (shouldDocument && e != null && d != null) { expressionsToDocument.put(e, d); }
 	}
 
 	/**
