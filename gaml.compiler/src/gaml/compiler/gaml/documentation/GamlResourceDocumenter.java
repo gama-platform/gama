@@ -61,14 +61,7 @@ public class GamlResourceDocumenter implements IDocManager {
 	record DocumentedObject(DocumentationNode node, Set<URI> resources) {}
 
 	/**
-	 * The references from resources to EObjets. Key is the URI of the resource, value is the set of hashcodes of the
-	 * complete URIs of objects present in this resource (they might belong to other resources)
-	 */
-
-	Map<URI, Set<URI>> objectsIndexedByResources = new ConcurrentHashMap();
-
-	/**
-	 * Adds the arbitrary documentation task.
+	 * Adds arbitrary documentation task.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param task
@@ -123,7 +116,7 @@ public class GamlResourceDocumenter implements IDocManager {
 				documentedObjects.put(fragment, documented);
 			}
 			documented.resources.add(res);
-			objectsIndexedByResources.computeIfAbsent(res, uri -> new HashSet()).add(fragment);
+			getTaskFor(res).objects.add(fragment);
 			return true;
 		} catch (final RuntimeException e) {
 			DEBUG.ERR("Error in documenting " + res.lastSegment(), e);
@@ -173,10 +166,9 @@ public class GamlResourceDocumenter implements IDocManager {
 	@Override
 	public void invalidate(final URI uri) {
 		if (uri == null) return;
-		Set<URI> objects = objectsIndexedByResources.remove(uri);
-		documentationTasks.remove(uri);
-		if (objects != null) {
-			objects.forEach(object -> {
+		GamlResourceDocumentationTask task = documentationTasks.remove(uri);
+		if (task != null) {
+			task.objects.forEach(object -> {
 				DocumentedObject documented = documentedObjects.get(object);
 				if (documented != null) {
 					Set<URI> resources = documented.resources;
@@ -196,7 +188,7 @@ public class GamlResourceDocumenter implements IDocManager {
 	public void invalidateAll() {
 		getTaskFor(URI.createURI("")).add(() -> {
 			documentedObjects.clear();
-			objectsIndexedByResources.clear();
+			documentationTasks.clear();
 		});
 
 	}

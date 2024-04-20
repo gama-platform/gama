@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.documentation;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,6 +36,9 @@ public class GamlResourceDocumentationTask {
 
 	/** The current generation. */
 	int currentGeneration;
+
+	/** The objects. */
+	Set<URI> objects = new HashSet<>();
 
 	/**
 	 * Instantiates a new gaml resource documentation task.
