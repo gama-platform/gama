@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.documentation;
 
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,9 +34,6 @@ public class GamlResourceDocumentationTask {
 
 	/** The current generation. */
 	int currentGeneration;
-
-	/** The objects. */
-	HashSet<URI> objects = new HashSet<>();
 
 	/**
 	 * Instantiates a new gaml resource documentation task.
@@ -69,9 +65,9 @@ public class GamlResourceDocumentationTask {
 	/**
 	 * Increment generation.
 	 */
-	public int incrementGeneration() {
+	public void incrementGeneration() {
+		currentGeneration++;
 		queue = new ConcurrentLinkedQueue<>();
-		return currentGeneration++;
 	}
 
 	/**

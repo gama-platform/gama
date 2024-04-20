@@ -219,9 +219,13 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		try {
 			updateWith(model.validate(), true);
 		} finally {
-			// make sure to get rid of the model only if its documentation is not being produced (in which case the
-			// model is disposed by the documenter
-			if (!GamlResourceServices.isEdited(this.getURI())) { model.dispose(); }
+			// make sure to get rid of the model only after its documentation has been produced
+			if (GamlResourceServices.isEdited(this.getURI())) {
+				GamlResourceServices.getResourceDocumenter().addDocumentationTask(getURI(), () -> model.dispose());
+			} else {
+				model.dispose();
+			}
+			// }
 		}
 	}
 
