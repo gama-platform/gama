@@ -44,15 +44,21 @@ public class GamlResourceDocumenter implements IDocManager {
 	/** The documentation queue. */
 	final Map<URI, GamlResourceDocumentationTask> documentationTasks = new ConcurrentHashMap();
 
-	/** The documentations from EObject to DocumentationNode. Key is the complete URI of the object */
-	final Map<URI, DocumentationNode> docIndexedByObjects = new ConcurrentHashMap();
+	/**
+	 * The references from Eobject to resources and documentation. Key is the URI of the object, value is the
+	 * corresponding "documented object"
+	 */
+	final Map<URI, DocumentedObject> documentedObjects = new ConcurrentHashMap();
 
 	/**
-	 * The references from Eobject to resources. Key is the complete URI of the object, value is the set of hashcodes of
-	 * the URIs of open resources using this object
+	 * The Record DocumentedObject.
+	 *
+	 * @param node
+	 *            the documentation node corresponding to this object
+	 * @param resources
+	 *            the resources, resources that are referencing this object
 	 */
-
-	Map<URI, Set<URI>> resourcesIndexedByObjects = new ConcurrentHashMap();
+	record DocumentedObject(DocumentationNode node, Set<URI> resources) {}
 
 	/**
 	 * The references from resources to EObjets. Key is the URI of the resource, value is the set of hashcodes of the
@@ -111,8 +117,12 @@ public class GamlResourceDocumenter implements IDocManager {
 		try {
 			if (!isTaskValid(res) || !isValidGeneration(res, generation)) return false;
 			URI fragment = EcoreUtil.getURI(object);
-			docIndexedByObjects.put(fragment, new DocumentationNode(desc));
-			resourcesIndexedByObjects.computeIfAbsent(fragment, uri -> new HashSet()).add(res);
+			DocumentedObject documented = documentedObjects.get(fragment);
+			if (documented == null) {
+				documented = new DocumentedObject(new DocumentationNode(desc), new HashSet());
+				documentedObjects.put(fragment, documented);
+			}
+			documented.resources.add(res);
 			objectsIndexedByResources.computeIfAbsent(res, uri -> new HashSet()).add(fragment);
 			return true;
 		} catch (final RuntimeException e) {
@@ -125,7 +135,6 @@ public class GamlResourceDocumenter implements IDocManager {
 	@Override
 	public void doDocument(final URI res, final ModelDescription desc,
 			final Map<EObject, IGamlDescription> additionalExpressions) {
-
 		GamlResourceDocumentationTask task;
 		task = getTaskFor(res);
 		task.incrementGeneration();
@@ -157,67 +166,26 @@ public class GamlResourceDocumenter implements IDocManager {
 	@Override
 	public IGamlDescription getGamlDocumentation(final EObject object) {
 		if (object == null) return null;
-		IGamlDescription doc = docIndexedByObjects.get(EcoreUtil.getURI(object));
-		// if (doc == null && DEBUG.IS_ON()) {
-		// DEBUG.OUT("EObject " + object + " in resource "
-		// + (object.eResource() == null ? "null" : object.eResource().getURI().lastSegment())
-		// + " is not documented ");
-		// }
-		return doc;
+		DocumentedObject documented = documentedObjects.get(EcoreUtil.getURI(object));
+		return documented == null ? null : documented.node;
 	}
 
 	@Override
 	public void invalidate(final URI uri) {
 		if (uri == null) return;
-		// Should we do it immediately ? with the following reasoning:
-		// 1/ If called from closing the editor, no reason to do it at the end and not immediately
-		// 2/ If called from the erasing of cache in GamlResource, it must be done immediately to allow the new Eobjects
-		// to not be mixed with the "old" ones
-		// addDocumentationTask(d -> {
 		Set<URI> objects = objectsIndexedByResources.remove(uri);
 		documentationTasks.remove(uri);
 		if (objects != null) {
 			objects.forEach(object -> {
-				Set<URI> resources = resourcesIndexedByObjects.get(object);
-				if (resources != null) {
+				DocumentedObject documented = documentedObjects.get(object);
+				if (documented != null) {
+					Set<URI> resources = documented.resources;
 					resources.remove(uri);
-					if (resources.isEmpty()) {
-						docIndexedByObjects.remove(object);
-						resourcesIndexedByObjects.remove(object);
-					}
+					if (resources.isEmpty()) { documentedObjects.remove(object); }
 				}
 			});
 		}
-		// if (DEBUG.IS_ON()) { debugStatistics("Invalidation of " + uri.lastSegment()); }
-		// });
-
-		/**
-		 * Debug statistics.
-		 *
-		 * @param title
-		 *            the title
-		 */
 	}
-
-	/**
-	 * Debug statistics.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param title
-	 *            the title
-	 * @date 31 déc. 2023
-	 */
-	// private void debugStatistics(final String title) {
-	// DEBUG.SECTION(title);
-	// DEBUG.BANNER("DOC", "docIndexedByObjects", "size", String.valueOf(docIndexedByObjects.size()));
-	// DEBUG.BANNER("DOC", "eObjectsIndexedByResources", "size", String.valueOf(objectsIndexedByResources.size()));
-	// DEBUG.BANNER("DOC", "Opened Resources", "names", new HashSet(resourceNames.values()).toString());
-	// DEBUG.BANNER("DOC", "resourcesIndexedByEObjects", "size", String.valueOf(resourcesIndexedByObjects.size()));
-	// DEBUG.LINE();
-	// /**
-	// * Invalidate all.
-	// */
-	// }
 
 	/**
 	 * Invalidate all.
@@ -226,10 +194,8 @@ public class GamlResourceDocumenter implements IDocManager {
 	 * @date 30 déc. 2023
 	 */
 	public void invalidateAll() {
-		// if (DEBUG.IS_ON()) { debugStatistics("Before clean build"); }
 		getTaskFor(URI.createURI("")).add(() -> {
-			docIndexedByObjects.clear();
-			resourcesIndexedByObjects.clear();
+			documentedObjects.clear();
 			objectsIndexedByResources.clear();
 		});
 
