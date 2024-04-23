@@ -190,6 +190,18 @@
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>				 
 			</plugin>
+
+			<!-- Code Review for PR 
+			Execute by running `mvn -B verify spotbugs:spotbugs` -->
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.8.4.0</version>
+				<configuration>
+					<xmlOutput>true</xmlOutput>
+					<failOnError>false</failOnError>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<packaging>eclipse-plugin</packaging>

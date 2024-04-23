@@ -139,9 +139,9 @@
 		<!-- <plugins combine.self="override"> -->
 		<plugins>
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-deploy-plugin</artifactId>
-			    <version>${maven.plugins.version}</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven.plugins.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.wagon</groupId>
@@ -154,7 +154,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-			    <version>${maven-compiler-plugin.version}</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
@@ -185,6 +185,18 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>
+			</plugin>
+
+			<!-- Code Review for PR 
+			Execute by running `mvn -B verify spotbugs:spotbugs` -->
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.8.4.0</version>
+				<configuration>
+					<xmlOutput>true</xmlOutput>
+					<failOnError>false</failOnError>
+				</configuration>
 			</plugin>
 
 		</plugins>
