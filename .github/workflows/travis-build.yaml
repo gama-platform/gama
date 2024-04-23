@@ -110,6 +110,7 @@ jobs:
           cd ${{ github.workspace }}/gama.processor
           mvn verify spotbugs:spotbugs
           cd ${{ github.workspace }}/gama.parent
+          mvn verify spotbugs:spotbugs
 
       - uses: actions/upload-artifact@v4
         if: "${{ inputs.RUN_SPOTBUGS }}"
