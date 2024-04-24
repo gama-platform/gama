@@ -246,15 +246,6 @@ public class ExperimentJob implements IExperimentJob {
 					temp.getFrameRate(), simulator.getTypeOf(temp.getName()), temp.getOutputPath());
 		}
 		simulator.getExperimentPlan().setStopCondition(untilCond);
-
-		// // Initialize the enCondition
-		// if (untilCond == null || "".equals(untilCond)) {
-		// endCondition = IExpressionFactory.FALSE_EXPR;
-		// } else {
-		// endCondition = GAML.getExpressionFactory().createExpr(untilCond, simulator.getModel().getDescription());
-		// // endCondition = GAML.compileExpression(untilCond, simulator.getSimulation(), true);
-		// }
-
 	}
 
 	/**

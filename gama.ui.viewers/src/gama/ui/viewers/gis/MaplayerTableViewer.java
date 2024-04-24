@@ -76,7 +76,7 @@ public class MaplayerTableViewer extends TableViewer implements ISelectionChange
 		this.setContentProvider(new ArrayContentProvider());
 		this.addSelectionChangedListener(this);
 
-		createColumns(parent, this);
+		createColumns(parent);
 		final Table table = this.getTable();
 		table.setHeaderVisible(true);
 		// table.setLinesVisible(true);
@@ -109,10 +109,8 @@ public class MaplayerTableViewer extends TableViewer implements ISelectionChange
 	 *
 	 * @param parent
 	 *            the parent
-	 * @param viewer
-	 *            the viewer
 	 */
-	private void createColumns(final Composite parent, final TableViewer viewer) {
+	private void createColumns(final Composite parent) {
 
 		final int[] bounds = { 120, 50, 50 };
 

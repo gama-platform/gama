@@ -590,20 +590,20 @@ public class SpatialOperators {
 			final boolean isLineF = isLine;
 
 			geomVisibleF.removeIf(g -> (isPolygonF || isLineF) && g.isPoint() && isPolygonF && g.isLine());
-			if (!geomVisibleF.isEmpty(scope)) {
-				IShape result = Cast.asGeometry(scope, geomVisibleF, false);
-				if (result == null || result.getInnerGeometry() == null) {
-					geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
-					result = Cast.asGeometry(scope, geomVisibleF, false);
-				}
-				if (result == null || result.getInnerGeometry() == null) return null;
-				if (result.getInnerGeometry() instanceof GeometryCollection) {
-
-					result = SpatialTransformations.enlarged_by(scope, result, 0.1);
-				}
-				return result;
+			if (geomVisibleF.isEmpty(scope)) {
+				return null;
 			}
-			return null;
+			IShape result = Cast.asGeometry(scope, geomVisibleF, false);
+			if (result == null || result.getInnerGeometry() == null) {
+				geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
+				result = Cast.asGeometry(scope, geomVisibleF, false);
+			}
+			if (result == null || result.getInnerGeometry() == null) return null;
+			if (result.getInnerGeometry() instanceof GeometryCollection) {
+
+				result = SpatialTransformations.enlarged_by(scope, result, 0.1);
+			}
+			return result;
 		}
 		return GamaShapeFactory.createFrom(visiblePercept);
 	}

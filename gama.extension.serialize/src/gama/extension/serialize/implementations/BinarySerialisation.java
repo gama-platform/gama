@@ -10,11 +10,13 @@
  ********************************************************************************************************/
 package gama.extension.serialize.implementations;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.common.util.FileUtils;
@@ -197,7 +199,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static final void saveToFile(final IScope scope, final Object o, final String path, final String format,
 			final boolean zip, final boolean includingHistory) {
-		try (FileOutputStream fos = new FileOutputStream(path, true)) {
+		try (OutputStream fos = Files.newOutputStream(new File(path).toPath(), StandardOpenOption.APPEND)) {
 			if (o instanceof SimulationAgent sim) {
 				sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, includingHistory);
 			}

@@ -253,7 +253,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 */
 	@Override
 	public boolean processPause(final boolean andWait) {
-		// Dont block display threads (see #
+		// Don't block display threads (see #
 		return !GAMA.getGui().isInDisplayThread() && andWait ? synchronousPause() : asynchronousPause();
 	}
 

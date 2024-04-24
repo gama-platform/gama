@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -431,7 +430,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		boolean yNeg = false;
 		final String extension = getExtension(scope);
 		if (geodataFile != null && !"".equals(geodataFile)) {
-			try (final InputStream ips = new FileInputStream(geodataFile);
+			try (	final InputStream ips = java.nio.file.Files.newInputStream(new File(geodataFile).toPath());
 					final InputStreamReader ipsr = new InputStreamReader(ips);
 					final BufferedReader in = new BufferedReader(ipsr);) {
 				String line = in.readLine();

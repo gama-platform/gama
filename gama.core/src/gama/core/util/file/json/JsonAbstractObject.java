@@ -589,35 +589,6 @@ public abstract class JsonAbstractObject extends JsonValue implements Iterable<J
 		return names.lastIndexOf(name);
 	}
 
-	/**
-	 * Read object.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param inputStream
-	 *            the input stream
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws ClassNotFoundException
-	 *             the class not found exception
-	 * @date 29 oct. 2023
-	 */
-	private synchronized void readObject(final ObjectInputStream inputStream)
-			throws IOException, ClassNotFoundException {
-		inputStream.defaultReadObject();
-		table = new HashIndexTable();
-		updateHashIndex();
-	}
-
-	/**
-	 * Update hash index.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 29 oct. 2023
-	 */
-	private void updateHashIndex() {
-		int size = names.size();
-		for (int i = 0; i < size; i++) { table.add(names.get(i), i); }
-	}
 
 	@Override
 	public abstract Object toGamlValue(final IScope scope);

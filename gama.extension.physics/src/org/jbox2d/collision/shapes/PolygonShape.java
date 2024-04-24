@@ -120,10 +120,6 @@ public class PolygonShape extends Shape {
   public final void set(final Vec2[] verts, final int num, final Vec2Array vecPool,
       final IntArray intPool) {
     assert (3 <= num && num <= Settings.maxPolygonVertices);
-    if (num < 3) {
-      setAsBox(1.0f, 1.0f);
-      return;
-    }
 
     int n = MathUtils.min(num, Settings.maxPolygonVertices);
 

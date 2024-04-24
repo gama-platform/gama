@@ -12,10 +12,10 @@ package gama.headless.batch.documentation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -105,7 +105,7 @@ public class CheckConcepts {
 		String result = "";
 
 		// read the file
-		try (final FileInputStream fis = new FileInputStream(file);
+		try (final InputStream fis = java.nio.file.Files.newInputStream(new File(file).toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 
 			String line = null;
@@ -125,7 +125,7 @@ public class CheckConcepts {
 
 		// write the file
 		final File outputFile = new File(file);
-		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
+		try (final OutputStream fileOut = java.nio.file.Files.newOutputStream(outputFile.toPath())) {
 			fileOut.write(result.getBytes());
 		}
 	}

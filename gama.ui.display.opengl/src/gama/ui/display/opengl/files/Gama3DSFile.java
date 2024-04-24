@@ -11,8 +11,9 @@
 package gama.ui.display.opengl.files;
 
 import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -138,7 +139,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 	public void fillBuffer(final IScope scope) {
 		setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
 		try {
-			final FileInputStream fileInputStream = new FileInputStream(getFile(scope));
+			final InputStream fileInputStream = Files.newInputStream(getFile(scope).toPath());
 			dataInputStream = new DataInputStream(fileInputStream);
 			readChunkHeader(currentChunk);
 			if (currentChunk.id != PRIMARY) { DEBUG.ERR("Unable to load PRIMARY chunk from file " + getPath(scope)); }

@@ -217,25 +217,25 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 * @return the geometry
 	 */
 	protected Geometry multiPolygonManagement(final Geometry geom) {
-		if (geom instanceof MultiPolygon) {
-			final Polygon gs[] = new Polygon[geom.getNumGeometries()];
-			for (int i = 0; i < geom.getNumGeometries(); i++) {
-				final Polygon p = (Polygon) geom.getGeometryN(i);
-				final ICoordinates coords = GeometryUtils.getContourCoordinates(p);
-				final LinearRing lr = GEOMETRY_FACTORY.createLinearRing(coords.toCoordinateArray());
-				try (final Collector.AsList<LinearRing> holes = Collector.getList()) {
-					for (int j = 0; j < p.getNumInteriorRing(); j++) {
-						final LinearRing h = p.getInteriorRingN(j);
-						if (!hasNullElements(h.getCoordinates())) { holes.add(h); }
-					}
-					LinearRing[] stockArr = new LinearRing[holes.size()];
-					stockArr = holes.items().toArray(stockArr);
-					gs[i] = GEOMETRY_FACTORY.createPolygon(lr, stockArr);
-				}
-			}
-			return GEOMETRY_FACTORY.createMultiPolygon(gs);
+		if (! (geom instanceof MultiPolygon)) {
+			return geom;
 		}
-		return geom;
+		final Polygon gs[] = new Polygon[geom.getNumGeometries()];
+		for (int i = 0; i < geom.getNumGeometries(); i++) {
+			final Polygon p = (Polygon) geom.getGeometryN(i);
+			final ICoordinates coords = GeometryUtils.getContourCoordinates(p);
+			final LinearRing lr = GEOMETRY_FACTORY.createLinearRing(coords.toCoordinateArray());
+			try (final Collector.AsList<LinearRing> holes = Collector.getList()) {
+				for (int j = 0; j < p.getNumInteriorRing(); j++) {
+					final LinearRing h = p.getInteriorRingN(j);
+					if (!hasNullElements(h.getCoordinates())) { holes.add(h); }
+				}
+				LinearRing[] stockArr = new LinearRing[holes.size()];
+				stockArr = holes.items().toArray(stockArr);
+				gs[i] = GEOMETRY_FACTORY.createPolygon(lr, stockArr);
+			}
+		}
+		return GEOMETRY_FACTORY.createMultiPolygon(gs);
 	}
 
 	/**

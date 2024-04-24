@@ -10,16 +10,16 @@
 package gama.core.util.file.csv;
 
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 /**
  * A stream based writer for writing delimited text data to a file or a stream.
  */
-@SuppressWarnings ({ "unchecked", "rawtypes" })
 public class CsvWriter extends AbstractCSVManipulator {
 
 	/** The output stream. */
@@ -151,7 +151,7 @@ public class CsvWriter extends AbstractCSVManipulator {
 	private void checkInit() throws IOException {
 		if (outputStream == null && fileName != null) {
 			outputStream = new BufferedWriter(
-					new OutputStreamWriter(new FileOutputStream(fileName), Charset.forName("UTF-8")));
+					new OutputStreamWriter(Files.newOutputStream(new File(fileName).toPath()), Charset.forName("UTF-8")));
 		}
 	}
 
@@ -180,18 +180,18 @@ public class CsvWriter extends AbstractCSVManipulator {
 	public static String replace(final String original, final String pattern, final String replace) {
 		final int len = pattern.length();
 		int found = original.indexOf(pattern);
-		if (found > -1) {
-			final StringBuilder sb = new StringBuilder();
-			int start = 0;
-			while (found != -1) {
-				sb.append(original.substring(start, found));
-				sb.append(replace);
-				start = found + len;
-				found = original.indexOf(pattern, start);
-			}
-			sb.append(original.substring(start));
-			return sb.toString();
+		if (found == -1) {
+			return original;
 		}
-		return original;
+		final StringBuilder sb = new StringBuilder();
+		int start = 0;
+		while (found != -1) {
+			sb.append(original.substring(start, found));
+			sb.append(replace);
+			start = found + len;
+			found = original.indexOf(pattern, start);
+		}
+		sb.append(original.substring(start));
+		return sb.toString();
 	}
 }

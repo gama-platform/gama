@@ -11,7 +11,8 @@
 package gama.headless.runtime;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,23 +104,6 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	public static GamaHeadlessWebSocketServer startForHeadless(final int port, final ThreadPoolExecutor runner,
 			final int pingInterval) {
-		// try {
-		// ServerSocketChannel sserver = ServerSocketChannel.open();
-		// ServerSocket socket = sserver.socket();
-		// socket.bind(new InetSocketAddress(port), -1);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// try {
-		// ServerSocketChannel sserver = ServerSocketChannel.open();
-		// ServerSocket socket = sserver.socket();
-		// socket.bind(new InetSocketAddress(port), -1);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, false, "", "", "", pingInterval);
 
@@ -177,7 +161,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 			final String keyPassword) {
 		// load up the key store
 		KeyStore ks;
-		try (FileInputStream fis = new FileInputStream(new File(keyStore))) {
+		try (InputStream fis = Files.newInputStream(new File(keyStore).toPath())) {
 			ks = KeyStore.getInstance(JKS);
 			ks.load(fis, storePassword.toCharArray());
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X509);

@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -201,7 +202,7 @@ public class Files {
 							byte data[] = new byte[BUFFER];
 
 							try (// write the current file to disk
-									FileOutputStream fos = new FileOutputStream(destFile)) {
+									OutputStream fos = java.nio.file.Files.newOutputStream(destFile.toPath())) {
 								try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER)) {
 									// read and write until last byte is encountered
 									while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
@@ -250,7 +251,7 @@ public class Files {
 				String name = file.getAbsolutePath().substring(baseName.length());
 				ZipEntry zipEntry = new ZipEntry(name);
 				zip.putNextEntry(zipEntry);
-				IOUtils.copy(new FileInputStream(file), zip);
+				IOUtils.copy(java.nio.file.Files.newInputStream(file.toPath()), zip);
 				zip.closeEntry();
 			}
 		}
@@ -471,8 +472,8 @@ public class Files {
 	public static boolean zip(final IScope scope, final IList<String> sources, final String destination) {
 		if (sources == null || sources.isEmpty() || destination == null || scope == null) return false;
 		final String pathDestination = FileUtils.constructAbsoluteFilePath(scope, destination, false);
-		try (FileOutputStream fos = new FileOutputStream(pathDestination)) {
-			try (ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(fos))) {
+		try (OutputStream os = java.nio.file.Files.newOutputStream(new File(pathDestination).toPath())) {
+			try (ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(os))) {
 				for (String source : sources) {
 					final String pathSource = FileUtils.constructAbsoluteFilePath(scope, source, false);
 					File f = new File(pathSource);

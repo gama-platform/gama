@@ -250,7 +250,7 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 *
 	 * @return single instance of SnapshotMaker
 	 */
-	public static SnapshotMaker getInstance() {
+	public static synchronized SnapshotMaker getInstance() {
 		if (instance == null) { instance = new SnapshotMaker(); }
 
 		return instance;

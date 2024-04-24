@@ -1596,29 +1596,28 @@ public class GeometryUtils {
 			dimMax = Math.max(dimMax, dim);
 
 		}
-		if (toManage) {
-			List<Geometry> list = new ArrayList<>();
-			for (int i = 0; i < gc.getNumGeometries(); i++) {
-				Geometry g = gc.getGeometryN(i);
-				if (g.getDimension() == dimMax) { list.add(g); }
-			}
-			if (list.size() == 1) return list.get(0);
-			if (dimMax == 0) {
-				Point[] pts = new Point[list.size()];
-				for (int i = 0; i < pts.length; i++) { pts[i] = (Point) list.get(i); }
-				return GEOMETRY_FACTORY.createMultiPoint(pts);
-			}
-			if (dimMax == 1) {
-				LineString[] ls = new LineString[list.size()];
-				for (int i = 0; i < ls.length; i++) { ls[i] = (LineString) list.get(i); }
-				return GEOMETRY_FACTORY.createMultiLineString(ls);
-			}
-			Polygon[] ps = new Polygon[list.size()];
-			for (int i = 0; i < ps.length; i++) { ps[i] = (Polygon) list.get(i); }
-			return GEOMETRY_FACTORY.createMultiPolygon(ps);
-
+		if (!toManage) {
+			return gc;
 		}
-		return gc;
+		List<Geometry> list = new ArrayList<>();
+		for (int i = 0; i < gc.getNumGeometries(); i++) {
+			Geometry g = gc.getGeometryN(i);
+			if (g.getDimension() == dimMax) { list.add(g); }
+		}
+		if (list.size() == 1) return list.get(0);
+		if (dimMax == 0) {
+			Point[] pts = new Point[list.size()];
+			for (int i = 0; i < pts.length; i++) { pts[i] = (Point) list.get(i); }
+			return GEOMETRY_FACTORY.createMultiPoint(pts);
+		}
+		if (dimMax == 1) {
+			LineString[] ls = new LineString[list.size()];
+			for (int i = 0; i < ls.length; i++) { ls[i] = (LineString) list.get(i); }
+			return GEOMETRY_FACTORY.createMultiLineString(ls);
+		}
+		Polygon[] ps = new Polygon[list.size()];
+		for (int i = 0; i < ps.length; i++) { ps[i] = (Polygon) list.get(i); }
+		return GEOMETRY_FACTORY.createMultiPolygon(ps);
 	}
 
 	/**
@@ -1629,35 +1628,38 @@ public class GeometryUtils {
 	 * @return the geometry
 	 */
 	public static Geometry cleanGeometryCollection(final Geometry gg) {
-		if (gg instanceof GeometryCollection gc) {
-			boolean isMultiPolygon = true;
-			boolean isMultiPoint = true;
-			boolean isMultiLine = true;
-			final int nb = gc.getNumGeometries();
-
-			for (int i = 0; i < nb; i++) {
-				final Geometry g = gc.getGeometryN(i);
-				if (!(g instanceof Polygon)) { isMultiPolygon = false; }
-				if (!(g instanceof LineString)) { isMultiLine = false; }
-				if (!(g instanceof Point)) { isMultiPoint = false; }
-			}
-
-			if (isMultiPolygon) {
-				final Polygon[] polygons = new Polygon[nb];
-				for (int i = 0; i < nb; i++) { polygons[i] = (Polygon) gc.getGeometryN(i); }
-				return GEOMETRY_FACTORY.createMultiPolygon(polygons);
-			}
-			if (isMultiLine) {
-				final LineString[] lines = new LineString[nb];
-				for (int i = 0; i < nb; i++) { lines[i] = (LineString) gc.getGeometryN(i); }
-				return GEOMETRY_FACTORY.createMultiLineString(lines);
-			}
-			if (isMultiPoint) {
-				final Point[] points = new Point[nb];
-				for (int i = 0; i < nb; i++) { points[i] = (Point) gc.getGeometryN(i); }
-				return GEOMETRY_FACTORY.createMultiPoint(points);
-			}
+		GeometryCollection gc = gg instanceof GeometryCollection ? (GeometryCollection)gg : null;
+		if (gc == null) {
+			return gg;
 		}
+		boolean isMultiPolygon = true;
+		boolean isMultiPoint = true;
+		boolean isMultiLine = true;
+		final int nb = gc.getNumGeometries();
+
+		for (int i = 0; i < nb; i++) {
+			final Geometry g = gc.getGeometryN(i);
+			if (!(g instanceof Polygon)) { isMultiPolygon = false; }
+			if (!(g instanceof LineString)) { isMultiLine = false; }
+			if (!(g instanceof Point)) { isMultiPoint = false; }
+		}
+
+		if (isMultiPolygon) {
+			final Polygon[] polygons = new Polygon[nb];
+			for (int i = 0; i < nb; i++) { polygons[i] = (Polygon) gc.getGeometryN(i); }
+			return GEOMETRY_FACTORY.createMultiPolygon(polygons);
+		}
+		if (isMultiLine) {
+			final LineString[] lines = new LineString[nb];
+			for (int i = 0; i < nb; i++) { lines[i] = (LineString) gc.getGeometryN(i); }
+			return GEOMETRY_FACTORY.createMultiLineString(lines);
+		}
+		if (isMultiPoint) {
+			final Point[] points = new Point[nb];
+			for (int i = 0; i < nb; i++) { points[i] = (Point) gc.getGeometryN(i); }
+			return GEOMETRY_FACTORY.createMultiPoint(points);
+		}
+		
 		return gg;
 	}
 

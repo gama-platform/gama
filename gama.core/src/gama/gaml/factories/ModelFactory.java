@@ -440,15 +440,17 @@ public class ModelFactory extends SymbolFactory {
 	private boolean applyPragmas(final ValidationContext collector, final ISyntacticElement source) {
 		final Map<String, List<String>> pragmas = source.getPragmas();
 		collector.resetInfoAndWarning();
-		if (pragmas != null) {
-			List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
-			if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
-					&& requiresList != null
-					&& !collector.verifyPlugins(requiresList))
-				return false;
+		if (pragmas == null) {
+			return true;
+		}
+		List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
+		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
+				&& requiresList != null
+				&& !collector.verifyPlugins(requiresList)) {
+			return false;			
 		}
 		return true;
 	}

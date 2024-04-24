@@ -276,7 +276,6 @@ public class SpatialRelations {
 					final GamaSpatialPath path = gt.pathBetween(scope, previous, gg, cells);
 					edges.addAll(path.getEdgeList());
 					weight += path.getWeight();
-
 				} else {
 					edges.addAll(scope.getTopology().pathBetween(scope, previous, gg).getEdgeList());
 				}

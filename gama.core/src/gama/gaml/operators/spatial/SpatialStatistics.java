@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
+import gama.annotations.precompiler.Reason;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -212,9 +212,9 @@ public class SpatialStatistics {
 				return groups;
 			double distMin = Double.MAX_VALUE;
 
-			Set<IList> minFusion = null;
+			List[] minFusion = null;
 
-			final Map<Set<IList>, Double> distances = new HashMap<>();
+			final Map<List[], Double> distances = new HashMap<>();
 			for (final IAgent ag : agents.iterable(scope)) {
 				final IList group = GamaListFactory.create(Types.AGENT);
 				group.add(ag);
@@ -227,9 +227,9 @@ public class SpatialStatistics {
 				final IList g1 = groups.get(i);
 				for (int j = i + 1; j < nb; j++) {
 					final IList g2 = groups.get(j);
-					final Set<IList> distGp = new LinkedHashSet<>();
-					distGp.add(g1);
-					distGp.add(g2);
+					final List[] distGp = new ArrayList[2];
+					distGp[0] = g1;
+					distGp[1] = g2;
 					final IAgent a = (IAgent) g1.get(0);
 					final IAgent b = (IAgent) g2.get(0);
 					final Double dist = scope.getTopology().distanceBetween(scope, a, b);
@@ -244,10 +244,11 @@ public class SpatialStatistics {
 			}
 			while (distMin <= distance) {
 
-				IList<IList> fusionL = GamaListFactory.create();
-				fusionL.addAll(minFusion);
-				final IList<IAgent> g1 = fusionL.get(0);
-				final IList<IAgent> g2 = fusionL.get(1);
+				IList<List> fusionL = GamaListFactory.create();
+				fusionL.add(minFusion[0]);
+				fusionL.add(minFusion[1]);
+				final List<IAgent> g1 = fusionL.get(0);
+				final List<IAgent> g2 = fusionL.get(1);
 				distances.remove(minFusion);
 				fusionL = null;
 				groups.remove(g2);
@@ -256,20 +257,18 @@ public class SpatialStatistics {
 				groupeF.add(g2);
 				groupeF.add(g1);
 
-				for (final IList groupe : groups) {
-					final Set<IList> newDistGp = new LinkedHashSet<>();
-					newDistGp.add(groupe);
-					newDistGp.add(g1);
+				for (final List groupe : groups) {
+					final List[] newDistGp = new ArrayList[2];
+					newDistGp[0] = groupe;
+					newDistGp[1] = g1;
 					double dist1 = Double.MAX_VALUE;
 					if (distances.containsKey(newDistGp)) { dist1 = distances.remove(newDistGp); }
-					newDistGp.remove(g1);
-					newDistGp.add(g2);
+					newDistGp[1] = g2;
 					double dist2 = Double.MAX_VALUE;
 					if (distances.containsKey(newDistGp)) { dist2 = distances.remove(newDistGp); }
 					final double dist = Math.min(dist1, dist2);
 					if (dist <= distance) {
-						newDistGp.remove(g2);
-						newDistGp.add(groupeF);
+						newDistGp[1] = groupeF;
 						distances.put(newDistGp, dist);
 					}
 
@@ -278,7 +277,7 @@ public class SpatialStatistics {
 
 				distMin = Double.MAX_VALUE;
 				minFusion = null;
-				for (final Set<IList> distGp : distances.keySet()) {
+				for (final List[] distGp : distances.keySet()) {
 					final double dist = distances.get(distGp);
 					if (dist < distMin) {
 						minFusion = distGp;

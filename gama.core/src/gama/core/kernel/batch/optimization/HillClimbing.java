@@ -165,7 +165,7 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 						neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
 					}
 					testedSolutions.put(neighborSol, neighborFitness);
-					//TODO: if the goal of this for loop was to find the best neighbor, we should break here
+					//TODO: if the goal of this for loop was only to find the best neighbor, we should break here
 					//also TODO: comment this code please
 					if (neighborSol.equals(bestSolution)) { bestNeighbor = neighborSol; }
 
@@ -178,15 +178,8 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 			nbIt++;
 			endingCritParams.put("Iteration", Integer.valueOf(nbIt));
 		}
-		// DEBUG.LOG("Best solution : " + currentSol + " fitness : "
-		// + currentFitness);
 		return getBestSolution();
 	}
-	//
-	// @Override
-	// public void initializeFor(final IScope scope, final BatchAgent agent) throws GamaRuntimeException {
-	// super.initializeFor(scope, agent);
-	// }
 
 	@Override
 	protected void initParams(final IScope scope) {

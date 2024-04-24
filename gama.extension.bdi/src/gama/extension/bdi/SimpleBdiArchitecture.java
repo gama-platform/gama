@@ -550,192 +550,187 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	protected final Object executePlans(final IScope scope) {
 		Object result = null;
-		if (_plansNumber > 0 || _normNumber > 0) {
-			boolean loop_instantaneous_plans = true;
-			while (loop_instantaneous_plans) {
-				loop_instantaneous_plans = false;
-				final IAgent agent = getCurrentAgent(scope);
-				if (agent.dead()) { return null; }
-				agent.setAttribute(LAW_BASE, _laws);
-				agent.setAttribute(PLAN_BASE, _plans);
-				agent.setAttribute(NORM_BASE, _norms);
-				agent.setAttribute(SANCTION_BASE, _sanctions);
-				final Boolean usingPersistence = (Boolean) agent.getAttribute(USE_PERSISTENCE);
-				final IList<MentalState> intentionBase = scope.hasArg(INTENTION_BASE) ? scope.getListArg(INTENTION_BASE)
-						: (IList<MentalState>) agent.getAttribute(INTENTION_BASE);
-				Double persistenceCoefficientPlans = 1.0;
-				Double persistenceCoefficientintention = 1.0;
-				if (usingPersistence) {
-					persistenceCoefficientPlans = scope.hasArg(PERSISTENCE_COEFFICIENT_PLANS)
-							? scope.getFloatArg(PERSISTENCE_COEFFICIENT_PLANS)
-							: (Double) agent.getAttribute(PERSISTENCE_COEFFICIENT_PLANS);
-					persistenceCoefficientintention = scope.hasArg(PERSISTENCE_COEFFICIENT_INTENTIONS)
-							? scope.getFloatArg(PERSISTENCE_COEFFICIENT_INTENTIONS)
-							: (Double) agent.getAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS);
+		if (_plansNumber <= 0 && _normNumber <= 0) {
+			return result;	
+		}
+		boolean loop_instantaneous_plans = true;
+		while (loop_instantaneous_plans) {
+			loop_instantaneous_plans = false;
+			final IAgent agent = getCurrentAgent(scope);
+			if (agent.dead()) { return null; }
+			agent.setAttribute(LAW_BASE, _laws);
+			agent.setAttribute(PLAN_BASE, _plans);
+			agent.setAttribute(NORM_BASE, _norms);
+			agent.setAttribute(SANCTION_BASE, _sanctions);
+			final Boolean usingPersistence = (Boolean) agent.getAttribute(USE_PERSISTENCE);
+			final IList<MentalState> intentionBase = scope.hasArg(INTENTION_BASE) ? scope.getListArg(INTENTION_BASE)
+					: (IList<MentalState>) agent.getAttribute(INTENTION_BASE);
+			Double persistenceCoefficientPlans = 1.0;
+			Double persistenceCoefficientintention = 1.0;
+			if (usingPersistence) {
+				persistenceCoefficientPlans = scope.hasArg(PERSISTENCE_COEFFICIENT_PLANS)
+						? scope.getFloatArg(PERSISTENCE_COEFFICIENT_PLANS)
+						: (Double) agent.getAttribute(PERSISTENCE_COEFFICIENT_PLANS);
+				persistenceCoefficientintention = scope.hasArg(PERSISTENCE_COEFFICIENT_INTENTIONS)
+						? scope.getFloatArg(PERSISTENCE_COEFFICIENT_INTENTIONS)
+						: (Double) agent.getAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS);
 
-				}
-				BDIPlan _persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
-				Norm _persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
-				// RANDOMLY REMOVE (last)INTENTION
-				Boolean flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
-				while (!flipResultintention && intentionBase.size() > 0) {
-					flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
-					if (intentionBase.size() > 0) {
-						final int toremove = intentionBase.size() - 1;
-						final Predicate previousint = intentionBase.get(toremove).getPredicate();
-						intentionBase.remove(toremove);
-						final String think = "check what happens if I remove: " + previousint;
-						addThoughts(scope, think);
-						_persistentTask = null;
-						agent.setAttribute(CURRENT_PLAN, _persistentTask);
-						_persistentNorm = null;
-						agent.setAttribute(CURRENT_NORM, _persistentNorm);
-					}
-				}
-				// If current intention has no plan/norm or is on hold, choose a new
-				// Desire/Obligation
-				MentalState intentionTemp;
-				if (currentIntention(scope) != null) {
-					intentionTemp = currentIntention(scope);
-				} else {
-					intentionTemp = new MentalState("Intention", currentIntention(scope));
-				}
-				if (testOnHold(scope, intentionTemp) || currentIntention(scope) == null
-						|| currentIntention(scope).getPredicate() == null
-						|| listExecutablePlans(scope).isEmpty() && listExecutableNorms(scope).isEmpty()) {
-					if (!selectObligationWithHighestPriority(scope)) {
-						selectDesireWithHighestPriority(scope);
-					}
+			}
+			BDIPlan _persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
+			Norm _persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
+			// RANDOMLY REMOVE (last)INTENTION
+			Boolean flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
+			while (!flipResultintention && intentionBase.size() > 0) {
+				flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
+				if (intentionBase.size() > 0) {
+					final int toremove = intentionBase.size() - 1;
+					final Predicate previousint = intentionBase.get(toremove).getPredicate();
+					intentionBase.remove(toremove);
+					final String think = "check what happens if I remove: " + previousint;
+					addThoughts(scope, think);
 					_persistentTask = null;
 					agent.setAttribute(CURRENT_PLAN, _persistentTask);
 					_persistentNorm = null;
 					agent.setAttribute(CURRENT_NORM, _persistentNorm);
 				}
-
-				_persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
-				_persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
-				// if((currentIntention(scope)!=null) && (_persistentTask!=null)
-				// &&
-				// !(_persistentTask._intention.value(scope).equals(currentIntention(scope)))){
-				// _persistentTask = null;
-				// agent.setAttribute(CURRENT_PLAN, _persistentTask);
-				// }
-				final Boolean flipResult = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientPlans);
-
-				if (!flipResult) {
-					if (_persistentTask != null) {
-						addThoughts(scope, "check what happens if I stop: " + _persistentTask.getName());
-					}
-					_persistentTask = selectExecutablePlanWithHighestPriority(scope);
-					agent.setAttribute(CURRENT_PLAN, _persistentTask);
-
-					if (_persistentTask != null) {
-						addThoughts(scope, "lets do instead " + _persistentTask.getName());
-					}
-
+			}
+			// If current intention has no plan/norm or is on hold, choose a new
+			// Desire/Obligation
+			MentalState intentionTemp;
+			if (currentIntention(scope) != null) {
+				intentionTemp = currentIntention(scope);
+			} else {
+				intentionTemp = new MentalState("Intention", currentIntention(scope));
+			}
+			if (testOnHold(scope, intentionTemp) || currentIntention(scope) == null
+					|| currentIntention(scope).getPredicate() == null
+					|| listExecutablePlans(scope).isEmpty() && listExecutableNorms(scope).isEmpty()) {
+				if (!selectObligationWithHighestPriority(scope)) {
+					selectDesireWithHighestPriority(scope);
 				}
-				if (currentIntention(scope) == null) {
+				_persistentTask = null;
+				agent.setAttribute(CURRENT_PLAN, _persistentTask);
+				_persistentNorm = null;
+				agent.setAttribute(CURRENT_NORM, _persistentNorm);
+			}
+
+			_persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
+			_persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
+			final Boolean flipResult = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientPlans);
+
+			if (!flipResult) {
+				if (_persistentTask != null) {
+					addThoughts(scope, "check what happens if I stop: " + _persistentTask.getName());
+				}
+				_persistentTask = selectExecutablePlanWithHighestPriority(scope);
+				agent.setAttribute(CURRENT_PLAN, _persistentTask);
+
+				if (_persistentTask != null) {
+					addThoughts(scope, "lets do instead " + _persistentTask.getName());
+				}
+
+			}
+			if (currentIntention(scope) == null) {
+				addThoughts(scope, "I want nothing...");
+				// update the lifetime of beliefs
+				// updateLifeTimePredicates(scope);
+				// updateEmotionsIntensity(scope);
+				return null;
+			}
+			// check and choose a norm to apply to the current intention
+			if (_persistentNorm == null && currentIntention(scope) != null
+					&& currentIntention(scope).getPredicate() == null) {
+				if (!selectObligationWithHighestPriority(scope)) {
+					selectDesireWithHighestPriority(scope);
+				}
+				if (currentIntention(scope) != null && currentIntention(scope).getPredicate() == null) {
 					addThoughts(scope, "I want nothing...");
 					// update the lifetime of beliefs
 					// updateLifeTimePredicates(scope);
 					// updateEmotionsIntensity(scope);
 					return null;
 				}
-				// check and choose a norm to apply to the current intention
-				if (_persistentNorm == null && currentIntention(scope) != null
-						&& currentIntention(scope).getPredicate() == null) {
-					if (!selectObligationWithHighestPriority(scope)) {
-						selectDesireWithHighestPriority(scope);
-					}
-					if (currentIntention(scope) != null && currentIntention(scope).getPredicate() == null) {
-						addThoughts(scope, "I want nothing...");
-						// update the lifetime of beliefs
-						// updateLifeTimePredicates(scope);
-						// updateEmotionsIntensity(scope);
-						return null;
-					}
-					_persistentNorm = selectExecutableNormWithHighestPriority(scope);
-					agent.setAttribute(CURRENT_NORM, _persistentNorm);
-					if (currentIntention(scope) != null && _persistentTask != null) {
-						addThoughts(scope, "ok, new intention: " + currentIntention(scope).getPredicate()
-								+ " with norm " + _persistentNorm.getName());
-					}
+				_persistentNorm = selectExecutableNormWithHighestPriority(scope);
+				agent.setAttribute(CURRENT_NORM, _persistentNorm);
+				if (currentIntention(scope) != null && _persistentTask != null) {
+					addThoughts(scope, "ok, new intention: " + currentIntention(scope).getPredicate()
+							+ " with norm " + _persistentNorm.getName());
 				}
-				// choose a plan for the current intention
-				if (_persistentNorm == null && _persistentTask == null && currentIntention(scope) != null
-						&& currentIntention(scope).getPredicate() == null) {
-					selectDesireWithHighestPriority(scope);
-					if (currentIntention(scope) != null && currentIntention(scope).getPredicate() == null) {
-						addThoughts(scope, "I want nothing...");
-						// update the lifetime of beliefs
-						// updateLifeTimePredicates(scope);
-						// updateEmotionsIntensity(scope);
-						return null;
-					}
+			}
+			// choose a plan for the current intention
+			if (_persistentNorm == null && _persistentTask == null && currentIntention(scope) != null
+					&& currentIntention(scope).getPredicate() == null) {
+				selectDesireWithHighestPriority(scope);
+				if (currentIntention(scope) != null && currentIntention(scope).getPredicate() == null) {
+					addThoughts(scope, "I want nothing...");
+					// update the lifetime of beliefs
+					// updateLifeTimePredicates(scope);
+					// updateEmotionsIntensity(scope);
+					return null;
+				}
+				_persistentTask = selectExecutablePlanWithHighestPriority(scope);
+				agent.setAttribute(CURRENT_PLAN, _persistentTask);
+				if (currentIntention(scope) != null && _persistentTask != null) {
+					addThoughts(scope, "ok, new intention: " + currentIntention(scope).getPredicate()
+							+ " with plan " + _persistentTask.getName());
+				}
+			}
+			if (currentIntention(scope) != null && _persistentTask == null
+					&& currentIntention(scope).getPredicate() != null) {
+				_persistentNorm = selectExecutableNormWithHighestPriority(scope);
+				agent.setAttribute(CURRENT_NORM, _persistentNorm);
+				if (_persistentNorm == null) {
 					_persistentTask = selectExecutablePlanWithHighestPriority(scope);
 					agent.setAttribute(CURRENT_PLAN, _persistentTask);
-					if (currentIntention(scope) != null && _persistentTask != null) {
-						addThoughts(scope, "ok, new intention: " + currentIntention(scope).getPredicate()
-								+ " with plan " + _persistentTask.getName());
-					}
-				}
-				if (currentIntention(scope) != null && _persistentTask == null
-						&& currentIntention(scope).getPredicate() != null) {
-					_persistentNorm = selectExecutableNormWithHighestPriority(scope);
-					agent.setAttribute(CURRENT_NORM, _persistentNorm);
-					if (_persistentNorm == null) {
-						_persistentTask = selectExecutablePlanWithHighestPriority(scope);
-						agent.setAttribute(CURRENT_PLAN, _persistentTask);
-					} else {
-						agent.setAttribute(CURRENT_PLAN, _persistentTask);
-					}
-					if (_persistentNorm != null) {
-						addThoughts(scope, "use norm : " + _persistentNorm.getName());
-					}
-					if (_persistentTask != null) {
-						addThoughts(scope, "use plan : " + _persistentTask.getName());
-					}
+				} else {
+					agent.setAttribute(CURRENT_PLAN, _persistentTask);
 				}
 				if (_persistentNorm != null) {
-					if (!agent.dead()) {
-						result = _persistentNorm.getNormStatement().executeOn(scope);
-						boolean isExecuted = false;
-						if (_persistentNorm.getNormStatement().getExecutedExpression() != null) {
-							isExecuted = Cast.asBool(scope,
-									_persistentNorm.getNormStatement().getExecutedExpression().value(scope));
-						}
-						if (this.iscurrentplaninstantaneous) {
-							loop_instantaneous_plans = true;
-						}
-						if (isExecuted) {
-							_persistentNorm = null;
-							agent.setAttribute(CURRENT_NORM, _persistentNorm);
-
-						}
-					}
+					addThoughts(scope, "use norm : " + _persistentNorm.getName());
 				}
 				if (_persistentTask != null) {
-					if (!agent.dead()) {
-						result = _persistentTask.getPlanStatement().executeOn(scope);
-						boolean isExecuted = false;
-						if (_persistentTask.getPlanStatement().getExecutedExpression() != null) {
-							isExecuted = Cast.asBool(scope,
-									_persistentTask.getPlanStatement().getExecutedExpression().value(scope));
-						}
-						if (this.iscurrentplaninstantaneous) {
-							loop_instantaneous_plans = true;
-						}
-						if (isExecuted) {
-							_persistentTask = null;
-							agent.setAttribute(CURRENT_PLAN, _persistentTask);
+					addThoughts(scope, "use plan : " + _persistentTask.getName());
+				}
+			}
+			if (_persistentNorm != null) {
+				if (!agent.dead()) {
+					result = _persistentNorm.getNormStatement().executeOn(scope);
+					boolean isExecuted = false;
+					if (_persistentNorm.getNormStatement().getExecutedExpression() != null) {
+						isExecuted = Cast.asBool(scope,
+								_persistentNorm.getNormStatement().getExecutedExpression().value(scope));
+					}
+					if (this.iscurrentplaninstantaneous) {
+						loop_instantaneous_plans = true;
+					}
+					if (isExecuted) {
+						_persistentNorm = null;
+						agent.setAttribute(CURRENT_NORM, _persistentNorm);
 
-						}
+					}
+				}
+			}
+			if (_persistentTask != null) {
+				if (!agent.dead()) {
+					result = _persistentTask.getPlanStatement().executeOn(scope);
+					boolean isExecuted = false;
+					if (_persistentTask.getPlanStatement().getExecutedExpression() != null) {
+						isExecuted = Cast.asBool(scope,
+								_persistentTask.getPlanStatement().getExecutedExpression().value(scope));
+					}
+					if (this.iscurrentplaninstantaneous) {
+						loop_instantaneous_plans = true;
+					}
+					if (isExecuted) {
+						_persistentTask = null;
+						agent.setAttribute(CURRENT_PLAN, _persistentTask);
+
 					}
 				}
 			}
 		}
+		return result;	
 
-		return result;
 	}
 
 	
@@ -987,8 +982,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		}
 		final List<Norm> normsCopy = new ArrayList(_norms);
 		scope.getRandom().shuffleInPlace(normsCopy);
-		for (final Norm Normstatement : normsCopy) {
-			final NormStatement statement = Normstatement.getNormStatement();
+		for (final Norm norm : normsCopy) {
+			final NormStatement statement = norm.getNormStatement();
 			final boolean isContextConditionSatisfied = statement.getContextExpression() == null
 					|| Cast.asBool(scope, statement.getContextExpression().value(scope));
 			boolean isIntentionConditionSatisfied = false;
@@ -1007,7 +1002,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 			if (isContextConditionSatisfied && isObligationConditionSatisfied && thresholdSatisfied) {
 				if (is_probabilistic_choice) {
-					temp_norm.add((Norm) Normstatement);
+					temp_norm.add((Norm) norm);
 				} else {
 					double currentPriority = 1.0;
 					if (statement.getFacet(SimpleBdiArchitecture.PRIORITY) != null) {
@@ -1016,14 +1011,14 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 					if (highestPriority < currentPriority) {
 						highestPriority = currentPriority;
-						resultStatement = Normstatement;
+						resultStatement = norm;
 					}
 				}
 			}
 
 			if (isContextConditionSatisfied && isIntentionConditionSatisfied && thresholdSatisfied) {
 				if (is_probabilistic_choice) {
-					temp_norm.add(Normstatement);
+					temp_norm.add(norm);
 				} else {
 					double currentPriority = 1.0;
 					if (statement.getFacet(SimpleBdiArchitecture.PRIORITY) != null) {
@@ -1032,7 +1027,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 					if (highestPriority < currentPriority) {
 						highestPriority = currentPriority;
-						resultStatement = Normstatement;
+						resultStatement = norm;
 					}
 				}
 			}
@@ -1342,21 +1337,21 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			}
 		}
 		final List<MentalState> onHoldIntention = intention.onHoldUntil;
-		if (onHoldIntention instanceof ArrayList) {
-			if (desbase.isEmpty()) { return false; }
-			for (final MentalState subintention : onHoldIntention) {
-				if (desbase.contains(subintention)) { 
-					return true; 
-				}
-			}
-			addThoughts(scope, "no more subintention for" + intention);
-			/* Must remove the current plan to change for a new one */
-			final IAgent agent = getCurrentAgent(scope);
-			BDIPlan _persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
-			_persistentTask = null;
-			agent.setAttribute(CURRENT_PLAN, _persistentTask);
+		if (!(onHoldIntention instanceof ArrayList)) {
 			return false;
 		}
+		if (desbase.isEmpty()) { return false; }
+		for (final MentalState subintention : onHoldIntention) {
+			if (desbase.contains(subintention)) { 
+				return true; 
+			}
+		}
+		addThoughts(scope, "no more subintention for" + intention);
+		/* Must remove the current plan to change for a new one */
+		final IAgent agent = getCurrentAgent(scope);
+		BDIPlan _persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
+		_persistentTask = null;
+		agent.setAttribute(CURRENT_PLAN, _persistentTask);
 		return false;
 
 	}
@@ -1626,9 +1621,6 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public static boolean addToBase(final IScope scope, final MentalState mentalItem,
 			final IList<MentalState> factBase) {
 		if (!factBase.contains(mentalItem)) {
-			// factBase.remove(mentalItem);
-
-			// mentalItem.setDate(scope.getClock().getTimeElapsedInSeconds());
 			return factBase.add(mentalItem);
 		}
 		return false;
@@ -1644,10 +1636,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	public static boolean addToBase(final IScope scope, final Emotion predicateItem, final IList<Emotion> factBase) {
 		factBase.remove(predicateItem);
-		// if(!factBase.contains(predicateItem)){
 		return factBase.add(predicateItem);
-		// }
-		// return false;
 	}
 
 	/**
@@ -1660,10 +1649,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	public static boolean addToBase(final IScope scope, final SocialLink socialItem, final IList<SocialLink> factBase) {
 		factBase.remove(socialItem);
-		// if(!factBase.contains(socialItem)){
 		return factBase.add(socialItem);
-		// }
-		// return false;
 	}
 
 	// le add belief crée les émotion joie, sadness, satisfaction, disapointment, relief, fear_confirmed, pride, shame,
@@ -3003,36 +2989,37 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			ok = false;
 		}
 		final Predicate newPredicate = scope.getTypedArgIfExists(PREDICATE, PredicateType.id);
-		if (newPredicate != null) {
-			final MentalState temp = new MentalState("Belief", newPredicate);
-			// Predicate current_intention = currentIntention(scope);
-			if (getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)
-					.contains(new MentalState("Intention", newPredicate))) {
-				removeFromBase(scope, temp, DESIRE_BASE);
-				removeFromBase(scope, temp, INTENTION_BASE);
-			}
-			if (getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(new MentalState("Desire", newPredicate))) {
-				removeFromBase(scope, temp, DESIRE_BASE);
-			}
-			for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-				if (statement.getPredicate() != null) {
-					final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
-					if (statementSubintention != null) {
-						if (statementSubintention.contains(temp)) {
-							statementSubintention.remove(temp);
-						}
+		if (newPredicate == null) {
+			return ok;
+		}
+		
+		final MentalState temp = new MentalState("Belief", newPredicate);
+		// Predicate current_intention = currentIntention(scope);
+		if (getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)
+				.contains(new MentalState("Intention", newPredicate))) {
+			removeFromBase(scope, temp, DESIRE_BASE);
+			removeFromBase(scope, temp, INTENTION_BASE);
+		}
+		if (getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(new MentalState("Desire", newPredicate))) {
+			removeFromBase(scope, temp, DESIRE_BASE);
+		}
+		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			if (statement.getPredicate() != null) {
+				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
+				if (statementSubintention != null) {
+					if (statementSubintention.contains(temp)) {
+						statementSubintention.remove(temp);
 					}
-					final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
-					if (statementOnHoldUntil != null) {
-						if (statementOnHoldUntil.contains(temp)) {
-							statementOnHoldUntil.remove(temp);
-						}
+				}
+				final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
+				if (statementOnHoldUntil != null) {
+					if (statementOnHoldUntil.contains(temp)) {
+						statementOnHoldUntil.remove(temp);
 					}
 				}
 			}
-			return addToBase(scope, temp, BELIEF_BASE);
 		}
-		return ok;
+		return addToBase(scope, temp, BELIEF_BASE);
 	}
 
 	/**
@@ -3506,40 +3493,37 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Intention", predicateDirect);
-		if (predicateDirect != null) {
-			final Boolean dodesire =
-					scope.hasArg(REMOVE_DESIRE_AND_INTENTION) ? scope.getBoolArg(REMOVE_DESIRE_AND_INTENTION) : false;
-			// getBase(scope, INTENTION_BASE).remove(temp);
-			if (dodesire) {
-				getBase(scope, DESIRE_BASE).remove(temp);
-				getBase(scope, OBLIGATION_BASE).remove(temp);
-			}
-			if (currentIntention(scope) != null && predicateDirect.equals(currentIntention(scope).getPredicate())) {
-				scope.getAgent().setAttribute(CURRENT_PLAN, null);
-				scope.getAgent().setAttribute(CURRENT_NORM, null);
-			}
-			for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
-				if (statement.getPredicate() != null) {
-					final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
-					if (statementSubintention != null) {
-						if (statementSubintention.contains(temp)) {
-							statementSubintention.remove(temp);
-						}
+		if (predicateDirect == null) {
+			return false;
+		}
+		final Boolean dodesire = scope.getBoolArgIfExists(REMOVE_DESIRE_AND_INTENTION, false);
+		if (dodesire) {
+			getBase(scope, DESIRE_BASE).remove(temp);
+			getBase(scope, OBLIGATION_BASE).remove(temp);
+		}
+		if (currentIntention(scope) != null && predicateDirect.equals(currentIntention(scope).getPredicate())) {
+			scope.getAgent().setAttribute(CURRENT_PLAN, null);
+			scope.getAgent().setAttribute(CURRENT_NORM, null);
+		}
+		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			if (statement.getPredicate() != null) {
+				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
+				if (statementSubintention != null) {
+					if (statementSubintention.contains(temp)) {
+						statementSubintention.remove(temp);
 					}
-					final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
-					if (statementOnHoldUntil != null) {
-						if (statementOnHoldUntil.contains(temp)) {
-							statementOnHoldUntil.remove(temp);
-						}
+				}
+				final List<MentalState> statementOnHoldUntil = statement.getPredicate().getOnHoldUntil();
+				if (statementOnHoldUntil != null) {
+					if (statementOnHoldUntil.contains(temp)) {
+						statementOnHoldUntil.remove(temp);
 					}
 				}
 			}
-			getBase(scope, INTENTION_BASE).remove(temp);
-
-			return true;
 		}
+		getBase(scope, INTENTION_BASE).remove(temp);
 
-		return false;
+		return true;
 	}
 
 	/**

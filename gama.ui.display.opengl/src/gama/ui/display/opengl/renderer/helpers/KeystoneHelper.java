@@ -146,7 +146,6 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 * Switch corners.
 	 */
 	public void switchCorners() {
-		getData();
 		worldCorners =
 				!LayeredDisplayData.KEYSTONE_IDENTITY.getEnvelope().covers(getData().getKeystone().getEnvelope());
 	}

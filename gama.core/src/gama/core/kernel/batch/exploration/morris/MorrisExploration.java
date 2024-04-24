@@ -177,7 +177,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
-		// TODO : why doesnt it take into account the value of 'keep_simulations:' ? because, by design, there is to many simulation to keep in memory... 
+		// TODO : why doesn't it take into account the value of 'keep_simulations:' ? because, by design, there is to many simulation to keep in memory... 
 		currentExperiment.setKeepSimulations(false);
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
 			res_outputs = currentExperiment.launchSimulationsWithSolution(solutions);

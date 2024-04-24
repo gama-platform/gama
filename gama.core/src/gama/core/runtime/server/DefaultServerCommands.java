@@ -25,10 +25,11 @@ import static gama.core.runtime.server.ISocketCommand.SYNTAX;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -416,8 +417,8 @@ public class DefaultServerCommands {
 		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
 		if (filepath == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
 				"For 'download', mandatory parameter is: 'file'", map, false);
-		try (FileInputStream fis = new FileInputStream(new File(filepath));
-				InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+		try (	InputStream is = Files.newInputStream(new File(filepath).toPath());
+				InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 				BufferedReader br = new BufferedReader(isr)) {
 			StringBuilder sc = new StringBuilder();
 			String line;

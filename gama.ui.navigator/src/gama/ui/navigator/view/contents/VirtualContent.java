@@ -197,9 +197,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 */
 	public abstract void getSuffix(StringBuilder sb);
 
-	// public Font getFont() {
-	// return GamaFonts.getNavigFolderFont(); // by default
-	// }
 
 	/**
 	 * Find max problem severity.
@@ -221,8 +218,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 * @return the top level folder
 	 */
 	public TopLevelFolder getTopLevelFolder() {
-		final Object p = getParent();
-		if (p instanceof VirtualContent) return ((VirtualContent<?>) p).getTopLevelFolder();
+		final P p = getParent();
+		if (p != null) return p.getTopLevelFolder();
 		return null;
 	}
 
@@ -232,8 +229,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 * @return the project
 	 */
 	public WrappedProject getProject() {
-		final Object p = getParent();
-		if (p instanceof VirtualContent) return ((VirtualContent<?>) p).getProject();
+		final P p = getParent();
+		if (p != null) return p.getProject();
 		return null;
 	}
 

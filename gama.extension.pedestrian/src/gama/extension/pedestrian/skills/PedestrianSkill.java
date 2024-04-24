@@ -1121,7 +1121,6 @@ public class PedestrianSkill extends MovingSkill {
 				: SpatialPunctal._closest_point_to(location, currentTarget);
 		target.setZ(target.z);
 		double dist = location.distance(target);
-		// System.out.println("location: " + location +" target: " + target + " dist: " + dist);
 
 		if (dist == 0.0) return 0.0;
 
@@ -1199,8 +1198,6 @@ public class PedestrianSkill extends MovingSkill {
 	 * @param obstaclesList
 	 * @return
 	 */
-	// public GamaPoint avoidSFMSimple(IScope scope, IAgent agent, GamaPoint location, GamaPoint currentTarget, double
-	// distPercep, IContainer obstaclesList) {
 	@SuppressWarnings ("unchecked")
 	public GamaPoint avoidSFMSimple(final IScope scope, final IAgent agent, final GamaPoint location,
 			final GamaPoint currentTarget, final double distPercepPedestrian, final double distPercepObstacle,
@@ -1210,8 +1207,6 @@ public class PedestrianSkill extends MovingSkill {
 		GamaPoint current_velocity = getVelocity(agent).copy(scope);
 		GamaPoint fsoc = new GamaPoint(0, 0, 0);
 		double dist = location.euclidianDistanceTo(currentTarget);
-		// double step = scope.getSimulation().getClock().getStepInSeconds();
-		// double speed = getSpeed(agent);
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
 
@@ -1437,7 +1432,6 @@ public class PedestrianSkill extends MovingSkill {
 		IMap<IShape, IShape> roadTarget = GamaMapFactory.create();
 		IList<IShape> targets = GamaListFactory.create();
 		IList<IShape> segments = thePath.getEdgeGeometry();
-		// GamaPoint pp = source.getCentroid();
 
 		for (int i = 0; i < segments.size(); i++) {
 			IShape cSeg = segments.get(i);
@@ -1451,27 +1445,17 @@ public class PedestrianSkill extends MovingSkill {
 					cRoadNext = thePath.getRealObject(segments.get(i + 1));
 					geomNext = PedestrianRoadSkill.getFreeSpace(cRoadNext.getAgent());
 				}
-				// else {
-				// geomNext = null;
-				// }
 			}
 
-			// IShape nSeg = i == segments.size() - 1 ? null : segments.get(i + 1);
-			// AD Note: getPoints() can be a very costly operation. It'd be better to call it once.
-			for (int j = 1; j < cSeg.getPoints().size(); j++) {
-				GamaPoint pt = cSeg.getPoints().get(j);
+			IList<GamaPoint> points = cSeg.getPoints();
+			for (int j = 1; j < points.size(); j++) {
+				GamaPoint pt = points.get(j);
 				IShape cTarget = null;
 				if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
 					cTarget = pt;
 				} else {
-					// GamaPoint nextPt = null;
-					// if (j == cSeg.getPoints().size() - 1) {
-					// nextPt = nSeg == null ? null : nSeg.getPoints().get(1);
-					// } else {
-					// nextPt = cSeg.getPoints().get(j + 1);
-					// }
 					cTarget = pt;
-					if (cTarget == null) { cTarget = pt; }
+					//if (cTarget == null) { cTarget = pt; } //TODO:why ?
 				}
 				if (useGeometryTarget) {
 					cTarget = null;
@@ -1489,7 +1473,6 @@ public class PedestrianSkill extends MovingSkill {
 				targets.add(cTarget);
 
 				roadTarget.put(cTarget, cRoad);
-				// pp = cTarget.getLocation();
 			}
 		}
 		IShape targ = targets.get(0);

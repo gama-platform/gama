@@ -288,8 +288,8 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 		/*
 		 * PATRICK TAILLANDIER: the problem of having the host here is that depending on the simulation the hashcode
-		 * will be different... and this hashcode is very important for the manipultion of GamaMap thus, having two
-		 * different hashcodes depending on the simulation makes ensure the repication of simulation So I remove the
+		 * will be different... and this hashcode is very important for the manipulation of GamaMap thus, having two
+		 * different hashcodes depending on the simulation makes ensure the replication of simulation So I remove the
 		 * host for the moment.
 		 */
 		/*
@@ -348,10 +348,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return GamaExecutorService.step(scope, this, getSpecies());
 	}
 
-	// @Override
-	// public StreamEx<T> stream(final IScope scope) {
-	// return super.stream(scope);
-	// }
 
 	/**
 	 * Take copy into account and always creates a list (necessary for #2254)

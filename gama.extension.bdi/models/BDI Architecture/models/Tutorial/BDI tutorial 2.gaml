@@ -103,8 +103,8 @@ species miner skills: [moving] control:simple_bdi {
     }
     
     plan choose_closest_gold_mine intention: choose_gold_mine instantaneous: true {
-        list<point> possible_mines <- get_beliefs_with_name(mine_at_location) collect (point(get_predicate(mental_state (each)).values["location_value"]));
-        list<point> empty_mines <- get_beliefs_with_name(empty_mine_location) collect (point(get_predicate(mental_state (each)).values["location_value"]));
+        list<point> possible_mines <- get_beliefs_with_name(mine_at_location) collect (point((mental_state (each)).predicate.values["location_value"]));
+        list<point> empty_mines <- get_beliefs_with_name(empty_mine_location) collect (point((mental_state (each)).predicate.values["location_value"]));
         possible_mines <- possible_mines - empty_mines;
         if (empty(possible_mines)) {
             do remove_intention(has_gold, true); 

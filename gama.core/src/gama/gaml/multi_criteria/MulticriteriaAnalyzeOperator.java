@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -111,7 +111,7 @@ public class MulticriteriaAnalyzeOperator {
 	 * @param index the index
 	 */
 	public static void buildCombination(final List<String> criteria, final Set<String> currentSol,
-			final Set<Set<String>> combinations, final int start, final int end, final int index) {
+			final List<Set<String>> combinations, final int start, final int end, final int index) {
 		if (index == criteria.size()) {
 			combinations.add(new LinkedHashSet<>(criteria));
 			return;
@@ -164,7 +164,7 @@ public class MulticriteriaAnalyzeOperator {
 				critWeight.put(crit, 1.0);
 			}
 		}
-		final Set<Set<String>> combinations = new LinkedHashSet<>();
+		final List<Set<String>> combinations = new ArrayList<>();
 		buildCombination(criteria, new LinkedHashSet<>(), combinations, 0, criteria.size() - 1, 0);
 		for (final Set<String> comb : combinations) {
 			if (!weight.containsKey(comb)) {

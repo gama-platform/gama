@@ -199,11 +199,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 			List<Object> var_info = new ArrayList<>();
 
 			switch (parameters.get(j).getType().id()) {
-				case IType.INT:
-					var_info.add(parameters.get(j).getMinValue(scope));
-					var_info.add(parameters.get(j).getMaxValue(scope));
-					break;
-				case IType.FLOAT:
+				case IType.INT, IType.FLOAT:
 					var_info.add(parameters.get(j).getMinValue(scope));
 					var_info.add(parameters.get(j).getMaxValue(scope));
 					break;

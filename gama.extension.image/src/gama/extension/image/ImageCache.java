@@ -164,7 +164,7 @@ public class ImageCache {
 		}
 		if (gifExt.contains(ext)) {
 			final GifImageContainer d = new GifImageContainer();
-			d.read(new FileInputStream(file.getAbsolutePath()));
+			d.read(java.nio.file.Files.newInputStream(file.toPath()));
 			return d.getImage();
 		}
 
@@ -219,7 +219,7 @@ public class ImageCache {
 	 */
 	private GifImageContainer privateReadGifFromFile(final File file) throws IOException {
 		final GifImageContainer d = new GifImageContainer();
-		d.read(new FileInputStream(file.getAbsolutePath()));
+		d.read(java.nio.file.Files.newInputStream(file.toPath()));
 		return d;
 	}
 

@@ -1216,8 +1216,6 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		}
 		switch (varName) {
 			case EXPERIMENT:
-				//IExperimentPlan exp = GAMA.getExperiment();
-				//if (exp != null) return getFactory().createConst(exp.getAgent(), exp.getDescription().getGamlType());
 				return CurrentExperimentExpression.create();
 			case IKeyword.GAMA:
 				return GAMA.getPlatformAgent();

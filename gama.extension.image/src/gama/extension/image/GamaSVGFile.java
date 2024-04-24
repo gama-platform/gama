@@ -44,9 +44,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
 
 import javax.imageio.ImageIO;
 
@@ -79,12 +80,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.shape.GamaShape;
@@ -200,7 +201,7 @@ public class GamaSVGFile extends GamaGeometryFile {
 		if (document == null) {
 			File f = getFile(scope);
 			try {
-				FileInputStream is = new FileInputStream(f);
+				InputStream is = Files.newInputStream(f.toPath());
 				document = (SVGOMDocument) SVG_FACTORY.createSVGDocument(f.toURI().toString(), is);
 			} catch (IOException e) {
 				e.printStackTrace();

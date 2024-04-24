@@ -957,42 +957,42 @@ public class RuleStatement extends AbstractStatement {
     @SuppressWarnings("unchecked")
 	private void removeSinglePredicates(IScope scope, boolean allVal, List<Predicate> predBeliefList, List<Predicate> predUncertaintyList, List<Predicate> predIdealList) {
 
-    	final Predicate removBel = (Predicate) removeBelief.value(scope);
-        final Predicate removeDes = (Predicate) removeDesire.value(scope);
-        final Predicate removUncert = (Predicate) removeUncertainty.value(scope);
-        final Predicate removeIde = (Predicate) removeIdeal.value(scope);
-        final Predicate removeObl = (Predicate) removeObligation.value(scope);
+    	final Predicate removBel 	= removeBelief != null ? (Predicate) removeBelief.value(scope) : null;
+        final Predicate removeDes 	= removeDesire != null ? (Predicate) removeDesire.value(scope) : null;
+        final Predicate removUncert	= removeUncertainty != null ? (Predicate) removeUncertainty.value(scope) : null;
+        final Predicate removeIde 	= removeIdeal != null ? (Predicate) removeIdeal.value(scope) : null;
+        final Predicate removeObl 	= removeObligation != null ? (Predicate) removeObligation.value(scope) : null;
     	
         if (allVal) {
         	for (Predicate p : predUncertaintyList) {
         		var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
         		
-        		if (removeBelief != null) {
+        		if (removBel != null) {
         			SimpleBdiArchitecture.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
         		}
-                if (removeDesire != null) {                        
+                if (removeDes != null) {                        
                 	SimpleBdiArchitecture.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));                	
                 }
-                if (removeIdeal != null) {
+                if (removeIde != null) {
                 	SimpleBdiArchitecture.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", values));
                 }
-                if (removeObligation != null) {
+                if (removeObl != null) {
                     SimpleBdiArchitecture.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", values));
                 }
         	}
 
             for (Predicate p : predIdealList) {
             	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
-                if (removeBelief != null) {
+                if (removBel != null) {
         			SimpleBdiArchitecture.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
                 }
-                if (removeDesire != null) {
+                if (removeDes != null) {
                     SimpleBdiArchitecture.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));
                 }
-                if (removeUncertainty != null) {
+                if (removUncert != null) {
                     SimpleBdiArchitecture.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", values));
                 }
-                if (removeObligation != null) {
+                if (removeObl != null) {
                     SimpleBdiArchitecture.removeObligation(scope,prepareToRemove(scope, removeObl, "Obligation", values));
                 }
             }
@@ -1000,35 +1000,34 @@ public class RuleStatement extends AbstractStatement {
             for (Predicate p : predBeliefList) {
             	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 
-            	if (removeDesire != null) {
+            	if (removeDes != null) {
                 	SimpleBdiArchitecture.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));                	
                 }
-                if (removeUncertainty != null) {
+                if (removUncert != null) {
                 	SimpleBdiArchitecture.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", values));
                 }
-                if (removeIdeal != null) {
+                if (removeIde != null) {
                     SimpleBdiArchitecture.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", values));
                 }
-                if (removeObligation != null) {
+                if (removeObl != null) {
                     SimpleBdiArchitecture.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", values));
                 }
             }
-        	
         }
         else {
-            if (removeBelief != null) {
+            if (removBel != null) {
                 SimpleBdiArchitecture.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", null));
             }
-            if (removeDesire != null) {
+            if (removeDes != null) {
             	SimpleBdiArchitecture.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", null));
             }
-            if (removeUncertainty != null) {
+            if (removUncert != null) {
             	SimpleBdiArchitecture.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", null));
             }
-            if (removeIdeal != null) {
+            if (removeIde != null) {
             	SimpleBdiArchitecture.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", null));
             }
-            if (removeObligation != null) {
+            if (removeObl != null) {
             	SimpleBdiArchitecture.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", null));
             }
         }        

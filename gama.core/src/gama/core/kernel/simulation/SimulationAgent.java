@@ -1072,7 +1072,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		}
 
 		// Update all the references !
-		updateReferences(scope, list_ref, this);
+		updateReferences(scope, list_ref);
 	}
 
 	/**
@@ -1085,8 +1085,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param sim
 	 *            the sim
 	 */
-	private void updateReferences(final IScope scope, final List<IReference> list_ref, final SimulationAgent sim) {
-		for (final IReference ref : list_ref) { ref.resolveReferences(scope, sim); }
+	private void updateReferences(final IScope scope, final List<IReference> list_ref) {
+		for (final IReference ref : list_ref) { ref.resolveReferences(scope, this); }
 	}
 
 	/**

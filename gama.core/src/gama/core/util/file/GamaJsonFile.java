@@ -11,17 +11,17 @@
 package gama.core.util.file;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -134,7 +134,7 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(file.getName() + " already exists", scope),
 					false);
 		}
-		try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+		try (Writer writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)) {
 			writer.write(Json.getNew().valueOf(toSave).toString(WriterConfig.PRETTY_PRINT));
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);

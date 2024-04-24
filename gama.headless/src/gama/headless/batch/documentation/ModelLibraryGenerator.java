@@ -13,11 +13,11 @@ package gama.headless.batch.documentation;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -382,7 +382,7 @@ public class ModelLibraryGenerator {
 		final ArrayList<String> result = new ArrayList<>();
 		String extractedStr = "";
 
-		try (final FileInputStream fis = new FileInputStream(file);
+		try (final InputStream fis = Files.newInputStream(file.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 
 			String line = null;
@@ -699,7 +699,7 @@ public class ModelLibraryGenerator {
 
 					Utils.createFolder(outputFile.getParentFile());
 					outputFile.createNewFile();
-					try (final FileOutputStream fileOut = new FileOutputStream(outputFile);) {
+					try (final OutputStream fileOut = Files.newOutputStream(outputFile.toPath());) {
 
 						// write the header
 						fileOut.write(mainKeywordsMap.get(gamlFile.getAbsolutePath().replace("\\", "/")).getBytes());
@@ -751,7 +751,7 @@ public class ModelLibraryGenerator {
 		final File outputFile = new File(pathToSectionFile);
 		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
-		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
+		try (final OutputStream fileOut = Files.newOutputStream(outputFile.toPath())) {
 
 			final String sectionName =
 					pathToSectionFile.split("/")[pathToSectionFile.split("/").length - 1].replace(".md", "");
@@ -772,7 +772,7 @@ public class ModelLibraryGenerator {
 		final File outputFile = new File(pathToSubSectionFile);
 		Utils.createFolder(outputFile.getParentFile());
 		outputFile.createNewFile();
-		try (final FileOutputStream fileOut = new FileOutputStream(outputFile)) {
+		try (final OutputStream fileOut = Files.newOutputStream(outputFile.toPath())) {
 
 			final String sectionName =
 					pathToSubSectionFile.split("/")[pathToSubSectionFile.split("/").length - 1].replace(".md", "");
@@ -839,7 +839,7 @@ public class ModelLibraryGenerator {
 		// returns the header
 		StringBuilder result = new StringBuilder();
 
-		try (final FileInputStream fis = new FileInputStream(file);
+		try (final InputStream fis = Files.newInputStream(file.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 
 			String line = null;
@@ -873,7 +873,7 @@ public class ModelLibraryGenerator {
 			throws IOException {
 
 		ArrayList<String> results2 = results;
-		try (final FileInputStream fis = new FileInputStream(file);
+		try (final InputStream fis = Files.newInputStream(file.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 
 			String line = null;
@@ -907,7 +907,7 @@ public class ModelLibraryGenerator {
 		// write the code
 		String result = "";
 		result = "```\n";
-		try (final FileInputStream fis = new FileInputStream(gamlFile);
+		try (final InputStream fis = Files.newInputStream(gamlFile.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 			String line = null;
 			boolean inHeader = true;

@@ -144,9 +144,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	}
 
 	/**
-	 * Update cartesian coordinates from angles.
+	 * Update Cartesian coordinates from angles.
 	 */
-	// @Override
 	public void updateCartesianCoordinatesFromAngles() {
 		theta = theta % 360;
 		phi = phi % 360;
@@ -171,8 +170,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public void updateSphericalCoordinatesFromLocations() {
 		final GamaPoint p = getPosition();
 		final GamaPoint t = getTarget();
-		// final GamaPoint p = getPosition().minus(getTarget());
-		// setDistance(p.norm());
 
 		theta = Maths.toDeg * Math.atan2(p.y - t.y, p.x - t.x);
 		// See issue on camera_pos
@@ -358,8 +355,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		// DEBUG.OUT(
-		// "Position " + position.rounded() + " target " + target.rounded() + " up " + up + " flipped " + flipped);
 		glu.gluLookAt(position.x, position.y, position.z, target.x, target.y, target.z, up.x, up.y, up.z);
 	}
 
@@ -633,9 +628,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return the int
 	 */
 	protected int hoverOnKeystone(final int x, final int y) {
-		// return the number of the corner clicked. Return -1 if no click on
-		// keystone. Return 10 if click on the center.
-		// final GamaPoint p = getNormalizedCoordinates(e);
 		return renderer.getKeystoneHelper().cornerHovered(new GamaPoint(x, y));
 	}
 
@@ -649,7 +641,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	final void internalMouseDown(final int x, final int y, final int button, final boolean isCtrl,
 			final boolean isShift) {
-		// DEBUG.OUT("Camera mouse down on " + x + ", " + y);
 
 		if (firsttimeMouseDown) {
 			firstMousePressedPosition.setLocation(x, y, 0);
@@ -675,9 +666,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
 			resetPivot();
 		} else if (isShift && isViewInXYPlan()) { startROI(); }
-		// else {
-		// renderer.getPickingState().setPicking(false);
-		// }
 		mousePosition.x = x;
 		mousePosition.y = y;
 		computeMouseLocationInTheWorld(x, y);
@@ -690,9 +678,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	@Override
 	public final void mouseReleased(final com.jogamp.newt.event.MouseEvent e) {
 		invokeOnGLThread(drawable -> {
-			// if (cameraInteraction) {
 			internalMouseUp(e.getButton(), e.isShiftDown());
-			// }
 			return false;
 		});
 	}
@@ -704,7 +690,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the e
 	 */
 	protected void internalMouseUp(final int button, final boolean isShift) {
-		// DEBUG.OUT("Camera mouse up.");
 		firsttimeMouseDown = true;
 		if (isViewInXYPlan() && isShift) { finishROISelection(); }
 		if (button == 1) { setMouseLeftPressed(false); }
@@ -745,10 +730,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
 
-		// getWorldPositionFrom(mousePosition, positionInTheWorld);
-		// double distance = data.getCameraDistance();
-		// double zFar = data.getzFar();
-		// double zNear = data.getzNear();
 		OpenGL gl = renderer.getOpenGLHelper();
 		final double[] wcoord = new double[4];
 		final int[] viewport = gl.viewport;
@@ -759,13 +740,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		pixelDepth.rewind();
 		gl.getGL().glReadPixels(x, y, 1, 1, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
-
-		// DEBUG.OUT("First value retrieved by gluUnproject for Z : " + z + " computing a camera distance of "
-		// + (1 - z) * (zFar - zNear) + " while the real one is " + distance);
-
-		// z = Math.min(1, 1 - distance / (2 * (zFar - zNear)));
-
-		// DEBUG.OUT("Value retrieved for Z : " + z + " with camera distance " + data.getCameraDistance());
 
 		if (z == 1d || z == 0d) {
 			getWorldPositionFrom(new GamaPoint(mouse_x, mouse_y), positionInTheWorld);
@@ -795,14 +769,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		return result.setLocation(result.x * distance + camLoc.x, result.y * distance + camLoc.y, 0);
 	}
 
-	//
-	// protected void dump() {
-	// DEBUG.LOG("xPos:" + position.x + " yPos:" + position.y + "
-	// zPos:" + position.z);
-	// DEBUG.LOG("xLPos:" + target.x + " yLPos:" + target.y + " zLPos:"
-	// + target.z);
-	// DEBUG.LOG("_phi " + phi + " _theta " + theta);
-	// }
 
 	/**
 	 * Gets the mouse position.
@@ -900,11 +866,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 					case com.jogamp.newt.event.KeyEvent.VK_SPACE:
 						if (cameraInteraction) { resetPivot(); }
 						break;
-					case com.jogamp.newt.event.KeyEvent.VK_CONTROL:
-						// The press and release of these keys does not seem to work. Caught after
-						setCtrlPressed(!firsttimeMouseDown);
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_META:
+					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
 						// The press and release of these keys does not seem to work. Caught after
 						setCtrlPressed(!firsttimeMouseDown);
 						break;
@@ -976,16 +938,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * Reset pivot.
 	 */
 	protected void resetPivot() {
-		// final LayeredDisplayData data = data;
-		// final double envWidth = data.getEnvWidth();
-		// final double envHeight = data.getEnvHeight();
-		// GamaPoint position = getDefinition().getLocation();
-		// GamaPoint target = getDefinition().getTarget();
-		// final double translate_x = target.x - envWidth / 2d;
-		// final double translate_y = target.y + envHeight / 2d;
-		// final double translate_z = target.z;
-		// setTarget(envWidth / 2d, -envHeight / 2d, 0);
-		// setPosition(position.x - translate_x, position.y - translate_y, position.z - translate_z);
 		data.resetCamera();
 		updateSphericalCoordinatesFromLocations();
 	}
@@ -1091,10 +1043,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 					case com.jogamp.newt.event.KeyEvent.VK_DOWN:
 						if (cameraInteraction) { goesBackward = false; }
 						break;
-					case com.jogamp.newt.event.KeyEvent.VK_CONTROL:
-						setCtrlPressed(false);
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_META:
+					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
 						setCtrlPressed(false);
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_SHIFT:
@@ -1141,13 +1090,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param in
 	 *            the in
 	 */
-	// @Override
 	public void zoom(final boolean in) {
 		if (keystoneMode) return;
 		Double distance = data.getCameraDistance();
 		final double step = distance != 0d ? distance / 10d * GamaPreferences.Displays.OPENGL_ZOOM.getValue() : 0.1d;
 		data.setCameraDistance(distance + (in ? -step : step));
-		// zoom(zoomLevel());
 		data.setZoomLevel(zoomLevel(), true);
 	}
 
