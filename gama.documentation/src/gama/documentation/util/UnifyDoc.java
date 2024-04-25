@@ -12,6 +12,7 @@ package gama.documentation.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -60,7 +61,7 @@ public class UnifyDoc {
 			System.out.println("" + hmFiles);
 
 			XMLOutputter sortie = new XMLOutputter(Format.getPrettyFormat());
-			sortie.output(doc, new FileOutputStream(Constants.DOCGAMA_GLOBAL_FILE));
+			sortie.output(doc, Files.newOutputStream(new File(Constants.DOCGAMA_GLOBAL_FILE).toPath()));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -82,7 +83,7 @@ public class UnifyDoc {
 			System.out.println("" + hmFiles);
 
 			XMLOutputter sortie = new XMLOutputter(Format.getPrettyFormat());
-			sortie.output(doc, new FileOutputStream(Constants.DOCGAMA_GLOBAL_FILE));
+			sortie.output(doc, Files.newOutputStream(new File(Constants.DOCGAMA_GLOBAL_FILE).toPath()));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

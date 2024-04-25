@@ -390,22 +390,17 @@ public class Exploration extends AExplorationAlgorithm {
 				int minValue = Cast.asInt(scope, var.getMinValue(scope));
 				int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
 				double stepValue = 1;
+				int nbIterNeeded = 0;
 				if (var.getStepValue(scope) != null) {
 					stepValue = Cast.asInt(scope, var.getStepValue(scope));
 				} else if (maxValue - minValue > __default_step_factor) {
-					stepValue = (maxValue - minValue) / __default_step_factor;
+					stepValue = (maxValue - minValue) / (double)__default_step_factor;
 				}
-
-				while (minValue <= maxValue) {
-					if (stepValue >= 0) {
-						res.add(minValue);
-						minValue = minValue + (int) stepValue
-								+ (Random.opFlip(scope, stepValue - (int) stepValue) ? 1 : 0);
-					} else {
-						res.add(maxValue);
-						maxValue = maxValue + (int) stepValue
-								- (Random.opFlip(scope, stepValue - (int) stepValue) ? 1 : 0);
-					}
+				//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
+				nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
+				double start = stepValue >= 0 ? minValue : maxValue;
+				for(int i = 0 ; i <= nbIterNeeded ; i++) {
+					res.add(start + (int)(stepValue * i));
 				}
 				break;
 			case IType.FLOAT:
