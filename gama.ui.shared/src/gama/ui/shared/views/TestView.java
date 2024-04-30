@@ -256,11 +256,12 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	 * Save tests.
 	 */
 	public void saveTests() {
-		final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getDisplay().getActiveShell(), SWT.NULL);
+		final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getShell(), SWT.NULL);
 		dialog.setFilterPath(GAMA.getModel() == null
 				? ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() : GAMA.getModel().getFilePath());
-		dialog.setText("Choose a folder for saving the tests");
+		dialog.setMessage("Choose a folder for saving the tests");
 		final String path = dialog.open();
+		if (path == null) return;
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		String file = path + "/" + "tests_" + timestamp.toString() + ".txt";
 		file = FileUtils.constructAbsoluteFilePath(GAMA.getRuntimeScope(), file, false);
