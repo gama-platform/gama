@@ -213,6 +213,11 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("Allows to enable/disable the light at once. Default is true")),
 				@facet (
+						name = "locked",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Allows to lock/unlock a 2D display when it opens. For 3D displays please use the `camera` statement")),
+				@facet (
 						name = "draw_diffuse_light",
 						type = IType.BOOL,
 						optional = true,

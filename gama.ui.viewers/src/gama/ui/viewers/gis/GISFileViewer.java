@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GISFileViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GISFileViewer.java, in gama.ui.viewers, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
@@ -44,28 +44,28 @@ public abstract class GISFileViewer extends EditorPart
 
 	/** The pane. */
 	SwtMapPane pane;
-	
+
 	/** The content. */
 	MapContent content;
-	
+
 	/** The toolbar. */
 	GamaToolbar2 toolbar;
-	
+
 	/** The file. */
 	IFile file;
-	
+
 	/** The feature source. */
 	SimpleFeatureSource featureSource;
-	
+
 	/** The no CRS. */
 	boolean noCRS = false;
-	
+
 	/** The style. */
 	Style style;
-	
+
 	/** The layer. */
 	Layer layer;
-	
+
 	/** The path str. */
 	String pathStr;
 
@@ -79,14 +79,10 @@ public abstract class GISFileViewer extends EditorPart
 	public void doSaveAs() {}
 
 	@Override
-	public boolean isDirty() {
-		return false;
-	}
+	public boolean isDirty() { return false; }
 
 	@Override
-	public boolean isSaveAsAllowed() {
-		return false;
-	}
+	public boolean isSaveAsAllowed() { return false; }
 
 	@Override
 	public void createPartControl(final Composite composite) {
@@ -118,7 +114,7 @@ public abstract class GISFileViewer extends EditorPart
 
 	@Override
 	public void zoomIn() {
-		if(!locked) {
+		if (!locked) {
 			final ReferencedEnvelope env = pane.getDisplayArea();
 			env.expandBy(-env.getWidth() / 10, -env.getHeight() / 10);
 			pane.setDisplayArea(env);
@@ -127,7 +123,7 @@ public abstract class GISFileViewer extends EditorPart
 
 	@Override
 	public void zoomOut() {
-		if(!locked) {
+		if (!locked) {
 			final ReferencedEnvelope env = pane.getDisplayArea();
 			env.expandBy(env.getWidth() / 10, env.getHeight() / 10);
 			pane.setDisplayArea(env);
@@ -145,19 +141,18 @@ public abstract class GISFileViewer extends EditorPart
 		pane.toggleLock();
 	}
 
+	@Override
+	public boolean isLocked() { return locked; }
+
 	/**
 	 * Gets the map composite.
 	 *
 	 * @return the map composite
 	 */
-	public Control getMapComposite() {
-		return pane;
-	}
+	public Control getMapComposite() { return pane; }
 
 	@Override
-	public Control[] getZoomableControls() {
-		return new Control[] { pane };
-	}
+	public Control[] getZoomableControls() { return new Control[] { pane }; }
 
 	/**
 	 * Method createToolItem()
@@ -183,28 +178,27 @@ public abstract class GISFileViewer extends EditorPart
 	/**
 	 * Save as CSV.
 	 *
-	 * @param attributes the attributes
-	 * @param geoms the geoms
-	 * @param name the name
+	 * @param attributes
+	 *            the attributes
+	 * @param geoms
+	 *            the geoms
+	 * @param name
+	 *            the name
 	 */
 	public void saveAsCSV(final List<String> attributes, final List<IShape> geoms, final String name) {
-		String path = "";
+		StringBuilder path = new StringBuilder();
 		final String[] decomp = pathStr.split("\\.");
-		for (int i = 0; i < decomp.length - 1; i++) {
-			path += decomp[i] + (i < decomp.length - 2 ? "." : "");
-		}
+		for (int i = 0; i < decomp.length - 1; i++) { path.append(decomp[i]).append(i < decomp.length - 2 ? "." : ""); }
 		if (name != null) {
-			path += name + ".";
+			path.append(name).append(".");
 		} else {
-			path += ".";
+			path.append(".");
 		}
-		path += "csv";
-		final File fcsv = new File(path);
+		path.append("csv");
+		final File fcsv = new File(path.toString());
 		try (FileWriter fw = new FileWriter(fcsv, false)) {
 			fw.write("id");
-			for (final String att : attributes) {
-				fw.write(";" + att);
-			}
+			for (final String att : attributes) { fw.write(";" + att); }
 			fw.write(Strings.LN);
 			if (geoms != null) {
 				int cpt = 0;
