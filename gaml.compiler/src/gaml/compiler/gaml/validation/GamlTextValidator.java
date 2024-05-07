@@ -22,6 +22,7 @@ import org.eclipse.xtext.validation.EObjectDiagnosticImpl;
 
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.IGamlTextValidator;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.interfaces.IGamlIssue;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.GamlResourceServices;
@@ -59,17 +60,20 @@ public class GamlTextValidator implements IGamlTextValidator {
 					GamlCompilationError error;
 					if (d instanceof EObjectDiagnosticImpl ed) {
 						error = new GamlCompilationError(ed.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
-								ed.getProblematicObject(), Severity.WARNING.equals(ed.getSeverity()),
-								Severity.INFO.equals(ed.getSeverity()), ed.getData());
+								ed.getProblematicObject(), 
+								Severity.WARNING.equals(ed.getSeverity()) ? GamlCompilationErrorType.Warning 
+										: Severity.INFO.equals(ed.getSeverity()) ? GamlCompilationErrorType.Info : GamlCompilationErrorType.Error
+								//Previously: Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
+								, ed.getData());
 					} else if (d instanceof XtextLinkingDiagnostic ld) {
 						error = new GamlCompilationError(ld.getMessage(), IGamlIssue.LINKING_ERROR,
-								ld.getUriToProblem(), false, false, ld.getData());
+								ld.getUriToProblem(), GamlCompilationErrorType.Error, ld.getData());
 					} else if (d instanceof XtextSyntaxDiagnostic sd) {
 						error = new GamlCompilationError(sd.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
-								sd.getUriToProblem(), false, false, sd.getData());
+								sd.getUriToProblem(), GamlCompilationErrorType.Error, sd.getData());
 					} else {
 						error = new GamlCompilationError(d.getMessage(), IGamlIssue.SYNTACTIC_ERROR, resource.getURI(),
-								false, false);
+								GamlCompilationErrorType.Error);
 					}
 					errors.add(error);
 				}

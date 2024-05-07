@@ -18,11 +18,9 @@ import org.eclipse.emf.ecore.EObject;
  */
 public class GamlCompilationError {
 
-	/** The is warning. */
-	protected boolean isWarning = false;
-
-	/** The is info. */
-	protected boolean isInfo = false;
+	public enum GamlCompilationErrorType {
+		Info, Warning, Error
+	}
 
 	/** The message. */
 	protected final String message;
@@ -38,6 +36,8 @@ public class GamlCompilationError {
 
 	/** The uri. */
 	protected final URI uri;
+	
+	protected final GamlCompilationErrorType errorType;
 
 	/**
 	 * Instantiates a new gaml compilation error.
@@ -55,12 +55,11 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final EObject object, final boolean warning,
-			final boolean info, final String... data) {
+	public GamlCompilationError(final String string, final String code, final EObject object, final GamlCompilationErrorType type, 
+			final String... data) {
 
 		message = string;
-		isWarning = warning;
-		isInfo = info;
+		errorType = type;
 		this.code = code;
 		this.data = data;
 		source = object;
@@ -83,12 +82,11 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final URI uri, final boolean warning,
-			final boolean info, final String... data) {
+	public GamlCompilationError(final String string, final String code, final URI uri, final GamlCompilationErrorType type,
+			final String... data) {
 
 		message = string;
-		isWarning = warning;
-		isInfo = info;
+		errorType = type;
 		this.code = code;
 		this.data = data;
 		source = null;
@@ -126,14 +124,14 @@ public class GamlCompilationError {
 	 *
 	 * @return true, if is warning
 	 */
-	public boolean isWarning() { return isWarning && !isInfo; }
+	public boolean isWarning() { return errorType == GamlCompilationErrorType.Warning; }
 
 	/**
 	 * Checks if is info.
 	 *
 	 * @return true, if is info
 	 */
-	public boolean isInfo() { return isInfo; }
+	public boolean isInfo() { return errorType == GamlCompilationErrorType.Info; }
 
 	/**
 	 * Gets the statement.
@@ -147,7 +145,7 @@ public class GamlCompilationError {
 	 *
 	 * @return true, if is error
 	 */
-	public boolean isError() { return !isInfo && !isWarning; }
+	public boolean isError() { return errorType == GamlCompilationErrorType.Error; }
 
 	@Override
 	public boolean equals(final Object other) {

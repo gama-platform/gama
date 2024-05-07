@@ -35,6 +35,7 @@ import gama.core.util.ICollector;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaHelper;
 import gama.gaml.compilation.IGamaHelper;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -532,17 +533,17 @@ public class VariableDescription extends SymbolDescription {
 	public void setDefinitionClass(final Class definitionClass) { this.definitionClass = definitionClass; }
 
 	@Override
-	protected void flagError(final String s, final String code, final boolean warning, final boolean info,
+	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
 		if (isExperimentParameter()) {
 			EObject param = getUnderlyingElement();
 			if (EcoreUtil.isAncestor(param, source)) {
-				super.flagError(s, code, warning, info, source, data);
+				super.flagError(s, code, type, source, data);
 			} else {
-				super.flagError(s, code, warning, info, param, data);
+				super.flagError(s, code, type, param, data);
 			}
 		} else {
-			super.flagError(s, code, warning, info, source, data);
+			super.flagError(s, code, type, source, data);
 		}
 	}
 

@@ -28,6 +28,7 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlDescription;
@@ -365,11 +366,11 @@ public abstract class SymbolDescription implements IDescription {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected void flagError(final String s, final String code, final boolean warning, final boolean info,
+	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
 
-		if (warning && !info && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()) return;
-		if (info && !GamaPreferences.Modeling.INFO_ENABLED.getValue()) return;
+		if (type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()) return;
+		if (type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue()) return;
 
 		IDescription desc = this;
 		EObject e = source;
@@ -382,16 +383,16 @@ public abstract class SymbolDescription implements IDescription {
 		// the source
 		// (i.e. we are probably in a runtime scenario)
 		if (e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX)) {
-			if (!warning && !info) throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
+			if (type == GamlCompilationErrorType.Error) throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
 			return;
 
 		}
 		final ValidationContext c = getValidationContext();
 		if (c == null) {
-			DEBUG.ERR((warning ? "Warning" : "Error") + ": " + s);
+			DEBUG.ERR((type == GamlCompilationErrorType.Warning ? "Warning" : "Error") + ": " + s);
 			return;
 		}
-		c.add(new GamlCompilationError(s, code, e, warning, info, data));
+		c.add(new GamlCompilationError(s, code, e, type, data));
 	}
 
 	/**
@@ -413,49 +414,49 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void error(final String message, final String code) {
-		flagError(message, code, false, false, getUnderlyingElement(), EMPTY_DATA);
+		flagError(message, code, GamlCompilationErrorType.Error, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
 	public void error(final String s, final String code, final EObject facet, final String... data) {
-		flagError(s, code, false, false, facet, data);
+		flagError(s, code, GamlCompilationErrorType.Error, facet, data);
 	}
 
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, false, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Error, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void info(final String message, final String code) {
-		flagError(message, code, false, true, getUnderlyingElement(), EMPTY_DATA);
+		flagError(message, code, GamlCompilationErrorType.Info, getUnderlyingElement(), EMPTY_DATA);
 	}
 
 	@Override
 	public void info(final String s, final String code, final EObject facet, final String... data) {
-		flagError(s, code, false, true, facet, data);
+		flagError(s, code, GamlCompilationErrorType.Info, facet, data);
 	}
 
 	@Override
 	public void info(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, false, true, this.getUnderlyingElement(facet, false),
+		flagError(s, code, GamlCompilationErrorType.Info, this.getUnderlyingElement(facet, false),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
 	@Override
 	public void warning(final String message, final String code) {
-		flagError(message, code, true, false, null, EMPTY_DATA);
+		flagError(message, code, GamlCompilationErrorType.Warning, null, EMPTY_DATA);
 	}
 
 	@Override
 	public void warning(final String s, final String code, final EObject object, final String... data) {
-		flagError(s, code, true, false, object, data);
+		flagError(s, code, GamlCompilationErrorType.Warning, object, data);
 	}
 
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, true, false, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Warning, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 

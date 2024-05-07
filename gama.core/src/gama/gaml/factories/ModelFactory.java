@@ -40,6 +40,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
@@ -542,11 +543,11 @@ public class ModelFactory extends SymbolFactory {
 				URI myself = collector.getURI();
 				if (other.equals(myself)) {
 					collector.add(new GamlCompilationError("Experiment " + element.getName() + " is declared twice",
-							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, false));
+							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Error));
 				} else {
 					collector.add(new GamlCompilationError(
 							"Experiment " + experimentName + " supersedes the one declared in " + other.lastSegment(),
-							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, true));
+							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Info));
 				}
 			}
 		}
@@ -596,9 +597,9 @@ public class ModelFactory extends SymbolFactory {
 		ISyntacticElement node = speciesNodes.get(name);
 		if (node != null) {
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
-					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, false));
+					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Error));
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
-					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), false, false));
+					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), GamlCompilationErrorType.Error));
 		}
 		speciesNodes.put(name, element);
 	}
