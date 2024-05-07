@@ -157,7 +157,7 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 			return null;
 		}
 		
-		if (SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+		if (Utils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
 			
 			charismaValue = (double) (charisma != null ? charisma.value(scope) : scope.getAgent().getAttribute(CHARISMA));
 			
@@ -167,7 +167,7 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 				thresholdValue = (double) threshold.value(scopeMySelf); 
 			}
 			if (charismaValue * receptivityValue >= thresholdValue) {
-				final Emotion tempEmo = SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotion.value(scope));
+				final Emotion tempEmo = Utils.getEmotion(scope, (Emotion) emotion.value(scope));
 				Emotion temp;
 				if (tempEmo.hasIntensity()) {
 					temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
@@ -177,9 +177,9 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 				}
 				temp.setAgentCause(scope.getAgent());
 				if (decay != null) {
-					temp.setDecay(Math.clamp((Double) decay.value(scopeMySelf),0 ,1));
+					temp.setDecay(Utils.clamp((Double) decay.value(scopeMySelf),0 ,1));
 				}
-				SimpleBdiArchitecture.addEmotion(scopeMySelf, temp);
+				Utils.addEmotion(scopeMySelf, temp);
 			}
 		}
 		GAMA.releaseScope(scopeMySelf);

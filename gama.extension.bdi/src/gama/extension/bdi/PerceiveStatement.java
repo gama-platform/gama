@@ -206,10 +206,10 @@ public class PerceiveStatement extends AbstractStatementSequence {
 		if (_when != null && ! Cast.asBool(scope, _when.value(scope))){
 			return null;
 		}
-		if (emotion != null && !SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+		if (emotion != null && !Utils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
 			return null;
 		}
-		if (threshold != null && (emotion == null || SimpleBdiArchitecture.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
+		if (threshold != null && (emotion == null || Utils.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
 			return null;
 		}
 		

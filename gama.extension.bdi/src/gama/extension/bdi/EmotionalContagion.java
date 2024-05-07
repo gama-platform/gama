@@ -180,9 +180,9 @@ public class EmotionalContagion extends AbstractStatement {
 		}
 		if (	   (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) 
 				&& emotionDetected != null
-				&& SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
+				&& Utils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
 
-			final Emotion detectedEmo = SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotionDetected.value(scope));
+			final Emotion detectedEmo = Utils.getEmotion(scope, (Emotion) emotionDetected.value(scope));
 			
 			//getting variables to calculate the contagious power
 			if (charisma != null) {
@@ -214,7 +214,7 @@ public class EmotionalContagion extends AbstractStatement {
 						decayValue = detectedEmo.getDecay();
 					}
 					if (intensity != null) {
-						intensityValue = Math.clamp((double) intensity.value(scopeMySelf), 0, 1);
+						intensityValue = Utils.clamp((double) intensity.value(scopeMySelf), 0, 1);
 					}
 					emo.setIntensity(intensityValue);
 				} else {
@@ -226,8 +226,8 @@ public class EmotionalContagion extends AbstractStatement {
 					}
 				}
 				emo.setAgentCause(scope.getAgent());
-				emo.setDecay(Math.clamp(decayValue, 0, 1));
-				SimpleBdiArchitecture.addEmotion(scopeMySelf, emo);
+				emo.setDecay(Utils.clamp(decayValue, 0, 1));
+				Utils.addEmotion(scopeMySelf, emo);
 			}
 		}
 		GAMA.releaseScope(scopeMySelf);

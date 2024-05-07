@@ -243,8 +243,8 @@ public class LawStatement extends AbstractStatement {
 		final MentalState tempBelief = new MentalState("Belief");
 		if (belief != null) {
 			tempBelief.setPredicate((Predicate) belief.value(scope));
-			if (SimpleBdiArchitecture.hasBelief(scope, tempBelief)) {
-				for (final MentalState mental : SimpleBdiArchitecture.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+			if (Utils.hasBelief(scope, tempBelief)) {
+				for (final MentalState mental : Utils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
 					if (tempBelief.getPredicate().equals(mental.getPredicate())) {
 						predBeliefList.add(mental.getPredicate());
 					}
@@ -252,7 +252,7 @@ public class LawStatement extends AbstractStatement {
 			}
 		}
 
-		if (	(belief == null || SimpleBdiArchitecture.hasBelief(scope, tempBelief))
+		if (	(belief == null || Utils.hasBelief(scope, tempBelief))
 			&& 	(beliefs == null || hasBeliefs(scope, (List<Predicate>) beliefs.value(scope)))
 			&&	(threshold == null || (double) scope.getAgent().getAttribute("obedience") >= (double) threshold.value(scope))) {
 			
@@ -291,9 +291,9 @@ public class LawStatement extends AbstractStatement {
 			tempNewObligation.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
 		}
 		// Only do it if there's not already an obligation
-		if (!SimpleBdiArchitecture.hasObligation(scope, tempNewObligation)) {
-			SimpleBdiArchitecture.addObligation(scope, tempNewObligation);
-			SimpleBdiArchitecture.clearIntention(scope);
+		if (!Utils.hasObligation(scope, tempNewObligation)) {
+			Utils.addObligation(scope, tempNewObligation);
+			Utils.clearIntention(scope);
 			final IAgent agent = scope.getAgent();
 			agent.setAttribute(SimpleBdiArchitecture.CURRENT_PLAN, null);
 			agent.setAttribute(SimpleBdiArchitecture.CURRENT_NORM, null);
@@ -312,7 +312,7 @@ public class LawStatement extends AbstractStatement {
 	private boolean hasBeliefs(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Belief", p);
-			if (!SimpleBdiArchitecture.hasBelief(scope, temp)) return false;
+			if (!Utils.hasBelief(scope, temp)) return false;
 		}
 		return true;
 	}
