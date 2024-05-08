@@ -10,13 +10,24 @@ on:
 
 jobs:
 
-  compiling-gama:
-    name: Compiling GAMA
+  compiling-gama-pr:
+    name: Compiling GAMA from base branch
     uses: ./.github/workflows/travis-build.yaml
     with:
       get_testing_compiled_archives: false
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
+      SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
+      CHECKOUT_BRANCH: "2024-06"
+
+  compiling-gama-base:
+    name: Compiling GAMA from PR branch
+    uses: ./.github/workflows/travis-build.yaml
+    with:
+      get_testing_compiled_archives: false
+      get_all_archives_for_release: false
+      RUN_SPOTBUGS: true
+      SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-pr"
 
   spotbugs-result: 
     name: Display Spotbugs results
@@ -26,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: result-spotbugs
+          name: result-spotbugs-pr
 
       - uses: jwgmeligmeyling/spotbugs-github-action@master
         with:
