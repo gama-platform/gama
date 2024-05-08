@@ -126,9 +126,9 @@ jobs:
           mvn verify spotbugs:spotbugs
           # Merge every spotbugs files in a single XML
           python3 -m pip install lxml 
-          mkdir $GITHUB_WORKSPACE/spotbugFiles
-          mv $GITHUB_WORKSPACE/**/spotbugsXml.xml $GITHUB_WORKSPACE/spotbugFiles
-          python3 $GITHUB_WORKSPACE/travis/merge_xml_spotbugs.py -r $GITHUB_WORKSPACE/spotbugFiles/ -o $GITHUB_WORKSPACE/spotbugsXml.xml
+          mkdir ~/spotbugFiles
+          find $GITHUB_WORKSPACE -name "spotbugsXml.xml" -exec mv {} ~/spotbugFiles \;
+          python3 $GITHUB_WORKSPACE/travis/merge_xml_spotbugs.py -r ~/spotbugFiles/ -o $GITHUB_WORKSPACE/spotbugsXml.xml
 
       - uses: actions/upload-artifact@v4
         if: "${{ inputs.RUN_SPOTBUGS }}"
