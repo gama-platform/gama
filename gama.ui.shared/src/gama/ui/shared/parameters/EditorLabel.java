@@ -82,6 +82,7 @@ public class EditorLabel extends Label {
 	 * @param isSubParameter
 	 *            the is sub parameter
 	 */
+	@SuppressWarnings("rawtypes")
 	public EditorLabel(final AbstractEditor ed, final Composite parent, final String title,
 			final boolean isSubParameter) {
 		super(parent, SWT.WRAP | SWT.RIGHT);
@@ -99,6 +100,7 @@ public class EditorLabel extends Label {
 	 *            the e
 	 * @return the string
 	 */
+	@SuppressWarnings("rawtypes")
 	protected String computeLabelTooltip(final AbstractEditor e) {
 		boolean isBatch = GAMA.getExperiment() != null && GAMA.getExperiment().isBatch();
 		IParameter param = e.getParam();

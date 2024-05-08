@@ -27,6 +27,7 @@ public class FixedValueEditorControl extends EditorControl<CLabel> {
 	 * @param value
 	 *            the original value to display
 	 */
+	@SuppressWarnings("rawtypes")
 	FixedValueEditorControl(final AbstractEditor editor, final Composite parent) {
 		super(editor, new CLabel(parent, SWT.READ_ONLY));
 	}

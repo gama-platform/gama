@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.core.metamodel.agent.IAgent;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
@@ -30,6 +31,7 @@ import gama.gaml.statements.Facets;
 // handles = { ISymbolKind.EXPERIMENT })
 public class ExperimentFactory extends SpeciesFactory {
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public ExperimentDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,

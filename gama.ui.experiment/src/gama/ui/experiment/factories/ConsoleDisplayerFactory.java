@@ -111,6 +111,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Object create(final Class serviceInterface, final IServiceLocator parentLocator,
 			final IServiceLocator locator) {

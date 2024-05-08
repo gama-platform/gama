@@ -773,7 +773,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				listNorm.stream().filter(p -> getExpression.apply(p.getNormStatement()).equalsIntentionPlan(predicate)) 
 						.forEach(i -> listMentalStatesTest.add(tempMentalState));					
 			}
-			MentalState newIntention = mentalStateBase.getFirst();
+			MentalState newIntention = mentalStateBase.firstValue(scope);
 			double newIntStrength;
 			
 			final double priority_list[] = listMentalStatesTest.stream().mapToDouble(s -> s.getStrength()).toArray();
