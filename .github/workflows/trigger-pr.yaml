@@ -32,13 +32,27 @@ jobs:
   spotbugs-result: 
     name: Display Spotbugs results
     runs-on: ubuntu-latest
-    needs: compiling-gama
+    needs: [compiling-gama-base, compiling-gama-pr]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+
+      - name: Get Spotbugs result from base branch 
+        uses: actions/download-artifact@v4
+        with:
+          name: result-spotbugs-base
+          path: ${{ github.workspace }}/main
+
+      - name: Get Spotbugs result from PR branch
+        uses: actions/download-artifact@v4
         with:
           name: result-spotbugs-pr
+          path: ${{ github.workspace }}/pull-request
+
+      - name: Calculate diff between results
+        run: |
+          python3 -m pip install lxml
+          python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/output-spotbugsXml.xml
 
       - uses: jwgmeligmeyling/spotbugs-github-action@master
         with:
-          path: '**/spotbugsXml.xml'
+          path: ${{ github.workspace }}/output-spotbugsXml.xml
