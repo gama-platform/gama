@@ -6,8 +6,8 @@ import argparse
 if __name__ == '__main__':
     # handle script arguments
     parser = argparse.ArgumentParser(description="Merges all found BugInstance in spotbugsXml.xml files found recursively in a directory into one file")
-    parser.add_argument("--root_dir",  metavar='-r', default='.', help='The directory in which to run the script')
-    parser.add_argument("--output_file_name", metavar='-o', default='merged_spotbugsXml.xml', help='The path of the resulting merged xml file')
+    parser.add_argument('-r', "--root_dir",default='.', help='The directory in which to run the script')
+    parser.add_argument('-o', "--output_file_name", default='merged_spotbugsXml.xml', help='The path of the resulting merged xml file')
     args = parser.parse_args()
     merged = None
 

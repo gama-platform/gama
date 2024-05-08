@@ -22,9 +22,9 @@ def identical_nodes(node1: etree.Element, node2: etree.Element):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Creates an xml file that contains the BugInstances that are only specific to one of the two spotbugs xml result file given as a parameter. It is used to get a 'diff' to see if there's improvement between two compilations.")
-    parser.add_argument("--new_file", metavar='-n', help='The path of the most recent file to compare')
-    parser.add_argument("--old_file", metavar='-o', help='The path of the oldest file to compare')
-    parser.add_argument("--diff_file", metavar='-d', help='The path of the output diff file')
+    parser.add_argument('-n', "--new_file", help='The path of the most recent file to compare')
+    parser.add_argument('-o', "--old_file", help='The path of the oldest file to compare')
+    parser.add_argument('-d', "--diff_file", help='The path of the output diff file')
     args = parser.parse_args()
 
     new_root = etree.parse(open(args.new_file)).getroot()
