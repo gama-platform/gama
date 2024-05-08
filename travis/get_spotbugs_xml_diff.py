@@ -39,6 +39,8 @@ if __name__ == '__main__':
                     break
             if not found:
                 out_root.append(element)
+        else:
+            out_root.append(element)
     out_content = etree.tostring(out_root)
     out_file = open(args.diff_file, "w")
     out_file.write(out_content.decode())
