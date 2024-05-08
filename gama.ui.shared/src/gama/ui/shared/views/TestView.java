@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * TestView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * TestView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,14 +15,19 @@ import static gama.core.common.preferences.GamaPreferences.Runtime.TESTS_SORTED;
 import static gama.ui.shared.resources.IGamaIcons.TEST_FILTER;
 import static gama.ui.shared.resources.IGamaIcons.TEST_SORT;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
@@ -32,6 +38,7 @@ import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.ItemList;
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.common.util.FileUtils;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
 import gama.gaml.statements.test.AbstractSummary;
@@ -44,6 +51,7 @@ import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -236,6 +244,33 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				}, SWT.RIGHT);
 		t2.setSelection(FAILED_TESTS.getValue());
 		FAILED_TESTS.onChange(v -> t2.setSelection(v));
+		final ToolItem save =
+				tb.button(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> {
+					this.saveTests();
+				}, SWT.RIGHT);
+	}
+
+	/**
+	 * Save tests.
+	 */
+	public void saveTests() {
+		final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getShell(), SWT.NULL);
+		dialog.setFilterPath(GAMA.getModel() == null
+				? ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() : GAMA.getModel().getFilePath());
+		dialog.setMessage("Choose a folder for saving the tests");
+		final String path = dialog.open();
+		if (path == null) return;
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		String file = path + "/" + "tests_" + timestamp.toString() + ".txt";
+		file = FileUtils.constructAbsoluteFilePath(GAMA.getRuntimeScope(), file, false);
+		try (PrintWriter out = new PrintWriter(file)) {
+			for (AbstractSummary summary : experiments) {
+				out.println(summary.toString());
+				out.flush();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
 	}
 

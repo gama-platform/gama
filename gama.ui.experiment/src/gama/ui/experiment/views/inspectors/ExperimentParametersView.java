@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ExperimentParametersView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.ui.experiment.views.inspectors;
 
@@ -44,8 +44,8 @@ import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.parameters.MonitorDisplayer;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.Selector;
@@ -323,7 +323,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	private void saveParameterValuesForCurrentAgent() {
 		if (!(agent instanceof SimulationAgent sim)) return;
 		sim.setExternalInits(getEditorsList().getItemValues());
-		DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
+		// DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
 	}
 
 	@Override

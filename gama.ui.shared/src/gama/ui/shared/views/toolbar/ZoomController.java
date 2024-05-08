@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ZoomController.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ZoomController.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -102,9 +102,7 @@ public class ZoomController {
 						// toolbar
 					}
 				}
-				if (view.getCameraHelper() != null && cameraLocked != null) {
-					tb.setSelection(cameraLocked, view.getCameraHelper().isCameraLocked());
-				}
+				if (cameraLocked != null) { tb.setSelection(cameraLocked, view.isLocked()); }
 				tb.removeControlListener(this);
 			}
 
@@ -127,7 +125,7 @@ public class ZoomController {
 								@Override
 								public void widgetSelected(final SelectionEvent e) {
 									view.getCameraHelper().setCameraName(p);
-									cameraLocked.setSelection(view.getCameraHelper().isCameraLocked());
+									cameraLocked.setSelection(view.isLocked());
 								}
 
 							}, p.equals(view.getCameraHelper().getCameraName())
@@ -149,9 +147,8 @@ public class ZoomController {
 				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.height, 96);
 			}, SWT.RIGHT);
 		}
-		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock camera", e -> {
-			view.toggleLock();
-		}, SWT.RIGHT);
+		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view", e -> { view.toggleLock(); },
+				SWT.RIGHT);
 	}
 
 }

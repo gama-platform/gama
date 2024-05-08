@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -70,30 +69,6 @@ public class ModelFactory extends SymbolFactory {
 	static {
 		DEBUG.ON();
 	}
-
-	/** The hierarchy. */
-	DirectedAcyclicGraph<SpeciesDescription, Object> hierarchy = new DirectedAcyclicGraph<>(Object.class);
-
-	/** The hierarchy builder. */
-	final DescriptionVisitor<SpeciesDescription> hierarchyBuilder = desc -> {
-		if (desc instanceof ModelDescription) return true;
-		final SpeciesDescription sd = desc.getParent();
-		if (sd == null || sd == desc) return false;
-		hierarchy.addVertex(desc);
-		if (!sd.isBuiltIn()) {
-			hierarchy.addVertex(sd);
-			try {
-				hierarchy.addEdge(sd, desc);
-			} catch (
-			/** The e. */
-			IllegalArgumentException e) {
-				// denotes the presence of a cycle in the hierarchy
-				desc.error("The hierarchy of " + desc.getName() + " is inconsistent.", IGamlIssue.WRONG_PARENT);
-				return false;
-			}
-		}
-		return true;
-	};
 
 	/**
 	 * Creates a new Model object.
@@ -172,77 +147,72 @@ public class ModelFactory extends SymbolFactory {
 		/** The temp species cache. */
 		final LinkedHashMap<String, SpeciesDescription> tempSpeciesCache = new LinkedHashMap<>();
 
-		try {
+		final ISyntacticElement source = get(models, 0);
 
-			final ISyntacticElement source = get(models, 0);
+		if (!applyPragmas(collector, source)) return null;
 
-			if (!applyPragmas(collector, source)) return null;
-
-			Facets globalFacets = null;
-			ISyntacticElement globalNodes = SyntacticFactory.create(GLOBAL, (EObject) null, true);
-			for (int i = Iterables.size(models); i-- > 0;) {
-				globalFacets = extractAndAssembleElementsOf(collector, globalFacets, get(models, i), globalNodes,
-						speciesNodes, experimentNodes);
-			}
-
-			final String modelName = buildModelName(source.getName());
-
-			// We build a list of working paths from which the composite model will
-			// be able to look for resources. These working paths come from the
-			// imported models
-
-			// DEBUG.OUT("In building " + modelName);
-			Set<String> absoluteAlternatePathAsStrings = buildWorkingPaths(mm, models);
-
-			final ModelDescription model = buildPrimaryModel(projectPath, modelPath, collector, models, source,
-					globalFacets, modelName, absoluteAlternatePathAsStrings);
-
-			// hqnghi add micro-models
-			if (mm != null) {
-				// model.setMicroModels(mm);
-				model.addChildren(mm.values());
-			}
-			// end-hqnghi
-			// recursively add user-defined species to world and down on to the
-			// hierarchy
-			addSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
-
-			// Parent the species and the experiments of the model (all are now
-			// known).
-			parentSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
-
-			// Initialize the hierarchy of types
-			model.buildTypes();
-			// hqnghi build micro-models as types
-			if (mm != null) {
-				mm.forEach((k, v) -> model.getTypesManager().alias(v.getName(), k));
-				// end-hqnghi
-			}
-
-			// Make species and experiments recursively create their attributes,
-			// actions....
-			complementSpecies(model, globalNodes);
-
-			complementSpeciesAndExperiments(model, speciesNodes, experimentNodes);
-
-			// Complement recursively the different species (incl. the world). The
-			// recursion is hierarchical
-
-			model.inheritFromParent();
-
-			for (final SpeciesDescription sd : getSpeciesInHierarchicalOrder(model)) {
-				sd.inheritFromParent();
-				if (sd.isExperiment() && !sd.finalizeDescription()) return null;
-			}
-
-			// Issue #1708 (put before the finalization)
-			if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
-
-			if (!model.finalizeDescription()) return null;
-			return model;
-		} finally {
-			hierarchy = new DirectedAcyclicGraph<>(Object.class);
+		Facets globalFacets = null;
+		ISyntacticElement globalNodes = SyntacticFactory.create(GLOBAL, (EObject) null, true);
+		for (int i = Iterables.size(models); i-- > 0;) {
+			globalFacets = extractAndAssembleElementsOf(collector, globalFacets, get(models, i), globalNodes,
+					speciesNodes, experimentNodes);
 		}
+
+		final String modelName = buildModelName(source.getName());
+
+		// We build a list of working paths from which the composite model will
+		// be able to look for resources. These working paths come from the
+		// imported models
+
+		// DEBUG.OUT("In building " + modelName);
+		Set<String> absoluteAlternatePathAsStrings = buildWorkingPaths(mm, models);
+
+		final ModelDescription model = buildPrimaryModel(projectPath, modelPath, collector, models, source,
+				globalFacets, modelName, absoluteAlternatePathAsStrings);
+
+		// hqnghi add micro-models
+		if (mm != null) {
+			// model.setMicroModels(mm);
+			model.addChildren(mm.values());
+		}
+		// end-hqnghi
+		// recursively add user-defined species to world and down on to the
+		// hierarchy
+		addSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
+
+		// Parent the species and the experiments of the model (all are now
+		// known).
+		parentSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
+
+		// Initialize the hierarchy of types
+		model.buildTypes();
+		// hqnghi build micro-models as types
+		if (mm != null) {
+			mm.forEach((k, v) -> model.getTypesManager().alias(v.getName(), k));
+			// end-hqnghi
+		}
+
+		// Make species and experiments recursively create their attributes,
+		// actions....
+		complementSpecies(model, globalNodes);
+
+		complementSpeciesAndExperiments(model, speciesNodes, experimentNodes);
+
+		// Complement recursively the different species (incl. the world). The
+		// recursion is hierarchical
+
+		model.inheritFromParent();
+
+		for (final SpeciesDescription sd : getSpeciesInHierarchicalOrder(model)) {
+			sd.inheritFromParent();
+			if (sd.isExperiment() && !sd.finalizeDescription()) return null;
+		}
+
+		// Issue #1708 (put before the finalization)
+		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
+
+		if (!model.finalizeDescription()) return null;
+		return model;
 
 	}
 
@@ -464,6 +434,29 @@ public class ModelFactory extends SymbolFactory {
 	 * @return the species in hierarchical order
 	 */
 	private Iterable<SpeciesDescription> getSpeciesInHierarchicalOrder(final ModelDescription model) {
+		/** The hierarchy. */
+		final DirectedAcyclicGraph<SpeciesDescription, Object> hierarchy = new DirectedAcyclicGraph<>(Object.class);
+
+		/** The hierarchy builder. */
+		final DescriptionVisitor<SpeciesDescription> hierarchyBuilder = desc -> {
+			if (desc instanceof ModelDescription) return true;
+			final SpeciesDescription sd = desc.getParent();
+			if (sd == null || sd == desc) return false;
+			hierarchy.addVertex(desc);
+			if (!sd.isBuiltIn()) {
+				hierarchy.addVertex(sd);
+				try {
+					hierarchy.addEdge(sd, desc);
+				} catch (
+				/** The e. */
+				IllegalArgumentException e) {
+					// denotes the presence of a cycle in the hierarchy
+					desc.error("The hierarchy of " + desc.getName() + " is inconsistent.", IGamlIssue.WRONG_PARENT);
+					return false;
+				}
+			}
+			return true;
+		};
 		model.visitAllSpecies(hierarchyBuilder);
 		return () -> hierarchy.iterator();
 	}

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ImageViewer.java, in gama.ui.shared.viewers, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ImageViewer.java, in gama.ui.viewers, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.ui.viewers.image;
 
@@ -77,9 +77,9 @@ import gama.core.util.file.IGamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.ui.navigator.metadata.ImageDataLoader;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -819,4 +819,7 @@ public class ImageViewer extends EditorPart
 	//
 	// @Override
 	// public void setToogle(final Action toggle) {}
+
+	@Override
+	public boolean isLocked() { return locked; }
 }

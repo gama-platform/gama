@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ParametersSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,6 +24,9 @@ import gama.gaml.types.Types;
  */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class ParametersSet extends GamaMap<String, Object> {
+
+	/** The empty. */
+	public final static ParametersSet EMPTY = new ParametersSet();
 
 	/**
 	 * Instantiates a new parameters set. A GamaMap with some specialized constructors and a specialisation of put(..)

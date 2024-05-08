@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FileEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FileEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -161,7 +161,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 			dialog.setFilterPath(file != null ? file.getPath(getScope())
 					: GAMA.getModel() == null ? ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
 					: GAMA.getModel().getFilePath());
-			dialog.setText("Choose a folder for parameter '" + param.getTitle() + "'");
+			dialog.setMessage("Choose a folder for parameter '" + param.getTitle() + "'");
 			final String path = dialog.open();
 			if (path != null) { file = Files.folderFile(getScope(), path, false); }
 		} else {

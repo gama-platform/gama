@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ProjectionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,6 +24,7 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
 
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultProjectedCRS;
 import org.locationtech.jts.geom.Envelope;
@@ -72,7 +73,8 @@ public class ProjectionFactory {
 	/** The target CRS. */
 	public CoordinateReferenceSystem targetCRS;
 
-	public static final CoordinateReferenceSystem EPSG3857;
+	/** The epsg3857. */
+	public static CoordinateReferenceSystem EPSG3857 = null;
 
 	static {
 		//have to use a tmp variable because EPSG3857 is final
@@ -173,10 +175,18 @@ public class ProjectionFactory {
 		return worldProjection == null ? ProjectionFactory.EPSG3857 : worldProjection.getTargetCRS(scope);
 	}
 
+	/**
+	 * Save target CRS as PRJ file.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param path
+	 *            the path
+	 * @return true, if successful
+	 */
 	public static boolean saveTargetCRSAsPRJFile(final IScope scope, final String path) {
 		CoordinateReferenceSystem crs = getTargetCRSOrDefault(scope);
-		try (FileWriter fw =
-				new FileWriter(path.replace(".png", ".prj").replace(".tif", ".prj").replace(".asc", ".prj"))) {
+		try (FileWriter fw = new FileWriter(FilenameUtils.removeExtension(path) + ".prj")) {
 			fw.write(crs.toString());
 			return true;
 		} catch (final IOException e) {

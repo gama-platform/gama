@@ -18,6 +18,7 @@ import java.util.Set;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.ExperimentPlan;
+import gama.core.kernel.experiment.ParametersSet;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.metamodel.population.GamaPopulation;
@@ -129,21 +130,21 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	public IList<SimulationAgent> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) throws GamaRuntimeException {
-		final IList<SimulationAgent> result = GamaListFactory.create(SimulationAgent.class);
 
+		final IList<SimulationAgent> result = GamaListFactory.create(SimulationAgent.class);
+		final IAgentConstructor<SimulationAgent> constr = species.getDescription().getAgentConstructor();
 		for (int i = 0; i < number; i++) {
 			scope.getGui().getStatus().waitStatus(scope, "Initializing simulation");
 			// Model do not only rely on SimulationAgent
-			final IAgentConstructor<SimulationAgent> constr = species.getDescription().getAgentConstructor();
-			// currentSimulation = currentAgentIndex++;
+
 			SimulationAgent sim = constr.createOneAgent(this, currentAgentIndex++);
 			sim.setScheduled(toBeScheduled);
 			sim.setName("Simulation " + sim.getIndex());
 			add(sim);
+			boolean isBatch = getHost().getSpecies().isBatch();
 			// Batch experiments now dont allow their simulations to have outputs
-			if (!getHost().getSpecies().isBatch()) {
-				sim.setOutputs(((ExperimentPlan) host.getSpecies()).getOriginalSimulationOutputs());
-			}
+
+			if (!isBatch) { sim.setOutputs(((ExperimentPlan) host.getSpecies()).getOriginalSimulationOutputs()); }
 			if (scope.interrupted()) return null;
 			// Necessary to set it early -- see Issue #3872
 			setCurrentSimulation(sim);
@@ -178,16 +179,17 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 			final List<? extends Map<String, Object>> initialValues, final int index, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) {
 		scope.getGui().getStatus().waitStatus(scope, "Instantiating agents");
-		// if (toBeScheduled) { sim.prepareGuiForSimulation(scope); }
 
-		final Map<String, Object> firstInitValues = initialValues.isEmpty() ? null : initialValues.get(index);
-		final Object firstValue =
-				firstInitValues != null && !firstInitValues.isEmpty() ? firstInitValues.values().toArray()[0] : null;
+		final Map<String, Object> firstInitValues =
+				initialValues.isEmpty() ? ParametersSet.EMPTY : initialValues.get(index);
+		final Object firstValue = !firstInitValues.isEmpty() ? firstInitValues.values().toArray()[0] : null;
 		if (firstValue instanceof ISerialisedAgent sa) {
 			sim.updateWith(scope, sa);
 		} else {
+			// See issue #130 -- we add the parameters values to make sure they are passed (but not for batch).
+			if (!getHost().getSpecies().isBatch()) { sim.setExternalInits(getHost().getParameterValues()); }
 			sim.setExternalInits(firstInitValues);
-			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Collections.singletonList(firstInitValues));
+			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Collections.singletonList(sim.getExternalInits()));
 		}
 
 		if (toBeScheduled) {

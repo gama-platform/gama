@@ -15,7 +15,7 @@ on:
 
 jobs:
 
-  ci-handler:
+  ci-release:
     if: ${{ contains(github.event.head_commit.message, 'ci release') }}
     runs-on: ubuntu-latest
     steps:

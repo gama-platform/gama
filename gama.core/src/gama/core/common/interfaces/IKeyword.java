@@ -578,6 +578,12 @@ public interface IKeyword {
 	/** The linear attenuation. */
 	String LINEAR_ATTENUATION = "linear_attenuation";
 
+	/** The constant attenuation. */
+	String CONSTANT_ATTENUATION = "constant_attenuation";
+
+	/** The lines. */
+	String LINES = "lines";
+
 	/**
 	 * TYPES
 	 */

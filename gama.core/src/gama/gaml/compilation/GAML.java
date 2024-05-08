@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -55,18 +55,17 @@ import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.constants.IConstantAcceptor;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.expressions.GamlExpressionFactory;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.expressions.units.UnitConstantExpression;
-import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.factories.ModelFactory;
 import gama.gaml.types.IType;
 import gama.gaml.types.Signature;
@@ -116,7 +115,7 @@ public class GAML {
 	public static volatile IExpressionFactory expressionFactory = null;
 
 	/** The model factory. */
-	public static volatile ModelFactory modelFactory = null;
+	// public static volatile ModelFactory modelFactory = null;
 
 	/** The info provider. */
 	private static IGamlResourceInfoProvider infoProvider = null;
@@ -188,8 +187,10 @@ public class GAML {
 	 */
 
 	public static ModelFactory getModelFactory() {
-		if (modelFactory == null) { modelFactory = DescriptionFactory.getModelFactory(); }
-		return modelFactory;
+		return new ModelFactory();
+		// Returning a new instance eliminates a lot of ConcurrentModificationException
+		// if (modelFactory == null) { modelFactory = DescriptionFactory.getModelFactory(); }
+		// return modelFactory;
 	}
 
 	/**

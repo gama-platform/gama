@@ -137,7 +137,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	Point mousePosition;
 
 	/** The is locked. */
-	private boolean is_locked = false;
+	private boolean isLocked = false;
 
 	/**
 	 * Instantiates a new java 2 D display surface.
@@ -150,11 +150,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		output.setSurface(this);
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display"));
 		output.getData().addListener(this);
-		// temp_focus = output.getFacet(IKeyword.FOCUS);
 		setDoubleBuffered(true);
 		setIgnoreRepaint(true);
 		setLayout(new BorderLayout());
 		setBackground(output.getData().getBackgroundColor());
+		isLocked = output.getData().isCameraLocked();
 		setName(output.getName());
 		layerManager = new LayerManager(this, output);
 
@@ -219,7 +219,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void draggedTo(final int x, final int y) {
-		if (!is_locked) {
+		if (!isLocked) {
 			final Point origin = getOrigin();
 			setOrigin(origin.x + x - getMousePosition().x, origin.y + y - getMousePosition().y);
 			updateDisplay(true);
@@ -405,12 +405,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 		updateDisplay(true);
 	}
-	//
-	// @Override
-	// public void validate() {}
-	//
-	// @Override
-	// public void doLayout() {}
 
 	/**
 	 * Zoom.
@@ -438,18 +432,25 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void zoomIn() {
-		if (!is_locked) { zoom(true); }
+		if (!isLocked) { zoom(true); }
 	}
 
 	@Override
 	public void zoomOut() {
-		if (!is_locked) { zoom(false); }
+		if (!isLocked) { zoom(false); }
 	}
 
 	@Override
 	public void toggleLock() {
-		is_locked = !is_locked;
+		isLocked = !isLocked;
 	}
+
+	/**
+	 * Checks if is locked.
+	 *
+	 * @return true, if is locked
+	 */
+	public boolean isLocked() { return isLocked; }
 
 	/**
 	 * Checks if is image edge in panel.

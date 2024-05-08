@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FileMetaDataProvider.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * FileMetaDataProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -44,15 +44,15 @@ import org.eclipse.swt.graphics.ImageData;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.util.file.GamaCSVFile;
+import gama.core.util.file.GamaCSVFile.CSVInfo;
 import gama.core.util.file.GamaFileMetaData;
 import gama.core.util.file.GamaOsmFile;
+import gama.core.util.file.GamaOsmFile.OSMInfo;
 import gama.core.util.file.GamaShapeFile;
+import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
-import gama.core.util.file.GamaCSVFile.CSVInfo;
-import gama.core.util.file.GamaOsmFile.OSMInfo;
-import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
@@ -643,16 +643,6 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 				});
 			} catch (final CoreException e) {}
 		});
-		// new Thread(() -> {
-		// try {
-		// TIMER_WITH_EXCEPTIONS(
-		// DEBUG.PAD("> GAMA: workspace projects ", 55, ' ') + DEBUG.PAD(" built in", 15, '_'), () -> {
-		// workspace.build(IncrementalProjectBuilder.FULL_BUILD, null);
-		// });
-		// } catch (CoreException e) {
-		// e.printStackTrace();
-		// }
-		// }).start();
 
 		try {
 			workspace.addSaveParticipant("gama.ui.shared.modeling", getSaveParticipant());

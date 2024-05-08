@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,6 +45,9 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	Attribute<Double> angleAttribute;
 
 	/** The initial angle. */
+	final Attribute<Double> attenuationAttribute;
+
+	/** The initial angle. */
 	final Attribute<Double> linearAttribute;
 
 	/** The quadratic attribute. */
@@ -72,6 +75,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		locationAttribute = create(IKeyword.LOCATION, Types.POINT, DEFAULT_LOCATION);
 		directionAttribute = create("direction", Types.POINT, DEFAULT_DIRECTION);
 		linearAttribute = create(IKeyword.LINEAR_ATTENUATION, Types.FLOAT, 0d);
+		attenuationAttribute = create(IKeyword.CONSTANT_ATTENUATION, Types.FLOAT, 0d);
 		quadraticAttribute = create(IKeyword.QUADRATIC_ATTENUATION, Types.FLOAT, 0d);
 		angleAttribute = create("angle", Types.FLOAT, DEFAULT_ANGLE);
 		drawAttribute = create("show", Types.BOOL, false);
@@ -137,5 +141,29 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	protected void reset() {
 		// Nothing to do for the moment
 	}
+
+	/**
+	 * Gets the linear attenuation.
+	 *
+	 * @return the linear attenuation
+	 */
+	@Override
+	public double getLinearAttenuation() { return linearAttribute.get(); }
+
+	/**
+	 * Gets the quadratic attenuation.
+	 *
+	 * @return the quadratic attenuation
+	 */
+	@Override
+	public double getQuadraticAttenuation() { return quadraticAttribute.get(); }
+
+	/**
+	 * Gets the constant attenuation.
+	 *
+	 * @return the constant attenuation
+	 */
+	@Override
+	public double getConstantAttenuation() { return attenuationAttribute.get(); }
 
 }

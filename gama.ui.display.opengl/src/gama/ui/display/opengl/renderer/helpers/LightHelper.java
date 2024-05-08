@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LightHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -97,8 +97,10 @@ public class LightHelper extends AbstractRendererHelper {
 				gl.glLightfv(id, GLLightingFunc.GL_POSITION, lightPosition, 0);
 				// Get and set the attenuation (if it is not a direction light)
 				if (!ILightDefinition.direction.equals(type)) {
+					final double ca = light.getConstantAttenuation();
 					final double l = light.getLinearAttenuation();
 					final double q = light.getQuadraticAttenuation();
+					gl.glLightf(id, GLLightingFunc.GL_CONSTANT_ATTENUATION, (float) ca);
 					gl.glLightf(id, GLLightingFunc.GL_LINEAR_ATTENUATION, (float) l);
 					gl.glLightf(id, GLLightingFunc.GL_QUADRATIC_ATTENUATION, (float) q);
 				}

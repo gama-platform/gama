@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceGraph.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceGraph.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.EdgeSetFactory;
-import org.jgrapht.opt.graph.fastutil.FastutilFastLookupGSS;
+import org.jgrapht.graph.FastLookupGraphSpecificsStrategy;
 
 import com.google.common.collect.Maps;
 
@@ -47,8 +47,10 @@ public class GamlResourceGraph {
 		 * Instantiates a new graph.
 		 */
 		public Imports() {
-			super(null, null, new DefaultGraphType.Builder().directed().allowMultipleEdges(false).allowSelfLoops(false)
-					.weighted(false).allowCycles(true).build(), new FastutilFastLookupGSS<URI, LabeledEdge>() {
+			super(null, null,
+					new DefaultGraphType.Builder().directed().allowMultipleEdges(false).allowSelfLoops(false)
+							.weighted(false).allowCycles(true).build(),
+					new FastLookupGraphSpecificsStrategy<URI, LabeledEdge>() {
 						@Override
 						public EdgeSetFactory<URI, LabeledEdge> getEdgeSetFactory() {
 							return vertex -> Collections.newSetFromMap(new ConcurrentHashMap<LabeledEdge, Boolean>());

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FileProcessor.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -60,9 +60,9 @@ public class FileProcessor extends ElementProcessor<file> {
 					if (context.isIType(type)) { indexOfIType = i; }
 					args[i - 1] = rawNameOf(context, argParams.get(i).asType());
 				}
-				final int content = indexOfIType == -1 ? ITypeProvider.NONE
-						: ITypeProvider.DENOTED_TYPE_AT_INDEX + indexOfIType + 1;
-				writeCreateFileOperator(context, sb, name, clazz, args, content, f.buffer_content(), f.buffer_index());
+				final int content =
+						indexOfIType == -1 ? f.buffer_content() : ITypeProvider.DENOTED_TYPE_AT_INDEX + indexOfIType;
+				writeCreateFileOperator(context, sb, name, clazz, args, content, f.buffer_index());
 			}
 		}
 	}
@@ -91,7 +91,7 @@ public class FileProcessor extends ElementProcessor<file> {
 	 *            the index
 	 */
 	private void writeCreateFileOperator(final ProcessorContext context, final StringBuilder sb, final String name,
-			final String clazz, final String[] names, final int forcedContent, final int contents, final int index) {
+			final String clazz, final String[] names, final int forcedContent, final int index) {
 		sb.append(in).append("_operator(S(").append(toJavaString(name + "_file")).append("),")
 				.append(toClassObject(clazz)).append(".getConstructor(").append(toClassObject(ISCOPE)).append(',');
 		for (final String classe : names) { sb.append(toClassObject(classe)).append(','); }
