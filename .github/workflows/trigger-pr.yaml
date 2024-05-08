@@ -53,6 +53,6 @@ jobs:
           python3 -m pip install lxml
           python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/output-spotbugsXml.xml
 
-      - uses: jwgmeligmeyling/spotbugs-github-action@master
+      - uses: lcollins/spotbugs-github-action@v3.0.0
         with:
           path: ${{ github.workspace }}/output-spotbugsXml.xml
