@@ -51,9 +51,17 @@ jobs:
       - name: Calculate diff between results
         run: |
           python3 -m pip install lxml
-          python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/output-spotbugsXml.xml
+          python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/final-report-spotbugsXml.xml
 
       - uses: lcollins/spotbugs-github-action@v3.0.0
         with:
-          path: ${{ github.workspace }}/output-spotbugsXml.xml
+          path: ${{ github.workspace }}/final-report-spotbugsXml.xml
           fail-on-violation: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-report-spotbugs
+          if-no-files-found: error
+          compression-level: 9
+          overwrite: true
+          path: ${{ github.workspace }}/final-report-spotbugsXml.xml
