@@ -3,20 +3,7 @@ import argparse
 
 
 def identical_nodes(node1: etree.Element, node2: etree.Element):
-    if node1.tag == node2.tag:
-        for name, value in node1.items():
-            if not ((name, value) in node2.items()):
-                return False
-        for subNode in node1:
-            found = False
-            for subNode2 in node2:
-                if identical_nodes(subNode, subNode2):
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
-    return False
+    return node1.get('instanceHash') == node2.get('instanceHash')
 
 def is_gaml_additions(node):
     clazz = node.find("Class")
@@ -37,7 +24,7 @@ if __name__ == '__main__':
         if is_gaml_additions(element):
             new_root.remove(element)
         else: # Else we check if it already existed before, in which case it's not new and we also ignore it
-            for element2 in old_root:
+            for element2 in old_root.findall("BugInstance"):
                 if identical_nodes(element, element2):
                     new_root.remove(element)
                     break
