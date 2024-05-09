@@ -18,6 +18,9 @@ def identical_nodes(node1: etree.Element, node2: etree.Element):
         return True
     return False
 
+def is_gaml_additions(node):
+    clazz = node.find("Class")
+    return clazz is not None and "GamlAdditions" in clazz.get("classname", "")
 
 if __name__ == '__main__':
 
@@ -29,19 +32,16 @@ if __name__ == '__main__':
 
     new_root = etree.parse(open(args.new_file)).getroot()
     old_root = etree.parse(open(args.old_file)).getroot()
-    out_root = etree.Element("BugCollection")
-    for element in new_root:
-        if element.tag == "BugInstance":
-            found = False
+    for element in new_root.findall("BugInstance"):
+        # If it's in GamlAdditions we ignore that bug
+        if is_gaml_additions(element):
+            new_root.remove(element)
+        else: # Else we check if it already existed before, in which case it's not new and we also ignore it
             for element2 in old_root:
                 if identical_nodes(element, element2):
-                    found = True
+                    new_root.remove(element)
                     break
-            if not found:
-                out_root.append(element)
-        else:
-            out_root.append(element)
-    out_content = etree.tostring(out_root)
+    out_content = etree.tostring(new_root)
     out_file = open(args.diff_file, "w")
     out_file.write(out_content.decode())
     
