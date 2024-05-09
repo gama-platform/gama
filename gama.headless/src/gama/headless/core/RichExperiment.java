@@ -56,7 +56,6 @@ public class RichExperiment extends Experiment implements IRichExperiment {
 
 		Object val = null;
 		DataType tpe = null;
-		DataType tpe2 = null;
 
 		if (output instanceof MonitorOutput) {
 			val = ((MonitorOutput) output).getLastValue();
