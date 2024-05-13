@@ -24,7 +24,6 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;

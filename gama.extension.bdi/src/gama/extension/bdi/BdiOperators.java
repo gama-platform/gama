@@ -33,7 +33,7 @@ import gama.gaml.types.IType;
  * The Class Operators.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class Operators {
+public class BdiOperators {
 
 	/**
 	 * New predicate.
@@ -474,7 +474,7 @@ public class Operators {
 					examples = { @example (
 							value = "new_emotion(\"joy\",12.3)",
 							isExecutable = false) }) })
-	@test ("get_intensity(new_emotion('joy',12.3)) = 12.3")
+	@test ("new_emotion('joy',12.3).intensity = 12.3")
 	public static Emotion newEmotion(final String name, final Double intensity) throws GamaRuntimeException {
 		return new Emotion(name, intensity);
 	}

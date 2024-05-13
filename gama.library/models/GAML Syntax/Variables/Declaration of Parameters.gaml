@@ -11,19 +11,25 @@ model Parameters
 global {
 
 	int attribute_3 <- 10000;
+	int attribute_2 <- 1000;
 }
 
-experiment "Show Parameters" {
+experiment base_experiment {
+	// This parameter definition in an experiment will be found in all the experiments that inherit from it
+	parameter "Experiment attribute directly declared as parameter" var:attribute_2;	
+}
+
+experiment "Show Parameters" parent:base_experiment{
 
 	int attribute_1 <- 100 on_change: {write attribute_1;};
 	
-	// This direct definition builds a parameter that targets this attribute in experiment
-	int attribute_2 <- 1000 parameter: "Experiment attribute directly declared as parameter";
+
 	// This attribute sports the same name as one in simulation, and it cannot become a parameter unless the parameter: facet is declared directly on it
 	int attribute_3 <- 100;
 
 	// This direct definition of parameters allows to declare the seed of the experiment as a parameter (otherwise the seed of the simulation is used by default)
-	float seed parameter: "The random seed of the experiment" <- 100.0;
+	float seed;
+	parameter "The random seed of the experiment" var:seed <- 100.0;
 	
 	
 	
