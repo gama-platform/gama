@@ -279,7 +279,7 @@ public class SpatialCreation {
 					"super_ellipse", "rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Arc tests}")
 
-	public static IShape EllipticalArc(final IScope scope, final GamaPoint pt1, final GamaPoint pt2, final double h,
+	public static IShape ellipticalArc(final IScope scope, final GamaPoint pt1, final GamaPoint pt2, final double h,
 			final int nPts) {
 		double xRadius = pt1.distance(pt2) / 2.0;
 		double yRadius = h;

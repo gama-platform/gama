@@ -745,15 +745,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Boolean is_probabilistic_choice = scope.getBoolArgIfExists(PROBABILISTIC_CHOICE, (Boolean) agent.getAttribute(PROBABILISTIC_CHOICE));
 		
 		final List<BDIPlan> listPlans = getPlans(scope) == null ? Collections.emptyList() : getPlans(scope);
-		final List<Norm> listNorm = Utils.getNorms(scope);
+		final List<Norm> listNorm = BdiUtils.getNorms(scope);
 
 		if (listNorm == null) {
 			return false;
 		}
 		
 		final List<MentalState> listMentalStatesTest = GamaListFactory.create();
-		final IList<MentalState> mentalStateBase = Utils.getBase(scope, base);
-		final IList<MentalState> intentionBase = Utils.getBase(scope, INTENTION_BASE);
+		final IList<MentalState> mentalStateBase = BdiUtils.getBase(scope, base);
+		final IList<MentalState> intentionBase = BdiUtils.getBase(scope, INTENTION_BASE);
 
 		if (is_probabilistic_choice) {
 			
@@ -820,7 +820,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	private void addMentalStatesWithMatchingIntentions(final IScope scope, final IList<MentalState> mentalStateBase, List<MentalState> listMentalStatesTest, boolean testListPlans) {
 		
 		final List<BDIPlan> listPlans = getPlans(scope) == null ? Collections.emptyList() : getPlans(scope);
-		final List<Norm> listNorm = Utils.getNorms(scope);
+		final List<Norm> listNorm = BdiUtils.getNorms(scope);
 		for (final MentalState tempMentalState : mentalStateBase) {
 			//TODO: this is just rewriting the old method but it feels like this should be refactored and it was probably partially wrong
 			//TODO: could an item in the lists really be null ? probably useless conditions
@@ -841,8 +841,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 	private boolean addInMentalStateBase(final IScope scope, MentalState newIntention, double maxpriority, String base) {
 		MentalState newIntentionState = null;
-		var intentionBase = Utils.getBase(scope, INTENTION_BASE);
-		var mentalStateBase = Utils.getBase(scope, base);
+		var intentionBase = BdiUtils.getBase(scope, INTENTION_BASE);
+		var mentalStateBase = BdiUtils.getBase(scope, base);
 		final Predicate predicate = newIntention.getPredicate();
 		int lifetime = newIntention.getLifeTime();
 		if (predicate != null) {
@@ -916,9 +916,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					|| ((Predicate) statement.getIntentionExpression().value(scope))
 							.equalsIntentionPlan(currentIntention(scope).getPredicate());
 			final boolean isEmotionConditionSatisfied = statement.getEmotionExpression() == null
-					|| Utils.getEmotionBase(scope, EMOTION_BASE).contains(statement.getEmotionExpression().value(scope));
+					|| BdiUtils.getEmotionBase(scope, EMOTION_BASE).contains(statement.getEmotionExpression().value(scope));
 			final boolean thresholdSatisfied = statement.getThreshold() == null
-					|| statement.getEmotionExpression() != null && Utils.getEmotion(scope,
+					|| statement.getEmotionExpression() != null && BdiUtils.getEmotion(scope,
 							(Emotion) statement.getEmotionExpression().value(scope)).intensity >= (double) statement
 									.getThreshold().value(scope);
 			if (isContextConditionSatisfied && isIntentionConditionSatisfied && isEmotionConditionSatisfied
@@ -976,7 +976,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		double highestPriority = Double.MIN_VALUE;
 		final List<Norm> temp_norm = new ArrayList<>();
 		final IList priorities = GamaListFactory.create(Types.FLOAT);
-		for (final Norm tempNorm : Utils.getNorms(scope)){
+		for (final Norm tempNorm : BdiUtils.getNorms(scope)){
 			tempNorm.setSanctioned(false);
 		}
 		final List<Norm> normsCopy = new ArrayList(_norms);
@@ -992,7 +992,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			}
 			boolean isObligationConditionSatisfied = false;
 			if (	statement.getObligationExpression() != null && statement.getObligationExpression().value(scope) != null
-				&& 	Utils.hasObligation(scope, new MentalState("Obligation", (Predicate) statement.getObligationExpression().value(scope)))) {
+				&& 	BdiUtils.hasObligation(scope, new MentalState("Obligation", (Predicate) statement.getObligationExpression().value(scope)))) {
 				isObligationConditionSatisfied = ((Predicate) statement.getObligationExpression().value(scope))
 						.equalsIntentionPlan(currentIntention(scope).getPredicate());
 			}
@@ -1058,50 +1058,50 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 * @param scope the scope
 	 */
 	protected void updateLifeTimePredicates(final IScope scope) {
-		for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 			mental.isUpdated = false;
 		}
-		for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 			mental.isUpdated = false;
 		}
-		for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 			mental.isUpdated = false;
 		}
-		for (final MentalState mental : Utils.getBase(scope, UNCERTAINTY_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, UNCERTAINTY_BASE)) {
 			mental.isUpdated = false;
 		}
-		for (final MentalState mental : Utils.getBase(scope, OBLIGATION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, OBLIGATION_BASE)) {
 			mental.isUpdated = false;
 		}
-		for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 			mental.updateLifetime();
 		}
 		for (final MentalState mental : listBeliefsLifeTimeNull(scope)) {
-			Utils.removeBelief(scope, mental);
+			BdiUtils.removeBelief(scope, mental);
 		}
-		for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 			mental.updateLifetime();
 		}
 		for (final MentalState mental : listDesiresLifeTimeNull(scope)) {
-			Utils.removeDesire(scope, mental);
+			BdiUtils.removeDesire(scope, mental);
 		}
-		for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 			mental.updateLifetime();
 		}
 		for (final MentalState mental : listIntentionsLifeTimeNull(scope)) {
-			Utils.removeIntention(scope, mental);
+			BdiUtils.removeIntention(scope, mental);
 		}
-		for (final MentalState mental : Utils.getBase(scope, UNCERTAINTY_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, UNCERTAINTY_BASE)) {
 			mental.updateLifetime();
 		}
 		for (final MentalState mental : listUncertaintyLifeTimeNull(scope)) {
-			Utils.removeUncertainty(scope, mental);
+			BdiUtils.removeUncertainty(scope, mental);
 		}
-		for (final MentalState mental : Utils.getBase(scope, OBLIGATION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, OBLIGATION_BASE)) {
 			mental.updateLifetime();
 		}
 		for (final MentalState mental : listObligationLifeTimeNull(scope)) {
-			Utils.removeObligation(scope, mental);
+			BdiUtils.removeObligation(scope, mental);
 		}
 	}
 
@@ -1113,7 +1113,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<MentalState> listBeliefsLifeTimeNull(final IScope scope) {
 		final List<MentalState> tempPred = new ArrayList<>();
-		for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 			if (mental.getLifeTime() == 0) {
 				tempPred.add(mental);
 			}
@@ -1129,7 +1129,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<MentalState> listDesiresLifeTimeNull(final IScope scope) {
 		final List<MentalState> tempPred = new ArrayList<>();
-		for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 			if (mental.getLifeTime() == 0) {
 				tempPred.add(mental);
 			}
@@ -1145,7 +1145,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<MentalState> listIntentionsLifeTimeNull(final IScope scope) {
 		final List<MentalState> tempPred = new ArrayList<>();
-		for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 			if (mental.getLifeTime() == 0) {
 				tempPred.add(mental);
 			}
@@ -1161,7 +1161,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<MentalState> listUncertaintyLifeTimeNull(final IScope scope) {
 		final List<MentalState> tempPred = new ArrayList<>();
-		for (final MentalState mental : Utils.getBase(scope, UNCERTAINTY_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, UNCERTAINTY_BASE)) {
 			if (mental.getLifeTime() == 0) {
 				tempPred.add(mental);
 			}
@@ -1177,7 +1177,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<MentalState> listObligationLifeTimeNull(final IScope scope) {
 		final List<MentalState> tempPred = new ArrayList<>();
-		for (final MentalState mental : Utils.getBase(scope, OBLIGATION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, OBLIGATION_BASE)) {
 			if (mental.getLifeTime() == 0) {
 				tempPred.add(mental);
 			}
@@ -1281,12 +1281,12 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 	
 	private void removeIntention(final IScope scope, MentalState intention, boolean shouldRemoveFromIntentionBase) {
-		final IList desbase = Utils.getBase(scope, DESIRE_BASE);
-		final IList intentionbase = Utils.getBase(scope, INTENTION_BASE);
+		final IList desbase = BdiUtils.getBase(scope, DESIRE_BASE);
+		final IList intentionbase = BdiUtils.getBase(scope, INTENTION_BASE);
 		desbase.remove(intention);
 		intentionbase.remove(intention);
 		if (shouldRemoveFromIntentionBase) {
-			for (final MentalState statement : Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+			for (final MentalState statement : BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
 				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null && statementSubintention.contains(intention)) {
 					statementSubintention.remove(intention);
@@ -1312,7 +1312,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		if (intention.getPredicate() == null) { return false; }
 		if (intention.onHoldUntil == null) { return false; }
 		
-		final IList desbase = Utils.getBase(scope, DESIRE_BASE);
+		final IList desbase = BdiUtils.getBase(scope, DESIRE_BASE);
 		
 		final List<MentalState> onHoldPredicate = intention.getPredicate().onHoldUntil;
 		if (intention.getPredicate().getValues() != null && onHoldPredicate != null) {
@@ -1486,7 +1486,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			tempState.setStrength(stre);
 		}
 		tempState.setOwner(scope.getAgent());
-		return Utils.addBelief(scope, tempState);
+		return BdiUtils.addBelief(scope, tempState);
 
 	}
 
@@ -1512,7 +1512,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists("belief", MentalStateType.id);
 		if (predicateDirect != null && "Belief".equals(predicateDirect.getModality())) {
 			predicateDirect.setOwner(scope.getAgent());
-			return Utils.addBelief(scope, predicateDirect);
+			return BdiUtils.addBelief(scope, predicateDirect);
 		}
 		return false;
 
@@ -1560,7 +1560,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			tempState.setLifeTime(life);
 		}
 		tempState.setOwner(scope.getAgent());
-		return Utils.addBelief(scope, tempState);
+		return BdiUtils.addBelief(scope, tempState);
 
 	}
 
@@ -1611,7 +1611,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			tempState.setStrength(stre);
 		} 
 		tempState.setOwner(scope.getAgent());
-		return Utils.addBelief(scope, tempState);
+		return BdiUtils.addBelief(scope, tempState);
 
 	}
 
@@ -1637,7 +1637,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState tempState = new MentalState("Belief", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasBelief(scope, tempState); }
+		if (predicateDirect != null) { return BdiUtils.hasBelief(scope, tempState); }
 		return false;
 	}
 
@@ -1663,7 +1663,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("name", IType.STRING);
 		if (predicateName != null) {
 			final MentalState tempState = new MentalState("Belief", new Predicate(predicateName));
-			return Utils.hasBelief(scope, tempState);
+			return BdiUtils.hasBelief(scope, tempState);
 		}
 		return null;
 	}
@@ -1690,7 +1690,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final MentalState tempState = new MentalState("Belief", predicateDirect);
 		if (predicateDirect != null) { 
-			return Utils.hasBelief(scope, tempState); 
+			return BdiUtils.hasBelief(scope, tempState); 
 		}
 		return false;
 	}
@@ -1718,7 +1718,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		if (predicateDirect == null) {
 			return null;
 		}
-		for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 			if (mental.getPredicate() != null) {
 				if (predicateDirect.equals(mental.getPredicate())) { return mental; }
 				if (predicateDirect.equalsButNotTruth(mental.getPredicate())) { return mental; }
@@ -1748,7 +1748,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("get_belief(new_mental_state(\"Desire\", predicate1))") }))
 	public MentalState getBeliefMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
-		return Utils.getBeliefMentalStateFromBase(scope, predicateDirect);
+		return BdiUtils.getBeliefMentalStateFromBase(scope, predicateDirect);
 	}
 	
 	
@@ -1775,7 +1775,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getBeliefEmotion(final IScope scope) throws GamaRuntimeException {
 		final Emotion predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.EMOTION, EmotionType.EMOTIONTYPE_ID);
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 				if (mental.getMentalState() != null) {
 					if (predicateDirect.equals(mental.getEmotion())) { return mental; }
 				}
@@ -1807,7 +1807,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getBeliefName(final IScope scope) throws GamaRuntimeException {
 		final String predicateName = scope.<String>getTypedArg("belief_name", IType.STRING);
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					return mental;
 				}
@@ -1838,7 +1838,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.<String>getTypedArgIfExists("belief_name", IType.STRING);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					predicates.add(mental);
 				}
@@ -1869,7 +1869,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect = scope.<Predicate>getTypedArgIfExists(PREDICATE, PredicateType.id);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 				if (mental.getPredicate() != null) {
 					if (predicateDirect.equals(mental.getPredicate())) {
 						predicates.add(mental);
@@ -1905,7 +1905,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, BELIEF_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, BELIEF_BASE)) {
 				if (mental.getMentalState() != null) {
 					if (predicateDirect.equals(mental.getMentalState())) {
 						predicates.add(mental);
@@ -1989,7 +1989,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "the current intention",
 					examples = { @example ("") }))
 	public MentalState currentIntention(final IScope scope) throws GamaRuntimeException {
-		final IList<MentalState> intentionBase = Utils.getBase(scope, INTENTION_BASE);
+		final IList<MentalState> intentionBase = BdiUtils.getBase(scope, INTENTION_BASE);
 		if (intentionBase == null) { return null; }
 		if (!intentionBase.isEmpty()) { return intentionBase.lastValue(scope); }
 		return null;
@@ -2017,7 +2017,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect = scope.<Predicate>getTypedArgIfExists(PREDICATE, PredicateType.id);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Desire", predicateDirect);
-			return Utils.getBase(scope, DESIRE_BASE).contains(temp);
+			return BdiUtils.getBase(scope, DESIRE_BASE).contains(temp);
 		}
 		return false;
 	}
@@ -2044,7 +2044,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.<String>getTypedArgIfExists("desire_name", IType.STRING);
 		if (predicateName != null) {
 			final MentalState tempState = new MentalState("Desire", new Predicate(predicateName));
-			return Utils.hasDesire(scope, tempState);
+			return BdiUtils.hasDesire(scope, tempState);
 		}
 		return null;
 	}
@@ -2071,7 +2071,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Desire", predicateDirect);
-			return Utils.getBase(scope, DESIRE_BASE).contains(temp);
+			return BdiUtils.getBase(scope, DESIRE_BASE).contains(temp);
 		}
 		return false;
 	}
@@ -2119,7 +2119,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				tempUntil.setSuperIntention(tempState);
 				predicate.onHoldUntil.add(tempUntil);
 				predicate.getSubintentions().add(tempUntil);
-				Utils.addToBase(scope, tempUntil, DESIRE_BASE);
+				BdiUtils.addToBase(scope, tempUntil, DESIRE_BASE);
 			}
 		}
 		return true;
@@ -2160,7 +2160,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		if (predicate == null || subpredicate == null) { return false; }
 		final boolean addAsDesire = scope.<Boolean>getTypedArgIfExists("add_as_desire", IType.BOOL, false);
 		MentalState superState = null;
-		for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+		for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 			if (mental != null && predicate.equals(mental)) {
 				superState = mental;
 				break;
@@ -2176,7 +2176,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		predicate.getSubintentions().add(subState);
 		subState.strength = superState.strength;
 		if (addAsDesire) {
-			Utils.addToBase(scope, subState, DESIRE_BASE);
+			BdiUtils.addToBase(scope, subState, DESIRE_BASE);
 		}
 		return true;
 	}
@@ -2229,7 +2229,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				tempPred.setLifeTime(life);
 			}
 			tempPred.setOwner(scope.getAgent());
-			return Utils.addDesire(scope, tempSuper, tempPred);
+			return BdiUtils.addDesire(scope, tempSuper, tempPred);
 		}
 		return false;
 	}
@@ -2256,7 +2256,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists("desire", MentalStateType.id);
 		if (predicateDirect != null && "Desire".equals(predicateDirect.getModality())) {
 			predicateDirect.setOwner(scope.getAgent());
-			return Utils.addDesire(scope, null, predicateDirect);
+			return BdiUtils.addDesire(scope, null, predicateDirect);
 		}
 		return false;
 
@@ -2310,7 +2310,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				tempPred.setLifeTime(life);
 			}
 			tempPred.setOwner(scope.getAgent());
-			return Utils.addDesire(scope, tempSuper, tempPred);
+			return BdiUtils.addDesire(scope, tempSuper, tempPred);
 		}
 
 		return false;
@@ -2364,7 +2364,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				tempPred.setLifeTime(life);
 			}
 			tempPred.setOwner(scope.getAgent());
-			return Utils.addDesire(scope, tempSuper, tempPred);
+			return BdiUtils.addDesire(scope, tempSuper, tempPred);
 		}
 
 		return false;
@@ -2391,7 +2391,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getDesire(final IScope scope) throws GamaRuntimeException {
 		final Predicate predicateDirect = scope.getTypedArgIfExists(PREDICATE, PredicateType.id);
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getPredicate() != null && predicateDirect.equals(mental.getPredicate())) { return mental; }
 			}
 		}
@@ -2419,7 +2419,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getDesireMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getMentalState() != null && predicateDirect.equals(mental.getMentalState())) {
 					return mental;
 				}
@@ -2450,7 +2450,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect = scope.getTypedArgIfExists(PREDICATE, PredicateType.id);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getPredicate() != null && predicateDirect.equals(mental.getPredicate())) {
 					predicates.add(mental);
 				}
@@ -2481,7 +2481,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getMentalState() != null && predicateDirect.equals(mental.getMentalState())) {
 					predicates.add(mental);
 				}
@@ -2511,7 +2511,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getDesireName(final IScope scope) throws GamaRuntimeException {
 		final String predicateName = scope.getTypedArgIfExists("desire_name", IType.STRING);
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					return mental;
 				}
@@ -2542,7 +2542,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("desire_name", IType.STRING);
 		final List<MentalState> predicates = GamaListFactory.create();
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, DESIRE_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, DESIRE_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					predicates.add(mental);
 				}
@@ -2575,7 +2575,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Belief", predicateDirect);
-			return Utils.removeBelief(scope, temp);
+			return BdiUtils.removeBelief(scope, temp);
 		}
 		return false;
 	}
@@ -2602,7 +2602,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Belief", predicateDirect);
-			return Utils.removeBelief(scope, temp);
+			return BdiUtils.removeBelief(scope, temp);
 		}
 		return false;
 	}
@@ -2634,7 +2634,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate oldPredicate = scope.getTypedArgIfExists("old_predicate", PredicateType.id);
 		boolean ok = true;
 		if (oldPredicate != null) {
-			ok = Utils.getBase(scope, BELIEF_BASE).remove(new MentalState("Belief", oldPredicate));
+			ok = BdiUtils.getBase(scope, BELIEF_BASE).remove(new MentalState("Belief", oldPredicate));
 		} else {
 			ok = false;
 		}
@@ -2645,15 +2645,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		
 		final MentalState temp = new MentalState("Belief", newPredicate);
 		// Predicate current_intention = currentIntention(scope);
-		if (Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)
+		if (BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)
 				.contains(new MentalState("Intention", newPredicate))) {
-			Utils.removeFromBase(scope, temp, DESIRE_BASE);
-			Utils.removeFromBase(scope, temp, INTENTION_BASE);
+			BdiUtils.removeFromBase(scope, temp, DESIRE_BASE);
+			BdiUtils.removeFromBase(scope, temp, INTENTION_BASE);
 		}
-		if (Utils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(new MentalState("Desire", newPredicate))) {
-			Utils.removeFromBase(scope, temp, DESIRE_BASE);
+		if (BdiUtils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(new MentalState("Desire", newPredicate))) {
+			BdiUtils.removeFromBase(scope, temp, DESIRE_BASE);
 		}
-		for (final MentalState statement : Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		for (final MentalState statement : BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
 			if (statement.getPredicate() != null) {
 				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null) {
@@ -2669,7 +2669,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 			}
 		}
-		return Utils.addToBase(scope, temp, BELIEF_BASE);
+		return BdiUtils.addToBase(scope, temp, BELIEF_BASE);
 	}
 
 	/**
@@ -2695,7 +2695,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Desire", predicateDirect);
-			return Utils.removeDesire(scope, temp);
+			return BdiUtils.removeDesire(scope, temp);
 		}
 		return false;
 	}
@@ -2722,7 +2722,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Desire", predicateDirect);
-			return Utils.removeDesire(scope, temp);
+			return BdiUtils.removeDesire(scope, temp);
 		}
 		return false;
 	}
@@ -2773,7 +2773,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addToBase(scope, temp, INTENTION_BASE);
+		return BdiUtils.addToBase(scope, temp, INTENTION_BASE);
 
 	}
 
@@ -2822,7 +2822,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addToBase(scope, temp, INTENTION_BASE);
+		return BdiUtils.addToBase(scope, temp, INTENTION_BASE);
 
 	}
 
@@ -2871,7 +2871,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addToBase(scope, temp, INTENTION_BASE);
+		return BdiUtils.addToBase(scope, temp, INTENTION_BASE);
 
 	}
 
@@ -2897,7 +2897,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getPredicate() != null && predicateDirect.equals(mental.getPredicate())) { return mental; }
 			}
 		}
@@ -2925,7 +2925,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getIntentionMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getMentalState() != null && predicateDirect.equals(mental.getMentalState())) {
 					return mental;
 				}
@@ -2957,7 +2957,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getPredicate() != null && predicateDirect.equals(mental.getPredicate())) {
 					predicates.add(mental);
 				}
@@ -2988,7 +2988,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final IList<MentalState> predicates = GamaListFactory.create();
 		if (predicateDirect != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getMentalState() != null && predicateDirect.equals(mental.getMentalState())) {
 					predicates.add(mental);
 				}
@@ -3018,7 +3018,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getIntentionName(final IScope scope) throws GamaRuntimeException {
 		final String predicateName = scope.getTypedArgIfExists("intention_name", IType.STRING);
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					return mental;
 				}
@@ -3049,7 +3049,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("intention_name", IType.STRING);
 		final List<MentalState> predicates = GamaListFactory.create();
 		if (predicateName != null) {
-			for (final MentalState mental : Utils.getBase(scope, INTENTION_BASE)) {
+			for (final MentalState mental : BdiUtils.getBase(scope, INTENTION_BASE)) {
 				if (mental.getPredicate() != null && predicateName.equals(mental.getPredicate().getName())) {
 					predicates.add(mental);
 				}
@@ -3092,14 +3092,14 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		}
 		final Boolean dodesire = scope.getBoolArgIfExists(REMOVE_DESIRE_AND_INTENTION, false);
 		if (dodesire) {
-			Utils.getBase(scope, DESIRE_BASE).remove(temp);
-			Utils.getBase(scope, OBLIGATION_BASE).remove(temp);
+			BdiUtils.getBase(scope, DESIRE_BASE).remove(temp);
+			BdiUtils.getBase(scope, OBLIGATION_BASE).remove(temp);
 		}
 		if (currentIntention(scope) != null && predicateDirect.equals(currentIntention(scope).getPredicate())) {
 			scope.getAgent().setAttribute(CURRENT_PLAN, null);
 			scope.getAgent().setAttribute(CURRENT_NORM, null);
 		}
-		for (final MentalState statement : Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		for (final MentalState statement : BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
 			if (statement.getPredicate() != null) {
 				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null) {
@@ -3115,7 +3115,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				}
 			}
 		}
-		Utils.getBase(scope, INTENTION_BASE).remove(temp);
+		BdiUtils.getBase(scope, INTENTION_BASE).remove(temp);
 
 		return true;
 	}
@@ -3150,9 +3150,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		if (predicateDirect != null) {
 			final Boolean dodesire =
 					scope.hasArg(REMOVE_DESIRE_AND_INTENTION) ? scope.getBoolArg(REMOVE_DESIRE_AND_INTENTION) : false;
-			Utils.getBase(scope, INTENTION_BASE).remove(temp);
+			BdiUtils.getBase(scope, INTENTION_BASE).remove(temp);
 			if (dodesire) {
-				Utils.getBase(scope, DESIRE_BASE).remove(temp);
+				BdiUtils.getBase(scope, DESIRE_BASE).remove(temp);
 			}
 
 			return true;
@@ -3174,7 +3174,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearBelief(final IScope scope) {
-		Utils.getBase(scope, BELIEF_BASE).clear();
+		BdiUtils.getBase(scope, BELIEF_BASE).clear();
 		return true;
 	}
 
@@ -3191,7 +3191,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearDesire(final IScope scope) {
-		Utils.getBase(scope, DESIRE_BASE).clear();
+		BdiUtils.getBase(scope, DESIRE_BASE).clear();
 		return true;
 	}
 
@@ -3208,7 +3208,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearIntention(final IScope scope) {
-		Utils.getBase(scope, INTENTION_BASE).clear();
+		BdiUtils.getBase(scope, INTENTION_BASE).clear();
 		scope.getAgent().setAttribute(CURRENT_PLAN, null);
 		return true;
 	}
@@ -3237,7 +3237,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
 			final MentalState temp = new MentalState("Belief", predicateDirect);
-			Utils.getBase(scope, BELIEF_BASE).removeAllOccurrencesOfValue(scope, temp);
+			BdiUtils.getBase(scope, BELIEF_BASE).removeAllOccurrencesOfValue(scope, temp);
 			return true;
 		}
 		return false;
@@ -3256,7 +3256,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearEmotion(final IScope scope) {
-		Utils.getEmotionBase(scope, EMOTION_BASE).clear();
+		BdiUtils.getEmotionBase(scope, EMOTION_BASE).clear();
 		return true;
 	}
 
@@ -3266,11 +3266,11 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 * @param scope the scope
 	 */
 	protected void updateEmotionsIntensity(final IScope scope) {
-		for (final Emotion emo : Utils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
+		for (final Emotion emo : BdiUtils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
 			emo.decayIntensity();
 		}
 		for (final Emotion emo : listEmotionsNull(scope)) {
-			Utils.removeFromBase(scope, emo, SimpleBdiArchitecture.EMOTION_BASE);
+			BdiUtils.removeFromBase(scope, emo, SimpleBdiArchitecture.EMOTION_BASE);
 		}
 	}
 
@@ -3288,7 +3288,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Boolean use_emotion_architecture = scope.hasArg(USE_EMOTIONS_ARCHITECTURE)
 				? scope.getBoolArg(USE_EMOTIONS_ARCHITECTURE) : (Boolean) agent.getAttribute(USE_EMOTIONS_ARCHITECTURE);
 		if (use_emotion_architecture) {
-			Utils.createEmotionsRelatedToOthers(scope);
+			BdiUtils.createEmotionsRelatedToOthers(scope);
 		}
 	}
 	
@@ -3301,7 +3301,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<Emotion> listEmotionsNull(final IScope scope) {
 		final List<Emotion> tempPred = new ArrayList<>();
-		for (final Emotion pred : Utils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
+		for (final Emotion pred : BdiUtils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
 			if (pred.getIntensity() <= 0 && pred.getIntensity() != -1.0) {
 				tempPred.add(pred);
 			}
@@ -3328,8 +3328,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if it is added in the base.",
 					examples = { @example ("") }))
 	public Boolean primAddEmotion(final IScope scope) throws GamaRuntimeException {
-		final Emotion emotionDirect = (Emotion) (scope.hasArg(EMOTION) ? scope.getArg(EMOTION, EmotionType.EMOTIONTYPE_ID) : null);
-		return Utils.addEmotion(scope, emotionDirect);
+		final Emotion emotionDirect = scope.getTypedArgIfExists(EMOTION, EmotionType.EMOTIONTYPE_ID);
+		return BdiUtils.addEmotion(scope, emotionDirect);
 	}
 
 	/**
@@ -3352,7 +3352,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("") }))
 	public Boolean primTestEmotion(final IScope scope) throws GamaRuntimeException {
 		final Emotion emotionDirect = (Emotion) (scope.hasArg(EMOTION) ? scope.getArg(EMOTION, EmotionType.EMOTIONTYPE_ID) : null);
-		if (emotionDirect != null) { return Utils.hasEmotion(scope, emotionDirect); }
+		if (emotionDirect != null) { return BdiUtils.hasEmotion(scope, emotionDirect); }
 		return false;
 	}
 
@@ -3378,7 +3378,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("emotion_name", IType.STRING);
 		if (predicateName != null) {
 			final Emotion tempEmo = new Emotion(predicateName);
-			return Utils.hasEmotion(scope, tempEmo);
+			return BdiUtils.hasEmotion(scope, tempEmo);
 		}
 		return null;
 	}
@@ -3405,7 +3405,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Emotion getEmotion(final IScope scope) throws GamaRuntimeException {
 		final Emotion emotionDirect = (Emotion) (scope.hasArg(EMOTION) ? scope.getArg(EMOTION, EmotionType.EMOTIONTYPE_ID) : null);
 		if (emotionDirect != null) {
-			for (final Emotion emo : Utils.getEmotionBase(scope, EMOTION_BASE)) {
+			for (final Emotion emo : BdiUtils.getEmotionBase(scope, EMOTION_BASE)) {
 				if (emotionDirect.equals(emo)) { return emo; }
 			}
 		}
@@ -3433,7 +3433,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Emotion getEmotionName(final IScope scope) throws GamaRuntimeException {
 		final String emotionName = scope.getTypedArgIfExists("emotion_name", IType.STRING);
 		if (emotionName != null) {
-			for (final Emotion emo : Utils.getEmotionBase(scope, EMOTION_BASE)) {
+			for (final Emotion emo : BdiUtils.getEmotionBase(scope, EMOTION_BASE)) {
 				if (emotionName.equals(emo.getName())) { return emo; }
 			}
 		}
@@ -3460,7 +3460,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("") }))
 	public Boolean primRemoveEmotion(final IScope scope) throws GamaRuntimeException {
 		final Emotion emotionDirect = (Emotion) (scope.hasArg(EMOTION) ? scope.getArg(EMOTION, EmotionType.EMOTIONTYPE_ID) : null);
-		if (emotionDirect != null) { return Utils.removeEmotion(scope, emotionDirect); }
+		if (emotionDirect != null) { return BdiUtils.removeEmotion(scope, emotionDirect); }
 		return false;
 	}
 
@@ -3511,7 +3511,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addUncertainty(scope, temp);
+		return BdiUtils.addUncertainty(scope, temp);
 
 	}
 
@@ -3537,7 +3537,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists("uncertainty", MentalStateType.id);
 		if (predicateDirect != null && "Uncertainty".equals(predicateDirect.getModality())) {
 			predicateDirect.setOwner(scope.getAgent());
-			return Utils.addUncertainty(scope, predicateDirect);
+			return BdiUtils.addUncertainty(scope, predicateDirect);
 		}
 		return false;
 
@@ -3588,7 +3588,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addUncertainty(scope, temp);
+		return BdiUtils.addUncertainty(scope, temp);
 
 	}
 
@@ -3637,7 +3637,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addUncertainty(scope, temp);
+		return BdiUtils.addUncertainty(scope, temp);
 
 	}
 
@@ -3663,7 +3663,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
-			for (final MentalState pred : Utils.getBase(scope, UNCERTAINTY_BASE)) {
+			for (final MentalState pred : BdiUtils.getBase(scope, UNCERTAINTY_BASE)) {
 				if (pred.getPredicate() != null && predicateDirect.equals(pred.getPredicate())) { return pred; }
 			}
 		}
@@ -3691,7 +3691,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getUncertaintyMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
-			for (final MentalState pred : Utils.getBase(scope, UNCERTAINTY_BASE)) {
+			for (final MentalState pred : BdiUtils.getBase(scope, UNCERTAINTY_BASE)) {
 				if (pred.getMentalState() != null && predicateDirect.equals(pred.getMentalState())) { return pred; }
 			}
 		}
@@ -3721,7 +3721,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Uncertainty", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasUncertainty(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.hasUncertainty(scope, temp); }
 		return false;
 	}
 
@@ -3747,7 +3747,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("uncertainty_name", IType.STRING);
 		if (predicateName != null) {
 			final MentalState tempState = new MentalState("Uncertainty", new Predicate(predicateName));
-			return Utils.hasUncertainty(scope, tempState);
+			return BdiUtils.hasUncertainty(scope, tempState);
 		}
 		return null;
 	}
@@ -3773,7 +3773,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primTestUncertaintyMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final MentalState temp = new MentalState("Uncertainty", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasUncertainty(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.hasUncertainty(scope, temp); }
 		return false;
 	}
 
@@ -3799,7 +3799,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Uncertainty", predicateDirect);
-		if (predicateDirect != null) { return Utils.removeUncertainty(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.removeUncertainty(scope, temp); }
 		return false;
 	}
 
@@ -3824,7 +3824,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primRemoveUncertaintyMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.<MentalState>getTypedArgIfExists(MENTAL_STATE, MentalStateType.id);
 		final MentalState temp = new MentalState("Uncertainty", predicateDirect);
-		if (predicateDirect != null) { return Utils.removeUncertainty(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.removeUncertainty(scope, temp); }
 		return false;
 	}
 
@@ -3843,7 +3843,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearUncertainty(final IScope scope) {
-		Utils.getBase(scope, UNCERTAINTY_BASE).clear();
+		BdiUtils.getBase(scope, UNCERTAINTY_BASE).clear();
 		return true;
 	}
 
@@ -3894,7 +3894,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addIdeal(scope, temp);
+		return BdiUtils.addIdeal(scope, temp);
 	}
 
 	/**
@@ -3919,7 +3919,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final MentalState predicateDirect = scope.getTypedArgIfExists("ideal", MentalStateType.id);
 		if (predicateDirect != null && "Ideal".equals(predicateDirect.getModality())) {
 			predicateDirect.setOwner(scope.getAgent());
-			return Utils.addIdeal(scope, predicateDirect);
+			return BdiUtils.addIdeal(scope, predicateDirect);
 		}
 		return false;
 
@@ -3970,7 +3970,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addIdeal(scope, temp);
+		return BdiUtils.addIdeal(scope, temp);
 	}
 
 	/**
@@ -4018,7 +4018,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addIdeal(scope, temp);
+		return BdiUtils.addIdeal(scope, temp);
 	}
 
 	/**
@@ -4043,7 +4043,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
-			for (final MentalState pred : Utils.getBase(scope, IDEAL_BASE)) {
+			for (final MentalState pred : BdiUtils.getBase(scope, IDEAL_BASE)) {
 				if (pred.getPredicate() != null && predicateDirect.equals(pred.getPredicate())) { return pred; }
 			}
 		}
@@ -4071,7 +4071,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public MentalState getIdealMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		if (predicateDirect != null) {
-			for (final MentalState pred : Utils.getBase(scope, IDEAL_BASE)) {
+			for (final MentalState pred : BdiUtils.getBase(scope, IDEAL_BASE)) {
 				if (pred.getMentalState() != null && predicateDirect.equals(pred.getMentalState())) { return pred; }
 			}
 		}
@@ -4100,7 +4100,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Ideal", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasIdeal(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.hasIdeal(scope, temp); }
 		return false;
 	}
 
@@ -4126,7 +4126,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final String predicateName = scope.getTypedArgIfExists("ideal_name", IType.STRING);
 		if (predicateName != null) {
 			final MentalState tempState = new MentalState("Ideal", new Predicate(predicateName));
-			return Utils.hasIdeal(scope, tempState);
+			return BdiUtils.hasIdeal(scope, tempState);
 		}
 		return null;
 	}
@@ -4152,7 +4152,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primTestIdealMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final MentalState temp = new MentalState("Ideal", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasIdeal(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.hasIdeal(scope, temp); }
 		return false;
 	}
 
@@ -4179,7 +4179,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Ideal", predicateDirect);
-		if (predicateDirect != null) { return Utils.removeIdeal(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.removeIdeal(scope, temp); }
 		return false;
 	}
 
@@ -4204,7 +4204,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primRemoveIdealMentalState(final IScope scope) throws GamaRuntimeException {
 		final MentalState predicateDirect = scope.getTypedArgIfExists(SimpleBdiArchitecture.MENTAL_STATE, MentalStateType.id);
 		final MentalState temp = new MentalState("Ideal", predicateDirect);
-		if (predicateDirect != null) { return Utils.removeIdeal(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.removeIdeal(scope, temp); }
 		return false;
 	}
 
@@ -4221,7 +4221,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearIdeal(final IScope scope) {
-		Utils.getBase(scope, IDEAL_BASE).clear();
+		BdiUtils.getBase(scope, IDEAL_BASE).clear();
 		return true;
 	}
 
@@ -4271,7 +4271,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			temp.setLifeTime(life);
 		}
 		temp.setOwner(scope.getAgent());
-		return Utils.addObligation(scope, temp);
+		return BdiUtils.addObligation(scope, temp);
 	}
 
 	/**
@@ -4296,7 +4296,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		if (predicateDirect != null) {
-			for (final MentalState pred : Utils.getBase(scope, OBLIGATION_BASE)) {
+			for (final MentalState pred : BdiUtils.getBase(scope, OBLIGATION_BASE)) {
 				if (pred.getPredicate() != null && predicateDirect.equals(pred.getPredicate())) { return pred; }
 			}
 		}
@@ -4325,7 +4325,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Obligation", predicateDirect);
-		if (predicateDirect != null) { return Utils.hasObligation(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.hasObligation(scope, temp); }
 		return false;
 	}
 
@@ -4351,7 +4351,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Predicate predicateDirect =
 				(Predicate) (scope.hasArg(PREDICATE) ? scope.getArg(PREDICATE, PredicateType.id) : null);
 		final MentalState temp = new MentalState("Obligation", predicateDirect);
-		if (predicateDirect != null) { return Utils.removeObligation(scope, temp); }
+		if (predicateDirect != null) { return BdiUtils.removeObligation(scope, temp); }
 		return false;
 	}
 
@@ -4368,7 +4368,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearObligation(final IScope scope) {
-		Utils.getBase(scope, OBLIGATION_BASE).clear();
+		BdiUtils.getBase(scope, OBLIGATION_BASE).clear();
 		return true;
 	}
 
@@ -4391,9 +4391,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if it is added in the base.",
 					examples = { @example ("") }))
 	public Boolean primAddSocialLink(final IScope scope) throws GamaRuntimeException {
-		final SocialLink social =
-				(SocialLink) (scope.hasArg(SOCIALLINK) ? scope.getArg(SOCIALLINK, SocialLinkType.id) : null);
-		return Utils.addSocialLink(scope, social);
+		final SocialLink social = scope.getTypedArgIfExists(SOCIALLINK, SocialLinkType.id);
+		return BdiUtils.addSocialLink(scope, social);
 	}
 
 	/**
@@ -4417,7 +4416,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public SocialLink getSocialLink(final IScope scope) throws GamaRuntimeException {
 		final SocialLink socialDirect =
 				(SocialLink) (scope.hasArg(SOCIALLINK) ? scope.getArg(SOCIALLINK, SocialLinkType.id) : null);
-		if (socialDirect != null) { return Utils.getSocialLink(scope, socialDirect); }
+		if (socialDirect != null) { return BdiUtils.getSocialLink(scope, socialDirect); }
 		return null;
 	}
 
@@ -4441,7 +4440,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("get_social_link_with_agent(agentA)") }))
 	public SocialLink getSocialLinkWithAgent(final IScope scope) throws GamaRuntimeException {
 		final IAgent agentDirect = (IAgent) (scope.hasArg("agent") ? scope.getArg("agent", IType.AGENT) : null);
-		if (agentDirect != null) { return Utils.getSocialLink(scope, new SocialLink(agentDirect)); }
+		if (agentDirect != null) { return BdiUtils.getSocialLink(scope, new SocialLink(agentDirect)); }
 		return null;
 	}
 
@@ -4466,7 +4465,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primTestSocialWithAgent(final IScope scope) throws GamaRuntimeException {
 		final SocialLink socialDirect =
 				(SocialLink) (scope.hasArg(SOCIALLINK) ? scope.getArg(SOCIALLINK, SocialLinkType.id) : null);
-		if (socialDirect != null) { return Utils.hasSocialLink(scope, socialDirect); }
+		if (socialDirect != null) { return BdiUtils.hasSocialLink(scope, socialDirect); }
 		return false;
 	}
 
@@ -4490,7 +4489,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("") }))
 	public Boolean primTestSocial(final IScope scope) throws GamaRuntimeException {
 		final IAgent agentDirect = (IAgent) (scope.hasArg("agent") ? scope.getArg("agent", IType.AGENT) : null);
-		if (agentDirect != null) { return Utils.hasSocialLink(scope, new SocialLink(agentDirect)); }
+		if (agentDirect != null) { return BdiUtils.hasSocialLink(scope, new SocialLink(agentDirect)); }
 		return false;
 	}
 
@@ -4515,7 +4514,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public Boolean primRemoveSocialLinkWithAgent(final IScope scope) throws GamaRuntimeException {
 		final SocialLink socialDirect =
 				(SocialLink) (scope.hasArg(SOCIALLINK) ? scope.getArg(SOCIALLINK, SocialLinkType.id) : null);
-		if (socialDirect != null) { return Utils.removeSocialLink(scope, socialDirect); }
+		if (socialDirect != null) { return BdiUtils.removeSocialLink(scope, socialDirect); }
 		return false;
 	}
 
@@ -4539,7 +4538,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					examples = { @example ("") }))
 	public Boolean primRemoveSocialLink(final IScope scope) throws GamaRuntimeException {
 		final IAgent agentDirect = (IAgent) (scope.hasArg("agent") ? scope.getArg("agent", IType.AGENT) : null);
-		if (agentDirect != null) { return Utils.removeSocialLink(scope, new SocialLink(agentDirect)); }
+		if (agentDirect != null) { return BdiUtils.removeSocialLink(scope, new SocialLink(agentDirect)); }
 		return false;
 	}
 
@@ -4556,7 +4555,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if the base is cleared correctly",
 					examples = { @example ("") }))
 	public Boolean primClearSocialLinks(final IScope scope) {
-		Utils.getSocialBase(scope, SOCIALLINK_BASE).clear();
+		BdiUtils.getSocialBase(scope, SOCIALLINK_BASE).clear();
 		return true;
 	}
 
@@ -4587,7 +4586,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final IAgent agentDirect = (IAgent) (scope.hasArg("agent") ? scope.getArg("agent", IType.AGENT) : null);
 		final Double likingDirect = (Double) (scope.hasArg("liking") ? scope.getArg("liking", IType.FLOAT) : 0.0);
 		if (agentDirect != null) {
-			final SocialLink tempSocial = Utils.getSocialLink(scope, new SocialLink(agentDirect));
+			final SocialLink tempSocial = BdiUtils.getSocialLink(scope, new SocialLink(agentDirect));
 			if (tempSocial != null) {
 				tempSocial.setLiking(tempSocial.getLiking() + likingDirect);
 				if (tempSocial.getLiking() > 1.0) {
@@ -4630,7 +4629,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Double dominanceDirect =
 				(Double) (scope.hasArg("dominance") ? scope.getArg("dominance", IType.FLOAT) : 0.0);
 		if (agentDirect != null) {
-			final SocialLink tempSocial = Utils.getSocialLink(scope, new SocialLink(agentDirect));
+			final SocialLink tempSocial = BdiUtils.getSocialLink(scope, new SocialLink(agentDirect));
 			if (tempSocial != null) {
 				tempSocial.setDominance(tempSocial.getDominance() + dominanceDirect);
 				if (tempSocial.getDominance() > 1.0) {
@@ -4673,7 +4672,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Double solidarityDirect =
 				(Double) (scope.hasArg("solidarity") ? scope.getArg("solidarity", IType.FLOAT) : 0.0);
 		if (agentDirect != null) {
-			final SocialLink tempSocial = Utils.getSocialLink(scope, new SocialLink(agentDirect));
+			final SocialLink tempSocial = BdiUtils.getSocialLink(scope, new SocialLink(agentDirect));
 			if (tempSocial != null) {
 				tempSocial.setSolidarity(tempSocial.getSolidarity() + solidarityDirect);
 				if (tempSocial.getSolidarity() > 1.0) {
@@ -4716,7 +4715,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Double familiarityDirect =
 				(Double) (scope.hasArg("familiarity") ? scope.getArg("familiarity", IType.FLOAT) : 0.0);
 		if (agentDirect != null) {
-			final SocialLink tempSocial = Utils.getSocialLink(scope, new SocialLink(agentDirect));
+			final SocialLink tempSocial = BdiUtils.getSocialLink(scope, new SocialLink(agentDirect));
 			if (tempSocial != null) {
 				tempSocial.setFamiliarity(tempSocial.getFamiliarity() + familiarityDirect);
 				if (tempSocial.getFamiliarity() > 1.0) {
@@ -4758,7 +4757,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final IAgent agentDirect = (IAgent) (scope.hasArg("agent") ? scope.getArg("agent", IType.AGENT) : null);
 		final Double trustDirect = (Double) (scope.hasArg("trust") ? scope.getArg("trust", IType.FLOAT) : 0.0);
 		if (agentDirect != null) {
-			final SocialLink tempSocial = Utils.getSocialLink(scope, new SocialLink(agentDirect));
+			final SocialLink tempSocial = BdiUtils.getSocialLink(scope, new SocialLink(agentDirect));
 			if (tempSocial != null) {
 				double trust = Math.min(1.0, Math.max(-1.0, tempSocial.getTrust() + trustDirect));
 				tempSocial.setTrust(trust);
@@ -4776,7 +4775,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	private List<SocialLink> listSocialAgentDead(final IScope scope) {
 		final List<SocialLink> tempPred = new ArrayList<>();
-		for (final SocialLink pred : Utils.getSocialBase(scope, SimpleBdiArchitecture.SOCIALLINK_BASE)) {
+		for (final SocialLink pred : BdiUtils.getSocialBase(scope, SimpleBdiArchitecture.SOCIALLINK_BASE)) {
 			if (pred.getAgent().dead()) {
 				tempPred.add(pred);
 			}
@@ -4795,7 +4794,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 				? scope.getBoolArg(USE_SOCIAL_ARCHITECTURE) : (Boolean) agent.getAttribute(USE_SOCIAL_ARCHITECTURE);
 		if (use_social_architecture) {
 			for (final SocialLink tempLink : listSocialAgentDead(scope)) {
-				Utils.removeFromBase(scope, tempLink, SimpleBdiArchitecture.SOCIALLINK_BASE);
+				BdiUtils.removeFromBase(scope, tempLink, SimpleBdiArchitecture.SOCIALLINK_BASE);
 			}
 		}
 	}
@@ -4809,7 +4808,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		final Norm _persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
 		// Double obedienceValue = (Double) scope.getAgent().getAttribute("obedience");
 
-		for (final Norm tempNorm : Utils.getNorms(scope)) {
+		for (final Norm tempNorm : BdiUtils.getNorms(scope)) {
 			// si la norme est activable mais n'est pas activée, alors elle est violée (non prise en compte des
 			// obligations)
 			final NormStatement statement = tempNorm.getNormStatement();
@@ -4849,7 +4848,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 * @param scope the scope
 	 */
 	public void updateNormLifetime(final IScope scope) {
-		for (final Norm tempNorm : Utils.getNorms(scope)) {
+		for (final Norm tempNorm : BdiUtils.getNorms(scope)) {
 			if (tempNorm != null) {
 				tempNorm.updateLifeime();
 			}

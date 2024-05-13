@@ -319,7 +319,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 			double s = start.getBulge() * l / 2;
 
-			IShape c = SpatialCreation.EllipticalArc(scope, startPt, endPt, s, 20);
+			IShape c = SpatialCreation.ellipticalArc(scope, startPt, endPt, s, 20);
 			list.addAll(c.getPoints());
 		}
 

@@ -29,7 +29,6 @@ public class RandomSampling extends SamplingUtils {
 	 * @return
 	 */
 	public static List<ParametersSet> uniformSampling(IScope scope, int sample, List<Batch> parameters){
-		List<ParametersSet>  sampling= new ArrayList<>();
 		
 		List<Map<String,Double>> rSample = new ArrayList<>();
 		int i = 0;
@@ -39,8 +38,7 @@ public class RandomSampling extends SamplingUtils {
 			rSample.add(point);
 		}
 		
-        sampling=buildParametersSetfromSample(scope,parameters,rSample);
-        return sampling;
+        return buildParametersSetfromSample(scope,parameters,rSample);
 	}
 	
 	/**
@@ -52,7 +50,6 @@ public class RandomSampling extends SamplingUtils {
 	 * @return
 	 */
 	public static List<ParametersSet> factorialUniformSampling(IScope scope, int[] samples, List<Batch> parameters){
-		List<ParametersSet>  sampling = new ArrayList<>();
 		
 		Map<Batch,List<Double>> facorial = new HashMap<>();
 		for(Batch p : parameters) { 
@@ -64,8 +61,7 @@ public class RandomSampling extends SamplingUtils {
 		
 		List<Map<String,Double>> rSample = buildFactorialDesign(parameters,facorial,new ArrayList<>(),0);
 		
-        sampling=buildParametersSetfromSample(scope,parameters,rSample);
-        return sampling;
+        return buildParametersSetfromSample(scope,parameters,rSample);
 	}
 	
 	/**

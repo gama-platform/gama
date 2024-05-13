@@ -134,32 +134,32 @@ public class ConsciousContagionStatement extends AbstractStatement {
 			
 		if (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) {
 			if (emotionDetected != null && emotionCreated != null) {
-				if (Utils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
+				if (BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
 					if (charisma != null) {
-						charismaValue = Utils.clamp((double) charisma.value(scope), 0,1);
+						charismaValue = BdiUtils.clamp((double) charisma.value(scope), 0,1);
 					} else {
 						charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
 					}
 					if (receptivity != null) {
-						receptivityValue = Utils.clamp((double)receptivity.value(scopeMySelf), 0,1);
+						receptivityValue = BdiUtils.clamp((double)receptivity.value(scopeMySelf), 0,1);
 					} else {
 						receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY);
 					}
 					if (threshold != null) {
-						thresholdValue = Utils.clamp((double) threshold.value(scopeMySelf),0,1);
+						thresholdValue = BdiUtils.clamp((double) threshold.value(scopeMySelf),0,1);
 					}
 					if (charismaValue * receptivityValue >= thresholdValue) {
 						final Emotion tempEmo = (Emotion) emotionCreated.value(scope);
 						tempEmo.setAgentCause(scope.getAgent());
 						if(decay != null){
-							decayValue = Utils.clamp((double) decay.value(scopeMySelf), 0,1);
+							decayValue = BdiUtils.clamp((double) decay.value(scopeMySelf), 0,1);
 						}
 						tempEmo.setDecay(decayValue);
 						if(intensity != null){
-							intensityValue = Utils.clamp((double)intensity.value(scopeMySelf),0,1);
+							intensityValue = BdiUtils.clamp((double)intensity.value(scopeMySelf),0,1);
 						}
 						tempEmo.setIntensity(intensityValue);
-						Utils.addEmotion(scopeMySelf, tempEmo);
+						BdiUtils.addEmotion(scopeMySelf, tempEmo);
 					}
 				}
 			}

@@ -220,13 +220,11 @@ public class OrthogonalSampling extends SamplingUtils {
      * @return
      */
     public static List<ParametersSet> orthogonalSamples(int N,int iteration, List<Batch> parameters,Random r,IScope scope){
-    	List<ParametersSet>   finalSamp= new ArrayList<>();
-        List<String> names= new ArrayList<>();
+        List<String> names = new ArrayList<>();
         for(int i=0;i<parameters.size();i++) {
         	names.add(parameters.get(i).getName());
         }
-        List<Map<String,Double>> sampletempmap= generate(names.size(),N,iteration,names,r); 
-        finalSamp= buildParametersSetfromSample(scope,parameters,sampletempmap);  
-        return finalSamp;
+        List<Map<String,Double>> sampletempmap = generate(names.size(),N,iteration,names,r); 
+        return buildParametersSetfromSample(scope,parameters,sampletempmap);
     }     
 }

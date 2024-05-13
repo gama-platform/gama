@@ -1451,12 +1451,12 @@ public class PedestrianSkill extends MovingSkill {
 			for (int j = 1; j < points.size(); j++) {
 				GamaPoint pt = points.get(j);
 				IShape cTarget = null;
-				if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
-					cTarget = pt;
-				} else {
+//				if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
+//					cTarget = pt;
+//				} else {
 					cTarget = pt;
 					//if (cTarget == null) { cTarget = pt; } //TODO:why ?
-				}
+//				}
 				if (useGeometryTarget) {
 					cTarget = null;
 					if (geomNext != null) {

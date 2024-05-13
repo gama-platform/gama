@@ -152,7 +152,7 @@ public class DiffusionStatement extends AbstractStatement {
 
 		@Override
 		public void validate(final StatementDescription desc) {
-			final String kw = desc.getKeyword();
+//			final String kw = desc.getKeyword();
 			IExpression spec = desc.getFacetExpr(IKeyword.ON);
 			if (spec.getGamlType().isAgentType() && spec.getGamlType().getSpecies().isGrid()) {
 				desc.error("Diffusions can only be executed on grid species", IGamlIssue.GENERAL);

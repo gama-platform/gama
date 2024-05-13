@@ -130,16 +130,16 @@ public class Utils {
 	}
 
 	/**
-	 * Creates the folder.
-	 *
-	 * @param file the file
+	 * Creates the folders from the path of the file passed in parameter
+	 * @param file 
+	 * @return true if the folders have been created false otherwise
 	 */
-	public static void createFolder(final File file) {
+	public static boolean createFolder(final File file) {
 		if (!file.mkdir() && !file.exists()) {
 			createFolder(file.getParentFile());
-			file.mkdir();
+			return file.mkdir();
 		}
-		return;
+		return true;
 	}
 
 }

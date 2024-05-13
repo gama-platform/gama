@@ -127,7 +127,7 @@ public class SocializeStatement extends AbstractStatement{
 		}
 		if(!scope.getAgent().equals(mySelfAgent)){
 			SocialLink tempSocial = new SocialLink(scope.getAgent());
-			if(!Utils.hasSocialLink(scopeMySelf, tempSocial)){
+			if(!BdiUtils.hasSocialLink(scopeMySelf, tempSocial)){
 				if (appreciation != null) {
 					tempSocial.setLiking(Cast.asFloat(scopeMySelf, appreciation.value(scopeMySelf)));;
 				}
@@ -146,11 +146,11 @@ public class SocializeStatement extends AbstractStatement{
 				if (agent != null){
 					tempSocial.setAgent((IAgent)agent.value(scopeMySelf));
 				}
-				Utils.addSocialLink(scopeMySelf, tempSocial);
+				BdiUtils.addSocialLink(scopeMySelf, tempSocial);
 			} else{
 				/*update the social link.*/
-				tempSocial = Utils.getSocialLink(scopeMySelf, tempSocial);
-				Utils.updateSocialLink(scopeMySelf, tempSocial);
+				tempSocial = BdiUtils.getSocialLink(scopeMySelf, tempSocial);
+				BdiUtils.updateSocialLink(scopeMySelf, tempSocial);
 			}
 		}
 		GAMA.releaseScope(scopeMySelf);

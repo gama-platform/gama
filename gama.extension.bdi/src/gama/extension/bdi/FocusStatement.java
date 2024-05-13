@@ -267,41 +267,42 @@ public class FocusStatement extends AbstractStatement {
 		if (belief != null) {
 			MentalState temporaryBelief = new MentalState("Belief");
 			temporaryBelief.setPredicate((Predicate) belief.value(scope));
-			if (Utils.hasBelief(scope, temporaryBelief)) {
-				addMentalState(scope, scopeMySelf, scope, Utils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			if (BdiUtils.hasBelief(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (desire != null) {
 			MentalState temporaryBelief = new MentalState("Desire");
 			temporaryBelief.setPredicate((Predicate) desire.value(scope));
-			if (Utils.hasDesire(scope, temporaryBelief)) {
-				addMentalState(scope, scopeMySelf, scope, Utils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			if (BdiUtils.hasDesire(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (uncertainty != null) {
 			MentalState temporaryBelief = new MentalState("Uncertainty");
 			temporaryBelief.setPredicate((Predicate) uncertainty.value(scope));
-			if (Utils.hasUncertainty(scope, temporaryBelief)) {
-				addMentalState(scope, scopeMySelf, scope, Utils.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			if (BdiUtils.hasUncertainty(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (ideal != null) {
 			MentalState temporaryBelief = new MentalState("Ideal");
 			temporaryBelief.setPredicate((Predicate) ideal.value(scope));
-			if (Utils.hasIdeal(scope, temporaryBelief)) {
-				addMentalState(scope, scopeMySelf, scope, Utils.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			if (BdiUtils.hasIdeal(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
 			}
 		}
 		if (emotion != null) {
 			Emotion temporaryEmotion = (Emotion) emotion.value(scope);
-			if (Utils.hasEmotion(scope, temporaryEmotion)) {
-				addMentalState(scope, scopeMySelf, scope, Utils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE), temporaryEmotion, (MentalState belief, Emotion temp) -> belief.setEmotion(temp));
+			if (BdiUtils.hasEmotion(scope, temporaryEmotion)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE), temporaryEmotion, (MentalState belief, Emotion temp) -> belief.setEmotion(temp));
 			}
 		}
 		if (expression != null) {
+			//TODO: nothing is done with this tempPred, should it be added to some base ?
 			final String namePred = 	nameExpression != null 
 									? (String)nameExpression.value(scope) 
-									: "expression" + "_" + scope.getAgent().getSpeciesName();
+									: "expression_" + scope.getAgent().getSpeciesName();
 			final IMap<String, Object> tempValues = GamaMapFactory.create(Types.NO_TYPE, Types.NO_TYPE, 1);
 			tempValues.put("expression_value", expression.value(scope));
 			Predicate tempPred = new Predicate(namePred, tempValues);
@@ -333,12 +334,12 @@ public class FocusStatement extends AbstractStatement {
 			tempBelief.setLifeTime(Cast.asInt(scopeLifetime, lifetime.value(scope)));
 		}
 		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-			if (!Utils.hasUncertainty(scopeMySelf, tempBelief)) {
-				Utils.addUncertainty(scopeMySelf, tempBelief);
+			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
+				BdiUtils.addUncertainty(scopeMySelf, tempBelief);
 			}
 		} else {
-			if (!Utils.hasBelief(scopeMySelf, tempBelief)) {
-				Utils.addBelief(scopeMySelf, tempBelief);
+			if (!BdiUtils.hasBelief(scopeMySelf, tempBelief)) {
+				BdiUtils.addBelief(scopeMySelf, tempBelief);
 			}
 		}		
 	}
@@ -393,8 +394,8 @@ public class FocusStatement extends AbstractStatement {
 			if (lifetime != null) {
 				tempBelief.setLifeTime(Cast.asInt(scopeMySelf, lifetime.value(scope)));
 			}
-			if (!Utils.hasUncertainty(scopeMySelf, tempBelief)) {
-				Utils.addUncertainty(scopeMySelf, tempBelief);
+			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
+				BdiUtils.addUncertainty(scopeMySelf, tempBelief);
 			}
 		} else {
 			if (strength != null) {
@@ -405,8 +406,8 @@ public class FocusStatement extends AbstractStatement {
 			if (lifetime != null) {
 				tempBelief.setLifeTime(Cast.asInt(lifetimeScope, lifetime.value(scope)));
 			}
-			if (!Utils.hasBelief(scopeMySelf, tempBelief)) {
-				Utils.addBelief(scopeMySelf, tempBelief);
+			if (!BdiUtils.hasBelief(scopeMySelf, tempBelief)) {
+				BdiUtils.addBelief(scopeMySelf, tempBelief);
 			}
 		}
 		

@@ -239,8 +239,9 @@ public class Sobol {
 		// Output from the original samples where the j-th parameter is replaced by the corresponding resampled parameter.
 		double[][] C_A = new double[sample][this.parameters.size()];
 		
+		// Commented out as not used
 		// Output from the resampled samples where the j-th parameter is replaced by the corresponding original parameter.
-		double[][] C_B = new double[sample][this.parameters.size()];
+		//double[][] C_B = new double[sample][this.parameters.size()];
 
 		for (String output : outputs.keySet()) {
 			Iterator<Object> it = outputs.get(output).iterator();
@@ -255,7 +256,8 @@ public class Sobol {
 				}
 
 				for (int j = 0; j < this.parameters.size(); j++) {
-					C_B[i][j] = Double.parseDouble(it.next().toString());
+					it.next();
+//					C_B[i][j] = Double.parseDouble(it.next().toString());
 				}
 
 				B[i] = Double.parseDouble(it.next().toString());

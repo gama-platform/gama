@@ -10,7 +10,7 @@ import gama.core.util.IList;
 import gama.gaml.operators.Maths;
 import gama.gaml.types.Types;
 
-public class Utils {
+public class BdiUtils {
 
 	//TODO: replace this by Math.clamp calls once we switch in java21
 	public static int clamp(long value, int min, int max) {
@@ -456,7 +456,11 @@ public class Utils {
 	 * @return true, if successful
 	 */
 	public static boolean addEmotion(final IScope scope, final Emotion emo) {
+		
 		Emotion newEmo = emo;
+		if (newEmo == null) {
+			return false;
+		}
 		if (emo.hasIntensity() && hasEmotion(scope, emo)) {
 			final Emotion oldEmo = getEmotion(scope, emo);
 			if (oldEmo.hasIntensity()) {
@@ -635,13 +639,16 @@ public class Utils {
 	 * @return true, if successful
 	 */
 	public static boolean addSocialLink(final IScope scope, final SocialLink social) {
-		if (social.getLiking() >= -1.0 && social.getLiking() <= 1.0) {
-			if (social.getDominance() >= -1.0 && social.getDominance() <= 1.0) {
-				if (social.getSolidarity() >= 0.0 && social.getSolidarity() <= 1.0) {
-					if (social.getFamiliarity() >= 0.0 && social.getFamiliarity() <= 1.0) {
-						if (getSocialLink(scope, social) == null) { return addToBase(scope, social, SimpleBdiArchitecture.SOCIALLINK_BASE); }
-					}
-				}
+		if (social == null) {
+			return false;
+		}
+		boolean likingInRange = social.getLiking() >= -1.0 && social.getLiking() <= 1.0;
+		boolean dominanceInRange = social.getDominance() >= -1.0 && social.getDominance() <= 1.0;
+		boolean solidarityInRange = social.getSolidarity() >= 0.0 && social.getSolidarity() <= 1.0;
+		boolean familiarityInRange = social.getFamiliarity() >= 0.0 && social.getFamiliarity() <= 1.0;
+		if (likingInRange && dominanceInRange && solidarityInRange && familiarityInRange) {
+			if (getSocialLink(scope, social) == null) { 
+				return addToBase(scope, social, SimpleBdiArchitecture.SOCIALLINK_BASE); 
 			}
 		}
 		return false;
@@ -715,9 +722,9 @@ public class Utils {
 	 * @return the boolean
 	 */
 	public static Boolean removeDesire(final IScope scope, final MentalState pred) {
-		Utils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).remove(pred);
-		Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).remove(pred);
-		for (final MentalState statement : Utils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		BdiUtils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).remove(pred);
+		BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).remove(pred);
+		for (final MentalState statement : BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
 			if (statement.getPredicate() != null) {
 				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null) {
@@ -785,7 +792,7 @@ public class Utils {
 		moyPositif = tempPositif != 0.0 ? moyPositif / tempPositif : 0;
 		moyNegatif = tempNegatif != 0.0 ? moyNegatif / tempNegatif : 0;
 
-		appreciationModif = Utils.clamp(appreciationModif 
+		appreciationModif = BdiUtils.clamp(appreciationModif 
 							+ Maths.abs(appreciationModif) * (1 - Maths.abs(appreciationModif)) * social.getSolidarity()
 							+ coefModification * (1 - Maths.abs(appreciationModif)) * (moyPositif - moyNegatif),
 							-1,
@@ -808,10 +815,10 @@ public class Utils {
 			scopeAgentCause.push(agentCause);
 		}
 		final IAgent currentAgent = scope.getAgent();
-		double tempPositif = 0.0;
-		double moyPositif = 0.0;
-		double tempNegatif = 0.0;
-		double moyNegatif = 0.0;
+		double nbPositive = 0.0;
+		double avgPositive = 0.0;
+		double nbNegative = 0.0;
+		double avgNegative = 0.0;
 		double coefModification = 0.1;
 		if (use_personality) {
 			final double neurotisme = (double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
@@ -821,24 +828,26 @@ public class Utils {
 		for (final Emotion emo : getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
 			if (emo.getAgentCause() != null && emo.getAgentCause().equals(agentCause)) {
 				if ("sadness".equals(emo.getName()) || "fear".equals(emo.getName())) {
-					tempNegatif = tempNegatif + 1.0;
-					moyNegatif = moyNegatif + emo.getIntensity();
+					nbNegative = nbNegative + 1.0;
+					avgNegative = avgNegative + emo.getIntensity();
 				}
 			}
 		}
-		for (final Emotion emo : getEmotionBase(scopeAgentCause, SimpleBdiArchitecture.EMOTION_BASE)) {
-			if (emo.getAgentCause() != null && emo.getAgentCause().equals(currentAgent)) {
-				if ("sadness".equals(emo.getName()) || "fear".equals(emo.getName())) {
-					tempPositif = tempPositif + 1.0;
-					moyPositif = moyPositif + emo.getIntensity();
+		if (scopeAgentCause != null) {
+			for (final Emotion emo : getEmotionBase(scopeAgentCause, SimpleBdiArchitecture.EMOTION_BASE)) {
+				if (emo.getAgentCause() != null && emo.getAgentCause().equals(currentAgent)) {
+					if ("sadness".equals(emo.getName()) || "fear".equals(emo.getName())) {
+						nbPositive = nbPositive + 1.0;
+						avgPositive = avgPositive + emo.getIntensity();
+					}
 				}
-			}
+			}			
 		}
 
-		moyPositif = tempPositif != 0.0 ? moyPositif / tempPositif : 0;
-		moyNegatif = tempNegatif != 0.0 ? moyNegatif / tempNegatif : 0;
+		avgPositive = nbPositive != 0.0 ? avgPositive / nbPositive : 0;
+		avgNegative = nbNegative != 0.0 ? avgNegative / nbNegative : 0;
 
-		dominanceModif = Utils.clamp(dominanceModif + coefModification * Maths.abs(dominanceModif) * (moyPositif - moyNegatif), 1, 1);
+		dominanceModif = BdiUtils.clamp(dominanceModif + coefModification * Maths.abs(dominanceModif) * (avgPositive - avgNegative), 1, 1);
 		social.setDominance(dominanceModif);
 		GAMA.releaseScope(scopeAgentCause);
 	}
@@ -1352,7 +1361,7 @@ public class Utils {
 		// Regroupe le happy_for, sorry_for, resentment et gloating.
 		
 		
-		for (final SocialLink temp : Utils.getSocialBase(scope, SimpleBdiArchitecture.SOCIALLINK_BASE)) {
+		for (final SocialLink temp : BdiUtils.getSocialBase(scope, SimpleBdiArchitecture.SOCIALLINK_BASE)) {
 			final IAgent agentTemp = temp.getAgent();
 			IScope scopeAgentTemp = null;
 			if (agentTemp != null) {
@@ -1360,15 +1369,15 @@ public class Utils {
 				scopeAgentTemp.push(agentTemp);
 			}
 			double signLiking = Math.signum(temp.getLiking());
-			for (final Emotion emo : Utils.getEmotionBase(scopeAgentTemp, SimpleBdiArchitecture.EMOTION_BASE)) {
+			for (final Emotion emo : BdiUtils.getEmotionBase(scopeAgentTemp, SimpleBdiArchitecture.EMOTION_BASE)) {
 				if ( "joy".equals(emo.getName()) || "sadness".equals(emo.getName()) ) {
-					final Emotion newEmo = new Emotion(Utils.getNewEmotionNameToCreateHappyFor(emo.getName(), signLiking > 0),
+					final Emotion newEmo = new Emotion(BdiUtils.getNewEmotionNameToCreateHappyFor(emo.getName(), signLiking > 0),
 							emo.getIntensity() * signLiking * temp.getLiking(), emo.getAbout(),
 							//TODO: the previous comments said to change the formula but no indication
 							// maybe use the one used in createHappyForFromMentalState (above)?
 							agentTemp);
 					newEmo.setDecay(0);
-					Utils.addEmotion(scope, newEmo);
+					BdiUtils.addEmotion(scope, newEmo);
 				}
 			}
 			GAMA.releaseScope(scopeAgentTemp);
@@ -1420,7 +1429,7 @@ public class Utils {
 				if (use_personality) {
 					final double neurotisme = (double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 					final double amicability = (double) scope.getAgent().getAttribute(SimpleBdiArchitecture.AGREEABLENESS);
-					intensity = Utils.clamp(emo.getIntensity() * absLiking * (1 - signLiking * (0.5 - amicability)), 0, 1);
+					intensity = BdiUtils.clamp(emo.getIntensity() * absLiking * (1 - signLiking * (0.5 - amicability)), 0, 1);
 					decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * emotion.getIntensity();//TODO: decay will be negative, is it normal ?
 				}
 				emotion.setIntensity(intensity);
@@ -1451,7 +1460,7 @@ public class Utils {
 			if (use_personality) {
 				final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 				final Double openness = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.OPENNESS);
-				intensity = Utils.clamp(predicateDirect.getStrength() * absStrength * (1 + (0.5 - openness)), 0, 1);
+				intensity = BdiUtils.clamp(predicateDirect.getStrength() * absStrength * (1 + (0.5 - openness)), 0, 1);
 				decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * -1;//TODO: formula obtained while refactoring and unchanged: decay will be negative, is it normal ?
 			}
 			

@@ -95,15 +95,13 @@ public class LatinhypercubeSampling extends SamplingUtils{
      * @return
      */
     public static List<ParametersSet> latinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){
-    	List<ParametersSet>   finalSamp= new ArrayList<>();
-        List<String> names= new ArrayList<>();
+        List<String> names = new ArrayList<>();
         for(int i=0;i<parameters.size();i++) {
         	names.add(parameters.get(i).getName());
         }
-        Map<String,List<Double>> sampletempmap= generate(N,names,r);
-        List<Map<String,Double>>  sampling =transformMapListToListMap(sampletempmap,names);    
-        finalSamp= buildParametersSetfromSample(scope,parameters,sampling);  
-        return finalSamp;
+        Map<String,List<Double>> sampletempmap = generate(N,names,r);
+        List<Map<String,Double>> sampling = transformMapListToListMap(sampletempmap,names);    
+        return buildParametersSetfromSample(scope,parameters,sampling);
         
     }
 }

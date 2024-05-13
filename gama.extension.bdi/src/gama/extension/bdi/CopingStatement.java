@@ -579,7 +579,7 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (belief != null) {
 			tempBelief.setPredicate((Predicate) belief.value(scope));
 			//if we can't find it in the base we stop
-			if ( !Utils.hasBelief(scope, tempBelief)) {
+			if ( !BdiUtils.hasBelief(scope, tempBelief)) {
 				return super.privateExecuteIn(scope);
 			}
 		}
@@ -588,7 +588,7 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (desire != null) {
 			tempDesire.setPredicate((Predicate) desire.value(scope));
 			//if we can't find it in the base we stop
-			if ( !Utils.hasDesire(scope, tempDesire)) {
+			if ( !BdiUtils.hasDesire(scope, tempDesire)) {
 				return super.privateExecuteIn(scope);
 			}
 		}
@@ -597,7 +597,7 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (uncertainty != null) {
 			tempUncertainty.setPredicate((Predicate) uncertainty.value(scope));
 			//if we can't find it in the base we stop
-			if ( !Utils.hasUncertainty(scope, tempUncertainty)) {
+			if ( !BdiUtils.hasUncertainty(scope, tempUncertainty)) {
 				return super.privateExecuteIn(scope);
 			}
 		}
@@ -606,7 +606,7 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (ideal != null) {
 			tempIdeal.setPredicate((Predicate) ideal.value(scope));
 			//if we can't find it in the base we stop
-			if ( !Utils.hasIdeal(scope, tempIdeal)) {
+			if ( !BdiUtils.hasIdeal(scope, tempIdeal)) {
 				return super.privateExecuteIn(scope);
 			}
 		}
@@ -616,13 +616,13 @@ public class CopingStatement extends AbstractStatementSequence{
 			tempObligation.setPredicate((Predicate) obligation.value(scope));
 			//TODO: it was previously tested against tempUncertainty instead of tempObligation
 			// but that seems illogical, check that it's behaving correctly
-			if ( !Utils.hasObligation(scope, tempObligation)) {
+			if ( !BdiUtils.hasObligation(scope, tempObligation)) {
 				return super.privateExecuteIn(scope);
 			}
 		}
 		
 		// here we make sure we have the proper conditions to add and remove the predicates asked by the user
-		if (emotion != null && ! Utils.hasEmotion(scope, (Emotion) emotion.value(scope))){
+		if (emotion != null && ! BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))){
 			return super.privateExecuteIn(scope);
 		}
 		if (beliefs != null && ! hasBeliefs(scope, (List<Predicate>) beliefs.value(scope))) {
@@ -643,7 +643,7 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (emotions != null && ! hasEmotions(scope,(List<Emotion>) emotions.value(scope))) {
 			return super.privateExecuteIn(scope);
 		}
-		if (threshold != null && (emotion == null || !Utils.hasEmotion(scope, (Emotion) emotion.value(scope)) || Utils.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
+		if (threshold != null && (emotion == null || !BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope)) || BdiUtils.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
 			return super.privateExecuteIn(scope);
 		}
 			
@@ -679,31 +679,31 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (newDesires != null) {
 			final List<Predicate> newDess = (List<Predicate>) newDesires.value(scope);
 			for (final Predicate newDes : newDess) {
-				Utils.addDesire(scope, null,prepareMentalState(scope, "Desire", newDes));
+				BdiUtils.addDesire(scope, null,prepareMentalState(scope, "Desire", newDes));
 			}
 		}
 		if (newBeliefs != null) {
 			final List<Predicate> newBels = (List<Predicate>) newBeliefs.value(scope);
 			for (final Predicate newBel : newBels) {
-				Utils.addBelief(scope, prepareMentalState(scope, "Belief", newBel));
+				BdiUtils.addBelief(scope, prepareMentalState(scope, "Belief", newBel));
 			}
 		}
 		if (newEmotions != null) {
 			final List<Emotion> newEmos = (List<Emotion>) newEmotions.value(scope);
 			for (final Emotion newEmo : newEmos) {
-				Utils.addEmotion(scope, newEmo);
+				BdiUtils.addEmotion(scope, newEmo);
 			}
 		}
 		if (newUncertainties != null) {
 			final List<Predicate> newUncerts = (List<Predicate>) newUncertainties.value(scope);
 			for (final Predicate newUncert : newUncerts) {
-				Utils.addUncertainty(scope, prepareMentalState(scope, "Uncertainty", newUncert));
+				BdiUtils.addUncertainty(scope, prepareMentalState(scope, "Uncertainty", newUncert));
 			}
 		}
 		if (newIdeals != null) {
 			final List<Predicate> newIdes = (List<Predicate>) newIdeals.value(scope);
 			for (final Predicate newIde : newIdes) {
-				Utils.addIdeal(scope, prepareMentalState(scope, "Ideal", newIde));
+				BdiUtils.addIdeal(scope, prepareMentalState(scope, "Ideal", newIde));
 			}
 		}
 	}	
@@ -717,19 +717,19 @@ public class CopingStatement extends AbstractStatementSequence{
 	private void addNewPredicates(IScope scope) {
 		
 		if	(newDesire != null) {
-			Utils.addDesire(scope, null,prepareMentalState(scope, "Desire", (Predicate) newDesire.value(scope)));
+			BdiUtils.addDesire(scope, null,prepareMentalState(scope, "Desire", (Predicate) newDesire.value(scope)));
 		}
 		if (newBelief != null) {
-			Utils.addBelief(scope, prepareMentalState(scope, "Belief", (Predicate) newBelief.value(scope)));
+			BdiUtils.addBelief(scope, prepareMentalState(scope, "Belief", (Predicate) newBelief.value(scope)));
 		}
 		if (newEmotion != null) {
-			Utils.addEmotion(scope, (Emotion) newEmotion.value(scope));
+			BdiUtils.addEmotion(scope, (Emotion) newEmotion.value(scope));
 		}
 		if (newUncertainty != null) {
-			Utils.addUncertainty(scope, prepareMentalState(scope, "Uncertainty", (Predicate) newUncertainty.value(scope)));
+			BdiUtils.addUncertainty(scope, prepareMentalState(scope, "Uncertainty", (Predicate) newUncertainty.value(scope)));
 		}
 		if (newIdeal != null) {
-			Utils.addIdeal(scope, prepareMentalState(scope, "Ideal", (Predicate) newIdeal.value(scope)));
+			BdiUtils.addIdeal(scope, prepareMentalState(scope, "Ideal", (Predicate) newIdeal.value(scope)));
 		}
 	}
 	
@@ -744,36 +744,36 @@ public class CopingStatement extends AbstractStatementSequence{
 		if (removeBelief != null) {
 			final Predicate removBel = (Predicate) removeBelief.value(scope);
 			final MentalState tempRemoveBelief = new MentalState("Belief", removBel);
-			Utils.removeBelief(scope,tempRemoveBelief);
+			BdiUtils.removeBelief(scope,tempRemoveBelief);
 		}
 		if (removeDesire != null) {
 			final Predicate removeDes = (Predicate) removeDesire.value(scope);
 			final MentalState tempRemoveDesire = new MentalState("Desire", removeDes);
-			Utils.removeDesire(scope,tempRemoveDesire);
+			BdiUtils.removeDesire(scope,tempRemoveDesire);
 		}
 		if (removeIntention != null) {
 			final Predicate removeInt = (Predicate) removeIntention.value(scope);
 			final MentalState tempRemoveIntention = new MentalState("Intention", removeInt);
-			Utils.removeIntention(scope,tempRemoveIntention);
+			BdiUtils.removeIntention(scope,tempRemoveIntention);
 		}
 		if (removeEmotion != null) {
 			final Emotion removeEmo = (Emotion) removeEmotion.value(scope);
-			Utils.removeEmotion(scope, removeEmo);
+			BdiUtils.removeEmotion(scope, removeEmo);
 		}
 		if (removeUncertainty != null) {
 			final Predicate removUncert = (Predicate) removeUncertainty.value(scope);
 			final MentalState tempRemoveUncertainty = new MentalState("Uncertainty",removUncert);
-			Utils.removeUncertainty(scope,tempRemoveUncertainty);
+			BdiUtils.removeUncertainty(scope,tempRemoveUncertainty);
 		}
 		if (removeIdeal != null) {
 			final Predicate removeIde = (Predicate) removeIdeal.value(scope);
 			final MentalState tempRemoveIde = new MentalState("Ideal", removeIde);
-			Utils.removeIdeal(scope,tempRemoveIde);
+			BdiUtils.removeIdeal(scope,tempRemoveIde);
 		}
 		if (removeObligation != null) {
 			final Predicate removeObl = (Predicate) removeObligation.value(scope);
 			final MentalState tempRemoveObl = new MentalState("Obligation",removeObl);
-			Utils.removeObligation(scope,tempRemoveObl);
+			BdiUtils.removeObligation(scope,tempRemoveObl);
 		}
 	}
 	
@@ -788,36 +788,36 @@ public class CopingStatement extends AbstractStatementSequence{
 		final List<Predicate> removBels = removeBeliefs != null ? (List<Predicate>) removeBeliefs.value(scope) : List.of();
 		for (final Predicate removBel : removBels) {
 			final MentalState tempRemoveBeliefs = new MentalState("Belief", removBel);
-			Utils.removeBelief(scope,tempRemoveBeliefs);
+			BdiUtils.removeBelief(scope,tempRemoveBeliefs);
 		}
 
 		final List<Predicate> removeDess = removeDesires != null ? (List<Predicate>) removeDesires.value(scope) : List.of();
 		for (final Predicate removeDes : removeDess) {
 			final MentalState tempRemoveDesires = new MentalState("Desire", removeDes);
-			Utils.removeDesire(scope,tempRemoveDesires);
+			BdiUtils.removeDesire(scope,tempRemoveDesires);
 		}
 
 		final List<Emotion> removeEmos = removeEmotions != null ? (List<Emotion>) removeEmotions.value(scope) : List.of();
 		for (final Emotion removeEmo : removeEmos) {
-			Utils.removeEmotion(scope,removeEmo);
+			BdiUtils.removeEmotion(scope,removeEmo);
 		}
 		
 		final List<Predicate> removUncerts = removeUncertainties != null ? (List<Predicate>) removeUncertainties.value(scope) : List.of();
 		for (final Predicate removUncert : removUncerts) {
 			final MentalState tempRemoveUncertainties = new MentalState("Uncertainty",removUncert);
-			Utils.removeUncertainty(scope,tempRemoveUncertainties);
+			BdiUtils.removeUncertainty(scope,tempRemoveUncertainties);
 		}
 	
 		final List<Predicate> removeIdes = removeIdeals != null ? (List<Predicate>) removeIdeals.value(scope) : List.of();
 		for (final Predicate removeIde : removeIdes) {
 			final MentalState tempRemoveIdeals = new MentalState("Ideal", removeIde);
-			Utils.removeIdeal(scope,tempRemoveIdeals);
+			BdiUtils.removeIdeal(scope,tempRemoveIdeals);
 		}
 		
 		final List<Predicate> removeObls = removeObligation != null ? (List<Predicate>)removeObligations.value(scope) : List.of();
 		for (final Predicate removeObl : removeObls) {
 			final MentalState tempRemoveObligations = new MentalState("Obligation",removeObl);
-			Utils.removeObligation(scope,tempRemoveObligations);
+			BdiUtils.removeObligation(scope,tempRemoveObligations);
 		}
 	}
 	
@@ -832,7 +832,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	private boolean hasBeliefs(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Belief", p);
-			if (!Utils.hasBelief(scope, temp))
+			if (!BdiUtils.hasBelief(scope, temp))
 				return false;
 		}
 		return true;
@@ -848,7 +848,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	private boolean hasDesires(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Desire", p);
-			if (!Utils.hasDesire(scope, temp))
+			if (!BdiUtils.hasDesire(scope, temp))
 				return false;
 		}
 		return true;
@@ -864,7 +864,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	private boolean hasUncertainties(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Uncertainty", p);
-			if (!Utils.hasUncertainty(scope, temp))
+			if (!BdiUtils.hasUncertainty(scope, temp))
 				return false;
 		}
 		return true;
@@ -880,7 +880,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	private boolean hasIdeals(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Ideal", p);
-			if (!Utils.hasIdeal(scope, temp))
+			if (!BdiUtils.hasIdeal(scope, temp))
 				return false;
 		}
 		return true;
@@ -896,7 +896,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	private boolean hasObligations(final IScope scope, final List<Predicate> predicates) {
 		for (final Predicate p : predicates) {
 			final MentalState temp = new MentalState("Uncertainty", p);
-			if (!Utils.hasUncertainty(scope, temp))
+			if (!BdiUtils.hasUncertainty(scope, temp))
 				return false;
 		}
 		return true;
@@ -911,7 +911,7 @@ public class CopingStatement extends AbstractStatementSequence{
 	 */
 	private boolean hasEmotions(final IScope scope, final List<Emotion> emotions) {
 		for (final Emotion p : emotions) {
-			if (!Utils.hasEmotion(scope, p))
+			if (!BdiUtils.hasEmotion(scope, p))
 				return false;
 		}
 		return true;
