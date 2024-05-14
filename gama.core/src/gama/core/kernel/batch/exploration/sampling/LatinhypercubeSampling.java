@@ -95,7 +95,8 @@ public class LatinhypercubeSampling extends SamplingUtils{
      * @return
      */
     public static List<ParametersSet> latinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){
-        List<String> names = new ArrayList<>();
+        //TODO: This should probably be refactored with orthogonalsampling, uniformsamlpling, factorialuniformsampling and saltellisampling
+    	List<String> names = new ArrayList<>();
         for(int i=0;i<parameters.size();i++) {
         	names.add(parameters.get(i).getName());
         }
