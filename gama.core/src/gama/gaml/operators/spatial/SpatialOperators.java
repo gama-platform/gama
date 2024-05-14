@@ -525,7 +525,7 @@ public class SpatialOperators {
 	@no_test
 	public static IShape masked_by(final IScope scope, final IShape source, final IContainer<?, IShape> obstacles,
 			final Integer prec) {
-		final Integer precision = prec == null ? 120 : prec;
+		final int precision = prec == null ? 120 : prec;
 		final IAgent a = scope.getAgent();
 		final List<IShape> obst =
 				obstacles == null ? new ArrayList<>() : obstacles.listValue(scope, Types.GEOMETRY, false);

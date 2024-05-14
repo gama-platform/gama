@@ -413,24 +413,24 @@ public class Stochanalysis {
 		IMap<ParametersSet,List<Double>> res = GamaMapFactory.create();
 		switch (method) {
 		case CV -> {
-			for (ParametersSet ps : sample.keySet()) {
-				List<Object> currentXp = new ArrayList<>(sample.get(ps));
+			for (var es : sample.entrySet()) {
+				List<Object> currentXp = new ArrayList<>(es.getValue());
 				Collections.shuffle(currentXp);
-				res.put(ps, coefficientOfVariance(currentXp, scope));
+				res.put(es.getKey(), coefficientOfVariance(currentXp, scope));
 			}
 		}
 		case SE -> {
-			for (ParametersSet ps : sample.keySet()) {
-				List<Object> currentXp = new ArrayList<>(sample.get(ps));
+			for (var es : sample.entrySet()) {
+				List<Object> currentXp = new ArrayList<>(es.getValue());
 				Collections.shuffle(currentXp);
-				res.put(ps, standardError(currentXp, scope));
+				res.put(es.getKey(), standardError(currentXp, scope));
 			}
 		}
 		case ES -> {
-			for (ParametersSet ps : sample.keySet()) {
-				List<Object> currentXp = new ArrayList<>(sample.get(ps));
+			for (var es : sample.entrySet()) {
+				List<Object> currentXp = new ArrayList<>(es.getValue());
 				Collections.shuffle(currentXp);
-				res.put(ps, criticalEffectSize(currentXp, scope) );
+				res.put(es.getKey(), criticalEffectSize(currentXp, scope) );
 			}
 		}
 		case PT -> {
@@ -632,7 +632,7 @@ public class Stochanalysis {
 	 */
 	private static String buildString(final Map<String, Object> s) {
 		StringBuilder txt = new StringBuilder();
-		for (String name : s.keySet()) { txt.append(s.get(name)).append("_"); }
+		for (var v : s.values()) { txt.append(v).append("_"); }
 		return txt.toString();
 	}
 
@@ -659,17 +659,17 @@ public class Stochanalysis {
 		List<Map<String, Object>> MySample = Cast.asList(scope, STO_simu.get(0));
 		Map<String, List<Double>> Outputs = Cast.asMap(scope, STO_simu.get(1), false);
 		int min_replicat = 1;
-		for (String name : Outputs.keySet()) {
+		for (List<Double> val : Outputs.values()) {
 			Map<String, List<Object>> sample = new HashedMap<>();
 			for (Map<String, Object> m : MySample) {
 				String s = buildString(m);
 				List<Object> tmp_l = sample.get(s);
 				if (tmp_l != null) {
-					tmp_l.add(Outputs.get(name));
+					tmp_l.add(val);
 					m.replace(s, tmp_l);
 				} else {
 					tmp_l = new ArrayList<>();
-					tmp_l.add(Outputs.get(name));
+					tmp_l.add(val);
 					m.put(s, tmp_l);
 				}
 			}

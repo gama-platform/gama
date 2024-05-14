@@ -51,8 +51,8 @@ public class ImageLayer extends AbstractLayer {
 	/** The is file. */
 	boolean isImageProvider;
 
-	/** cached copy to avoid reloading **/
-	BufferedImage cachedBufferedImage;
+//	/** cached copy to avoid reloading **/
+//	BufferedImage cachedBufferedImage;
 
 	/**
 	 * Instantiates a new image layer.

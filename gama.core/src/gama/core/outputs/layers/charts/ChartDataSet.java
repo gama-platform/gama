@@ -488,9 +488,9 @@ public class ChartDataSet {
 		for (final ChartDataSource source : sourcestoremove) {
 			final LinkedHashMap<String, ChartDataSeries> sourceseries = source.getSeries();
 
-			for (final String sn : sourceseries.keySet()) {
-				final ChartDataSeries ser = sourceseries.get(sn);
-				if (ser.xvalues.size() < 2) { this.removeserie(scope, sn); }
+			for (final var es : sourceseries.entrySet()) {
+				final ChartDataSeries ser = es.getValue();
+				if (ser.xvalues.size() < 2) { this.removeserie(scope, es.getKey()); }
 			}
 			sources.remove(source);
 		}

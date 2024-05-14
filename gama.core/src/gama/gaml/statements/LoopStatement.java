@@ -542,7 +542,6 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 * @return the from exp
 		 */
 		Number getFromExp(final IScope scope, final IExpression exp) {
-			var v = isInt ? Cast.asInt(scope, exp.value(scope)) : Cast.asFloat(scope, exp.value(scope));
 			return isInt ? Cast.asInt(scope, exp.value(scope)) : Cast.asFloat(scope, exp.value(scope));
 		}
 

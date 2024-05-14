@@ -1363,17 +1363,18 @@ public class BdiUtils {
 		
 		for (final SocialLink temp : BdiUtils.getSocialBase(scope, SimpleBdiArchitecture.SOCIALLINK_BASE)) {
 			final IAgent agentTemp = temp.getAgent();
-			IScope scopeAgentTemp = null;
-			if (agentTemp != null) {
-				scopeAgentTemp = agentTemp.getScope().copy("in SimpleBdiArchitecture");
-				scopeAgentTemp.push(agentTemp);
+			if (agentTemp == null) {
+				return;
 			}
+			IScope scopeAgentTemp = null;
+			scopeAgentTemp = agentTemp.getScope().copy("in SimpleBdiArchitecture");
+			scopeAgentTemp.push(agentTemp);
 			double signLiking = Math.signum(temp.getLiking());
 			for (final Emotion emo : BdiUtils.getEmotionBase(scopeAgentTemp, SimpleBdiArchitecture.EMOTION_BASE)) {
 				if ( "joy".equals(emo.getName()) || "sadness".equals(emo.getName()) ) {
 					final Emotion newEmo = new Emotion(BdiUtils.getNewEmotionNameToCreateHappyFor(emo.getName(), signLiking > 0),
 							emo.getIntensity() * signLiking * temp.getLiking(), emo.getAbout(),
-							//TODO: the previous comments said to change the formula but no indication
+							//TODO: the previous comments said that the formula had to be changed but with no further indication
 							// maybe use the one used in createHappyForFromMentalState (above)?
 							agentTemp);
 					newEmo.setDecay(0);

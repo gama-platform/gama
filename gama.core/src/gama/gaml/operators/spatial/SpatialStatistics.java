@@ -277,10 +277,10 @@ public class SpatialStatistics {
 
 				distMin = Double.MAX_VALUE;
 				minFusion = null;
-				for (final List[] distGp : distances.keySet()) {
-					final double dist = distances.get(distGp);
+				for (final var es : distances.entrySet()) {
+					final double dist = es.getValue();
 					if (dist < distMin) {
-						minFusion = distGp;
+						minFusion = es.getKey();
 						distMin = dist;
 					}
 				}

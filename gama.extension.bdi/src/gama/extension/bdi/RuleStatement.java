@@ -820,7 +820,7 @@ public class RuleStatement extends AbstractStatement {
         if (obligation != null) {
             tempObligation.setPredicate((Predicate) obligation.value(scope));
             // if we can't find the obligation we stop the execution
-            if (!BdiUtils.hasObligation(scope, tempUncertainty)) {
+            if (!BdiUtils.hasObligation(scope, tempObligation)) {
                 return null;
             }
         }

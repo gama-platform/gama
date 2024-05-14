@@ -151,7 +151,7 @@ public class MulticriteriaAnalyzeOperator {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		final Map<String, Double> critWeight = new HashMap<>();
 		final Map<Set<String>, Double> weight = new HashMap<>();
-		for (final Object o : criteriaWeights.keySet()) {
+		for (final Object o : criteriaWeights.entrySet()) {
 			final Set<String> key = new LinkedHashSet<>((List) o);
 			final Double val = Cast.asFloat(scope, criteriaWeights.get(o));
 			if (key.size() == 1) {
