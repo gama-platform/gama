@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.core.kernel.simulation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -190,7 +189,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 			// See issue #130 -- we add the parameters values to make sure they are passed (but not for batch).
 			if (!getHost().getSpecies().isBatch()) { sim.setExternalInits(getHost().getParameterValues()); }
 			sim.setExternalInits(firstInitValues);
-			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Arrays.asList(sim.getExternalInits()));
+			createVariablesFor(sim.getScope(), Collections.singletonList(sim), Collections.singletonList(sim.getExternalInits()));
 		}
 
 		if (toBeScheduled) {

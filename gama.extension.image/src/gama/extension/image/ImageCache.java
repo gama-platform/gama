@@ -15,9 +15,8 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -69,10 +68,10 @@ public class ImageCache {
 	}
 
 	/** The Constant tiffExt. */
-	private static final List<String> tiffExt = Arrays.asList(".tiff", ".tif", ".TIF", ".TIFF");
+	private static final Set<String> tiffExt = Set.of(".tiff", ".tif", ".TIF", ".TIFF");
 
 	/** The Constant gifExt. */
-	private static final List<String> gifExt = Arrays.asList(".gif", ".GIF");
+	private static final Set<String> gifExt = Set.of(".gif", ".GIF");
 
 	/** The instance. */
 	private static ImageCache instance = new ImageCache();
@@ -165,7 +164,7 @@ public class ImageCache {
 		}
 		if (gifExt.contains(ext)) {
 			final GifImageContainer d = new GifImageContainer();
-			d.read(new FileInputStream(file.getAbsolutePath()));
+			d.read(java.nio.file.Files.newInputStream(file.toPath()));
 			return d.getImage();
 		}
 
@@ -220,7 +219,7 @@ public class ImageCache {
 	 */
 	private GifImageContainer privateReadGifFromFile(final File file) throws IOException {
 		final GifImageContainer d = new GifImageContainer();
-		d.read(new FileInputStream(file.getAbsolutePath()));
+		d.read(java.nio.file.Files.newInputStream(file.toPath()));
 		return d;
 	}
 

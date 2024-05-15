@@ -1288,7 +1288,7 @@ public class GMatrix implements java.io.Serializable, Cloneable {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer(nRow * nCol * 8);
+		StringBuilder buffer = new StringBuilder(nRow * nCol * 8);
 
 		int i, j;
 
@@ -1376,13 +1376,6 @@ public class GMatrix implements java.io.Serializable, Cloneable {
 		}
 	}
 
-	/**
-	 * @deprecated Use epsilonEquals(GMatrix, double) instead
-	 */
-	@Deprecated
-	public boolean epsilonEquals(final GMatrix m1, final float epsilon) {
-		return epsilonEquals(m1, (double) epsilon);
-	}
 
 	/**
 	 * Returns true if the L-infinite distance between this matrix and matrix m1 is less than or equal to the epsilon
@@ -2314,7 +2307,7 @@ public class GMatrix implements java.io.Serializable, Cloneable {
 	 * @return the string
 	 */
 	private static String toString(final GMatrix m) {
-		StringBuffer buffer = new StringBuffer(m.nRow * m.nCol * 8);
+		StringBuilder buffer = new StringBuilder(m.nRow * m.nCol * 8);
 		int i, j;
 
 		for (i = 0; i < m.nRow; i++) {

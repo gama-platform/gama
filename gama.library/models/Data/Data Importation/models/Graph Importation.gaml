@@ -9,7 +9,7 @@ model GraphImportation
 
 global {
 	
-	string type <- "graphml" among: ["graphml", "gml","dot", "dimacs", "gexf", "tsplib", "graph6"] parameter: true; 
+	string type <- "graphml" among: ["graphml", "gml","dot", "dimacs", "gexf", "tsplib", "graph6"]; 
 	
 	map loc_nodes;
 	
@@ -54,6 +54,9 @@ global {
 }
 
 experiment import_graph type: gui {
+	
+	parameter var:type;
+	
 	output {
 		display graph_display type: 3d axes: false{
 			graphics "graph " {

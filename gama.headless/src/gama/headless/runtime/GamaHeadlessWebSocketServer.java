@@ -11,7 +11,8 @@
 package gama.headless.runtime;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +76,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaHeadlessWebSocketServer StartForSecureHeadless(final int port, final ThreadPoolExecutor runner,
+	public static GamaHeadlessWebSocketServer startForSecureHeadless(final int port, final ThreadPoolExecutor runner,
 			final boolean ssl, final String jksPath, final String spwd, final String kpwd, final int pingInterval) {
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval);
@@ -101,25 +102,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaHeadlessWebSocketServer StartForHeadless(final int port, final ThreadPoolExecutor runner,
+	public static GamaHeadlessWebSocketServer startForHeadless(final int port, final ThreadPoolExecutor runner,
 			final int pingInterval) {
-		// try {
-		// ServerSocketChannel sserver = ServerSocketChannel.open();
-		// ServerSocket socket = sserver.socket();
-		// socket.bind(new InetSocketAddress(port), -1);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// try {
-		// ServerSocketChannel sserver = ServerSocketChannel.open();
-		// ServerSocket socket = sserver.socket();
-		// socket.bind(new InetSocketAddress(port), -1);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, false, "", "", "", pingInterval);
 
@@ -177,7 +161,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 			final String keyPassword) {
 		// load up the key store
 		KeyStore ks;
-		try (FileInputStream fis = new FileInputStream(new File(keyStore))) {
+		try (InputStream fis = Files.newInputStream(new File(keyStore).toPath())) {
 			ks = KeyStore.getInstance(JKS);
 			ks.load(fis, storePassword.toCharArray());
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X509);
@@ -284,8 +268,12 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void execute(final Runnable command) {
-		if (executor == null) { command.run(); }
-		executor.execute(command);
+		if (executor == null) { 
+			command.run(); 
+		}
+		else {
+			executor.execute(command);			
+		}
 	}
 
 	/**
@@ -309,12 +297,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan) {
-		Map<String, IExperimentPlan> exps = launchedExperiments.get(socketId);
-		if (exps == null) {
-			exps = new ConcurrentHashMap<>();
-			launchedExperiments.put(socketId, exps);
-		}
-		exps.put(experimentId, plan);
+		launchedExperiments.putIfAbsent(socketId,  new ConcurrentHashMap<>());
+		launchedExperiments.get(socketId).put(experimentId, plan);
 	}
 
 	/**
@@ -348,12 +332,15 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		final String socket_id = map.get(ISocketCommand.SOCKET_ID) != null
 				? map.get(ISocketCommand.SOCKET_ID).toString() : "" + socket.hashCode();
 		IExperimentPlan plan = null;
-		if (exp_id == "") throw new CommandException(new CommandResponse(GamaServerMessage.Type.MalformedRequest,
-				"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
+		if ("".equals(exp_id)) {
+			throw new CommandException(new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+					"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
+		}
 		plan = getExperiment(socket_id, exp_id);
-		if (plan == null || plan.getAgent() == null || plan.getAgent().dead() || plan.getCurrentSimulation() == null)
+		if (plan == null || plan.getAgent() == null || plan.getAgent().dead() || plan.getCurrentSimulation() == null) {
 			throw new CommandException(new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));
+		}
 		return plan;
 	}
 

@@ -290,19 +290,6 @@ public class DXFDocument {
 		return bounds;
 	}
 
-	/**
-	 * @deprecated use getBounds().getHeight() instead
-	 * @return
-	 */
-	@Deprecated
-	public double getHeight() { return this.bounds.getHeight(); }
-
-	/**
-	 * @deprecated use getBounds().getWidth() instead
-	 * @return
-	 */
-	@Deprecated
-	public double getWidth() { return this.bounds.getWidth(); }
 
 	/**
 	 * Gets the DXF header.

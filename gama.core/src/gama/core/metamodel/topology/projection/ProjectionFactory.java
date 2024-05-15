@@ -77,9 +77,13 @@ public class ProjectionFactory {
 	public static CoordinateReferenceSystem EPSG3857 = null;
 
 	static {
+		//have to use a tmp variable because EPSG3857 is final
+		CoordinateReferenceSystem tmp = null;
 		try {
-			EPSG3857 = CRS.decode("EPSG:3857");
-		} catch (FactoryException e) {}
+			tmp = CRS.decode("EPSG:3857");
+		} catch (FactoryException e) {
+		}
+		EPSG3857 = tmp;
 	}
 
 	/**
@@ -278,7 +282,7 @@ public class ProjectionFactory {
 	 *            the longitude first
 	 * @return the crs
 	 */
-	public CoordinateReferenceSystem getCRS(final IScope scope, final String code, final boolean longitudeFirst) {
+	public CoordinateReferenceSystem getCRS(final IScope scope, final String code, final boolean longitudeFirst) throws GamaRuntimeException {
 		try {
 			CoordinateReferenceSystem crs = CRSCache.get(code);
 			if (crs == null) {

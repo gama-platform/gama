@@ -10,7 +10,6 @@
 package gama.core.kernel.experiment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -229,7 +228,7 @@ public class BatchAgent extends ExperimentAgent {
 	 */
 	@Override
 	public boolean step(final IScope scope) {
-		// We run the exloration algorithm. The future steps will be called by the exploration algorithm through the
+		// We run the exploration algorithm. The future steps will be called by the exploration algorithm through the
 		// launchSimulationsWithSolution() method
 		getSpecies().getExplorationAlgorithm().run(scope);
 		// Once the algorithm has finished exploring the solutions, the agent is
@@ -389,7 +388,7 @@ public class BatchAgent extends ExperimentAgent {
 							: fitnessCombination == AOptimizationAlgorithm.C_MIN ? fit.min().getAsDouble()
 							: fit.average().getAsDouble();
 				}
-				res.get(p).put(IKeyword.FITNESS, Arrays.asList(lastFitness));
+				res.get(p).put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
 				// we update the best solution found so far
 				oAlgo.updateBestFitness(lastSolution, lastFitness);
 
@@ -479,7 +478,7 @@ public class BatchAgent extends ExperimentAgent {
 									+ pop.getNumberOfActiveThreads() + " threads)",
 							"overlays/small.exp.batch.white" + suffix);
 				}
-				suffix = suffix == "" ? "2" : "";
+				suffix = "".equals(suffix) ? "2" : "";
 				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}

@@ -26,7 +26,7 @@ import gama.gaml.types.IType;
  */
 @SuppressWarnings ("unchecked")
 @type (
-		name = "predicate",
+		name = SimpleBdiArchitecture.PREDICATE,
 		id = PredicateType.id,
 		wraps = { Predicate.class },
 		concept = { IConcept.TYPE, IConcept.BDI })
@@ -46,12 +46,15 @@ public class PredicateType extends GamaType<Predicate> {
 	@doc ("cast an object as a predicate")
 	public Predicate cast(final IScope scope, final Object obj, final Object val, final boolean copy)
 			throws GamaRuntimeException {
-		if (obj instanceof Predicate) return (Predicate) obj;
-		if (obj instanceof String) return new Predicate((String) obj);
+		if (obj instanceof Predicate p) return p;
+		if (obj instanceof String s) return new Predicate(s);
 		if (obj instanceof Map) {
 			final Map<String, Object> map = (Map<String, Object>) obj;
-			final String nm = (String) (map.containsKey("name") ? map.get("name") : "predicate");
-			final IMap values = (IMap) (map.containsKey("values") ? map.get("values") : null);
+			String nm = (String) map.get("name");
+			if (nm == null) {
+				nm = SimpleBdiArchitecture.PREDICATE;
+			}
+			final IMap values = (IMap) map.get("values");
 			return new Predicate(nm, values);
 		}
 		return null;

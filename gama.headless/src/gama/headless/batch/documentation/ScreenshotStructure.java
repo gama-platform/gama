@@ -27,24 +27,12 @@ public class ScreenshotStructure {
 	/**
 	 * The Class DisplayParametersStructure.
 	 */
-	private class DisplayParametersStructure {
+	private record DisplayParametersStructure (
+		String displayName,
+		int cycleNumber
+	)
+	{
 		
-		/** The Display name. */
-		public String DisplayName;
-		
-		/** The Cycle number. */
-		public int CycleNumber;
-		
-		/**
-		 * Instantiates a new display parameters structure.
-		 *
-		 * @param displayName the display name
-		 * @param cycleNumber the cycle number
-		 */
-		public DisplayParametersStructure(String displayName, int cycleNumber) {
-			DisplayName = displayName;
-			CycleNumber = cycleNumber;
-		}
 	}
 	
 	/**
@@ -64,8 +52,8 @@ public class ScreenshotStructure {
 	public int getFinalStep() {
 		int result=1;
 		for (int displayId = 0 ; displayId < displayParameters.size(); displayId++) {
-			if (result <= displayParameters.get(displayId).CycleNumber) {
-				result = displayParameters.get(displayId).CycleNumber + 1;
+			if (result <= displayParameters.get(displayId).cycleNumber) {
+				result = displayParameters.get(displayId).cycleNumber + 1;
 			}
 		}
 		return result;
@@ -80,8 +68,8 @@ public class ScreenshotStructure {
 	public boolean checkDisplayName(ArrayList<String> displayNames) {
 		// return true if all the list of internal "display names" are also present in the list "displayNames".
 		for (int displayIdx = 0 ; displayIdx < displayParameters.size() ; displayIdx++) {
-			if (!displayNames.contains(displayParameters.get(displayIdx).DisplayName)) {
-				System.err.println(displayParameters.get(displayIdx).DisplayName+" display is impossible to find...");
+			if (!displayNames.contains(displayParameters.get(displayIdx).displayName)) {
+				System.err.println(displayParameters.get(displayIdx).displayName+" display is impossible to find...");
 				return false;
 			}
 		}
@@ -104,8 +92,8 @@ public class ScreenshotStructure {
         
         // browse all the displays
         for (int displayIdx = 0 ; displayIdx < displayParameters.size() ; displayIdx++) {
-        	String display = displayParameters.get(displayIdx).DisplayName;
-        	result += "      <Output id=\""+displayIdx+1+"\" name=\""+display+"\" framerate=\""+displayParameters.get(displayIdx).CycleNumber+"\" />\n";
+        	String display = displayParameters.get(displayIdx).displayName;
+        	result += "      <Output id=\""+displayIdx+1+"\" name=\""+display+"\" framerate=\""+displayParameters.get(displayIdx).cycleNumber+"\" />\n";
         }
         
         result += "    </Outputs>\n";

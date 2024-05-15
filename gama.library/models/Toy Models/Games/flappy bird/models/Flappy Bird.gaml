@@ -17,13 +17,13 @@ global {
 	file bird_image <- image_file("../includes/birdd.png");
 	
 	
-	point param_size <- {3.0, 4.65}parameter:true;
-	point off_set <- {0.035,0.16,0}parameter:true;
-	float bird_to_size <- 5.2 parameter:true;
-	point bird_offset <- {0.017, -0.012} parameter:true;
-	point text_point <- {0.97, 0.18} parameter:true;
-	float text_size <- 30.0 parameter:true;
-	point graph_position <- {0.2, 0.2} parameter:true;
+	point param_size <- {3.0, 4.65};
+	point off_set <- {0.035,0.16,0};
+	float bird_to_size <- 5.2;
+	point bird_offset <- {0.017, -0.012};
+	point text_point <- {0.97, 0.18};
+	float text_size <- 30.0;
+	point graph_position <- {0.2, 0.2};
 	
 	geometry shape <- square(2#m);
 	
@@ -178,7 +178,16 @@ experiment main {
 	
 	float minimum_cycle_time <- step;
 	
-	bool has_started<-false;
+	bool has_started <- false;
+	
+	parameter var:param_size <- {3.0, 4.65};
+	parameter var:off_set <- {0.035,0.16,0};
+	parameter var:bird_to_size <- 5.2 ;
+	parameter var:bird_offset <- {0.017, -0.012} ;
+	parameter var:text_point <- {0.97, 0.18} ;
+	parameter var:text_size <- 30.0 ;
+	parameter var:graph_position <- {0.2, 0.2} ;
+	
 	
 	output synchronized:true{
 		

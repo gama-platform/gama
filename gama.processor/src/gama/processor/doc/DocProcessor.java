@@ -86,10 +86,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 	/** The nbr operators. */
 	// Statistic values
 	int nbrOperators;
-	
-	/** The nbr operators doc. */
-	int nbrOperatorsDoc;
-	
+		
 	/** The nbr skills. */
 	int nbrSkills;
 	
@@ -102,7 +99,6 @@ public class DocProcessor extends ElementProcessor<doc> {
 	public DocProcessor() {
 		// firstParsing = true;
 		nbrOperators = 0;
-		nbrOperatorsDoc = 0;
 		nbrSkills = 0;
 		nbrSymbols = 0;
 		tc = new TypeConverter();
@@ -352,7 +348,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			///////////*****************
 			for( Element elt : ((TypeElement) e).getEnclosedElements()) {
 //				mes.printMessage(Kind.WARNING, ((TypeElement) e).getQualifiedName().toString() + " - " + elt.getSimpleName() + " - " + elt.getSimpleName().toString().equals("staticCast") + " - " + elt.getKind().equals(ElementKind.METHOD));
-				if(elt.getKind().equals(ElementKind.METHOD) &&  elt.getSimpleName().toString().equals(CAST_METHOD) ) {
+				if(ElementKind.METHOD.equals(elt.getKind()) &&  CAST_METHOD.equals(elt.getSimpleName().toString()) ) {
 					doc docMethod = elt.getAnnotation(doc.class);
 //					mes.printMessage(Kind.WARNING, "--------" + ((TypeElement) e).getQualifiedName().toString() + " - " + elt.getSimpleName() + " " + (docMethod));
 					
@@ -469,7 +465,9 @@ public class DocProcessor extends ElementProcessor<doc> {
 				if(elt.getKind().equals(ElementKind.CONSTRUCTOR)) {
 					Operands ops_file = new Operands(document, ((TypeElement) e).getQualifiedName().toString(), "", "file", "");
 					int arity = 0;
-					String op_name_usage = e.getAnnotation(file.class).name() + "_file(";
+					StringBuilder str = new StringBuilder();
+					str.append(e.getAnnotation(file.class).name());
+					str.append("_file(");
 					
 					// Define the various possible uses 
 					// Parse the constructor parameters
@@ -479,12 +477,13 @@ public class DocProcessor extends ElementProcessor<doc> {
 						if(!typeName.contains("IScope")) {
 							ops_file.addOperand(new Operand(document, operandName, arity, tc.getProperType(var.asType().toString())));	
 							arity++;		
-							op_name_usage = op_name_usage + tc.getProperType(var.asType().toString()) + ",";
+							str.append(tc.getProperType(var.asType().toString()));
+							str.append(",");
 						}						
 					}
 					op_file.addOperands(ops_file);	
 					
-					op_name_usage = op_name_usage.substring(0, op_name_usage.length()-1) + ")";
+					final String op_name_usage = str.substring(0, str.length()-1) + ")";
 					
 					// Create the documentation for each constructor as an usage
 					// when reading a @doc annotation:
@@ -502,17 +501,18 @@ public class DocProcessor extends ElementProcessor<doc> {
 			}
 			
 			final String[] tabExtension = e.getAnnotation(file.class).extensions();
-			String listExtension = "";
+			StringBuilder listExtensions = new StringBuilder();
 			if (tabExtension.length > 0) {
-				listExtension = tabExtension[0];
+				listExtensions.append(tabExtension[0]);
 				if (tabExtension.length > 1) {
 					for (int i = 1; i < tabExtension.length; i++) {
-						listExtension = listExtension + ", " + tabExtension[i];
+						listExtensions.append(", ");
+						listExtensions.append(tabExtension[i]);
 					}
 				}
 			}
 			op_file.setDocumentation("Constructs a file of type " + e.getAnnotation(file.class).name()
-					+ ". Allowed extensions are limited to " + listExtension);
+					+ ". Allowed extensions are limited to " + listExtensions.toString());
 
 			op_file.addSeeAlso("is_" + e.getAnnotation(file.class).name());
 			op_is.addSeeAlso(e.getAnnotation(file.class).name() + "_file");
@@ -1306,7 +1306,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			// Parse result
 			final String value = docAnnot.value();
 			final boolean masterDoc = docAnnot.masterDoc();
-			if (value != "") {
+			if (! "".equals(value)) {
 				if (docElt.getElementsByTagName(XMLElements.RESULT).getLength() != 0) {
 					final org.w3c.dom.Element resultElt =
 							(org.w3c.dom.Element) docElt.getElementsByTagName(XMLElements.RESULT).item(0);
@@ -1329,7 +1329,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			
 			// Parse returns
 			final String returns = docAnnot.returns();
-			if (returns != "") {
+			if ( ! "".equals(returns)) {
 				if (docElt.getElementsByTagName(XMLElements.RETURNS).getLength() != 0) {
 					final org.w3c.dom.Element returnstElt =
 							(org.w3c.dom.Element) docElt.getElementsByTagName(XMLElements.RETURNS).item(0);
@@ -1591,10 +1591,20 @@ public class DocProcessor extends ElementProcessor<doc> {
 		final String valCstStr = valCst == null ? "No Default Value" : valCst.toString();
 		constantElt.setAttribute(XMLElements.ATT_CST_VALUE, valCstStr);
 
-		String names = "";
+		StringBuilder str = new StringBuilder();
+		boolean first = true;
 		for (final String n : constant.altNames()) {
-			names = "".equals(names) ? PREFIX_CONSTANT + n : names + "," + PREFIX_CONSTANT + n;
+			if (first) {
+				first=false;
+			}
+			else {
+				str.append(",");
+			}
+			str.append(PREFIX_CONSTANT);
+			str.append(n); 
 		}
+		
+		final String names = str.toString();
 		if (!"".equals(names)) {
 			constantElt.setAttribute(XMLElements.ATT_CST_NAMES, names);
 		}
@@ -1622,30 +1632,36 @@ public class DocProcessor extends ElementProcessor<doc> {
 	 */
 	public org.w3c.dom.Element getVarsElt(final vars varsAnnot, final Document doc, final Messager mes,
 			final String skillName, final TypeConverter tc) {
-		if (varsAnnot != null) {
-			final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
-			for (final variable v : varsAnnot.value()) {
-				final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
-				varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
-				varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
-				varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
+		if (varsAnnot == null) {
+			return null;
+		}
+		final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
+		for (final variable v : varsAnnot.value()) {
+			final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
+			varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
+			varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
+			varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
 
-				final org.w3c.dom.Element docEltVar =
-						getDocElt(v.doc(), doc, mes, "Var " + v.name() + " from " + skillName, tc, null, varElt);
-				if (docEltVar != null) {
-					varElt.appendChild(docEltVar);
-				}
-
-				String dependsOn = new String();
-				for (final String dependElement : v.depends_on()) {
-					dependsOn = ("".equals(dependsOn) ? "" : dependsOn + ",") + dependElement;
-				}
-				varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
-				varsElt.appendChild(varElt);
+			final org.w3c.dom.Element docEltVar =
+					getDocElt(v.doc(), doc, mes, "Var " + v.name() + " from " + skillName, tc, null, varElt);
+			if (docEltVar != null) {
+				varElt.appendChild(docEltVar);
 			}
-			return varsElt;
-		} 
-		return null;
+
+
+			StringBuilder strBuilder = new StringBuilder();
+			for (int i = 0 ; i < v.depends_on().length; i++ ) {
+				final String dependElement = v.depends_on()[i];
+				strBuilder.append(dependElement);
+				if (i < v.depends_on().length - 1) {
+					strBuilder.append(",");
+				}
+			}
+			final String dependsOn = strBuilder.toString();				
+			varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
+			varsElt.appendChild(varElt);
+		}
+		return varsElt;
 	}
 
 	/**
@@ -1723,12 +1739,15 @@ public class DocProcessor extends ElementProcessor<doc> {
 				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
 				facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
 				if (f.values().length != 0) {
-					String valuesTaken = ", takes values in: {" + f.values()[0];
+					StringBuilder valuesTaken = new StringBuilder();
+					valuesTaken.append(", takes values in: {");
+					valuesTaken.append(f.values()[0]);
 					for (int i = 1; i < f.values().length; i++) {
-						valuesTaken += ", " + f.values()[i];
+						valuesTaken.append(", ");
+						valuesTaken.append(f.values()[i]);
 					}
-					valuesTaken += "}";
-					facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken);
+					valuesTaken.append("}");
+					facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken.toString());
 				}
 				facetElt.setAttribute(XMLElements.ATT_FACET_OMISSIBLE,
 						f.name().equals(facetsAnnot.omissible()) ? "true" : "false");
@@ -1842,7 +1861,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			}
 		}
 
-		// We had a particular category that is read from the iterator
+		// We add a particular category that is read from the iterator
 		if (e.getAnnotation(operator.class) != null && e.getAnnotation(operator.class).iterator()) {
 			final org.w3c.dom.Element catElt = doc.createElement(XMLElements.CATEGORY);
 			catElt.setAttribute(XMLElements.ATT_CAT_ID, IOperatorCategory.ITERATOR);

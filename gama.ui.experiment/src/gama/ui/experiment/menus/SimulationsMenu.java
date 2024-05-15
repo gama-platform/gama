@@ -39,7 +39,7 @@ import gama.ui.shared.views.toolbar.GamaCommand;
 public class SimulationsMenu extends ContributionItem {
 
 	/** The create new simulation. */
-	public static GamaCommand addNewSimulation = new GamaCommand("experiment/experiment.simulations.add",
+	public static final GamaCommand addNewSimulation = new GamaCommand("experiment/experiment.simulations.add",
 			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment", e -> {
 				final SimulationAgent sim = GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 				if (sim == null) return;
@@ -54,7 +54,7 @@ public class SimulationsMenu extends ContributionItem {
 			});
 
 	/** The duplicate current simulation. */
-	public static GamaCommand duplicateCurrentSimulation =
+	public static final GamaCommand duplicateCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
 					"Duplicate the current simulation and add it to the experiment", e -> {
 						byte[] bytes =
@@ -71,7 +71,7 @@ public class SimulationsMenu extends ContributionItem {
 					});
 
 	/** The kill current simulation. */
-	public static GamaCommand killCurrentSimulation = new GamaCommand("experiment/experiment.simulations.kill",
+	public static final GamaCommand killCurrentSimulation = new GamaCommand("experiment/experiment.simulations.kill",
 			"Kill Simulation", "Kill and remove the current simulation from the experiment", e -> {
 				SimulationAgent sim = GAMA.getSimulation();
 				if (sim == null) return;
@@ -79,7 +79,7 @@ public class SimulationsMenu extends ContributionItem {
 			});
 
 	/** The save current simulation. */
-	public static GamaCommand saveCurrentSimulation = new GamaCommand("experiment/experiment.simulations.save",
+	public static final GamaCommand saveCurrentSimulation = new GamaCommand("experiment/experiment.simulations.save",
 			"Save Simulation...", "Save the current simulation to disk", e -> {
 				SimulationAgent sim = GAMA.getSimulation();
 				if (sim == null) return;
@@ -105,7 +105,7 @@ public class SimulationsMenu extends ContributionItem {
 			});
 
 	/** The save current simulation and history. */
-	public static GamaCommand saveCurrentSimulationAndHistory =
+	public static final GamaCommand saveCurrentSimulationAndHistory =
 			new GamaCommand("experiment/experiment.simulations.save.history", "Save Simulation with its History...",
 					"Save the current simulation and its history to disk", e -> {
 						SimulationAgent sim = GAMA.getSimulation();
@@ -122,7 +122,7 @@ public class SimulationsMenu extends ContributionItem {
 					});
 
 	/** The replace current simulation. */
-	public static GamaCommand replaceCurrentSimulation =
+	public static final GamaCommand replaceCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.load.replace", "Load and Replace Simulation...",
 					"Load a previously saved simulation and replace the current one", e -> {
 
@@ -139,7 +139,7 @@ public class SimulationsMenu extends ContributionItem {
 					});
 
 	/** The load new simulation. */
-	public static GamaCommand loadNewSimulation = new GamaCommand("experiment/experiment.simulations.load.new",
+	public static final GamaCommand loadNewSimulation = new GamaCommand("experiment/experiment.simulations.load.new",
 			"Load New Simulation...", "Load a previously saved simulation and add it to the experiment", e -> {
 				FileDialog fileOpen = new FileDialog(e.display.getActiveShell(), SWT.OPEN);
 				fileOpen.setFilterExtensions(new String[] { "*.simulation" });

@@ -13,8 +13,8 @@ global {
 	
 	
 	geometry shape <- envelope(wall_shapefile);
-	bool display_free_space <- false parameter: true;
-	float P_shoulder_length <- 0.45 parameter: true;
+	bool display_free_space <- false;
+	float P_shoulder_length <- 0.45;
 	
 	float simplification_dist <- 0.5; //simplification distance for the final geometries
 	
@@ -65,14 +65,18 @@ species wall {
 }
 
 experiment normal_sim type: gui {
-		output {
-		display map type: 3d{
+	
+	parameter var:display_free_space;
+	parameter var:P_shoulder_length;
+	
+	output {
+		display map type: 3d axes:false{
 			species wall refresh: false;
 			graphics "open_area" {
 				draw open_area color: #lightpink;
 			}
 			species pedestrian_path aspect:free_area_aspect transparency: 0.5 ;
-			species pedestrian_path refresh: false;
+			species pedestrian_path refresh: true;
 		}
 	}
 }

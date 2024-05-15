@@ -22,11 +22,11 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 		boolean dialog, boolean runtime) {
 
 	/** The null. */
-	public static GamaServerExperimentConfiguration NULL =
+	public static final GamaServerExperimentConfiguration NULL =
 			new GamaServerExperimentConfiguration(null, "", false, false, false, false);
 
 	/** The gui. */
-	public static GamaServerExperimentConfiguration GUI =
+	public static final GamaServerExperimentConfiguration GUI =
 			new GamaServerExperimentConfiguration(null, "", true, true, true, true);
 
 	/**

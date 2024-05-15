@@ -15,7 +15,6 @@ import static gama.core.common.geometry.GeometryUtils.getContourCoordinates;
 import static gama.core.common.geometry.GeometryUtils.getLastPointOf;
 import static gama.core.common.geometry.GeometryUtils.getPointsOf;
 import static gama.core.common.geometry.GeometryUtils.split_at;
-import static gama.gaml.operators.Spatial.Punctal._closest_point_to;
 import static java.lang.Math.min;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,8 +41,8 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Punctal;
+import gama.gaml.operators.spatial.SpatialCreation;
+import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.Types;
 
@@ -184,7 +183,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 				}
 			} else {
 				final IShape lineEnd = edges.get(edges.size() - 1);
-				final GamaPoint falseTarget = _closest_point_to(getEndVertex().getLocation(), lineEnd);
+				final GamaPoint falseTarget = SpatialPunctal._closest_point_to(getEndVertex().getLocation(), lineEnd);
 				pt = start.euclidianDistanceTo(pt0) < falseTarget.euclidianDistanceTo(pt0) ? pt0 : pt1;
 			}
 			if (graph != null) { graphVersion = graph.getPathComputer().getVersion(); }
@@ -223,7 +222,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 						if (cpt == 0 && !source.equals(pt)) {
 							GamaPoint falseSource = source.getLocation();
 							if (source.euclidianDistanceTo(edge2) > min(0.01, edge2.getPerimeter() / 1000)) {
-								falseSource = _closest_point_to(source, edge2);
+								falseSource = SpatialPunctal._closest_point_to(source, edge2);
 								falseSource.z = zVal(falseSource, edge2);
 							}
 							edge2 = split_at(edge2, falseSource).get(1);
@@ -231,7 +230,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 						if (cpt == _edges.size() - 1 && !target.equals(getLastPointOf(edge2))) {
 							GamaPoint falseTarget = target.getLocation();
 							if (target.euclidianDistanceTo(edge2) > min(0.01, edge2.getPerimeter() / 1000)) {
-								falseTarget = _closest_point_to(target, edge2);
+								falseTarget = SpatialPunctal._closest_point_to(target, edge2);
 								falseTarget.z = zVal(falseTarget, edge2);
 							}
 							edge2 = split_at(edge2, falseTarget).get(0);
@@ -257,7 +256,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 									pts.add(edge2.getPoints().get(i));
 								}
 							}
-							edge2 = Spatial.Creation.line(GAMA.getRuntimeScope(), pts);
+							edge2 = SpatialCreation.line(GAMA.getRuntimeScope(), pts);
 						}
 						if (cpt == _edges.size() - 1 && !target.equals(getLastPointOf(edge2))) {
 							IList<IShape> pts = GamaListFactory.create(Types.GEOMETRY);
@@ -280,7 +279,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 							}
 							pts.add(target);
 
-							edge2 = Spatial.Creation.line(GAMA.getRuntimeScope(), pts);
+							edge2 = SpatialCreation.line(GAMA.getRuntimeScope(), pts);
 						}
 
 					}
@@ -487,7 +486,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 				}
 			}
 			line = segments.get(index);
-			currentLocation = Punctal._closest_point_to(source, line);
+			currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
 			final Point pointGeom = (Point) currentLocation.getInnerGeometry();
 			if (line.getInnerGeometry().getNumPoints() >= 3) {
 				distanceS = Double.MAX_VALUE;
@@ -510,7 +509,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		int endIndexSegment = lineEnd.getInnerGeometry().getNumPoints();
 		GamaPoint falseTarget = null;//target.getLocation();
 		if (!keepTarget) {
-			falseTarget = Punctal._closest_point_to(getEndVertex(), lineEnd);
+			falseTarget = SpatialPunctal._closest_point_to(getEndVertex(), lineEnd);
 			endIndexSegment = 1;
 			final Point pointGeom = (Point) falseTarget.getInnerGeometry();
 			if (lineEnd.getInnerGeometry().getNumPoints() >= 3) {

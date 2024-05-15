@@ -10,11 +10,8 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import static gama.core.common.interfaces.IKeyword.EMPTY;
 import static gama.gaml.expressions.IExpressionFactory.TRUE_EXPR;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,6 +19,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.GridLayerStatement.GridLayerSerializer;
@@ -33,7 +32,6 @@ import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.SymbolDescription;
@@ -94,13 +92,6 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("Defines whether this layer is visible or not")),
 				@facet (
-						name = IKeyword.LINES,
-						type = IType.COLOR,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'border' instead",
-								value = "the color to draw lines (borders of cells)")),
-				@facet (
 						name = IKeyword.BORDER,
 						type = IType.COLOR,
 						optional = true,
@@ -143,29 +134,10 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("specify whether the attribute used to compute the elevation is displayed on each cells (false by default)")),
 				@facet (
-						name = "draw_as_dem",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'elevation' instead. This facet is not functional anymore")),
-				@facet (
-						name = EMPTY,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use 'wireframe' instead",
-								value = "if true displays the grid in wireframe using the lines color")),
-				@facet (
 						name = IKeyword.WIREFRAME,
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("if true displays the grid in wireframe using the lines color")),
-				@facet (
-						name = "dem",
-						type = IType.MATRIX,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'elevation' instead. This facet is not functional anymore")),
 				@facet (
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
@@ -223,11 +195,6 @@ public class GridLayerStatement extends AbstractLayerStatement {
 
 		@Override
 		public void validate(final StatementDescription d) {
-			final IExpressionDescription empty = d.getFacet(IKeyword.EMPTY);
-			if (empty != null) {
-				d.setFacetExprDescription(IKeyword.WIREFRAME, empty);
-				d.removeFacets(EMPTY);
-			}
 			final String name = d.getFacet(SPECIES).serializeToGaml(true);
 			final SpeciesDescription sd = d.getModelDescription().getSpeciesDescription(name);
 			if (sd == null || !sd.isGrid()) {
@@ -239,8 +206,6 @@ public class GridLayerStatement extends AbstractLayerStatement {
 				final Integer n = (Integer) exp.getConstValue();
 				if (n == 6) { d.setFacet("hexagonal", TRUE_EXPR); }
 			}
-			final IExpression lines = d.getFacetExpr(LINES);
-			if (lines != null) { d.setFacet(BORDER, lines); }
 			final IExpression tx = d.getFacetExpr(TEXTURE);
 			final IExpression el = d.getFacetExpr(ELEVATION);
 			if ((el == null || FALSE.equals(el.serializeToGaml(true))) && tx != null) {

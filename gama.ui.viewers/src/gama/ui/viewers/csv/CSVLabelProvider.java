@@ -54,7 +54,7 @@ public class CSVLabelProvider extends StyledCellLabelProvider {
 	public String getColumnText(final Object element, final int columnIndex) {
 		final CSVRow row = (CSVRow) element;
 
-		if (row.getEntries().size() > columnIndex) { return row.getEntries().get(columnIndex).toString(); }
+		if (row.getEntries().size() > columnIndex) { return row.getEntries().get(columnIndex); }
 
 		return "";
 	}

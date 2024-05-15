@@ -48,11 +48,9 @@ public class SaltelliSampling extends SamplingUtils{
 		return Saltelli_sequence;
 	}
 	
-	public static List<ParametersSet> MakeSaltelliSampling(IScope scope,int sample,List<Batch> parameters){
-		List<ParametersSet>  sampling= new ArrayList<>();
+	public static List<ParametersSet> makeSaltelliSampling(IScope scope,int sample,List<Batch> parameters){
 		List<Map<String,Double>> saltelli= setRandomSaltelliSampling(sample,parameters);
-        sampling=BuildParametersSetfromSample(scope,parameters,saltelli);
-        return sampling;
+        return buildParametersSetfromSample(scope,parameters,saltelli);
 	}
 
 }

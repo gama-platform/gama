@@ -29,8 +29,8 @@ import gama.gaml.operators.Containers;
 import gama.gaml.operators.Graphs;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Queries;
+import gama.gaml.operators.spatial.SpatialQueries;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.Types;
 
 /**
@@ -75,7 +75,7 @@ public class LayoutGrid {
 		IList<IShape> places = null;
 		IMap<IShape, GamaPoint> locs = GamaMapFactory.create();
 		do {
-			places = Spatial.Transformations.toSquares(scope, envelopeGeometry,
+			places = SpatialTransformations.toSquares(scope, envelopeGeometry,
 					Maths.round(graph.getVertices().size() * coeffSq), false);
 		} while (places.size() < graph.getVertices().size());
 
@@ -92,7 +92,7 @@ public class LayoutGrid {
 				currentV = v;
 			}
 		}
-		IShape center = Queries.overlapping(scope, places, envelopeGeometry.getLocation()).firstValue(scope);
+		IShape center = SpatialQueries.overlapping(scope, places, envelopeGeometry.getLocation()).firstValue(scope);
 		places.remove(center);
 		locs.put(currentV, center.getLocation());
 		final List<IShape> open = new ArrayList<>();
@@ -110,7 +110,7 @@ public class LayoutGrid {
 
 			for (final IShape n : neigh) {
 				if (remaining.contains(n)) {
-					center = Queries.closest_to(scope, places, locs.get(currentV));
+					center = SpatialQueries.closest_to(scope, places, locs.get(currentV));
 					places.remove(center);
 					locs.put(n, center.getLocation());
 					open.add(n);
@@ -152,7 +152,7 @@ public class LayoutGrid {
 					final IList<GamaPoint> pts = GamaListFactory.create(Types.POINT);
 					for (final IShape n : neigh2) { pts.add(locs.get(n)); }
 					final GamaPoint targetLoc = (GamaPoint) Containers.opMean(scope, pts);
-					center = places.size() > 0 ? Queries.closest_to(scope, places, targetLoc.getLocation())
+					center = places.size() > 0 ? SpatialQueries.closest_to(scope, places, targetLoc.getLocation())
 							: locs.get(nV);
 				} else {
 

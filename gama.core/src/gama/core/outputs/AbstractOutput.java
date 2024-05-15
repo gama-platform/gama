@@ -52,9 +52,6 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	/** The original name. */
 	final String originalName;
 
-	/** The refresh rate. */
-	private int refreshRate = 1;
-
 	/** The virtual. */
 	final boolean virtual;
 
@@ -108,8 +105,6 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	@Override
 	public boolean init(final IScope scope) {
 		setScope(buildScopeFrom(scope));
-		final IExpression refreshExpr = getFacet(IKeyword.REFRESH_EVERY);
-		if (refreshExpr != null) { setRefreshRate(Cast.asInt(getScope(), refreshExpr.value(getScope()))); }
 		// getScope().setCurrentSymbol(this);
 		return true;
 	}
@@ -158,15 +153,8 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		if (!isOpen() || isPaused()) return false;
 		final IScope scope = getScope();
 		if (scope == null || scope.interrupted()) return false;
-		return Cast.asBool(scope, refresh.value(scope)) && refreshRate > 0
-				&& scope.getClock().getCycle() % refreshRate == 0;
+		return Cast.asBool(scope, refresh.value(scope));
 	}
-
-	@Override
-	public int getRefreshRate() { return refreshRate; }
-
-	@Override
-	public void setRefreshRate(final int refresh) { refreshRate = refresh; }
 
 	@Override
 	public abstract boolean step(IScope scope);

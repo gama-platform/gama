@@ -231,7 +231,7 @@ public class AgentsMenu extends ContributionItem {
 	};
 
 	/** The highlighter. */
-	public static SelectionAdapter highlighter = new SelectionAdapter() {
+	public final static SelectionAdapter highlighter = new SelectionAdapter() {
 
 		@Override
 		public void widgetSelected(final SelectionEvent e) {

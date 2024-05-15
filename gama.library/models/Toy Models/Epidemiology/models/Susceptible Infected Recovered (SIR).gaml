@@ -24,9 +24,9 @@ global {
 	//Number total of hosts
 	int numberHosts <- number_S+number_I+number_R;
 	//Boolean to represent if the infection is computed locally
-	bool local_infection <- true parameter: "Is the infection is computed locally?";
+	bool local_infection <- true;
 	//Range of the cells considered as neighbours for a cell
-	int neighbours_size <- 2 min:1 max: 5 parameter:"Size of the neighbours";
+	int neighbours_size <- 2 min:1 max: 5 ;
 	
 	float R0 ;
 	geometry shape <- square(50);
@@ -137,6 +137,8 @@ species Host  {
 
 
 experiment Simulation type: gui { 
+	
+	
  	parameter "Number of Susceptible" var: number_S ;// The number of susceptible
     parameter "Number of Infected" var: number_I ;	// The number of infected
     parameter "Number of Resistant" var:number_R ;	// The number of removed

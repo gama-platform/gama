@@ -154,12 +154,12 @@ public class LightHelper extends AbstractRendererHelper {
 		GamaPoint dir = light.getDirection();
 		GamaPoint dirNorm = dir.normalized();
 		final String type = light.getType();
-		if (type == ILightDefinition.point) {
+		if (ILightDefinition.point.equals(type)) {
 			openGL.pushMatrix();
 			openGL.translateBy(pos[0], pos[1], pos[2]);
 			glut.glutSolidSphere(size, 16, 16);
 			openGL.popMatrix();
-		} else if (type == ILightDefinition.spot) {
+		} else if (ILightDefinition.spot.equals(type)) {
 			openGL.pushMatrix();
 			openGL.translateBy(pos[0], pos[1], pos[2]);
 			final double baseSize = Math.sin(Math.toRadians(light.getAngle())) * size;

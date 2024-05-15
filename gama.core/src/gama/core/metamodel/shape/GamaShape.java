@@ -128,102 +128,7 @@ public class GamaShape implements IShape {
 		this(geom == null ? source.getInnerGeometry().copy() : geom);
 		withAttributesOf(source);
 	}
-
-	/**
-	 * Instantiates a new gama shape.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param source
-	 *            the source
-	 * @param geom
-	 *            the geom
-	 * @param rotation
-	 *            the rotation
-	 * @param newLocation
-	 *            the new location
-	 * @date 18 sept. 2023
-	 * @deprecated use GamaShapeFactory instead
-	 */
-	@Deprecated
-	public GamaShape(final IShape source, final Geometry geom, final AxisAngle rotation, final GamaPoint newLocation) {
-		this(source, geom);
-		if (!isPoint() && rotation != null) {
-			Double normalZ = null;
-			if (is3D()) { normalZ = getContourCoordinates(geometry).getNormal(true).z; }
-			rotate(geometry, getLocation(), rotation);
-			if (normalZ != null) {
-				final Double normalZ2 = getContourCoordinates(geometry).getNormal(true).z;
-				if (normalZ > 0 && normalZ2 < 0) { setDepth(-getDepth()); }
-			}
-		}
-		if (newLocation != null) { setLocation(newLocation); }
-	}
-
-	/**
-	 * Instantiates a new gama shape.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param source
-	 *            the source
-	 * @param geom
-	 *            the geom
-	 * @param rotation
-	 *            the rotation
-	 * @param newLocation
-	 *            the new location
-	 * @param bounds
-	 *            the bounds
-	 * @param isBoundingBox
-	 *            the is bounding box
-	 * @date 18 sept. 2023
-	 * @deprecated use GamaShapeFactory instead
-	 */
-	@Deprecated
-	public GamaShape(final IShape source, final Geometry geom, final AxisAngle rotation, final GamaPoint newLocation,
-			final Scaling3D bounds, final boolean isBoundingBox) {
-		this(source, geom, rotation, newLocation);
-		if (bounds != null && !isPoint()) {
-			final Envelope3D env = getEnvelope();
-			final GamaPoint previous = getLocation();
-			// final boolean flat = env.isFlat();
-			if (isBoundingBox) {
-				geometry.apply(bounds.asBoundingBoxIn(env));
-			} else {
-				geometry.apply(bounds);
-			}
-			setLocation(previous);
-			if (is3D()) { setDepth(isBoundingBox ? bounds.getZ() : getDepth() * bounds.getZ()); }
-		}
-	}
-
-	/**
-	 * Instantiates a new gama shape.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param source
-	 *            the source
-	 * @param geom
-	 *            the geom
-	 * @param rotation
-	 *            the rotation
-	 * @param newLocation
-	 *            the new location
-	 * @param scaling
-	 *            the scaling
-	 * @date 18 sept. 2023
-	 * @deprecated use GamaShapeFactory instead
-	 */
-	@Deprecated
-	public GamaShape(final IShape source, final Geometry geom, final AxisAngle rotation, final GamaPoint newLocation,
-			final Double scaling) {
-		this(source, geom, rotation, newLocation);
-		if (scaling != null && !isPoint()) {
-			final GamaPoint previous = getLocation();
-			geometry.apply(Scaling3D.of(scaling));
-			setLocation(previous);
-			if (is3D()) { setDepth(getDepth() * scaling); }
-		}
-	}
+	
 
 	/**
 	 * This is where the attributes of this shape and the attributes of an incoming shape are mixed. The default
@@ -369,15 +274,25 @@ public class GamaShape implements IShape {
 		if (isPoint()) return getLocation().serializeToGaml(includingBuiltIn) + " as geometry";
 		if (isMultiple()) return getGeometries().serializeToGaml(includingBuiltIn) + " as geometry";
 		final IList<GamaShape> holes = getHoles();
-		String result = "";
+		//String result = "";
+		StringBuilder strBuilder = new StringBuilder();
 		if (getInnerGeometry() instanceof LineString) {
-			result = "polyline (" + getPoints().serializeToGaml(includingBuiltIn) + ")";
+			strBuilder.append("polyline (");
 		} else {
-			result = "polygon (" + getPoints().serializeToGaml(includingBuiltIn) + ")";
+			strBuilder.append("polygon (");
 		}
-		if (holes.isEmpty()) return result;
-		for (final GamaShape g : holes) { result = "(" + result + ") - (" + g.serializeToGaml(includingBuiltIn) + ")"; }
-		return result;
+		strBuilder.append(getPoints().serializeToGaml(includingBuiltIn));
+		strBuilder.append(")");
+		
+		if (holes.isEmpty()) return strBuilder.toString();
+		
+		for (final GamaShape g : holes) { 
+			strBuilder.insert(0, "("); //TODO: this is weird, are we sure this is the way we want to output this ?
+			strBuilder.append(") - (");
+			strBuilder.append(g.serializeToGaml(includingBuiltIn));
+			strBuilder.append(")"); 
+		}
+		return strBuilder.toString();
 	}
 
 	@Override
@@ -673,15 +588,16 @@ public class GamaShape implements IShape {
 	@Override
 	public Type getGeometricalType() {
 		final ShapeData data = getData(false);
-		Type type = data == null ? null : data.type;
+		if (data != null && data.type != null) {
+			return data.type;			
+		}
+		final String tt = getInnerGeometry().getGeometryType();
+		Type type = JTS_TYPES.get(tt);
 		if (type == null) {
-			final String tt = getInnerGeometry().getGeometryType();
-			if (JTS_TYPES.containsKey(tt)) {
-				type = JTS_TYPES.get(tt);
-			} else {
-				type = Type.NULL;
-			}
-			if (data != null) { data.type = type; }
+			type = Type.NULL;
+		}
+		if (data != null) { 
+			data.type = type; 
 		}
 		return type;
 	}

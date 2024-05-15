@@ -11,12 +11,12 @@ package gama.core.util.file.csv;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -322,9 +322,9 @@ public class CsvReader extends AbstractCSVManipulator {
 	 */
 	private void checkDataLength() throws IOException {
 		if (inputStream == null && fileName != null) {
-			inputStream =
-					new BufferedReader(new InputStreamReader(new FileInputStream(fileName), Charset.forName("UTF-8")),
-							MAX_FILE_BUFFER_SIZE);
+			inputStream = new BufferedReader(new InputStreamReader(	Files.newInputStream(new File(fileName).toPath()), 
+																	Charset.forName("UTF-8")),
+											MAX_FILE_BUFFER_SIZE);
 		}
 		updateCurrentValue();
 		try {

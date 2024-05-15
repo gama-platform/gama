@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -82,14 +83,10 @@ public abstract class SqlConnection implements AutoCloseable {
 	/** The Constant NULLVALUE. */
 	protected static final String NULLVALUE = "NULL";
 
-//	/** The Constant MYSQLDriver. */
-//	static final String MYSQLDriver = "com.mysql.cj.jdbc.Driver";
 	
 	/** The Constant SQLITEDriver. */
 	protected static final String SQLITEDriver = "org.sqlite.JDBC";
 	
-//	/** The Constant POSTGRESDriver. */
-//	protected static final String POSTGRESDriver = "org.postgresql.Driver";
 
 	/** The vender. */
 	protected String vender = "";
@@ -316,6 +313,15 @@ public abstract class SqlConnection implements AutoCloseable {
 	protected abstract IList<IList<Object>> resultSet2GamaList(ResultSetMetaData rsmd, ResultSet rs);
 
 	/**
+	 * Returns true if column colNb is of type geometry (depends on the type of connection)
+	 * @param rsmd
+	 * @param colNb
+	 * @return
+	 * @throws SQLException
+	 */
+	protected abstract boolean colIsGeometryType(ResultSetMetaData rsmd, int colNb) throws SQLException;
+	
+	/**
 	 * Gets the geometry columns.
 	 *
 	 * @param rsmd the rsmd
@@ -333,7 +339,16 @@ public abstract class SqlConnection implements AutoCloseable {
 	 *
 	 * @throws SQLException
 	 */
-	protected abstract List<Integer> getGeometryColumns(ResultSetMetaData rsmd) throws SQLException;
+	protected List<Integer> getGeometryColumns(ResultSetMetaData rsmd) throws SQLException{
+		final int numberOfColumns = rsmd.getColumnCount();
+		final List<Integer> geoColumn = new ArrayList<>();
+		for (int i = 1; i <= numberOfColumns; i++) {
+			if (colIsGeometryType(rsmd, i)) {
+				geoColumn.add(i);
+			}
+		}
+		return geoColumn;
+	}
 
 	/**
 	 * Gets the column type name.
@@ -353,7 +368,30 @@ public abstract class SqlConnection implements AutoCloseable {
 	 *
 	 * @throws SQLException
 	 */
-	protected abstract IList<Object> getColumnTypeName(ResultSetMetaData rsmd) throws SQLException;
+	protected IList<Object> getColumnTypeName(ResultSetMetaData rsmd) throws SQLException{
+		final int numberOfColumns = rsmd.getColumnCount();
+		final IList<Object> columnType = GamaListFactory.create();
+		for (int i = 1; i <= numberOfColumns; i++) {
+			if (colIsGeometryType(rsmd, i)) {
+				columnType.add(GEOMETRYTYPE);
+			} else {
+				columnType.add(rsmd.getColumnTypeName(i).toUpperCase());
+			}
+		}
+		return columnType;
+	}
+	
+	/**
+	 * Returns true if a column type name is one of the possible text types (char, varchar, nvarchar and text)
+	 * @param s
+	 * @return
+	 */
+	public static boolean isTextType(String s) {
+		return  	CHAR.equalsIgnoreCase(s)
+				|| 	VARCHAR.equalsIgnoreCase(s)
+				|| 	NVARCHAR.equalsIgnoreCase(s)
+				|| 	TEXT.equalsIgnoreCase(s);
+	}
 
 	/**
 	 * Gets the insert string.

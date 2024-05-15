@@ -72,7 +72,7 @@ public class WriteStatement extends AbstractStatement {
 
 	@Override
 	public String getTrace(final IScope scope) {
-		// We dont trace write statements
+		// We don't trace write statements
 		return "";
 	}
 

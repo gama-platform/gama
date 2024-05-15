@@ -42,7 +42,7 @@ public interface ISaveDelegate {
 	 * @param code
 	 *            the code (epsg code)
 	 * @param addHeader
-	 *            wether to add a header or not when it makes sense
+	 *            whether to add a header or not when it makes sense
 	 * @param type
 	 *            the type of saved data we target (e.g. 'image', etc.)
 	 * @param attributesToSave

@@ -13,9 +13,9 @@ model gridloading
 
 global {
 	file grid_data <- file("../includes/DEM-Vulcano/vulcano_50.asc");
-	file dem_file parameter: 'DEM' <- file('../includes/DEM-Vulcano/DEM.png');
+	file dem_file <- file('../includes/DEM-Vulcano/DEM.png');
 	image_file europe <- image_file("../images/mnt/europe.jpg");
-	file texture parameter: 'Texture' <- file('../includes/DEM-Vulcano/Texture.jpg');
+	file texture <- file('../includes/DEM-Vulcano/Texture.jpg');
 	geometry shape <- envelope(200);
 
 	init {
@@ -42,7 +42,12 @@ global {
 
 grid cell file: grid_data;
 
-experiment Comparison type: gui {
+experiment base {
+	parameter 'DEM' var:dem_file ;
+	parameter 'Texture' var:texture;	
+}
+
+experiment Comparison type: gui parent:base{
 	output {
 		layout #split;
 
@@ -80,7 +85,7 @@ experiment Comparison type: gui {
 
 }
 
-experiment "Grids" type: gui {
+experiment "Grids" type: gui parent:base{
 	output {
 		layout #split toolbars: false;
 
@@ -126,7 +131,7 @@ experiment "Grids" type: gui {
 
 }
 
-experiment "Meshes" type: gui {
+experiment "Meshes" type: gui parent:base{
 	output {
 		layout #split toolbars: false;
 		display "Large file, rectangles, wireframe and scaled" type: 3d axes: false {

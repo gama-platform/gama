@@ -44,7 +44,7 @@ public class BenchmarkCSVExporter {
 	 * @param records
 	 *            the records
 	 */
-	public void save(final IExperimentPlan experiment, final Benchmark records) {
+	public void save(final IExperimentPlan experiment, final Benchmark records) throws GamaRuntimeException {
 		final IScope scope = experiment.getExperimentScope();
 		try {
 			Files.newFolder(scope, exportFolder);

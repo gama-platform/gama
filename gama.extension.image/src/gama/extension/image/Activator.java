@@ -23,19 +23,9 @@ import gama.dev.DEBUG;
  */
 public class Activator implements BundleActivator {
 
-	/** The context. */
-	private static BundleContext context;
-
-	/**
-	 * Gets the context.
-	 *
-	 * @return the context
-	 */
-	static BundleContext getContext() { return context; }
 
 	@Override
 	public void start(final BundleContext bundleContext) throws Exception {
-		Activator.context = bundleContext;
 		// We set the snapshot maker early so that it becomes available early from the IGui access
 		// In reference to #3689, the GraphicsEnvironment is queried earlier for headless mode.
 		String message, mode;
@@ -53,7 +43,7 @@ public class Activator implements BundleActivator {
 
 	@Override
 	public void stop(final BundleContext bundleContext) throws Exception {
-		Activator.context = null;
+
 	}
 
 }

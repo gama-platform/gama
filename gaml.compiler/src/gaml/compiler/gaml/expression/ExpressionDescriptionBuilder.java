@@ -85,8 +85,8 @@ public class ExpressionDescriptionBuilder extends GamlSwitch<IExpressionDescript
 	@Override
 	public IExpressionDescription caseUnitName(final UnitName object) {
 		final String s = EGaml.getInstance().getKeyOf(object);
-		if (GAML.UNITS.containsKey(s)) return GAML.UNITS.get(s);
-		return null;
+		var unit = GAML.UNITS.get(s);
+		return unit;
 	}
 
 	@Override

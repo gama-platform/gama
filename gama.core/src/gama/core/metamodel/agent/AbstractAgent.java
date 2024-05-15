@@ -498,32 +498,6 @@ public abstract class AbstractAgent implements IAgent {
 		return m;
 	}
 
-	/**
-	 * Prim write.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @deprecated
-	 * @return the object
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "write",
-			args = { @arg (
-					name = "message",
-					type = IType.STRING,
-					doc = @doc ("The message to write")) },
-			doc = { @doc (
-					value = "",
-					deprecated = "Use the 'write' statement instead") })
-	@Deprecated (
-			forRemoval = true)
-	public final Object primWrite(final IScope scope) throws GamaRuntimeException {
-		final String s = (String) scope.getArg("message", IType.STRING);
-		scope.getGui().getConsole().informConsole(s, scope.getRoot());
-		return s;
-	}
 
 	/**
 	 * Prim error.

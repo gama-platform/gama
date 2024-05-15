@@ -30,11 +30,9 @@ public class Constants {
 
 	// Repositories containing used files
 
-	/** The Constant BASE_FOLDER. */
-	public final static String BASE_FOLDER = "";
 
 	/** The Constant SRC_FOLDER. */
-	public final static String SRC_FOLDER = BASE_FOLDER + "files";
+	public final static String SRC_FOLDER = "files";
 
 	/** The Constant GEN_FOLDER. */
 	public final static String GEN_FOLDER = SRC_FOLDER + File.separator + "gen";

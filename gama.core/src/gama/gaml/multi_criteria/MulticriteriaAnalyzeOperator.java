@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -63,7 +63,7 @@ public class MulticriteriaAnalyzeOperator {
 					value = "weighted_means_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0],[\"name\"::\"price\", \"weight\" :: 1.0]])",
 					equals = "1") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer WeightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		final List<String> criteriaStr = new LinkedList<>();
@@ -111,7 +111,7 @@ public class MulticriteriaAnalyzeOperator {
 	 * @param index the index
 	 */
 	public static void buildCombination(final List<String> criteria, final Set<String> currentSol,
-			final Set<Set<String>> combinations, final int start, final int end, final int index) {
+			final List<Set<String>> combinations, final int start, final int end, final int index) {
 		if (index == criteria.size()) {
 			combinations.add(new LinkedHashSet<>(criteria));
 			return;
@@ -146,12 +146,12 @@ public class MulticriteriaAnalyzeOperator {
 					value = "fuzzy_choquet_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [\"utility\", \"price\", \"size\"],[[\"utility\"]::0.5,[\"size\"]::0.1,[\"price\"]::0.4,[\"utility\", \"price\"]::0.55])",
 					equals = "0") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer FuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<String> criteria, final IMap criteriaWeights) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		final Map<String, Double> critWeight = new HashMap<>();
 		final Map<Set<String>, Double> weight = new HashMap<>();
-		for (final Object o : criteriaWeights.keySet()) {
+		for (final Object o : criteriaWeights.entrySet()) {
 			final Set<String> key = new LinkedHashSet<>((List) o);
 			final Double val = Cast.asFloat(scope, criteriaWeights.get(o));
 			if (key.size() == 1) {
@@ -164,7 +164,7 @@ public class MulticriteriaAnalyzeOperator {
 				critWeight.put(crit, 1.0);
 			}
 		}
-		final Set<Set<String>> combinations = new LinkedHashSet<>();
+		final List<Set<String>> combinations = new ArrayList<>();
 		buildCombination(criteria, new LinkedHashSet<>(), combinations, 0, criteria.size() - 1, 0);
 		for (final Set<String> comb : combinations) {
 			if (!weight.containsKey(comb)) {
@@ -235,7 +235,7 @@ public class MulticriteriaAnalyzeOperator {
 					value = "promethee_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]])",
 					equals = "1") },
 			see = { "weighted_means_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer PrometheeDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Integer prometheeDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) { return -1; }
 		int cpt = 0;
@@ -271,9 +271,9 @@ public class MulticriteriaAnalyzeOperator {
 				sf = Cast.asFloat(scope, s);
 			}
 
-			if (typeFct.equals("type_5")) {
+			if ("type_5".equals(typeFct)) {
 				fctPrefCrit.put(name, new PreferenceType5(qf, pf));
-			} else if (typeFct.equals("type_6")) {
+			} else if ("type_6".equals(typeFct)) {
 				fctPrefCrit.put(name, new PreferenceType6(sf));
 			}
 
@@ -505,7 +505,7 @@ public class MulticriteriaAnalyzeOperator {
 				v2Contre = Cast.asFloat(scope, v2cr);
 			}
 			final Object max = critMap.get("maximize");
-			if (max != null && max instanceof Boolean) {
+			if (max instanceof Boolean) {
 				maximizeCrit.put(name, (Boolean) max);
 			}
 			final CritereFonctionsCroyances cfc =

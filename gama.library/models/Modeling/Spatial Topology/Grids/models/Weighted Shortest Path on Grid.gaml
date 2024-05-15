@@ -18,8 +18,8 @@ global {
 	
 	file dem <- file("../includes/vulcano_50.asc");
 	geometry shape <- envelope(dem);
-	string algorithm <- "Dijkstra" among: ["A*", "Dijkstra"] parameter: true;
-	int neighborhood_type <- 8 among:[4,8] parameter: true;
+	string algorithm <- "Dijkstra" among: ["A*", "Dijkstra"];
+	int neighborhood_type <- 8 among:[4,8];
 	point source;
 	point goal;
 	path the_path;
@@ -56,6 +56,10 @@ grid cell file: dem neighbors: neighborhood_type optimizer: algorithm;
 	
 
 experiment goto_grid type: gui {
+	
+	
+	parameter var:algorithm;
+	parameter var:neighborhood_type;
 	
 	float minimum_cycle_duration <- 300 #msec;
 	

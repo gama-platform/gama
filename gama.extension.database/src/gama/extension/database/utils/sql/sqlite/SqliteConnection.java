@@ -127,32 +127,10 @@ public class SqliteConnection extends SqlConnection {
 	}
 
 	@Override
-	protected List<Integer> getGeometryColumns(final ResultSetMetaData rsmd) throws SQLException {
-		final int numberOfColumns = rsmd.getColumnCount();
-		final List<Integer> geoColumn = new ArrayList<>();
-		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (SQLITE.equalsIgnoreCase(vender) && rsmd.getColumnType(i) == 2004) { geoColumn.add(i); }
-		}
-		return geoColumn;
-
+	protected boolean colIsGeometryType(ResultSetMetaData rsmd, int colNb) throws SQLException {
+		return SQLITE.equalsIgnoreCase(vender) && rsmd.getColumnType(colNb) == 2004;
 	}
 
-	@Override
-	protected IList<Object> getColumnTypeName(final ResultSetMetaData rsmd) throws SQLException {
-		final int numberOfColumns = rsmd.getColumnCount();
-		final IList<Object> columnType = GamaListFactory.create();
-		for (int i = 1; i <= numberOfColumns; i++) {
-			// Search column with Geometry type
-			if (SQLITE.equalsIgnoreCase(vender) && rsmd.getColumnType(i) == 2004) {
-				columnType.add(GEOMETRYTYPE);
-			} else {
-				columnType.add(rsmd.getColumnTypeName(i).toUpperCase());
-			}
-		}
-		return columnType;
-
-	}
 
 	@Override
 	protected String getInsertString(final IScope scope, final Connection conn, final String table_name,
@@ -160,17 +138,17 @@ public class SqliteConnection extends SqlConnection {
 		final int col_no = cols.size();
 		String insertStr = "INSERT INTO ";
 		StringBuilder selectStr = new StringBuilder("SELECT ");
-		String colStr = "";
-		String valueStr = "";
+		StringBuilder colStr = new StringBuilder();
 		// Check size of parameters
 		if (values.size() != col_no)
 			throw new IndexOutOfBoundsException("Size of columns list and values list are not equal");
 		// Get column name
 		for (int i = 0; i < col_no; i++) {
 			if (i == col_no - 1) {
-				colStr = colStr + (String) cols.get(i);
+				colStr.append(cols.get(i));
 			} else {
-				colStr = colStr + (String) cols.get(i) + ",";
+				colStr.append(cols.get(i));
+				colStr.append(",");
 			}
 		}
 		// create SELECT statement string
@@ -183,28 +161,27 @@ public class SqliteConnection extends SqlConnection {
 
 			// Insert command
 			// set parameter value
-			valueStr = "";
+			StringBuilder valueStr = new StringBuilder();
 
 			for (int i = 0; i < col_no; i++) {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
-					valueStr = valueStr + NULLVALUE;
-				} else if (CHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| VARCHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| NVARCHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| TEXT.equalsIgnoreCase((String) col_Types.get(i))) { // for
+					valueStr.append(NULLVALUE);
+				} else if (isTextType((String) col_Types.get(i))) { // for
 																					// String
 																					// type
 					// Correct error string
 					String temp = values.get(i).toString();
 					temp = temp.replace("'", "''");
 					// Add to value:
-					valueStr = valueStr + "'" + temp + "'";
+					valueStr.append("'");
+					valueStr.append(temp);
+					valueStr.append("'");
 				} else { // For other type
-					valueStr = valueStr + values.get(i).toString();
+					valueStr.append(values.get(i));
 				}
 				if (i != col_no - 1) { // Add delimiter of each value
-					valueStr = valueStr + ",";
+					valueStr.append(",");
 				}
 				// Value list
 				// end--------------------------------------------------------
@@ -227,8 +204,8 @@ public class SqliteConnection extends SqlConnection {
 			final IList<Object> values) throws GamaRuntimeException {
 		StringBuilder insertStr = new StringBuilder("INSERT INTO ");
 		String selectStr = "SELECT ";
-		String colStr = "";
-		String valueStr = "";
+		StringBuilder colStr = new StringBuilder();
+		StringBuilder valueStr = new StringBuilder();
 
 		// Get column name
 		// create SELECT statement string
@@ -253,28 +230,25 @@ public class SqliteConnection extends SqlConnection {
 			}
 			// Insert command
 			// set parameter value
-			colStr = "";
-			valueStr = "";
 			for (int i = 0; i < col_no; i++) {
 				// Value list begin-------------------------------------------
 				if (values.get(i) == null) {
-					valueStr = valueStr + NULLVALUE;
-				} else if (CHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| VARCHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| NVARCHAR.equalsIgnoreCase((String) col_Types.get(i))
-						|| TEXT.equalsIgnoreCase((String) col_Types.get(i))) {
+					valueStr.append(NULLVALUE);
+				} else if (isTextType((String) col_Types.get(i))) {
 					String temp = values.get(i).toString();
 					temp = temp.replace("'", "''");
 					// Add to value:
-					valueStr = valueStr + "'" + temp + "'";
+					valueStr.append("'");
+					valueStr.append(temp);
+					valueStr.append("'");
 				} else { // For other type
-					valueStr = valueStr + values.get(i).toString();
+					valueStr.append(values.get(i));
 				}
-				colStr = colStr + col_Names.get(i).toString();
+				colStr.append(col_Names.get(i));
 
 				if (i != col_no - 1) { // Add delimiter of each value
-					colStr = colStr + ",";
-					valueStr = valueStr + ",";
+					colStr.append(",");
+					valueStr.append(",");
 				}
 			}
 

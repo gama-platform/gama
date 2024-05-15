@@ -63,7 +63,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -396,7 +395,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *
 	 */
 	public ImportProjectWizardPage() {
-		this("wizardExternalProjectsPage", null, null); //$NON-NLS-1$
+		this("wizardExternalProjectsPage", null); //$NON-NLS-1$
 	}
 
 	/**
@@ -405,7 +404,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * @param pageName
 	 */
 	public ImportProjectWizardPage(final String pageName) { // NO_UCD (unused code)
-		this(pageName, null, null);
+		this(pageName, null);
 	}
 
 	/**
@@ -413,14 +412,11 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *
 	 * @param pageName
 	 * @param initialPath
-	 * @param currentSelection
 	 * @since 3.5
 	 */
-	public ImportProjectWizardPage(final String pageName, final String initialPath,
-			final IStructuredSelection currentSelection) {
+	public ImportProjectWizardPage(final String pageName, final String initialPath) {
 		super(pageName);
 		this.initialPath = initialPath;
-		// this.currentSelection = currentSelection;
 		setPageComplete(false);
 		setTitle("Import GAMA projects");
 		setMessage("Select a directory or an archive to search for existing GAMA projects.");
@@ -1007,7 +1003,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		// first look for project description files
 		final String dotProject = IProjectDescription.DESCRIPTION_FILE_NAME;
 		for (final File file : contents) {
-			if (file.isFile() && file.getName().equals(dotProject)) {
+			if (file.isFile() && dotProject.equals(file.getName())) {
 				files.add(file);
 				if (!nestedProjects) {
 					// don't search sub-directories since we can't have nested
@@ -1020,7 +1016,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		// so recurse into sub-directories
 		for (final File content : contents) {
 			if (content.isDirectory()) {
-				if (!content.getName().equals(METADATA_FOLDER)) {
+				if (!METADATA_FOLDER.equals(content.getName())) {
 					try {
 						final String canonicalPath = content.getCanonicalPath();
 						if (!directoriesVisited.add(canonicalPath)) {
@@ -1064,7 +1060,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 				collectProjectFilesFromProvider(files, child, level + 1, monitor);
 			}
 			final String elementLabel = structureProvider.getLabel(child);
-			if (elementLabel.equals(IProjectDescription.DESCRIPTION_FILE_NAME)) {
+			if (IProjectDescription.DESCRIPTION_FILE_NAME.equals(elementLabel)) {
 				files.add(new ProjectRecord(child, entry, level));
 			}
 		}

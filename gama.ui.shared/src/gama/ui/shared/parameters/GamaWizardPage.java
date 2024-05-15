@@ -34,9 +34,6 @@ public class GamaWizardPage extends WizardPage {
 	/** The parameters. */
 	private final List<IParameter> parameters;
 
-	/** The font. */
-	private final GamaFont font;
-
 	/** The scope. */
 	private final IScope scope;
 
@@ -54,13 +51,11 @@ public class GamaWizardPage extends WizardPage {
 	 * @param font
 	 *            the font
 	 */
-	public GamaWizardPage(final IScope scope, final List<IParameter> parameters, final String title,
-			final String description, final GamaFont font) {
+	public GamaWizardPage(final IScope scope, final List<IParameter> parameters, final String title, final String description) {
 		super(title);
 		setTitle(title);
 		setDescription(description);
 		this.scope = scope;
-		this.font = font;
 		this.parameters = parameters;
 		parameters.forEach(p -> { values.put(p.getName(), p.getInitialValue(scope)); });
 	}

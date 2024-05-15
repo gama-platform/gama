@@ -52,27 +52,29 @@ public class AssetDrawer implements IDrawDelegate {
 			throws GamaRuntimeException {
 		IGraphics g = scope.getGraphics();
 		Object obj = items[0].value(scope);
-
-		if (obj instanceof IAsset asset) {
-			// TODO verify that we do not spend the processing time recreating the file...
-			final AssetDrawingAttributes attributes = computeAttributes(scope, data, asset instanceof IImageProvider,
-					asset instanceof GamaGisFile, g.is2D());
-			// XXX EXPERIMENTAL See Issue #1521
-			if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue()
-					&& /* !GAMA.isInHeadLessMode() */ !scope.getExperiment().isHeadless()) {
-				final Scaling3D size = attributes.getSize();
-				if (size != null) {
-					// if a size is provided
-					final Envelope3D expected = Envelope3D.of(attributes.getLocation());
-					expected.expandBy(size.getX() / 2, size.getY() / 2);
-					final Envelope visible = g.getVisibleRegion();
-					if (visible != null && !visible.intersects(expected)) return null;
-				}
-				// XXX EXPERIMENTAL
-			}
-			return g.drawAsset(asset, attributes);
+		
+		if (!(obj instanceof IAsset)){
+			return null;
 		}
-		return null;
+		IAsset asset = (IAsset) obj;
+
+		// TODO verify that we do not spend the processing time recreating the file...
+		final AssetDrawingAttributes attributes = computeAttributes(scope, data, asset instanceof IImageProvider,
+				asset instanceof GamaGisFile, g.is2D());
+		// XXX EXPERIMENTAL See Issue #1521
+		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue()
+				&& /* !GAMA.isInHeadLessMode() */ !scope.getExperiment().isHeadless()) {
+			final Scaling3D size = attributes.getSize();
+			if (size != null) {
+				// if a size is provided
+				final Envelope3D expected = Envelope3D.of(attributes.getLocation());
+				expected.expandBy(size.getX() / 2, size.getY() / 2);
+				final Envelope visible = g.getVisibleRegion();
+				if (visible != null && !visible.intersects(expected)) return null;
+			}
+			// XXX EXPERIMENTAL
+		}
+		return g.drawAsset(asset, attributes);
 	}
 
 	/**

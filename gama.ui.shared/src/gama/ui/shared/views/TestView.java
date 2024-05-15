@@ -84,10 +84,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	@Override
 	public void init(final IViewSite site) throws PartInitException {
 		super.init(site);
-		// if (!SwtGui.ALL_TESTS_RUNNING) {
 		experiments.clear();
 		super.reset();
-		// }
 	}
 
 	@Override
@@ -149,7 +147,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 
 	@Override
 	public void ownCreatePartControl(final Composite view) {
-		// view.setBackground(IGamaColors.WHITE.color());
+
 	}
 
 	// Experimental: creates a deferred item
@@ -292,7 +290,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	public String getItemDisplayName(final AbstractSummary<?> obj, final String previousName) {
 		final StringBuilder sb = new StringBuilder(300);
 		final String name = obj.getTitle();
-		sb.append(obj.getState()).append(ItemList.SEPARATION_CODE).append(name).append(" ");
+		sb.append(obj.getState()).append(ItemList.SEPARATION_CODE).append(name).append(' ');
 		return sb.toString();
 	}
 
@@ -326,8 +324,6 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 					toolbar.status(null, new CompoundSummary<>(experiments).getStringSummary(), null, IGamaColors.BLUE,
 							SWT.LEFT);
 				}
-				// GAMA.getGui().getStatus().informStatus(GAMA.getRuntimeScope(),
-				// new CompoundSummary<>(experiments).getStringSummary());
 				ViewsHelper.bringToFront(this);
 			}
 		});

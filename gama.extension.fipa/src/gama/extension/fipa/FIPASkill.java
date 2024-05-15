@@ -132,35 +132,6 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class FIPASkill extends MessagingSkill {
 
-	/**
-	 * The Class Deprecated.
-	 */
-	@doc (
-			deprecated = "Use the keyword 'fipa' instead")
-	@skill (
-			name = "communicating",
-			concept = { IConcept.FIPA, IConcept.SKILL, IConcept.COMMUNICATION })
-	public static class DeprecatedCommunicatingSkill extends FIPASkill {}
-
-	// /** The protocol indexes. */
-	// private static Map<String, Integer> protocolIndexes = new HashMap();
-
-	/** The performative indexes. */
-	// protected static Map<String, Integer> performativeIndexes = new HashMap();
-	// static {
-	// int i = 0;
-	// // for (final String name : FIPAConstants.protocolNames) {
-	// // protocolIndexes.put(name, i);
-	// // i++;
-	// // }
-	//
-	// // i = 0;
-	// for (final String name : FIPAConstants.performativeNames) {
-	// performativeIndexes.put(name, i);
-	// i++;
-	// }
-
-	// }
 
 	/**
 	 * @throws GamaRuntimeException
@@ -229,31 +200,6 @@ public class FIPASkill extends MessagingSkill {
 	}
 
 	@Override
-	@action (
-			name = "send",
-			args = { @arg (
-					name = "to",
-					type = IType.LIST,
-					optional = false,
-					doc = @doc ("A list of receiver agents")),
-					@arg (
-							name = GamaMessage.CONTENTS,
-							type = IType.LIST,
-							optional = false,
-							doc = @doc ("The content of the message. A list of any GAML type")),
-					@arg (
-							name = "performative",
-							type = IType.STRING,
-							optional = true,
-							doc = @doc ("A string, representing the message performative")),
-					@arg (
-							name = "protocol",
-							type = IType.STRING,
-							optional = true,
-							doc = @doc ("A string representing the name of interaction protocol")) },
-			doc = @doc (
-					deprecated = "It is preferable to use 'start_conversation' instead to start a conversation",
-					value = "Starts a conversation/interaction protocol."))
 	public FIPAMessage primSendMessage(final IScope scope) throws GamaRuntimeException {
 		return primStartConversation(scope);
 	}

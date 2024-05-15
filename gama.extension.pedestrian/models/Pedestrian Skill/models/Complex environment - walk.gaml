@@ -20,37 +20,34 @@ global {
 	
 	geometry shape <- envelope(wall_shapefile);
 	
-	bool display_free_space <- false parameter: true;
-	bool display_force <- false parameter: true;
-	bool display_target <- false parameter: true;
-	bool display_circle_min_dist <- true parameter: true;
+	bool display_free_space <- false;
+	bool display_force <- false;
+	bool display_target <- false;
+	bool display_circle_min_dist <- true;
+	float P_shoulder_length <- 0.45;
+	float P_proba_detour <- 0.5;
+	bool P_avoid_other <- true;
+	float P_obstacle_consideration_distance <- 3.0;
+	float P_pedestrian_consideration_distance <- 3.0;
+	float P_tolerance_target <- 0.1;
+	bool P_use_geometry_target <- true;
 	
-	float P_shoulder_length <- 0.45 parameter: true;
-	float P_proba_detour <- 0.5 parameter: true ;
-	bool P_avoid_other <- true parameter: true ;
-	float P_obstacle_consideration_distance <- 3.0 parameter: true ;
-	float P_pedestrian_consideration_distance <- 3.0 parameter: true ;
-	float P_tolerance_target <- 0.1 parameter: true;
-	bool P_use_geometry_target <- true parameter: true;
 	
-	
-	string P_model_type <- "simple" among: ["simple", "advanced"] parameter: true ; 
-	
-	float P_A_pedestrian_SFM_advanced parameter: true <- 0.16 category: "SFM advanced" ;
-	float P_A_obstacles_SFM_advanced parameter: true <- 1.9 category: "SFM advanced" ;
-	float P_B_pedestrian_SFM_advanced parameter: true <- 0.1 category: "SFM advanced" ;
-	float P_B_obstacles_SFM_advanced parameter: true <- 1.0 category: "SFM advanced" ;
-	float P_relaxion_SFM_advanced  parameter: true <- 0.5 category: "SFM advanced" ;
-	float P_gama_SFM_advanced parameter: true <- 0.35 category: "SFM advanced" ;
-	float P_lambda_SFM_advanced <- 0.1 parameter: true category: "SFM advanced" ;
-	float P_minimal_distance_advanced <- 0.25 parameter: true category: "SFM advanced" ;
-	
-	float P_n_prime_SFM_simple parameter: true <- 3.0 category: "SFM simple" ;
-	float P_n_SFM_simple parameter: true <- 2.0 category: "SFM simple" ;
-	float P_lambda_SFM_simple <- 2.0 parameter: true category: "SFM simple" ;
-	float P_gama_SFM_simple parameter: true <- 0.35 category: "SFM simple" ;
-	float P_relaxion_SFM_simple parameter: true <- 0.54 category: "SFM simple" ;
-	float P_A_pedestrian_SFM_simple parameter: true <-4.5category: "SFM simple" ;
+	string P_model_type <- "simple" among: ["simple", "advanced"];	
+	float P_A_pedestrian_SFM_advanced <- 0.16 ;
+	float P_A_obstacles_SFM_advanced <- 1.9 ;
+	float P_B_pedestrian_SFM_advanced <- 0.1 ;
+	float P_B_obstacles_SFM_advanced <- 1.0 ;
+	float P_relaxion_SFM_advanced  <- 0.5 ;
+	float P_gama_SFM_advanced <- 0.35 ;
+	float P_lambda_SFM_advanced <- 0.1 ;
+	float P_minimal_distance_advanced <- 0.25;	
+	float P_n_prime_SFM_simple <- 3.0 ;
+	float P_n_SFM_simple <- 2.0 ;
+	float P_lambda_SFM_simple <- 2.0 ;
+	float P_gama_SFM_simple <- 0.35 ;
+	float P_relaxion_SFM_simple <- 0.54 ;
+	float P_A_pedestrian_SFM_simple <-4.5;
 	
 	float step <- 0.1;
 	int nb_people <- 250;
@@ -180,6 +177,40 @@ species people skills: [pedestrian]{
 
 
 experiment normal_sim type: gui {
+	
+	
+	parameter "display_free_space" var:display_free_space;
+	parameter "display_force" var:display_force;
+	parameter "display_target" var:display_target; 
+	parameter "display_circle_min_dist" var:display_circle_min_dist;
+	parameter "P_shoulder_length" var:P_shoulder_length;
+	parameter "P_proba_detour" var:P_proba_detour;
+	parameter "P_avoid_other" var:P_avoid_other;
+	parameter "P_obstacle_consideration_distance" var:P_obstacle_consideration_distance;
+	parameter "P_pedestrian_consideration_distance" var:P_pedestrian_consideration_distance;
+	parameter "P_tolerance_target" var:P_tolerance_target;
+	parameter "P_use_geometry_target" var:P_use_geometry_target;
+
+
+	parameter "P_model_type" var:P_model_type among: ["simple", "advanced"]; 
+
+	parameter "P_A_pedestrian_SFM_advanced" var:P_A_pedestrian_SFM_advanced   category: "SFM advanced";
+	parameter "P_A_obstacles_SFM_advanced" var:P_A_obstacles_SFM_advanced   category: "SFM advanced";
+	parameter "P_B_pedestrian_SFM_advanced" var:P_B_pedestrian_SFM_advanced   category: "SFM advanced";
+	parameter "P_B_obstacles_SFM_advanced" var:P_B_obstacles_SFM_advanced   category: "SFM advanced";
+	parameter "P_relaxion_SFM_advanced" var:P_relaxion_SFM_advanced    category: "SFM advanced";
+	parameter "P_gama_SFM_advanced" var:P_gama_SFM_advanced category: "SFM advanced";
+	parameter "P_lambda_SFM_advanced" var:P_lambda_SFM_advanced   category: "SFM advanced";
+	parameter "P_minimal_distance_advanced" var:P_minimal_distance_advanced   category: "SFM advanced";
+
+	parameter "P_n_prime_SFM_simple" var:P_n_prime_SFM_simple   category: "SFM simple";
+	parameter "P_n_SFM_simple" var:P_n_SFM_simple   category: "SFM simple";
+	parameter "P_lambda_SFM_simple" var:P_lambda_SFM_simple   category: "SFM simple";
+	parameter "P_gama_SFM_simple" var:P_gama_SFM_simple   category: "SFM simple";
+	parameter "P_relaxion_SFM_simple" var:P_relaxion_SFM_simple   category: "SFM simple";
+	parameter "P_A_pedestrian_SFM_simple" var:P_A_pedestrian_SFM_simple   category:"SFM simple";
+	
+	
 	float minimum_cycle_duration <- 0.02;
 		output {
 		display map type: 3d{

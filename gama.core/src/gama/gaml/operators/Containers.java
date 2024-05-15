@@ -266,7 +266,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = "range",
+				value = IKeyword.RANGE,
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
@@ -292,7 +292,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = { "range", "to" },
+				value = { IKeyword.RANGE, "to" },
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
@@ -324,7 +324,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = "range",
+				value = IKeyword.RANGE,
 				content_type = IType.INT,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
@@ -2727,7 +2727,7 @@ public class Containers {
 			see = {})
 	public static IMap create_map(final IScope scope, final IList keys, final IList values) {
 		if (keys.length(scope) != values.length(scope)) {
-			GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope), false);
 		}
 		// final HashSet newSet = new HashSet(keys);
 		// if (newSet.size() < keys.length(scope))

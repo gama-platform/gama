@@ -154,7 +154,7 @@ public class MarkupBoxBuilder extends BoxBuilderImpl {
 		 */
 		public void addClosing(String token) {
 			if (token == null) {
-				if (!tokens.isEmpty() && !tokens.getLast().equals(CLOSING))
+				if (!tokens.isEmpty() && !CLOSING.equals(tokens.getLast()))
 					tokens.removeLast();
 				else
 					tokens.add(CLOSING);
@@ -176,7 +176,7 @@ public class MarkupBoxBuilder extends BoxBuilderImpl {
 		public int result() {
 			if (tokens.isEmpty())
 				return 0;
-			if (tokens.getLast().equals(CLOSING))
+			if (CLOSING.equals(tokens.getLast()))
 				return -1;
 			return 1;
 		}

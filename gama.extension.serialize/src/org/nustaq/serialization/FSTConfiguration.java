@@ -70,23 +70,6 @@ import gama.gaml.compilation.kernel.GamaClassLoader;
  */
 public class FSTConfiguration {
 
-	/**
-	 * The Enum ConfType.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 30 sept. 2023
-	 */
-	enum ConfType {
-
-		/** The default. */
-		DEFAULT,
-		/** The unsafe. */
-		UNSAFE,
-		/** The json. */
-		JSON,
-		/** The jsonpretty. */
-		JSONPRETTY
-	}
 
 	/** The stream coder factory. */
 	private StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);

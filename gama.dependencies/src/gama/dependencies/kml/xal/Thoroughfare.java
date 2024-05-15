@@ -120,15 +120,6 @@ public class Thoroughfare implements Cloneable
     }
 
     /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private Thoroughfare() {
-        super();
-    }
-
-    /**
      * 
      */
     public List<AddressLine> getAddressLine() {
@@ -1974,15 +1965,6 @@ public class Thoroughfare implements Cloneable
             super();
             this.thoroughfareNumberFrom = thoroughfareNumberFrom;
             this.thoroughfareNumberTo = thoroughfareNumberTo;
-        }
-
-        /**
-         * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-         * 
-         */
-        @Deprecated
-        private ThoroughfareNumberRange() {
-            super();
         }
 
         /**

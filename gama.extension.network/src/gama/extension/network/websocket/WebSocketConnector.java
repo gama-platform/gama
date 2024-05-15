@@ -13,18 +13,14 @@ package gama.extension.network.websocket;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import gama.core.messaging.GamaMessage;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.extension.network.common.CommandMessage;
+import gama.extension.network.common.CommandMessage.CommandType;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;
 import gama.extension.network.common.MessageFactory;
-import gama.extension.network.common.CommandMessage.CommandType;
-import gama.extension.network.common.MessageFactory.MessageType;
 import gama.extension.network.common.socket.SocketService;
-import gama.extension.network.tcp.ClientService;
-import gama.extension.network.tcp.ServerService;
 
 /**
  * The Class TCPConnection.
@@ -42,12 +38,6 @@ public class WebSocketConnector extends Connector {
 	
 	/** The websocket so timeout. */
 	public static Integer _WEBSOCKET_SO_TIMEOUT = 100;
-
-	/** The default host. */
-	public static String DEFAULT_HOST = "localhost";
-	
-	/** The default port. */
-	public static String DEFAULT_PORT = "1988";
 
 	/** The socket. */
 	private SocketService socket;
@@ -95,7 +85,7 @@ public class WebSocketConnector extends Connector {
 		}
 
 		final String server = this.getConfigurationParameter(SERVER_URL);
-		final int port = Integer.valueOf(this.getConfigurationParameter(SERVER_PORT)).intValue();
+		final int port = Integer.parseInt(this.getConfigurationParameter(SERVER_PORT));
 		if (this.isServer) {
 			socket = new WebSocketServerService(agent, port, this);
 		} else {

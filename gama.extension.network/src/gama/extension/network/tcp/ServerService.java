@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.network.tcp;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -57,8 +56,6 @@ public class ServerService extends Thread implements SocketService, IListener {
 	/** The sender. */
 	protected PrintWriter sender;
 
-	/** The receiver. */
-	BufferedReader receiver = null;
 
 	/** The connector. */
 	protected IConnector connector;
@@ -103,25 +100,12 @@ public class ServerService extends Thread implements SocketService, IListener {
 		this.start();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		while (this.isAlive) {
 			isOnline = true;
 			try {
-				// DEBUG.OUT("before accept wait...");
-				// currentSocket = this.serverSocket.accept();
-				// String msg = "";
-				// do {
-				// DEBUG.OUT("wait message ...........");
-				// receiver = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-				// msg = receiver.readLine();
-				// if (msg != null) {
-				// msg = msg.replace("@n@", "\n");
-				// msg = msg.replace("@b@@r@", "\b\r");
-				// receivedMessage(this.currentSocket.getInetAddress() + ":" + this.port, msg);
-				// }
-				// DEBUG.OUT("fin traitement message ..." + this.isOnline);
-				// } while (isOnline);
 
 				// Accept incoming connections.
 				if (myAgent.dead()) {
@@ -129,24 +113,20 @@ public class ServerService extends Thread implements SocketService, IListener {
 					this.interrupt();
 					return;
 				}
-				// DEBUG.OUT(myServerSocket+" server waiting for connection");
-
+				
 				final Socket clientSocket = this.serverSocket.accept();
+				final String socketStr = clientSocket.toString();
 				DEBUG.OUT(clientSocket + " connected");
 
 				if (!clientSocket.isClosed() && !clientSocket.isInputShutdown()) {
-					final IList<String> list_net_agents =
-							Cast.asList(myAgent.getScope(), myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
-					if (list_net_agents != null && !list_net_agents.contains(clientSocket.toString())) {
-						list_net_agents.addValue(myAgent.getScope(), clientSocket.toString());
+					final IList<String> list_net_agents = Cast.asList(myAgent.getScope(), myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
+					if (list_net_agents != null && !list_net_agents.contains(socketStr)) {
+						list_net_agents.addValue(myAgent.getScope(), socketStr);
 						myAgent.setAttribute(INetworkSkill.NET_AGENT_GROUPS, list_net_agents);
-						// clientSocket.setSoTimeout(TCPConnector._TCP_SO_TIMEOUT);
-						// clientSocket.setKeepAlive(true);
-
 						final ClientService cliThread = new ClientService(clientSocket, connector);
 						cliThread.startService();
 
-						myAgent.setAttribute(TCPConnector._TCP_CLIENT + clientSocket.toString(), cliThread);
+						myAgent.setAttribute(TCPConnector._TCP_CLIENT + socketStr, cliThread);
 					}
 				}
 
@@ -156,13 +136,11 @@ public class ServerService extends Thread implements SocketService, IListener {
 				DEBUG.LOG("Socket closed");
 			} catch (final IOException e1) {
 				DEBUG.LOG("Socket error" + e1);
-				/// isOnline = false;
 			} catch (final Exception e) {
 				DEBUG.LOG("Exception occured in socket " + e.getMessage());
 				if (serverSocket.isClosed()) { isOnline = false; }
 			}
 		}
-		// DEBUG.OUT("closed ");
 		try {
 			myAgent.setAttribute(TCPConnector._TCP_SERVER + serverSocket.getLocalPort(), null);
 			serverSocket.close();
@@ -182,7 +160,6 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 		if (sender != null) { sender.close(); }
 		try {
-			if (receiver != null) { receiver.close(); }
 			if (serverSocket != null) { serverSocket.close(); }
 		} catch (final IOException e) {
 			e.printStackTrace();
@@ -192,7 +169,6 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 	@Override
 	public void sendMessage(final String msg, final String receiver) throws IOException {
-		// IList<String> groups = Cast.asList(myAgent.getScope(), myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 		final ClientService cliThread = (ClientService) myAgent.getAttribute(TCPConnector._TCP_CLIENT + receiver);
 
 		String message = msg;
@@ -214,13 +190,11 @@ public class ServerService extends Thread implements SocketService, IListener {
 			sender.flush();
 		}
 
-		// DataOutputStream outToServer = new DataOutputStream(currentSocket.getOutputStream());
-		// outToServer.writeUTF(message +"\n");
-		// outToServer.flush();
 	}
 
 	@Override
 	public void sendMessage(final String msg) throws IOException {
+		//TODO: why is this empty  if it's normal delete
 		// String message = msg;
 		// if (currentSocket == null || !isOnline()) return;
 		// message = message.replace("\n", "@n@");

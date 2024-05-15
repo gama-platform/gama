@@ -61,7 +61,7 @@ public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 	// Delta delta = new Delta();
 
 	/** The diffs. */
-	LinkedList<SimulationHistoryNode> diffs = new LinkedList<>();
+//	LinkedList<SimulationHistoryNode> diffs = new LinkedList<>();
 
 	@Override
 	public void push(final SimulationHistoryNode node) {

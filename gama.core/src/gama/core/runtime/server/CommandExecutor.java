@@ -61,22 +61,8 @@ public class CommandExecutor {
 	protected volatile LinkedBlockingQueue<Entry<WebSocket, IMap<String, Object>>> commandQueue;
 
 	/** The json encoder. */
-	protected static Json jsonEncoder = Json.getNew();
+	protected static final Json jsonEncoder = Json.getNew();
 
-	/** The command execution thread. */
-	// protected final Thread commandExecutionThread = new Thread(() -> {
-	// while (true) {
-	// Entry<WebSocket, IMap<String, Object>> cmd;
-	// try {
-	// cmd = commandQueue.take();
-	// process(cmd.getKey(), cmd.getValue());
-	// } catch (
-	// /** The e. */
-	// InterruptedException e) {
-	// e.printStackTrace();
-	// }
-	// }
-	// });
 
 	/**
 	 * Instantiates a new command executor.
@@ -89,8 +75,6 @@ public class CommandExecutor {
 		this.server = server;
 		commands = GAMA.getGui().getServerCommands();
 		commandQueue = new LinkedBlockingQueue<>();
-		// commandExecutionThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-		// commandExecutionThread.start();
 	}
 
 	/**
@@ -169,7 +153,7 @@ public class CommandExecutor {
 	 * @return the default commands
 	 * @date 15 oct. 2023
 	 */
-	public static Map<String, ISocketCommand> getDefaultCommands() {
+	public static synchronized Map<String, ISocketCommand> getDefaultCommands() {
 		if (DEFAULT_COMMANDS == null) {
 
 			DEFAULT_COMMANDS = Map.ofEntries(entry(LOAD, DefaultServerCommands::LOAD),

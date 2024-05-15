@@ -47,41 +47,6 @@ public class SerialisationOperators {
 		DEBUG.OFF();
 	}
 
-	/**
-	 * As json string.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @param container
-	 *            the container
-	 * @return the string
-	 * @date 20 août 2023
-	 */
-	@operator (
-			value = { "as_json_string" },
-			can_be_const = true,
-			category = { IOperatorCategory.CONTAINER },
-			concept = { IConcept.SERIALIZE })
-	@doc (
-			deprecated = "Use to_json() instead",
-			value = "Tries to convert the container into a json-formatted string",
-			usages = { @usage (
-					value = "With a map:",
-					examples = { @example (
-							value = "as_json_string(map('int_value'::1, 'string_value'::'some words', 'tab'::[1, 2, 3]))",
-							returnType = IKeyword.STRING,
-							equals = "{\"int_value\":1,\"string_value\":\"some words\",\"tab\":[1,2,3]}") }),
-					@usage (
-							value = "With an array:",
-							examples = { @example (
-									value = "as_json_string([1, 2, 3, 'some words'])",
-									returnType = IKeyword.STRING,
-									equals = "[1,2,3,\"some words\"]") }) })
-	@Deprecated
-	public static String asJsonString(final IScope scope, final IContainer container) {
-		return Json.getNew().valueOf(container).toString();
-	}
 
 	/**
 	 * To gaml.

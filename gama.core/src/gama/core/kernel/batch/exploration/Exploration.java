@@ -216,22 +216,22 @@ public class Exploration extends AExplorationAlgorithm {
 		} else if (hasFacet(IKeyword.WITH)) { method = FROM_LIST; }
 
 		sets = switch (method) {
-			case IKeyword.MORRIS -> MorrisSampling.MakeMorrisSamplingOnly(nb_levels, sample_size, parameters, scope);
-			case IKeyword.SALTELLI -> SaltelliSampling.MakeSaltelliSampling(scope, sample_size, parameters);
-			case IKeyword.LHS -> LatinhypercubeSampling.LatinHypercubeSamples(sample_size, parameters,
+			case IKeyword.MORRIS -> MorrisSampling.makeMorrisSamplingOnly(nb_levels, sample_size, parameters, scope);
+			case IKeyword.SALTELLI -> SaltelliSampling.makeSaltelliSampling(scope, sample_size, parameters);
+			case IKeyword.LHS -> LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 					scope.getRandom().getGenerator(), scope);
-			case IKeyword.ORTHOGONAL -> OrthogonalSampling.OrthogonalSamples(sample_size, iterations, parameters,
+			case IKeyword.ORTHOGONAL -> OrthogonalSampling.orthogonalSamples(sample_size, iterations, parameters,
 					scope.getRandom().getGenerator(), scope);
-			case IKeyword.UNIFORM -> RandomSampling.UniformSampling(scope, sample_size, parameters);
+			case IKeyword.UNIFORM -> RandomSampling.uniformSampling(scope, sample_size, parameters);
 			case IKeyword.FACTORIAL -> {
 				List<ParametersSet> ps = null;
 				if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
 					@SuppressWarnings ("unchecked") int[] factors =
 							Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
 									.mapToInt(o -> Integer.parseInt(o.toString())).toArray();
-					ps = RandomSampling.FactorialUniformSampling(scope, factors, params);
+					ps = RandomSampling.factorialUniformSampling(scope, factors, params);
 				} else {
-					ps = RandomSampling.FactorialUniformSampling(scope, sample_size, params);
+					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
 				}
 				yield ps;
 			}
@@ -336,7 +336,7 @@ public class Exploration extends AExplorationAlgorithm {
 	 * @return
 	 */
 	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) {
+			final List<ParametersSet> sets) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
@@ -390,22 +390,17 @@ public class Exploration extends AExplorationAlgorithm {
 				int minValue = Cast.asInt(scope, var.getMinValue(scope));
 				int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
 				double stepValue = 1;
+				int nbIterNeeded = 0;
 				if (var.getStepValue(scope) != null) {
 					stepValue = Cast.asInt(scope, var.getStepValue(scope));
 				} else if (maxValue - minValue > __default_step_factor) {
-					stepValue = (maxValue - minValue) / __default_step_factor;
+					stepValue = (maxValue - minValue) / (double)__default_step_factor;
 				}
-
-				while (minValue <= maxValue) {
-					if (stepValue >= 0) {
-						res.add(minValue);
-						minValue = minValue + (int) stepValue
-								+ (Random.opFlip(scope, stepValue - (int) stepValue) ? 1 : 0);
-					} else {
-						res.add(maxValue);
-						maxValue = maxValue + (int) stepValue
-								- (Random.opFlip(scope, stepValue - (int) stepValue) ? 1 : 0);
-					}
+				//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
+				nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
+				double start = stepValue >= 0 ? minValue : maxValue;
+				for(int i = 0 ; i <= nbIterNeeded ; i++) {
+					res.add(start + (int)(stepValue * i));
 				}
 				break;
 			case IType.FLOAT:
@@ -453,14 +448,9 @@ public class Exploration extends AExplorationAlgorithm {
 					increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
 
 					if (increment == null) {
-						Double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
-						if (d == null) {
-							GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Cannot retrieve steps "
-									+ var.getStepValue(scope) + " of paramter " + var.getName(), scope), true);
-						} else {
-							stepV = d;
-							increment = new GamaPoint(d, d, d);
-						}
+						double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
+						stepV = d;
+						increment = new GamaPoint(d, d, d);
 					} else {
 						stepV = (increment.x + increment.y + increment.z) / 3.0;
 

@@ -17,7 +17,6 @@ import java.util.Collections;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.gaml.compilation.GamlAddition;
-import gama.gaml.interfaces.IGamlDescription;
 
 /**
  * Class AbstractProto.
@@ -26,7 +25,7 @@ import gama.gaml.interfaces.IGamlDescription;
  * @since 17 déc. 2014
  *
  */
-public abstract class AbstractProto extends GamlAddition implements IGamlDescription {
+public abstract class AbstractProto extends GamlAddition {
 
 	/** The deprecated. */
 	protected String deprecated;

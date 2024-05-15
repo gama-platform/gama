@@ -148,7 +148,7 @@ public class _Edge<V, E> extends GraphObject<GamaGraph<V, E>, V, E> {
 
 	@Override
 	public String toString() {
-		return new StringBuffer().append(source.toString()).append(" -> ").append(target.toString()).toString();
+		return new StringBuffer().append(source).append(" -> ").append(target).toString();
 	}
 
 	@Override

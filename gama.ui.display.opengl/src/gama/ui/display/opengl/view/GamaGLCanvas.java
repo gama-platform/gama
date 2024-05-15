@@ -60,8 +60,6 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	/** The canvas. */
 	final Control canvas;
 
-	/** The surface. */
-	SWTOpenGLDisplaySurface surface;
 
 	/** The drawable. */
 	final GLWindow drawable;
@@ -91,7 +89,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 * @param name
 	 *            for debug purposes
 	 */
-	public GamaGLCanvas(final Composite parent, final IOpenGLRenderer renderer, final SWTOpenGLDisplaySurface surface) {
+	public GamaGLCanvas(final Composite parent, final IOpenGLRenderer renderer, final String name) {
 		super(parent, SWT.NONE);
 		parent.addControlListener(new ControlAdapter() {
 			@Override
@@ -106,8 +104,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 				GamaGLCanvas.this.setMonitor(parent.getMonitor());
 			}
 		});
-		this.surface = surface;
-		this.name = surface.getOutput().getName();
+		this.name = name;
 		parent.setLayout(new FillLayout());
 		this.setLayout(new FillLayout());
 		final GLCapabilities cap = defineCapabilities();

@@ -106,17 +106,17 @@ public class GamaColorMenu extends GamaMenu {
 	private static Integer reverse = null;
 
 	/** The by RGB. */
-	public static Comparator<String> byRGB = (a, b) -> getReverse() * colors.get(a).compareTo(colors.get(b));
+	public static final Comparator<String> byRGB = (a, b) -> getReverse() * colors.get(a).compareTo(colors.get(b));
 
 	/** The by brightness. */
-	public static Comparator<String> byBrightness =
+	public static final Comparator<String> byBrightness =
 			(a, b) -> getReverse() * colors.get(a).compareBrightnessTo(colors.get(b));
 
 	/** The by name. */
-	public static Comparator<String> byName = (a, b) -> getReverse() * a.compareTo(b);
+	public static final Comparator<String> byName = (a, b) -> getReverse() * a.compareTo(b);
 
 	/** The by luminescence. */
-	public static Comparator<String> byLuminescence =
+	public static final Comparator<String> byLuminescence =
 			(a, b) -> getReverse() * GamaColor.colors.get(a).compareTo(GamaColor.colors.get(b));
 
 	/** The color comp. */

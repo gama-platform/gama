@@ -22,7 +22,7 @@ global {
 
 	int num_dead <- 0;
 	init {
-		float t <- machine_time;
+		float t <- gama.machine_time;
 		create people number: number_people ;
         ask (number_I among people) {
         	is_infected <- true;
@@ -75,6 +75,7 @@ species people skills:[moving] {
 experiment Simple type:gui {
 	parameter 'Infection Rate:' var: infection_rate;
 	parameter 'Infection Distance:' var: infection_distance;
+	parameter 'Probability of dying:' var: dying_proba;
 	output {
 		monitor "nb of dead" value: num_dead;
 		display map {
@@ -84,12 +85,12 @@ experiment Simple type:gui {
 }
 
 // This experiment explores two parameters with a PSO strategy,
-// repeating each simulation three times (the aggregated fitness correspond to the mean fitness), 
+// repeating each simulation five times (the aggregated fitness correspond to the mean fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment PSO type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment PSO type: batch keep_seed: true repeat: 5 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
-	method pso num_particles: 3 weight_inertia:0.7 weight_cognitive: 1.5 weight_social: 1.5  iter_max: 5  minimize: num_dead  ; 
+	method pso num_particles: 5 weight_inertia:0.7 weight_cognitive: 1.5 weight_social: 1.5  iter_max: 5 aggregation:"avr"  minimize: num_dead  ; 
 }
 
 // This experiment explores two parameters with a GA strategy,

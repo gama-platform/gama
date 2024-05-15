@@ -246,15 +246,6 @@ public class ExperimentJob implements IExperimentJob {
 					temp.getFrameRate(), simulator.getTypeOf(temp.getName()), temp.getOutputPath());
 		}
 		simulator.getExperimentPlan().setStopCondition(untilCond);
-
-		// // Initialize the enCondition
-		// if (untilCond == null || "".equals(untilCond)) {
-		// endCondition = IExpressionFactory.FALSE_EXPR;
-		// } else {
-		// endCondition = GAML.getExpressionFactory().createExpr(untilCond, simulator.getModel().getDescription());
-		// // endCondition = GAML.compileExpression(untilCond, simulator.getSimulation(), true);
-		// }
-
 	}
 
 	/**
@@ -372,13 +363,12 @@ public class ExperimentJob implements IExperimentJob {
 			if (this.step % v.getFrameRate() == 0) {
 				final RichOutput out = simulator.getRichOutput(v);
 				if (out == null || out.getValue() == null) {} else if (out.getValue() instanceof BufferedImage) {
-					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), step,
-							out.getType());
+					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), out.getType());
 				} else {
-					v.setValue(out.getValue(), out.getStep(), out.getType());
+					v.setValue(out.getValue(), out.getType());
 				}
 			} else {
-				v.setValue(null, this.step);
+				v.setValue(null);
 			}
 		}
 		if (this.outputFile != null) { this.outputFile.writeResultStep(this.step, this.listenedVariables); }
@@ -402,7 +392,7 @@ public class ExperimentJob implements IExperimentJob {
 	protected Display2D writeImageInFile(final BufferedImage img, final String name, final String outputPath) {
 		final String fileName = name + this.getExperimentID() + "-" + step + ".png";
 		String fileFullName = Globals.IMAGES_PATH + "/" + fileName;
-		if (outputPath != "" && outputPath != null) {
+		if (!"".equals(outputPath)  && outputPath != null) {
 			// a specific output path has been specified with the "output_path"
 			// keyword in the xml
 			fileFullName = outputPath + "-" + step + ".png";

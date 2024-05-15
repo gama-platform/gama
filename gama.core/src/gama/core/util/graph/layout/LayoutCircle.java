@@ -18,7 +18,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.graph.IGraph;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Spatial;
+import gama.gaml.operators.spatial.SpatialPunctal;
 
 /**
  * The Class LayoutCircle.
@@ -50,7 +50,7 @@ public class LayoutCircle {
 	 */
 	public void applyLayout(final IScope scope, final boolean shuffle) {
 
-		final double radius = envelopeGeometry.getCentroid().euclidianDistanceTo(Spatial.Punctal
+		final double radius = envelopeGeometry.getCentroid().euclidianDistanceTo(SpatialPunctal
 				._closest_point_to(envelopeGeometry.getCentroid(), envelopeGeometry.getExteriorRing(scope)));
 
 		// Optimize node ordering

@@ -8,7 +8,7 @@
 model HexagonalGrid
 
 global {
-	string orientation <- "horizontal" among: ["horizontal", "vertical"] parameter: true;	
+	string orientation <- "horizontal" among: ["horizontal", "vertical"];	
 	
 	init {
 		ask cell {color <- #white;}
@@ -29,6 +29,7 @@ grid cell height: 10 width: 10 neighbors: 6 horizontal_orientation: orientation 
 
 
 experiment hexagonal type: gui{
+	parameter var:orientation;
 	output  synchronized:true{
 		display view type: 3d{
 			grid cell border: #black ;

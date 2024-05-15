@@ -22,7 +22,6 @@ import gama.gaml.types.IType;
 /**
  * The Class EmotionType.
  */
-@SuppressWarnings ("unchecked")
 @type (
 		name = "emotion",
 		id = EmotionType.EMOTIONTYPE_ID,

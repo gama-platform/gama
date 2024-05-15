@@ -143,44 +143,43 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final IAgent[] stack = scope.getAgentsStack();
 		final IAgent mySelfAgent = stack[stack.length - 2];
-		Double charismaValue = 1.0;
-		Double receptivityValue = 1.0;
-		Double thresholdValue = 0.25;
+		double charismaValue = 1.0;
+		double receptivityValue = 1.0;
+		double thresholdValue = 0.25;
 		IScope scopeMySelf = null;
-		Double decayValue = 0.0;
 		if (mySelfAgent != null) {
 			scopeMySelf = mySelfAgent.getScope().copy("in UnconsciousContagionStatement");
 			scopeMySelf.push(mySelfAgent);
 		}
-		if ((when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) && (emotion != null)) {
-			if (SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotion.value(scope))) {
-				if (charisma != null) {
-					charismaValue = (Double) charisma.value(scope);
+		
+		if (when != null && !Cast.asBool(scopeMySelf, when.value(scopeMySelf)) || (emotion == null)) {
+			GAMA.releaseScope(scopeMySelf);
+			return null;
+		}
+		
+		if (BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+			
+			charismaValue = (double) (charisma != null ? charisma.value(scope) : scope.getAgent().getAttribute(CHARISMA));
+			
+			receptivityValue = (double) (receptivity != null ? receptivity.value(scopeMySelf) : mySelfAgent.getAttribute(RECEPTIVITY));
+
+			if (threshold != null) { 
+				thresholdValue = (double) threshold.value(scopeMySelf); 
+			}
+			if (charismaValue * receptivityValue >= thresholdValue) {
+				final Emotion tempEmo = BdiUtils.getEmotion(scope, (Emotion) emotion.value(scope));
+				Emotion temp;
+				if (tempEmo.hasIntensity()) {
+					temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
+							tempEmo.getAbout(), tempEmo.getDecay());
 				} else {
-					charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
+					temp = (Emotion) tempEmo.copy(scope);
 				}
-				if (receptivity != null) {
-					receptivityValue = (Double) receptivity.value(scopeMySelf);
-				} else if (mySelfAgent != null) { receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY); }
-				if (threshold != null) { thresholdValue = (Double) threshold.value(scopeMySelf); }
-				if (charismaValue * receptivityValue >= thresholdValue) {
-					final Emotion tempEmo = SimpleBdiArchitecture.getEmotion(scope, (Emotion) emotion.value(scope));
-					Emotion temp;
-					if (!tempEmo.getNoIntensity()) {
-						temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
-								tempEmo.getAbout(), tempEmo.getDecay());
-					} else {
-						temp = (Emotion) tempEmo.copy(scope);
-					}
-					temp.setAgentCause(scope.getAgent());
-					if (decay != null) {
-						decayValue = (Double) decay.value(scopeMySelf);
-						if (decayValue > 1.0) { decayValue = 1.0; }
-						if (decayValue < 0.0) { decayValue = 0.0; }
-						temp.setDecay(decayValue);
-					}
-					SimpleBdiArchitecture.addEmotion(scopeMySelf, temp);
+				temp.setAgentCause(scope.getAgent());
+				if (decay != null) {
+					temp.setDecay(BdiUtils.clamp((Double) decay.value(scopeMySelf),0 ,1));
 				}
+				BdiUtils.addEmotion(scopeMySelf, temp);
 			}
 		}
 		GAMA.releaseScope(scopeMySelf);

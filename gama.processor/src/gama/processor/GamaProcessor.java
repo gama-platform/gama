@@ -137,7 +137,7 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 		for (final String element : context.imports) { sb.append(ln).append("import ").append(element).append("*;"); }
 		for (final String element : EXPLICIT_IMPORTS) { sb.append(ln).append("import ").append(element).append(";"); }
 		sb.append(ln).append("import static gama.gaml.operators.Cast.*;");
-		sb.append(ln).append("import static gama.gaml.operators.Spatial.*;");
+		sb.append(ln).append("import gama.gaml.operators.spatial.*;");
 		sb.append(ln).append("import static gama.core.common.interfaces.IKeyword.*;");
 		sb.append(ln).append("@SuppressWarnings({ \"rawtypes\", \"unchecked\", \"unused\" })");
 		sb.append(ln).append(ln)

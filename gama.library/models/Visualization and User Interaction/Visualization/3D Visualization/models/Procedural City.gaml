@@ -9,8 +9,8 @@
 model procedural_city   
 
 global {
-	int number_of_building parameter: 'Number of Agents' min: 1 <- 300 category: 'Initialization';
-	int width_and_height_of_environment parameter: 'Dimensions' min: 10 <- 500 category: 'Initialization';
+	int number_of_building min: 1 <- 300;
+	int width_and_height_of_environment min: 10 <- 500;
 	
 	geometry shape <- square(width_and_height_of_environment);
 		
@@ -52,7 +52,16 @@ species Building{
 }	
 
 
-experiment DisplayTextured  type: gui {
+experiment base {
+
+	parameter 'Number of Agents' var:number_of_building  category: 'Initialization';
+	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
+	
+}
+
+experiment DisplayTextured  type: gui parent:base{
+	
+	
 	
 	init {
 		gama.pref_texture_orientation <- true;
@@ -65,7 +74,8 @@ experiment DisplayTextured  type: gui {
 		}
 	}
 }
-experiment DisplayWithDynamicDiffuseLight  type: gui {
+
+experiment DisplayWithDynamicDiffuseLight  type: gui parent:base{
 	output {
 	  display City type:3d background:rgb(10,40,55) axes:false{
 	  		camera 'default' location: {178.9256,868.4599,470.2417} target: {274.5961,228.3136,0.0};

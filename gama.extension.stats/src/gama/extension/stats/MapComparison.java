@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.topology.filter.IAgentFilter;
@@ -467,8 +467,6 @@ public class MapComparison {
 		if (nb < 1) return 1;
 		similarities.clear();
 		final int nbCat = categories.size();
-		final double[] nbObs = new double[nbCat];
-		final double[] nbSim = new double[nbCat];
 		final double[] nbInit = new double[nbCat];
 		final double[][] nbInitObs = new double[nbCat][nbCat];
 		final double[][] nbInitSim = new double[nbCat][nbCat];
@@ -481,8 +479,6 @@ public class MapComparison {
 
 		for (int i = 0; i < nbCat; i++) {
 			nbInit[i] = 0;
-			nbObs[i] = 0;
-			nbSim[i] = 0;
 			for (int j = 0; j < nbCat; j++) {
 				nbInitObs[i][j] = 0;
 				nbInitSim[i][j] = 0;
@@ -498,8 +494,6 @@ public class MapComparison {
 			final int idCatObs = categoriesId.get(valsObs.get(i));
 			final int idCatSim = categoriesId.get(valsSim.get(i));
 			nbInit[idCatInit] += weight;
-			nbSim[idCatSim] += weight;
-			nbObs[idCatObs] += weight;
 			nbInitObs[idCatInit][idCatObs] += weight;
 			nbInitSim[idCatInit][idCatSim] += weight;
 		}
@@ -719,6 +713,7 @@ public class MapComparison {
 	 * @param Xvals
 	 *            the xvals
 	 */
+	@SuppressWarnings("unchecked")
 	private static void computeXaXsTransitions(final IScope scope, final IAgentFilter filter,
 			final GamaMatrix<Double> fuzzytransitions, final Double distance, final IContainer<Integer, IAgent> agents,
 			final int nbCat, final Map<List<Integer>, Map<Double, Double>> XaPerTransition,
@@ -765,11 +760,13 @@ public class MapComparison {
 								mapxa = GamaMapFactory.create();
 								mapxa.put(xa, 1.0);
 								XaPerTransition.put(ca, mapxa);
-							} else if (mapxa.containsKey(xa)) {
-								mapxa.put(xa, mapxa.get(xa) + 1.0);
-							} else {
-								mapxa.put(xa, 1.0);
-							}
+							} else  {
+								Double val = mapxa.get(xa);
+								if (val == null) {
+									val = 0d;
+								}
+								mapxa.put(xa, val + 1.0);
+							} 
 							Xvals.add(xa);
 						}
 						if (xs > 0) {
@@ -778,10 +775,12 @@ public class MapComparison {
 								mapxs = GamaMapFactory.create();
 								mapxs.put(xs, 1.0);
 								XsPerTransition.put(ca, mapxs);
-							} else if (mapxs.containsKey(xa)) {
-								mapxs.put(xs, mapxs.get(xs) + 1.0);
 							} else {
-								mapxs.put(xs, 1.0);
+								Double val =  mapxs.get(xs) ;
+								if (val == null) {
+									val = 0.0;
+								}
+								mapxs.put(xs, val+ 1.0);
 							}
 							Xvals.add(xs);
 						}

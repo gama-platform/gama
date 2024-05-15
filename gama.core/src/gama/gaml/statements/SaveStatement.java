@@ -21,8 +21,6 @@ import java.util.Set;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -30,14 +28,16 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IModifiableContainer;
-import gama.core.util.file.IGamaFile;
 import gama.core.util.file.GamaFile.FlushBufferException;
+import gama.core.util.file.IGamaFile;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.validator;
@@ -78,14 +78,6 @@ import gama.gaml.types.Types;
 				doc = @doc (
 						value = "a string representing the format of the output file (e.g. \"shp\", \"asc\", \"geotiff\", \"png\", \"text\", \"csv\"). If the file extension is non ambiguous in facet 'to:', this format does not need to be specified. However, in many cases, it can be useful to do it (for instance, when saving a string to a .pgw file, it is always better to clearly indicate that the expected format is 'text'). ")),
 				@facet (
-						name = IKeyword.TYPE,
-						type = IType.ID,
-						optional = true,
-
-						doc = @doc (
-								deprecated = "Use 'format' instead",
-								value = "a string representing the type of the output file (e.g. \"shp\", \"asc\", \"geotiff\", \"png\", \"text\", \"csv\") ")),
-				@facet (
 						name = IKeyword.DATA,
 						type = IType.NONE,
 						optional = true,
@@ -116,55 +108,49 @@ import gama.gaml.types.Types;
 						remote_context = true,
 						optional = true,
 						doc = @doc (
-								value = "Allows to specify the attributes of a shape file or GeoJson file where agents are saved. Can be expressed as a list of string or as a literal map. When expressed as a list, each value should represent the name of an attribute of the shape or agent. The keys of the map are the names of the attributes that will be present in the file, the values are whatever expressions neeeded to define their value. ")),
-				@facet (
-						name = IKeyword.WITH,
-						type = { IType.MAP },
-						optional = true,
-						doc = @doc (
-								deprecated = "Please use 'attributes:' instead",
-								value = "Allows to define the attributes of a shape file. Keys of the map are the attributes of agents to save, values are the names of attributes in the shape file")) },
+								value = "Allows to specify the attributes of a shape file or GeoJson file where agents are saved. Can be expressed as a list of string or as a literal map. When expressed as a list, each value should represent the name of an attribute of the shape or agent. The keys of the map are the names of the attributes that will be present in the file, the values are whatever expressions neeeded to define their value. ")), 
+		},
 		omissible = IKeyword.DATA)
 @doc (
 		value = "Allows to save data in a file.",
 		usages = { @usage (
 				value = "Its simple syntax is:",
 				examples = { @example (
-						value = "save data to: output_file type: a_type_file;",
+						value = "save data to: output_file format: a_file_format;",
 						isExecutable = false) }),
 				@usage (
 						value = "To save data in a text file:",
 						examples = { @example (
-								value = "save (string(cycle) + \"->\"  + name + \":\" + location) to: \"save_data.txt\" type: \"text\";") }),
+								value = "save (string(cycle) + \"->\"  + name + \":\" + location) to: \"save_data.txt\" format: \"text\";") }),
 				@usage (
 						value = "To save the values of some attributes of the current agent in csv file:",
 						examples = { @example (
-								value = "save [name, location, host] to: \"save_data.csv\" type: \"csv\";") }),
+								value = "save [name, location, host] to: \"save_data.csv\" format: \"csv\";") }),
 				@usage (
 						value = "To save the values of all attributes of all the agents of a species into a csv (with optional attributes):",
 						examples = { @example (
-								value = "save species_of(self) to: \"save_csvfile.csv\" type: \"csv\" header: false;") }),
+								value = "save species_of(self) to: \"save_csvfile.csv\" format: \"csv\" header: false;") }),
 				@usage (
 						value = "To save the geometries of all the agents of a species into a shapefile (with optional attributes):",
 						examples = { @example (
-								value = "save species_of(self) to: \"save_shapefile.shp\" type: \"shp\" attributes: ['nameAgent'::name, 'locationAgent'::location] crs: \"EPSG:4326\";") }),
+								value = "save species_of(self) to: \"save_shapefile.shp\" format: \"shp\" attributes: ['nameAgent'::name, 'locationAgent'::location] crs: \"EPSG:4326\";") }),
 				@usage (
 						value = "To save the grid_value attributes of all the cells of a grid into an ESRI ASCII Raster file:",
 						examples = { @example (
-								value = "save grid to: \"save_grid.asc\" type: \"asc\";") }),
+								value = "save grid to: \"save_grid.asc\" format: \"asc\";") }),
 				@usage (
 						value = "To save the grid_value attributes of all the cells of a grid into geotiff:",
 						examples = { @example (
-								value = "save grid to: \"save_grid.tif\" type: \"geotiff\";") }),
+								value = "save grid to: \"save_grid.tif\" format: \"geotiff\";") }),
 				@usage (
 						value = "To save the grid_value attributes of all the cells of a grid into png (with a worldfile):",
 						examples = { @example (
-								value = "save grid to: \"save_grid.png\" type: \"image\";") }),
+								value = "save grid to: \"save_grid.png\" format: \"image\";") }),
 				@usage (
 						value = "The save statement can be use in an init block, a reflex, an action or in a user command. Do not use it in experiments.") })
 @validator (SaveValidator.class)
 @SuppressWarnings ({ "rawtypes" })
-public class SaveStatement extends AbstractStatementSequence implements IStatement.WithArgs {
+public class SaveStatement extends AbstractStatementSequence{
 
 	/** The Constant NON_SAVEABLE_ATTRIBUTE_NAMES. */
 	public static final Set<String> NON_SAVEABLE_ATTRIBUTE_NAMES =
@@ -220,10 +206,8 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 		public void validate(final StatementDescription description) {
 
 			final StatementDescription desc = description;
-			final Arguments with = desc.getPassedArgs();
 			final IExpression att = desc.getFacetExpr(ATTRIBUTES);
-			final IExpressionDescription type = desc.getFacet(FORMAT, TYPE);
-			desc.removeFacets(TYPE);
+			final IExpressionDescription type = desc.getFacet(FORMAT);
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
 
@@ -299,12 +283,6 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 					}
 				}
 
-				if (with.exists()) {
-					desc.warning(
-							"'with' and 'attributes' are mutually exclusive. Only the first one will be considered",
-							IGamlIssue.CONFLICTING_FACETS, ATTRIBUTES, WITH);
-				}
-
 				if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext) || format != null
 						&& !"shp".equals(format.literalValue()) && !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
 					desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
@@ -319,26 +297,17 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 			/** The species. */
 			final SpeciesDescription species = t.getSpecies();
 
-			if (att == null && !with.exists()) return;
+			if (att == null) return;
 
 			if (species == null) {
-				if (with.exists() || isMap) {
+				if (isMap) {
 					desc.error("Attributes of geometries can only be specified with a list of attribute names",
-							IGamlIssue.UNKNOWN_FACET, att == null ? WITH : ATTRIBUTES);
+							IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
 				}
 				// Error deactivated for fixing #2982.
 				// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
 				// att == null ? WITH : ATTRIBUTES);
-			} else {
-				with.forEachFacet((name, exp) -> {
-					if (!species.hasAttribute(name)) {
-						desc.error("Attribute " + name + " is not defined for the agents of "
-								+ data.serializeToGaml(false), IGamlIssue.UNKNOWN_VAR, WITH);
-						return false;
-					}
-					return true;
-				});
-			}
+			} 
 		}
 
 		/**
@@ -357,9 +326,6 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 		}
 
 	}
-
-	/** The with facet. */
-	private Arguments withFacet;
 
 	/** The attributes facet. */
 	private final IExpression attributesFacet;
@@ -473,12 +439,11 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 					code = EPSG_LABEL + Cast.asInt(scope, crsCode.value(scope));
 				} else if (tt.id() == IType.STRING) { code = (String) crsCode.value(scope); }
 			}
-			Object attributesToSave = attributesFacet == null ? withFacet : attributesFacet;
 			//
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = findDelegate(itemType, type);
 			if (delegate != null) {
-				delegate.save(scope, item, fileToSave, code, addHeader, type, attributesToSave);
+				delegate.save(scope, item, fileToSave, code, addHeader, type, attributesFacet);
 				return Cast.asString(scope, file.value(scope));
 			}
 			throw GamaRuntimeException.error("Format not recognized: " + type, scope);
@@ -515,11 +480,4 @@ public class SaveStatement extends AbstractStatementSequence implements IStateme
 		return closest;
 	}
 
-	@Override
-	public void setFormalArgs(final Arguments args) { withFacet = args; }
-
-	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {
-		//
-	}
 }

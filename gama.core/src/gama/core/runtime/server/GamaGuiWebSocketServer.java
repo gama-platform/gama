@@ -40,8 +40,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaGuiWebSocketServer StartForGUI(final int port) {
-		return StartForGUI(port, DEFAULT_PING_INTERVAL);
+	public static GamaGuiWebSocketServer startForGUI(final int port) {
+		return startForGUI(port, DEFAULT_PING_INTERVAL);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaGuiWebSocketServer StartForGUI(final int port, final int pingInterval) {
+	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval) {
 		GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval);
 		server.currentServerConfig = GamaServerExperimentConfiguration.GUI;
 		server.start();

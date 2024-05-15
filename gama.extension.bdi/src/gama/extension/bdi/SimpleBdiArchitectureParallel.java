@@ -135,19 +135,19 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 	@Override
 	public void preStep(final IScope scope, IPopulation<? extends IAgent> gamaPopulation) {
 		final IExpression schedule = gamaPopulation.getSpecies().getSchedule();
-		final List<? extends IAgent> agents =
-				schedule == null ? gamaPopulation : Cast.asList(scope, schedule.value(scope));
+		final List<? extends IAgent> agents = schedule == null ? gamaPopulation : Cast.asList(scope, schedule.value(scope));
 
 		GamaExecutorService.execute(scope, new UpdateLifeTimePredicates(null), agents, parallel);
 		GamaExecutorService.execute(scope, new UpdateEmotionsIntensity(null), agents, parallel);
 
-		if (_reflexes != null)
+		if (_reflexes != null) {
 			for (final IStatement r : _reflexes) {
 				if (!scope.interrupted()) {
 					GamaExecutorService.execute(scope, r, agents, ConstantExpressionDescription.FALSE_EXPR_DESCRIPTION);
 				}
 			}
-
+		}
+		
 		if (_perceptionNumber > 0) {
 			for (int i = 0; i < _perceptionNumber; i++) {
 				if (!scope.interrupted()) {
@@ -186,8 +186,7 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 
 	@Override
 	public Object executeOn(final IScope scope) throws GamaRuntimeException {
-		final Boolean use_personality = scope.hasArg(USE_PERSONALITY) ? scope.getBoolArg(USE_PERSONALITY)
-				: (Boolean) scope.getAgent().getAttribute(USE_PERSONALITY);
+		final Boolean use_personality = scope.getBoolArgIfExists(USE_PERSONALITY, (Boolean) scope.getAgent().getAttribute(USE_PERSONALITY));
 		if (use_personality) {
 			Double expressivity = (Double) scope.getAgent().getAttribute(EXTRAVERSION);
 			Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);

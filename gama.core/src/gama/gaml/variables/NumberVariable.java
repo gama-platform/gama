@@ -61,13 +61,6 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("The initial value of the attribute. Same as 'init:'")),
 				@facet (
-						name = IKeyword.VALUE,
-						type = { IType.INT, IType.FLOAT, IType.POINT, IType.DATE },
-						optional = true,
-						doc = @doc (
-								value = "",
-								deprecated = "Use 'update' instead")),
-				@facet (
 						name = IKeyword.UPDATE,
 						type = { IType.INT, IType.FLOAT, IType.POINT, IType.DATE },
 						optional = true,
@@ -88,16 +81,6 @@ import gama.gaml.types.IType;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Indicates whether this attribute can be subsequently modified or not")),
-				@facet (
-						name = IKeyword.CATEGORY,
-						type = { IType.STRING },
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
-				@facet (
-						name = IKeyword.PARAMETER,
-						type = { IType.STRING, IType.BOOL },
-						optional = true,
-						doc = @doc ("Soon to be deprecated. Declare the parameter in an experiment instead")),
 				@facet (
 						name = IKeyword.ON_CHANGE,
 						type = IType.NONE,

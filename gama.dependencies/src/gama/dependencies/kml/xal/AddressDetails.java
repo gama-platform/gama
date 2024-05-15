@@ -145,14 +145,6 @@ public class AddressDetails implements Cloneable
         this.thoroughfare = thoroughfare;
     }
 
-    /**
-     * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-     * 
-     */
-    @Deprecated
-    private AddressDetails() {
-        super();
-    }
 
     /**
      * @see postalServiceElements
@@ -1247,15 +1239,6 @@ public class AddressDetails implements Cloneable
             this.administrativeArea = administrativeArea;
             this.locality = locality;
             this.thoroughfare = thoroughfare;
-        }
-
-        /**
-         * Default no-arg constructor is private. Use overloaded constructor instead! (Temporary solution, till a better and more suitable ObjectFactory is created.) 
-         * 
-         */
-        @Deprecated
-        private Country() {
-            super();
         }
 
         /**

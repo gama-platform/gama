@@ -251,9 +251,9 @@ public class SWTAccessor {
 		});
 
 		nwt = NativeWindowFactory.getNativeWindowType(false);
-		isOSX = NativeWindowFactory.TYPE_MACOSX == nwt;
-		isWindows = NativeWindowFactory.TYPE_WINDOWS == nwt;
-		isX11 = NativeWindowFactory.TYPE_X11 == nwt;
+		isOSX = NativeWindowFactory.TYPE_MACOSX.equals(nwt);
+		isWindows = NativeWindowFactory.TYPE_WINDOWS.equals(nwt);
+		isX11 = NativeWindowFactory.TYPE_X11.equals(nwt);
 
 		Method m = null;
 		try {

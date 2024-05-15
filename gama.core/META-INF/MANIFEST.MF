@@ -755,6 +755,7 @@ Export-Package: gama.core.common;
    gama.core.kernel.experiment,
    gama.core.util.path,
    org.jgrapht.alg.drawing.model",
+ gama.gaml.operators.spatial,
  gama.gaml.skills;
   uses:="gama.core.util,
    gama.core.util.graph,

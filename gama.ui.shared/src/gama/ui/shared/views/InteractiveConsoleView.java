@@ -493,8 +493,9 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
-		if (temps.containsKey(name)) {
-			final var value = temps.get(name);
+		
+		final var value = temps.get(name);
+		if (value != null) {
 			final IType<?> t = GamaType.of(value);
 			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.TEMP, null);
 		}

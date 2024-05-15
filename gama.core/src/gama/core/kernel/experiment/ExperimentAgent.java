@@ -33,7 +33,6 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
@@ -93,12 +92,6 @@ import gama.gaml.variables.IVariable;
 				doc = @doc (
 						value = "Contains a reference to the current simulation being run by this experiment",
 						comment = "will be nil if no simulation have been created. In case several simulations are launched, contains a reference to the latest one")),
-		// @variable (
-		// name = GAMA._WARNINGS,
-		// type = IType.BOOL,
-		// doc = @doc (
-		// deprecated = "use gama.pref_errors_warnings_errors instead",
-		// value = "The value of the preference 'Consider warnings as errors'")),
 		@variable (
 				name = ExperimentAgent.MODEL_PATH,
 				type = IType.STRING,
@@ -131,14 +124,6 @@ import gama.gaml.variables.IVariable;
 				doc = @doc (
 						value = "The minimum duration (in seconds) a simulation cycle should last. Default is 0. Units can be used to pass values smaller than a second (for instance '10 #msec')",
 						comment = "Useful to introduce slow_downs to fast simulations or to synchronize the simulation on some other process")),
-		@variable (
-				name = PlatformAgent.WORKSPACE_PATH,
-				type = IType.STRING,
-				constant = true,
-				doc = @doc (
-						deprecated = "Use 'gama.workspace_path' or 'gama.workspace' instead",
-						value = "Contains the absolute path to the workspace of GAMA",
-						comment = "Always terminated with a trailing separator")),
 		@variable (
 				name = IKeyword.PARAMETERS,
 				type = IType.MAP,
@@ -733,15 +718,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		}
 	}
 
-	/**
-	 * Gets the workspace path.
-	 *
-	 * @return the workspace path
-	 */
-	@getter (
-			value = PlatformAgent.WORKSPACE_PATH,
-			initializer = true)
-	public String getWorkspacePath() { return GAMA.getPlatformAgent().getWorkspacePath(); }
 
 	/**
 	 * Gets the parameters.
@@ -970,9 +946,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		final ModelDescription main = this.getModel().getDescription();
 		if (main.getMicroModel(micro.getAlias()) == null) return sim.getPopulationFor(species.getName());
 		return sim.getPopulationFor(species);
-
-		// return sim.getPopulationFor(species.getName());
-
 	}
 
 	/**

@@ -51,7 +51,7 @@ import gama.ui.display.opengl.scene.text.StringObject;
  * @since 3 mars 2014
  *
  */
-@SuppressWarnings ({ "rawtypes", "unchecked" })
+@SuppressWarnings ({ "rawtypes" })
 public class LayerObject {
 
 	/** The Constant NULL_OFFSET. */
@@ -581,12 +581,6 @@ public class LayerObject {
 		return true;
 	}
 
-	/**
-	 * Recompute offset.
-	 */
-	public void recomputeOffset() {
-		computeOffset(currentList);
-	}
 
 	/**
 	 * Checks if is visible.

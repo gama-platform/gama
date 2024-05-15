@@ -59,34 +59,34 @@ public class SocialLink implements IValue {
 	IAgent agent;
 
 	/** The liking. */
-	Double liking = 0.0;
+	double liking = 0.0;
 
 	/** The dominance. */
-	Double dominance = 0.0;
+	double dominance = 0.0;
 
 	/** The solidarity. */
-	Double solidarity = 0.0;
+	double solidarity = 0.0;
 
 	/** The familiarity. */
-	Double familiarity = 0.0;
+	double familiarity = 0.0;
 
 	/** The trust. */
-	Double trust = 0.0;
+	double trust = 0.0;
 
 	/** The no liking. */
-	private Boolean noLiking = true;
+	private boolean hasLiking = false;
 
 	/** The no dominance. */
-	private Boolean noDominance = true;
+	private boolean hasDominance = false;
 
 	/** The no solidarity. */
-	private Boolean noSolidarity = true;
+	private boolean hasSolidarity = false;
 
 	/** The no familiarity. */
-	private Boolean noFamiliarity = true;
+	private boolean hasFamiliarity = false;
 
 	/** The no trust. */
-	private Boolean noTrust = true;
+	private boolean hasTrust = false;
 
 	@Override
 	public JsonValue serializeToJson(final Json json) {
@@ -108,7 +108,7 @@ public class SocialLink implements IValue {
 	 * @return the liking
 	 */
 	@getter ("liking")
-	public Double getLiking() { return liking; }
+	public double getLiking() { return liking; }
 
 	/**
 	 * Gets the dominance.
@@ -116,7 +116,7 @@ public class SocialLink implements IValue {
 	 * @return the dominance
 	 */
 	@getter ("dominance")
-	public Double getDominance() { return dominance; }
+	public double getDominance() { return dominance; }
 
 	/**
 	 * Gets the solidarity.
@@ -124,7 +124,7 @@ public class SocialLink implements IValue {
 	 * @return the solidarity
 	 */
 	@getter ("solidarity")
-	public Double getSolidarity() { return solidarity; }
+	public double getSolidarity() { return solidarity; }
 
 	/**
 	 * Gets the familiarity.
@@ -132,7 +132,7 @@ public class SocialLink implements IValue {
 	 * @return the familiarity
 	 */
 	@getter ("familiarity")
-	public Double getFamiliarity() { return familiarity; }
+	public double getFamiliarity() { return familiarity; }
 
 	/**
 	 * Gets the trust.
@@ -140,42 +140,42 @@ public class SocialLink implements IValue {
 	 * @return the trust
 	 */
 	@getter ("trust")
-	public Double getTrust() { return trust; }
+	public double getTrust() { return trust; }
 
 	/**
 	 * Gets the no liking.
 	 *
 	 * @return the no liking
 	 */
-	public Boolean getNoLiking() { return noLiking; }
+	public boolean hasLiking() { return hasLiking; }
 
 	/**
 	 * Gets the no dominance.
 	 *
 	 * @return the no dominance
 	 */
-	public Boolean getNoDominance() { return noDominance; }
+	public boolean hasDominance() { return hasDominance; }
 
 	/**
 	 * Gets the no solidarity.
 	 *
 	 * @return the no solidarity
 	 */
-	public Boolean getNoSolidarity() { return noSolidarity; }
+	public boolean hasSolidarity() { return hasSolidarity; }
 
 	/**
 	 * Gets the no familiarity.
 	 *
 	 * @return the no familiarity
 	 */
-	public Boolean getNoFamiliarity() { return noFamiliarity; }
+	public boolean hasFamiliarity() { return hasFamiliarity; }
 
 	/**
 	 * Gets the no trust.
 	 *
 	 * @return the no trust
 	 */
-	public Boolean getNoTrust() { return noTrust; }
+	public boolean hasTrust() { return hasTrust; }
 
 	/**
 	 * Sets the agent.
@@ -191,9 +191,9 @@ public class SocialLink implements IValue {
 	 * @param appre
 	 *            the new liking
 	 */
-	public void setLiking(final Double appre) {
+	public void setLiking(final double appre) {
 		this.liking = appre;
-		this.noLiking = false;
+		this.hasLiking = true;
 	}
 
 	/**
@@ -202,9 +202,9 @@ public class SocialLink implements IValue {
 	 * @param domi
 	 *            the new dominance
 	 */
-	public void setDominance(final Double domi) {
+	public void setDominance(final double domi) {
 		this.dominance = domi;
-		this.noDominance = false;
+		this.hasDominance = true;
 	}
 
 	/**
@@ -213,9 +213,9 @@ public class SocialLink implements IValue {
 	 * @param solid
 	 *            the new solidarity
 	 */
-	public void setSolidarity(final Double solid) {
+	public void setSolidarity(final double solid) {
 		this.solidarity = solid;
-		this.noSolidarity = false;
+		this.hasSolidarity = true;
 	}
 
 	/**
@@ -224,9 +224,9 @@ public class SocialLink implements IValue {
 	 * @param fami
 	 *            the new familiarity
 	 */
-	public void setFamiliarity(final Double fami) {
+	public void setFamiliarity(final double fami) {
 		this.familiarity = fami;
-		this.noFamiliarity = false;
+		this.hasFamiliarity = true;
 	}
 
 	/**
@@ -235,9 +235,9 @@ public class SocialLink implements IValue {
 	 * @param tru
 	 *            the new trust
 	 */
-	public void setTrust(final Double tru) {
+	public void setTrust(final double tru) {
 		this.trust = tru;
-		this.noTrust = false;
+		this.hasTrust = true;
 	}
 
 	/**
@@ -271,16 +271,16 @@ public class SocialLink implements IValue {
 	 * @param fami
 	 *            the fami
 	 */
-	public SocialLink(final IAgent ag, final Double appre, final Double domi, final Double solid, final Double fami) {
+	public SocialLink(final IAgent ag, final double appre, final double domi, final double solid, final double fami) {
 		this.agent = ag;
 		this.liking = appre;
-		this.noLiking = false;
+		this.hasLiking = true;
 		this.dominance = domi;
-		this.noDominance = false;
+		this.hasDominance = true;
 		this.solidarity = solid;
-		this.noDominance = false;
+		this.hasSolidarity = true;
 		this.familiarity = fami;
-		this.noFamiliarity = false;
+		this.hasFamiliarity = true;
 	}
 
 	/**
@@ -299,19 +299,19 @@ public class SocialLink implements IValue {
 	 * @param tru
 	 *            the tru
 	 */
-	public SocialLink(final IAgent ag, final Double appre, final Double domi, final Double solid, final Double fami,
-			final Double tru) {
+	public SocialLink(final IAgent ag, final double appre, final double domi, final double solid, final double fami,
+			final double tru) {
 		this.agent = ag;
 		this.liking = appre;
-		this.noLiking = false;
+		this.hasLiking = true;
 		this.dominance = domi;
-		this.noDominance = false;
+		this.hasDominance = true;
 		this.solidarity = solid;
-		this.noDominance = false;
+		this.hasSolidarity = true;
 		this.familiarity = fami;
-		this.noFamiliarity = false;
+		this.hasFamiliarity = true;
 		this.trust = tru;
-		this.noTrust = false;
+		this.hasTrust = true;
 	}
 
 	@Override
@@ -339,8 +339,8 @@ public class SocialLink implements IValue {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(agent, liking, dominance, solidarity, familiarity, trust, noLiking, noDominance,
-				noSolidarity, noFamiliarity, noTrust);
+		return Objects.hash(agent, liking, dominance, solidarity, familiarity, trust, hasLiking, hasDominance,
+				hasSolidarity, hasFamiliarity, hasTrust);
 	}
 
 	@Override
@@ -348,12 +348,12 @@ public class SocialLink implements IValue {
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final SocialLink other = (SocialLink) obj;
-		if (this.agent != null && other.getAgent() != null && !agent.equals(other.getAgent())) return false;
-		if (!noLiking && !other.getNoLiking() && !liking.equals(other.getLiking())) return false;
-		if (!noDominance && !other.getNoDominance() && !dominance.equals(other.getDominance())) return false;
-		if (!noSolidarity && !other.getNoSolidarity() && !solidarity.equals(other.getSolidarity())) return false;
-		if (!noFamiliarity && !other.getNoFamiliarity() && !familiarity.equals(other.getFamiliarity())) return false;
-		if (!noTrust && !other.getNoTrust() && !trust.equals(other.getTrust())) return false;
+		if (agent != null && (other.getAgent() == null || !agent.equals(other.getAgent()))) return false;
+		if (hasLiking && (!other.hasLiking() || liking != other.getLiking())) return false;
+		if (hasDominance && (!other.hasDominance() || dominance != other.getDominance())) return false;
+		if (hasSolidarity && (!other.hasSolidarity() || solidarity != other.getSolidarity())) return false;
+		if (hasFamiliarity && (!other.hasFamiliarity() || familiarity != other.getFamiliarity())) return false;
+		if (hasTrust && (!other.hasTrust() || trust != other.getTrust())) return false;
 		return true;
 	}
 
@@ -368,8 +368,14 @@ public class SocialLink implements IValue {
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final SocialLink other = (SocialLink) obj;
-		if ((agent != null || other.getAgent() != null) && !agent.equals(other.getAgent())) return false;
-		return true;
+		if (agent != null) {
+			return agent.equals(other.getAgent());
+		}
+		else {
+			// Here we know that agent is null
+			// so equalsInAgent will return true only if other.getAgent() is null too
+			return agent == other.getAgent(); 			
+		}
 	}
 
 }

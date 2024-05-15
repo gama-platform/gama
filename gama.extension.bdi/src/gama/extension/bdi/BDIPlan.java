@@ -16,6 +16,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -32,7 +33,7 @@ import gama.gaml.types.Types;
 		type = IType.STRING,
 		doc = @doc ("The name of this BDI plan")),
 		@variable (
-				name = "todo",
+				name = IKeyword.WHEN,
 				type = IType.STRING,
 				doc = @doc ("represent the when facet of a plan")),
 		@variable (
@@ -44,8 +45,8 @@ import gama.gaml.types.Types;
 				type = IType.STRING,
 				doc = @doc ("a string representing the finished condition of this plan")),
 		@variable (
-				name = SimpleBdiArchitecture.INSTANTANEAOUS,
-				type = IType.STRING,
+				name = SimpleBdiArchitecture.INSTANTANEOUS,
+				type = IType.BOOL,
 				doc = @doc ("indicates if the plan is instantaneous")) })
 public class BDIPlan implements IValue {
 
@@ -70,8 +71,10 @@ public class BDIPlan implements IValue {
 	 *
 	 * @return the when
 	 */
-	@getter ("todo")
-	public String getWhen() { return this.planstatement._when.serializeToGaml(true); }
+	@getter (IKeyword.WHEN)
+	public String getWhen() { 
+		return planstatement._when == null ? null : planstatement._when.serializeToGaml(true); 
+	}
 
 	/**
 	 * Gets the finished when.
@@ -79,7 +82,9 @@ public class BDIPlan implements IValue {
 	 * @return the finished when
 	 */
 	@getter (SimpleBdiArchitecture.FINISHEDWHEN)
-	public String getFinishedWhen() { return this.planstatement._executedwhen.serializeToGaml(true); }
+	public String getFinishedWhen() { 
+		return planstatement._executedwhen == null ? null : planstatement._executedwhen.serializeToGaml(true); 
+	}
 
 	/**
 	 * Gets the intention.
@@ -90,7 +95,7 @@ public class BDIPlan implements IValue {
 	 */
 	@getter (SimpleBdiPlanStatement.INTENTION)
 	public Predicate getIntention(final IScope scope) {
-		return (Predicate) this.planstatement._intention.value(scope);
+		return (Predicate)(planstatement._intention == null ? null : planstatement._intention.value(scope));
 	}
 
 	/**
@@ -98,8 +103,10 @@ public class BDIPlan implements IValue {
 	 *
 	 * @return the instantaneous
 	 */
-	@getter (SimpleBdiArchitecture.INSTANTANEAOUS)
-	public String getInstantaneous() { return this.planstatement._instantaneous.serializeToGaml(true); }
+	@getter (SimpleBdiArchitecture.INSTANTANEOUS)
+	public boolean getInstantaneous(final IScope scope) { 
+		return planstatement._instantaneous == null ? false : gama.gaml.operators.Cast.asBool(scope, planstatement._instantaneous.value(scope)); 
+	}
 
 	/**
 	 * Gets the plan statement.
@@ -141,16 +148,12 @@ public class BDIPlan implements IValue {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "BDIPlan(" + planstatement.getName()
-		// +(values == null ? "" : "," + values) +
-				+ ")";
+		return "BDIPlan(" + planstatement.getName() + ")";
 	}
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return "BDIPlan(" + planstatement.getName() + ")"
-		// +(values == null ? "" : "," + values)
-		;
+		return serializeToGaml(true);
 	}
 
 	@Override

@@ -33,6 +33,7 @@ import gama.core.runtime.GAMA;
 import gama.core.util.Collector;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlIssue;
@@ -308,7 +309,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> {
 			if (!GamaBundleLoader.gamlPluginExists(s)) {
 				if (!GAMA.isInHeadLessMode() || !GamaBundleLoader.isDisplayPlugin(s)) {
 					add(new GamlCompilationError("Missing plugin: " + s, IGamlIssue.MISSING_PLUGIN, resourceURI,
-							GamaBundleLoader.isDisplayPlugin(s), false));
+							GamaBundleLoader.isDisplayPlugin(s) ? GamlCompilationErrorType.Error : GamlCompilationErrorType.Warning));
 				}
 				return false;
 			}

@@ -114,7 +114,7 @@ import gama.ui.navigator.view.contents.ResourceManager;
 		final int length = resources.length;
 		int actualLength = 0;
 		String[] fileNames = new String[length];
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < length; i++) {
 			final IPath location = resources[i].getLocation();
 			// location may be null. See bug 29491.

@@ -109,7 +109,7 @@ public class DocProcessorAnnotations {
 			// Parse result
 			final String value = docAnnot.value();
 			final boolean masterDoc = docAnnot.masterDoc();
-			if (value != "") {
+			if ( !"".equals(value)) {
 				if (docElt.getElementsByTagName(XMLElements.RESULT).getLength() != 0) {
 					final org.w3c.dom.Element resultElt =
 							(org.w3c.dom.Element) docElt.getElementsByTagName(XMLElements.RESULT).item(0);
@@ -346,10 +346,21 @@ public class DocProcessorAnnotations {
 		final String valCstStr = valCst == null ? "No Default Value" : valCst.toString();
 		constantElt.setAttribute(XMLElements.ATT_CST_VALUE, valCstStr);
 
-		String names = "";
+		StringBuilder strBuilder = new StringBuilder();
+		boolean firstPass = true;
 		for (final String n : constant.altNames()) {
-			names = "".equals(names) ? PREFIX_CONSTANT + n : names + "," + PREFIX_CONSTANT + n;
+			
+			if (firstPass) {
+				firstPass = false;
+			}
+			else {
+				strBuilder.append(",");				
+			}
+			strBuilder.append(PREFIX_CONSTANT);
+			strBuilder.append(n);
 		}
+		final String names = strBuilder.toString();
+		
 		if (!"".equals(names))
 			constantElt.setAttribute(XMLElements.ATT_CST_NAMES, names);
 
@@ -376,30 +387,36 @@ public class DocProcessorAnnotations {
 	 */
 	public static org.w3c.dom.Element getVarsElt(final vars varsAnnot, final Document doc, final Messager mes,
 			final String skillName, final TypeConverter tc) {
-		if (varsAnnot != null) {
-			final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
-			for (final variable v : varsAnnot.value()) {
-				final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
-				varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
-				varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
-				varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
-
-				final org.w3c.dom.Element docEltVar = DocProcessorAnnotations.getDocElt(v.doc(), doc, mes,
-						"Var " + v.name() + " from " + skillName, tc, null);
-				if (docEltVar != null) {
-					varElt.appendChild(docEltVar);
-				}
-
-				String dependsOn = new String();
-				for (final String dependElement : v.depends_on()) {
-					dependsOn = ("".equals(dependsOn) ? "" : dependsOn + ",") + dependElement;
-				}
-				varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
-				varsElt.appendChild(varElt);
-			}
-			return varsElt;
+		if (varsAnnot == null) {
+			return null;
 		}
-		return null;
+		final org.w3c.dom.Element varsElt = doc.createElement(XMLElements.VARS);
+		for (final variable v : varsAnnot.value()) {
+			final org.w3c.dom.Element varElt = doc.createElement(XMLElements.VAR);
+			varElt.setAttribute(XMLElements.ATT_VAR_NAME, v.name());
+			varElt.setAttribute(XMLElements.ATT_VAR_TYPE, tc.getTypeString(Integer.valueOf(v.type())));
+			varElt.setAttribute(XMLElements.ATT_VAR_CONSTANT, "" + v.constant());
+
+			final org.w3c.dom.Element docEltVar = DocProcessorAnnotations.getDocElt(v.doc(), doc, mes,
+					"Var " + v.name() + " from " + skillName, tc, null);
+			if (docEltVar != null) {
+				varElt.appendChild(docEltVar);
+			}
+
+			StringBuilder strBuilder = new StringBuilder();
+			for (int i = 0 ; i < v.depends_on().length; i++ ) {
+				final String dependElement = v.depends_on()[i];
+				strBuilder.append(dependElement);
+				if (i < v.depends_on().length - 1) {
+					strBuilder.append(",");
+				}
+			}
+			
+			final String dependsOn = strBuilder.toString();
+			varElt.setAttribute(XMLElements.ATT_VAR_DEPENDS_ON, dependsOn);
+			varsElt.appendChild(varElt);
+		}
+		return varsElt;
 	}
 
 	/**
@@ -475,12 +492,15 @@ public class DocProcessorAnnotations {
 			facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
 			facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
 			if (f.values().length != 0) {
-				String valuesTaken = ", takes values in: {" + f.values()[0];
+				StringBuilder strBuilder = new StringBuilder();
+				strBuilder.append(", takes values in: {");
+				strBuilder.append(f.values()[0]);
 				for (int i = 1; i < f.values().length; i++) {
-					valuesTaken += ", " + f.values()[i];
+					strBuilder.append(", ");
+					strBuilder.append(f.values()[i]);
 				}
-				valuesTaken += "}";
-				facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, valuesTaken);
+				strBuilder.append("}");
+				facetElt.setAttribute(XMLElements.ATT_FACET_VALUES, strBuilder.toString());
 			}
 			facetElt.setAttribute(XMLElements.ATT_FACET_OMISSIBLE,
 					f.name().equals(facetsAnnot.omissible()) ? "true" : "false");

@@ -52,7 +52,7 @@ public class GamaCoordinateSequenceFactory implements CoordinateSequenceFactory 
 	@Override
 	public ICoordinates create(final CoordinateSequence cs) {
 		if (cs.size() == 1) return new UniqueCoordinateSequence(cs.getDimension(), cs.getCoordinate(0));
-		if (cs instanceof GamaCoordinateSequence) return ((GamaCoordinateSequence) cs).clone();
+		if (cs instanceof GamaCoordinateSequence) return ((GamaCoordinateSequence) cs).copy();
 		return new GamaCoordinateSequence(cs.getDimension(), cs.toCoordinateArray());
 	}
 

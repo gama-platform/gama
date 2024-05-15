@@ -19,7 +19,7 @@ package gama.annotations.precompiler;
  */
 public enum Reason {
 	/**
-	 * The test on this specific artefact are actually made somewhere else, usually in custom test files written by hand
+	 * The test on this specific artifact are actually made somewhere else, usually in custom test files written by hand
 	 */
 	ALREADY_TESTED,
 	/**

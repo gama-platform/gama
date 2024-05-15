@@ -135,7 +135,6 @@ global {
 			previous_pos <- init_pos;
 		}
 		ball_agent.location <- location;
-		ball_agent.destination <- location;
 		ball_agent.speed <- 0.0;
 	}
 }

@@ -29,6 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
@@ -86,23 +87,14 @@ import gama.gaml.types.Types;
 				type = IType.LIST,
 				depends_on = { RoadSkill.NUM_LANES },
 				doc = @doc ("provides information about the ordering of vehicle on any given lane")), })
+
 @skill (
-		name = RoadSkill.SKILL_ROAD,
+		name = "road_skill",
 		concept = { IConcept.TRANSPORT, IConcept.SKILL },
-		doc = @doc (
-				value = "A skill for agents representing roads in traffic simulations",
-				deprecated = "please use the name `road_skill` instead"))
+		doc = @doc ("A skill for agents representing roads in traffic simulations"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class RoadSkill extends Skill {
 
-	/**
-	 * The Class NewRoadSkill.
-	 */
-	@skill (
-			name = "road_skill",
-			concept = { IConcept.TRANSPORT, IConcept.SKILL },
-			doc = @doc ("A skill for agents representing roads in traffic simulations"))
-	public static class NewRoadSkill extends RoadSkill {}
 
 	/** The Constant SKILL_ROAD. */
 	public static final String SKILL_ROAD = "skill_road";
@@ -123,9 +115,6 @@ public class RoadSkill extends Skill {
 
 	/** The Constant LINKED_ROAD. */
 	public static final String LINKED_ROAD = "linked_road";
-
-	/** The Constant LANES. */
-	@Deprecated public static final String LANES = "lanes";
 
 	/** The Constant NUM_LANES. */
 	public static final String NUM_LANES = "num_lanes";
@@ -449,9 +438,9 @@ public class RoadSkill extends Skill {
 	 *             the gama runtime exception
 	 */
 	@action (
-			name = "register",
+			name = IKeyword.REGISTER,
 			args = { @arg (
-					name = "agent",
+					name = IKeyword.AGENT,
 					type = IType.AGENT,
 					optional = false,
 					doc = @doc ("the agent to register on the road.")),
@@ -465,7 +454,7 @@ public class RoadSkill extends Skill {
 					examples = { @example ("do register agent: the_driver lane: 0;") }))
 	public boolean primRegister(final IScope scope) throws GamaRuntimeException {
 		final IAgent road = getCurrentAgent(scope);
-		final IAgent driver = (IAgent) scope.getArg("agent", IType.AGENT);
+		final IAgent driver = (IAgent) scope.getArg(IKeyword.AGENT, IType.AGENT);
 		int lane = scope.getIntArg("lane");
 
 		return register(scope, driver, road, lane);

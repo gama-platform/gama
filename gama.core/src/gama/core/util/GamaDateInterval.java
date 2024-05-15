@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 import com.google.common.collect.Iterators;
 
@@ -331,7 +332,12 @@ public final class GamaDateInterval implements IList<GamaDate> {
 				if (current == null) {
 					current = start;
 				} else {
+					
 					current = current.plus(step);
+					if (current.isGreaterThan(end, false)) {
+						throw new NoSuchElementException();						
+					}
+					
 				}
 				return current;
 			}

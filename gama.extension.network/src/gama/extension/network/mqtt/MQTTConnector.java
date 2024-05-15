@@ -38,19 +38,19 @@ public final class MQTTConnector extends Connector {
 	}
 	
 	/** The default user. */
-	public static String DEFAULT_USER = "gama_demo";
+	public static final String DEFAULT_USER = "gama_demo";
 	
 	/** The default local name. */
-	public static String DEFAULT_LOCAL_NAME = "gama-" + Calendar.getInstance().getTimeInMillis() + "@";
+	public static final String DEFAULT_LOCAL_NAME = "gama-" + Calendar.getInstance().getTimeInMillis() + "@";
 	
 	/** The default password. */
-	public static String DEFAULT_PASSWORD = "gama_demo";
+	public static final String DEFAULT_PASSWORD = "gama_demo";
 	
 	/** The default host. */
-	public static String DEFAULT_HOST = "vmpams.ird.fr";
+	public static final String DEFAULT_HOST = "vmpams.ird.fr";
 	
 	/** The default port. */
-	public static String DEFAULT_PORT = "1935";
+	public static final String DEFAULT_PORT = "1935";
 
 	/** The send connection. */
 	protected MqttClient sendConnection = null;

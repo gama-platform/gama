@@ -21,7 +21,7 @@ import gama.core.runtime.IScope;
 import gama.core.util.GamaListFactory;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Points;
-import gama.gaml.operators.Spatial.Punctal;
+import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.types.Types;
 
 /**
@@ -176,7 +176,7 @@ public class LayoutForceDirected {
 			if (length != 0) { d = Points.multiply(d, Math.min(length, t) / length); }
 			final GamaPoint l = loc.get(v);
 			l.add(d);
-			if (!bounds.intersects(l)) { loc.put(v, Punctal._closest_point_to(l, bounds)); }
+			if (!bounds.intersects(l)) { loc.put(v, SpatialPunctal._closest_point_to(l, bounds)); }
 
 		}
 		final GamaPoint center = (GamaPoint) Containers.opMean(scope, GamaListFactory.wrap(Types.POINT, loc.values()));
@@ -186,7 +186,7 @@ public class LayoutForceDirected {
 			for (final IShape v : graph.vertexSet()) {
 				final GamaPoint l = loc.get(v);
 				l.add(d);
-				if (!bounds.intersects(l)) { loc.put(v, Punctal._closest_point_to(l, bounds)); }
+				if (!bounds.intersects(l)) { loc.put(v, SpatialPunctal._closest_point_to(l, bounds)); }
 			}
 		}
 		double maxDist = graph.vertexSet().stream().mapToDouble(v -> v.euclidianDistanceTo(center)).max().getAsDouble();
@@ -198,7 +198,7 @@ public class LayoutForceDirected {
 				final double len = d.norm();
 				if (len > 0) { d.multiplyBy(maxDist / d.norm()); }
 				l.add(d);
-				if (!bounds.intersects(l)) { loc.put(v, Punctal._closest_point_to(l, bounds)); }
+				if (!bounds.intersects(l)) { loc.put(v, SpatialPunctal._closest_point_to(l, bounds)); }
 			}
 		}
 

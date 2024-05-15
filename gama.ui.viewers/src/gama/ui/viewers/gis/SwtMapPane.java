@@ -267,11 +267,10 @@ public class SwtMapPane extends Canvas
 	 *            the renderer to use
 	 */
 	public void setRenderer(final GTRenderer renderer) {
-		if (renderer != null) {
-			if (renderer instanceof StreamingRenderer) {
-				if (this.content != null) { renderer.setMapContent(this.content); }
 
-			}
+		if (renderer instanceof StreamingRenderer) {
+			if (this.content != null) { renderer.setMapContent(this.content); }
+
 		}
 
 		this.renderer = renderer;

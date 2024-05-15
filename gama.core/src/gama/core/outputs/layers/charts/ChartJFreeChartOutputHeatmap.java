@@ -474,7 +474,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			public StringBuffer format(final double number, final StringBuffer toAppendTo, final FieldPosition pos) {
 				final int ind = chartdataset.XSeriesValues.indexOf(number);
 				if (ind >= 0) return new StringBuffer("" + chartdataset.Xcategories.get(ind));
-				return new StringBuffer("");
+				return new StringBuffer();
 
 			}
 
@@ -503,14 +503,13 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			public StringBuffer format(final double number, final StringBuffer toAppendTo, final FieldPosition pos) {
 				final int ind = chartdataset.YSeriesValues.indexOf(number);
 				if (ind >= 0) return new StringBuffer("" + chartdataset.Ycategories.get(ind));
-				return new StringBuffer("");
+				return new StringBuffer();
 
 			}
 
 			@Override
 			public StringBuffer format(final long number, final StringBuffer toAppendTo, final FieldPosition pos) {
 				return new StringBuffer("n" + number);
-				// return new StringBuffer(String.format("%s", number));
 			}
 
 			@Override

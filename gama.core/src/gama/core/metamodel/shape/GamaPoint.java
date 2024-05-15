@@ -56,7 +56,7 @@ import gama.gaml.types.Types;
 				name = IKeyword.Z,
 				type = IType.FLOAT,
 				doc = { @doc ("Returns the z ordinate of this point") }) })
-public class GamaPoint extends Coordinate implements IShape, IIntersectable {
+public class GamaPoint extends Coordinate implements IShape, IIntersectable, Cloneable {
 
 	/**
 	 * The Class Immutable.

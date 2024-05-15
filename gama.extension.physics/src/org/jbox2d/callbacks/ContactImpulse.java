@@ -38,5 +38,4 @@ import org.jbox2d.common.Settings;
 public class ContactImpulse {
   public float[] normalImpulses = new float[Settings.maxManifoldPoints];
   public float[] tangentImpulses = new float[Settings.maxManifoldPoints];
-  public int count;
 }

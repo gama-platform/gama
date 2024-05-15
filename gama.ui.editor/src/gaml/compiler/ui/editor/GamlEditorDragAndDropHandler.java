@@ -86,7 +86,7 @@ public class GamlEditorDragAndDropHandler {
 	protected Object fTextDragAndDropToken;
 	
 	/** The used names. */
-	protected static Set<String> usedNames = new HashSet<>();
+	protected static final Set<String> usedNames = new HashSet<>();
 
 	/**
 	 * Instantiates a new gaml editor drag and drop handler.

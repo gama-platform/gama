@@ -9,13 +9,13 @@ model fieldofvision
 
 global {
 	//number of obstacles
-	int nb_obstacles <- 20 parameter: true;
+	int nb_obstacles <- 20;
 	
 	//perception distance
-	float perception_distance <- 40.0 parameter: true;
+	float perception_distance <- 40.0;
 	
 	//precision used for the masked_by operator (default value: 120): the higher the most accurate the perception will be, but it will require more computation
-	int precision <- 600 parameter: true;
+	int precision <- 600;
 	
 	//space where the agent can move.
 	geometry free_space <- copy(shape);
@@ -86,6 +86,13 @@ species people skills: [moving]{
 }
 
 experiment fieldofvision type: gui {
+	
+	parameter var:nb_obstacles;
+	
+	parameter var:perception_distance;
+	
+	parameter var:precision;
+	
 	float minimum_cycle_duration <- 0.05;
 	output synchronized: true {
 		display view{

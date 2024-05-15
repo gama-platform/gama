@@ -39,7 +39,7 @@ import gama.gaml.types.IType;
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class SqlUtils {
 
-	public static Map<String,ISqlConnector> externalConnectors = new HashMap<>();
+	public static final Map<String,ISqlConnector> externalConnectors = new HashMap<>();
 	
 	/**
 	 * Creates the connection object.
@@ -131,7 +131,7 @@ public class SqlUtils {
 	 *
 	 * @throws Exception
 	 */
-	public static Geometry InputStream2Geometry(final InputStream inputStream) throws Exception {
+	public static Geometry inputStream2Geometry(final InputStream inputStream) throws Exception {
 		Geometry dbGeometry = null;
 		if (inputStream != null) {
 			// convert the stream to a byte[] array
@@ -223,7 +223,7 @@ public class SqlUtils {
 				final IList<Object> rec_old = (IList<Object>) records.get(i);
 				final IList<Object> rec_new = GamaListFactory.create();
 				for (int j = 0; j < columnSize; j++) {
-					if (((String) columnTypes.get(j)).equalsIgnoreCase(SqlConnection.GEOMETRYTYPE)) {
+					if (SqlConnection.GEOMETRYTYPE.equalsIgnoreCase((String) columnTypes.get(j))) {
 						Geometry geo2 = (Geometry) rec_old.get(j);
 						if (fromAbsoluteToGis) {
 							geo2 = gis.inverseTransform(geo2);

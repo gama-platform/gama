@@ -33,10 +33,10 @@ global torus: true {
 	list<pavement> road2;
 	
 	int nb_cars <- 25;
-	float acceleration1 <- 0.0045 min: 0.0 max: 0.01 parameter: true;
-	float deceleration1 <- 0.026 min: 0.0 max: 0.1 parameter: true;	
-	float acceleration2 <- 0.0005 min: 0.0 max: 0.01 parameter: true;
-	float deceleration2 <- 0.004 min: 0.0 max: 0.1 parameter: true;	
+	float acceleration1 <- 0.0045 min: 0.0 max: 0.01;
+	float deceleration1 <- 0.026 min: 0.0 max: 0.1;	
+	float acceleration2 <- 0.0005 min: 0.0 max: 0.01;
+	float deceleration2 <- 0.004 min: 0.0 max: 0.1;	
 	float max_speed <- 50.0;
 	
 	init {
@@ -147,6 +147,11 @@ species car skills: [moving] {
 }
 
 experiment NetlogoTrafficmodel type: gui {
+	
+	parameter var:acceleration1;
+	parameter var:deceleration1;
+	parameter var:acceleration2;
+	parameter var:deceleration2;
 	float minimum_cycle_duration <- 0.01;
 	
 	output {

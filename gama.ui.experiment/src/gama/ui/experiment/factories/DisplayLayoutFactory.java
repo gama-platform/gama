@@ -22,6 +22,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class DisplayLayoutFactory extends AbstractServiceFactory implements IDisplayLayoutManager {
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Object create(final Class serviceInterface, final IServiceLocator parentLocator,
 			final IServiceLocator locator) {

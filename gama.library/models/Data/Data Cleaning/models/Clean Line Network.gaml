@@ -16,16 +16,16 @@ global {
 	
 	
 	//clean or not the data
-	bool clean_data <- true parameter: true;
+	bool clean_data <- true;
 	
 	//tolerance for reconnecting nodes
-	float tolerance <- 3.0 parameter: true;
+	float tolerance <- 3.0;
 	
 	//if true, split the lines at their intersection
-	bool split_lines <- true parameter: true;
+	bool split_lines <- true;
 	
 	//if true, keep only the main connected components of the network
-	bool reduce_to_main_connected_components <- true parameter: true;
+	bool reduce_to_main_connected_components <- true;
 	
 	string legend <- not clean_data ? "Raw data" : ("Clean data : tolerance: " + tolerance + "; split_lines: " + split_lines + " ; reduce_to_main_connected_components:" + reduce_to_main_connected_components );
 	
@@ -57,6 +57,12 @@ species road {
 }
 
 experiment clean_network type: gui {
+	
+	parameter "Clean data" var:clean_data;
+	parameter "Tolerance" var:tolerance;
+	parameter "Split lines" var:split_lines;
+	parameter "Reduce to main connected components" var:reduce_to_main_connected_components;
+	
 	init {
 		create clean_road_network_model with:[clean_data::false]; 
 		create clean_road_network_model with:[split_lines::false,reduce_to_main_connected_components::false]; 

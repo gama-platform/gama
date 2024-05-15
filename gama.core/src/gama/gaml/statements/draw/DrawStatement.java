@@ -17,11 +17,9 @@ import static gama.core.common.interfaces.IKeyword.BORDER;
 import static gama.core.common.interfaces.IKeyword.COLOR;
 import static gama.core.common.interfaces.IKeyword.DEPTH;
 import static gama.core.common.interfaces.IKeyword.DRAW;
-import static gama.core.common.interfaces.IKeyword.EMPTY;
 import static gama.core.common.interfaces.IKeyword.FONT;
 import static gama.core.common.interfaces.IKeyword.PERSPECTIVE;
 import static gama.core.common.interfaces.IKeyword.ROTATE;
-import static gama.core.common.interfaces.IKeyword.ROUNDED;
 import static gama.core.common.interfaces.IKeyword.SIZE;
 import static gama.core.common.interfaces.IKeyword.TEXTURE;
 
@@ -30,9 +28,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -40,6 +37,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IDrawDelegate;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -59,8 +58,6 @@ import gama.gaml.statements.AbstractStatementSequence;
 import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
-
-import java.util.WeakHashMap;
 
 // A command that is used to draw shapes, figures, text on the display
 
@@ -87,13 +84,6 @@ import java.util.WeakHashMap;
 						optional = true,
 						doc = @doc ("the texture(s) that should be applied to the geometry. Either a path to a file or a list of paths")),
 				@facet (
-						name = EMPTY,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use 'wireframe' instead",
-								value = "a condition specifying whether the geometry is empty or full")),
-				@facet (
 						name = IKeyword.WIREFRAME,
 						type = IType.BOOL,
 						optional = true,
@@ -103,13 +93,6 @@ import java.util.WeakHashMap;
 						type = { IType.COLOR, IType.BOOL },
 						optional = true,
 						doc = @doc ("if used with a color, represents the color of the geometry border. If set to false, expresses that no border should be drawn. If not set, the borders will be drawn using the color of the geometry.")),
-				@facet (
-						name = ROUNDED,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								value = "specify whether the geometry have to be rounded (e.g. for squares)",
-								deprecated = "Use the squircle operator to draw rounded squares")),
 				@facet (
 						name = AT,
 						type = IType.POINT,
@@ -183,14 +166,8 @@ import java.util.WeakHashMap;
 						optional = true,
 						doc = @doc (
 								value = "The line width to use for drawing this object. In OpenGL displays, this attribute is considered as optional and not implemented by all gaphic card vendors. "
-										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")),
-				@facet (
-						name = "bitmap",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "use 'perspective' instead.",
-								value = "Whether to render the text in 3D or not")) },
+										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), 
+				},
 
 		omissible = IKeyword.GEOMETRY)
 @inside (
@@ -258,22 +235,6 @@ public class DrawStatement extends AbstractStatementSequence {
 		 */
 		@Override
 		public void validate(final StatementDescription description) {
-			final IExpressionDescription empty = description.getFacet(IKeyword.EMPTY);
-			if (empty != null) {
-				description.setFacetExprDescription(IKeyword.WIREFRAME, empty);
-				description.removeFacets(EMPTY);
-			}
-			final IExpressionDescription persp = description.getFacet("bitmap");
-			if (persp != null) {
-				if (description.getFacet(PERSPECTIVE) != null) {
-					description.removeFacets("bitmap");
-				} else {
-					final IExpression e = persp.getExpression();
-					final IExpression newExp =
-							GAML.getExpressionFactory().createOperator("not", description, persp.getTarget(), e);
-					description.setFacet(PERSPECTIVE, newExp);
-				}
-			}
 
 			final IExpressionDescription geom = description.getFacet(GEOMETRY);
 			if (geom != null) {

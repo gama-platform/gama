@@ -15,13 +15,13 @@ global {
 	//List of all the places
 	list<space> all_places ;
 	//Neighbours distance for the perception of an agent
-	int neighbours_distance <- 50 min: 1 parameter: "Distance of perception:" category: "Population" max: 1000;
+	int neighbours_distance <- 50 min: 1 max: 1000;
 	//Shapefile to load
-	file shape_file_name <- file("../gis/nha2.shp") parameter: "Shapefile to load:" category: "GIS specific";
+	file shape_file_name <- file("../gis/nha2.shp");
 	//Shape of the environment
 	geometry shape <- envelope(shape_file_name);
 	//Square meters per people in m2
-	int square_meters_per_people <- 200 parameter: "Occupancy of people (in m2):" category: "GIS specific";
+	int square_meters_per_people <- 200;
 	
 	//Action to initialize people agents
 	action initialize_people { 
@@ -114,7 +114,11 @@ species space {
 }
 
 
-experiment schelling type: gui {	
+experiment schelling type: gui parent:base_exp{	
+	
+	parameter "Shapefile to load:" var:shape_file_name category: "GIS specific";
+	parameter "Occupancy of people (in m2):" var:square_meters_per_people category: "GIS specific";
+	
 	output {
 		display Town_display type:2d  {
 			species space aspect: gis;

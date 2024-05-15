@@ -99,7 +99,8 @@ import gama.gaml.types.IType;
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")) },
+						doc = @doc ("The path to the file where the automatic batch report will be written")) 
+		},
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",
@@ -142,8 +143,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	/** The nb levels. */
 	private int nb_levels;
 
-	/** The My samples. */
-	private List<Map<String, Object>> MySamples;
+	/** The samples. */
+	private List<Map<String, Object>> samples;
 
 	/**
 	 * Instantiates a new morris exploration.
@@ -176,7 +177,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
-		// TODO : why doesnt it take into account the value of 'keep_simulations:' ? because, by design, there is to many simulation to keep in memory... 
+		// TODO : why doesn't it take into account the value of 'keep_simulations:' ? because, by design, there is to many simulation to keep in memory... 
 		currentExperiment.setKeepSimulations(false);
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
 			res_outputs = currentExperiment.launchSimulationsWithSolution(solutions);
@@ -197,7 +198,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
-		if (outsize == MySamples.size() && rebuilt_output.values().stream().findAny().get().size() == MySamples.size()) {
+		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
 		
 			List<String> output_names = rebuilt_output.keySet().stream().toList();
 			
@@ -210,12 +211,12 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			for (int i = 0; i < rebuilt_output.size(); i++) {
 				String tmp_name = output_names.get(i);
 				List<Map<String, Double>> morris_coefficient =
-						Morris.MorrisAggregation(nb_levels, rebuilt_output.get(tmp_name), MySamples);
-				Morris.WriteAndTellResult(tmp_name, fm.getAbsolutePath(), scope, morris_coefficient);
+						Morris.morrisAggregation(nb_levels, rebuilt_output.get(tmp_name), samples);
+				Morris.writeAndTellResult(tmp_name, fm.getAbsolutePath(), scope, morris_coefficient);
 			}
 			/* Save the simulation values in the provided .csv file (input and corresponding output) */
 			if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-				path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+				path_to = Cast.asString(scope, outputFilePath.value(scope));
 				final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 				final File parento = fo.getParentFile();
 				if (!parento.exists()) { parento.mkdirs(); }
@@ -238,8 +239,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
 		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
-		List<Object> morris_samplings = MorrisSampling.MakeMorrisSampling(nb_levels, this.sample, parameters, scope);
-		this.MySamples = Cast.asList(scope, morris_samplings.get(0));
+		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
+		this.samples = Cast.asList(scope, morris_samplings.get(0));
 		return Cast.asList(scope, morris_samplings.get(1));
 	}
 	
@@ -297,7 +298,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 * @param scope
 	 *            the scope
 	 */
-	private void saveSimulation(final Map<String, List<Double>> rebuilt_output, final File file, final IScope scope) {
+	private void saveSimulation(final Map<String, List<Double>> rebuilt_output, final File file, final IScope scope) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildSimulationCsv(rebuilt_output));
 		} catch (Exception e) {
@@ -346,7 +347,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 * @return the list
 	 */
 	public List<ParametersSet> buildParameterSetsFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) {
+			final List<ParametersSet> sets) throws GamaRuntimeException{
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
@@ -369,7 +370,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		} catch (IOException ioe) {
 			throw GamaRuntimeException.error("File " + path + " not found", scope);
 		}
-		MySamples = parameters;
+		samples = parameters;
 		// morris_analysis.ParametersNames=parameters.get(0).keySet().stream().toList();
 		for (Map<String, Object> parameterSet : parameters) {
 			ParametersSet p = new ParametersSet();

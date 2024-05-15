@@ -183,7 +183,7 @@ public class LayeredDisplayData {
 			ICoordinates.ofLength(4).setTo(0d, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0);
 
 	/** The keystone. */
-	private final ICoordinates keystone = (ICoordinates) KEYSTONE_IDENTITY.clone();
+	private final ICoordinates keystone = (ICoordinates) KEYSTONE_IDENTITY.copy();
 
 	/** The is open GL. */
 	private boolean is3D;

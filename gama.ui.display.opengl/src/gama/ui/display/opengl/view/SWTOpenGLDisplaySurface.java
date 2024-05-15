@@ -121,8 +121,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/** The scope. */
 	IGraphicsScope scope;
 
-	/** The synchronizer. */
-	// public IDisplaySynchronizer synchronizer;
 
 	/** The parent. */
 	final Composite parent;
@@ -151,7 +149,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		animator = new GamaGLCanvas(parent, renderer, this).getAnimator();
+		animator = new GamaGLCanvas(parent, renderer, getOutput().getName()).getAnimator();
 		animator.start();
 	}
 
@@ -817,8 +815,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	}
 
-	// @Override
-	// public void setDisplaySynchronizer(final IDisplaySynchronizer s) { synchronizer = s; }
 
 	@Override
 	public boolean isVisible() {

@@ -15,7 +15,6 @@ import static gama.core.common.interfaces.IKeyword.CELL_WIDTH;
 import static gama.core.common.interfaces.IKeyword.FILE;
 import static gama.core.common.interfaces.IKeyword.FILES;
 import static gama.core.common.interfaces.IKeyword.NEIGHBORS;
-import static gama.core.common.interfaces.IKeyword.NEIGHBOURS;
 import static gama.core.common.interfaces.IKeyword.WIDTH;
 import static gama.gaml.descriptions.VariableDescription.INIT_DEPENDENCIES_FACETS;
 import static gama.gaml.descriptions.VariableDescription.UPDATE_DEPENDENCIES_FACETS;
@@ -123,7 +122,6 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		final String optimizer = exp == null ? "" : Cast.asString(scope, exp.value(scope));
 
 		exp = species.getFacet(NEIGHBORS);
-		if (exp == null) { exp = species.getFacet(NEIGHBOURS); }
 		final boolean usesVN = exp == null || Cast.asInt(scope, exp.value(scope)) == 4;
 		final boolean isHexagon = exp != null && Cast.asInt(scope, exp.value(scope)) == 6;
 		exp = species.getFacet(FILES);

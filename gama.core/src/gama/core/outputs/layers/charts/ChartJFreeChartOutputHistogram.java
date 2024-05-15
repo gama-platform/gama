@@ -350,7 +350,6 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 				if (getY_LogScale(scope)) {
 					final double val = YValues.get(i);
 					if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
-
 				}
 				serie.addValue(YValues.get(i), serieid, CValues.get(i));
 			}

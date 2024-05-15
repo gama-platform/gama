@@ -120,27 +120,6 @@ public class AgentDB extends GamlAgent {
 
 	}
 
-	// Get current time of system
-	/**
-	 * Time stamp.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the long
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	// added from MaeliaSkill
-	@action (
-			name = "timeStamp",
-			doc = @doc (
-					value = "Get the current time of the system.",
-					returns = "Current time of the system in millisecondes",
-					deprecated = "Use machine_time instead"))
-	public Long timeStamp(final IScope scope) throws GamaRuntimeException {
-		return System.currentTimeMillis();
-	}
-
 	/**
 	 * Connect DB.
 	 *

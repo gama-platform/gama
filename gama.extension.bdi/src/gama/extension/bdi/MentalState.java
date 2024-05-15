@@ -33,11 +33,11 @@ import gama.gaml.types.Types;
 		type = IType.STRING,
 		doc = @doc ("the modality of the mental state")),
 		@variable (
-				name = "predicate",
+				name = SimpleBdiArchitecture.PREDICATE,
 				type = PredicateType.id,
 				doc = @doc ("the predicate about which is the mental state")),
 		@variable (
-				name = "mental_state",
+				name = SimpleBdiArchitecture.MENTAL_STATE,
 				type = MentalStateType.id,
 				doc = @doc ("the mental state about which is the mental state")),
 		@variable (
@@ -45,11 +45,11 @@ import gama.gaml.types.Types;
 				type = EmotionType.EMOTIONTYPE_ID,
 				doc = @doc ("the emotion about which is the mental state")),
 		@variable (
-				name = "owner",
+				name = SimpleBdiArchitecture.OWNER,
 				type = IType.AGENT,
 				doc = @doc ("the owner of the mental state")),
 		@variable (
-				name = "strength",
+				name = MentalState.STRENGTH,
 				type = IType.FLOAT,
 				doc = @doc ("the strength value related to the mental state")),
 		@variable (
@@ -58,12 +58,18 @@ import gama.gaml.types.Types;
 				doc = @doc ("the lifetime of the mental state")) })
 public class MentalState implements IValue {
 
+	
+
+	/** The Constant STRENGTH. */
+	public static final String STRENGTH = "strength";
+	
+	
 	@Override
 	public JsonValue serializeToJson(final Json json) {
 		return json
-				.typedObject(getGamlType(), "modality", modality, "mental_state", mental, "predicate",
+				.typedObject(getGamlType(), "modality", modality, SimpleBdiArchitecture.MENTAL_STATE, mental, SimpleBdiArchitecture.PREDICATE,
 						predicate == null ? null : predicate.getName(), "emotion", emo == null ? null : emo.name)
-				.add("strength", strength).add("owner", owner).add("lifetime", lifetime);
+				.add(STRENGTH, strength).add(SimpleBdiArchitecture.OWNER, owner).add("lifetime", lifetime);
 	}
 
 	/** The modality. */
@@ -112,7 +118,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the predicate
 	 */
-	@getter ("predicate")
+	@getter (SimpleBdiArchitecture.PREDICATE)
 	public Predicate getPredicate() { return predicate; }
 
 	/**
@@ -120,7 +126,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the mental state
 	 */
-	@getter ("mental_state")
+	@getter (SimpleBdiArchitecture.MENTAL_STATE)
 	public MentalState getMentalState() { return mental; }
 
 	/**
@@ -136,7 +142,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the strength
 	 */
-	@getter ("strength")
+	@getter (STRENGTH)
 	public Double getStrength() { return strength; }
 
 	/**
@@ -152,7 +158,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the owner
 	 */
-	@getter ("owner")
+	@getter (SimpleBdiArchitecture.OWNER)
 	public IAgent getOwner() { return owner; }
 
 	/**
@@ -160,7 +166,7 @@ public class MentalState implements IValue {
 	 *
 	 * @return the subintentions
 	 */
-	@getter ("subintentions")
+	@getter (SimpleBdiArchitecture.SUBINTENTIONS)
 	public List<MentalState> getSubintentions() { return subintentions; }
 
 	/**

@@ -40,6 +40,7 @@ import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ILayer;
 import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.preferences.GamaPreferences;
@@ -71,7 +72,7 @@ import gama.ui.shared.utils.DPIHelper;
  * The Class Java2DDisplaySurface.
  */
 @display (
-		value = { "java2D", "2d" })
+		value = { IKeyword.JAVA2D, IKeyword._2D })
 @doc ("Display that uses the Java2D technology to draw the layers in a SWT view")
 public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
@@ -108,12 +109,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	/** The menu manager. */
 	protected DisplaySurfaceMenu menuManager;
 
-	// /** The temp focus. */
-	// protected IExpression temp_focus;
-
-	/** The render lock. */
-	Semaphore renderLock = new Semaphore(1);
-
 	/** The previous panel size. */
 	protected Dimension previousPanelSize;
 
@@ -131,9 +126,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	/** The frames. */
 	int frames;
-
-	/** The synchronizer. */
-	// private IDisplaySynchronizer synchronizer;
 
 	/** The rendered. */
 	private volatile boolean rendered = false;

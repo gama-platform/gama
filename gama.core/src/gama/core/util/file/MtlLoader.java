@@ -23,18 +23,18 @@ import gama.dev.DEBUG;
 public class MtlLoader {
 
 	/** The Materials. */
-	public ArrayList Materials = new ArrayList<>();
+	protected ArrayList materials = new ArrayList<>();
 
 	/**
-	 * The Class mtl.
+	 * The Class Mtl.
 	 */
-	public class mtl {
+	public static class Mtl {
 		
 		/** The name. */
 		public String name;
 		
-		/** The mtlnum. */
-		public int mtlnum;
+		/** The mtlNum. */
+		public int mtlNum;
 		
 		/** The d. */
 		public float d = 1f;
@@ -82,7 +82,7 @@ public class MtlLoader {
 	 * @return the size
 	 */
 	public int getSize() {
-		return Materials.size();
+		return materials.size();
 	}
 
 	/**
@@ -93,8 +93,8 @@ public class MtlLoader {
 	 */
 	public float getd(final String namepass) {
 		final float returnfloat = 1f;
-		for (int i = 0; i < Materials.size(); i++) {
-			final mtl tempmtl = (mtl) Materials.get(i);
+		for (int i = 0; i < materials.size(); i++) {
+			final Mtl tempmtl = (Mtl) materials.get(i);
 			if (tempmtl.name.matches(namepass)) {
 				// returnfloat = tempmtl.d;
 				return tempmtl.d;
@@ -111,8 +111,8 @@ public class MtlLoader {
 	 */
 	public float[] getKd(final String namepass) {
 		final float[] returnfloat = new float[3];
-		for (int i = 0; i < Materials.size(); i++) {
-			final mtl tempmtl = (mtl) Materials.get(i);
+		for (int i = 0; i < materials.size(); i++) {
+			final Mtl tempmtl = (Mtl) materials.get(i);
 			if (tempmtl.name.matches(namepass)) {
 				// returnfloat = tempmtl.Kd;
 				return tempmtl.Kd;
@@ -128,8 +128,8 @@ public class MtlLoader {
 	 * @return the map ka
 	 */
 	public String getMapKa(final String namepass) {
-		for (int i = 0; i < Materials.size(); i++) {
-			final mtl tempmtl = (mtl) Materials.get(i);
+		for (int i = 0; i < materials.size(); i++) {
+			final Mtl tempmtl = (Mtl) materials.get(i);
 			if (tempmtl.name.matches(namepass)) { return tempmtl.map_Ka; }
 		}
 		return null;
@@ -142,8 +142,8 @@ public class MtlLoader {
 	 * @return the map kd
 	 */
 	public String getMapKd(final String namepass) {
-		for (int i = 0; i < Materials.size(); i++) {
-			final mtl tempmtl = (mtl) Materials.get(i);
+		for (int i = 0; i < materials.size(); i++) {
+			final Mtl tempmtl = (Mtl) materials.get(i);
 			if (tempmtl.name.matches(namepass)) { return tempmtl.map_Kd; }
 		}
 		return null;
@@ -156,8 +156,8 @@ public class MtlLoader {
 	 * @return the mapd
 	 */
 	public String getMapd(final String namepass) {
-		for (int i = 0; i < Materials.size(); i++) {
-			final mtl tempmtl = (mtl) Materials.get(i);
+		for (int i = 0; i < materials.size(); i++) {
+			final Mtl tempmtl = (Mtl) materials.get(i);
 			if (tempmtl.name.matches(namepass)) { return tempmtl.map_d; }
 		}
 		return null;
@@ -175,7 +175,7 @@ public class MtlLoader {
 
 			String newline;
 			boolean firstpass = true;
-			mtl matset = new mtl();
+			Mtl matset = new Mtl();
 			int mtlcounter = 0;
 
 			while ((newline = br.readLine()) != null) {
@@ -186,41 +186,31 @@ public class MtlLoader {
 						if (firstpass) {
 							firstpass = false;
 						} else {
-							Materials.add(matset);
-							matset = new mtl();
+							materials.add(matset);
+							matset = new Mtl();
 						}
-						String[] coordstext = new String[2];
-						coordstext = newline.split("\\s+");
+						final String[] coordstext = newline.split("\\s+");
 						matset.name = coordstext[1];
-						matset.mtlnum = mtlcounter;
+						matset.mtlNum = mtlcounter;
 						mtlcounter++;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'a') {
-						final float[] coords = new float[3];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
+						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
+							matset.Ka[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Ka = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'd') {
-						final float[] coords = new float[3];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
+						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
+							matset.Kd[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Kd = coords;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 's') {
-						final float[] coords = new float[3];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
+						final String[] coordstext = newline.split("\\s+");
 						for (int i = 1; i < coordstext.length; i++) {
-							coords[i - 1] = Float.valueOf(coordstext[i]).floatValue();
+							matset.Ks[i - 1] = Float.parseFloat(coordstext[i]);
 						}
-						matset.Ks = coords;
 					} else if (newline.charAt(0) == 'd') {
 						final String[] coordstext = newline.split("\\s+");
-						matset.d = Float.valueOf(coordstext[1]).floatValue();
+						matset.d = Float.parseFloat(coordstext[1]);
 					} else if (newline.contains("map_Ka")) {
 						String texture = newline.replace("map_Ka ", "");
 						while (texture.startsWith(" ")) {
@@ -242,7 +232,7 @@ public class MtlLoader {
 					}
 				}
 			}
-			Materials.add(matset);
+			materials.add(matset);
 
 		} catch (final IOException e) {
 			DEBUG.ERR("Failed to read file: " + br.toString());

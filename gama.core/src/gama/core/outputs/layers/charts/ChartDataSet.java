@@ -47,7 +47,7 @@ public class ChartDataSet {
 	/** The series. */
 	final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
 
-	/** The deletedseries. */
+	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
 
 	/** The Xcategories. */
@@ -119,9 +119,6 @@ public class ChartDataSet {
 
 	/** The use X labels. */
 	boolean useXLabels = false;
-
-	/** The use Y source. */
-	boolean useYSource = false;
 
 	/** The use Y labels. */
 	boolean useYLabels = false;
@@ -471,7 +468,7 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	public void BackwardSim(final IScope scope, final int cycle) {
+	public void backwardSim(final IScope scope, final int cycle) {
 		int chartCycle = cycle + 1; // AD : why ? I have put this by pure chance and it works ...
 		// There is still a problem, though, as cycle 0 is never drawn. But at least the charts are
 		// synchronized...
@@ -491,9 +488,9 @@ public class ChartDataSet {
 		for (final ChartDataSource source : sourcestoremove) {
 			final LinkedHashMap<String, ChartDataSeries> sourceseries = source.getSeries();
 
-			for (final String sn : sourceseries.keySet()) {
-				final ChartDataSeries ser = sourceseries.get(sn);
-				if (ser.xvalues.size() < 2) { this.removeserie(scope, sn); }
+			for (final var es : sourceseries.entrySet()) {
+				final ChartDataSeries ser = es.getValue();
+				if (ser.xvalues.size() < 2) { this.removeserie(scope, es.getKey()); }
 			}
 			sources.remove(source);
 		}
@@ -527,7 +524,7 @@ public class ChartDataSet {
 
 		commonXindex++;
 		commonYindex++;
-		if (scope.getExperiment().isRecord() && didReload(scope, chartCycle)) { BackwardSim(scope, chartCycle); }
+		if (scope.getExperiment().isRecord() && didReload(scope, chartCycle)) { backwardSim(scope, chartCycle); }
 		updateXValues(scope, chartCycle);
 		updateYValues(scope, chartCycle);
 

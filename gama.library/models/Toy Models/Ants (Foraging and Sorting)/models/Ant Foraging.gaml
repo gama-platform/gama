@@ -16,17 +16,17 @@ global {
 	bool use_icons <- true;
 	bool display_state <- false;
 	//Evaporation value per cycle
-	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0 parameter: 'Evaporation of the signal (unit/cycle):' category: 'Signals';
+	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0;
 	//Diffusion rate of the pheromon among the grid
-	float diffusion_rate <- 1.0 min: 0.0 max: 1.0 parameter: 'Rate of diffusion of the signal (%/cycle):' category: 'Signals';
+	float diffusion_rate <- 1.0 min: 0.0 max: 1.0;
 	//Size of the grid
-	int gridsize <- 100 min: 30 parameter: 'Width and Height of the grid:' category: 'Environment and Population';
+	int gridsize <- 100 min: 30;
 	//Number of ants
-	int ants_number <- 200 min: 1 parameter: 'Number of ants:' category: 'Environment and Population';
+	int ants_number <- 200 min: 1;
 	//Frequency of update of the grid
-	int grid_frequency <- 1 min: 1 max: 100 parameter: 'Grid updates itself every:' category: 'Environment and Population';
+	int grid_frequency <- 1 min: 1 max: 100;
 	//Number of food places among the grid
-	int number_of_food_places <- 5 min: 1 parameter: 'Number of food depots:' category: 'Environment and Population';
+	int number_of_food_places <- 5 min: 1;
 	float grid_transparency <- 1.0;
 	image_file ant_shape const: true <- file('../images/ant.png');
 	geometry ant_shape_svg const: true <- geometry(svg_file("../images/ant.svg"));
@@ -156,9 +156,7 @@ species ant skills: [moving] control: fsm {
 			draw circle(1) wireframe: !has_food color: #red;
 		}
 
-		if (destination != nil) {
-			draw line([location + {0, 0, 0.5}, {location.x + 5 * cos(heading), location.y + 5 * sin(heading)} + {0, 0, 0.5}]) + 0.1 color: #white border: false end_arrow: 1.2;
-		}
+		draw line([location + {0, 0, 0.5}, {location.x + 5 * cos(heading), location.y + 5 * sin(heading)} + {0, 0, 0.5}]) + 0.1 color: #white border: false end_arrow: 1.2;
 
 		if (display_state) {
 			draw string(self as int) color: #white font: regular at: my location + {0, -1, 0.5} anchor: #center;
@@ -177,12 +175,27 @@ species ant skills: [moving] control: fsm {
 
 	aspect icon_svg {
 		draw (ant_shape_svg) size: {5, 7} at: (location)rotate: my heading + 90 color: #black;
-	} }
+	} 
+}
+
+experiment base {
+		
+	parameter 'Evaporation of the signal (unit/cycle):' var:evaporation_per_cycle category: 'Signals';
+	parameter 'Rate of diffusion of the signal (%/cycle):' var:diffusion_rate category: 'Signals';
+	parameter 'Width and Height of the grid:' var:gridsize category: 'Environment and Population';
+	parameter 'Number of ants:' var:ants_number category: 'Environment and Population';
+	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population';
+	parameter 'Number of food depots:' var:number_of_food_places category: 'Environment and Population';
+	
+}
 
 	//Complete experiment that will inspect all ants in a table
-experiment "With Inspector" type: gui {
+experiment "With Inspector" type: gui parent:base{
+	
 	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+
+	
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
@@ -205,7 +218,7 @@ experiment "With Inspector" type: gui {
 
 }
 
-experiment "Classic" type: gui record: every(10) {
+experiment "Classic" type: gui record: every(10) parent:base{
 	
 	parameter 'Number of ants:' var: ants_number category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
@@ -229,7 +242,7 @@ experiment "Classic" type: gui record: every(10) {
 }
 
 //Complete experiment that will inspect all ants in a table
-experiment "3D View" type: gui {
+experiment "3D View" type: gui parent:base{
 	parameter 'Number:' var: ants_number init: 30 unit: 'ants' category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
@@ -247,7 +260,7 @@ experiment "3D View" type: gui {
 }
 
 //Experiment to show how to make multi simulations
-experiment "3 Simulations" type: gui record: every(10#cycle) {
+experiment "3 Simulations" type: gui record: every(10#cycle) parent:base{
 	
 	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';

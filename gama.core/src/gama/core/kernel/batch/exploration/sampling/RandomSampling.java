@@ -28,8 +28,7 @@ public class RandomSampling extends SamplingUtils {
 	 * @param parameters
 	 * @return
 	 */
-	public static List<ParametersSet> UniformSampling(IScope scope, int sample, List<Batch> parameters){
-		List<ParametersSet>  sampling= new ArrayList<>();
+	public static List<ParametersSet> uniformSampling(IScope scope, int sample, List<Batch> parameters){
 		
 		List<Map<String,Double>> rSample = new ArrayList<>();
 		int i = 0;
@@ -39,8 +38,7 @@ public class RandomSampling extends SamplingUtils {
 			rSample.add(point);
 		}
 		
-        sampling=BuildParametersSetfromSample(scope,parameters,rSample);
-        return sampling;
+        return buildParametersSetfromSample(scope,parameters,rSample);
 	}
 	
 	/**
@@ -51,8 +49,7 @@ public class RandomSampling extends SamplingUtils {
 	 * @param parameters : the list of dimensions
 	 * @return
 	 */
-	public static List<ParametersSet> FactorialUniformSampling(IScope scope, int[] samples, List<Batch> parameters){
-		List<ParametersSet>  sampling = new ArrayList<>();
+	public static List<ParametersSet> factorialUniformSampling(IScope scope, int[] samples, List<Batch> parameters){
 		
 		Map<Batch,List<Double>> facorial = new HashMap<>();
 		for(Batch p : parameters) { 
@@ -64,8 +61,7 @@ public class RandomSampling extends SamplingUtils {
 		
 		List<Map<String,Double>> rSample = buildFactorialDesign(parameters,facorial,new ArrayList<>(),0);
 		
-        sampling=BuildParametersSetfromSample(scope,parameters,rSample);
-        return sampling;
+        return buildParametersSetfromSample(scope,parameters,rSample);
 	}
 	
 	/**
@@ -76,12 +72,12 @@ public class RandomSampling extends SamplingUtils {
 	 * @param parameters
 	 * @return
 	 */
-	public static List<ParametersSet> FactorialUniformSampling(IScope scope, int samples, List<Batch> parameters){
+	public static List<ParametersSet> factorialUniformSampling(IScope scope, int samples, List<Batch> parameters){
 		int f = (int) Math.round(Math.pow(samples, 1d / parameters.size()));
 		f = f < 1 ? 1 : f;
 		int[] factor = new int[parameters.size()];
 		Arrays.fill(factor, f);
-		return FactorialUniformSampling(scope, factor, parameters);
+		return factorialUniformSampling(scope, factor, parameters);
 	}
 	
 	/**

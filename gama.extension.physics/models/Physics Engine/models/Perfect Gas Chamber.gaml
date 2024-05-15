@@ -14,11 +14,11 @@ model Gas
  */
 global parent: physical_world {
 	bool use_native <- true;
-	int width parameter: 'Dimensions' init:500 ; 
+	int width init:500 ; 
 	point gravity <- {0.0, 0.0, 0.0};
-	bool withGravity <- false parameter: "Enable gravity" on_change: {gravity <- withGravity ? {0.0, 0.0, -9.81} : {0.0, 0.0, 0.0};};
-	bool accurate_collision_detection <- false parameter: "Finer collision detection";
-	bool show_walls <- true parameter: "Show walls";
+	bool withGravity <- false on_change: {gravity <- withGravity ? {0.0, 0.0, -9.81} : {0.0, 0.0, 0.0};};
+	bool accurate_collision_detection <- false;
+	bool show_walls <- true;
 	geometry shape <- rectangle(width, width);
 	float step <- 0.01;
  
@@ -76,6 +76,12 @@ species particles skills: [dynamic_body] {
 
 
 experiment "Gas Chamber" type: gui {
+	
+	parameter 'Dimensions' var:width; 
+	parameter var:gravity;
+	parameter "Enable gravity" var:withGravity;
+	parameter "Finer collision detection" var:accurate_collision_detection;
+	parameter "Show walls" var:show_walls;
 	
 	// Allows to play with the step of the simulation (and physics step)
 	parameter "Physics resolution step (in sec)" var: step min: 0.0001 max: 1.0 ;

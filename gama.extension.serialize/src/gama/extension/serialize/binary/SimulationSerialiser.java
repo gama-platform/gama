@@ -66,7 +66,6 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 	 * @return the simulation history
 	 * @date 22 oct. 2023
 	 */
-	@SuppressWarnings ("unchecked")
 	private SimulationHistory getSimulationHistory(final SimulationAgent sim) {
 		SimulationHistory history = (SimulationHistory) sim.getAttribute(SerialisedAgent.HISTORY_KEY);
 		if (history == null) {

@@ -177,10 +177,10 @@ public class GamaToolbarFactory {
 	}
 
 	/** The toolbar height. */
-	public static int TOOLBAR_HEIGHT = 24; // CORE_ICONS_HEIGHT.getValue();Ì
+	public static final int TOOLBAR_HEIGHT = 24; // CORE_ICONS_HEIGHT.getValue();Ì
 
 	/** The toolbar sep. */
-	public static int TOOLBAR_SEP = 4;
+	public static final int TOOLBAR_SEP = 4;
 
 	/**
 	 * Creates a new GamaToolbar object.

@@ -78,7 +78,7 @@ public class Experiment implements IExperiment {
 	}
 
 	@Override
-	public void setup(final String expName, final double sd) {
+	public synchronized void setup(final String expName, final double sd) {
 		this.seed = sd;
 		this.loadCurrentExperiment(expName);
 	}
@@ -98,7 +98,7 @@ public class Experiment implements IExperiment {
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	public void setup(final String expName, final double sd, final IList params, final GamaServerExperimentJob ec) {
+	public synchronized void setup(final String expName, final double sd, final IList params, final GamaServerExperimentJob ec) {
 		this.seed = sd;
 		this.loadCurrentExperiment(expName, params, ec);
 	}
@@ -109,8 +109,8 @@ public class Experiment implements IExperiment {
 	 * @param expName
 	 *            the exp name
 	 */
-	private synchronized void loadCurrentExperiment(final String expName, final IList p,
-			final GamaServerExperimentJob ec) {
+	@SuppressWarnings("rawtypes")
+	private void loadCurrentExperiment(final String expName, final IList p, final GamaServerExperimentJob ec) {
 		this.experimentName = expName;
 		this.currentStep = 0;
 
@@ -132,7 +132,7 @@ public class Experiment implements IExperiment {
 	 * @param expName
 	 *            the exp name
 	 */
-	private synchronized void loadCurrentExperiment(final String expName) {
+	private void loadCurrentExperiment(final String expName) {
 		this.experimentName = expName;
 		this.currentStep = 0;
 		this.currentExperiment = GAMA.addHeadlessExperiment(model, experimentName, this.params, seed);

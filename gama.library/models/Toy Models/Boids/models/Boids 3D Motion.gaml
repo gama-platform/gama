@@ -8,31 +8,31 @@
 model boids_3D 
 global torus: torus_environment{ 
 	//Number of boids to create
-	int number_of_agents parameter: 'Number of agents' <- 100 min: 1 max: 500;
+	int number_of_agents <- 100 min: 1 max: 500;
 	//Number of obstacles to create
-	int number_of_obstacles parameter: 'Number of obstacles' <- 0 min: 0;
+	int number_of_obstacles <- 0 min: 0;
 	//Size of the boids
-	int boids_size parameter: 'Boids size' <- 50 min: 1;
+	int boids_size <- 50 min: 1;
 	//Maximal speed of the boids
-	float maximal_speed parameter: 'Maximal speed' <- 15.0 min: 0.1 max: 15.0;
+	float maximal_speed <- 15.0 min: 0.1 max: 15.0;
 	//Factor for the boids flock
-	int cohesion_factor parameter: 'Cohesion Factor' <- 100; 
-	int alignment_factor parameter: 'Alignment Factor' <- 100; 
-	float minimal_distance parameter: 'Minimal Distance' <- 10.0; 
+	int cohesion_factor <- 100; 
+	int alignment_factor <- 100; 
+	float minimal_distance <- 10.0; 
 	//MAximal angle of turn for the boids
-	int maximal_turn parameter: 'Maximal Turn' <- 90 min: 0 max: 359; 
+	int maximal_turn <- 90 min: 0 max: 359; 
 	//environment parameters
-	int width_and_height_of_environment parameter: 'Width/Height of the Environment' <- 800;  
-	int z_max parameter: 'Z max of the Environment' <- 400;  
-	bool torus_environment parameter: 'Toroidal Environment ?' <- false; 
+	int width_and_height_of_environment <- 800;  
+	int z_max <- 400;  
+	bool torus_environment <- false; 
 	//Experiment parameter
-	bool apply_cohesion <- true parameter: 'Apply Cohesion ?';
-	bool apply_alignment <- true parameter: 'Apply Alignment ?';   
-	bool apply_separation <- true parameter: 'Apply Separation ?';   
-	bool apply_goal <- true parameter: 'Follow Goal ?'; 
-	bool apply_wind <- true parameter: 'Apply Wind ?';     
+	bool apply_cohesion <- true;
+	bool apply_alignment <- true;   
+	bool apply_separation <- true;   
+	bool apply_goal <- true; 
+	bool apply_wind <- true;     
 	//Wind variable
-	point wind_vector <- {0,0,0}  parameter: 'Direction of the wind';   
+	point wind_vector <- {0,0,0};   
 	//Duration of the goal
 	int goal_duration <- 30 update: (goal_duration - 1); 
 	//Location of the goal
@@ -149,6 +149,24 @@ species boids skills: [moving3D] {
 
 experiment "3D" type: gui {
 	
+	parameter 'Number of agents' var: number_of_agents;
+	parameter 'Number of obstacles' var:number_of_obstacles;
+	parameter 'Boids size' var:boids_size;
+	parameter 'Maximal speed' var:maximal_speed;
+	parameter 'Cohesion Factor' var:cohesion_factor;
+	parameter 'Alignment Factor' var:alignment_factor;
+	parameter 'Minimal Distance' var:minimal_distance;
+	parameter 'Maximal Turn' var:maximal_turn;
+	parameter 'Width/Height of the Environment' var:width_and_height_of_environment;
+	parameter 'Z max of the Environment' var:z_max;
+	parameter 'Toroidal Environment ?' var:torus_environment;
+	
+	parameter 'Apply Cohesion ?' var: apply_cohesion;
+	parameter 'Apply Alignment ?' var: apply_alignment;   
+	parameter 'Apply Separation ?' var: apply_separation;  
+	parameter 'Apply Wind ?' var: apply_wind ;    
+	parameter 'Follow Goal ?' var:apply_goal;
+	parameter 'Direction of the wind' var:wind_vector;
 	
 	output synchronized: true {
 		

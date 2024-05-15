@@ -23,7 +23,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
-import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
@@ -41,7 +40,7 @@ import gama.gaml.types.Types;
 /**
  * The Class ImageSaver.
  */
-public class ImageSaver extends AbstractSaver implements ISaveDelegate {
+public class ImageSaver extends AbstractSaver {
 
 	/** The Constant FILE_FORMATS. */
 	public static final Set<String> FILE_FORMATS = Set.of("image", "jpg", "jpeg", "png", "gif");

@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -254,8 +255,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			gridFile.setReadable(true);
 			InputStream fis = null;
 			try {
-				fis = new FileInputStream(gridFile);
-			} catch (FileNotFoundException e1) {}
+				fis = Files.newInputStream(gridFile.toPath());
+			} catch (IOException e1) {}
 			try {
 				privateCreateCoverage(scope, fis);
 			} catch (final Exception e) {
@@ -352,7 +353,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 						ascInfo[2] = xCorner;
 					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
 						yCorner = doubleVal(line);
-
+						//TODO: very suspicious, probably xllcenter and yllcenter 
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) { // AD To verify: the
 																									// conditions are
 																									// the same as two
@@ -615,24 +616,9 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					}
 					for (int j = 0; j < vd.length; j++) { records.bands.get(j)[i] = vd[j]; }
 
-					// else if (byteValues) {
-					// final byte[] bv = (byte[]) vals;
-					// if (i == 0) { nbBands = bv.length; }
-					// if (bv.length == 1) {
-					// final double v = Double.valueOf(((byte[]) vals)[0]);
-					// rect.setAttribute("grid_value", v);
-					// } else if (bv.length == 3) {
-					// final int red = bv[0] < 0 ? 256 + bv[0] : bv[0];
-					// final int green = bv[0] < 0 ? 256 + bv[1] : bv[1];
-					// final int blue = bv[0] < 0 ? 256 + bv[2] : bv[2];
-					// rect.setAttribute("grid_value", (red + green + blue) / 3.0);
-					// }
-					// rect.setAttribute("bands", GamaListFactory.create(scope, Types.FLOAT, bv));
-					// }
-
 				}
 				if (createGeometries) {
-					// System.out.println("Building geometries !");
+					// Building geometries
 					for (int i = 0, n = numRows * numCols; i < n; i++) {
 
 						setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));

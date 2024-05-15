@@ -27,7 +27,7 @@ import gama.gaml.statements.IStatement;
 
 /**
  * The class RuleBasedArchitecture. A simple architecture of competing rules. Conditions and priorities of the rules are
- * computed every step and the rules executed are the ones which fulfil their condition, in the order of their
+ * computed every step and the rules executed are the ones which fulfill their condition, in the order of their
  * priorities
  *
  * task t1 weight: a_float { ... } task t2 weight: another_float {...}

@@ -82,13 +82,7 @@ import gama.gaml.types.IType;
 						type = IType.NONE,
 						optional = true,
 						internal = true),
-				@facet (
-						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
-						optional = true,
-						doc = @doc (
-								deprecated = "declare a temporary variable and use assignement of the execution of the action instead",
-								value = "create a new variable and assign to it the result of the action")) },
+		},
 		omissible = IKeyword.ACTION)
 @doc (
 		value = "Allows the agent to execute an action or a primitive.  For a list of primitives available in every species, see this [BuiltIn161 page]; for the list of primitives defined by the different skills, see this [Skills161 page]. Finally, see this [Species161 page] to know how to declare custom actions.",
@@ -239,9 +233,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	/** The args. */
 	Arguments args;
 
-	/** The return string. */
-	String returnString;
-
 	/** The target species. */
 	final String targetSpecies;
 
@@ -266,7 +257,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		} else {
 			targetSpecies = null;
 		}
-		returnString = getLiteral(IKeyword.RETURNS);
 		function = getFacet(IKeyword.INTERNAL_FUNCTION);
 
 		setName(getLiteral(IKeyword.ACTION));
@@ -274,7 +264,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 	@Override
 	public void enterScope(final IScope scope) {
-		if (returnString != null) { scope.addVarWithValue(returnString, null); }
 		super.enterScope(scope);
 	}
 
@@ -323,7 +312,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		} else
 			throw GamaRuntimeException.error("Impossible to find action " + getName() + " in " + species.getName(),
 					scope);
-		if (returnString != null) { scope.setVarValue(returnString, result); }
 		return result;
 	}
 

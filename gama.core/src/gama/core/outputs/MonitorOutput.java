@@ -64,13 +64,6 @@ import gama.gaml.types.Types;
 				optional = false,
 				doc = @doc ("identifier of the monitor")),
 				@facet (
-						name = IKeyword.REFRESH_EVERY,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								value = "Allows to refresh the monitor every n time steps (default is 1)",
-								deprecated = "Use refresh: every(n) instead")),
-				@facet (
 						name = IKeyword.COLOR,
 						type = IType.COLOR,
 						optional = true,

@@ -83,10 +83,10 @@ public class GAMA {
 	private static IGui regularGui;
 
 	/** The headless gui. */
-	private static IGui headlessGui;
+	private static volatile IGui headlessGui;
 
 	/** The current top level agent. */
-	private static ITopLevelAgent currentTopLevelAgent;
+	private static volatile ITopLevelAgent currentTopLevelAgent;
 
 	/** The top level agent listeners. */
 	private static List<ITopLevelAgentChangeListener> topLevelAgentListeners = new CopyOnWriteArrayList<>();
@@ -205,7 +205,7 @@ public class GAMA {
 	public static void closeAllExperiments(final boolean andOpenModelingPerspective, final boolean immediately) {
 		for (final IExperimentController controller : new ArrayList<>(controllers)) { closeController(controller); }
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
-		PoolUtils.WriteStats();
+		PoolUtils.writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 

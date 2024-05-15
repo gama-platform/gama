@@ -12,9 +12,10 @@ package gama.headless.batch.documentation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -77,7 +78,7 @@ public class Utils {
 		final ArrayList<String> result = new ArrayList<>();
 		String concept = "";
 
-		try (final FileInputStream fis = new FileInputStream(file);
+		try (final InputStream fis = Files.newInputStream(file.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 
 			String line = null;
@@ -118,7 +119,7 @@ public class Utils {
 	 * @param list the list
 	 * @return true, if successful
 	 */
-	public static boolean IsInList(final String element, final String[] list) {
+	public static boolean isInList(final String element, final String[] list) {
 		boolean result = false;
 		for (final String str : list) {
 			if (element.equals(str)) {
@@ -129,16 +130,16 @@ public class Utils {
 	}
 
 	/**
-	 * Creates the folder.
-	 *
-	 * @param file the file
+	 * Creates the folders from the path of the file passed in parameter
+	 * @param file 
+	 * @return true if the folders have been created false otherwise
 	 */
-	public static void CreateFolder(final File file) {
+	public static boolean createFolder(final File file) {
 		if (!file.mkdir() && !file.exists()) {
-			CreateFolder(file.getParentFile());
-			file.mkdir();
+			createFolder(file.getParentFile());
+			return file.mkdir();
 		}
-		return;
+		return true;
 	}
 
 }

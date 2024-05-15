@@ -12,8 +12,6 @@ package gama.extension.maths.pde.diffusion.statements;
 
 import java.util.Arrays;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -21,6 +19,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.grid.FieldDiffuser;
@@ -116,7 +116,7 @@ import gama.gaml.types.IType;
 								+ "won't diffuse the value afterward (lost of signal). (default value : false)")) },
 		omissible = IKeyword.VAR)
 @symbol (
-		name = { IKeyword.DIFFUSE, IKeyword.DIFFUSION },
+		name = { IKeyword.DIFFUSE},
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.MATH, IConcept.DIFFUSION })
@@ -152,11 +152,7 @@ public class DiffusionStatement extends AbstractStatement {
 
 		@Override
 		public void validate(final StatementDescription desc) {
-			final String kw = desc.getKeyword();
-			if (DIFFUSION.equals(kw)) {
-				desc.warning("The keyword 'diffusion' is deprecated. Please use the keyword 'diffuse' instead",
-						IGamlIssue.DEPRECATED);
-			}
+//			final String kw = desc.getKeyword();
 			IExpression spec = desc.getFacetExpr(IKeyword.ON);
 			if (spec.getGamlType().isAgentType() && spec.getGamlType().getSpecies().isGrid()) {
 				desc.error("Diffusions can only be executed on grid species", IGamlIssue.GENERAL);

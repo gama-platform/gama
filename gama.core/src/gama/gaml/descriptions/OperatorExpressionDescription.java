@@ -59,15 +59,16 @@ public class OperatorExpressionDescription extends BasicExpressionDescription {
 
 	@Override
 	public String toOwnString() {
-		String result = operator + "(";
+		StringBuilder str = new StringBuilder();
+		str.append(operator + "(");
 		for (int i = 0; i < args.length; i++) {
 			if (i > 0) {
-				result += ",";
+				str.append(",");
 			}
-			result += args[i].toString();
+			str.append(args[i]);
 		}
-		result += ")";
-		return result;
+		str.append(")");
+		return str.toString();
 	}
 
 	@Override

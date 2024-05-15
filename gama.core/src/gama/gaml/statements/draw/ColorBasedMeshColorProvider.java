@@ -18,7 +18,7 @@ import gama.core.util.GamaColor;
 public class ColorBasedMeshColorProvider implements IMeshColorProvider {
 
 	/** The b. */
-	final double r, g, b, a;
+	final double r, g, b;
 
 	/**
 	 * Instantiates a new color based mesh color provider.
@@ -30,7 +30,6 @@ public class ColorBasedMeshColorProvider implements IMeshColorProvider {
 		r = c.getRed() / 255d;
 		g = c.getGreen() / 255d;
 		b = c.getBlue() / 255d;
-		a = c.getAlpha() / 255d;
 	}
 
 	@Override
@@ -41,7 +40,7 @@ public class ColorBasedMeshColorProvider implements IMeshColorProvider {
 		result[0] = r * ratio;
 		result[1] = g * ratio;
 		result[2] = b * ratio;
-		result[3] = 1d; // a;
+		result[3] = 1d;
 		return result;
 	}
 

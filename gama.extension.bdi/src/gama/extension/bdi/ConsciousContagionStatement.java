@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.extension.bdi;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -42,8 +42,8 @@ import gama.gaml.types.IType;
 		@facet(name = ConsciousContagionStatement.CHARISMA, type = IType.FLOAT, optional = true, doc = @doc("The charisma value of the perceived agent (between 0 and 1)")),
 		@facet(name = IKeyword.WHEN, type = IType.BOOL, optional = true, doc = @doc("A boolean value to get the emotion only with a certain condition")),
 		@facet(name = ConsciousContagionStatement.THRESHOLD, type = IType.FLOAT, optional = true, doc = @doc("The threshold value to make the contagion")),
-		@facet(name = ConsciousContagionStatement.DECAY, type = IType.FLOAT, optional = true, doc = @doc("The decay value of the emotion added to the agent")),
-		@facet(name = ConsciousContagionStatement.INTENSITY, type = IType.FLOAT, optional = true, doc = @doc("The intensity value of the emotion added to the agent")),
+		@facet(name = Emotion.DECAY, type = IType.FLOAT, optional = true, doc = @doc("The decay value of the emotion added to the agent (between 0 and 1)")),
+		@facet(name = IKeyword.INTENSITY, type = IType.FLOAT, optional = true, doc = @doc("The intensity value of the emotion added to the agent (between 0 and 1)")),
 		@facet(name = ConsciousContagionStatement.RECEPTIVITY, type = IType.FLOAT, optional = true, doc = @doc("The receptivity value of the current agent (between 0 and 1)")) }, omissible = IKeyword.NAME)
 @doc(value = "enables to directly add an emotion of a perceived species if the perceived agent gets a particular emotion.", examples = {
 		@example("conscious_contagion emotion_detected:fear emotion_created:fearConfirmed;"),
@@ -69,11 +69,6 @@ public class ConsciousContagionStatement extends AbstractStatement {
 	/** The Constant THRESHOLD. */
 	public static final String THRESHOLD = "threshold";
 	
-	/** The Constant DECAY. */
-	public static final String DECAY = "decay";
-	
-	/** The Constant INTENSITY. */
-	public static final String INTENSITY = "intensity";
 
 	/** The name expr. */
 	final IExpression nameExpr;
@@ -116,8 +111,8 @@ public class ConsciousContagionStatement extends AbstractStatement {
 		when = getFacet(IKeyword.WHEN);
 		receptivity = getFacet(ConsciousContagionStatement.RECEPTIVITY);
 		threshold = getFacet(ConsciousContagionStatement.THRESHOLD);
-		decay = getFacet(ConsciousContagionStatement.DECAY);
-		intensity = getFacet(ConsciousContagionStatement.INTENSITY);
+		decay = getFacet(Emotion.DECAY);
+		intensity = getFacet(IKeyword.INTENSITY);
 	}
 
 	@Override
@@ -130,51 +125,41 @@ public class ConsciousContagionStatement extends AbstractStatement {
 		Double decayValue = 0.0;
 		Double intensityValue = 0.0;
 		IScope scopeMySelf = null;
-		if (mySelfAgent != null) {
-			scopeMySelf = mySelfAgent.getScope().copy("of ConsciousContagionStatement");
-			scopeMySelf.push(mySelfAgent);
-		} else
+		
+		if (mySelfAgent == null) {
 			return null;
+		} 
+		scopeMySelf = mySelfAgent.getScope().copy("of ConsciousContagionStatement");
+		scopeMySelf.push(mySelfAgent);
+			
 		if (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) {
 			if (emotionDetected != null && emotionCreated != null) {
-				if (SimpleBdiArchitecture.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
+				if (BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
 					if (charisma != null) {
-						charismaValue = (Double) charisma.value(scope);
+						charismaValue = BdiUtils.clamp((double) charisma.value(scope), 0,1);
 					} else {
 						charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
 					}
 					if (receptivity != null) {
-						receptivityValue = (Double) receptivity.value(scopeMySelf);
+						receptivityValue = BdiUtils.clamp((double)receptivity.value(scopeMySelf), 0,1);
 					} else {
 						receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY);
 					}
 					if (threshold != null) {
-						thresholdValue = (Double) threshold.value(scopeMySelf);
+						thresholdValue = BdiUtils.clamp((double) threshold.value(scopeMySelf),0,1);
 					}
 					if (charismaValue * receptivityValue >= thresholdValue) {
 						final Emotion tempEmo = (Emotion) emotionCreated.value(scope);
 						tempEmo.setAgentCause(scope.getAgent());
-						if(decay!=null){
-							decayValue = (Double) decay.value(scopeMySelf);
-							if(decayValue>1.0){
-								decayValue = 1.0;
-							}
-							if(decayValue<0.0){
-								decayValue = 0.0;
-							}
+						if(decay != null){
+							decayValue = BdiUtils.clamp((double) decay.value(scopeMySelf), 0,1);
 						}
 						tempEmo.setDecay(decayValue);
-						if(intensity!=null){
-							intensityValue = (Double) intensity.value(scopeMySelf);
-							if(intensityValue>1.0){
-								intensityValue = 1.0;
-							}
-							if(intensityValue<0.0){
-								intensityValue = 0.0;
-							}
+						if(intensity != null){
+							intensityValue = BdiUtils.clamp((double)intensity.value(scopeMySelf),0,1);
 						}
 						tempEmo.setIntensity(intensityValue);
-						SimpleBdiArchitecture.addEmotion(scopeMySelf, tempEmo);
+						BdiUtils.addEmotion(scopeMySelf, tempEmo);
 					}
 				}
 			}

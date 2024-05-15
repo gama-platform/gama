@@ -13,6 +13,7 @@ package gaml.compiler.ui.editbox;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -132,7 +133,7 @@ public class BoxProviderRegistry {
 		provider.setId(PROVIDER_ID_ + name);
 		provider.setName(name);
 		provider.setBuilders(defaultBuilders());
-		provider.setDefaultSettingsCatalog(Arrays.asList("Default"));
+		provider.setDefaultSettingsCatalog(Collections.singletonList("Default"));
 		return provider;
 	}
 
@@ -145,7 +146,7 @@ public class BoxProviderRegistry {
 		final BoxProviderImpl provider = createProvider("GAML");
 		provider.setDefaultSettingsCatalog(Arrays.asList("GAML", "Default", "OnClick", "GreyGradient", "Classic"));
 		if (provider.getEditorsBoxSettings().getFileNames() == null) {
-			provider.getEditorsBoxSettings().setFileNames(Arrays.asList("*.gaml"));
+			provider.getEditorsBoxSettings().setFileNames(Collections.singletonList("*.gaml"));
 		}
 		return provider;
 	}

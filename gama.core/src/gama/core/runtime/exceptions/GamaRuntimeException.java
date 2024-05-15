@@ -59,7 +59,7 @@ public class GamaRuntimeException extends RuntimeException {
 
 	// Factory methods
 	/**
-	 * This call is deprecated. Use the equivalent method that passes the scope
+	 * Creates a GamaRuntimeException out of a Throwable
 	 *
 	 * @param s
 	 * @return

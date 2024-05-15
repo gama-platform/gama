@@ -32,15 +32,13 @@ public class SearchResultStyle {
 	 * @return
 	 */
 	public static int[] getSearchTermOccurrences(final String searchTerm, final String content) {
-		List<StyleRange> styleRange;
 		List<Integer> ranges;
 		final Display disp = WorkbenchHelper.getDisplay();
 		final StyleRange myStyleRange = new StyleRange(0, 0, null, disp.getSystemColor(SWT.COLOR_YELLOW));
 
 		// reset the StyleRange-Array for each new field
-		styleRange = new ArrayList<StyleRange>();
 		ranges = new ArrayList<Integer>(); // reset the ranges-array
-		if (searchTerm.equals("")) { return new int[] {}; }
+		if ("".equals(searchTerm)) { return new int[] {}; }
 
 		// determine all occurrences of the searchText and write the beginning
 		// and length of each occurrence into an array
@@ -68,7 +66,6 @@ public class SearchResultStyle {
 				}
 			} else {
 				intRanges[arrayIndexCounter++] = ranges.get(listIndexCounter);
-				styleRange.add(myStyleRange);
 			}
 		}
 		// if there have been any overlappings we need to reduce the size of

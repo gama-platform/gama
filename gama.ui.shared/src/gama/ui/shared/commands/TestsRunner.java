@@ -60,7 +60,6 @@ public class TestsRunner {
 		}
 		int size = testFiles.size();
 		int[] i = { 1 };
-		// WorkbenchHelper.asyncRun(() -> {});
 
 		Job.createSystem("All tests", (m) -> {
 			for (final IFile file : testFiles) {
@@ -76,22 +75,6 @@ public class TestsRunner {
 			SwtGui.ALL_TESTS_RUNNING = false;
 			gui.endTestDisplay();
 		}).schedule();
-
-		// new Thread(() -> {
-		// for (final IFile file : testFiles) {
-		// if (testView != null) {
-		// testView.displayProgress(i[0]++, size);
-		// }
-		// final List<TestExperimentSummary> list = gui.runHeadlessTests(file);
-		// if (list != null) {
-		// LAST_RUN.addSummaries(list);
-		// }
-		// }
-		// gui.displayTestsResults(scope, LAST_RUN);
-		// SwtGui.ALL_TESTS_RUNNING = false;
-		// gui.endTestDisplay();
-		// }).start();
-
 	}
 
 	/**

@@ -217,7 +217,7 @@ public class Bound extends Entity implements Comparable<Bound> {
 
 		// Keep the origin string from this if it's not blank, otherwise use the origin string from
 		// the intersecting Bound
-		if (origin != "") {
+		if ( ! "".equals(origin)) {
 			newOrigin = origin;
 		} else {
 			newOrigin = intersectingBound.origin;

@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -29,6 +28,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -37,7 +37,6 @@ import gama.core.kernel.experiment.ActionExecuter;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentController;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.root.PlatformAgent;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
@@ -56,8 +55,8 @@ import gama.core.runtime.ExecutionScope;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
+import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaDate;
@@ -67,7 +66,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Spatial.Transformations;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.GamaGeometryType;
@@ -146,13 +145,6 @@ import gama.gaml.types.IType;
 				name = SimulationAgent.AVERAGE_DURATION,
 				type = IType.STRING,
 				doc = @doc ("Returns a string containing the average duration, in milliseconds, of a simulation cycle.")),
-		@variable (
-				name = PlatformAgent.MACHINE_TIME,
-				type = IType.FLOAT,
-				doc = @doc (
-						deprecated = "Use 'gama.machine_time' instead",
-						value = "Returns the current system time in milliseconds",
-						comment = "The return value is a float number")),
 		@variable (
 				name = SimulationAgent.CURRENT_DATE,
 				depends_on = SimulationAgent.STARTING_DATE,
@@ -510,7 +502,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		((WorldProjection) getProjectionFactory().getWorld()).updateTranslations(env);
 		((WorldProjection) getProjectionFactory().getWorld()).updateUnit(getProjectionFactory().getUnitConverter());
 		final GamaPoint p = new GamaPoint(-env.getMinX(), -env.getMinY(), -env.getMinZ());
-		geometry.setGeometry(Transformations.translated_by(scope, geom, p));
+		geometry.setGeometry(SpatialTransformations.translated_by(scope, geom, p));
 		if (getProjectionFactory().getUnitConverter() != null) {
 			((WorldProjection) getProjectionFactory().getWorld()).convertUnit(geometry.getInnerGeometry());
 
@@ -683,27 +675,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	public String getAverageDuration() { return Double.toString(getClock().getAverageDuration()); }
 
 	/**
-	 * Gets the machine time.
-	 *
-	 * @return the machine time
-	 */
-	@getter (PlatformAgent.MACHINE_TIME)
-	public Double getMachineTime() { return GAMA.getPlatformAgent().getMachineTime(); }
-
-	/**
-	 * Sets the machine time.
-	 *
-	 * @param t
-	 *            the new machine time
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@setter (PlatformAgent.MACHINE_TIME)
-	public void setMachineTime(final Double t) throws GamaRuntimeException {
-		// NOTHING
-	}
-
-	/**
 	 * Sets the current date.
 	 *
 	 * @param d
@@ -782,24 +753,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		// if (GAMA.isPaused()) { GAMA.resumeFrontmostExperiment(); }
 		final IExperimentController controller = scope.getExperiment().getSpecies().getController();
 		if (controller != null && controller.isPaused()) { controller.processStart(false); }
-		return null;
-	}
-
-	/**
-	 * Halt.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the object
-	 */
-	@action (
-			name = "halt",
-			doc = @doc (
-					deprecated = "It is preferable to use 'die' instead to kill a simulation, or 'pause' to stop it temporarily",
-					value = "Allows to stop the current simulation so that cannot be continued after. All the behaviors and updates are stopped. "))
-
-	public Object halt(final IScope scope) {
-		getExperiment().closeSimulation(this);
 		return null;
 	}
 
@@ -1119,7 +1072,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		}
 
 		// Update all the references !
-		updateReferences(scope, list_ref, this);
+		updateReferences(scope, list_ref);
 	}
 
 	/**
@@ -1132,8 +1085,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param sim
 	 *            the sim
 	 */
-	private void updateReferences(final IScope scope, final List<IReference> list_ref, final SimulationAgent sim) {
-		for (final IReference ref : list_ref) { ref.resolveReferences(scope, sim); }
+	private void updateReferences(final IScope scope, final List<IReference> list_ref) {
+		for (final IReference ref : list_ref) { ref.resolveReferences(scope, this); }
 	}
 
 	/**

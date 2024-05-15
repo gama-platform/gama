@@ -9,7 +9,7 @@ model GraphAttributesImportation
 
 global {
 	
-	string type <- "graphml" among: ["graphml"] parameter: true; 
+	string type <- "graphml" among: ["graphml"]; 
 	
 	graph<node_graph,edge_graph> g;
 	
@@ -61,6 +61,9 @@ species node_graph {
 }
 
 experiment import_graph type: gui {
+	
+	parameter var:type;
+	
 	output {
 		display graph_display type: 3d axes: false{
 			graphics "graph " {

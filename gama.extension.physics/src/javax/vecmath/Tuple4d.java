@@ -321,15 +321,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
     }
 
 
-
-    /**
-     * @deprecated Use scaleAdd(double,Tuple4d) instead
-     */
-    public final void scaleAdd(float s, Tuple4d t1) {
-	scaleAdd((double)s, t1);
-    }
-
-
     /**
      * Sets the value of this tuple to the scalar multiplication
      * of itself and then adds tuple t1 (this = s*this + t1).
@@ -447,14 +438,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
 
 
     /**
-     * @deprecated Use clamp(double,double,Tuple4d) instead
-     */
-    public final void clamp(float min, float max, Tuple4d t) {
-	clamp((double)min, (double)max, t);
-    }
-
-
-    /**
      *  Clamps the tuple parameter to the range [low, high] and
      *  places the values into this tuple.
      *  @param min   the lowest value in the tuple after clamping
@@ -498,14 +481,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
 
 
     /**
-     * @deprecated Use clampMin(double,Tuple4d) instead
-     */
-    public final void clampMin(float min, Tuple4d t) {
-	clampMin((double)min, t);
-    }
-
-
-    /**
      *  Clamps the minimum value of the tuple parameter to the min
      *  parameter and places the values into this tuple.
      *  @param min   the lowest value in the tuple after clamping
@@ -537,15 +512,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
         }
 
    }
-
-
-    /**
-     * @deprecated Use clampMax(double,Tuple4d) instead
-     */
-    public final void clampMax(float max, Tuple4d t) {
-	clampMax((double)max, t);
-    }
-
 
     /**
      *  Clamps the maximum value of the tuple parameter to the max
@@ -596,15 +562,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
   }
 
 
-
-    /**
-     * @deprecated Use clamp(double,double) instead
-     */
-    public final void clamp(float min, float max) {
-	clamp((double)min, (double)max);
-    }
-
-
     /**
      *  Clamps this tuple to the range [low, high].
      *  @param min  the lowest value in this tuple after clamping
@@ -639,14 +596,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
 
 
     /**
-     * @deprecated Use clampMin(double) instead
-     */
-    public final void clampMin(float min) {
-	clampMin((double)min);
-    }
-
-
-    /**
      *  Clamps the minimum value of this tuple to the min parameter.
      *  @param min   the lowest value in this tuple after clamping
      */
@@ -656,14 +605,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
       if( z < min ) z=min;
       if( w < min ) w=min;
    }
-
-
-    /**
-     * @deprecated Use clampMax(double) instead
-     */
-    public final void clampMax(float max) {
-	clampMax((double)max);
-    }
 
 
     /**
@@ -693,14 +634,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
 
 
     /**
-     * @deprecated Use interpolate(Tuple4d,Tuple4d,double) instead
-     */
-    public void interpolate(Tuple4d t1, Tuple4d t2, float alpha) {
-	interpolate(t1, t2, (double)alpha);
-    }
-
-
-    /**
      *  Linearly interpolates between tuples t1 and t2 and places the
      *  result into this tuple:  this = (1-alpha)*t1 + alpha*t2.
      *  @param t1  the first tuple
@@ -712,14 +645,6 @@ public abstract class Tuple4d implements java.io.Serializable, Cloneable {
 	this.y = (1-alpha)*t1.y + alpha*t2.y;
 	this.z = (1-alpha)*t1.z + alpha*t2.z;
 	this.w = (1-alpha)*t1.w + alpha*t2.w;
-    }
-
-
-    /**
-     * @deprecated Use interpolate(Tuple4d,double) instead
-     */
-    public void interpolate(Tuple4d t1, float alpha) {
-	interpolate(t1, (double)alpha);
     }
 
 

@@ -47,9 +47,9 @@ public abstract class AbstractShader {
 
 	/** The Constant UVMAPPING_ATTRIBUTE_IDX. */
 	public static final int UVMAPPING_ATTRIBUTE_IDX = 3;
-
-	/** The matrix buffer. */
-	private static FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
+//
+//	/** The matrix buffer. */
+//	private static FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
 
 	/**
 	 * Instantiates a new abstract shader.
@@ -239,15 +239,7 @@ public abstract class AbstractShader {
 		gl.glUniform1f(location, value);
 	}
 
-	/**
-	 * Load int.
-	 *
-	 * @param location the location
-	 * @param value the value
-	 */
-	protected void loadInt(final int location, final int value) {
-		gl.glUniform1i(location, value);
-	}
+
 
 	/**
 	 * Sets the layer alpha.

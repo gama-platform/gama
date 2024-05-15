@@ -254,14 +254,14 @@ public interface IDescriptionValidator<T extends IDescription> extends IValidato
 			}
 			final ModelDescription md = cd.getModelDescription();
 			final ITypesManager manager = md == null ? Types.builtInTypes : md.getTypesManager();
-			if (manager.containsType(name)) {
-				final String type = "It cannot be used as a "
-						+ (cd instanceof VariableDescription ? "variable" : cd.getKeyword()) + " name.";
-				final String species = manager.get(name).isAgentType() ? "species" : "type";
-				cd.error(name + " is a " + species + " name. " + type, IGamlIssue.IS_A_TYPE, NAME, name);
-				return false;
+			if (!manager.containsType(name)) {
+				return true;
 			}
-			return true;
+			final String type = "It cannot be used as a "
+					+ (cd instanceof VariableDescription ? "variable" : cd.getKeyword()) + " name.";
+			final String species = manager.get(name).isAgentType() ? "species" : "type";
+			cd.error(name + " is a " + species + " name. " + type, IGamlIssue.IS_A_TYPE, NAME, name);
+			return false;
 		}
 
 	}

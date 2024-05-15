@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Objects;
-
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
@@ -912,17 +910,6 @@ public class ExecutionScope implements IScope {
 		if (root == null) return null;
 		return root.getSimulation();
 	}
-
-	// @Override
-	// public SimulationAgent getSimulation() {
-	//     SimulationAgent result = null;
-	//     if (agentContext != null) { result = agentContext.getSimulation(); }
-	//     if (result == null) {
-	//         final ITopLevelAgent root = getRoot();
-	//         result = root == null ? null : root.getSimulation();
-	//     }
-	//     return result;
-	// }
 
 	@Override
 	public IExperimentAgent getExperiment() {

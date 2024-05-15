@@ -1115,22 +1115,9 @@ public class Dates {
 		return date1.plus(-duration * 1000, ChronoUnit.MILLIS);
 	}
 
-	/**
-	 * Concatain date.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param date1
-	 *            the date 1
-	 * @param text
-	 *            the text
-	 * @return the string
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
 
 	/**
-	 * Concatain date.
+	 * Concatenate date.
 	 *
 	 * @param scope
 	 *            the scope
@@ -1153,7 +1140,7 @@ public class Dates {
 					value = "date('2000-01-01 00:00:00') + '_Test'",
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
-	public static String ConcatainDate(final IScope scope, final GamaDate date1, final String text)
+	public static String concatenateDate(final IScope scope, final GamaDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
 	}

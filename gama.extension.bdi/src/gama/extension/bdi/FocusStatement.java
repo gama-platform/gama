@@ -11,14 +11,17 @@
 
 package gama.extension.bdi;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
+import java.util.List;
+import java.util.function.BiConsumer;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -80,7 +83,7 @@ import gama.gaml.types.Types;
 						name = FocusStatement.AGENTCAUSE,
 						type = IType.AGENT,
 						optional = true,
-						doc = @doc ("the agentCause value of the created belief (can be nil")),
+						doc = @doc ("the value of the agent causing the created belief (can be nil")),
 				@facet (
 						name = FocusStatement.BELIEF,
 						type = PredicateType.id,
@@ -226,389 +229,211 @@ public class FocusStatement extends AbstractStatement {
 		isUncertain = getFacet(FocusStatement.ISUNCERTAIN);
 	}
 
-	@SuppressWarnings ("rawtypes")
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		if (when == null || Cast.asBool(scope, when.value(scope))) {
-			final IAgent[] stack = scope.getAgentsStack();
-			final IAgent mySelfAgent = stack[stack.length > 2 ? 1 : 0];
-			IScope scopeMySelf = null;
-			if (mySelfAgent != null) {
-				scopeMySelf = mySelfAgent.getScope().copy("in FocusStatement");
-				scopeMySelf.push(mySelfAgent);
-			}
-			Predicate tempPred;
-			if (variable != null) {
-				// Pour la liste, faire un truc générique dans un premier temps
-				// avec un nom des variables du genre test_i, sans chercher à
-				// récupérer le nom précis des variables.
-				if (variable.value(scope) instanceof IContainer) {
-					String namePred;
-					if (nameExpression != null) {
-						namePred = (String) nameExpression.value(scope);
-					} else {
-						namePred = variable.getName() + "_" + scope.getAgent().getSpeciesName();
-					}
-					String nameVarTemp;
-					final IMap<String, Object> tempValues = GamaMapFactory.create(Types.STRING, Types.NO_TYPE, 1);
-					final IList<?> variablesTemp =
-							((IContainer<?, ?>) variable.value(scope)).listValue(scope, null, true);
-					for (int temp = 0; temp < variablesTemp.length(scope); temp++) {
-						final Object temp2 = variablesTemp.get(temp);
-						nameVarTemp = "test" + temp;
-						tempValues.put(nameVarTemp + "_value", Cast.asInt(scope, temp2));
-					}
-					tempPred = new Predicate(namePred, tempValues.copy(scope));
-					if (truth != null) {
-						tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
-					}
-					if (agentCause != null) {
-						tempPred.setAgentCause((IAgent) agentCause.value(scope));
-					} else {
-						tempPred.setAgentCause(scope.getAgent());
-					}
-					MentalState tempBelief;
-					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Uncertainty", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-						}
-					} else {
-						if (strength != null) {
-							tempBelief =
-									new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Belief", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-						}
-					}
-				} else {
-					String namePred;
-					if (nameExpression != null) {
-						namePred = (String) nameExpression.value(scope);
-					} else {
-						namePred = variable.getName() + "_" + scope.getAgent().getSpeciesName();
-					}
-					final String nameVar = variable.getName();
-					final IMap<String, Object> tempValues = GamaMapFactory.create(Types.STRING, Types.NO_TYPE, 1);
-					if (expression != null) {
-						tempValues.put(nameVar + "_value", expression.value(scope));
-					} else {
-						tempValues.put(nameVar + "_value", variable.value(scope));
-					}
-					tempPred = new Predicate(namePred, tempValues);
-					if (truth != null) {
-						tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
-					}
-					if (agentCause != null) {
-						tempPred.setAgentCause((IAgent) agentCause.value(scope));
-					} else {
-						tempPred.setAgentCause(scope.getAgent());
-					}
-					MentalState tempBelief;
-					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Uncertainty", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scopeMySelf, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-						}
-					} else {
-						if (strength != null) {
-							tempBelief =
-									new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Belief", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-						}
-					}
-				}
-			} else {
-				if (belief != null) {
-					MentalState temporaryBelief = new MentalState("Belief");
-					temporaryBelief.setPredicate((Predicate) belief.value(scope));
-					if (SimpleBdiArchitecture.hasBelief(scope, temporaryBelief)) {
-						MentalState tempBelief = null;
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							tempBelief = new MentalState("Uncertainty");
-						} else {
-							tempBelief = new MentalState("Belief");
-						}
-						for (final MentalState temp : SimpleBdiArchitecture.getBase(scope, "belief_base")) {
-							if (temp.equals(temporaryBelief)) {
-								temporaryBelief = temp;
-							}
-						}
-						tempBelief.setMentalState(temporaryBelief);
-						if (strength != null) {
-							tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-							}
-						} else {
-							if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-							}
-						}
-					}
-				}
-				if (desire != null) {
-					MentalState temporaryBelief = new MentalState("Desire");
-					temporaryBelief.setPredicate((Predicate) desire.value(scope));
-					if (SimpleBdiArchitecture.hasDesire(scope, temporaryBelief)) {
-						MentalState tempBelief = null;
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							tempBelief = new MentalState("Uncertainty");
-						} else {
-							tempBelief = new MentalState("Belief");
-						}
-						for (final MentalState temp : SimpleBdiArchitecture.getBase(scope, "desire_base")) {
-							if (temp.equals(temporaryBelief)) {
-								temporaryBelief = temp;
-							}
-						}
-						tempBelief.setMentalState(temporaryBelief);
-						if (strength != null) {
-							tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-							}
-						} else {
-							if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-							}
-						}
-					}
-				}
-				if (uncertainty != null) {
-					MentalState temporaryBelief = new MentalState("Uncertainty");
-					temporaryBelief.setPredicate((Predicate) uncertainty.value(scope));
-					if (SimpleBdiArchitecture.hasUncertainty(scope, temporaryBelief)) {
-						MentalState tempBelief = null;
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							tempBelief = new MentalState("Uncertainty");
-						} else {
-							tempBelief = new MentalState("Belief");
-						}
-						for (final MentalState temp : SimpleBdiArchitecture.getBase(scope, "uncertainty_base")) {
-							if (temp.equals(temporaryBelief)) {
-								temporaryBelief = temp;
-							}
-						}
-						tempBelief.setMentalState(temporaryBelief);
-						if (strength != null) {
-							tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-							}
-						} else {
-							if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-							}
-						}
-					}
-				}
-				if (ideal != null) {
-					MentalState temporaryBelief = new MentalState("Ideal");
-					temporaryBelief.setPredicate((Predicate) ideal.value(scope));
-					if (SimpleBdiArchitecture.hasIdeal(scope, temporaryBelief)) {
-						MentalState tempBelief = null;
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							tempBelief = new MentalState("Uncertainty");
-						} else {
-							tempBelief = new MentalState("Belief");
-						}
-						for (final MentalState temp : SimpleBdiArchitecture.getBase(scope, "ideal_base")) {
-							if (temp.equals(temporaryBelief)) {
-								temporaryBelief = temp;
-							}
-						}
-						tempBelief.setMentalState(temporaryBelief);
-						if (strength != null) {
-							tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-							}
-						} else {
-							if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-							}
-						}
-					}
-				}
-				if (emotion != null) {
-					Emotion temporaryEmotion = (Emotion) emotion.value(scope);
-					if (SimpleBdiArchitecture.hasEmotion(scope, temporaryEmotion)) {
-						MentalState tempBelief = null;
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							tempBelief = new MentalState("Uncertainty");
-						} else {
-							tempBelief = new MentalState("Belief");
-						}
-						for (final Emotion temp : SimpleBdiArchitecture.getEmotionBase(scope, "emotion_base")) {
-							if (temp.equals(temporaryEmotion)) {
-								temporaryEmotion = temp;
-							}
-						}
-						tempBelief.setEmotion(temporaryEmotion);
-						if (strength != null) {
-							tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-							if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-							}
-						} else {
-							if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-								SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-							}
-						}
-					}
-				}
-				if (expression != null) {
-					String namePred;
-					if (nameExpression != null) {
-						namePred = (String) nameExpression.value(scope);
-					} else {
-						namePred = "expression" + "_" + scope.getAgent().getSpeciesName();
-					}
-					final String nameVar = "expression";
-					final IMap<String, Object> tempValues = GamaMapFactory.create(Types.NO_TYPE, Types.NO_TYPE, 1);
-					tempValues.put(nameVar + "_value", expression.value(scope));
-					tempPred = new Predicate(namePred, tempValues);
-					if (truth != null) {
-						tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
-					}
-					if (agentCause != null) {
-						tempPred.setAgentCause((IAgent) agentCause.value(scope));
-					} else {
-						tempPred.setAgentCause(scope.getAgent());
-					}
-					MentalState tempBelief;
-					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Uncertainty", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-						}
-					} else {
-						if (strength != null) {
-							tempBelief =
-									new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Belief", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-						}
-					}
-				}
-				if (variable == null && belief == null && desire == null && uncertainty == null && ideal == null
-						&& emotion == null && expression == null) {
-					String namePred = null;
-					if (nameExpression != null) {
-						namePred = (String) nameExpression.value(scope);
-					}
-					// final Map<String, Object> tempValues = new IMap<String, Object>(1, null, null);
-					tempPred = new Predicate(namePred/* , tempValues */);
-					if (truth != null) {
-						tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
-					}
-					if (agentCause != null) {
-						tempPred.setAgentCause((IAgent) agentCause.value(scope));
-					} else {
-						tempPred.setAgentCause(scope.getAgent());
-					}
-					MentalState tempBelief;
-					if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
-						if (strength != null) {
-							tempBelief = new MentalState("Uncertainty", tempPred,
-									Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Uncertainty", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasUncertainty(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addUncertainty(scopeMySelf, tempBelief);
-						}
-					} else {
-						if (strength != null) {
-							tempBelief =
-									new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
-						} else {
-							tempBelief = new MentalState("Belief", tempPred);
-						}
-						if (lifetime != null) {
-							tempBelief.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-						}
-						if (!SimpleBdiArchitecture.hasBelief(scopeMySelf, tempBelief)) {
-							SimpleBdiArchitecture.addBelief(scopeMySelf, tempBelief);
-						}
-					}
-				}
-			}
-			GAMA.releaseScope(scopeMySelf);
+		if (when != null && !Cast.asBool(scope, when.value(scope))) {
+			return null;
 		}
+		
+		final IAgent[] stack = scope.getAgentsStack();
+		final IAgent mySelfAgent = stack[stack.length > 2 ? 1 : 0];
+		IScope scopeMySelf = null;
+		if (mySelfAgent != null) {
+			scopeMySelf = mySelfAgent.getScope().copy("in FocusStatement");
+			scopeMySelf.push(mySelfAgent);
+		}
+
+		if (variable != null) {
+
+			if (variable.value(scope) instanceof IContainer varValue) {
+				buildAndAddBeliefFromVariableList(scope, scopeMySelf, varValue);				
+			} else {
+				buildAndAddBeliefFromSingleVariable(scope, scopeMySelf);
+			}
+		} else if (belief != null || desire != null || uncertainty != null || ideal != null || emotion != null || expression != null) {
+			//There's at least one mentalstate provided by the facets of the statement so we use it
+			buildAndAddBeliefFromFacets(scope, scopeMySelf);
+			
+		} else {
+			//if there is no mentalstate provided we create one by default
+			buildAndAddDefaultBelief(scope, scopeMySelf);
+		}
+		GAMA.releaseScope(scopeMySelf);
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void buildAndAddBeliefFromFacets(IScope scope, IScope scopeMySelf) {
+		if (belief != null) {
+			MentalState temporaryBelief = new MentalState("Belief");
+			temporaryBelief.setPredicate((Predicate) belief.value(scope));
+			if (BdiUtils.hasBelief(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			}
+		}
+		if (desire != null) {
+			MentalState temporaryBelief = new MentalState("Desire");
+			temporaryBelief.setPredicate((Predicate) desire.value(scope));
+			if (BdiUtils.hasDesire(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			}
+		}
+		if (uncertainty != null) {
+			MentalState temporaryBelief = new MentalState("Uncertainty");
+			temporaryBelief.setPredicate((Predicate) uncertainty.value(scope));
+			if (BdiUtils.hasUncertainty(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			}
+		}
+		if (ideal != null) {
+			MentalState temporaryBelief = new MentalState("Ideal");
+			temporaryBelief.setPredicate((Predicate) ideal.value(scope));
+			if (BdiUtils.hasIdeal(scope, temporaryBelief)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE), temporaryBelief, (MentalState belief, MentalState temp) -> belief.setMentalState(temp));
+			}
+		}
+		if (emotion != null) {
+			Emotion temporaryEmotion = (Emotion) emotion.value(scope);
+			if (BdiUtils.hasEmotion(scope, temporaryEmotion)) {
+				addMentalState(scope, scopeMySelf, scope, BdiUtils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE), temporaryEmotion, (MentalState belief, Emotion temp) -> belief.setEmotion(temp));
+			}
+		}
+		if (expression != null) {
+			//TODO: nothing is done with this tempPred, should it be added to some base ?
+			final String namePred = 	nameExpression != null 
+									? (String)nameExpression.value(scope) 
+									: "expression_" + scope.getAgent().getSpeciesName();
+			final IMap<String, Object> tempValues = GamaMapFactory.create(Types.NO_TYPE, Types.NO_TYPE, 1);
+			tempValues.put("expression_value", expression.value(scope));
+			Predicate tempPred = new Predicate(namePred, tempValues);
+			if (truth != null) {
+				tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
+			}
+			tempPred.setAgentCause(agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
+		}
+	}
+	//TODO: forced to do this to refactor but actually what should be refactored is the class Hierarchy, and it would simplify all the BDI code base
+	private <T> void addMentalState(IScope scope, IScope scopeMySelf, IScope scopeLifetime, List<T> base, T temporary, BiConsumer<MentalState, T> setPred) {
+		MentalState tempBelief = null;
+		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
+			tempBelief = new MentalState("Uncertainty");
+		} else {
+			tempBelief = new MentalState("Belief");
+		}
+		for (final T temp : base) {
+			if (temp.equals(temporary)) {
+				temporary = temp;
+			}
+		}
+		setPred.accept(tempBelief, temporary);
+		
+		if (strength != null) {
+			tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
+		}
+		if (lifetime != null) {
+			tempBelief.setLifeTime(Cast.asInt(scopeLifetime, lifetime.value(scope)));
+		}
+		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
+			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
+				BdiUtils.addUncertainty(scopeMySelf, tempBelief);
+			}
+		} else {
+			if (!BdiUtils.hasBelief(scopeMySelf, tempBelief)) {
+				BdiUtils.addBelief(scopeMySelf, tempBelief);
+			}
+		}		
+	}
+
+	private void buildAndAddDefaultBelief(final IScope scope, final IScope scopeMySelf) {
+		String namePred = null;
+		if (nameExpression != null) {
+			namePred = (String) nameExpression.value(scope);
+		}
+		Predicate tempPred = new Predicate(namePred);//TODO: does it make sense to build a predicate with a name that is null ?
+		if (truth != null) {
+			tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
+		}
+		tempPred.setAgentCause(agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
+		
+		addBelief(scopeMySelf, scopeMySelf, scope, tempPred);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void buildAndAddBeliefFromSingleVariable(final IScope scope, final IScope scopeMySelf) {
+		
+
+		String namePred = (nameExpression != null) 
+						? (String) nameExpression.value(scope)
+						: variable.getName() + "_" + scope.getAgent().getSpeciesName();
+		
+		final String nameVar = variable.getName();
+		final IMap<String, Object> tempValues = GamaMapFactory.create(Types.STRING, Types.NO_TYPE, 1);
+	
+		tempValues.put(nameVar + "_value", (expression != null) ? expression.value(scope) : variable.value(scope));
+	
+		Predicate tempPred = new Predicate(namePred, tempValues);
+		if (truth != null) {
+			tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
+		}
+
+		tempPred.setAgentCause( agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
+
+		addBelief(scope, scopeMySelf, scope, tempPred);
+		
+	}
+
+	//TODO: not sure why the scope of lifetime changes in some cases but I kept it as it was before, please check that it's not a bug
+	private void addBelief(final IScope scope,final IScope scopeMySelf, final IScope lifetimeScope, final Predicate tempPred) {
+		MentalState tempBelief;
+		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
+			if (strength != null) {
+				tempBelief = new MentalState("Uncertainty", tempPred, Cast.asFloat(scope, strength.value(scope)));
+			} else {
+				tempBelief = new MentalState("Uncertainty", tempPred);
+			}
+			if (lifetime != null) {
+				tempBelief.setLifeTime(Cast.asInt(scopeMySelf, lifetime.value(scope)));
+			}
+			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
+				BdiUtils.addUncertainty(scopeMySelf, tempBelief);
+			}
+		} else {
+			if (strength != null) {
+				tempBelief = new MentalState("Belief", tempPred, Cast.asFloat(scope, strength.value(scope)));
+			} else {
+				tempBelief = new MentalState("Belief", tempPred);
+			}
+			if (lifetime != null) {
+				tempBelief.setLifeTime(Cast.asInt(lifetimeScope, lifetime.value(scope)));
+			}
+			if (!BdiUtils.hasBelief(scopeMySelf, tempBelief)) {
+				BdiUtils.addBelief(scopeMySelf, tempBelief);
+			}
+		}
+		
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void buildAndAddBeliefFromVariableList(final IScope scope, final IScope scopeMySelf, final IContainer varValue) {
+		// Pour la liste, faire un truc générique dans un premier temps
+		// avec un nom des variables du genre test_i, sans chercher à
+		// récupérer le nom précis des variables.
+		
+		final IMap<String, Object> tempValues = GamaMapFactory.create(Types.STRING, Types.NO_TYPE, 1);
+		final IList<?> variablesTemp = varValue.listValue(scope, null, true);
+		for (int temp = 0; temp < variablesTemp.length(scope); temp++) {
+			tempValues.put("test" + temp + "_value", Cast.asInt(scope, variablesTemp.get(temp)));
+		}
+		Predicate tempPred = new Predicate((nameExpression != null) ? (String) nameExpression.value(scope) : variable.getName() + "_" + scope.getAgent().getSpeciesName(), 
+									tempValues.copy(scope));
+		if (truth != null) {
+			tempPred.setIs_True(Cast.asBool(scope, truth.value(scope)));
+		}
+
+		tempPred.setAgentCause(agentCause != null ? (IAgent) agentCause.value(scope) : scope.getAgent());
+
+		addBelief(scope, scopeMySelf,scope, tempPred);
+		
 	}
 
 }

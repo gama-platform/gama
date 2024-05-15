@@ -68,7 +68,7 @@ species people parent: base  {
 
 
 
-experiment schelling type: gui {	
+experiment schelling type: gui parent:base_exp{	
 	output {
 		display Segregation {
 			species people;

@@ -92,6 +92,7 @@ public class Unknown implements Serializable {
 	 * @return the unknown
 	 * @date 30 sept. 2023
 	 */
+	@SuppressWarnings("rawtypes")
 	public Unknown add(final Object item) {
 		if (items == null) { items = new ArrayList(); }
 		items.add(item);
@@ -296,6 +297,7 @@ public class Unknown implements Serializable {
 	 * @return the items
 	 * @date 30 sept. 2023
 	 */
+	@SuppressWarnings("rawtypes")
 	public List getItems() {
 		if (items == null) { items = new ArrayList(); }
 		return items;

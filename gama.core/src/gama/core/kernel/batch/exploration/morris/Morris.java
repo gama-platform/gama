@@ -119,8 +119,8 @@ public class Morris {
 	 * @param morris_coefficient
 	 *            the morris coefficient
 	 */
-	public static void WriteAndTellResult(final String name, final String path, final IScope scope,
-			final List<Map<String, Double>> morris_coefficient) {
+	public static void writeAndTellResult(final String name, final String path, final IScope scope,
+			final List<Map<String, Double>> morris_coefficient) throws GamaRuntimeException {
 		Map<String, Double> mu = morris_coefficient.get(0);
 		Map<String, Double> mu_star = morris_coefficient.get(1);
 		Map<String, Double> sigma = morris_coefficient.get(2);
@@ -142,7 +142,7 @@ public class Morris {
 	 *            id of the column of the first output
 	 * @return A List of Outputs' values
 	 */
-	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) {
+	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
@@ -427,7 +427,7 @@ public class Morris {
 	 *
 	 */
 
-	public static List<Map<String, Double>> MorrisAggregation(final int num_levels, final List<Double> Outputs,
+	public static List<Map<String, Double>> morrisAggregation(final int num_levels, final List<Double> Outputs,
 			final List<Map<String, Object>> sample) {
 		List<Map<String, Object>> MySample = sample;
 		List<String> ParametersNames = sample.get(0).keySet().stream().toList();
@@ -453,8 +453,8 @@ public class Morris {
 		int number_of_groups = num_vars;
 		int num_trajectories;
 		int trajectory_size;
-		num_trajectories = Math.round(MySample.size() / (number_of_groups + 1));
-		trajectory_size = Math.round(MySample.size() / num_trajectories);
+		num_trajectories = (int) Math.round(MySample.size() / (number_of_groups + 1.0));
+		trajectory_size = (int) Math.round(MySample.size() / (double)num_trajectories);
 		List<Map<String, Double>> elementary_effects =
 				compute_elementary_effects(MySampleTemp, Outputs, trajectory_size, delta, ParametersNames, MySample);
 		Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, ParametersNames);
@@ -498,7 +498,7 @@ public class Morris {
 	 *            the sample
 	 * @return the list
 	 */
-	public static List<Map<String, Double>> MorrisAggregation_CSV(final int num_levels, final List<Double> Outputs,
+	public static List<Map<String, Double>> morrisAggregation_CSV(final int num_levels, final List<Double> Outputs,
 			final List<Map<String, Object>> sample) {
 		List<Map<String, Object>> MySample = sample;
 		List<String> ParametersNames = sample.get(0).keySet().stream().toList();
@@ -524,8 +524,8 @@ public class Morris {
 		int number_of_groups = num_vars;
 		int num_trajectories;
 		int trajectory_size;
-		num_trajectories = Math.round(MySample.size() / (number_of_groups + 1));
-		trajectory_size = Math.round(MySample.size() / num_trajectories);
+		num_trajectories = (int) Math.round(MySample.size() / (number_of_groups + 1.0));
+		trajectory_size = (int) Math.round(MySample.size() / (double)num_trajectories);
 		List<Map<String, Double>> elementary_effects =
 				compute_elementary_effects(MySampleTemp, Outputs, trajectory_size, delta, ParametersNames, MySample);
 		Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, ParametersNames);

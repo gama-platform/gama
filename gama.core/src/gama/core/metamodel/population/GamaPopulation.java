@@ -288,8 +288,8 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 		/*
 		 * PATRICK TAILLANDIER: the problem of having the host here is that depending on the simulation the hashcode
-		 * will be different... and this hashcode is very important for the manipultion of GamaMap thus, having two
-		 * different hashcodes depending on the simulation makes ensure the repication of simulation So I remove the
+		 * will be different... and this hashcode is very important for the manipulation of GamaMap thus, having two
+		 * different hashcodes depending on the simulation makes ensure the replication of simulation So I remove the
 		 * host for the moment.
 		 */
 		/*
@@ -348,10 +348,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return GamaExecutorService.step(scope, this, getSpecies());
 	}
 
-	// @Override
-	// public StreamEx<T> stream(final IScope scope) {
-	// return super.stream(scope);
-	// }
 
 	/**
 	 * Take copy into account and always creates a list (necessary for #2254)
@@ -528,6 +524,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return listAgt.firstValue(scope);
 	}
 
+	@SuppressWarnings ("unchecked") 
 	@Override
 	public IList<T> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
@@ -536,22 +533,21 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		final IList<T> list = GamaListFactory.create(getGamlType().getContentType(), number);
 		final IAgentConstructor<T> constr = species.getDescription().getAgentConstructor();
 		for (int i = 0; i < number; i++) {
-			@SuppressWarnings ("unchecked") final T a = constr.createOneAgent(this, currentAgentIndex++);
-			// final int ind = currentAgentIndex++;
-			// a.setIndex(ind);
+			final T a = constr.createOneAgent(this, currentAgentIndex++);
 			// Try to grab the location earlier
 			if (initialValues != null && !initialValues.isEmpty()) {
 				final Map<String, Object> init = initialValues.get(i);
-				if (init.containsKey(SHAPE)) {
-					final Object val = init.get(SHAPE);
-					if (val instanceof GamaPoint) {
-						a.setGeometry(GamaShapeFactory.createFrom((GamaPoint) val));
+				final Object val = init.get(SHAPE);
+				final Object loc = init.get(LOCATION);
+				if (val != null) {
+					if (val instanceof GamaPoint p) {
+						a.setGeometry(GamaShapeFactory.createFrom(p));
 					} else {
 						a.setGeometry((IShape) val);
 					}
 					init.remove(SHAPE);
-				} else if (init.containsKey(LOCATION)) {
-					a.setLocation(scope, (GamaPoint) init.get(LOCATION));
+				} else if (loc != null) {
+					a.setLocation(scope, (GamaPoint) loc);
 					init.remove(LOCATION);
 				}
 			}

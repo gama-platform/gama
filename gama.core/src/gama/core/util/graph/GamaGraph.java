@@ -61,11 +61,10 @@ import gama.core.util.matrix.IMatrix;
 import gama.core.util.path.IPath;
 import gama.core.util.path.PathFactory;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Strings;
 import gama.gaml.operators.Graphs.EdgeToAdd;
 import gama.gaml.operators.Graphs.GraphObjectToAdd;
-import gama.gaml.operators.Spatial.Creation;
+import gama.gaml.operators.Strings;
+import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaListType;
 import gama.gaml.types.GamaPairType;
@@ -120,7 +119,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	protected VertexRelationship vertexRelation;
 
 	/** The default node weight. */
-	protected static double DEFAULT_NODE_WEIGHT = 0.0;
+	protected static final double DEFAULT_NODE_WEIGHT = 0.0;
 
 	/** The edge species. */
 	protected ISpecies edgeSpecies;
@@ -250,7 +249,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 				IList<IShape> points = GamaListFactory.create();
 				points.add(sg.getLocation());
 				points.add(tg.getLocation());
-				IShape eg = Creation.line(scope, points);
+				IShape eg = SpatialCreation.line(scope, points);
 				setEdgeWeight(eg, graph.getEdgeWeight(e));
 				addEdge(sg, tg, eg);
 			}
@@ -340,7 +339,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 					IAgent n1 = verticesAg.get(s.toString());
 					IAgent n2 = verticesAg.get(t.toString());
 					addEdge(n1, n2, ag);
-					ag.setGeometry(Spatial.Creation.link(scope, n1, n2));
+					ag.setGeometry(SpatialCreation.link(scope, n1, n2));
 				} else {
 					addEdge(s, t, ag);
 				}
@@ -389,7 +388,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 				Object n1 = verticesAg.get(s.toString());
 				Object n2 = verticesAg.get(t.toString());
 				addEdge(n1, n2, ag);
-				if (n1 instanceof IShape) { ag.setGeometry(Spatial.Creation.link(scope, (IShape) n1, (IShape) n2)); }
+				if (n1 instanceof IShape) { ag.setGeometry(SpatialCreation.link(scope, (IShape) n1, (IShape) n2)); }
 
 				setEdgeWeight(ag, graph.getEdgeWeight(e));
 			}
@@ -480,14 +479,14 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 		// display the list of verticies
 		sb.append("graph { \nvertices (").append(vertexSet().size()).append("): ").append("[");
-		for (final Object v : vertexSet()) { sb.append(v.toString()).append(","); }
+		for (final Object v : vertexSet()) { sb.append(v).append(","); }
 		sb.append("]").append(Strings.LN);
 		sb.append("edges (").append(edgeSet().size()).append("): [").append(Strings.LN);
 		// display each edge
 		for (final Entry<E, _Edge<V, E>> entry : edgeMap.entrySet()) {
 			final E e = entry.getKey();
 			final _Edge<V, E> v = entry.getValue();
-			sb.append(e.toString()).append(Strings.TAB).append("(").append(v.toString()).append("),")
+			sb.append(e).append(Strings.TAB).append("(").append(v).append("),")
 					.append(Strings.LN);
 		}
 		sb.append("]\n}");
@@ -730,7 +729,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		final List initVal = new ArrayList<>();
 		map.put(IKeyword.SOURCE, v1);
 		map.put(IKeyword.TARGET, v2);
-		map.put(IKeyword.SHAPE, Creation.link(graphScope, (IShape) v1, (IShape) v2));
+		map.put(IKeyword.SHAPE, SpatialCreation.link(graphScope, (IShape) v1, (IShape) v2));
 		initVal.add(map);
 		return generateEdgeAgent(initVal);
 	}
@@ -777,7 +776,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( edge == null ) { return false; }
 		edgeMap.put((E) e, edge);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, e, null, GraphEventType.EDGE_ADDED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 
 	}
@@ -814,10 +813,19 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
 	public boolean addVertex(final Object v) {
-		if (v instanceof gama.gaml.operators.Graphs.GraphObjectToAdd) {
-			if (v instanceof IAgent && !this.getVertices().isEmpty() && ((IAgent) v).getSpecies() != vertexSpecies) {
+		
+		// we set the vertex species with the species of the added agent
+		if (v instanceof IAgent agentVertex) { 
+			// if it's different than the previous species we switch it to null
+			if (!getVertices().isEmpty() && agentVertex.getSpecies() != vertexSpecies) {
 				vertexSpecies = null;
 			}
+			else {
+				vertexSpecies = agentVertex.getSpecies();
+			}
+		}
+		
+		if (v instanceof gama.gaml.operators.Graphs.GraphObjectToAdd) {
 			addValue(graphScope, (gama.gaml.operators.Graphs.GraphObjectToAdd) v);
 			return ((gama.gaml.operators.Graphs.GraphObjectToAdd) v).getObject() != null;
 		}
@@ -831,7 +839,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( vertex == null ) { return false; }
 		vertexMap.put((V) v, vertex);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, null, v, GraphEventType.VERTEX_ADDED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, null, v, GraphEventType.VERTEX_ADDED));
 		return true;
 
 	}
@@ -1000,7 +1008,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		edge.removeFromVerticesAs(e);
 		edgeMap.remove(e);
 		if (generatedEdges.contains(e)) { ((IAgent) e).dispose(); }
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, e, null, GraphEventType.EDGE_REMOVED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_REMOVED));
 		return true;
 	}
 
@@ -1023,7 +1031,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		for (final Object e : edges) { removeEdge(e); }
 
 		vertexMap.remove(v);
-		dispatchEvent(graphScope, new GraphEvent(graphScope, this, this, null, v, GraphEventType.VERTEX_REMOVED));
+		dispatchEvent(graphScope, new GraphEvent(graphScope, this, null, v, GraphEventType.VERTEX_REMOVED));
 		return true;
 	}
 

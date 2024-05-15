@@ -61,8 +61,8 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 				do send to:"Mel" contents:"Travis is the best tester of the World and of the Universe";
 				 test<-true;
 			}
-		float mtime <- machine_time;
-		loop while: ((mtime+1000) > machine_time){ }
+		float mtime <- gama.machine_time;
+		loop while: ((mtime+1000) > gama.machine_time){ }
 		ask Person where(each.name = "Mel")
 		{
 			do fetch_message_from_network;
@@ -78,8 +78,8 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 		ask Person where(each.name = "Travis") {
 				do send to:"Melanie" contents:"Travis is the best tester of the World and of the Universe";
 			}
-		float mtime <- machine_time;
-		loop while: ((mtime+1000) > machine_time){ }
+		float mtime <- gama.machine_time;
+		loop while: ((mtime+1000) > gama.machine_time){ }
 		ask Person where(each.name = "Melanie")
 		{
 			do fetch_message_from_network;
@@ -102,8 +102,8 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 		ask Person where(each.name = "Travis") {
 				do send to:"Geri" contents:"Travis is the best tester of the World and of the Universe";
 			}
-		float mtime <- machine_time;
-		loop while: ((mtime+2000) > machine_time){ }
+		float mtime <- gama.machine_time;
+		loop while: ((mtime+2000) > gama.machine_time){ }
 		ask Person where(each.name = "Geri")
 		{
 			do fetch_message_from_network;
@@ -130,8 +130,8 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 		ask Person where(each.name = "Travis") {
 				do send to:"ALL" contents:"Travis is the best tester of the World and of the Universe";
 			}
-		float mtime <- machine_time;
-		loop while: ((mtime+2000) > machine_time){ }
+		float mtime <- gama.machine_time;
+		loop while: ((mtime+2000) > gama.machine_time){ }
 		ask Person where(each.name = "Victoria")
 		{
 			do fetch_message_from_network;
@@ -184,8 +184,8 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 		ask Person where(each.name = "Travis") {
 				do send to:grp contents:"Travis is the best tester of the World and of the Universe";
 		}
-		float mtime <- machine_time;
-		loop while: ((mtime+2000) > machine_time){ }
+		float mtime <- gama.machine_time;
+		loop while: ((mtime+2000) > gama.machine_time){ }
 
 		//nobody receive the message
 		ask Person where(each.myGroup = grp)

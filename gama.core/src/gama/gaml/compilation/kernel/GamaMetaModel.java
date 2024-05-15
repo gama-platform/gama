@@ -24,8 +24,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import gama.core.common.interfaces.IExperimentAgentCreator;
-import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.GamlModelSpecies;

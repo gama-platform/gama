@@ -71,19 +71,19 @@ public class GamaPreferencesView {
 	}
 
 	/** The dialog location. */
-	static Pref<GamaPoint> DIALOG_LOCATION = GamaPreferences.create("dialog_location",
+	static final Pref<GamaPoint> DIALOG_LOCATION = GamaPreferences.create("dialog_location",
 			"Location of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog size. */
-	static Pref<GamaPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
+	static final Pref<GamaPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
 			"Size of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog tab. */
-	static Pref<Integer> DIALOG_TAB = GamaPreferences
+	static final Pref<Integer> DIALOG_TAB = GamaPreferences
 			.create("dialog_tab", "Tab selected in the preferences dialog", -1, IType.INT, false).hidden();
 
 	/** The prefs images. */
-	public static Map<String, Image> prefs_images = new LinkedHashMap();
+	public static final Map<String, Image> prefs_images = new LinkedHashMap();
 
 	/** The nb divisions. */
 	public static final int NB_DIVISIONS = 2;

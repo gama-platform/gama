@@ -10,7 +10,7 @@ global parent: physical_world {
 	
 	int size <- 250;
 	
-	float seed <- machine_time;
+	float seed <- gama.machine_time;
 	string library <- "box2D";
 	// The definition of the step plays a crucial role in the dynamics. If the physics engine can kick in at a high frequency, then the simulation is more accurate (but also slower). 
 	// The outcome of a model can be completely changed by the step. 

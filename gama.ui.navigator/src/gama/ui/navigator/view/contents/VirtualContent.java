@@ -55,7 +55,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	}
 
 	/** The default label provider. */
-	public static ILabelProvider DEFAULT_LABEL_PROVIDER = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
+	public static final ILabelProvider DEFAULT_LABEL_PROVIDER = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
 
 	/** The Constant DESCRIPTORS. */
 	public static final Map<Integer, ImageDescriptor> DESCRIPTORS = new HashMap<>() {
@@ -92,7 +92,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	public static final int WEBLINK_BROKEN = -6;
 
 	/** The empty. */
-	public static Object[] EMPTY = {};
+	public static final Object[] EMPTY = {};
 
 	/** The root. */
 	private final P root;
@@ -197,9 +197,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 */
 	public abstract void getSuffix(StringBuilder sb);
 
-	// public Font getFont() {
-	// return GamaFonts.getNavigFolderFont(); // by default
-	// }
 
 	/**
 	 * Find max problem severity.
@@ -221,8 +218,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 * @return the top level folder
 	 */
 	public TopLevelFolder getTopLevelFolder() {
-		final Object p = getParent();
-		if (p instanceof VirtualContent) return ((VirtualContent<?>) p).getTopLevelFolder();
+		final P p = getParent();
+		if (p != null) return p.getTopLevelFolder();
 		return null;
 	}
 
@@ -232,8 +229,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 * @return the project
 	 */
 	public WrappedProject getProject() {
-		final Object p = getParent();
-		if (p instanceof VirtualContent) return ((VirtualContent<?>) p).getProject();
+		final P p = getParent();
+		if (p != null) return p.getProject();
 		return null;
 	}
 

@@ -740,7 +740,6 @@ public class Distance {
     // Prepare output.
     simplex.getWitnessPoints(output.pointA, output.pointB);
     output.distance = MathUtils.distance(output.pointA, output.pointB);
-    output.iterations = iter;
 
     // Cache the simplex.
     simplex.writeCache(cache);

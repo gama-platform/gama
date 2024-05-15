@@ -39,6 +39,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
@@ -310,7 +311,10 @@ public class ModelFactory extends SymbolFactory {
 		ModelDescription parent = ROOT;
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
-			if (BUILT_IN_MODELS.containsKey(parentModel)) { parent = BUILT_IN_MODELS.get(parentModel); }
+			ModelDescription parentBuiltInModels = BUILT_IN_MODELS.get(parentModel);
+			if (parentBuiltInModels != null){ 
+				parent = parentBuiltInModels;
+			}
 		}
 		final ModelDescription model =
 				new ModelDescription(modelName, null, projectPath, modelPath, source.getElement(), null, parent, null,
@@ -407,14 +411,17 @@ public class ModelFactory extends SymbolFactory {
 	private boolean applyPragmas(final ValidationContext collector, final ISyntacticElement source) {
 		final Map<String, List<String>> pragmas = source.getPragmas();
 		collector.resetInfoAndWarning();
-		if (pragmas != null) {
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
-			if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
-			if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
-					&& pragmas.containsKey(IKeyword.PRAGMA_REQUIRES)
-					&& !collector.verifyPlugins(pragmas.get(IKeyword.PRAGMA_REQUIRES)))
-				return false;
+		if (pragmas == null) {
+			return true;
+		}
+		List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
+		if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
+		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
+				&& requiresList != null
+				&& !collector.verifyPlugins(requiresList)) {
+			return false;			
 		}
 		return true;
 	}
@@ -521,18 +528,19 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> experimentNodes) {
 		// First we verify that this experiment has not been declared previously
 		final String experimentName = element.getName();
-		if (experimentNodes.containsKey(experimentName)) {
-			EObject object = experimentNodes.get(experimentName).getElement();
+		ISyntacticElement elm = experimentNodes.get(experimentName); 
+		if (elm != null) {
+			EObject object = elm.getElement();
 			if (object != null && object.eResource() != null) {
 				URI other = object.eResource().getURI();
 				URI myself = collector.getURI();
 				if (other.equals(myself)) {
 					collector.add(new GamlCompilationError("Experiment " + element.getName() + " is declared twice",
-							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, false));
+							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Error));
 				} else {
 					collector.add(new GamlCompilationError(
 							"Experiment " + experimentName + " supersedes the one declared in " + other.lastSegment(),
-							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, true));
+							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Info));
 				}
 			}
 		}
@@ -579,11 +587,12 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> speciesNodes) {
 		if (!(sse instanceof SyntacticSpeciesElement element)) return;
 		final String name = element.getName();
-		if (speciesNodes.containsKey(name)) {
+		ISyntacticElement node = speciesNodes.get(name);
+		if (node != null) {
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
-					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), false, false));
+					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Error));
 			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
-					IGamlIssue.DUPLICATE_DEFINITION, speciesNodes.get(name).getElement(), false, false));
+					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), GamlCompilationErrorType.Error));
 		}
 		speciesNodes.put(name, element);
 	}

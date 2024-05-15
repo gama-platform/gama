@@ -27,6 +27,7 @@ import gama.annotations.precompiler.GamlProperties;
 import gama.core.kernel.model.IModel;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamlModelBuilder;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.interfaces.IGamlIssue;
@@ -163,7 +164,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 					final String err_ =
 							r.getErrors() != null && r.getErrors().size() > 0 ? r.getErrors().get(0).toString() : "";
 					errors.add(new GamlCompilationError("Syntax errors: " + err_, IGamlIssue.GENERAL,
-							r.getContents().get(0), false, false));
+							r.getContents().get(0), GamlCompilationErrorType.Error));
 				}
 				return null;
 			}

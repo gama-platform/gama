@@ -52,7 +52,6 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
@@ -88,6 +87,10 @@ import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaMatrix;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.IPath;
+import gama.gaml.operators.spatial.SpatialProperties;
+import gama.gaml.operators.spatial.SpatialPunctal;
+import gama.gaml.operators.spatial.SpatialRelations;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGraphType;
 import gama.gaml.types.GamaPathType;
@@ -124,9 +127,9 @@ public class Graphs {
 
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			return Spatial.Properties.intersects(
-					Spatial.Transformations.enlarged_by(scope, p1.getGeometry(), tolerance),
-					Spatial.Transformations.enlarged_by(scope, p2.getGeometry(), tolerance));
+			return SpatialProperties.intersects(
+					SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
+					SpatialTransformations.enlarged_by(scope, p2.getGeometry(), tolerance));
 		}
 
 		@Override
@@ -248,7 +251,7 @@ public class Graphs {
 		@Override
 		public boolean related(final IScope scope, final IShape g1, final IShape g2) {
 			if (g1 == null || g2 == null) return false;
-			return Spatial.Relations.distance_to(scope, g1.getGeometry(), g2.getGeometry()) <= distance;
+			return SpatialRelations.distance_to(scope, g1.getGeometry(), g2.getGeometry()) <= distance;
 		}
 
 		/**
@@ -764,7 +767,7 @@ public class Graphs {
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),"
 			+ "edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r\n"
 			+ "(g edge_between ({10,5}::{20,3})) = g.edges[0]")
-	public static Object EdgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key) && graph.containsVertex(verticePair.value))
 			return graph.getEdge(verticePair.key, verticePair.value);
@@ -1023,7 +1026,7 @@ public class Graphs {
 			see = { "connected_components_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " length(main_connected_component(g)) = 5")
-	public static IGraph ReduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
+	public static IGraph reduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IList<IList> cc = connectedComponentOf(scope, graph);
@@ -1896,7 +1899,7 @@ public class Graphs {
 		Map<Object, IShape> map = GamaMapFactory.create(Types.NO_TYPE, Types.GEOMETRY);
 		IShape world = scope.getSimulation().getGeometry();
 		graph.vertexSet().forEach(v -> {
-			IShape newV = v instanceof IShape ? (IShape) v : Spatial.Punctal.any_location_in(scope, world);
+			IShape newV = v instanceof IShape ? (IShape) v : SpatialPunctal.any_location_in(scope, world);
 			newV.setAttribute(IKeyword.VALUE, v);
 			map.put(v, newV);
 			result.addVertex(newV);
@@ -2137,8 +2140,8 @@ public class Graphs {
 	@no_test
 	public static IGraph setKShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.kShortestPathAlgorithm.values()).stream()
-				.map(PathComputer.kShortestPathAlgorithm::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(PathComputer.KShortestPathAlgorithmEnum.values()).stream()
+				.map(PathComputer.KShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The K shortest paths algorithm "
 				+ shortestpathAlgo + " does not exist. Possible K shortest paths algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setKShortestPathAlgorithm(shortestpathAlgo);
@@ -2172,44 +2175,14 @@ public class Graphs {
 	@no_test
 	public static IGraph setShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.shortestPathAlgorithm.values()).stream()
-				.map(PathComputer.shortestPathAlgorithm::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(PathComputer.ShortestPathAlgorithmEnum.values()).stream()
+				.map(PathComputer.ShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The shortest path algorithm "
 				+ shortestpathAlgo + " does not exist. Possible shortest path algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setShortestPathAlgorithm(shortestpathAlgo);
 		return graph;
 	}
 
-	/**
-	 * Sets the optimize type.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param graph
-	 *            the graph
-	 * @param optimizerType
-	 *            the optimizer type
-	 * @return the i graph
-	 */
-	@operator (
-			value = "with_optimizer_type",
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
-			category = { IOperatorCategory.GRAPH },
-			concept = { IConcept.GRAPH, IConcept.SHORTEST_PATH, IConcept.GRAPH_WEIGHT, IConcept.OPTIMIZATION,
-					IConcept.ALGORITHM })
-	@doc (
-			value = "changes the shortest path computation method of the given graph",
-			deprecated = "with_shortestpath_algorithm instead",
-			comment = "the right-hand operand can be Djikstra, BidirectionalDijkstra, BellmannFord, FloydWarshall, Astar, NBAStar, NBAStarApprox, DeltaStepping, CHBidirectionalDijkstra, TransitNodeRouting to use the associated algorithm. ",
-			examples = @example (
-					value = "road_network <- road_network with_optimizer_type TransitNodeRouting;",
-					isExecutable = false),
-			see = "set_verbose")
-	@no_test (Reason.DEPRECATED)
-	public static IGraph setOptimizeType(final IScope scope, final IGraph graph, final String optimizerType) {
-		return setShortestPathAlgorithm(scope, graph, optimizerType);
-	}
 
 	/**
 	 * Adds the node.
@@ -2417,7 +2390,7 @@ public class Graphs {
 	public static IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaGraph graph,
 			final GamaPair sourTarg, final int k) throws GamaRuntimeException {
 
-		return Cast.asTopology(scope, graph).KpathsBetween(scope, (IShape) sourTarg.key, (IShape) sourTarg.value, k);
+		return Cast.asTopology(scope, graph).kPathsBetween(scope, (IShape) sourTarg.key, (IShape) sourTarg.value, k);
 	}
 
 	/**
@@ -2862,7 +2835,7 @@ public class Graphs {
 		if (graph == null || graph.isEmpty(scope)) return results;
 
 		IGraph g = graph.getConnected() ? asDirectedGraph(graph)
-				: asDirectedGraph(ReduceToMainconnectedComponentOf(scope, graph));
+				: asDirectedGraph(reduceToMainconnectedComponentOf(scope, graph));
 		if (g.hasCycle()) throw GamaRuntimeException
 				.error("Strahler number can only be computed for Tree (connected graph with no cycle)!", scope);
 
@@ -4194,7 +4167,7 @@ public class Graphs {
 			value = "The Girvan�Newman algorithm is a hierarchical method used to detect communities. It detects communities by progressively removing edges from the original network."
 					+ "It returns a list of list of vertices and takes as operand the graph and the number of clusters")
 	@no_test
-	public static IList GirvanNewmanClustering(final IScope scope, final IGraph graph, final int numCLusters) {
+	public static IList girvanNewmanClustering(final IScope scope, final IGraph graph, final int numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));
@@ -4268,7 +4241,7 @@ public class Graphs {
 					+ " * community structures in large-scale networks. Physical review E, 76(3), 036106."
 					+ "It returns a list of list of vertices and takes as operand the graph and maximal number of iteration")
 	@no_test
-	public static IList LabelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
+	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));

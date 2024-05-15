@@ -12,10 +12,8 @@ package gama.extension.maths.ode.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -25,6 +23,9 @@ import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -77,37 +78,17 @@ import gama.gaml.types.Types;
 								value = "integration method (can be one of \"Euler\", \"ThreeEighthes\", \"Midpoint\", \"Gill\", \"Luther\", \"rk4\" or \"dp853\", \"AdamsBashforth\", \"AdamsMoulton\", "
 										+ "\"DormandPrince54\", \"GraggBulirschStoer\",  \"HighamHall54\") (default value: \"rk4\") or the corresponding constant")),
 				@facet (
-						name = "integrated_times",
-						type = IType.LIST,
-						optional = true,
-						doc = @doc (
-								deprecated = "do not work anymore, use t[] instead; it is automatically updated.",
-								value = "time interval inside integration process")),
-				@facet (
-						name = "integrated_values",
-						type = IType.LIST,
-						optional = true,
-						doc = @doc (
-								deprecated = "do not work anymore, use S[], I[] or any variable of the equations instead; it is automatically updated.",
-								value = "list of variables's value inside integration process")),
-				@facet (
-						name = "t0",
+						name = IKeyword.TIME_INITIAL,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
 								value = "the first bound of the integration interval (defaut value: cycle*step, the time at the begining of the current cycle.)")),
 				@facet (
-						name = "tf",
+						name = IKeyword.TIME_FINAL,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
 								value = "the second bound of the integration interval. Can be smaller than t0 for a backward integration (defaut value: cycle*step, the time at the begining of the current cycle.)")),
-				@facet (
-						name = IKeyword.STEP,
-						type = IType.FLOAT,
-						optional = true,
-						doc = @doc (
-								value = "(deprecated) integration step, use with fixed step integrator methods (default value: 0.005*step)")),
 				@facet (
 						name = "step_size",
 						type = IType.FLOAT,
@@ -158,9 +139,9 @@ import gama.gaml.types.Types;
 		usages = { @usage (
 				value = "",
 				examples = { @example (
-						value = "solve SIR method: #rk4 step:0.001;",
+						value = "solve SIR method: #rk4 step_size:0.001;",
 						isExecutable = false) }) })
-@SuppressWarnings ({ "rawtypes", "unchecked" })
+@SuppressWarnings ({ "unchecked" })
 public class SolveStatement extends AbstractStatement implements MathConstants {
 
 	/**
@@ -170,16 +151,7 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 
 		@Override
 		public void validate(final IDescription desc) {
-			final IExpression clen = desc.getFacetExpr(IKeyword.CYCLE_LENGTH);
-			if (clen != null) {
-				desc.warning("The cycle_length is deprecated, please use the unit multiplying in equation",
-						IGamlIssue.GENERAL);
-			}
-			final IExpression stepE = desc.getFacetExpr("step");
-			if (stepE != null) {
-				desc.warning("This facet is deprecated and be removed soon, please use step_size instead",
-						IGamlIssue.GENERAL);
-			}
+
 			final IExpression method = desc.getFacetExpr(IKeyword.METHOD);
 			if (method != null && method.isConst() && method.isContextIndependant()) {
 				final String methodName = method.literalValue();
@@ -209,11 +181,10 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 	}
 
 	/** The Constant Fixed_Step_Integrators. */
-	final static List<String> Fixed_Step_Integrators = Arrays.asList(Euler, ThreeEighthes, Midpoint, Gill, Luther, rk4);
+	final static Set<String> Fixed_Step_Integrators = Set.of(Euler, ThreeEighthes, Midpoint, Gill, Luther, rk4);
 
 	/** The Constant Adaptive_Stepsize_Integrators. */
-	final static List<String> Adaptive_Stepsize_Integrators =
-			Arrays.asList(dp853, AdamsBashforth, AdamsMoulton, DormandPrince54, GraggBulirschStoer, HighamHall54);
+	final static Set<String> Adaptive_Stepsize_Integrators = Set.of(dp853, AdamsBashforth, AdamsMoulton, DormandPrince54, GraggBulirschStoer, HighamHall54);
 
 	/** The equation name. */
 	final String equationName;
@@ -241,15 +212,14 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 		// IExpression sn = getFacet(IKeyword.METHOD);
 		// solverName = sn == null ? "rk4" : sn.literalValue();
 		solverExp = getFacet(IKeyword.METHOD);
-		stepExp = getFacet("step_size") == null
-				? getFacet("step") == null ? new ConstantExpression(0.005d) : getFacet("step") : getFacet("step_size");
+		stepExp = getFacet("step_size") == null ? new ConstantExpression(0.005d) : getFacet("step_size");
 		nStepsExp = getFacet("nSteps");
 		minStepExp = getFacet("min_step");
 		maxStepExp = getFacet("max_step");
 		absTolerExp = getFacet("scalAbsoluteTolerance");
 		relTolerExp = getFacet("scalRelativeTolerance");
-		timeInitExp = getFacet("t0");
-		timeFinalExp = getFacet("tf");
+		timeInitExp = getFacet(IKeyword.TIME_INITIAL);
+		timeFinalExp = getFacet(IKeyword.TIME_FINAL);
 	}
 
 	/**
@@ -285,7 +255,6 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 		}
 		return systemOfEquations != null;
 	}
-
 	/**
 	 * Internal integrated value.
 	 *

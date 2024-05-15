@@ -12,9 +12,9 @@ package gama.gaml.statements.save;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -231,7 +231,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 			final String geomType, final Map<String, IExpression> attributes, final IProjection gis,
 			final String epsgCode) throws GamaRuntimeException, IOException, SchemaException {
 		// by default
-		try (OutputStream bf = new BufferedOutputStream(new FileOutputStream(f))) {
+		try (OutputStream bf = new BufferedOutputStream(Files.newOutputStream(f.toPath()))) {
 			this.internalSave(scope, bf, agents, specs, geomType, attributes, gis, epsgCode);
 		}
 	}

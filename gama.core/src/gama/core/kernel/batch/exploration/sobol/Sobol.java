@@ -111,7 +111,7 @@ public class Sobol {
 	 * @param output
 	 *            : name of the output columns in the .csv file
 	 */
-	public Sobol(final File f, final int nb_parameters, final IScope scope) {
+	public Sobol(final File f, final int nb_parameters, final IScope scope) throws GamaRuntimeException {
 		this.scope = scope;
 		this.parameters = new LinkedHashMap<>();
 		this.output_names = new ArrayList<>();
@@ -184,7 +184,7 @@ public class Sobol {
 	 * @param file
 	 *            : .csv file
 	 */
-	public void saveSaltelliSample(final File file) {
+	public void saveSaltelliSample(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(buildSaltelliReport());
 		} catch (IOException e) {
@@ -229,11 +229,19 @@ public class Sobol {
 	public Map<String, Map<String, List<Double>>> evaluate() {
 		if (outputs.isEmpty()) { System.err.println("no output porivded call setOutputs before calling evaluate"); }
 
-		/* INIT MOEA FRAMEWORK SOBOL SEQUENCE */
-		A = new double[sample];
-		B = new double[sample];
-		C_A = new double[sample][this.parameters.size()];
-		C_B = new double[sample][this.parameters.size()];
+
+		// Output from the original parameters.
+		double[]A = new double[sample];
+
+		// Output from the resampled parameters.
+		double[] B = new double[sample];
+
+		// Output from the original samples where the j-th parameter is replaced by the corresponding resampled parameter.
+		double[][] C_A = new double[sample][this.parameters.size()];
+		
+		// Commented out as not used
+		// Output from the resampled samples where the j-th parameter is replaced by the corresponding original parameter.
+		//double[][] C_B = new double[sample][this.parameters.size()];
 
 		for (String output : outputs.keySet()) {
 			Iterator<Object> it = outputs.get(output).iterator();
@@ -248,7 +256,8 @@ public class Sobol {
 				}
 
 				for (int j = 0; j < this.parameters.size(); j++) {
-					C_B[i][j] = Double.parseDouble(it.next().toString());
+					it.next();
+//					C_B[i][j] = Double.parseDouble(it.next().toString());
 				}
 
 				B[i] = Double.parseDouble(it.next().toString());
@@ -289,7 +298,7 @@ public class Sobol {
 	 * @param file
 	 *            : .csv file
 	 */
-	public void saveSimulation(final File file) {
+	public void saveSimulation(final File file) throws GamaRuntimeException{
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildSimulationCsv());
 		} catch (Exception e) {
@@ -303,7 +312,7 @@ public class Sobol {
 	 * @param file
 	 *            : .csv file
 	 */
-	public void saveResult(final File file) {
+	public void saveResult(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildReportString(FileNameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
@@ -436,7 +445,7 @@ public class Sobol {
 	 * @return a saltelli matrix of size N x D * N the number of sample points * D the dimension of each sample point
 	 *         (number of parameters)
 	 */
-	private void parseSaltelli(final File file) {
+	private void parseSaltelli(final File file) throws GamaRuntimeException {
 		saltelli = new double[this._sample][parameters.size()];
 
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -505,26 +514,6 @@ public class Sobol {
 	// ------------------------------------------------------------------- //
 	// COPY PAST FROM MOEAFRAMEWORK //
 	// ------------------------------------------------------------------- //
-
-	/**
-	 * Output from the original parameters.
-	 */
-	private double[] A;
-
-	/**
-	 * Output from the resampled parameters.
-	 */
-	private double[] B;
-
-	/**
-	 * Output from the original samples where the j-th parameter is replaced by the corresponding resampled parameter.
-	 */
-	private double[][] C_A;
-
-	/**
-	 * Output from the resampled samples where the j-th parameter is replaced by the corresponding original parameter.
-	 */
-	private double[][] C_B;
 
 	/**
 	 * Returns the first-order confidence interval of the i-th parameter. The arguments to this method mirror the

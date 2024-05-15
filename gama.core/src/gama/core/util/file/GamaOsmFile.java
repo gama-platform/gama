@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,10 +47,10 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
@@ -547,22 +548,6 @@ public class GamaOsmFile extends GamaGisFile {
 
 						return true;
 					});
-					// for (final Object att : pt.getAttributes().keySet()) {
-					// if (featureTypes.contains(att)) {
-					// final String idType = att + " (point)";
-					// List objs = layers.get(idType);
-					// if (objs == null) {
-					// objs = GamaListFactory.create(Types.GEOMETRY);
-					// layers.put(idType, objs);
-					// }
-					// objs.add(pt);
-					// for (final String v : atts.keySet()) {
-					// final String id = idType + ";" + v;
-					// attributes.put(id, atts.get(v));
-					// }
-					// break;
-					// }
-					// }
 				}
 			}
 		}
@@ -618,7 +603,6 @@ public class GamaOsmFile extends GamaGisFile {
 
 					values.forEach((k, v) -> geom.setAttribute(k, v));
 					geometries.add(geom);
-					// if (geom.getAttributes() != null) {}
 
 					geom.forEachAttribute((att, val) -> {
 						final String idType = att + " (polygon)";
@@ -637,23 +621,6 @@ public class GamaOsmFile extends GamaGisFile {
 						}
 						return true;
 					});
-					// for (final Object att : geom.getAttributes().keySet()) {
-					// final String idType = att + " (polygon)";
-					// if (featureTypes.contains(att)) {
-					// List objs = layers.get(idType);
-					// if (objs == null) {
-					// objs = GamaListFactory.create(Types.GEOMETRY);
-					// layers.put(idType, objs);
-					// }
-					// objs.add(geom);
-					// for (final String v : atts.keySet()) {
-					// final String id = idType + ";" + v;
-					// attributes.put(id, atts.get(v));
-					// }
-					// break;
-					// }
-					// }
-
 				}
 			}
 
@@ -693,11 +660,6 @@ public class GamaOsmFile extends GamaGisFile {
 
 				}
 			}
-
-			// if(relationWays.size() > 0) {
-			// final List<IShape> geoms = createSplitRoad(relationWays, values, intersectionNodes, nodesPt);
-			// geometries.addAll(geoms);
-			// }
 		}
 		nbObjects = geometries == null ? 0 : geometries.size();
 		return geometries;
@@ -810,7 +772,7 @@ public class GamaOsmFile extends GamaGisFile {
 		RunnableSource reader = null;
 		switch (ext) {
 			case "pbf":
-				try (FileInputStream stream = new FileInputStream(osmFile)) {
+				try (InputStream stream = Files.newInputStream(osmFile.toPath())) {
 					reader = new OsmosisReader(stream);
 					reader.setSink(sink);
 					reader.run();
@@ -836,7 +798,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 */
 	private void readXML(final IScope scope, final Sink sink) throws GamaRuntimeException {
 		try {
-			InputStream inputStream = new FileInputStream(getFile(scope));
+			InputStream inputStream = Files.newInputStream(getFile(scope).toPath());
 			final String ext = getExtension(scope);
 			switch (ext) {
 				case "gz":

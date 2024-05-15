@@ -64,9 +64,6 @@ public class FacetProto implements IGamlDescription, Comparable<FacetProto> {
 	/** The doc built. */
 	boolean docBuilt;
 
-	/** The is type. */
-	public final boolean isType;
-
 	/** The values. */
 	public final Set<String> values;
 
@@ -113,7 +110,6 @@ public class FacetProto implements IGamlDescription, Comparable<FacetProto> {
 		this.isRemote = isRemote;
 		isLabel = SymbolProto.ids.contains(types[0]);
 		isId = isLabel && types[0] != IType.LABEL;
-		isType = types[0] == IType.TYPE_ID;
 		this.values = values.length == 0 ? null : ImmutableSet.copyOf(values);
 	}
 
@@ -186,7 +182,7 @@ public class FacetProto implements IGamlDescription, Comparable<FacetProto> {
 				default:
 					// TODO AD 2/16 Document the types with the new possibility to
 					// include of and index
-					s.append(types[i].toString());
+					s.append(types[i]);
 			}
 			if (i != types.length - 1) { s.append(", "); }
 		}

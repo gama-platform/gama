@@ -39,6 +39,7 @@ import gama.core.runtime.IExecutionContext;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.ValidationContext;
@@ -166,9 +167,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	public void invalidate(final GamlResource r, final String s) {
 		GamlCompilationError error = null;
 		if (GamlResourceServices.equals(r.getURI(), getURI())) {
-			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), false, false);
+			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), GamlCompilationErrorType.Error);
 		} else {
-			error = new GamlCompilationError(s, GENERAL, r.getURI(), false, false);
+			error = new GamlCompilationError(s, GENERAL, r.getURI(), GamlCompilationErrorType.Error);
 		}
 		getValidationContext().add(error);
 		updateWith(null, true);

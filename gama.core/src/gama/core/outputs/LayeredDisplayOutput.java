@@ -95,33 +95,12 @@ import gama.gaml.types.IType;
 						type = IType.LABEL,
 						optional = false,
 						doc = @doc ("the identifier of the display")),
-				@facet (
-						name = IKeyword.FOCUS,
-						type = IType.GEOMETRY,
-						optional = true,
-						doc = @doc (
-								deprecated = "Insert a statement 'camera default target: the_agent;' alongside the definition of the layers to achieve the same effect. And please note that this possibility does not exist on Java2D anymore",
-								value = "the geometry (or agent) on which the display will (dynamically) focus")),
 				// WARNING VALIDER EN VERIFIANT LE TYPE DU DISPLAY
 				@facet (
 						name = IKeyword.TYPE,
 						type = IType.LABEL,
 						optional = true,
 						doc = @doc ("Allows to use either Java2D (for planar models) or OpenGL (for 3D models) as the rendering subsystem")),
-				@facet (
-						name = IKeyword.REFRESH_EVERY,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								value = "Allows to refresh the display every n time steps (default is 1)",
-								deprecated = "Use refresh: every(n) instead")),
-				@facet (
-						name = "synchronized",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Synchronized is now a property of 'output' or 'permanent' and is not available anymore as a per-view property",
-								value = "Indicates whether the display should be directly synchronized with the simulation")),
 				@facet (
 						name = "antialias",
 						type = IType.BOOL,
@@ -143,23 +122,6 @@ import gama.gaml.types.IType;
 						type = { IType.BOOL, IType.INT },
 						optional = true,
 						doc = @doc ("Indicates, when using a boolean value, whether or not the display should cover the whole screen (default is false). If an integer is passed, specifies also the screen to use: 0 for the primary monitor, 1 for the secondary one, and so on and so forth. If the monitor is not available, the first one is used")),
-
-				// @facet (
-				// name = IKeyword.ZFIGHTING,
-				// internal = true,
-				// type = IType.BOOL,
-				// optional = true,
-				// doc = @doc (
-				// deprecated = "now done automatically by default",
-				// value = "Allows to alleviate a problem where agents at the same z would overlap each other in random
-				// ways")),
-				@facet (
-						name = IKeyword.SCALE,
-						type = { IType.BOOL, IType.FLOAT },
-						optional = true,
-						doc = @doc (
-								value = "Allows to display a scale bar in the overlay. Accepts true/false or an unit name",
-								deprecated = "Not functional anymore. Scale is now displayed by default")),
 				@facet (
 						name = "show_fps",
 						internal = true,
@@ -172,13 +134,6 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in Preferences")),
 				@facet (
-						name = "draw_env",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use 'axes' instead",
-								value = "Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in Preferences")),
-				@facet (
 						name = IKeyword.ORTHOGRAPHIC_PROJECTION,
 						internal = true,
 						type = IType.BOOL,
@@ -186,27 +141,6 @@ import gama.gaml.types.IType;
 						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in Preferences")),
 
 				/// LIGHT FACETS
-				@facet (
-						name = "ambient_light",
-						type = { IType.INT, IType.COLOR },
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a statement 'light #ambient intensity: ...;' instead",
-								value = "Allows to define the value of the ambient light either using an int (ambient_light:(125)) or a rgb color ((ambient_light:rgb(255,255,255)). default is rgb(127,127,127,255)")),
-				@facet (
-						name = "diffuse_light",
-						type = { IType.INT, IType.COLOR },
-						optional = true,
-						doc = @doc (
-								value = "Allows to define the value of the diffuse light either using an int (diffuse_light:(125)) or a rgb color ((diffuse_light:rgb(255,255,255)). default is (127,127,127,255)",
-								deprecated = "Use statement \"light\" instead with a #point or #direction light, to define a new light and its intensity")),
-				@facet (
-						name = "diffuse_light_pos",
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								value = "Allows to define the position of the diffuse light either using an point (diffuse_light_pos:{x,y,z}). default is {world.shape.width/2,world.shape.height/2,world.shape.width`*`2}",
-								deprecated = "Use statement \"light\" instead")),
 				@facet (
 						name = IKeyword.IS_LIGHT_ON,
 						type = IType.BOOL,
@@ -234,84 +168,13 @@ import gama.gaml.types.IType;
 								+ "Accepted values are (1) the name of one of the cameras defined using the 'camera' statement or "
 								+ "(2) one of the preset cameras, accessible using constants: #from_above, #from_left, #from_right, "
 								+ "#from_up_left, #from_up_right, #from_front, #from_up_front, #isometric")),
-				@facet (
-						name = "camera_pos",
-						type = { IType.POINT, IType.AGENT },
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'location:' facet to it",
-								value = "Allows to define the position of the camera")),
-				@facet (
-						name = "camera_location",
-						type = { IType.POINT, IType.AGENT },
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'location:' facet to it",
-								value = "Allows to define the location of the camera, the origin being the center of the model")),
-				@facet (
-						name = "camera_target",
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'target:' facet to it",
-								value = "Allows to define the target of the camera (what does it look at)")),
-				@facet (
-						name = "camera_look_pos",
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'target:' facet to it",
-								value = "Allows to define the direction of the camera")),
-				@facet (
-						name = "camera_orientation",
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								deprecated = "This facet is not used anymore. The orientation of the camera is computed automatically by GAMA",
-								value = "Allows to define the orientation of the 'up-vector' of the camera")),
-				@facet (
-						name = "camera_up_vector",
-						type = IType.POINT,
-						optional = true,
-						doc = @doc (
-								deprecated = "This facet is not used anymore. The orientation of the camera is computed automatically by GAMA",
-								value = "Allows to define the orientation of the 'up-vector' of the camera")),
-				@facet (
-						name = "camera_lens",
-						internal = true,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'lens:' facet to it",
-								value = "Allows to define the lens of the camera")),
-				@facet (
-						name = "camera_interaction",
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc (
-								deprecated = "Define a separate camera instead in the body of the display using the 'camera' statement and attach the 'locked:' facet to it",
-								value = "If false, the user will not be able to modify the position and the orientation of the camera, and neither using the ROI. Default is true.")),
-
 				/// END CAMERA FACETS
-				// @facet (
-				// name = "use_shader",
-				// type = IType.BOOL,
-				// optional = true,
-				// doc = @doc (
-				// value = "Used to invoke the new OpenGL architecture",
-				// deprecated = "If the coresponding plugin has been installed, use 'display type: opengl2' instead")),
+
 				@facet (
 						name = IKeyword.KEYSTONE,
 						type = IType.CONTAINER,
 						optional = true,
 						doc = @doc ("Set the position of the 4 corners of your screen ([topLeft,topRight,botLeft,botRight]), in (x,y) coordinate ( the (0,0) position is the top left corner, while the (1,1) position is the bottom right corner). The default value is : [{0,0},{1,0},{0,1},{1,1}]")),
-				@facet (
-						name = IKeyword.ROTATE,
-						type = IType.FLOAT,
-						optional = true,
-						doc = @doc (
-								deprecated = "use the 'rotation' statement instead and passe the value to 'angle:' to achieve the same effect",
-								value = "Set the angle for the rotation around the Z axis in degrees")),
 				@facet (
 						name = "z_near",
 						type = IType.FLOAT,
@@ -345,7 +208,7 @@ import gama.gaml.types.IType;
 				@usage (
 						value = "Each display can include different layers (like in a GIS).",
 						examples = { @example (
-								value = "display gridWithElevationTriangulated type: opengl ambient_light: 100 {",
+								value = "display gridWithElevationTriangulated type: opengl {",
 								isExecutable = false),
 								@example (
 										value = "	grid cell elevation: true triangulation: true;",
@@ -461,59 +324,6 @@ public class LayeredDisplayOutput extends AbstractOutput {
 					&& d.visitOwnChildren(c -> (CHART.equals(c.getKeyword()) || EVENT.equals(c.getKeyword())))) {
 				d.warning("Consider switching to a 2d display if you only display charts", CONFLICTING_FACETS, TYPE);
 			}
-
-			// final String camera = d.firstFacetFoundAmong(CAMERA_LOCATION, CAMERA_TARGET, CAMERA_ORIENTATION,
-			// CAMERA_LENS, "z_near", "z_far", IKeyword.CAMERA);
-			// if (!isOpenGLWanted && camera != null) {
-			// d.warning(
-			// "camera-related facets will have no effect on 2D displays. Use 'focus:' instead if you want to change the
-			// default zoom and position.",
-			// IGamlIssue.UNUSED, camera);
-			// }
-
-			// AD: addressing the deprecation of the "trace:" facet
-			final IExpressionDescription trace = d.getFacet(TRACE);
-			if (trace != null) {
-				d.visitChildren(layer -> {
-					if (!layer.hasFacet(TRACE)) { layer.setFacetExprDescription(TRACE, trace); }
-					return true;
-				});
-
-			}
-			// AD: addressing the deprecation of camera_location, camera_target, camera_orientation, camera_up_vector,
-			// camera_look_pos and camera_pos
-			// IExpressionDescription up = d.getFacet("camera_up_vector");
-			// if (target == null) { target = d.getFacet(CAMERA_ORIENTATION); }
-			IExpressionDescription target = d.getFacet("camera_look_pos");
-			if (target == null) { target = d.getFacet("camera_target"); }
-			IExpressionDescription location = d.getFacet("camera_pos");
-			if (location == null) { location = d.getFacet("camera_location"); }
-			IExpressionDescription lens = d.getFacet("camera_lens");
-			IExpressionDescription locked = d.getFacet("camera_interaction");
-			String lockedString = locked == null ? "false" : locked.equalsString("true") ? "false" : "true";
-
-			// d.removeFacets("camera_pos", "camera_look_pos", "camera_up_vector",CAMERA_LOCATION,
-			// CAMERA_TARGET,CAMERA_ORIENTATION);
-			// Creating a default camera
-			if (target != null || location != null || lens != null) {
-				for (IDescription c : d.getChildrenWithKeyword(CAMERA)) {
-					if (DEFAULT.equals(c.getName())) {
-						d.warning(
-								"A camera named 'default' already exists. Rename it to enable GAMA to relocate the camera settings found here",
-								IGamlIssue.SHADOWS_NAME);
-						return;
-					}
-				}
-				IDescription cam =
-						DescriptionFactory.create(CAMERA, d, NAME, "\"" + DEFAULT + "\"", "locked", lockedString);
-				cam.validate();
-				d.replaceChildrenWith(Iterables.concat(d.getOwnChildren(), Collections.singleton(cam)));
-				if (target != null) { cam.getFacets().put(TARGET, target); }
-				if (location != null) { cam.getFacets().put(LOCATION, location); }
-				if (lens != null) { cam.getFacets().put("lens", lens); }
-
-			}
-
 		}
 
 		/**

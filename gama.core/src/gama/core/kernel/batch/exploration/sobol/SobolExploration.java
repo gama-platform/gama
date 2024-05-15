@@ -165,7 +165,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
 		if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+			String path_to = Cast.asString(scope, outputFilePath.value(scope));
 			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parent = f.getParentFile();
 			if (!parent.exists()) { parent.mkdirs(); }
@@ -199,11 +199,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 			List<Object> var_info = new ArrayList<>();
 
 			switch (parameters.get(j).getType().id()) {
-				case IType.INT:
-					var_info.add(parameters.get(j).getMinValue(scope));
-					var_info.add(parameters.get(j).getMaxValue(scope));
-					break;
-				case IType.FLOAT:
+				case IType.INT, IType.FLOAT:
 					var_info.add(parameters.get(j).getMinValue(scope));
 					var_info.add(parameters.get(j).getMaxValue(scope));
 					break;

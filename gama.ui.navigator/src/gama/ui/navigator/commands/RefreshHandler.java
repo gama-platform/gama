@@ -17,6 +17,7 @@ import static org.eclipse.core.resources.IResource.PROJECT;
 import static org.eclipse.core.resources.IResource.ROOT;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.filesystem.IFileInfo;
@@ -114,7 +115,7 @@ public class RefreshHandler implements IRefreshHandler {
 		final IStatus[] errorStatus = new IStatus[1];
 		errorStatus[0] = Status.OK_STATUS;
 		final List<? extends IResource> resources =
-				list == null || list.isEmpty() ? Arrays.asList(ResourcesPlugin.getWorkspace().getRoot()) : list;
+				list == null || list.isEmpty() ? Collections.singletonList(ResourcesPlugin.getWorkspace().getRoot()) : list;
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override
 			public void execute(final IProgressMonitor monitor) {

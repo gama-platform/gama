@@ -198,12 +198,6 @@ public class SymbolSerializer<C extends SymbolDescription> implements IKeyword {
 
 	}
 
-	/**
-	 * The Class ExperimentSerializer.
-	 */
-	public static class ExperimentSerializer extends SymbolSerializer<ExperimentDescription> {
-
-	}
 
 	/**
 	 * The Class StatementSerializer.

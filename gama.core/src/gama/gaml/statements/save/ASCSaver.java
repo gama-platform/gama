@@ -55,10 +55,22 @@ public class ASCSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
+		
 		if (file.exists()) { file.delete(); }
+		
+		FileWriter fileWriter = null;
+		
 		try {
-			save(scope, item, new FileWriter(file));
-		} finally {
+			fileWriter =  new FileWriter(file);
+			save(scope, item, fileWriter);
+		}finally {
+			// cleanup in case of failure in the save
+			if (fileWriter != null) {
+				try {
+					fileWriter.close();					
+				} finally {}
+			}
+			
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, file.getAbsolutePath());
 		}
 	}

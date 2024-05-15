@@ -11,6 +11,7 @@
 package gama.ui.shared.parameters;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,9 +101,9 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 	FileEditor(final IAgent agent, final IParameter param, final EditorListener l, final boolean isFolder) {
 		super(agent, param, l);
 		this.isFolder = isFolder;
-		this.isWorkspace = param != null && param.isWorkspace();
-		this.fileExtensions =
-				param == null ? null : param.getFileExtensions() == null || param.getFileExtensions().length == 0 ? null
+		this.isWorkspace = param.isWorkspace();
+		this.fileExtensions = param.getFileExtensions() == null || param.getFileExtensions().length == 0 
+						? null
 						: new HashSet(Arrays.asList(param.getFileExtensions()));
 	}
 
@@ -122,7 +123,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 				IFile result = WorkspaceResourceDialog.openFileSelection(null, "Choose file",
 						"Choose a file for parameter '" + param.getTitle() + "'", false,
 						file == null ? null : new IFile[] { FileUtils.getFile(file.getPath(getScope()), null, true) },
-						Arrays.asList(new ViewerFilter() {
+								Collections.singletonList(new ViewerFilter() {
 
 							@Override
 							public boolean select(final Viewer viewer, final Object parentElement,
@@ -140,7 +141,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 						"Choose a folder for parameter '" + param.getTitle() + "'", false,
 						file == null ? null
 								: new IContainer[] { FileUtils.getFolder(file.getPath(getScope()), null, true) },
-						Arrays.asList(new ViewerFilter() {
+								Collections.singletonList(new ViewerFilter() {
 
 							@Override
 							public boolean select(final Viewer viewer, final Object parentElement,

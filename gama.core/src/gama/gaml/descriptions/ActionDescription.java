@@ -236,7 +236,7 @@ public class ActionDescription extends StatementWithChildrenDescription {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
 			for (final IDescription desc : args) {
-				sb.append(desc.getGamlType().toString()).append(" ").append(desc.getName()).append(", ");
+				sb.append(desc.getGamlType()).append(" ").append(desc.getName()).append(", ");
 			}
 			if (sb.length() > 0) { sb.setLength(sb.length() - 2); }
 			sb.append(")");

@@ -2366,7 +2366,7 @@ public class Stats {
 
 		for (String name : OutputsNames) {
 			List<Map<String, Double>> morris_coefficient =
-					Morris.MorrisAggregation_CSV(nb_levels, output.get(name), MySamples);
+					Morris.morrisAggregation_CSV(nb_levels, output.get(name), MySamples);
 			Map<String, Double> mu = morris_coefficient.get(0);
 			Map<String, Double> mu_star = morris_coefficient.get(1);
 			Map<String, Double> sigma = morris_coefficient.get(2);
@@ -2392,11 +2392,11 @@ public class Stats {
 	 *            the scope
 	 * @return the string
 	 */
-	public static String Stochanalyse(final int replicat, final int threshold, final String path,
+	public static String stochanalyse(final int replicat, final int threshold, final String path,
 			final int id_firstOutput, final IScope scope) {
 		String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
 		// Stochanalysis sto = new Stochanalysis();
-		return Stochanalysis.StochasticityAnalysis_From_CSV(replicat, threshold, new_path, id_firstOutput, scope);
+		return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, id_firstOutput, scope);
 
 	}
 

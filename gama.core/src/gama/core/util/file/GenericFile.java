@@ -12,10 +12,11 @@ package gama.core.util.file;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.GAMA;
@@ -115,7 +116,7 @@ public class GenericFile extends GamaFile<IList<String>, String> {
 	public boolean isBinaryFile(final IScope scope) throws FileNotFoundException, IOException {
 		File f = getFile(scope);
 		if (f == null || !f.exists()) return false;
-		try (FileInputStream in = new FileInputStream(f)) {
+		try (InputStream in = Files.newInputStream(f.toPath())) {
 			int ascii = 0;
 			int other = 0;
 			for (final byte b : in.readNBytes(Math.min(1024, in.available()))) {

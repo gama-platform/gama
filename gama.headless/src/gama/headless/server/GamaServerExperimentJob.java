@@ -44,8 +44,6 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  */
 public class GamaServerExperimentJob extends ExperimentJob {
 
-	/** The server. */
-	public GamaWebSocketServer server;
 
 	/** The socket. */
 	public WebSocket socket;
@@ -83,12 +81,11 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 *            the dialog
 	 */
 	public GamaServerExperimentJob(final String sourcePath, final String exp,
-			final GamaWebSocketServer gamaWebSocketServer, final WebSocket sk, final IList p, final String end,
+			final WebSocket sk, final IList p, final String end,
 			final boolean console, final boolean status, final boolean dialog, final boolean runtime) {
 		// (final String sourcePath, final String exp, final long max, final String untilCond,
 		// final double s)
 		super(sourcePath, exp, 0, "", 0);
-		server = gamaWebSocketServer;
 		socket = sk;
 		// params = p;
 		controller = new GamaServerExperimentController(this, p, end, socket, console, status, dialog, runtime);
@@ -207,10 +204,10 @@ public class GamaServerExperimentJob extends ExperimentJob {
 
 					ByteBuffer byteBuffer = ByteBuffer.wrap(joinedArray);
 					if (!socket.isClosing() && !socket.isClosed()) { socket.send(byteBuffer); }
-					v.setValue(out.getValue(), out.getStep(), out.getType());
+					v.setValue(out.getValue(), out.getType());
 				}
 			} else {
-				v.setValue(null, this.step);
+				v.setValue(null);
 			}
 		}
 		// if (this.outputFile != null) {

@@ -72,7 +72,7 @@ species firefighter skills: [moving] control: simple_bdi{
 	}
 	
 	//The rules are used to create a desire from a belief. We can specify the priority of the desire with a statement priority.
-	rule belief: new_predicate(fireLocation) new_desire: get_predicate(get_belief_with_name(fireLocation));
+	rule belief: new_predicate(fireLocation) new_desire: get_belief_with_name(fireLocation).predicate;
 	rule belief: no_water_predicate new_desire: water_predicate strength: 10.0;
 	
 	//The plan to do when the intention is to patrol.
@@ -82,7 +82,7 @@ species firefighter skills: [moving] control: simple_bdi{
 	 
 	//The plan that is executed when the agent got the intention of extinguish a fire.
 	plan stopFire intention: new_predicate(fireLocation) priority:5{
-		point target_fire <- point(get_predicate(get_current_intention()).values["location_value"] );
+		point target_fire <- point(get_current_intention().predicate.values["location_value"] );
 		if(waterValue>0){
 			if (self distance_to target_fire <= 1) {
 				fireArea current_fire <- fireArea first_with (each.location = target_fire);
@@ -91,13 +91,13 @@ species firefighter skills: [moving] control: simple_bdi{
 					 current_fire.size <-  current_fire.size - 1;
 					 if ( current_fire.size <= 0) {
 						ask  current_fire {do die;}
-						do remove_belief(get_predicate(get_current_intention()));
-						do remove_intention(get_predicate(get_current_intention()), true);
+						do remove_belief(get_current_intention().predicate);
+						do remove_intention(get_current_intention().predicate, true);
 						do add_desire(patrol_desire,1.0);
 					}
 				} else {
-					do remove_belief(get_predicate(get_current_intention()));
-					do remove_intention(get_predicate(get_current_intention()), true);
+					do remove_belief(get_current_intention().predicate);
+					do remove_intention(get_current_intention().predicate, true);
 					do add_desire(patrol_desire,1.0);
 				}
 			} else {

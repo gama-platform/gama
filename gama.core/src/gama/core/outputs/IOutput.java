@@ -67,22 +67,6 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	void close();
 
 	/**
-	 * The output should return its refresh rate in terms of the number of cycles of the simulation (min. is 1) between
-	 * two updates
-	 *
-	 * @return an integer >=1 that represents how many cycles separate two updates
-	 */
-	int getRefreshRate();
-
-	/**
-	 * The output should set its refresh rate to the parameter passed. Mainly called by the interface
-	 *
-	 * @param rate,
-	 *            an integer normally >= 1. The output is free to consider if a negative or null rate makes any sense
-	 */
-	void setRefreshRate(int rate);
-
-	/**
 	 * Called by the output thread to perform the actual "refresh" of the concrete support of the output (whereas
 	 * step(), from IStepable, performs the computations described in GAML, that will serve as a model for this
 	 * refresh).

@@ -247,32 +247,10 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("Tick font face. Either the name of a font face or a font. When used for a series chart, it will set the font of values on the axes, but When used with a pie, it will modify the font of messages associated to each pie section.")),
 				@facet (
-						name = ChartLayerStatement.TICKFONTSIZE,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in tick_font instead",
-								value = "Tick font size")),
-				@facet (
-						name = ChartLayerStatement.TICKFONTSTYLE,
-						type = IType.ID,
-						values = { "plain", "bold", "italic" },
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in tick_font instead",
-								value = "the style used to display ticks")),
-				@facet (
 						name = ChartLayerStatement.LABELFONTFACE,
 						type = { IType.STRING, IType.FONT },
 						optional = true,
 						doc = @doc ("Label font face. Either the name of a font face or a font")),
-				@facet (
-						name = ChartLayerStatement.LABELFONTSIZE,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in label_font instead",
-								value = "Label font size")),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -284,53 +262,16 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc ("Defines whether this layer is visible or not")),
 				@facet (
-						name = ChartLayerStatement.LABELFONTSTYLE,
-						type = IType.ID,
-						values = { "plain", "bold", "italic" },
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in label_font instead",
-								value = "the style used to display labels")),
-				@facet (
 						name = ChartLayerStatement.LEGENDFONTFACE,
 						type = { IType.STRING, IType.FONT },
 						optional = true,
 						doc = @doc ("Legend font face. Either the name of a font face or a font")),
 				@facet (
-						name = ChartLayerStatement.LEGENDFONTSIZE,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in legend_font instead",
-								value = "Legend font size")),
-				@facet (
-						name = ChartLayerStatement.LEGENDFONTSTYLE,
-						type = IType.ID,
-						values = { "plain", "bold", "italic" },
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in legend_font instead",
-								value = "the style used to display legend")),
-				@facet (
 						name = ChartLayerStatement.TITLEFONTFACE,
 						type = { IType.STRING, IType.FONT },
 						optional = true,
 						doc = @doc ("Title font face. Either the name of a font face or a font")),
-				@facet (
-						name = ChartLayerStatement.TITLEFONTSIZE,
-						type = IType.INT,
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in title_font instead",
-								value = "Title font size")),
-				@facet (
-						name = ChartLayerStatement.TITLEFONTSTYLE,
-						type = IType.ID,
-						values = { "plain", "bold", "italic" },
-						optional = true,
-						doc = @doc (
-								deprecated = "Use a font in title_font instead",
-								value = "the style used to display titles")), },
+				},
 
 		omissible = IKeyword.NAME)
 @doc (
@@ -420,12 +361,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The Constant TICKFONTFACE. */
 	public static final String TICKFONTFACE = "tick_font";
 
-	/** The Constant TICKFONTSIZE. */
-	public static final String TICKFONTSIZE = "tick_font_size";
-
-	/** The Constant TICKFONTSTYLE. */
-	public static final String TICKFONTSTYLE = "tick_font_style";
-
 	/** The Constant LABELTEXTCOLOR. */
 	public static final String LABELTEXTCOLOR = "label_text_color";
 
@@ -435,29 +370,11 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The Constant LABELFONTFACE. */
 	public static final String LABELFONTFACE = "label_font";
 
-	/** The Constant LABELFONTSIZE. */
-	public static final String LABELFONTSIZE = "label_font_size";
-
-	/** The Constant LABELFONTSTYLE. */
-	public static final String LABELFONTSTYLE = "label_font_style";
-
 	/** The Constant LEGENDFONTFACE. */
 	public static final String LEGENDFONTFACE = "legend_font";
 
-	/** The Constant LEGENDFONTSIZE. */
-	public static final String LEGENDFONTSIZE = "legend_font_size";
-
-	/** The Constant LEGENDFONTSTYLE. */
-	public static final String LEGENDFONTSTYLE = "legend_font_style";
-
 	/** The Constant TITLEFONTFACE. */
 	public static final String TITLEFONTFACE = "title_font";
-
-	/** The Constant TITLEFONTSIZE. */
-	public static final String TITLEFONTSIZE = "title_font_size";
-
-	/** The Constant TITLEFONTSTYLE. */
-	public static final String TITLEFONTSTYLE = "title_font_style";
 
 	/** The Constant CHARTDATASET. */
 	public static final String CHARTDATASET = "chart_dataset_transfer";
@@ -582,12 +499,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartOutput.setUseXLabels(scope, expval);
 		}
 
-		/*
-		 * expr = getFacet(IKeyword.Y_SERIE); if (expr!=null) { IExpression expval =
-		 * getFacet(IKeyword.Y_SERIE).resolveAgainst(scope); chartdataset.setYSource(scope,expval);
-		 * chartoutput.setUseYSource(scope,expval); }
-		 */
-		// will be added with 3d charts
 
 		expr = getFacet(IKeyword.Y_LABELS);
 		if (expr != null) {
@@ -815,37 +726,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			}
 		}
 
-		face = getFacet(TICKFONTSIZE);
-		if (face != null) { chartOutput.setTickFontSize(scope, Cast.asInt(scope, face.value(scope))); }
-		face = getFacet(LABELFONTSIZE);
-		if (face != null) { chartOutput.setLabelFontSize(scope, Cast.asInt(scope, face.value(scope))); }
-		face = getFacet(LEGENDFONTSIZE);
-		if (face != null) { chartOutput.setLegendFontSize(scope, Cast.asInt(scope, face.value(scope))); }
-		face = getFacet(TITLEFONTSIZE);
-		if (face != null) { chartOutput.setTitleFontSize(scope, Cast.asInt(scope, face.value(scope))); }
-		face = getFacet(TICKFONTSTYLE);
-		if (face != null) { chartOutput.setTickFontStyle(scope, toFontStyle(getLiteral(TICKFONTSTYLE))); }
-		face = getFacet(LABELFONTSTYLE);
-		if (face != null) { chartOutput.setLabelFontStyle(scope, toFontStyle(getLiteral(LABELFONTSTYLE))); }
-		face = getFacet(LEGENDFONTSTYLE);
-		if (face != null) { chartOutput.setLegendFontStyle(scope, toFontStyle(getLiteral(LEGENDFONTSTYLE))); }
-		face = getFacet(TITLEFONTSTYLE);
-		if (face != null) { chartOutput.setTitleFontStyle(scope, toFontStyle(getLiteral(TITLEFONTSTYLE))); }
-
 		return true;
-	}
-
-	/**
-	 * To font style.
-	 *
-	 * @param style
-	 *            the style
-	 * @return the int
-	 */
-	int toFontStyle(final String style) {
-		if ("bold".equals(style)) return Font.BOLD;
-		if ("italic".equals(style)) return Font.ITALIC;
-		return Font.PLAIN;
 	}
 
 	@Override

@@ -107,10 +107,10 @@ public class Electre {
 				relation[j][i] = 0;
 
 				final String relationPaire = relation(act1, act2);
-				if (relationPaire.equals("A1_P_A2")) {
+				if ("A1_P_A2".equals(relationPaire)) {
 					relation[i][j] = 1;
 					relation[j][i] = -1;
-				} else if (relationPaire.equals("A2_P_A1")) {
+				} else if ("A2_P_A1".equals(relationPaire)) {
 					relation[i][j] = -1;
 					relation[j][i] = 1;
 				}

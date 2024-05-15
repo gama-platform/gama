@@ -65,8 +65,9 @@ import gama.core.util.path.PathFactory;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Spatial;
-import gama.gaml.operators.Spatial.Projections;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialProjections;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.GamaMatrixType;
@@ -308,7 +309,9 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		// if (ids.length > 0) { initCRS = ids[0].toString(); }
 
 		List<String> crsF = new ArrayList<>();
-		List<Envelope3D> envF = new ArrayList<>();
+
+		// commenting out envF as it seems to have no use 
+		//List<Envelope3D> envF = new ArrayList<>();
 
 		for (int j = 1; j < gfiles.size(); j++) {
 			String taCRS = null;
@@ -317,7 +320,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			ReferenceIdentifier[] ids = crs.getIdentifiers().toArray(new ReferenceIdentifier[0]);
 			if (ids.length > 0) { taCRS = ids[0].toString(); }
 			crsF.add(taCRS);
-			envF.add(gfiles.get(j).computeEnvelope(scope));
+			//envF.add(gfiles.get(j).computeEnvelope(scope));
 		}
 
 		for (int i = 0; i < matrix.length; i++) {
@@ -329,7 +332,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				GamaPoint loc = matrix[i].getLocation();
 				// See #3306 : initCRS was never used to compute the location
 				if (/* initCRS != null && */ taCRS != null) {
-					loc = Projections.transform_CRS(scope, loc, taCRS).getLocation();
+					loc = SpatialProjections.transform_CRS(scope, loc, taCRS).getLocation();
 				}
 				final Double v = gfile2.valueOf(scope, loc);
 				vals.add(v);
@@ -500,7 +503,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		for (int l = 0; l < numRows; l = l + 2) {
 			for (int c = 0; c < numCols; c++) {
 				i = c + numCols * l;
-				final IShape poly = Spatial.Transformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
+				final IShape poly = SpatialTransformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
 						cellWidth, new GamaPoint(xmin + c * cellWidth, ymin + l * cellHeight * 0.75)), 90.0);
 
 				// if (gbg.covers(poly)) {
@@ -517,7 +520,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			for (int c = 0; c < numCols; c++) {
 				i = c + numCols * l;
 
-				final IShape poly = Spatial.Transformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
+				final IShape poly = SpatialTransformations.rotated_by(scope, GamaGeometryType.buildHexagon(cellHeight,
 						cellWidth, new GamaPoint(xmin * 2 + c * cellWidth, ymin + l * cellHeight * 0.75)), 90.0);
 
 				// if (gbg.covers(poly)) {
@@ -546,7 +549,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final GamaPoint origin =
 				new GamaPoint(environmentFrame.getEnvelope().getMinX(), environmentFrame.getEnvelope().getMinY());
 
-		final IShape translatedReferenceFrame = Spatial.Transformations.translated_by(scope, environmentFrame, origin);
+		final IShape translatedReferenceFrame = SpatialTransformations.translated_by(scope, environmentFrame, origin);
 		final GamaPoint[][] xs = new GamaPoint[numCols + 1][numRows + 1];
 		for (int i = 0; i < numCols + 1; i++) {
 			for (int j = 0; j < numRows + 1; j++) {
@@ -573,7 +576,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			}
 			boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
 			if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
-				rect.setGeometry(Spatial.Operators.inter(scope, rect, translatedReferenceFrame));
+				rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
 				ok = true;
 			}
 			if (ok) {
@@ -1177,8 +1180,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 					}
 				});
 				open[next.getIndex()] = false;
-
-				if (!costSoFar.containsKey(next) || nextCost < costSoFar.get(next)) {
+				Double nextCostSoFar = costSoFar.get(next);
+				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
 					costSoFar.put(next, nextCost);
 					cameFrom.put(next, current);
 				}
@@ -1245,7 +1248,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				final double dist = current.getLocation().euclidianDistanceTo(next.getLocation());
 				final double nextCost = cost + (!weighted ? dist
 						: Cast.asFloat(scope, onWithWeight.get(next)) + (dist > maxDim ? Double.MIN_VALUE : 0.0));
-				if (!costSoFar.containsKey(next) || nextCost < costSoFar.get(next)) {
+				Double nextCostSoFar = costSoFar.get(next);
+				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
 					costSoFar.put(next, nextCost);
 					frontier.add(new ArrayList() {
 						{
@@ -1312,7 +1316,8 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				final IAgent jumpt = jump(scope, next, current, open, endAg);
 				final IAgent ne = jumpt == null ? next : jumpt;
 				final double nextCost = cost + current.getLocation().euclidianDistanceTo(ne.getLocation());
-				if (!costSoFar.containsKey(ne) || nextCost < costSoFar.get(ne)) {
+				Double neCostSoFar = costSoFar.get(ne);
+				if (neCostSoFar == null || nextCost < neCostSoFar) {
 					costSoFar.put(ne, nextCost);
 					frontier.add(new ArrayList() {
 						{

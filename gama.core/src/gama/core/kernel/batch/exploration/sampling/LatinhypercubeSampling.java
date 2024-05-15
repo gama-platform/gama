@@ -94,16 +94,15 @@ public class LatinhypercubeSampling extends SamplingUtils{
      * @param r : a Random object
      * @return
      */
-    public static List<ParametersSet> LatinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){
-    	List<ParametersSet>   finalSamp= new ArrayList<>();
-        List<String> names= new ArrayList<>();
+    public static List<ParametersSet> latinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){
+        //TODO: This should probably be refactored with orthogonalsampling, uniformsamlpling, factorialuniformsampling and saltellisampling
+    	List<String> names = new ArrayList<>();
         for(int i=0;i<parameters.size();i++) {
         	names.add(parameters.get(i).getName());
         }
-        Map<String,List<Double>> sampletempmap= generate(N,names,r);
-        List<Map<String,Double>>  sampling =transformMapListToListMap(sampletempmap,names);    
-        finalSamp= BuildParametersSetfromSample(scope,parameters,sampling);  
-        return finalSamp;
+        Map<String,List<Double>> sampletempmap = generate(N,names,r);
+        List<Map<String,Double>> sampling = transformMapListToListMap(sampletempmap,names);    
+        return buildParametersSetfromSample(scope,parameters,sampling);
         
     }
 }
