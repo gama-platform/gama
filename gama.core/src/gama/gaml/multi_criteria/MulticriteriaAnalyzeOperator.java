@@ -133,6 +133,7 @@ public class MulticriteriaAnalyzeOperator {
 			}
 		}
 
+		var spotbug = combinations.size();
 
 		for (int i = start; i <= end; i++) {
 			final Set<String> comb = new LinkedHashSet<>(currentSol);
