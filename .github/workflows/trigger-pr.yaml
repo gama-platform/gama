@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  compiling-gama-pr:
+  compiling-gama-base:
     name: Compiling GAMA from base branch
     uses: ./.github/workflows/travis-build.yaml
     with:
@@ -20,7 +20,7 @@ jobs:
       get_testing_compiled_archives: true
       get_all_archives_for_release: false
 
-  compiling-gama-base:
+  compiling-gama-pr:
     name: Compiling GAMA from PR branch
     uses: ./.github/workflows/travis-build.yaml
     with:
