@@ -14,8 +14,6 @@ jobs:
     name: Compiling GAMA from base branch
     uses: ./.github/workflows/travis-build.yaml
     with:
-      get_testing_compiled_archives: false
-      get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
       CHECKOUT_BRANCH: "2024-06"
