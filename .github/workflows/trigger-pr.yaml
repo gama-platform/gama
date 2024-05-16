@@ -19,6 +19,8 @@ jobs:
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
       CHECKOUT_BRANCH: "2024-06"
+      get_testing_compiled_archives: true
+      get_all_archives_for_release: false
 
   compiling-gama-base:
     name: Compiling GAMA from PR branch
@@ -29,10 +31,15 @@ jobs:
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-pr"
 
+  testing-gama-pr:
+    name: Testing built GAMA
+    needs: compiling-gama-pr
+    uses: ./.github/workflows/travis-build-test.yaml
+
   spotbugs-result: 
     name: Display Spotbugs results
     runs-on: ubuntu-latest
-    needs: [compiling-gama-base, compiling-gama-pr]
+    needs: [compiling-gama-base, testing-gama-pr]
     steps:
       - uses: actions/checkout@v4
 
