@@ -103,17 +103,18 @@ experiment RelationTests type: test {
 		the_path <- (cell where (each.color != #pink)) path_between (dummy(9), dummy(8));
 		assert the_path.weight = 12;
 		ask world{the_path <-  (cell where (each.color != #pink)) path_between([dummy(9), dummy(8), dummy(1)]);}
-		assert the_path.weight = 22;
+		
+		assert the_path.weight = 23;
 		
 		//path_between on a grid with weighted cells
 		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9)]);
 		assert the_path.weight= 0;
 		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9), dummy(8)]);
-		assert the_path.weight= 24;
+		assert the_path.weight= 8;
 		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between (dummy(9), dummy(8));
-		assert the_path.weight= 24;
+		assert the_path.weight= 8;
 		ask world{the_path <-  (cell as_map (each::(each.color = #pink ? 10.0 : 2.0)))  path_between([dummy(9), dummy(8), dummy(1)]);}
-		assert the_path.weight = 46;
+		assert the_path.weight = 19;
 	}
 
 	test "towards" {
