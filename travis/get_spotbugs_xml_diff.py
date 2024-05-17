@@ -19,6 +19,10 @@ if __name__ == '__main__':
 
     new_root = etree.parse(open(args.new_file)).getroot()
     old_root = etree.parse(open(args.old_file)).getroot()
+    # removing tags that are not supported by the github action
+    for element in new_root.xpath("//BugCollection/*[not(self::Project|self::BugInstance|self::SourceLine)]"):
+        new_root.remove(element)
+    # processing the diff
     for element in new_root.findall("BugInstance"):
         # If it's in GamlAdditions we ignore that bug
         if is_gaml_additions(element):
