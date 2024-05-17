@@ -27,6 +27,9 @@ if __name__ == '__main__':
             # merge all buginstance
             for elm in current.findall("BugInstance"):
                 merged.append(elm)
+            # merge bugpatterns as well
+            for elm in current.findall("BugPattern"):
+                merged.append(elm)
 
     # we save the merged result in a file
     out_content = etree.tostring(merged)
