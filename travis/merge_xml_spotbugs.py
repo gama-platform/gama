@@ -6,7 +6,7 @@ import argparse
 if __name__ == '__main__':
     # handle script arguments
     parser = argparse.ArgumentParser(description="Merges all found BugInstance in spotbugsXml.xml files found recursively in a directory into one file")
-    parser.add_argument('-r', "--root_dir",default='.', help='The directory in which to run the script')
+    parser.add_argument('-r', "--root_dir", default='.', help='The directory in which to run the script')
     parser.add_argument('-o', "--output_file_name", default='merged_spotbugsXml.xml', help='The path of the resulting merged xml file')
     args = parser.parse_args()
     merged = None
@@ -20,9 +20,13 @@ if __name__ == '__main__':
             merged = etree.parse(file).getroot()
         else:
             current = etree.parse(file).getroot()
-            for elm in current:
-                if elm.tag == "BugInstance":
-                    merged.append(elm)
+            # merge SrcDir
+            project = merged.find("Project")
+            for srcdir in current.find("Project").findall("SrcDir"):
+                project.append(srcdir)
+            # merge all buginstance
+            for elm in current.findall("BugInstance"):
+                merged.append(elm)
 
     # we save the merged result in a file
     out_content = etree.tostring(merged)
