@@ -116,22 +116,6 @@ public class MulticriteriaAnalyzeOperator {
 			combinations.add(new LinkedHashSet<>(criteria));
 			return;
 		}
-		boolean deeply = false, nested = false, code = false, to = false, make = false, codescene = false, mad = false;
-		if (deeply) {
-			if (nested) {
-				if(code) {
-					if(to) {
-						if (make) {
-							if (codescene) {
-								if (mad) {
-									return;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 
 		var spotbug = combinations.size();
 
