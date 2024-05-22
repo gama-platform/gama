@@ -288,11 +288,9 @@ species looping_on_lists {
 		l2 <- [];
 		l2 <<+ my_agents collect each.name;
 		write sample(l2);
-		// ... or, even simpler (since the casting of an agent to string returns its name)
-		list<string> l3 <- list<string>(my_agents);
-		write sample(l3);
+
 		// Powerful filter expressions can be built by combining the various 'iterator' operators
-		l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
+		list<string> l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
 		write sample(l3);
 	}
 }

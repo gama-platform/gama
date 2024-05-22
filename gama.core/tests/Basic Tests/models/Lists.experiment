@@ -243,9 +243,7 @@ experiment Lists  type:test {
 		l2 <<+ my_agents collect each.name;
 		assert l2 = ['dummy0','dummy1','dummy2','dummy3','dummy4'];
 
-//		// ... or, even simpler (since the casting of an agent to string returns its name)
-		assert list<string>(my_agents) = ['dummy0','dummy1','dummy2','dummy3','dummy4'];
-//		// Powerful filter expressions can be built by combining the various 'iterator' operators
+		// Powerful filter expressions can be built by combining the various 'iterator' operators
 		let l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
 		assert l3 = ['Agent dummy(0) has an even id','Agent dummy(2) has an even id','Agent dummy(4) has an even id'];
 	}
