@@ -1,0 +1,253 @@
+/**
+* Name: Lists
+* This wizard creates a new experiment file. 
+* Author: baptiste
+* Tags: 
+*/
+
+model test_lists
+
+species dummy {
+			
+}
+	
+experiment Lists  type:test {
+	
+	
+	test accessing_tests{
+		
+		seed <- 0.0327;
+		
+		list<int> l1 <- [1,2,3,4,5,6,7,8,9,10];
+		list<string> l2 <- ['this','is','a','list', 'of','strings'];
+		list<bool> l3 <- [true, false, false, true];
+		assert first(l1) = 1;
+		assert last(l1) = 10;
+		assert l1 at 1 = 2;
+		assert l1[1] = 2;
+		assert length(l1) = 10;
+		assert mean(l1) = 5.5;
+		assert max(l1) = 10;
+		assert min(l1) = 1;
+		assert any(l1) = 2; // tested with this seed, just for reference
+		assert 3 among l2 = ['this','of','list']; // same as above
+		assert l1 contains 1 = true;
+		assert l1 contains_all [1,4,6] = true;
+		assert l1 contains_all [1,4,6, 14] = false;
+		assert l1 contains_any [1,23] = true;
+		assert reverse(l2) = ['strings', 'of', 'list', 'a', 'is', 'this'];
+		assert l1 collect (each + 1) = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+		assert l1 collect (norm({each, each, each})) = [1.7320508075688772,3.4641016151377544,5.196152422706632,6.928203230275509,8.660254037844387,10.392304845413264,12.12435565298214,13.856406460551018,15.588457268119896,17.320508075688775];
+		assert l1 where (each > 5) = [6, 7, 8, 9, 10];
+		assert l1 count (each > 5) = 5;
+		assert l1 group_by (even(each)) = map(true::[2,4,6,8,10],false::[1,3,5,7,9]);
+		assert l2 index_by (each + "_index") = map(['this_index'::'this','is_index'::'is','a_index'::'a','list_index'::'list','of_index'::'of','strings_index'::'strings']);
+		assert l1 index_of 100 = -1;
+		assert l1 index_of 10 = 9;
+		
+		assert l2 last_index_of 'is' = 1;
+		assert l3 last_index_of true = 3;
+		assert l2 last_index_of 'not there' = -1;
+		assert l2 sort_by each = ['a', 'is', 'list', 'of', 'strings', 'this'];
+		assert ['aaa', 'aa'] sort_by each = ['aa', 'aaa'];
+		assert l2 sort_by length(each) = ['a', 'is', 'of', 'this', 'list', 'strings'];
+		assert l2 first_with (first(each)  = 'o') = 'of';
+		assert l2 where (length(each) = 2) = ['is', 'of'];
+		assert l2 where (length(each) = 10) = [];
+		assert l2 with_min_of (length(each)) = 'a';
+		assert l2 with_max_of (length(each)) = 'strings';
+		assert l2 min_of (length(each)) = 1;
+		assert l2 max_of (length(each)) = length('strings'); 
+		assert copy_between(l2,1,3) = ['is', 'a'];
+		assert copy_between(l2, 1, length(l2) - 1) = ['is','a','list', 'of'];
+		assert l2 as_map (length(each)::"new"+each) = map([4::'newthis',2::'newis',1::'newa',7::'newstrings']);
+		assert l2[1::3] = ['is', 'a'];
+	}
+	
+	
+	test combining_lists {
+
+		list<int> l1 <- [1,2,3,4,5,6,7,8,9,10];
+		list<int> l2 <- [1,3,5,7,9];
+		list<list> useful_list_of_lists <- [['A','B'],['C','D']]; 
+
+		assert list<list<string>>([[1,2,3]]) = [['1','2','3']];
+
+		assert l1 + l2 = [1,2,3,4,5,6,7,8,9,10,1,3,5,7,9];
+		assert l1 - l2 = [2,4,6,8,10];
+		assert l1 inter (l2 + [11,12,13]) = l2;
+		assert l1 union l2 = l1;
+		assert interleave ([l1,l2]) = [1,1,2,3,3,5,4,7,5,9,6,7,8,9,10];
+		assert (l1 as list<float>) = [1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0];
+		assert cartesian_product(useful_list_of_lists) = [['A','C'],['A','D'],['B','C'],['B','D']];
+	}
+	
+	
+	test modifying {
+		
+		seed <- 1.234;
+		
+		list<int> l1;
+		add 1 to: l1;
+		add 2 to: l1;
+		add 3 to: l1;
+		assert l1 = [1,2,3];
+
+		l1 <+ 4;
+		l1 <+ 5;
+		assert l1 = [1,2,3,4,5];
+
+		add all: [6, 7, 8, 9] to: l1;
+		assert l1 = [1,2,3,4,5,6,7,8,9];
+		
+		
+		l1 <<+ [10,11,12,13];
+		assert l1 = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+
+		l1[1::3] <- 100;
+		assert l1 = [1,100, 100,4,5,6,7,8,9,10,11,12,13];
+
+		// implicit castings:
+		// casting elements
+ 		l1 <+ "14";
+		// casting elements from a list
+		l1 <<+ ["15", 16.0];
+		assert l1 = [1,100, 100,4,5,6,7,8,9,10,11,12,13, 14, 15, 16];
+
+
+		
+		// elements are by default added to the end of the list
+		// but they can be introduced at specific positions using the "at:" facet
+		add 0 to: l1 at: 0;
+		assert l1 = [0, 1, 100, 100,4,5,6,7,8,9,10,11,12,13, 14, 15, 16];
+		// or
+		l1[4] +<- 0;
+		assert l1 = [0, 1, 100, 100, 0, 4 , 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+		
+		// what about replacing some elements once they have been added ?
+		// "put" can be used for that purpose
+		put -2 at: 0 in: l1;
+		assert l1 =  [-2, 1, 100, 100, 0, 4 , 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+		
+		// or, more elegantly:
+		l1[0] <- -100;
+		assert l1 = [-100,  1, 100, 100, 0, 4 , 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+//TODO: uncomment when the bug is fixed		
+//		// Trying to put an element outside the bounds of the list will yield an error
+//		try {
+//			l1[20] <- 10;
+//			assert false; // an exception must be raised so this line should never be reached
+//		}
+//		catch{
+//			assert true; // the exception is caught
+//		}
+
+		// And what about replacing all the values with a new one ?
+		l1[] <- 0;
+		assert l1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+		// Well, l1 is a bit boring now, isnt't it ?
+		// Let's fill it again with fresh values
+		loop i from: 0 to: length(l1) -1 {
+			l1[i] <- rnd(3);
+		}
+		assert l1 = [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+		// To remove values from it, the "remove" statement (and its compact forms) can be used
+		// For instance, let's try to remove its first element
+		remove first(l1) from: l1;
+		assert l1 = [1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+		
+		// it can also be written
+		l1 >- first(l1);
+		assert l1 = [0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+		
+		// To remove all occurrences of a specific element, "all:" (or ">>-") can be used
+		// For instance:
+		l1 >>- 2;
+		assert l1 = [0,0,0,3,0,1,1,3,3,0,3,3,0];
+		l1 >>- 10;
+		assert l1 = [0,0,0,3,0,1,1,3,3,0,3,3,0];
+		// or, written using the long syntactic form
+		remove all: 1 from: l1;
+		assert l1 = [0,0,0,3,0,3,3,0,3,3,0];
+
+		// To remove all the elements present in a given container, the same syntax can be used
+		l1 >>- [0,3];
+		assert l1 = [];
+		
+		// By all means, l1 should now be empty! Let's fill it again
+		loop times: 20 {
+			l1 <+ rnd(3);
+		}
+		assert l1 = [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+		// It is also possible to remove an index rather than a value (this will remove the 
+		// value present at this index )
+		l1[] >- 3;
+		assert l1 = [1,2,2,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+		// Removing several indexes can be written using a syntax similar to the one used
+		// for removing values
+		l1[] >>- [1,2,4];
+		assert l1 = [1,1,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+		// Random things to try out
+		// Using casting back and forth: all number now vary from 1000 to 31000
+		l1 <- list<int>(l1 collect (string(each) + "1000"));
+		assert l1 = [11000,11000,21000,31000,21000,11000,31000,1000,21000,21000,31000,21000,31000,11000,21000,1000];
+
+		// Removing elements based on a criteria
+		l1 >>- l1 select (each > 20000);
+		assert l1 = [11000,11000,11000,1000,11000,1000];
+		
+		// Removing duplicates
+		l1 <- remove_duplicates(l1);
+		assert l1 = [11000, 1000];
+		// Another way (see "../Maps.gaml")
+		l1 <- map(l1).values; 
+		assert l1 = [11000, 1000];
+	
+	}
+	
+	
+	test looping_on_lists {
+		
+		
+		
+		// Besides iterator operators (like "collect", "where", etc.), which provide 
+		// functional iterations (i.e. filters), one can loop over lists using the imperative
+		// statement 'loop'
+		list<string> l1 <- list("This is a list of strings");
+		assert l1 = ['T','h','i','s',' ','i','s',' ','a',' ','l','i','s','t',' ','o','f',' ','s','t','r','i','n','g','s'];
+
+		// Here, the value of 's' will be that of each element of the list
+		string s  <- '';
+		loop letter over: l1 {
+			s <- s + letter;
+		}
+		assert s = "This is a list of strings";
+		
+		// 'loop' can also directly use an integer index (remember lists have a zero-based index)
+		list l2 <- [];
+		loop k from: 0 to: length(l1) - 1 step:2 {
+			l2 << l1[k];
+		}
+		assert l2 = ['T','i',' ','s','a','l','s',' ','f','s','r','n','s'];
+		// Finally, list containing agents can be the support of implicit loops in the 'ask' statement
+		create dummy number: 5 returns: my_agents;
+		l2 <- [];
+		ask my_agents{
+			l2 << name;
+		}
+		assert l2 = ['dummy0','dummy1','dummy2','dummy3','dummy4'];
+		// ... which is formally equivalent to:
+		l2 <- [];
+		l2 <<+ my_agents collect each.name;
+		assert l2 = ['dummy0','dummy1','dummy2','dummy3','dummy4'];
+
+		// Powerful filter expressions can be built by combining the various 'iterator' operators
+		let l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
+		assert l3 = ['Agent dummy(0) has an even id','Agent dummy(2) has an even id','Agent dummy(4) has an even id'];
+	}
+	
+	
+	
+}
