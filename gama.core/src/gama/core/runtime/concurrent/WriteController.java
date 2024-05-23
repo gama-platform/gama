@@ -16,9 +16,13 @@ public class WriteController {
 		Object owner;
 		StringBuilder cumulatedContent;
 		
-		public OwnerWriteAsks(Object owner, String initialContent) {
+		public OwnerWriteAsks(Object owner, CharSequence initialContent) {
 			this.owner = owner;
 			cumulatedContent = new StringBuilder(initialContent);
+		}
+		
+		public void appendContent(CharSequence s) {
+			cumulatedContent.append(s);
 		}
 		
 		public void appendContent(String s) {
@@ -69,7 +73,7 @@ public class WriteController {
 		fileWritingMap = new HashMap<>();
 	}
 	
-	public boolean askWrite(String fileId, Object owner, String content) {
+	public boolean askWrite(String fileId, Object owner, CharSequence content) {
 		
 		// If no queue yet we initialize one
 		var fileExecutionStack = fileWritingMap.get(fileId);
@@ -88,8 +92,9 @@ public class WriteController {
 			fileExecutionStack.peekLast().appendContent(content);
 			return true;
 		}
-		
 	}
+	
+	
 	
 	public boolean flushFile(String fileId) {
 		FileWriter fr;

@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.runtime;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,16 @@ public class GAMA {
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
 	private static final WriteController writeController = new WriteController();
+	
+	public static boolean askWriteFile(Object owner, File f, String content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content);
+	}
+	public static boolean askWriteFile(Object owner, File f, CharSequence content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content);
+	}
+	public static boolean flushWrite(Object owner) {
+		return writeController.flushOwner(owner);
+	}
 	
 	/**
 	 * Gets the controllers.

@@ -12,8 +12,6 @@ package gama.gaml.statements.save;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import gama.core.common.interfaces.ISerialisationConstants;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
@@ -48,17 +47,16 @@ public class TextSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
+	public void save(final IScope scope, final IExpression item, final File file, final boolean header)
 			throws GamaRuntimeException {
-		if (os == null) return;
+		if (file == null) return;
 		String toSave = Cast.asString(scope, item.value(scope));
 		char id = toSave.charAt(0);
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		final Writer fw = new OutputStreamWriter(os, ch);
-		try (fw) {
-			fw.write(toSave);
+		try {
+			GAMA.askWriteFile(scope.getSimulation(), file, toSave);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -97,8 +95,8 @@ public class TextSaver extends AbstractSaver {
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		try (final Writer fw = new FileWriter(file, ch, true)) {
-			fw.write(Cast.asString(scope, item.value(scope)) + Strings.LN);
+		try  {
+			GAMA.askWriteFile(scope.getSimulation(), file, toSave);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

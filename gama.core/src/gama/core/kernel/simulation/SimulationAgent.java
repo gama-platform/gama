@@ -455,6 +455,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 			}
 		}
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
+		GAMA.flushWrite(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
 		super.dispose();
