@@ -35,6 +35,7 @@ import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
+import gama.core.runtime.concurrent.WriteController;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
 import gama.dev.DEBUG;
@@ -98,6 +99,8 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
+	private static final WriteController writeController = new WriteController();
+	
 	/**
 	 * Gets the controllers.
 	 *
