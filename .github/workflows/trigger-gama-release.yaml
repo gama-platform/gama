@@ -18,6 +18,11 @@ on:
         type: string
         required: true
         default: 17.0.8.1+1
+      releaseGithubOnly:
+        description: "Should this release be pushed only on Github or also on Microsoft Stores, else ?"
+        type: boolean
+        required: true
+        default: false
 
 run-name: Building GAMA release
 
@@ -111,6 +116,7 @@ jobs:
       RELEASE_VERSION: ${{ inputs.tag }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       COMMIT_SHA: ${{needs.travis-scripts.outputs.commit}}
+      RELEASE_GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
     secrets: 
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 

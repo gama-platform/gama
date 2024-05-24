@@ -14,6 +14,10 @@ on:
         required: true
         default: false 
         type: boolean
+      RELEASE_GITHUB_ONLY: 
+        required: true
+        default: false 
+        type: boolean
     secrets:
       BOT_TOKEN:
         required: true
@@ -31,6 +35,7 @@ jobs:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 
   publishing-third-party:
+    if: "${{ inputs.RELEASE_GITHUB_ONLY == false }}"
     needs: publish-github
     name: Publish archives to 3rd parties
     uses: ./.github/workflows/travis-publish-third-party.yaml
