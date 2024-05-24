@@ -19,7 +19,7 @@ on:
         required: true
         default: 17.0.11+9
       releaseGithubOnly:
-        description: "Should this release be pushed only on Github or also on Microsoft Stores, else ?"
+        description: "Release only on Github (not on Microsoft Stores, else) ?"
         type: boolean
         required: true
         default: false
