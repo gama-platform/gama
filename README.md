@@ -11,6 +11,9 @@ Due to several bugfixes in the recent versions of SWT, the _highly recommended c
 
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=gama-platform_new.gama&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=gama-platform_new.gama)
 
+[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/51964)
+[![CodeScene Code Health](https://codescene.io/projects/51964/status-badges/code-health)](https://codescene.io/projects/51964)
+
 **Core repository for the GAMA Platform project**
  
 Please post issues about GAMA here: 
