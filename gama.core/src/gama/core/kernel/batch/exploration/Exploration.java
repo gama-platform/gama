@@ -41,7 +41,6 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -50,7 +49,6 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Random;
 import gama.gaml.types.GamaDateType;
 import gama.gaml.types.GamaFloatType;
 import gama.gaml.types.GamaPointType;
@@ -170,10 +168,10 @@ public class Exploration extends AExplorationAlgorithm {
 	private int sample_size = 132;
 
 	/** The nb levels. */
-	private int nb_levels = 4;
+	private int nb_levels = MorrisSampling.DEFAULT_LEVEL;
 
 	/** The iterations. */
-	private int iterations = 5;
+	private int iterations = OrthogonalSampling.DEFAULT_ITERATION;
 
 	/** The parameters. */
 	private List<Batch> parameters;
