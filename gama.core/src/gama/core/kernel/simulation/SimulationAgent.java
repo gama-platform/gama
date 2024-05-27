@@ -406,6 +406,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		executer.executeOneShotActions();
 		if (outputs != null) { outputs.step(this.getScope()); }
 		ownClock.step();
+		//
 	}
 
 	@Override
