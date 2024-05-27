@@ -21,6 +21,8 @@ import gama.core.runtime.IScope;
  */
 public class OrthogonalSampling extends SamplingUtils {
 	
+	public static int DEFAULT_ITERATION = 5;
+	
 	/**
 	 * Build a Cut List with value between 0 and 1
 	 * @param sample

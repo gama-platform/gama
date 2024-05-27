@@ -132,7 +132,7 @@ public class Morris {
 			 fr = new FileReader(file);
 		 } catch (FileNotFoundException e) {
 			 GamaRuntimeException.error(e.getMessage(), scope);
-		 } 
+		 }		
 
 		 BufferedReader br = new BufferedReader(fr);
 		 String line = " ";
@@ -262,27 +262,8 @@ public class Morris {
 		StringBuilder sb = new StringBuilder();
 		char sep = ',';
 		
-		if ("csv".equalsIgnoreCase(extension)) {
+		if ("txt".equalsIgnoreCase(extension)) {
 			
-			// Build header
-			sb.append("output").append(sep);
-			sb.append("parameter").append(sep); 
-			sb.append("\u00B5").append(sep);
-			sb.append("\u00B5").append("*").append(sep);
-			sb.append("\u03C3").append(Strings.LN);
-			
-			for (String output_name : outputs.keySet()) {
-				for (String param : ParametersNames) {
-					// The output & parameter
-					sb.append(output_name).append(sep);
-					sb.append(param).append(sep);
-					sb.append(mu.get(output_name).get(param)).append(sep);
-					sb.append(mu_star.get(output_name).get(param)).append(sep);
-					sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
-				}
-			}
-			
-		} else {
 			sb.append("MORRIS ANALYSIS :").append(Strings.LN);
 			for (String o : outputs.keySet()) {
 				
@@ -309,6 +290,26 @@ public class Morris {
 						.append(_sigma.get(n)).append(Strings.LN);
 				}
 			}
+			
+		} else {
+			// Build header
+			sb.append("output").append(sep);
+			sb.append("parameter").append(sep); 
+			sb.append("\u00B5").append(sep);
+			sb.append("\u00B5").append("*").append(sep);
+			sb.append("\u03C3").append(Strings.LN);
+			
+			for (String output_name : outputs.keySet()) {
+				for (String param : ParametersNames) {
+					// The output & parameter
+					sb.append(output_name).append(sep);
+					sb.append(param).append(sep);
+					sb.append(mu.get(output_name).get(param)).append(sep);
+					sb.append(mu_star.get(output_name).get(param)).append(sep);
+					sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
+				}
+			}
+
 		}
 
 		return sb.toString();

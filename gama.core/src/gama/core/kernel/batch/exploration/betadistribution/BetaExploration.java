@@ -12,13 +12,12 @@ package gama.core.kernel.batch.exploration.betadistribution;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
+import org.apache.commons.compress.utils.FileNameUtils;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -26,16 +25,21 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.exploration.Exploration;
+import gama.core.kernel.batch.exploration.sampling.LatinhypercubeSampling;
+import gama.core.kernel.batch.exploration.sampling.MorrisSampling;
+import gama.core.kernel.batch.exploration.sampling.OrthogonalSampling;
 import gama.core.kernel.batch.exploration.sampling.RandomSampling;
 import gama.core.kernel.batch.exploration.sampling.SaltelliSampling;
 import gama.core.kernel.experiment.BatchAgent;
+import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -157,15 +161,12 @@ public class BetaExploration extends AExplorationAlgorithm {
 
 		String method = Cast.asString(scope, getFacet(Exploration.METHODS).value(scope));
 		sets = switch (method) {
-			case IKeyword.MORRIS -> throw GamaRuntimeException
-					.error("Beta d indicator should use a factorial sampling design", scope);
-			case IKeyword.LHS -> throw GamaRuntimeException
-					.error("Beta d indicator should use a factorial sampling design", scope);
-			case IKeyword.ORTHOGONAL -> throw GamaRuntimeException
-					.error("Beta d indicator should use a factorial sampling design", scope);
-
-			case IKeyword.SALTELLI -> SaltelliSampling.makeSaltelliSampling(scope, sample_size, parameters);
-			case IKeyword.FACTORIAL -> {
+			case IKeyword.MORRIS: yield MorrisSampling.makeMorrisSamplingOnly(4, sample_size, params, scope);
+			case IKeyword.LHS: yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, params, scope.getRandom().getGenerator(), scope);
+			case IKeyword.ORTHOGONAL: yield OrthogonalSampling.orthogonalSamples(sample_size, OrthogonalSampling.DEFAULT_ITERATION, params, scope.getRandom().getGenerator(), scope);
+			case IKeyword.SALTELLI: yield SaltelliSampling.makeSaltelliSampling(scope, sample_size, parameters);
+			case IKeyword.UNIFORM: yield RandomSampling.uniformSampling(scope, sample_size, parameters);
+			default: 
 				List<ParametersSet> ps = null;
 				if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
 					int[] factors = Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
@@ -175,9 +176,6 @@ public class BetaExploration extends AExplorationAlgorithm {
 					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
 				}
 				yield ps;
-			}
-			case IKeyword.UNIFORM -> RandomSampling.uniformSampling(scope, sample_size, parameters);
-			default -> buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 
 		// == Launch simulations ==
@@ -203,17 +201,25 @@ public class BetaExploration extends AExplorationAlgorithm {
 			res.put(out, bs.evaluate());
 		}
 
-		if (hasFacet(IKeyword.BATCH_REPORT)) {
-			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
-			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
-			final File parent = f.getParentFile();
-			try (FileWriter fw = new FileWriter(f, false)) {
-				if (!parent.exists()) { parent.mkdirs(); }
-				if (f.exists()) { f.delete(); }
-				fw.write(this.buildReportString(res));
-			} catch (Exception e) {
-				throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);
-			}
+		/* Save the simulation values in the provided .csv file (input and corresponding output) */
+		if (hasFacet(IKeyword.BATCH_OUTPUT)) {
+			 String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
+			final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
+			final File parento = fo.getParentFile();
+			if (!parento.exists()) { parento.mkdirs(); }
+			if (fo.exists()) { fo.delete(); }
+			saveSimulation(fo, scope);
+		}
+		
+		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
+		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
+		final File parent = f.getParentFile();
+		try (FileWriter fw = new FileWriter(f, false)) {
+			if (!parent.exists()) { parent.mkdirs(); }
+			if (f.exists()) { f.delete(); }
+			fw.write(buildReportString(res,FileNameUtils.getExtension(f.getPath())));
+		} catch (Exception e) {
+			throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);
 		}
 
 	}
@@ -240,23 +246,91 @@ public class BetaExploration extends AExplorationAlgorithm {
 	}
 	
 	/**
+	 * Save simulation.
+	 *
+	 * @param rebuilt_output
+	 *            the rebuilt output
+	 * @param file
+	 *            the file
+	 * @param scope
+	 *            the scope
+	 */
+	private void saveSimulation(final File file, final IScope scope) throws GamaRuntimeException {
+		try (FileWriter fw = new FileWriter(file, false)) {
+			fw.write(this.buildSimulationCsv());
+		} catch (Exception e) {
+			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
+		}
+	}
+
+	/**
+	 * Builds the simulation csv.
+	 *
+	 * @param rebuilt_output
+	 *            the rebuilt output
+	 * @return the string
+	 */
+	private String buildSimulationCsv() {
+		StringBuilder sb = new StringBuilder();
+		String sep = ",";
+		
+		List<String> paramnames = parameters.stream().map(b -> b.getName()).toList();
+		
+		// Headers
+		sb.append(String.join(sep, paramnames));
+		sb.append(sep);
+		sb.append(String.join(sep, outputs));
+		sb.append(Strings.LN);
+
+		// Values
+		for (ParametersSet ps : res_outputs.keySet().stream().toList()) {
+			for (String sol : paramnames) { sb.append(ps.get(sol)).append(sep); } // inputs values
+			for (String output : outputs) { 
+				sb.append(res_outputs.get(ps).get(output).get(0)).append(sep); 
+			} // outputs values
+			sb.deleteCharAt(sb.length() - 1).append(Strings.LN); // new line
+		}
+		return sb.toString();
+	}
+	
+	/**
 	 * Builds the report string.
 	 *
 	 * @param res
 	 *            the res
 	 * @return the string
 	 */
-	public String buildReportString(final Map<String, Map<Batch, Double>> res) {
+	public String buildReportString(final Map<String, Map<Batch, Double>> res, final String extension) {
 		StringBuilder sb = new StringBuilder();
-		String sep = "; ";
-		sb.append("BETA b Kuiper based estimator :\n");
-		sb.append("##############################\n");
-		sb.append("inputs" + sep + String.join(sep, outputs)).append(Strings.LN);
-		String line = "";
-		for (Batch param : parameters) {
-			line = param.getName();
-			for (String output_name : outputs) { line = line + sep + res.get(output_name).get(param).toString(); }
-			sb.append(line).append(Strings.LN);
+		String sep = ",";
+		
+		if ("txt".equalsIgnoreCase(extension)) {
+		
+			sb.append("BETA b Kuiper based estimator :").append(Strings.LN);
+			sb.append("##############################").append(Strings.LN);
+			sb.append("inputs" + sep + String.join(sep, outputs)).append(Strings.LN);
+			String line = "";
+			for (Batch param : parameters) {
+				line = param.getName();
+				for (String output_name : outputs) { line = line + sep + res.get(output_name).get(param).toString(); }
+				sb.append(line).append(Strings.LN);
+			}
+		} else {
+			
+			// Build header
+			sb.append("output").append(sep);
+			sb.append("parameter").append(sep); 
+			sb.append("\u03B2").append(Strings.LN);
+			
+			for (String output_name : outputs) {
+				for (Batch param : parameters) {
+					// The output & parameter
+					sb.append(output_name).append(sep);
+					sb.append(param.getName()).append(sep);
+					sb.append(res.get(output_name).get(param)).append(Strings.LN);
+				}
+			}
+			
 		}
 		return sb.toString();
 	}

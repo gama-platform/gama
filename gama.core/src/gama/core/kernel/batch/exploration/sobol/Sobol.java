@@ -346,27 +346,7 @@ public class Sobol {
 		StringBuilder sb = new StringBuilder();
 		char sep = ',';
 
-		if ("csv".equalsIgnoreCase(extension)) {
-			// Build header
-			sb.append("output").append(sep);
-			sb.append("parameter").append(sep);
-			sb.append("first order").append(sep);
-			sb.append("first order confidence").append(sep);
-			sb.append("Total order").append(sep);
-			sb.append("Total order confidence").append(Strings.LN);
-			for (String output_name : sobol_analysis.keySet()) {
-				for (String param : sobol_analysis.get(output_name).keySet()) {
-					// The output & parameter
-					sb.append(output_name).append(sep);
-					sb.append(param);
-					for (Double indices : sobol_analysis.get(output_name).get(param)) {
-						// The Sobol indices
-						sb.append(sep).append(indices);
-					}
-					sb.append(Strings.LN);
-				}
-			}
-		} else {
+		if ("txt".equalsIgnoreCase(extension)) {
 			sb.append("SOBOL ANALYSIS:\n");
 			for (String output_name : sobol_analysis.keySet()) {
 				sb.append("##############################\n");
@@ -383,6 +363,25 @@ public class Sobol {
 					sb.append("Total order confidence : ");
 					sb.append(sobol_analysis.get(output_name).get(param).get(3)).append(Strings.LN);
 					sb.append("-------------------").append(Strings.LN);
+				}
+			}
+		} else {
+			sb.append("output").append(sep);
+			sb.append("parameter").append(sep);
+			sb.append("first order").append(sep);
+			sb.append("first order confidence").append(sep);
+			sb.append("Total order").append(sep);
+			sb.append("Total order confidence").append(Strings.LN);
+			for (String output_name : sobol_analysis.keySet()) {
+				for (String param : sobol_analysis.get(output_name).keySet()) {
+					// The output & parameter
+					sb.append(output_name).append(sep);
+					sb.append(param);
+					for (Double indices : sobol_analysis.get(output_name).get(param)) {
+						// The Sobol indices
+						sb.append(sep).append(indices);
+					}
+					sb.append(Strings.LN);
 				}
 			}
 		}
