@@ -320,6 +320,24 @@ public class Sobol {
 		}
 	}
 
+	/*******************************************************/
+	/************************* UTILS *************************/
+	/*******************************************************/
+
+	/*
+	 * Compute the parameters values for each sample using the Saltelli indices matrix
+	 */
+	private void sample() {
+		for (int i = 0; i < _sample; i++) {
+			int j = 0;
+			for (String param : parameters.keySet()) {
+				roll(param, saltelli[i][j], problem.get(param));
+				j++;
+			}
+		}
+	}
+	
+
 	/**
 	 * Build the string that contains the report of the Sobol analysis
 	 */
@@ -370,23 +388,6 @@ public class Sobol {
 		}
 
 		return sb.toString();
-	}
-
-	/*******************************************************/
-	/************************* UTILS *************************/
-	/*******************************************************/
-
-	/*
-	 * Compute the parameters values for each sample using the Saltelli indices matrix
-	 */
-	private void sample() {
-		for (int i = 0; i < _sample; i++) {
-			int j = 0;
-			for (String param : parameters.keySet()) {
-				roll(param, saltelli[i][j], problem.get(param));
-				j++;
-			}
-		}
 	}
 
 	/**
