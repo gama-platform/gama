@@ -66,7 +66,8 @@ public class TextSaver extends AbstractSaver {
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
 		try  {
-			GAMA.askWriteFile(scope.getSimulation(), file, toSave, bufferingStrategy);
+			//TODO: manage the rewrite case here
+			GAMA.askWriteFile(scope.getSimulation(), file, toSave, bufferingStrategy, true);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

@@ -29,20 +29,20 @@ public class WriteController {
 		fileWritingPerCycleMap = new HashMap<>();
 	}
 	
-	public boolean askWrite(String fileId, SimulationAgent owner, CharSequence content, BufferingStrategies bs) {
+	public boolean askWrite(String fileId, SimulationAgent owner, CharSequence content, BufferingStrategies bs, boolean append) {
 		switch (bs) {
 			case PER_SIMULATION_BUFFERING:
-				return appendWriteSimulation(fileId, owner, content);
+				return appendWriteSimulation(fileId, owner, content, append);
 			case PER_CYCLE_BUFFERING:
-				return appendWriteCycle(fileId, owner, content);
+				return appendWriteCycle(fileId, owner, content, append);
 			case NO_BUFFERING:
-				return directWrite(fileId, content);
+				return directWrite(fileId, content, append);
 			default:
 				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + bs.toString()), owner.getScope());
 		}
 	}
 	
-	protected boolean appendWriteRequestToMap(String fileId, SimulationAgent owner, CharSequence content, Map<String, Map<SimulationAgent, StringBuilder>> map) {
+	protected boolean appendWriteRequestToMap(String fileId, SimulationAgent owner, CharSequence content, Map<String, Map<SimulationAgent, StringBuilder>> map, boolean append) {
 		// If we don't have any map for this file yet we create one
 		Map<SimulationAgent, StringBuilder> fileSavingAsksMap = map.get(fileId);
 		if (fileSavingAsksMap == null) {
@@ -50,8 +50,9 @@ public class WriteController {
 			map.put(fileId, fileSavingAsksMap);
 		}
 		
-		// We loop up for the previous write request of the owner simulation in the map
-		// if there's already one we append our content, else we create one with the content as its initial value
+		// We look up for the previous write request of the owner simulation in the map
+		// if there's already one we append our content or rewrite, depending on the append parameter
+		// else we create one with the content as its initial value
 		StringBuilder askRequest = fileSavingAsksMap.get(owner);
 		if (askRequest == null) {
 			try {
@@ -64,21 +65,25 @@ public class WriteController {
 			}
 		}
 		else {
+			// If we are not in append mode, we empty the buffer
+			if (!append) {
+				askRequest.setLength(0);
+			}
 			askRequest.append(content);
 			return true;
 		}
 	}
 	
-	protected boolean appendWriteSimulation(String fileId, SimulationAgent owner, CharSequence content) {
-		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerSimulationMap);
+	protected boolean appendWriteSimulation(String fileId, SimulationAgent owner, CharSequence content, boolean append) {
+		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerSimulationMap, append);
 	}
 
-	protected boolean appendWriteCycle(String fileId, SimulationAgent owner, CharSequence content) {
-		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerCycleMap);
+	protected boolean appendWriteCycle(String fileId, SimulationAgent owner, CharSequence content, boolean append) {
+		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerCycleMap, append);
 	}
-	protected boolean directWrite(String fileId, CharSequence content ) {
+	protected boolean directWrite(String fileId, CharSequence content, boolean append ) {
 		try {
-			var fr = new FileWriter(new File(fileId));
+			var fr = new FileWriter(new File(fileId), append);
 			fr.append(content);
 			fr.flush();
 			fr.close();
@@ -99,7 +104,7 @@ public class WriteController {
 		for(var entry : map.entrySet()) {
 			var cumulatedContent = entry.getValue().get(owner);
 			if (cumulatedContent != null) {
-				var writeSuccess = directWrite(entry.getKey(), cumulatedContent);
+				var writeSuccess = directWrite(entry.getKey(), cumulatedContent, true);
 				// we don't return false directly because we try to flush as much files as possible
 				success &= writeSuccess;
 				// if the write was successful we remove the operation from the map 
