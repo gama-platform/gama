@@ -103,25 +103,11 @@ public class GAMA {
 
 	private static final WriteController writeController = new WriteController();
 	
-	public static boolean askWriteFileSimulation(SimulationAgent owner, File f, String content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_SIMULATION_BUFFERING);
+	public static boolean askWriteFile(SimulationAgent owner, File f, String content, BufferingStrategies strategy) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, strategy);
 	}
-	public static boolean askWriteFileSimulation(SimulationAgent owner, File f, CharSequence content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_SIMULATION_BUFFERING);
-	}
-	
-	public static boolean askWriteFileCycle(SimulationAgent owner, File f, String content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_CYCLE_BUFFERING);
-	}
-	public static boolean askWriteFileCycle(SimulationAgent owner, File f, CharSequence content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_CYCLE_BUFFERING);
-	}
-	
-	public static boolean askWriteFileDirect(SimulationAgent owner, File f, String content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.NO_BUFFERING);
-	}
-	public static boolean askWriteFileDirect(SimulationAgent owner, File f, CharSequence content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.NO_BUFFERING);
+	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content, BufferingStrategies strategy) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, strategy);
 	}
 	
 	public static boolean flushWriteSimulation(SimulationAgent owner) {

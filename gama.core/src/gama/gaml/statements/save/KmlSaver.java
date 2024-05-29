@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.Set;
 
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.GamaKmlExport;
 
@@ -35,7 +36,7 @@ public class KmlSaver extends AbstractSaver {
 	 */
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) {
+			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) {
 		final Object kml = item.value(scope);
 		String path = file.getAbsolutePath();
 		if (!(kml instanceof GamaKmlExport export)) return;

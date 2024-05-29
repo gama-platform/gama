@@ -27,6 +27,7 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.util.GamaColor;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
@@ -59,7 +60,7 @@ public class ImageSaver extends AbstractSaver {
 	 */
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
+			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
 		String t = "image".equals(type) ? "png" : "jpeg".equals(type) ? "jpg" : type;

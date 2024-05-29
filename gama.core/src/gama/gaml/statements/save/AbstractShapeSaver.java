@@ -41,6 +41,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.SimpleScalingProjection;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
@@ -94,7 +95,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 */
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) throws GamaRuntimeException {
+			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws GamaRuntimeException {
 		save(scope, item, file, code, attributesToSave);
 	}
 

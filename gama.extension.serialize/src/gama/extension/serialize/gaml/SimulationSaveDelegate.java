@@ -20,6 +20,7 @@ import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.IType;
@@ -35,7 +36,7 @@ public class SimulationSaveDelegate implements ISaveDelegate, ISerialisationCons
 
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
+			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException {
 		Object toSave = item.value(scope);
 		if (toSave instanceof IAgent sa) {
 			BinarySerialisation.saveToFile(scope, sa, file.getPath(), type, true, true);

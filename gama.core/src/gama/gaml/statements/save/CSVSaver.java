@@ -10,7 +10,6 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
@@ -19,6 +18,7 @@ import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
@@ -76,9 +76,9 @@ public class CSVSaver extends AbstractSaver {
 	 */
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave)
+			final boolean addHeader, final String type, final Object attributesToSave, final BufferingStrategies bufferingStrategy)
 			throws GamaRuntimeException, IOException {
-		save(scope, file, addHeader, item);
+		save(scope, file, addHeader, item, bufferingStrategy);
 
 	}
 
@@ -96,7 +96,7 @@ public class CSVSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private void save(final IScope scope, final File file, final boolean header, final IExpression item)
+	private void save(final IScope scope, final File file, final boolean header, final IExpression item, final BufferingStrategies bufferingStrategy)
 			throws GamaRuntimeException {
 		
 		StringBuilder sb = new StringBuilder();
@@ -138,7 +138,6 @@ public class CSVSaver extends AbstractSaver {
 					}
 					sb.append(Strings.LN);
 				}
-
 			}
 		} else {
 			if (header) {
@@ -157,8 +156,8 @@ public class CSVSaver extends AbstractSaver {
 				}
 			}
 			sb.append(Strings.LN);
-			GAMA.askWriteFile(scope.getSimulation(), file, sb);
 		}
+		GAMA.askWriteFile(scope.getSimulation(), file, sb, bufferingStrategy);
 	}
 
 	/**

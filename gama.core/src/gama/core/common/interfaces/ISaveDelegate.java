@@ -18,6 +18,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -51,7 +52,7 @@ public interface ISaveDelegate {
 	 * @throws IOException
 	 */
 	void save(IScope scope, IExpression item, File file, String code, boolean addHeader, String type,
-			Object attributesToSave) throws IOException;
+			Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException;
 
 	/**
 	 * The type of the item. Returns the gaml type required for triggering this save delegate. If no type is declared

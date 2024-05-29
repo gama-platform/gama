@@ -465,6 +465,13 @@ public class SaveStatement extends AbstractStatementSequence{
 			typeExp = Cast.asString(scope, format.value(scope));
 			if (!DELEGATES.containsKey(typeExp)) { typeExp = null; }
 		}
+		
+		// get the buffering strategy
+		BufferingStrategies strategy = BufferingStrategies.NO_BUFFERING;
+		if (bufferingStrategy != null) {
+			strategy = stringToBufferingStrategies((String)bufferingStrategy.value(scope));
+		}
+		
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
 			boolean exists = fileToSave.exists();
@@ -488,7 +495,7 @@ public class SaveStatement extends AbstractStatementSequence{
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = findDelegate(itemType, type);
 			if (delegate != null) {
-				delegate.save(scope, item, fileToSave, code, addHeader, type, attributesFacet);
+				delegate.save(scope, item, fileToSave, code, addHeader, type, attributesFacet, strategy);
 				return Cast.asString(scope, file.value(scope));
 			}
 			throw GamaRuntimeException.error("Format not recognized: " + type, scope);

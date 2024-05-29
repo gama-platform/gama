@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.Set;
 
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.WriterConfig;
@@ -31,7 +32,7 @@ public class JsonSaver extends AbstractSaver {
 
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave)
+			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy)
 			throws GamaRuntimeException {
 		try (Writer fw = new FileWriter(file, true)) {
 			Json.getNew().valueOf(item.value(scope)).writeTo(fw, WriterConfig.PRETTY_PRINT);

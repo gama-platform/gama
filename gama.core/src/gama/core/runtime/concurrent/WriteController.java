@@ -1,10 +1,8 @@
 package gama.core.runtime.concurrent;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,6 +81,7 @@ public class WriteController {
 			var fr = new FileWriter(new File(fileId));
 			fr.append(content);
 			fr.flush();
+			fr.close();
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -90,39 +89,26 @@ public class WriteController {
 		}
 	}
 	
-//	
-//	public boolean flushFile(String fileId) {
-//		FileWriter fr;
-//		try {
-//			fr = new FileWriter(new File(fileId));
-//			// we merge everything
-//			for(var asks : fileWritingPerSimulationMap.get(fileId)) {
-//				fr.append(asks.cumulatedContent);
-//			}
-//			fr.flush();
-//			return true;
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//		
-//	}
 	/**
 	 * Flushes all the save requests made by a simulation saved in a map
 	 * @param owner: the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
 	protected boolean flushMapOwner(SimulationAgent owner, Map<String, Map<SimulationAgent, StringBuilder>> map) {
+		boolean success = true;
 		for(var entry : map.entrySet()) {
 			var cumulatedContent = entry.getValue().get(owner);
 			if (cumulatedContent != null) {
-				var success = directWrite(entry.getKey(), cumulatedContent);
-				if (!success) {
-					return false;
+				var writeSuccess = directWrite(entry.getKey(), cumulatedContent);
+				// we don't return false directly because we try to flush as much files as possible
+				success &= writeSuccess;
+				// if the write was successful we remove the operation from the map 
+				if (writeSuccess) {
+					entry.getValue().remove(owner);
 				}
 			}
 		}
-		return true;
+		return success;
 	}
 	/**
 	 * Flushes all the save requests made by a simulation with the 'per_simulation_buffering' strategy
