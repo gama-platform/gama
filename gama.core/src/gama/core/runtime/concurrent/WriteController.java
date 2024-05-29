@@ -8,6 +8,8 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -37,6 +39,8 @@ public class WriteController {
 				return appendWriteCycle(fileId, owner, content);
 			case NO_BUFFERING:
 				return directWrite(fileId, content);
+			default:
+				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + bs.toString()), owner.getScope());
 		}
 	}
 	

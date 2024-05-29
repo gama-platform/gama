@@ -37,6 +37,7 @@ import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.WriteController;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
 import gama.dev.DEBUG;
@@ -102,18 +103,34 @@ public class GAMA {
 
 	private static final WriteController writeController = new WriteController();
 	
-	public static boolean askWriteFile(SimulationAgent owner, File f, String content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content);
+	public static boolean askWriteFileSimulation(SimulationAgent owner, File f, String content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_SIMULATION_BUFFERING);
 	}
-	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content);
+	public static boolean askWriteFileSimulation(SimulationAgent owner, File f, CharSequence content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_SIMULATION_BUFFERING);
 	}
+	
+	public static boolean askWriteFileCycle(SimulationAgent owner, File f, String content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_CYCLE_BUFFERING);
+	}
+	public static boolean askWriteFileCycle(SimulationAgent owner, File f, CharSequence content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.PER_CYCLE_BUFFERING);
+	}
+	
+	public static boolean askWriteFileDirect(SimulationAgent owner, File f, String content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.NO_BUFFERING);
+	}
+	public static boolean askWriteFileDirect(SimulationAgent owner, File f, CharSequence content) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, BufferingStrategies.NO_BUFFERING);
+	}
+	
 	public static boolean flushWriteSimulation(SimulationAgent owner) {
 		return writeController.flushSimulationOwner(owner);
 	}
 	public static boolean flushWriteStep(SimulationAgent owner) {
-		return writeController.flushStepOwner(owner);
+		return writeController.flushCycleOwner(owner);
 	}
+	//TODO: other flushes + their operators
 	
 	/**
 	 * Gets the controllers.
