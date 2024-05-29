@@ -64,7 +64,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @param runner
 	 *            the runner a ThreadPoolExecutor to launch concurrent experiments
 	 * @param ssl
-	 *            the ssl wether to use ssl or no
+	 *            the ssl whether to use ssl or not
 	 * @param jksPath
 	 *            the jks path the store path
 	 * @param spwd

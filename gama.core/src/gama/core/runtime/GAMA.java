@@ -102,14 +102,17 @@ public class GAMA {
 
 	private static final WriteController writeController = new WriteController();
 	
-	public static boolean askWriteFile(Object owner, File f, String content) {
+	public static boolean askWriteFile(SimulationAgent owner, File f, String content) {
 		return writeController.askWrite(f.getAbsolutePath(), owner, content);
 	}
-	public static boolean askWriteFile(Object owner, File f, CharSequence content) {
+	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content) {
 		return writeController.askWrite(f.getAbsolutePath(), owner, content);
 	}
-	public static boolean flushWrite(Object owner) {
-		return writeController.flushOwner(owner);
+	public static boolean flushWriteSimulation(SimulationAgent owner) {
+		return writeController.flushSimulationOwner(owner);
+	}
+	public static boolean flushWriteStep(SimulationAgent owner) {
+		return writeController.flushStepOwner(owner);
 	}
 	
 	/**

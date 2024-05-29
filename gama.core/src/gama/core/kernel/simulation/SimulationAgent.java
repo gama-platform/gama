@@ -406,6 +406,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		executer.executeOneShotActions();
 		if (outputs != null) { outputs.step(this.getScope()); }
 		ownClock.step();
+		GAMA.flushWriteStep(this);
 	}
 
 	@Override
@@ -437,8 +438,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	public void dispose() {
 		if (dead) return;
 		executer.executeDisposeActions();
-		// hqnghi if simulation come from popultion extern, dispose pop first
-		// and then their outputs
+		// hqnghi if simulation comes from an external population, dispose this population first
+		// and then its outputs
 
 		if (externMicroPopulations != null) { externMicroPopulations.clear(); }
 
@@ -455,7 +456,9 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 			}
 		}
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
-		GAMA.flushWrite(this);
+
+		//we make sure that all pending write operations are flushed
+		GAMA.flushWriteSimulation(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
 		super.dispose();

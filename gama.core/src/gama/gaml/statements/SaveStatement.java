@@ -36,6 +36,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IModifiableContainer;
 import gama.core.util.file.GamaFile.FlushBufferException;
@@ -210,6 +211,22 @@ public class SaveStatement extends AbstractStatementSequence{
 
 	}
 
+	/**
+	 * Converts a string into a BufferingStrategies if it matches the corresponding static variables. If not it returns NO_BUFFERING
+	 * @param s
+	 * @return
+	 */
+	public static BufferingStrategies stringToBufferingStrategies(String s) {
+		switch (s){
+			case PER_CYCLE_BUFFERING:
+				return BufferingStrategies.PER_CYCLE_BUFFERING;
+			case PER_SIMULATION_BUFFERING:
+				return BufferingStrategies.PER_SIMULATION_BUFFERING;
+			default:
+				return BufferingStrategies.NO_BUFFERING;
+		}
+	}
+	
 	/**
 	 * The Class SaveValidator.
 	 */

@@ -1,148 +1,141 @@
 package gama.core.runtime.concurrent;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
+
+import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.runtime.GAMA;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 
 public class WriteController {
 	
-	protected class OwnerWriteAsks {
-		Object owner;
-		StringBuilder cumulatedContent;
-		
-		public OwnerWriteAsks(Object owner, CharSequence initialContent) {
-			this.owner = owner;
-			cumulatedContent = new StringBuilder(initialContent);
-		}
-		
-		public void appendContent(CharSequence s) {
-			cumulatedContent.append(s);
-		}
-		
-		public void appendContent(String s) {
-			cumulatedContent.append(s);
-		}
-		
-		public Object getOwner() {
-			return owner;
-		}
-		
-		public String getCumulatedContent() {
-			return cumulatedContent.toString();
-		}
-		
+	public enum BufferingStrategies{
+		NO_BUFFERING,
+		PER_CYCLE_BUFFERING,
+		PER_SIMULATION_BUFFERING
 	}
-	
-	protected class OwnerWriteAsksQueue extends LinkedBlockingQueue<OwnerWriteAsks>{
-		
-		Map<Object, List<OwnerWriteAsks>> tasksPerOwner;
-		
-		public OwnerWriteAsksQueue() {
-			super();
-		}
-		
-		@Override
-		public boolean add(OwnerWriteAsks e) {
-			var added = super.add(e);
-			if (added) {
-				var listTaskOwner = tasksPerOwner.get(e.owner);
-				if (listTaskOwner == null) {
-					listTaskOwner = new ArrayList<>();
-					tasksPerOwner.put(e.owner, listTaskOwner);
-				}
-				listTaskOwner.add(e);
-			}
-			return added;
-		}
-		
-		public List<OwnerWriteAsks> getAllWriteAsksOfOwner(Object owner) {
-			return tasksPerOwner.get(owner);
-		}
-	}
-	
-	
-	protected Map<String, ArrayDeque<OwnerWriteAsks>> fileWritingMap;
+
+
+	protected Map<String, Map<SimulationAgent, StringBuilder>> fileWritingPerSimulationMap;
+	protected Map<String, Map<SimulationAgent, StringBuilder>> fileWritingPerCycleMap;
 	
 	public WriteController() {
-		fileWritingMap = new HashMap<>();
+		fileWritingPerSimulationMap = new HashMap<>();
+		fileWritingPerCycleMap = new HashMap<>();
 	}
 	
-	public boolean askWrite(String fileId, Object owner, CharSequence content) {
-		
-		// If no queue yet we initialize one
-		var fileExecutionStack = fileWritingMap.get(fileId);
-		if (fileExecutionStack == null) {
-			fileExecutionStack = new ArrayDeque<>();
-			fileWritingMap.put(fileId, fileExecutionStack);
+	public boolean askWrite(String fileId, SimulationAgent owner, CharSequence content, BufferingStrategies bs) {
+		switch (bs) {
+			case PER_SIMULATION_BUFFERING:
+				return appendWriteSimulation(fileId, owner, content);
+			case PER_CYCLE_BUFFERING:
+				return appendWriteCycle(fileId, owner, content);
+			case NO_BUFFERING:
+				return directWrite(fileId, content);
+		}
+	}
+	
+	protected boolean appendWriteRequestToMap(String fileId, SimulationAgent owner, CharSequence content, Map<String, Map<SimulationAgent, StringBuilder>> map) {
+		// If we don't have any map for this file yet we create one
+		Map<SimulationAgent, StringBuilder> fileSavingAsksMap = map.get(fileId);
+		if (fileSavingAsksMap == null) {
+			fileSavingAsksMap = new HashMap<>();
+			map.put(fileId, fileSavingAsksMap);
 		}
 		
-		// we look up in the queue for the latest ask on this file, 
-		// if it's by the same owner we append to it
-		// else we create a new ask object
-		if (fileExecutionStack.size() == 0 || ! fileExecutionStack.peekLast().owner.equals(owner)) {
-			return fileExecutionStack.add(new OwnerWriteAsks(owner, content));
+		// We loop up for the previous write request of the owner simulation in the map
+		// if there's already one we append our content, else we create one with the content as its initial value
+		StringBuilder askRequest = fileSavingAsksMap.get(owner);
+		if (askRequest == null) {
+			try {
+				fileSavingAsksMap.put(owner, new StringBuilder(content));	
+				return true;
+			}
+			catch(Exception ex) {
+				GAMA.reportError(owner.getScope(), GamaRuntimeException.create(ex, owner.getScope()), false);
+				return false;
+			}
 		}
 		else {
-			fileExecutionStack.peekLast().appendContent(content);
+			askRequest.append(content);
 			return true;
 		}
 	}
 	
-	
-	
-	public boolean flushFile(String fileId) {
-		FileWriter fr;
+	protected boolean appendWriteSimulation(String fileId, SimulationAgent owner, CharSequence content) {
+		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerSimulationMap);
+	}
+
+	protected boolean appendWriteCycle(String fileId, SimulationAgent owner, CharSequence content) {
+		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerCycleMap);
+	}
+	protected boolean directWrite(String fileId, CharSequence content ) {
 		try {
-			fr = new FileWriter(new File(fileId));
-			// we merge everything
-			for(var asks : fileWritingMap.get(fileId)) {
-				fr.append(asks.cumulatedContent);
-			}
+			var fr = new FileWriter(new File(fileId));
+			fr.append(content);
 			fr.flush();
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
 	}
 	
-	public boolean flushOwner(Object owner) {
-		for(var entry : fileWritingMap.entrySet()) {
-			// First we start by looking for the last time this owner made a write request on a file
-			boolean found = false;
-			var it = entry.getValue().descendingIterator();
-			OwnerWriteAsks lastAskToExecute = null;
-			while (it.hasNext()) {
-				lastAskToExecute = it.next();
-				if(lastAskToExecute.owner.equals(owner)) {
-					found = true;
-					break;
-				}
-			}
-			// If the owner made at least one write request on the file, we flush everything up until its last request
-			if (found) {
-				FileWriter fr;
-				try {
-					fr = new FileWriter(new File(entry.getKey()));
-					for(var ask : entry.getValue()) {
-						fr.append(ask.cumulatedContent);
-					}
-					fr.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
+//	
+//	public boolean flushFile(String fileId) {
+//		FileWriter fr;
+//		try {
+//			fr = new FileWriter(new File(fileId));
+//			// we merge everything
+//			for(var asks : fileWritingPerSimulationMap.get(fileId)) {
+//				fr.append(asks.cumulatedContent);
+//			}
+//			fr.flush();
+//			return true;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//		
+//	}
+	/**
+	 * Flushes all the save requests made by a simulation saved in a map
+	 * @param owner: the simulation in which the save statements have been executed
+	 * @return true if everything went well, false in case of error
+	 */
+	protected boolean flushMapOwner(SimulationAgent owner, Map<String, Map<SimulationAgent, StringBuilder>> map) {
+		for(var entry : map.entrySet()) {
+			var cumulatedContent = entry.getValue().get(owner);
+			if (cumulatedContent != null) {
+				var success = directWrite(entry.getKey(), cumulatedContent);
+				if (!success) {
 					return false;
 				}
 			}
 		}
 		return true;
 	}
+	/**
+	 * Flushes all the save requests made by a simulation with the 'per_simulation_buffering' strategy
+	 * @param owner: the simulation in which the save statements have been executed
+	 * @return true if everything went well, false in case of error
+	 */
+	public boolean flushSimulationOwner(SimulationAgent owner) {
+		return flushMapOwner(owner, fileWritingPerSimulationMap);		
+	}
 	
+	/**
+	 * Flushes all the save requests made by a simulation with the 'per_cycle_buffering' strategy
+	 * @param owner: the simulation in which the save statements have been executed
+	 * @return true if everything went well, false in case of error
+	 */
+	public boolean flushCycleOwner(SimulationAgent owner) {
+		return flushMapOwner(owner, fileWritingPerCycleMap);
+	}
 	
 }
