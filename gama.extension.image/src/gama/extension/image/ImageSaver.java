@@ -70,7 +70,10 @@ public class ImageSaver extends AbstractSaver {
 			path += "." + t;
 			f = new File(path);
 		}
-		if (f.exists()) { f.delete(); }
+		
+		if (f.exists() && !f.delete()) {
+			return; 
+		}
 		Object v = item.value(scope);
 		boolean saved = false;
 		if (v instanceof GamaField gf) {

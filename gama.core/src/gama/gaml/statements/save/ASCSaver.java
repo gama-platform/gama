@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import gama.core.metamodel.topology.grid.GridPopulation;
@@ -57,21 +58,9 @@ public class ASCSaver extends AbstractSaver {
 	public void save(final IScope scope, final IExpression item, final File file, final String code,
 			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException {
 		
-		if (file.exists()) { file.delete(); }
-		
-		FileWriter fileWriter = null;
-		
-		try {
-			fileWriter =  new FileWriter(file);
+		try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)){
 			save(scope, item, fileWriter);
 		}finally {
-			// cleanup in case of failure in the save
-			if (fileWriter != null) {
-				try {
-					fileWriter.close();					
-				} finally {}
-			}
-			
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, file.getAbsolutePath());
 		}
 	}

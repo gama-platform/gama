@@ -3,6 +3,7 @@ package gama.core.runtime.concurrent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,8 +83,8 @@ public class WriteController {
 		return appendWriteRequestToMap(fileId, owner, content, fileWritingPerCycleMap, append);
 	}
 	protected boolean directWrite(String fileId, CharSequence content, boolean append ) {
-		try {
-			var fr = new FileWriter(new File(fileId), append);
+		// TODO: should we always use utf8 ?
+		try (FileWriter fr = new FileWriter(new File(fileId), StandardCharsets.UTF_8,append )){
 			fr.append(content);
 			fr.flush();
 			fr.close();
