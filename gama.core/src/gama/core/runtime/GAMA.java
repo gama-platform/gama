@@ -116,7 +116,6 @@ public class GAMA {
 	public static boolean flushWriteStep(SimulationAgent owner) {
 		return writeController.flushCycleOwner(owner);
 	}
-	//TODO: other flushes + their operators
 	
 	/**
 	 * Gets the controllers.
