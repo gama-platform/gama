@@ -57,17 +57,17 @@ public class TextSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, final BufferingStrategies bufferingStrategy)
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
 			throws GamaRuntimeException {
 		String toSave = Cast.asString(scope, item.value(scope));
 		char id = toSave.charAt(0);
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
+		options.setCharSet(ch);
+		
 		try  {
-			//TODO: manage the rewrite case here
-			GAMA.askWriteFile(scope.getSimulation(), file, toSave, bufferingStrategy, true);
+			GAMA.askWriteFile(scope.getSimulation(), file, toSave, options);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

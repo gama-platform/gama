@@ -37,13 +37,13 @@ import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.WriteController;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.statements.save.SaveOptions;
 
 /**
  * Written by drogoul Modified on 23 nov. 2009
@@ -103,11 +103,11 @@ public class GAMA {
 
 	private static final WriteController writeController = new WriteController();
 	
-	public static boolean askWriteFile(SimulationAgent owner, File f, String content, BufferingStrategies strategy, boolean append) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, strategy, append);
+	public static boolean askWriteFile(SimulationAgent owner, File f, String content, final SaveOptions options) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, options);
 	}
-	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content, BufferingStrategies strategy, boolean append) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, strategy, append);
+	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content, final SaveOptions options) {
+		return writeController.askWrite(f.getAbsolutePath(), owner, content, options);
 	}
 	
 	public static boolean flushWriteSimulation(SimulationAgent owner) {

@@ -44,12 +44,11 @@ public class GraphSaver extends AbstractSaver {
 	 */
 	@Override
 	@SuppressWarnings ("unchecked")
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) {
-		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(type);
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) {
+		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type);
 		final var g = Cast.asGraph(scope, item);
 		if (g != null) {
-			if (exp == null) throw GamaRuntimeException.error("Format is not recognized ('" + type + "')", scope);
+			if (exp == null) throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);
 			exp.exportGraph(g, file.getAbsoluteFile());
 		}
 	}

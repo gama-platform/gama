@@ -27,7 +27,6 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
 import gama.core.util.GamaColor;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
@@ -35,6 +34,7 @@ import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.save.AbstractSaver;
+import gama.gaml.statements.save.SaveOptions;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -59,11 +59,10 @@ public class ImageSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options) throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
-		String t = "image".equals(type) ? "png" : "jpeg".equals(type) ? "jpg" : type;
+		String t = "image".equals(options.type) ? "png" : "jpeg".equals(options.type) ? "jpg" : options.type;
 		if ("image".equals(t)) { t = "png"; }
 		if ("jpeg".equals(t)) { t = "jpg"; }
 		if (!path.contains("." + t)) {

@@ -32,10 +32,9 @@ import gama.gaml.expressions.IExpression;
 public class JsonSaver extends AbstractSaver {
 
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy)
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
-		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, true)) {
+		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, !saveOptions.rewrite)) {
 			Json.getNew().valueOf(item.value(scope)).writeTo(fw, WriterConfig.PRETTY_PRINT);
 		} catch (final GamaRuntimeException e) {
 			throw e;

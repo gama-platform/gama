@@ -35,12 +35,11 @@ public class KmlSaver extends AbstractSaver {
 	 *            the type
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options) {
 		final Object kml = item.value(scope);
 		String path = file.getAbsolutePath();
 		if (!(kml instanceof GamaKmlExport export)) return;
-		if ("kml".equals(type)) {
+		if ("kml".equals(options.type)) {
 			export.saveAsKml(scope, path);
 		} else {
 			export.saveAsKmz(scope, path);

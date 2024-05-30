@@ -53,6 +53,7 @@ import gama.gaml.expressions.data.MapExpression;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.SaveStatement.SaveValidator;
+import gama.gaml.statements.save.SaveOptions;
 import gama.gaml.types.GamaFileType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -413,21 +414,33 @@ public class SaveStatement extends AbstractStatementSequence{
 		if (rewriteExpr == null) return true;
 		return Cast.asBool(scope, rewriteExpr.value(scope));
 	}
+	
+	/**
+	 * In case the save statement is called with a file object, calls the save method from this object
+	 * @param scope
+	 * @return
+	 */
+	protected Object saveFile(IScope scope) {
+		if (!Types.FILE.isAssignableFrom(item.getGamlType())) return null;
+		final IGamaFile theFile = (IGamaFile) item.value(scope);
+		if (theFile != null) {
+			// Passes directly the facets of the statement, like crs, etc.
+			theFile.save(scope, description.getFacets());
+		}
+		return theFile;
+	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		// if item is null, there's nothing to write
 		if (item == null) return null;
-		// First case: we have a file as item;
+		
+		// First case: we have no destination file, so it means the item is a file;
 		if (file == null) {
-			if (!Types.FILE.isAssignableFrom(item.getGamlType())) return null;
-			final IGamaFile theFile = (IGamaFile) item.value(scope);
-			if (theFile != null) {
-				// Passes directly the facets of the statement, like crs, etc.
-				theFile.save(scope, description.getFacets());
-			}
-			return theFile;
+			return saveFile(scope);
 		}
+		
 		final String fileName = Cast.asString(scope, file.value(scope));
 		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
 		if (filePath == null || "".equals(filePath)) return null;
@@ -456,7 +469,6 @@ public class SaveStatement extends AbstractStatementSequence{
 				}
 			}
 			typeExp = com.google.common.io.Files.getFileExtension(fileName);
-
 		}
 
 		// We may have the case of a string (instead of a literal)
@@ -476,10 +488,11 @@ public class SaveStatement extends AbstractStatementSequence{
 			Files.createDirectories(fileToSave.toPath().getParent());
 			boolean exists = fileToSave.exists();
 			final boolean rewrite = shouldOverwrite(scope);
-			if (rewrite && exists) {
-				fileToSave.delete();
-				exists = false;
-			}
+			//removing as this should be treated in the save delegate
+//			if (rewrite && exists) {
+//				fileToSave.delete();
+//				exists = false;
+//			}
 			IExpression header = getFacet(IKeyword.HEADER);
 			final boolean addHeader = !exists && (header == null || Cast.asBool(scope, header.value(scope)));
 			final String type = (typeExp != null ? typeExp : "text").trim().toLowerCase();
@@ -495,7 +508,8 @@ public class SaveStatement extends AbstractStatementSequence{
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = findDelegate(itemType, type);
 			if (delegate != null) {
-				delegate.save(scope, item, fileToSave, code, addHeader, type, attributesFacet, strategy);
+				var saveOptions = new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite);
+				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
 			}
 			throw GamaRuntimeException.error("Format not recognized: " + type, scope);

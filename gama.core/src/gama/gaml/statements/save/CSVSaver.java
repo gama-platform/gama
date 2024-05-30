@@ -75,30 +75,9 @@ public class CSVSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, final BufferingStrategies bufferingStrategy)
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException, IOException {
-		save(scope, file, addHeader, item, bufferingStrategy);
 
-	}
-
-	/**
-	 * Save.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param fw
-	 *            the fw
-	 * @param header
-	 *            the header
-	 * @param item
-	 *            the item
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	private void save(final IScope scope, final File file, final boolean header, final IExpression item, final BufferingStrategies bufferingStrategy)
-			throws GamaRuntimeException {
-		
 		StringBuilder sb = new StringBuilder();
 		final IType itemType = item.getGamlType();
 		final SpeciesDescription sd;
@@ -117,7 +96,7 @@ public class CSVSaver extends AbstractSaver {
 		if (sd != null) {
 			final Collection<String> attributeNames = sd.getAttributeNames();
 			attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
-			if (header) {
+			if (saveOptions.addHeader) {
 				sb.append("cycle" + del + "name;location.x" + del + "location.y" + del + "location.z");
 				for (final String v : attributeNames) { sb.append(del + v); }
 				sb.append(Strings.LN);
@@ -140,7 +119,7 @@ public class CSVSaver extends AbstractSaver {
 				}
 			}
 		} else {
-			if (header) {
+			if (saveOptions.addHeader) {
 				sb.append(item.serializeToGaml(true).replace("]", "").replace("[", "").replace(',', del));
 				sb.append(Strings.LN);
 			}
@@ -157,7 +136,26 @@ public class CSVSaver extends AbstractSaver {
 			}
 			sb.append(Strings.LN);
 		}
-		GAMA.askWriteFile(scope.getSimulation(), file, sb, bufferingStrategy, true);
+		GAMA.askWriteFile(scope.getSimulation(), file, sb, saveOptions);
+	}
+
+	/**
+	 * Save.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param fw
+	 *            the fw
+	 * @param header
+	 *            the header
+	 * @param item
+	 *            the item
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	private void save(final IScope scope, final File file, final boolean header, final IExpression item, final BufferingStrategies bufferingStrategy)
+			throws GamaRuntimeException {
+		
 	}
 
 	/**

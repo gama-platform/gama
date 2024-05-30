@@ -55,9 +55,7 @@ public class ASCSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave, BufferingStrategies bufferingStrategy) throws IOException {
-		
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws IOException {
 		try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)){
 			save(scope, item, fileWriter);
 		}finally {
