@@ -486,7 +486,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 				}
 			}
 			line = segments.get(index);
-			currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
+			currentLocation = SpatialPunctal._closest_point_to(source, line);
 			final Point pointGeom = (Point) currentLocation.getInnerGeometry();
 			if (line.getInnerGeometry().getNumPoints() >= 3) {
 				distanceS = Double.MAX_VALUE;
