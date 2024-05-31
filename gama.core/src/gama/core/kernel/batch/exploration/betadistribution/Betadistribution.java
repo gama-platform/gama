@@ -25,11 +25,23 @@ public class Betadistribution {
 	Map<ParametersSet,List<Double>> sample;
 	final EmpiricalDistribution Y;
 	
-	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, String obj) { 
-		this(sample,inputs,10,obj); 
+	/**
+	 * Build the empirical distribution of results based on an experimental plan 
+	 * @param sample: the experimental plan and results
+	 * @param inputs: the input parameters
+	 */
+	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs) { 
+		this(sample,inputs,100); 
 	}
 	
-	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity, String obj) {
+	/**
+	 * Build the empirical distribution (with user defined granularity - discretisation of distribution) of results based on an experimental plan
+	 * @param sample
+	 * @param inputs
+	 * @param granularity
+	 * @param obj
+	 */
+	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity) {
 		this.sample = new HashMap<>();
 		for (ParametersSet ps : sample.keySet()) { 
 			this.sample.put(ps, sample.get(ps).stream().mapToDouble(v -> Double.parseDouble(v.toString())).boxed().toList());

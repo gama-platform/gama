@@ -293,20 +293,6 @@ public class Sobol {
 	}
 
 	/**
-	 * Save the simulation data (input and output of the model for each sample) in a .csv file
-	 *
-	 * @param file
-	 *            : .csv file
-	 */
-	public void saveSimulation(final File file) throws GamaRuntimeException{
-		try (FileWriter fw = new FileWriter(file, false)) {
-			fw.write(this.buildSimulationCsv());
-		} catch (Exception e) {
-			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
-		}
-	}
-
-	/**
 	 * Save the report of the Sobol analysis (sobol indexes) in a .csv file
 	 *
 	 * @param file
@@ -383,33 +369,6 @@ public class Sobol {
 					}
 					sb.append(Strings.LN);
 				}
-			}
-		}
-
-		return sb.toString();
-	}
-
-	/**
-	 * Build the string that contains the input and output for each sample
-	 *
-	 * @return the string
-	 */
-	private String buildSimulationCsv() {
-		StringBuilder sb = new StringBuilder();
-		String sep = ",";
-		int j = 0;
-		for (String param : parameters.keySet()) { sb.append(param).append(sep); }
-		for (String output : output_names) {
-			j++;
-			sb.append(output).append(j == output_names.size() ? Strings.LN : sep);
-		}
-
-		for (int i = 0; i < _sample; i++) {
-			j = 0;
-			for (String param : parameters.keySet()) { sb.append(parameters.get(param).get(i)).append(sep); }
-			for (String output : output_names) {
-				j++;
-				sb.append(outputs.get(output).get(i)).append(j == output_names.size() ? Strings.LN : sep);
 			}
 		}
 

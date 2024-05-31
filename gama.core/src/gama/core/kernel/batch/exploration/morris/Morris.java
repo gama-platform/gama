@@ -56,6 +56,8 @@ import gama.gaml.operators.Strings;
 
 public class Morris {
 	
+	public static final int DEFAULT_LEVELS = 4;
+	
 	/**
 	 * Attributes 
 	 * MySample -> List of samples for simulation 

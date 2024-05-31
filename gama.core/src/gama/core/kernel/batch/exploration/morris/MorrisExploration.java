@@ -22,8 +22,6 @@ import java.util.Map;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -31,14 +29,17 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
+import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.batch.exploration.sampling.MorrisSampling;
 import gama.core.kernel.experiment.BatchAgent;
+import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -49,7 +50,6 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
 
 /**
@@ -72,7 +72,7 @@ import gama.gaml.types.IType;
 				internal = true,
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
-						name = MorrisExploration.SAMPLE_SIZE,
+						name = Exploration.SAMPLE_SIZE,
 						type = IType.ID,
 						optional = false,
 						doc = @doc ("The size of the sample for Morris samples")),
@@ -113,11 +113,9 @@ import gama.gaml.types.IType;
 						isExecutable = false) }) })
 
 public class MorrisExploration extends AExplorationAlgorithm {
-	/** The Constant SAMPLE_SIZE */
-	protected static final String SAMPLE_SIZE = "sample";
 
 	/** The Constant NB_LEVELS */
-	protected static final String NB_LEVELS = "levels";
+	public static final String NB_LEVELS = "levels";
 
 	/** The Constant PARAMETER_CSV_PATH. */
 	protected static final String PARAMETER_CSV_PATH = "csv";
@@ -171,14 +169,13 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) {
-		this.sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
+		this.sample = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
 		this.nb_levels = Cast.asInt(scope, getFacet(NB_LEVELS).value(scope));
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
-			String path = Cast.asString(scope, path_facet.value(scope));
-			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
+			String path = FileUtils.constructAbsoluteFilePath(scope, Cast.asString(scope, path_facet.value(scope)), false);
 			this.solutions = this.solutions == null
-					? buildParameterSetsFromCSV(scope, new_path, new ArrayList<>()) : this.solutions;
+					? buildParameterSetsFromCSV(scope, path, new ArrayList<>()) : this.solutions;
 		} else {
 			this.solutions = buildParameterSets(scope, new ArrayList<>(), 0);
 		}
@@ -205,20 +202,13 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			outsize += m.values().stream().findFirst().get().size();
 		}
 		
+		/* Save the simulation values in the provided .csv file (input and corresponding output) */
+		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
 		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
 			
 			momo.evaluate();
-
-			/* Save the simulation values in the provided .csv file (input and corresponding output) */
-			if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-				 String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_OUTPUT).value(scope));
-				final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
-				final File parento = fo.getParentFile();
-				if (!parento.exists()) { parento.mkdirs(); }
-				if (fo.exists()) { fo.delete(); }
-				saveSimulation(fo, scope);
-			}
 			
 			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 			final File fm = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
@@ -260,7 +250,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
-		int s = Cast.asInt(agent.getScope(), getFacet(SAMPLE_SIZE).value(agent.getScope()));
+		int s = Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
 		int l = Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
 		
 		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
@@ -298,51 +288,6 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			}
 		}
 		return rebuilt_output;
-	}
-
-	/**
-	 * Save simulation.
-	 *
-	 * @param rebuilt_output
-	 *            the rebuilt output
-	 * @param file
-	 *            the file
-	 * @param scope
-	 *            the scope
-	 */
-	private void saveSimulation(final File file, final IScope scope) throws GamaRuntimeException {
-		try (FileWriter fw = new FileWriter(file, false)) {
-			fw.write(this.buildSimulationCsv());
-		} catch (Exception e) {
-			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
-		}
-	}
-
-	/**
-	 * Builds the simulation csv.
-	 *
-	 * @param rebuilt_output
-	 *            the rebuilt output
-	 * @return the string
-	 */
-	private String buildSimulationCsv() {
-		StringBuilder sb = new StringBuilder();
-		String sep = ",";
-		// Headers
-		sb.append(String.join(sep, ParametersNames));
-		sb.append(sep);
-		sb.append(String.join(sep, outputs));
-		sb.append(Strings.LN);
-
-		// Values
-		for (ParametersSet ps : res_outputs.keySet().stream().toList()) {
-			for (String sol : ParametersNames) { sb.append(ps.get(sol)).append(sep); } // inputs values
-			for (String output : outputs) { 
-				sb.append(res_outputs.get(ps).get(output).get(0)).append(sep); 
-			} // outputs values
-			sb.deleteCharAt(sb.length() - 1).append(Strings.LN); // new line
-		}
-		return sb.toString();
 	}
 	
 	/**

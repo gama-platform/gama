@@ -52,10 +52,9 @@ public class RandomSampling extends SamplingUtils {
 	public static List<ParametersSet> factorialUniformSampling(IScope scope, int[] samples, List<Batch> parameters){
 		
 		Map<Batch,List<Double>> facorial = new HashMap<>();
-		for(Batch p : parameters) { 
-			int i = parameters.indexOf(p);
+		for(Batch p : parameters) {
 			facorial.put(p, 
-				IntStream.range(0, samples[i]).mapToDouble(o -> scope.getRandom().next()).boxed().toList() 
+				IntStream.range(0, samples[parameters.indexOf(p)]).mapToDouble(o -> scope.getRandom().next()).boxed().toList() 
 			); 
 		}
 		
