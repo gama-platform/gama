@@ -50,7 +50,7 @@ public class WriteController {
 		fileWritingPerCycleMap = new HashMap<>();
 	}
 	
-	public boolean askWrite(String fileId, SimulationAgent owner, CharSequence content, final SaveOptions options) {
+	public boolean askWrite(final String fileId, final SimulationAgent owner, final CharSequence content, final SaveOptions options) {
 		switch (options.bufferingStrategy) {
 			case PER_SIMULATION_BUFFERING:
 				return appendWriteSimulation(fileId, owner, content, options);
@@ -63,7 +63,7 @@ public class WriteController {
 		}
 	}
 	
-	protected boolean appendWriteRequestToMap(String fileId, SimulationAgent owner, CharSequence content, Map<String, Map<SimulationAgent, WriteTask>> map, final SaveOptions options) {
+	protected boolean appendWriteRequestToMap(final String fileId,final  SimulationAgent owner,final  CharSequence content,final  Map<String, Map<SimulationAgent, WriteTask>> map, final SaveOptions options) {
 		// If we don't have any map for this file yet we create one
 		Map<SimulationAgent, WriteTask> fileSavingAsksMap = map.get(fileId);
 		if (fileSavingAsksMap == null) {

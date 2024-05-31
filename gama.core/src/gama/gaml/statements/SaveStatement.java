@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -34,6 +36,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISaveDelegate;
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
@@ -183,7 +186,7 @@ public class SaveStatement extends AbstractStatementSequence{
 	/** The Constant SYNONYMS. */
 	private static final SetMultimap<String, String> SYNONYMS = TreeMultimap.create();
 	
-	private static final Set<String> BUFFERING_STRATEGIES = new HashSet<>(Arrays.asList(PER_CYCLE_BUFFERING, PER_SIMULATION_BUFFERING, NO_BUFFERING));
+	public static final Set<String> BUFFERING_STRATEGIES = new HashSet<>(Arrays.asList(PER_CYCLE_BUFFERING, PER_SIMULATION_BUFFERING, NO_BUFFERING));
 
 	/**
 	 * @param createExecutableExtension
@@ -217,14 +220,16 @@ public class SaveStatement extends AbstractStatementSequence{
 	 * @param s
 	 * @return
 	 */
-	public static BufferingStrategies stringToBufferingStrategies(String s) {
+	public static BufferingStrategies stringToBufferingStrategies(IScope scope, String s) {
 		switch (s){
 			case PER_CYCLE_BUFFERING:
 				return BufferingStrategies.PER_CYCLE_BUFFERING;
 			case PER_SIMULATION_BUFFERING:
 				return BufferingStrategies.PER_SIMULATION_BUFFERING;
-			default:
+			case NO_BUFFERING:
 				return BufferingStrategies.NO_BUFFERING;
+			default:
+				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + s), scope);
 		}
 	}
 	
@@ -479,9 +484,9 @@ public class SaveStatement extends AbstractStatementSequence{
 		}
 		
 		// get the buffering strategy
-		BufferingStrategies strategy = BufferingStrategies.NO_BUFFERING;
+		BufferingStrategies strategy = stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_BUFFERING_STRATEGY).value(scope));
 		if (bufferingStrategy != null) {
-			strategy = stringToBufferingStrategies((String)bufferingStrategy.value(scope));
+			strategy = stringToBufferingStrategies(scope, (String)bufferingStrategy.value(scope));
 		}
 		
 		try {

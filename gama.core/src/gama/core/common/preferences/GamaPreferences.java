@@ -45,6 +45,7 @@ import gama.core.util.file.csv.AbstractCSVManipulator;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.operators.Strings;
+import gama.gaml.statements.SaveStatement;
 import gama.gaml.types.IType;
 import one.util.streamex.StreamEx;
 
@@ -76,6 +77,8 @@ public class GamaPreferences {
 			() -> GamaColor.get(199, 234, 229), () -> GamaColor.get(128, 205, 193), () -> GamaColor.get(53, 151, 143),
 			() -> GamaColor.get(1, 102, 94), () -> GamaColor.get(0, 60, 48) };
 
+	public static final String PREF_BUFFERING_STRATEGY = "pref_buffering_strategy";
+	
 	/**
 	 *
 	 * Interface tab
@@ -864,6 +867,12 @@ public class GamaPreferences {
 				"In-memory shapefile mapping (optimizes access to shapefile data in exchange for increased memory usage)",
 				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
 
+		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
+		public static final Pref<String> DEFAULT_BUFFERING_STRATEGY =
+				create(PREF_BUFFERING_STRATEGY, "Default buffering strategy for save statement", SaveStatement.NO_BUFFERING, IType.STRING, true)
+				.among(SaveStatement.BUFFERING_STRATEGIES.stream().toList())
+				.in(NAME, OPTIMIZATIONS);
+		
 		/**
 		 * Paths to libraries
 		 */
