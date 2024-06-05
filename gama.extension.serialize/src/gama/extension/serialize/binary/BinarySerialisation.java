@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform.
+ * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
@@ -199,7 +199,8 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 */
 	public static final void saveToFile(final IScope scope, final Object o, final String path, final String format,
 			final boolean zip, final boolean includingHistory) {
-		try (OutputStream os = Files.newOutputStream(new File(path).toPath(), StandardOpenOption.APPEND)) {
+		try (OutputStream os = Files.newOutputStream(new File(path).toPath(), StandardOpenOption.APPEND,
+				StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
 			if (o instanceof SimulationAgent sim) {
 				sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, includingHistory);
 			}
