@@ -1,19 +1,19 @@
 /*******************************************************************************************************
  *
- * CompositeGamaMessage.java, in gama.network, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * CompositeGamaMessage.java, in gama.extension.network, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2024-06).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.extension.network.common;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.messaging.GamaMessage;
 import gama.core.runtime.IScope;
-import gama.extension.serialize.implementations.BinarySerialisation;
+import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
  * The Class CompositeGamaMessage.

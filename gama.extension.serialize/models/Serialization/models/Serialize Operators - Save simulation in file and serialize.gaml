@@ -24,13 +24,13 @@ experiment SaveSimulation type: gui {
 	
 	reflex save_simulation when: cycle mod 2 = 0 {
 		write "================ START SAVE + self " + " - " + cycle ;		
-		save simulation to: '../result/file.simulation' format: "json" ;
+		save simulation to: '../result/file.simulation'  ;
 		write "================ END SAVE + self " + " - " + cycle ;					
 	}
 	
 	reflex serialize_agent when: cycle mod 2 = 1 {
 		write "================ Serialize simulation " + self + " - " + cycle;
-		write serialize(self.simulation, 'json', false);
+		write serialize(self.simulation);
 		write "================ END Serialize simulation " + self + " - " + cycle;				
 	}
 	
