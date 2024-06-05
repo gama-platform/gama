@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaPreferences.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.common.preferences;
 
@@ -861,7 +861,7 @@ public class GamaPreferences {
 
 		/** The Constant SHAPEFILE_IN_MEMORY. */
 		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
-				"In-memory shapefile mapping (optimizes access to shapefile data in exchange for increased memory usage)",
+				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
 				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
 
 		/**
