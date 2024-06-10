@@ -3,7 +3,7 @@ package gama.gaml.statements.save;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 
 public class SaveOptions {
 

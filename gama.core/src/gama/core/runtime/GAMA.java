@@ -36,7 +36,7 @@ import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
-import gama.core.runtime.concurrent.WriteController;
+import gama.core.runtime.concurrent.BufferingController;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
 import gama.dev.DEBUG;
@@ -101,21 +101,28 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
-	private static final WriteController writeController = new WriteController();
+	private static final BufferingController writeController = new BufferingController();
 	
 	public static boolean askWriteFile(SimulationAgent owner, File f, String content, final SaveOptions options) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, options);
+		return writeController.askWriteFile(f.getAbsolutePath(), owner, content, options);
 	}
 	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content, final SaveOptions options) {
-		return writeController.askWrite(f.getAbsolutePath(), owner, content, options);
+		return writeController.askWriteFile(f.getAbsolutePath(), owner, content, options);
 	}
 	
-	public static boolean flushWriteSimulation(SimulationAgent owner) {
-		return writeController.flushSimulationOwner(owner);
+	public static boolean flushSaveFileSimulation(SimulationAgent owner) {
+		return writeController.flushSaveFilesSimulationPerOwner(owner);
 	}
-	public static boolean flushWriteStep(SimulationAgent owner) {
-		return writeController.flushCycleOwner(owner);
+	public static boolean flushSaveFileStep(SimulationAgent owner) {
+		return writeController.flushSaveFilesCycleOwner(owner);
 	}
+	public static void flushWriteStep(final SimulationAgent owner) {
+		writeController.flushwriteCycleOwner(owner);
+	}
+	public static void flushWriteSimulation(final SimulationAgent owner) {
+		writeController.flushWriteSimulationPerOwner(owner);
+	}
+
 	
 	/**
 	 * Gets the controllers.

@@ -727,7 +727,7 @@ public class Files {
 	}
 
 	/**
-	 * Flushes all the pending write operations in the current simulation
+	 * Flushes all the pending save operations in the current simulation
 	 * @param scope
 	 * @return true if everything went well, false if there was a problem while flushing
 	 * @throws GamaRuntimeException
@@ -739,19 +739,19 @@ public class Files {
 			type = IType.BOOL
 			)
 	@doc (
-			value = "Flushes all the pending write operations in the current simulation. This operator is only useful "
-					+ "in simulation that save files using a buffering strategy.",
+			value = "Flushes all the pending save operations in the current simulation. ",
 			comment = "",
 			usages = {
-					@usage ("If the specified string does not refer to an existing repository, the repository is created."),
-					@usage ("If the string refers to an existing file, an exception is risen.") },
+					@usage ("This operator is only useful in simulations that save files using a buffering strategy."),
+					@usage ("If a file writing fails it returns false, else it returns true."),
+					@usage ("If a file writing fails it still tries to write the others."), 
+					},
 			examples = {
-					@example ("file dirNewT <- new_folder(\"incl/\");   	// dirNewT represents the repository \"../incl/\""),
-					@example ("															// eventually creates the directory ../incl") },
+					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments")},
 			see = { "save"})
 	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation) throws GamaRuntimeException {
-		boolean success = GAMA.flushWriteStep(simulation);
-		success &= GAMA.flushWriteSimulation(simulation);
+		boolean success = GAMA.flushSaveFileStep(simulation);
+		success &= GAMA.flushSaveFileSimulation(simulation);
 		return success;
 	}
 	

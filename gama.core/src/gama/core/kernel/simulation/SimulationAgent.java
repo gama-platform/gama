@@ -406,6 +406,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		executer.executeOneShotActions();
 		if (outputs != null) { outputs.step(this.getScope()); }
 		ownClock.step();
+		GAMA.flushSaveFileStep(this);
 		GAMA.flushWriteStep(this);
 	}
 
@@ -458,6 +459,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
 
 		//we make sure that all pending write operations are flushed
+		GAMA.flushSaveFileSimulation(this);
 		GAMA.flushWriteSimulation(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;

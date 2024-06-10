@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.Set;
 
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.GamaKmlExport;
 

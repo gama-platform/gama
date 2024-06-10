@@ -39,7 +39,7 @@ import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IModifiableContainer;
 import gama.core.util.file.GamaFile.FlushBufferException;

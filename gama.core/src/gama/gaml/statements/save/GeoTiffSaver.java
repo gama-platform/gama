@@ -26,7 +26,7 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;

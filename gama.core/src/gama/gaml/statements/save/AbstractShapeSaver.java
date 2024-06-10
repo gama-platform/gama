@@ -41,7 +41,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.SimpleScalingProjection;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;

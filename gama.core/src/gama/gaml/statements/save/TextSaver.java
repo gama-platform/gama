@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableBiMap;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;

@@ -17,7 +17,7 @@ import java.util.Set;
 import org.jgrapht.nio.GraphExporter;
 
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.WriteController.BufferingStrategies;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.graph.writer.GraphExporters;
 import gama.gaml.expressions.IExpression;
