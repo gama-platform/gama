@@ -136,7 +136,7 @@ public class CSVSaver extends AbstractSaver {
 			}
 			sb.append(Strings.LN);
 		}
-		GAMA.askWriteFile(scope.getSimulation(), file, sb, saveOptions);
+		GAMA.askWriteFile(scope, file, sb, saveOptions);
 	}
 
 	/**

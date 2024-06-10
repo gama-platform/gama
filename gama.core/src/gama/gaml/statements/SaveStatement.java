@@ -13,14 +13,10 @@ package gama.gaml.statements;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
@@ -39,6 +35,7 @@ import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController;
 import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IModifiableContainer;
@@ -121,11 +118,12 @@ import gama.gaml.types.Types;
 						type = { IType.STRING},
 						optional = true,
 						doc = @doc (
-								value = "Allows to specify a buffering strategy to write the file. Accepted values are `" + SaveStatement.PER_CYCLE_BUFFERING +"` and `" + SaveStatement.PER_SIMULATION_BUFFERING + "`, `" + SaveStatement.NO_BUFFERING + "`. "
-										+ "In the case of `"+ SaveStatement.PER_CYCLE_BUFFERING +"` or `"+ SaveStatement.PER_SIMULATION_BUFFERING +"`, all the write operations in the simulation which used these values would be "
-										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. This can be used to optimise a "
+								value = "Allows to specify a buffering strategy to write the file. Accepted values are `" + BufferingController.PER_CYCLE_BUFFERING +"` and `" + BufferingController.PER_SIMULATION_BUFFERING + "`, `" + BufferingController.NO_BUFFERING + "`. "
+										+ "In the case of `"+ BufferingController.PER_CYCLE_BUFFERING +"` or `"+ BufferingController.PER_SIMULATION_BUFFERING +"`, all the write operations in the simulation which used these values would be "
+										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '" + BufferingController.PER_AGENT
+										+ "' all operations will be released when the agent is killed (or the simulation ends). Those strategies can be used to optimise a "
 										+ "simulation's execution time on models that extensively write in files. "
-										+ "The `" + SaveStatement.NO_BUFFERING + "` (which is the system's default) will directly write into the file.")),
+										+ "The `" + BufferingController.NO_BUFFERING + "` (which is the system's default) will directly write into the file.")),
 		},
 		omissible = IKeyword.DATA)
 @doc (
@@ -169,10 +167,6 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "rawtypes" })
 public class SaveStatement extends AbstractStatementSequence{
 	
-	public static final String PER_CYCLE_BUFFERING = "per_cycle";
-	public static final String PER_SIMULATION_BUFFERING = "per_simulation";
-	public static final String NO_BUFFERING = "no_buffering";
-
 	/** The Constant NON_SAVEABLE_ATTRIBUTE_NAMES. */
 	public static final Set<String> NON_SAVEABLE_ATTRIBUTE_NAMES =
 			Set.of(IKeyword.PEERS, IKeyword.LOCATION, IKeyword.HOST, IKeyword.AGENTS, IKeyword.MEMBERS, IKeyword.SHAPE);
@@ -186,7 +180,6 @@ public class SaveStatement extends AbstractStatementSequence{
 	/** The Constant SYNONYMS. */
 	private static final SetMultimap<String, String> SYNONYMS = TreeMultimap.create();
 	
-	public static final Set<String> BUFFERING_STRATEGIES = new HashSet<>(Arrays.asList(PER_CYCLE_BUFFERING, PER_SIMULATION_BUFFERING, NO_BUFFERING));
 
 	/**
 	 * @param createExecutableExtension
@@ -215,23 +208,6 @@ public class SaveStatement extends AbstractStatementSequence{
 
 	}
 
-	/**
-	 * Converts a string into a BufferingStrategies if it matches the corresponding static variables. If not it returns NO_BUFFERING
-	 * @param s
-	 * @return
-	 */
-	public static BufferingStrategies stringToBufferingStrategies(IScope scope, String s) {
-		switch (s){
-			case PER_CYCLE_BUFFERING:
-				return BufferingStrategies.PER_CYCLE_BUFFERING;
-			case PER_SIMULATION_BUFFERING:
-				return BufferingStrategies.PER_SIMULATION_BUFFERING;
-			case NO_BUFFERING:
-				return BufferingStrategies.NO_BUFFERING;
-			default:
-				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + s), scope);
-		}
-	}
 	
 	/**
 	 * The Class SaveValidator.
@@ -309,8 +285,8 @@ public class SaveStatement extends AbstractStatementSequence{
 
 			}
 
-			if (bufferingStrategy != null && ! BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
-				desc.error("The value for buffering must be '" + SaveStatement.NO_BUFFERING +"', '" + PER_CYCLE_BUFFERING + "' or '" + PER_SIMULATION_BUFFERING +"'.", 
+			if (bufferingStrategy != null && ! BufferingController.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
+				desc.error("The value for buffering must be '" + BufferingController.NO_BUFFERING +"', '" + BufferingController.PER_CYCLE_BUFFERING + "', '" + BufferingController.PER_AGENT + "'" + "' or '" + BufferingController.PER_SIMULATION_BUFFERING +"'.", 
 						IGamlIssue.WRONG_TYPE);
 			}
 			
@@ -484,9 +460,9 @@ public class SaveStatement extends AbstractStatementSequence{
 		}
 		
 		// get the buffering strategy
-		BufferingStrategies strategy = stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_BUFFERING_STRATEGY).value(scope));
+		BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_BUFFERING_STRATEGY).value(scope));
 		if (bufferingStrategy != null) {
-			strategy = stringToBufferingStrategies(scope, (String)bufferingStrategy.value(scope));
+			strategy = BufferingController.stringToBufferingStrategies(scope, (String)bufferingStrategy.value(scope));
 		}
 		
 		try {

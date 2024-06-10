@@ -459,8 +459,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
 
 		//we make sure that all pending write operations are flushed
-		GAMA.flushSaveFileSimulation(this);
-		GAMA.flushWriteSimulation(this);
+		GAMA.flushSaveFilePerOwner(this);
+		GAMA.flushWritePerAgent(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
 		super.dispose();

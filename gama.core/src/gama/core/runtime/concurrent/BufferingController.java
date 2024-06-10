@@ -5,27 +5,63 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.metamodel.agent.AbstractAgent;
+import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.gaml.operators.Strings;
 import gama.gaml.statements.save.SaveOptions;
 
 public class BufferingController {
 	
+
+	public static final String PER_CYCLE_BUFFERING = "per_cycle";
+	public static final String PER_SIMULATION_BUFFERING = "per_simulation";
+	public static final String PER_AGENT = "per_agent";
+	public static final String NO_BUFFERING = "no_buffering";
+
+	public static final Set<String> BUFFERING_STRATEGIES = new HashSet<>(Arrays.asList(PER_CYCLE_BUFFERING, PER_SIMULATION_BUFFERING, NO_BUFFERING, PER_AGENT));
+
+	
 	public enum BufferingStrategies{
 		NO_BUFFERING,
 		PER_CYCLE_BUFFERING,
-		PER_SIMULATION_BUFFERING
+		PER_SIMULATION_BUFFERING,
+		PER_AGENT,
 	}
 
+	
+
+	/**
+	 * Converts a string into a BufferingStrategies if it matches the corresponding static variables. If not it returns NO_BUFFERING
+	 * @param s
+	 * @return
+	 */
+	public static BufferingStrategies stringToBufferingStrategies(IScope scope, String s) {
+		switch (s){
+			case BufferingController.PER_CYCLE_BUFFERING:
+				return BufferingStrategies.PER_CYCLE_BUFFERING;
+			case BufferingController.PER_SIMULATION_BUFFERING:
+				return BufferingStrategies.PER_SIMULATION_BUFFERING;
+			case BufferingController.NO_BUFFERING:
+				return BufferingStrategies.NO_BUFFERING;
+			case BufferingController.PER_AGENT:
+				return BufferingStrategies.PER_AGENT;
+			default:
+				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + s), scope);
+		}
+	}
 
 		
 	public static class BufferingTask {	
@@ -57,22 +93,26 @@ public class BufferingController {
 		}
 	}
 
-	protected Map<String, Map<SimulationAgent, BufferingTask>> fileWritingPerSimulationMap;
-	protected Map<String, Map<SimulationAgent, BufferingTask>> fileWritingPerCycleMap;
-	protected Map<SimulationAgent, List<BufferingTask>> consoleWritingPerSimulationMap;
-	protected Map<SimulationAgent, List<BufferingTask>> consoleWritingPerCycleMap;
+	protected Map<String, Map<AbstractAgent, BufferingTask>> fileWritingPerAgentMap;
+	protected Map<String, Map<AbstractAgent, BufferingTask>> fileWritingPerCycleMap;
+	protected Map<AbstractAgent, List<BufferingTask>> consoleWritingPerAgentMap;
+	protected Map<AbstractAgent, List<BufferingTask>> consoleWritingPerCycleMap;
 	
 	public BufferingController() {
-		fileWritingPerSimulationMap 	= new HashMap<>();
-		fileWritingPerCycleMap 			= new HashMap<>();
-		consoleWritingPerSimulationMap 	= new HashMap<>();
-		consoleWritingPerCycleMap 		= new HashMap<>();
+		fileWritingPerAgentMap		= new HashMap<>();
+		fileWritingPerCycleMap 		= new HashMap<>();
+		consoleWritingPerAgentMap 	= new HashMap<>();
+		consoleWritingPerCycleMap 	= new HashMap<>();
 	}
 	
-	public boolean askWriteFile(final String fileId, final SimulationAgent owner, final CharSequence content, final SaveOptions options) {
+	public boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content, final SaveOptions options) {
+		AbstractAgent owner = scope.getSimulation();
 		switch (options.bufferingStrategy) {
-			case PER_SIMULATION_BUFFERING:
-				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileWritingPerSimulationMap), content, options);
+			case PER_AGENT:
+				// in case it's per agent we just switch the owner to the calling agent instead of the whole simulation
+				owner = (AbstractAgent) scope.getAgent();
+			case PER_SIMULATION_BUFFERING: 
+				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileWritingPerAgentMap), content, options);
 			case PER_CYCLE_BUFFERING:
 				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileWritingPerCycleMap), content, options);
 			case NO_BUFFERING:
@@ -83,10 +123,14 @@ public class BufferingController {
 	}
 	
 
-	public boolean askWriteConsole(final SimulationAgent owner, final CharSequence content, final GamaColor color, final BufferingStrategies bufferingStrategy) {
+	public boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies bufferingStrategy) {
+		AbstractAgent owner = scope.getSimulation();
 		switch (bufferingStrategy) {
+			case PER_AGENT:
+				// in case it's per agent we just switch the owner to the calling agent instead of the whole simulation
+				owner = (AbstractAgent) scope.getAgent();
 			case PER_SIMULATION_BUFFERING:
-				return appendWriteConsoleRequestToMap(owner, consoleWritingPerSimulationMap, content, color);
+				return appendWriteConsoleRequestToMap(owner, consoleWritingPerAgentMap, content, color);
 			case PER_CYCLE_BUFFERING:
 				return appendWriteConsoleRequestToMap(owner, consoleWritingPerCycleMap, content, color);
 			case NO_BUFFERING:
@@ -98,9 +142,9 @@ public class BufferingController {
 	}
 	
 	
-	protected Map<SimulationAgent, BufferingTask> getOrInitBufferingMap(final String fileId, final  Map<String, Map<SimulationAgent, BufferingTask>> map){
+	protected Map<AbstractAgent, BufferingTask> getOrInitBufferingMap(final String fileId, final  Map<String, Map<AbstractAgent, BufferingTask>> map){
 		// If we don't have any map for this file yet we create one
-		Map<SimulationAgent, BufferingTask> bufferingMap = map.get(fileId);
+		Map<AbstractAgent, BufferingTask> bufferingMap = map.get(fileId);
 		if (bufferingMap == null) {
 			bufferingMap = new HashMap<>();
 			map.put(fileId, bufferingMap);
@@ -108,7 +152,7 @@ public class BufferingController {
 		return bufferingMap;
 	}
 	
-	protected boolean appendSaveFileRequestToMap(final SimulationAgent owner, final Map<SimulationAgent, BufferingTask> bufferingMap, final CharSequence content, final SaveOptions options) {
+	protected boolean appendSaveFileRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, BufferingTask> bufferingMap, final CharSequence content, final SaveOptions options) {
 		
 		// We look up for the previous request of the owner simulation in the map
 		// if there's already one we append our content or rewrite, depending on the append parameter
@@ -135,7 +179,7 @@ public class BufferingController {
 		}
 	}
 	
-	protected boolean appendWriteConsoleRequestToMap(final SimulationAgent owner, final Map<SimulationAgent, List<BufferingTask>> bufferingMap, final CharSequence content, final GamaColor color) {
+	protected boolean appendWriteConsoleRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, List<BufferingTask>> bufferingMap, final StringBuilder content, final GamaColor color) {
 		
 		// We look up for the previous request of the owner simulation in the map
 		List<BufferingTask> requests = bufferingMap.get(owner);
@@ -144,6 +188,13 @@ public class BufferingController {
 		if (requests == null) {
 			requests = new ArrayList<BufferingTask>();
 			bufferingMap.put(owner, requests);	
+		}
+		
+		//appends a new line character to mimic the calls to informConsole
+		//TODO: this should be refactored here and in the console, the new line should be added directly in the write statement
+		// it should even be an option (new line by default but could be changed to anything or nothing)
+		if (content != null) {
+			content.append(Strings.LN);
 		}
 		
 		// If the last element of the list is not of the same color as the currently requested color we append a new task with the new color
@@ -187,7 +238,7 @@ public class BufferingController {
 	 * @param owner: the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	protected boolean flushFilesInMapPerOwner(SimulationAgent owner, Map<String, Map<SimulationAgent, BufferingTask>> map) {
+	protected boolean flushFilesInMapPerOwner(AbstractAgent owner, Map<String, Map<AbstractAgent, BufferingTask>> map) {
 		boolean success = true;
 		for(var entry : map.entrySet()) {
 			var writeTask = entry.getValue().get(owner);
@@ -209,10 +260,13 @@ public class BufferingController {
 	 * Flushes all the write requests made by a simulation saved in a map
 	 * @param owner: the simulation in which the write statements have been executed
 	 */
-	protected void flushWriteInMapPerOwner(final SimulationAgent owner, final Map<SimulationAgent, List<BufferingTask>> map) {
+	protected void flushWriteInMapPerOwner(final AbstractAgent owner, final Map<AbstractAgent, List<BufferingTask>> map) {
 		var tasks = map.get(owner);
 		if (tasks != null) {
 			for (var task : tasks) {
+				//we remove the last new line char as it's going to call informconsole that already append a new line
+				//TODO: when the code is refactored and that last new line is appened directly in the write statement, delete this and only use content.toString()
+				task.content.setLength(task.content.length() - Strings.LN.length());
 				directWriteConsole(owner.getScope(), task.content.toString(), task.color);
 			}
 			tasks.clear();
@@ -226,8 +280,8 @@ public class BufferingController {
 	 * @param owner: the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public boolean flushSaveFilesSimulationPerOwner(SimulationAgent owner) {
-		return flushFilesInMapPerOwner(owner, fileWritingPerSimulationMap);		
+	public boolean flushSaveFilesSimulationPerOwner(AbstractAgent owner) {
+		return flushFilesInMapPerOwner(owner, fileWritingPerAgentMap);		
 	}
 	
 	/**
@@ -235,7 +289,7 @@ public class BufferingController {
 	 * @param owner: the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public boolean flushSaveFilesCycleOwner(SimulationAgent owner) {
+	public boolean flushSaveFilesCycleOwner(AbstractAgent owner) {
 		return flushFilesInMapPerOwner(owner, fileWritingPerCycleMap);
 	}
 	
@@ -243,7 +297,7 @@ public class BufferingController {
 	 * Flushes all the write statement requests made by a simulation with the 'per_cycle_buffering' strategy
 	 * @param owner: the simulation in which the write statements have been executed
 	 */
-	public void flushwriteCycleOwner(SimulationAgent owner) {
+	public void flushwriteCycleOwner(AbstractAgent owner) {
 		flushWriteInMapPerOwner(owner, consoleWritingPerCycleMap);
 	}
 
@@ -251,8 +305,8 @@ public class BufferingController {
 	 * Flushes all the save requests made by a simulation with the 'per_simulation_buffering' strategy
 	 * @param owner: the simulation in which the save statements have been executed
 	 */
-	public void flushWriteSimulationPerOwner(SimulationAgent owner) {
-		flushWriteInMapPerOwner(owner, consoleWritingPerSimulationMap);		
+	public void flushWriteSimulationPerOwner(AbstractAgent owner) {
+		flushWriteInMapPerOwner(owner, consoleWritingPerAgentMap);		
 	}
 	
 }

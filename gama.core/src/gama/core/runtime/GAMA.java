@@ -33,12 +33,15 @@ import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.BufferingController;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
+import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
@@ -101,26 +104,28 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
-	private static final BufferingController writeController = new BufferingController();
+	private static final BufferingController bufferingController = new BufferingController();
 	
-	public static boolean askWriteFile(SimulationAgent owner, File f, String content, final SaveOptions options) {
-		return writeController.askWriteFile(f.getAbsolutePath(), owner, content, options);
+	
+
+	public static boolean askWriteFile(final IScope scope, final File f, final CharSequence content, final SaveOptions options) {
+		return bufferingController.askWriteFile(f.getAbsolutePath(), scope, content, options);
 	}
-	public static boolean askWriteFile(SimulationAgent owner, File f, CharSequence content, final SaveOptions options) {
-		return writeController.askWriteFile(f.getAbsolutePath(), owner, content, options);
+	public static boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies strategy) {
+		return bufferingController.askWriteConsole(scope, content, color, strategy);
 	}
 	
-	public static boolean flushSaveFileSimulation(SimulationAgent owner) {
-		return writeController.flushSaveFilesSimulationPerOwner(owner);
+	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
+		return bufferingController.flushSaveFilesSimulationPerOwner(owner);
 	}
-	public static boolean flushSaveFileStep(SimulationAgent owner) {
-		return writeController.flushSaveFilesCycleOwner(owner);
+	public static boolean flushSaveFileStep(final SimulationAgent owner) {
+		return bufferingController.flushSaveFilesCycleOwner(owner);
 	}
 	public static void flushWriteStep(final SimulationAgent owner) {
-		writeController.flushwriteCycleOwner(owner);
+		bufferingController.flushwriteCycleOwner(owner);
 	}
-	public static void flushWriteSimulation(final SimulationAgent owner) {
-		writeController.flushWriteSimulationPerOwner(owner);
+	public static void flushWritePerAgent(final AbstractAgent owner) {
+		bufferingController.flushWriteSimulationPerOwner(owner);
 	}
 
 	

@@ -10,9 +10,6 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,15 +19,26 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.gaml.compilation.IDescriptionValidator;
+import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
+import gama.gaml.statements.WriteStatement.WriteValidator;
 import gama.gaml.types.IType;
 
 /**
@@ -48,24 +56,59 @@ import gama.gaml.types.IType;
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @facets (
-		value = { @facet (
+		value = { 
+			@facet (
 				name = IKeyword.COLOR,
 				type = IType.COLOR,
 				optional = true,
 				doc = @doc ("The color with wich the message will be displayed. Note that different simulations will have different (default) colors to use for this purpose if this facet is not specified")),
-				@facet (
-						name = IKeyword.MESSAGE,
-						type = IType.NONE,
-						optional = false,
-						doc = @doc ("the message to display. Modelers can add some formatting characters to the message (carriage returns, tabs, or Unicode characters), which will be used accordingly in the console.")), },
+			@facet (
+					name = IKeyword.BUFFERING,
+					type = { IType.STRING},
+					optional = true,
+					doc = @doc (
+							value = "Allows to specify a buffering strategy to write in the console. Accepted values are `" + BufferingController.PER_CYCLE_BUFFERING +"` and `" + BufferingController.PER_SIMULATION_BUFFERING + "`, `" + BufferingController.NO_BUFFERING + "`. "
+									+ "In the case of `"+ BufferingController.PER_CYCLE_BUFFERING +"` or `"+ BufferingController.PER_SIMULATION_BUFFERING +"`, all the write operations in the simulation which used these values would be "
+									+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '" + BufferingController.PER_AGENT
+									+ "' all operations will be released when the agent is killed (or the simulation ends). Those strategies can be used to optimise a "
+									+ "simulation's execution time on models that extensively write in files. "
+									+ "The `" + BufferingController.NO_BUFFERING + "` (which is the system's default) will directly write into the file.")
+					),
+			@facet (
+				name = IKeyword.MESSAGE,
+				type = IType.NONE,
+				optional = false,
+				doc = @doc ("the message to display. Modelers can add some formatting characters to the message (carriage returns, tabs, or Unicode characters), which will be used accordingly in the console.")), },
+		
 		omissible = IKeyword.MESSAGE)
 @doc (
 		value = "The statement makes the agent output an arbitrary message in the console.",
 		usages = { @usage (
 				value = "Outputting a message",
 				examples = { @example ("write \"This is a message from \" + self;") }) })
+@validator(WriteValidator.class)
 public class WriteStatement extends AbstractStatement {
 
+	
+	public static class WriteValidator implements IDescriptionValidator<StatementDescription> {
+
+		@Override
+		public void validate(StatementDescription description) {
+			final StatementDescription desc = description;
+			final IExpression bufferingStrategy = desc.getFacetExpr(IKeyword.BUFFERING);
+			
+
+			if (bufferingStrategy != null && ! BufferingController.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
+				desc.error("The value for buffering must be '" + BufferingController.NO_BUFFERING + "', '" 
+							+ BufferingController.PER_CYCLE_BUFFERING + "', '" 
+							+ BufferingController.PER_AGENT + "'" 
+							+ "' or '" + BufferingController.PER_SIMULATION_BUFFERING +"'.", 
+						IGamlIssue.WRONG_TYPE);
+			}
+		}
+		
+	}
+	
 	static {
 		// DEBUG.ON();
 	}
@@ -81,6 +124,8 @@ public class WriteStatement extends AbstractStatement {
 
 	/** The color. */
 	final IExpression color;
+	
+	final IExpression bufferingStrategy;
 
 	/**
 	 * Instantiates a new write statement.
@@ -92,6 +137,7 @@ public class WriteStatement extends AbstractStatement {
 		super(desc);
 		message = getFacet(IKeyword.MESSAGE);
 		color = getFacet(IKeyword.COLOR);
+		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 	}
 
 	@Override
@@ -102,10 +148,16 @@ public class WriteStatement extends AbstractStatement {
 			mes = Cast.asString(scope, message.value(scope));
 			if (mes == null) { mes = "nil"; }
 			GamaColor rgb = null;
-			if (color != null) { rgb = (GamaColor) color.value(scope); }
+			BufferingStrategies strategy = BufferingStrategies.NO_BUFFERING;
+			if (color != null) { 
+				rgb = (GamaColor) color.value(scope); 
+			}
+			if (bufferingStrategy != null) { 
+				strategy = BufferingController.stringToBufferingStrategies(scope, Cast.asString(scope,bufferingStrategy.value(scope)));
+			}
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
-			scope.getGui().getConsole().informConsole(mes, scope.getRoot(), rgb);
+			GAMA.askWriteConsole(scope, new StringBuilder(mes), rgb, strategy);
 		}
 		return mes;
 	}

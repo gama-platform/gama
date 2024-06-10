@@ -751,7 +751,7 @@ public class Files {
 			see = { "save"})
 	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation) throws GamaRuntimeException {
 		boolean success = GAMA.flushSaveFileStep(simulation);
-		success &= GAMA.flushSaveFileSimulation(simulation);
+		success &= GAMA.flushSaveFilePerOwner(simulation);
 		return success;
 	}
 	

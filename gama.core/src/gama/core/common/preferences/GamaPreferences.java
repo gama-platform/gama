@@ -36,6 +36,7 @@ import gama.core.common.util.StringUtils;
 import gama.core.outputs.layers.properties.ICameraDefinition;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
+import gama.core.runtime.concurrent.BufferingController;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
 import gama.core.util.GamaMapFactory;
@@ -45,7 +46,6 @@ import gama.core.util.file.csv.AbstractCSVManipulator;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.operators.Strings;
-import gama.gaml.statements.SaveStatement;
 import gama.gaml.types.IType;
 import one.util.streamex.StreamEx;
 
@@ -869,8 +869,8 @@ public class GamaPreferences {
 
 		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
 		public static final Pref<String> DEFAULT_BUFFERING_STRATEGY =
-				create(PREF_BUFFERING_STRATEGY, "Default buffering strategy for save statement", SaveStatement.NO_BUFFERING, IType.STRING, true)
-				.among(SaveStatement.BUFFERING_STRATEGIES.stream().toList())
+				create(PREF_BUFFERING_STRATEGY, "Default buffering strategy for save statement", BufferingController.NO_BUFFERING, IType.STRING, true)
+				.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
 				.in(NAME, OPTIMIZATIONS);
 		
 		/**

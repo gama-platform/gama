@@ -10,9 +10,7 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -21,13 +19,12 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import gama.core.common.interfaces.ISerialisationConstants;
+import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
 
 /**
  * The Class TextSaver.
@@ -67,7 +64,7 @@ public class TextSaver extends AbstractSaver {
 		options.setCharSet(ch);
 		
 		try  {
-			GAMA.askWriteFile(scope.getSimulation(), file, toSave, options);
+			GAMA.askWriteFile(scope, file, toSave, options);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {
