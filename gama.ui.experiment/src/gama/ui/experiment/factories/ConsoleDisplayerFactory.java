@@ -64,7 +64,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				});
 			}
 			if (console[0] != null) {
-				console[0].append(msg + Strings.LN, root, color);
+				console[0].append(msg, root, color);
 			} else { // DO WE KEEP THIS ? NOT HAVING BUFFERS MEANS THAT IF A CONSOLE IS OPENED AFTERWARDS, NOTHING WILL
 				// APPEAR ON IT
 				GamaColor c = color == null ? root == null ? GamaColor.get(0) : root.getColor() : color;
@@ -73,7 +73,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 					sb = new StringBuilder(2000);
 					consoleBuffers.put(c, sb);
 				}
-				sb.append(msg + Strings.LN);
+				sb.append(msg);
 			}
 
 		}

@@ -301,6 +301,8 @@ public interface IKeyword {
 
 	/** The enables. */
 	String ENABLES = "enables";
+	
+	String END = "end";
 
 	/** The enter. */
 	String ENTER = "enter";

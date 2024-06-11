@@ -15,7 +15,6 @@ import java.util.Set;
 import org.apache.commons.lang3.NotImplementedException;
 
 import gama.core.metamodel.agent.AbstractAgent;
-import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -188,13 +187,6 @@ public class BufferingController {
 		if (requests == null) {
 			requests = new ArrayList<BufferingTask>();
 			bufferingMap.put(owner, requests);	
-		}
-		
-		//appends a new line character to mimic the calls to informConsole
-		//TODO: this should be refactored here and in the console, the new line should be added directly in the write statement
-		// it should even be an option (new line by default but could be changed to anything or nothing)
-		if (content != null) {
-			content.append(Strings.LN);
 		}
 		
 		// If the last element of the list is not of the same color as the currently requested color we append a new task with the new color

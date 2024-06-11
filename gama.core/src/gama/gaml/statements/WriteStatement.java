@@ -38,6 +38,7 @@ import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.Strings;
 import gama.gaml.statements.WriteStatement.WriteValidator;
 import gama.gaml.types.IType;
 
@@ -62,6 +63,12 @@ import gama.gaml.types.IType;
 				type = IType.COLOR,
 				optional = true,
 				doc = @doc ("The color with wich the message will be displayed. Note that different simulations will have different (default) colors to use for this purpose if this facet is not specified")),
+			@facet (
+					name = IKeyword.END,
+					type = IType.STRING,
+					optional = true,
+					doc = @doc ("The string to be appened at the end of the message. By default it's a new line character: '\\n' or '\\r\\n' depending on the operating system." )
+					),
 			@facet (
 					name = IKeyword.BUFFERING,
 					type = { IType.STRING},
@@ -127,6 +134,8 @@ public class WriteStatement extends AbstractStatement {
 	
 	final IExpression bufferingStrategy;
 
+	final IExpression end;
+	
 	/**
 	 * Instantiates a new write statement.
 	 *
@@ -138,6 +147,7 @@ public class WriteStatement extends AbstractStatement {
 		message = getFacet(IKeyword.MESSAGE);
 		color = getFacet(IKeyword.COLOR);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
+		end = getFacet(IKeyword.END);
 	}
 
 	@Override
@@ -155,6 +165,14 @@ public class WriteStatement extends AbstractStatement {
 			if (bufferingStrategy != null) { 
 				strategy = BufferingController.stringToBufferingStrategies(scope, Cast.asString(scope,bufferingStrategy.value(scope)));
 			}
+			
+			if (end != null) {
+				mes += Cast.asString(scope, end);
+			}
+			else {
+				mes += Strings.LN;
+			}
+			
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
 			GAMA.askWriteConsole(scope, new StringBuilder(mes), rgb, strategy);
