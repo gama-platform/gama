@@ -460,7 +460,7 @@ public class SaveStatement extends AbstractStatementSequence{
 		}
 		
 		// get the buffering strategy
-		BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_BUFFERING_STRATEGY).value(scope));
+		BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_SAVE_BUFFERING_STRATEGY).value(scope));
 		if (bufferingStrategy != null) {
 			strategy = BufferingController.stringToBufferingStrategies(scope, (String)bufferingStrategy.value(scope));
 		}

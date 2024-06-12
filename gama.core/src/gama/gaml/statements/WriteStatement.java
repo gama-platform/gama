@@ -23,6 +23,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -158,10 +159,10 @@ public class WriteStatement extends AbstractStatement {
 			mes = Cast.asString(scope, message.value(scope));
 			if (mes == null) { mes = "nil"; }
 			GamaColor rgb = null;
-			BufferingStrategies strategy = BufferingStrategies.NO_BUFFERING;
 			if (color != null) { 
 				rgb = (GamaColor) color.value(scope); 
 			}
+			BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_WRITE_BUFFERING_STRATEGY).value(scope));
 			if (bufferingStrategy != null) { 
 				strategy = BufferingController.stringToBufferingStrategies(scope, Cast.asString(scope,bufferingStrategy.value(scope)));
 			}
