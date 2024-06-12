@@ -167,16 +167,17 @@ public class WriteStatement extends AbstractStatement {
 				strategy = BufferingController.stringToBufferingStrategies(scope, Cast.asString(scope,bufferingStrategy.value(scope)));
 			}
 			
+			var messageToSend = new StringBuilder(mes);
 			if (end != null) {
-				mes += Cast.asString(scope, end);
+				messageToSend.append(Cast.asString(scope, end));
 			}
 			else {
-				mes += Strings.LN;
+				messageToSend.append(Strings.LN);
 			}
 			
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
-			GAMA.askWriteConsole(scope, new StringBuilder(mes), rgb, strategy);
+			GAMA.askWriteConsole(scope, messageToSend, rgb, strategy);
 		}
 		return mes;
 	}

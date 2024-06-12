@@ -116,16 +116,16 @@ public class GAMA {
 	}
 	
 	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
-		return bufferingController.flushSaveFilesSimulationPerOwner(owner);
+		return bufferingController.flushSaveFilesOfOwner(owner);
 	}
 	public static boolean flushSaveFileStep(final SimulationAgent owner) {
-		return bufferingController.flushSaveFilesCycleOwner(owner);
+		return bufferingController.flushSaveFilesInCycle(owner);
 	}
 	public static void flushWriteStep(final SimulationAgent owner) {
-		bufferingController.flushwriteCycleOwner(owner);
+		bufferingController.flushWriteInCycle(owner);
 	}
 	public static void flushWritePerAgent(final AbstractAgent owner) {
-		bufferingController.flushWriteSimulationPerOwner(owner);
+		bufferingController.flushWriteOfOwner(owner);
 	}
 
 	

@@ -469,11 +469,7 @@ public class SaveStatement extends AbstractStatementSequence{
 			Files.createDirectories(fileToSave.toPath().getParent());
 			boolean exists = fileToSave.exists();
 			final boolean rewrite = shouldOverwrite(scope);
-			//removing as this should be treated in the save delegate
-//			if (rewrite && exists) {
-//				fileToSave.delete();
-//				exists = false;
-//			}
+
 			IExpression header = getFacet(IKeyword.HEADER);
 			final boolean addHeader = !exists && (header == null || Cast.asBool(scope, header.value(scope)));
 			final String type = (typeExp != null ? typeExp : "text").trim().toLowerCase();
