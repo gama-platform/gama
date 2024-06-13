@@ -17,14 +17,14 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.ui.workbench,
  org.eclipse.e4.core.services,
- org.eclipse.osgi.services,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.ui.css.swt.theme,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.workbench.addons.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
- org.eclipse.e4.ui.css.core
+ org.eclipse.e4.ui.css.core,
+ org.osgi.service.event
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2
