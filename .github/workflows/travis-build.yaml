@@ -83,12 +83,19 @@ jobs:
           M2_HOME='/opt/apache-maven-3.9.7'
           PATH="$M2_HOME/bin:$PATH"
           export PATH
+          # Overwrite PATH with updated maven install
+          echo $PATH > $GITHUB_PATH
+          echo "=== Check if well installed ==="
+          echo "$ mvn -version"
           mvn -version
 
       - name: Set custom runner parameters
         run: |
           echo "MAVEN_OPTS='-Dorg.slf4j.simpleLogger.defaultLogLevel=error -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx15g'" >> ~/.mavenrc
           sudo chmod +x $GITHUB_WORKSPACE/travis/*
+          echo "=== Check which maven version ==="
+          echo "$ mvn -version"
+          mvn -version
 
       # Prep release
 
