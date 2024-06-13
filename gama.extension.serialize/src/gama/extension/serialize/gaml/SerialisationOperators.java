@@ -25,6 +25,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -297,8 +298,8 @@ public class SerialisationOperators {
 			final IExpression e = GAML.getExpressionFactory().createExpr(gaml, d);
 			return scope.evaluate(e, agent).getValue();
 		} catch (final GamaRuntimeException e) {
-			scope.getGui().getConsole().informConsole("Error in evaluating Gaml code : '" + gaml + "' in "
-					+ scope.getAgent() + Strings.LN + "Reason: " + e.getMessage(), scope.getRoot());
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml + "' in "
+					+ scope.getAgent() + Strings.LN + "Reason: " + e.getMessage(), scope), false);
 
 			return null;
 		}
