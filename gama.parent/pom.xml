@@ -269,7 +269,6 @@
 					<useProjectSettings>false</useProjectSettings>
 					<generatedSourcesDirectory>${project.build.directory}</generatedSourcesDirectory>
 					<optimize>true</optimize>
-					<executionEnvironment>${jdk.version}</executionEnvironment>
 					<showWarnings>true</showWarnings>
 				</configuration>
 			</plugin>
@@ -420,7 +419,6 @@
 							<removeAll />
 						</filter>
 					</filters>
-					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
 					<environments>
 						<environment>
