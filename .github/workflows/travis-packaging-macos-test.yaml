@@ -21,11 +21,11 @@ jobs:
           rm -fr ~/Gama.app
           hdiutil detach /Volumes/Gama
       
-      - name: Set up Adopt OpenJDK 17
+      - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           java-package: jdk
 
       - name: Test Gama w/o JDK

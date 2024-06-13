@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           sudo apt install -y ./gama-platform_${{ inputs.RELEASE_VERSION }}-1_amd64.deb
-          # Switch to OpenJDK 17
+          # Switch to installed OpenJDK
           sudo update-java-alternatives -s $(update-java-alternatives -l | grep "\-openjdk" | cut -d " " -f 1)
           java -version
           gama-headless -help

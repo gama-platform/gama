@@ -23,7 +23,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tycho.version>3.0.5</tycho.version>
-		<jdk.version>17</jdk.version>
+		<jdk.version>21</jdk.version>
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>

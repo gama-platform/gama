@@ -21,7 +21,7 @@ on:
         description: "The tag of the release to publish (YYYY.MM.0)"
         type: string
         required: false
-        default: "2024.03.0"
+        default: "2024.06.0"
       jdk_embedded_version:
         type: string
         required: false
@@ -67,11 +67,11 @@ jobs:
         with:
           ref: ${{ inputs.CHECKOUT_BRANCH }}
       
-      - name: Set up Adopt OpenJDK 17
+      - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           java-package: jdk
 
       - name: Set custom runner parameters
