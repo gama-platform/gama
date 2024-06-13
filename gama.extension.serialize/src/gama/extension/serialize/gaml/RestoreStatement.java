@@ -66,9 +66,8 @@ import gama.gaml.types.IType;
 						optional = false,
 						doc = @doc ("The file or the string from which to restore the agent")) },
 		omissible = IKeyword.TARGET)
-@doc ("Allows to restore any agent that has been previously serialised or saved to a file, e.g. `string s <- serialize(a, 'json'); ...  restore a from: s; `"
-		+ " or `save simulation to: 'sim.gsim' format: `binary`; ... restore simulation from: file('sim.gsim') `")
-@SuppressWarnings ({ "unchecked", "rawtypes" })
+@doc ("Allows to restore any agent that has been previously serialised or saved to a file, e.g. `string s <- serialize(a);` ...  `restore a from: s;`"
+	+ " or `save simulation to: 'sim.gsim' format: 'binary';` ... `restore simulation from: file('sim.gsim');`")
 public class RestoreStatement extends AbstractStatement {
 
 	/** The header. */
