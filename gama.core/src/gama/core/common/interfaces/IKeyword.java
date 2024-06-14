@@ -222,6 +222,9 @@ public interface IKeyword {
 	/** The current state. */
 	String CURRENT_STATE = "currentState";
 
+	/** The Constant CYCLE. */
+	String CYCLE = "cycle";
+	
 	/** The cycle length. */
 	String CYCLE_LENGTH = "cycle_length";
 
