@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.operators.Strings;
@@ -131,10 +133,12 @@ public class Morris {
 
 		 FileReader fr = null;
 		 try {
-			 fr = new FileReader(file);
+			 fr = new FileReader(file, StandardCharsets.UTF_8);
 		 } catch (FileNotFoundException e) {
-			 GamaRuntimeException.error(e.getMessage(), scope);
-		 }		
+			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
+		 } catch (IOException e) {
+			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
+		}		
 
 		 BufferedReader br = new BufferedReader(fr);
 		 String line = " ";
