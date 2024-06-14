@@ -73,7 +73,7 @@ fi
 
 ini_arguments=$(read_from_ini)
 
-if ! $java -cp "${headless_path}"/../plugins/org.eclipse.equinox.launcher*.jar -Xms512m $memory ${ini_arguments[@]} org.eclipse.core.launcher.Main -configuration "${headless_path}"/configuration -application gama.headless.product -data $passWork "$@"; then
+if ! $java -cp "${headless_path}"/../plugins/org.eclipse.equinox.launcher*.jar -Xms512m $memory ${ini_arguments[@]} org.eclipse.equinox.launcher.Main -configuration "${headless_path}"/configuration -application gama.headless.product -data $passWork "$@"; then
     echo "Error in you command, here's the log :"
     cat $passWork/.metadata/.log
     exit 1
