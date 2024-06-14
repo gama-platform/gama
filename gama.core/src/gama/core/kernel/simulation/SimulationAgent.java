@@ -122,7 +122,7 @@ import gama.gaml.types.IType;
 						value = "Represents the total time passed, in model time, since the beginning of the simulation",
 						comment = "Equal to cycle * step if the user does not arbitrarily initialize it.")),
 		@variable (
-				name = SimulationAgent.CYCLE,
+				name = IKeyword.CYCLE,
 				type = IType.INT,
 				doc = @doc ("Returns the current cycle of the simulation")),
 		@variable (
@@ -172,9 +172,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 	/** The Constant AVERAGE_DURATION. */
 	public static final String AVERAGE_DURATION = "average_duration";
-
-	/** The Constant CYCLE. */
-	public static final String CYCLE = "cycle";
 
 	/** The Constant TIME. */
 	public static final String TIME = "time";
@@ -534,7 +531,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *            the scope
 	 * @return the cycle
 	 */
-	@getter (CYCLE)
+	@getter (IKeyword.CYCLE)
 	public Integer getCycle(final IScope scope) {
 		final SimulationClock clock = getClock();
 		if (clock != null) return clock.getCycle();
@@ -1010,7 +1007,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		setUsage(usageValue);
 
 		// Update Clock
-		final Object cycle = sa.getAttributeValue(CYCLE);
+		final Object cycle = sa.getAttributeValue(IKeyword.CYCLE);
 		ownClock.setCycleNoCheck((Integer) cycle);
 
 		final Map<String, ISerialisedPopulation> savedAgentInnerPop = sa.innerPopulations();
