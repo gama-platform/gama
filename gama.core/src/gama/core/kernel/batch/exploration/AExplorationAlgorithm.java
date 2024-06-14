@@ -191,7 +191,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	public int[] getFactorial(IScope scope, List<Batch> parameters) {
 		Object o = getFacet(Exploration.SAMPLE_FACTORIAL).value(scope);
 		int[] r = new int[parameters.size()];
-		Arrays.fill(r, Integer.valueOf(o.toString()).intValue());
+		Arrays.fill(r, Integer.parseInt(o.toString()));
 		return r;
 	}
 	
