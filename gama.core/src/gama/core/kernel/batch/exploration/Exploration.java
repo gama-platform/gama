@@ -50,7 +50,6 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Random;
 import gama.gaml.types.GamaDateType;
 import gama.gaml.types.GamaFloatType;
 import gama.gaml.types.GamaPointType;
@@ -311,8 +310,10 @@ public class Exploration extends AExplorationAlgorithm {
 	private List<ParametersSet> buildParameterFromMap(final IScope scope, final List<ParametersSet> sets,
 			final int index) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getDenotedType() != Types.LIST) throw GamaRuntimeException.error(
-				"You cannot use " + IKeyword.WITH + " facet without input a list of maps as parameters inputs", scope);
+		if ( !Types.LIST.isAssignableFrom(psexp.getDenotedType())) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(
+					"The facet '" + IKeyword.WITH + "' must be provided with a list of maps", scope), true);
+		}
 		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
 
 		for (Map<String, Object> parameterSet : parameterSets) {
