@@ -152,6 +152,8 @@ public interface IKeyword {
 
 	/** The browse. */
 	String BROWSE = "browse";
+	
+	String BUFFERING = "buffering";
 
 	/** The camera. */
 	String CAMERA = "camera";
@@ -302,6 +304,8 @@ public interface IKeyword {
 
 	/** The enables. */
 	String ENABLES = "enables";
+	
+	String END = "end";
 
 	/** The enter. */
 	String ENTER = "enter";

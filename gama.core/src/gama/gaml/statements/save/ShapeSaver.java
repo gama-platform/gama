@@ -60,7 +60,7 @@ public class ShapeSaver extends AbstractShapeSaver {
 
 		final ShapefileDataStore store = new ShapefileDataStore(f.toURI().toURL());
 		store.setCharset(StandardCharsets.UTF_8);
-		// The name of the type and the name of the feature source shoud now be
+		// The name of the type and the name of the feature source should now be
 		// the same.
 		final SimpleFeatureType type =
 				DataUtilities.createType(store.getFeatureSource().getEntry().getTypeName(), specs);
