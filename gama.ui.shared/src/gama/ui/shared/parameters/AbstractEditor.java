@@ -104,12 +104,14 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	protected EditorsGroup parent;
 
 	/** The editor toolbar. */
+	@SuppressWarnings("rawtypes")
 	protected EditorToolbar editorToolbar;
 
 	/** The editor label. */
 	protected EditorLabel editorLabel;
 
 	/** The editor control. */
+	@SuppressWarnings("rawtypes")
 	protected EditorControl editorControl;
 
 	/**
@@ -124,7 +126,6 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 * @param l
 	 *            the l
 	 */
-	@SuppressWarnings ("unchecked")
 	public AbstractEditor(@Nonnull final IAgent a, @Nonnull final IParameter parameter,
 			@Nullable final EditorListener<T> l) {
 		param = parameter;
@@ -357,7 +358,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 *
 	 * @return the editor toolbar
 	 */
-	@SuppressWarnings ("unchecked")
+	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	EditorToolbar createEditorToolbar() {
 		editorToolbar = new EditorToolbar(this, parent);
 		updateToolbar();
@@ -369,6 +370,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 *
 	 * @return the editor control
 	 */
+	@SuppressWarnings("rawtypes")
 	EditorControl createEditorControl() {
 		boolean isCombo = param.getAmongValue(getScope()) != null;
 		boolean isEditable = param.isEditable();
