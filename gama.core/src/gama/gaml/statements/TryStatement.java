@@ -21,6 +21,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.descriptions.IDescription;
@@ -135,6 +136,9 @@ public class TryStatement extends AbstractStatementSequence {
 			scope.enableTryMode();
 			result = super.privateExecuteIn(scope);
 		} catch (final Exception e) {
+			if (!(e instanceof GamaRuntimeException)){
+				scope.setCurrentError(GamaRuntimeException.create(e, scope));
+			}
 			scope.disableTryMode();
 			if (catchStatement != null) return scope.execute(catchStatement).getValue();
 		} finally {
