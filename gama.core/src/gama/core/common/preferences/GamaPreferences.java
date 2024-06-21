@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaPreferences.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.common.preferences;
 
@@ -36,6 +36,7 @@ import gama.core.common.util.StringUtils;
 import gama.core.outputs.layers.properties.ICameraDefinition;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
+import gama.core.runtime.concurrent.BufferingController;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
 import gama.core.util.GamaMapFactory;
@@ -76,6 +77,9 @@ public class GamaPreferences {
 			() -> GamaColor.get(199, 234, 229), () -> GamaColor.get(128, 205, 193), () -> GamaColor.get(53, 151, 143),
 			() -> GamaColor.get(1, 102, 94), () -> GamaColor.get(0, 60, 48) };
 
+	public static final String PREF_SAVE_BUFFERING_STRATEGY = "pref_save_buffering_strategy";
+	public static final String PREF_WRITE_BUFFERING_STRATEGY = "pref_write_buffering_strategy";
+	
 	/**
 	 *
 	 * Interface tab
@@ -861,9 +865,20 @@ public class GamaPreferences {
 
 		/** The Constant SHAPEFILE_IN_MEMORY. */
 		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
-				"In-memory shapefile mapping (optimizes access to shapefile data in exchange for increased memory usage)",
+				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
 				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
 
+		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
+		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY =
+				create(PREF_SAVE_BUFFERING_STRATEGY, "Default buffering strategy for the save statement", BufferingController.NO_BUFFERING, IType.STRING, true)
+				.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+				.in(NAME, OPTIMIZATIONS);
+		
+		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY =
+				create(PREF_WRITE_BUFFERING_STRATEGY, "Default buffering strategy for the write statement", BufferingController.NO_BUFFERING, IType.STRING, true)
+				.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+				.in(NAME, OPTIMIZATIONS);
+		
 		/**
 		 * Paths to libraries
 		 */

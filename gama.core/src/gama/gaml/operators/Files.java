@@ -12,8 +12,6 @@ package gama.gaml.operators;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -37,9 +35,11 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
+import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -59,16 +59,7 @@ import gama.gaml.types.Types;
 public class Files {
 
 
-	// @operator (
-	// value = IKeyword.FILE,
-	// can_be_const = true,
-	// category = IOperatorCategory.FILE,
-	// concept = { IConcept.FILE })
-	// @doc (
-	// value = "Creates a file in read/write mode, setting its contents to the container passed in parameter",
-	// comment = "The type of container to pass will depend on the type of file (see the management of files in the
-	// documentation). Can be used to copy files since files are considered as containers. For example: save
-	// file('image_copy.png', file('image.png')); will copy image.png to image_copy.png")
+
 	/**
 	 * From.
 	 *
@@ -89,24 +80,6 @@ public class Files {
 		return (IGamaFile) Types.FILE.cast(scope, s, container, key, content, false);
 	}
 
-	//
-	// @operator (
-	// value = IKeyword.FILE,
-	// can_be_const = true,
-	// category = IOperatorCategory.FILE,
-	// concept = { IConcept.FILE })
-	// @doc (
-	// value = "opens a file in read only mode, creates a GAML file object, and tries to determine and store the file
-	// content in the contents attribute.",
-	// comment = "The file should have a supported extension, see file type definition for supported file extensions.",
-	// usages = @usage ("If the specified string does not refer to an existing file, an exception is risen when the
-	// variable is used."),
-	// examples = { @example (
-	// value = "let fileT type: file value: file(\"../includes/Stupid_Cell.Data\"); "),
-	// @example (
-	// value = " // fileT represents the file \"../includes/Stupid_Cell.Data\""),
-	// @example (
-	// value = " // fileT.contents here contains a matrix storing all the data of the text file") },
 	/**
 	 * From.
 	 *
@@ -753,4 +726,33 @@ public class Files {
 
 	}
 
+	/**
+	 * Flushes all the pending save operations in the current simulation
+	 * @param scope
+	 * @return true if everything went well, false if there was a problem while flushing
+	 * @throws GamaRuntimeException
+	 */
+	@operator (
+			value = { "flush_all_files" },
+			category = IOperatorCategory.FILE,
+			concept = { IConcept.FILE },
+			type = IType.BOOL
+			)
+	@doc (
+			value = "Flushes all the pending save operations in the current simulation. ",
+			comment = "",
+			usages = {
+					@usage ("This operator is only useful in simulations that save files using a buffering strategy."),
+					@usage ("If a file writing fails it returns false, else it returns true."),
+					@usage ("If a file writing fails it still tries to write the others."), 
+					},
+			examples = {
+					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments")},
+			see = { "save"})
+	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation) throws GamaRuntimeException {
+		boolean success = GAMA.flushSaveFileStep(simulation);
+		success &= GAMA.flushSaveFilePerOwner(simulation);
+		return success;
+	}
+	
 }

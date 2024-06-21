@@ -152,6 +152,8 @@ public interface IKeyword {
 
 	/** The browse. */
 	String BROWSE = "browse";
+	
+	String BUFFERING = "buffering";
 
 	/** The camera. */
 	String CAMERA = "camera";
@@ -222,6 +224,9 @@ public interface IKeyword {
 	/** The current state. */
 	String CURRENT_STATE = "currentState";
 
+	/** The Constant CYCLE. */
+	String CYCLE = "cycle";
+	
 	/** The cycle length. */
 	String CYCLE_LENGTH = "cycle_length";
 
@@ -299,6 +304,8 @@ public interface IKeyword {
 
 	/** The enables. */
 	String ENABLES = "enables";
+	
+	String END = "end";
 
 	/** The enter. */
 	String ENTER = "enter";

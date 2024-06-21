@@ -12,13 +12,13 @@ package gama.gaml.statements;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -135,7 +135,10 @@ public class TryStatement extends AbstractStatementSequence {
 		try {
 			scope.enableTryMode();
 			result = super.privateExecuteIn(scope);
-		} catch (final GamaRuntimeException e) {
+		} catch (final Exception e) {
+			if (!(e instanceof GamaRuntimeException)){
+				scope.setCurrentError(GamaRuntimeException.create(e, scope));
+			}
 			scope.disableTryMode();
 			if (catchStatement != null) return scope.execute(catchStatement).getValue();
 		} finally {

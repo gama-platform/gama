@@ -75,7 +75,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		locationAttribute = create(IKeyword.LOCATION, Types.POINT, DEFAULT_LOCATION);
 		directionAttribute = create("direction", Types.POINT, DEFAULT_DIRECTION);
 		linearAttribute = create(IKeyword.LINEAR_ATTENUATION, Types.FLOAT, 0d);
-		attenuationAttribute = create(IKeyword.CONSTANT_ATTENUATION, Types.FLOAT, 0d);
+		attenuationAttribute = create(IKeyword.CONSTANT_ATTENUATION, Types.FLOAT, 1d);
 		quadraticAttribute = create(IKeyword.QUADRATIC_ATTENUATION, Types.FLOAT, 0d);
 		angleAttribute = create("angle", Types.FLOAT, DEFAULT_ANGLE);
 		drawAttribute = create("show", Types.BOOL, false);

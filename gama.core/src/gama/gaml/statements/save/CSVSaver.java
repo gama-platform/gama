@@ -10,17 +10,15 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Set;
 
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
@@ -54,11 +52,11 @@ public class CSVSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
-			throws GamaRuntimeException {
-		if (os == null) return;
-		save(scope, new OutputStreamWriter(os), header, item);
-	}
+//	public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
+//			throws GamaRuntimeException {
+//		if (os == null) return;
+//		save(scope, new OutputStreamWriter(os), header, item);
+//	}
 
 	/**
 	 * Save.
@@ -77,24 +75,68 @@ public class CSVSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave)
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException, IOException {
-		
-		FileWriter fileWriter = null;
-		
-		try {
-			fileWriter =  new FileWriter(file, true);
-			save(scope, fileWriter, addHeader, item);
-		}catch(IOException ex) {
-			// cleanup in case of failure in the save
-			if (fileWriter != null) {
-				try {
-					fileWriter.close();					
-				} finally {}
-			}
-			throw ex;
+
+		StringBuilder sb = new StringBuilder();
+		final IType itemType = item.getGamlType();
+		final SpeciesDescription sd;
+		if (itemType.isAgentType()) {
+			sd = itemType.getSpecies();
+		} else if (itemType.getContentType().isAgentType()) {
+			sd = itemType.getContentType().getSpecies();
+		} else {
+			sd = null;
 		}
+		final Object value = item.value(scope);
+		final IList values =
+				itemType.isContainer() ? Cast.asList(scope, value) : GamaListFactory.create(scope, itemType, value);
+		if (values.isEmpty()) return;
+		char del = AbstractCSVManipulator.getDefaultDelimiter();
+		if (sd != null) {
+			final Collection<String> attributeNames = sd.getAttributeNames();
+			attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
+			if (saveOptions.addHeader) {
+				sb.append("cycle" + del + "name;location.x" + del + "location.y" + del + "location.z");
+				for (final String v : attributeNames) { sb.append(del + v); }
+				sb.append(Strings.LN);
+			}
+			for (final Object obj : values) {
+				if (obj instanceof IAgent) {
+					final IAgent ag = Cast.asAgent(scope, obj);
+					sb.append(scope.getClock().getCycle() + del + ag.getName().replace(';', ',') + del
+							+ ag.getLocation().getX() + del + ag.getLocation().getY() + del
+							+ ag.getLocation().getZ());
+					for (final String v : attributeNames) {
+						String val = StringUtils.toGaml(ag.getDirectVarValue(scope, v), false).replace(';', ',');
+						if (val.startsWith("'") && val.endsWith("'")
+								|| val.startsWith("\"") && val.endsWith("\"")) {
+							val = val.substring(1, val.length() - 1);
+						}
+						sb.append(del + val);
+					}
+					sb.append(Strings.LN);
+				}
+			}
+		} else {
+			if (saveOptions.addHeader) {
+				sb.append(item.serializeToGaml(true).replace("]", "").replace("[", "").replace(',', del));
+				sb.append(Strings.LN);
+			}
+			if (itemType.id() == IType.MATRIX) {
+				GamaMatrix<?> matrix = (GamaMatrix) value;
+				matrix.rowByRow(scope, v -> sb.append(toCleanString(v)), () -> sb.append(del),
+						() -> sb.append(Strings.LN));
+			} else {
+				final int size = values.size();
+				for (int i = 0; i < size; i++) {
+					if (i > 0) { sb.append(del); }
+					sb.append(toCleanString(values.get(i)));
+				}
+			}
+			sb.append(Strings.LN);
+		}
+		GAMA.askWriteFile(scope, file, sb, saveOptions);
 	}
 
 	/**
@@ -111,74 +153,9 @@ public class CSVSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private void save(final IScope scope, final Writer fw, final boolean header, final IExpression item)
+	private void save(final IScope scope, final File file, final boolean header, final IExpression item, final BufferingStrategies bufferingStrategy)
 			throws GamaRuntimeException {
-		try (fw) {
-			final IType itemType = item.getGamlType();
-			final SpeciesDescription sd;
-			if (itemType.isAgentType()) {
-				sd = itemType.getSpecies();
-			} else if (itemType.getContentType().isAgentType()) {
-				sd = itemType.getContentType().getSpecies();
-			} else {
-				sd = null;
-			}
-			final Object value = item.value(scope);
-			final IList values =
-					itemType.isContainer() ? Cast.asList(scope, value) : GamaListFactory.create(scope, itemType, value);
-			if (values.isEmpty()) return;
-			char del = AbstractCSVManipulator.getDefaultDelimiter();
-			if (sd != null) {
-				final Collection<String> attributeNames = sd.getAttributeNames();
-				attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
-				if (header) {
-					fw.write("cycle" + del + "name;location.x" + del + "location.y" + del + "location.z");
-					for (final String v : attributeNames) { fw.write(del + v); }
-					fw.write(Strings.LN);
-				}
-				for (final Object obj : values) {
-					if (obj instanceof IAgent) {
-						final IAgent ag = Cast.asAgent(scope, obj);
-						fw.write(scope.getClock().getCycle() + del + ag.getName().replace(';', ',') + del
-								+ ag.getLocation().getX() + del + ag.getLocation().getY() + del
-								+ ag.getLocation().getZ());
-						for (final String v : attributeNames) {
-							String val = StringUtils.toGaml(ag.getDirectVarValue(scope, v), false).replace(';', ',');
-							if (val.startsWith("'") && val.endsWith("'")
-									|| val.startsWith("\"") && val.endsWith("\"")) {
-								val = val.substring(1, val.length() - 1);
-							}
-							fw.write(del + val);
-						}
-						fw.write(Strings.LN);
-					}
-
-				}
-			} else {
-				if (header) {
-					fw.write(item.serializeToGaml(true).replace("]", "").replace("[", "").replace(',', del));
-					fw.write(Strings.LN);
-				}
-				if (itemType.id() == IType.MATRIX) {
-					GamaMatrix<?> matrix = (GamaMatrix) value;
-					matrix.rowByRow(scope, v -> fw.write(toCleanString(v)), () -> fw.write(del),
-							() -> fw.write(Strings.LN));
-				} else {
-					final int size = values.size();
-					for (int i = 0; i < size; i++) {
-						if (i > 0) { fw.write(del); }
-						fw.write(toCleanString(values.get(i)));
-					}
-				}
-				fw.write(Strings.LN);
-			}
-
-		} catch (final GamaRuntimeException e) {
-			throw e;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.create(e, scope);
-		}
-
+		
 	}
 
 	/**

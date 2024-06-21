@@ -8,10 +8,9 @@ Require-Bundle: gama.core,
 Bundle-ClassPath: .
 Export-Package: gama.extension.serialize,
  gama.extension.serialize.binary,
- gama.extension.serialize.gaml,
- gama.extension.serialize.implementations
+ gama.extension.serialize.gaml
 Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.serialize
 Bundle-Activator: gama.extension.serialize.Activator

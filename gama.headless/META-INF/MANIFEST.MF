@@ -22,5 +22,5 @@ Export-Package:
  gama.headless.xml
 Import-Package: com.google.inject
 Bundle-ClassPath: .
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.headless

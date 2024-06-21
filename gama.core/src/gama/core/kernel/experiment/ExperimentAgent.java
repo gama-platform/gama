@@ -109,6 +109,10 @@ import gama.gaml.variables.IVariable;
 				type = IType.STRING,
 				doc = @doc (RandomUtils.DOC)),
 		@variable (
+				name = IKeyword.CYCLE,
+				type = IType.INT,
+				doc = @doc ("Returns the current cycle of the simulation")),
+		@variable (
 				name = SimulationAgent.USAGE,
 				type = IType.INT,
 				doc = @doc ("Returns the number of times the random number generator of the experiment has been drawn")),
@@ -738,6 +742,20 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@getter (PROJECT_PATH)
 	public String getProjectPath() { return getModel().getProjectPath() + "/"; }
 
+	
+	/**
+	 * Gets the cycle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the cycle
+	 */
+	@getter (IKeyword.CYCLE)
+	public Integer getCycle(final IScope scope) {
+		if (ownClock != null) return ownClock.getCycle();
+		return 0;
+	}
+	
 	/**
 	 * Update displays.
 	 *
@@ -1197,7 +1215,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (pop != null)
 			return Iterables.filter(Iterables.concat(Iterables.transform(pop, SimulationAgent::getOutputManager),
 					Collections.singletonList(getOutputManager())), each -> each != null);
-		return Collections.EMPTY_LIST;
+		return Collections.emptyList();
 	}
 
 	/**
