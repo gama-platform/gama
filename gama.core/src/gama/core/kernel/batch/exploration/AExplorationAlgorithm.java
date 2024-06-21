@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,7 +193,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	public int[] getFactorial(IScope scope, List<Batch> parameters) {
 		Object o = getFacet(Exploration.SAMPLE_FACTORIAL).value(scope);
 		int[] r = new int[parameters.size()];
-		Arrays.fill(r, Integer.valueOf(o.toString()).intValue());
+		Arrays.fill(r, Integer.parseInt(o.toString()));
 		return r;
 	}
 	
@@ -240,7 +241,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		final File parento = fo.getParentFile();
 		if (!parento.exists()) { parento.mkdirs(); }
 		if (fo.exists()) { fo.delete(); }
-		try (FileWriter fw = new FileWriter(fo, false)) {
+		try (FileWriter fw = new FileWriter(fo, StandardCharsets.UTF_8, false)) {
 			fw.write(buildSimulationCsv(results, scope));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + fo.toString() + " cannot be found to save "+currentExperiment.getName()+" experiment results", scope);
@@ -292,7 +293,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
-			try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
+			try (FileReader fr = new FileReader(file, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
 				String line = " ";
 				String[] tempArr;
 				List<String> list_name = new ArrayList<>();

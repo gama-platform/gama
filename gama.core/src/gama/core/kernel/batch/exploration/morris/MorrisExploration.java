@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -297,7 +298,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 *            : .csv file
 	 */
 	private void saveResults(final File file, final IScope scope) throws GamaRuntimeException {
-		try (FileWriter fw = new FileWriter(file, false)) {
+		try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8, false)) {
 			fw.write(momo.buildReportString(FileNameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
