@@ -99,6 +99,10 @@ experiment exploration_with_sampling  parent: batch_abstract repeat:3 type: batc
 	method exploration sampling:"latinhypercube" sample:100;
 }
 
+experiment exploration_with_factorial  parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+	method exploration sampling:"factorial" factorial:4 sample:100;
+}
+
 // This experiment iterate over 100 point randomly drawn from the parameter space
 // Then the model global variables "nb_preys" and "nb_predators" are saved un a csv for each simulation run (including potential replicates)
 experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
