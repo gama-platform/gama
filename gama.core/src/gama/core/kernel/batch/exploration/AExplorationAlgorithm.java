@@ -58,6 +58,7 @@ import gama.gaml.types.GamaFloatType;
 import gama.gaml.types.GamaPointType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
+import gama.gaml.variables.NumberVariable;
 
 /**
  * The Class AExplorationAlgorithm.
@@ -297,7 +298,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				List<String> list_name = new ArrayList<>();
 				int i = 0;
 				while ((line = br.readLine()) != null) {
-					tempArr = line.split(",");
+					tempArr = line.split(CSV_SEP);
 					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
 					if (i > 0) {
 						Map<String, Object> temp_map = new HashMap<>();
@@ -401,16 +402,10 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				} else {
 					stepFloatValue = (maxFloatValue - minFloatValue) / __DEFAULT_STEP_FACTOR;
 				}
-
+				double val = stepFloatValue >= 0 ? minFloatValue : maxFloatValue;
 				while (minFloatValue <= maxFloatValue) {
-					if (stepFloatValue >= 0) {
-						res.add(minFloatValue);
-						minFloatValue = minFloatValue + stepFloatValue;
-
-					} else {
-						res.add(maxFloatValue);
-						maxFloatValue = maxFloatValue + stepFloatValue;
-					}
+					res.add(val);
+					val += stepFloatValue;
 				}
 				break;
 			case IType.DATE:
@@ -469,29 +464,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				} else {
 					floatcrement = (maxVarValue - varValue) / __DEFAULT_STEP_FACTOR;
 				}
+				
+				double v = floatcrement >= 0 ? varValue : maxVarValue;
+				
 				while (varValue <= maxVarValue) {
 
 					if (var.getType().id() == IType.INT) {
-						if (floatcrement >= 0) {
-							res.add((int) varValue);
-						} else {
-							res.add((int) maxVarValue);
-						}
-
+						res.add((int) v);
 					} else if (var.getType().id() == IType.FLOAT) {
-						if (floatcrement >= 0) {
-							res.add(varValue);
-						} else {
-							res.add(maxVarValue);
-						}
-					} else {
-						continue;
+						res.add(v);
 					}
-					if (floatcrement >= 0) {
-						varValue = varValue + floatcrement;
-					} else {
-						maxVarValue = maxVarValue + floatcrement;
-					}
+					v += floatcrement;
 				}
 		}
 		return res;
