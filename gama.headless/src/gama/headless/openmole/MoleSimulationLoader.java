@@ -16,9 +16,9 @@ import java.util.List;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.kernel.model.IModel;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.headless.core.GamaHeadlessException;
-
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
@@ -41,7 +41,7 @@ public abstract class MoleSimulationLoader {
 	 *             the gama headless exception
 	 */
 	public static IModel loadModel(final File modelPath, final List<GamlCompilationError> errors)
-			throws IOException, GamaHeadlessException {
+			throws IOException, GamaCompilationFailedException {
 		return loadModel(modelPath, errors, null);
 	}
 
@@ -61,7 +61,7 @@ public abstract class MoleSimulationLoader {
 	 *             the gama headless exception
 	 */
 	public static IModel loadModel(final File modelPath, final List<GamlCompilationError> errors,
-			final GamlProperties metadata) throws IOException, GamaHeadlessException {
+			final GamlProperties metadata) throws IOException, GamaCompilationFailedException {
 		return GamlModelBuilder.getDefaultInstance().compile(modelPath, errors, metadata);
 	}
 
