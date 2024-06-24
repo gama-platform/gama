@@ -22,7 +22,7 @@ public class GamaCompilationFailedException extends RuntimeException{
 	
 	public String toJsonString() {
 		StringBuilder sb = new StringBuilder("{");
-		sb.append("\"exception\":\"").append(getClass().getName()).append("\",");
+		sb.append("\"exception\":\"").append(getClass().getSimpleName()).append("\",");
 		sb.append("\"message\":\"").append(getMessage()).append("\",");
 		sb.append("\"errors\":[");
 
