@@ -12,11 +12,11 @@
     </manifest>
     <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="true">
         <folder path="/gama.processor/META-INF"/>
-        <file path="/gama.processor/pom.xml"/>
-        <file path="/gama.processor/.project"/>
-        <javaElement handleIdentifier="=gama.annotations/src"/>
-        <file path="/gama.processor/build.properties"/>
         <file path="/gama.processor/.classpath"/>
+        <file path="/gama.processor/.project"/>
+        <file path="/gama.processor/build.properties"/>
         <file path="/gama.processor/plugin.xml"/>
+        <file path="/gama.processor/pom.xml"/>
+        <javaElement handleIdentifier="=gama.annotations/src"/>
     </selectedElements>
 </jardesc>

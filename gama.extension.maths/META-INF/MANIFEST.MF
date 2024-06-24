@@ -8,7 +8,7 @@ Require-Bundle: gama.core,
  gama.dependencies
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.extension.maths.ode.statements
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.maths
 Bundle-ClassPath: .
 

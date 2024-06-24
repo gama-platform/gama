@@ -17,6 +17,7 @@ import java.util.Set;
 import org.jgrapht.nio.GraphExporter;
 
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.graph.writer.GraphExporters;
 import gama.gaml.expressions.IExpression;
@@ -43,12 +44,11 @@ public class GraphSaver extends AbstractSaver {
 	 */
 	@Override
 	@SuppressWarnings ("unchecked")
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) {
-		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(type);
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) {
+		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type);
 		final var g = Cast.asGraph(scope, item);
 		if (g != null) {
-			if (exp == null) throw GamaRuntimeException.error("Format is not recognized ('" + type + "')", scope);
+			if (exp == null) throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);
 			exp.exportGraph(g, file.getAbsoluteFile());
 		}
 	}

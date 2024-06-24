@@ -12,5 +12,5 @@ Bundle-ClassPath: .,
  lib/mp3spi-1.9.5.4.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.sound

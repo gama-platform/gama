@@ -15,11 +15,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -53,24 +55,10 @@ public class ASCSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
-		
-		if (file.exists()) { file.delete(); }
-		
-		FileWriter fileWriter = null;
-		
-		try {
-			fileWriter =  new FileWriter(file);
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws IOException {
+		try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)){
 			save(scope, item, fileWriter);
 		}finally {
-			// cleanup in case of failure in the save
-			if (fileWriter != null) {
-				try {
-					fileWriter.close();					
-				} finally {}
-			}
-			
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, file.getAbsolutePath());
 		}
 	}

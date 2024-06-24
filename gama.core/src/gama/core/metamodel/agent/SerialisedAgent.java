@@ -162,7 +162,7 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 			map.put(IKeyword.SEED, sim.getSeed());
 			map.put(IKeyword.RNG, sim.getRng());
 			map.put(SimulationAgent.USAGE, sim.getUsage());
-			map.put(SimulationAgent.CYCLE, sim.getClock().getCycle());
+			map.put(IKeyword.CYCLE, sim.getClock().getCycle());
 		}
 		if (!isGrid) { map.put(IKeyword.SHAPE, agent.getGeometry()); }
 		map.put(IKeyword.NAME, agent.getName());
@@ -232,7 +232,7 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 				sim.setRandomGenerator(new RandomUtils(seedValue, rngValue));
 				sim.setUsage(usageValue);
 				// Update Clock
-				final Integer cycle = (Integer) sim.getAttribute(SimulationAgent.CYCLE);
+				final Integer cycle = (Integer) sim.getAttribute(IKeyword.CYCLE);
 				sim.getClock().setCycleNoCheck(cycle);
 
 			}

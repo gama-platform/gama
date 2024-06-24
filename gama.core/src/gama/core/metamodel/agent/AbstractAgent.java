@@ -129,6 +129,8 @@ public abstract class AbstractAgent implements IAgent {
 			attributes.clear();
 			attributes = null;
 		}
+		GAMA.flushSaveFilePerOwner(this);
+		GAMA.flushWritePerAgent(this);
 	}
 
 	/**

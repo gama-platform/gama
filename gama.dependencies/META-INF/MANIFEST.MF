@@ -839,5 +839,5 @@ Bundle-ClassPath: .,
  jgrapht 1.5.2/jgrapht-opt-1.5.2.jar,
  jgrapht 1.5.2/jheaps-0.14.jar,
  geotools/commons-io-2.6.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.dependencies
