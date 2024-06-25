@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -360,4 +361,28 @@ public class BufferingController {
 		flushAllWriteOfOwner(owner, consoleBufferListPerAgent);		
 	}
 	
+	public void flushAllBufferings() {
+		// flushes the console per cycle first
+		for (var agent : consoleBufferListPerAgentForCycles.keySet()) {
+			flushWriteInCycle(agent);
+		}
+		// flushes the others for the console
+		for (var agent : consoleBufferListPerAgent.keySet()) {
+			flushWriteOfOwner(agent);
+		}
+		// flushes the files registered for the cycle
+		var agents = fileBufferPerAgentForCycles.entrySet().stream().map(s -> s.getValue().keySet())
+					.collect(Collectors.toSet())
+					.toArray(new AbstractAgent[0]);
+		for (AbstractAgent agent : agents) {
+			flushSaveFilesInCycle(agent);
+		}
+		// finally flushes the files registered per agent
+		agents = fileBufferPerAgent.entrySet().stream().map(s -> s.getValue().keySet())
+				.collect(Collectors.toSet())
+				.toArray(new AbstractAgent[0]);
+		for (AbstractAgent agent : agents) {
+			flushSaveFilesOfOwner(agent);
+		}
+	}
 }
