@@ -219,7 +219,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 
 ## Other concepts
 [scheduling](RuntimeConcepts#Scheduling_of_Agents ), [step](RuntimeConcepts#agents-step), [Key concepts](BasicProgrammingConceptsInGAML),
-[Object-oriented paradigm to GAML](Introduction#vocabulary-correspondence-with-the-object-oriented-paradigm-as-in-java), [Correspondence GAML and Netlogo](/Introduction#vocabulary-correspondence-with-the-agent-based-paradigm-as-in-netlogo)
+[Object-oriented paradigm to GAML](Introduction#vocabulary-correspondence-with-the-object-oriented-paradigm-as-in-java), [Correspondence GAML and Netlogo](Introduction#vocabulary-correspondence-with-the-agent-based-paradigm-as-in-netlogo)
 
 
 </xsl:template>
