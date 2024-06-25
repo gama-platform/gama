@@ -57,7 +57,6 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.constants.ColorCSS;
 import gama.annotations.precompiler.doc.utils.TypeConverter;
 import gama.annotations.precompiler.doc.utils.XMLElements;
 import gama.processor.Constants;
@@ -289,34 +288,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 				eltConstants.appendChild(eltConstant);
 			}
-
-			if (e.getAnnotation(constant.class).category() != null
-					&& IConstantCategory.COLOR_CSS.equals(e.getAnnotation(constant.class).category()[0])) {
-				final Object[] colorTab = ColorCSS.array;
-				for (int i = 0; i < colorTab.length; i += 2) {
-					final org.w3c.dom.Element constantElt = document.createElement(XMLElements.CONSTANT);
-					constantElt.setAttribute(XMLElements.ATT_CST_NAME, PREFIX_CONSTANT + colorTab[i]);
-					constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
-							"r=" + ((int[]) colorTab[i + 1])[0] + ", g=" + ((int[]) colorTab[i + 1])[1] + ", b="
-									+ ((int[]) colorTab[i + 1])[2] + ", alpha=" + ((int[]) colorTab[i + 1])[3]);
-					constantElt.appendChild(
-							getCategories(e, document, document.createElement(XMLElements.CATEGORIES), tc));
-
-					// Concept
-					org.w3c.dom.Element conceptsElt;
-					if (constantElt.getElementsByTagName(XMLElements.CONCEPTS).getLength() == 0) {
-						conceptsElt = getConcepts(e, document, document.createElement(XMLElements.CONCEPTS), tc);
-					} else {
-						conceptsElt = getConcepts(e, document,
-								(org.w3c.dom.Element) constantElt.getElementsByTagName(XMLElements.CONCEPTS).item(0),
-								tc);
-					}
-					constantElt.appendChild(conceptsElt);
-
-					eltConstants.appendChild(constantElt);
-				}
-			}
 		}
+		
 		return eltConstants;
 	}
 
@@ -1257,9 +1230,6 @@ public class DocProcessor extends ElementProcessor<doc> {
 		return statementsElt;
 	}
 
-	/** The Constant PREFIX_CONSTANT. */
-	public static final String PREFIX_CONSTANT = "#";
-
 	/**
 	 * Gets the doc elt.
 	 *
@@ -1584,7 +1554,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			final Messager mes, final TypeConverter tc) {
 		final org.w3c.dom.Element constantElt = doc.createElement(XMLElements.CONSTANT);
 
-		constantElt.setAttribute(XMLElements.ATT_CST_NAME, PREFIX_CONSTANT + constant.value());
+		constantElt.setAttribute(XMLElements.ATT_CST_NAME, IConstantCategory.PREFIX_CONSTANT + constant.value());
 		// constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
 		// ((VariableElement)e).getConstantValue().toString());
 		final Object valCst = ((VariableElement) e).getConstantValue();
@@ -1600,7 +1570,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			else {
 				str.append(",");
 			}
-			str.append(PREFIX_CONSTANT);
+			str.append(IConstantCategory.PREFIX_CONSTANT);
 			str.append(n); 
 		}
 		

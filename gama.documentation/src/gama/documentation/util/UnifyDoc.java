@@ -11,7 +11,6 @@
 package gama.documentation.util;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +23,8 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import gama.annotations.precompiler.IConstantCategory;
+import gama.annotations.precompiler.constants.ColorCSS;
 import gama.annotations.precompiler.doc.utils.Constants;
 import gama.annotations.precompiler.doc.utils.TypeConverter;
 import gama.annotations.precompiler.doc.utils.XMLElements;
@@ -148,13 +149,47 @@ public class UnifyDoc {
 			doc.getRootElement().getChild(XMLElements.OPERATORS_CATEGORIES).addContent(new Element(XMLElements.CATEGORY)
 					.setAttribute(XMLElements.ATT_CAT_ID, new TypeConverter().getProperCategory("Types")));
 
+			// Add the colors constant category
+			doc.getRootElement().getChild(XMLElements.CONSTANTS_CATEGORIES).addContent(new Element(XMLElements.CATEGORY)
+					.setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS));	
+			
+			// Add the color in constants
+			Element constantsElt = doc.getRootElement().getChild(XMLElements.CONSTANTS);
+			final Object[] colorTab = ColorCSS.array;
+			for (int i = 0; i < colorTab.length; i += 2) {
+				constantsElt.addContent(createColorConstantElement(colorTab,i));				
+			}
+
 			return doc;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		return null;
 	}
+	
+	private static Element createColorConstantElement(Object[] colorTab, int i) {
+		final Element constantElt = new Element(XMLElements.CONSTANT);
+		constantElt.setAttribute(XMLElements.ATT_CST_NAME, IConstantCategory.PREFIX_CONSTANT + colorTab[i]);
+		constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
+				"r=" + ((int[]) colorTab[i + 1])[0] + ", g=" + ((int[]) colorTab[i + 1])[1] + ", b="
+						+ ((int[]) colorTab[i + 1])[2] + ", alpha=" + ((int[]) colorTab[i + 1])[3]);
 
+		// Category
+		final Element categoriesElt = new Element(XMLElements.CATEGORIES);
+		final Element colorCatElt = new Element(XMLElements.CATEGORY).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
+		categoriesElt.addContent(colorCatElt);
+		constantElt.addContent(categoriesElt);
+		
+		// Concept
+		final Element conceptsElt = new Element(XMLElements.CONCEPTS);
+		final Element conceptElt = new Element(XMLElements.CONCEPT).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
+		conceptsElt.addContent(conceptElt);
+		constantElt.addContent(conceptsElt);					
+		
+		return constantElt;
+	}
+
+	
 	/**
 	 * The main method.
 	 *
