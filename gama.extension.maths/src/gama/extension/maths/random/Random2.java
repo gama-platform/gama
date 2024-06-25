@@ -140,7 +140,7 @@ public class Random2 {
 			category = { IOperatorCategory.RANDOM },
 			concept = { IConcept.RANDOM })
 	@doc (
-			value = "returns a random value from a Log-Normal distribution with specified values of the shape (alpha) and scale (beta) parameters. See https://en.wikipedia.org/wiki/Log-normal_distribution for more details. ",
+			value = "returns a random value from a Log-Normal distribution with specified values of the expected value (or mean) of the variable's natural logarithm (shape) and the standard deviation of the variable's natural logarithm (scale) parameters. See https://en.wikipedia.org/wiki/Log-normal_distribution for more details. ",
 			examples = { @example (
 					value = "lognormal_rnd(2,3)",
 					equals = "0.731",
