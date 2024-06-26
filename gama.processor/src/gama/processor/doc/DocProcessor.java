@@ -15,6 +15,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -748,8 +751,64 @@ public class DocProcessor extends ElementProcessor<doc> {
 				}
 			}
 		}
+		
+		// To manage see Also bidirectional, we need to go through all of the operators
+		NodeList ops = operators.getElementsByTagName(XMLElements.OPERATOR);
+		for(int i =0; i < ops.getLength();i++) {		
+			org.w3c.dom.Element eltOperator = (org.w3c.dom.Element) ops.item(i);
+			String eltName = eltOperator.getAttribute(XMLElements.ATT_OP_NAME);
+			NodeList sees = eltOperator.getElementsByTagName(XMLElements.SEE);
+			
+			// For each see, 
+			//	find the element with the proper name
+			//	add to each of them a see to the current element, if it is not present yet
+			for(int j =0; j < sees.getLength();j++) {	
+				List<Node> l_elts = searchForElementOfInterest(operators, ((org.w3c.dom.Element) sees.item(j)).getAttribute(XMLElements.ATT_SEE_ID));
+				if(l_elts.size() > 0) {
+					org.w3c.dom.Element targetOperatorelt = (org.w3c.dom.Element) l_elts.get(0);
+					org.w3c.dom.Element seeAlsoElt;
+					if (targetOperatorelt.getElementsByTagName(XMLElements.SEEALSO).getLength() != 0) {
+						seeAlsoElt = (org.w3c.dom.Element) targetOperatorelt.getElementsByTagName(XMLElements.SEEALSO).item(0);
+					} else {
+						seeAlsoElt = document.createElement(XMLElements.SEEALSO);
+					}
+					
+					DocProcessor.addIfNotExistSee(document, seeAlsoElt, eltName);					
+				}
+			}
+		}
+		
 		return operators;
 	}
+	
+	// from https://stackoverflow.com/questions/23360278/how-to-use-org-w3c-dom-nodelist-with-java-8-stream-api
+	public List<Node> searchForElementOfInterest(org.w3c.dom.Element elt, String eltName) {
+	        NodeList nList = elt.getElementsByTagName(XMLElements.OPERATOR);
+
+	        // since NodeList does not have stream implemented, then use this hack
+	        Stream<Node> nodeStream = IntStream.range(0, nList.getLength()).mapToObj(nList::item);
+	        // search for element of interest in the NodeList
+	        List<Node> l = nodeStream.parallel()
+	        						.filter( x -> DocProcessor.isElementOfInterestWithName(x,eltName))
+	        						.collect(Collectors.toList());
+
+	        return l;
+	}
+
+	private static boolean isElementOfInterestWithName(Node nNode, String n) {
+	        boolean bFound=false;
+	        if ((nNode != null) && (nNode.getNodeType() == Node.ELEMENT_NODE)) {
+	        	org.w3c.dom.Element eElement = (org.w3c.dom.Element) nNode;
+	        	
+	            if(n.equals(eElement.getAttribute("name"))) {
+                    bFound = true;	            	
+	            }
+	        }
+	        return bFound;
+	}
+
+	
+	
 
 	/**
 	 * Process doc XML architectures.
@@ -1342,20 +1401,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 				seeAlsoElt = doc.createElement(XMLElements.SEEALSO);
 			}
 			for (final String see : docAnnot.see()) {
-				final NodeList nLSee = seeAlsoElt.getElementsByTagName(XMLElements.SEE);
-				int i = 0;
-				boolean seeAlreadyInserted = false;
-				while (i < nLSee.getLength() && !seeAlreadyInserted) {
-					if (((org.w3c.dom.Element) nLSee.item(i)).getAttribute(XMLElements.ATT_SEE_ID).equals(see)) {
-						seeAlreadyInserted = true;
-					}
-					i++;
-				}
-				if (!seeAlreadyInserted) {
-					final org.w3c.dom.Element seesElt = doc.createElement(XMLElements.SEE);
-					seesElt.setAttribute(XMLElements.ATT_SEE_ID, see);
-					seeAlsoElt.appendChild(seesElt);
-				}
+				DocProcessor.addIfNotExistSee(doc, seeAlsoElt, see);
 			}
 			if (docAnnot.see().length != 0) {
 				docElt.appendChild(seeAlsoElt);
@@ -1455,6 +1501,24 @@ public class DocProcessor extends ElementProcessor<doc> {
 		return docElt;
 	}
 
+	public static void addIfNotExistSee(final Document doc, org.w3c.dom.Element seeAlsoElt, String opName) {
+		final NodeList nLSee = seeAlsoElt.getElementsByTagName(XMLElements.SEE);
+		int i = 0;
+		boolean seeAlreadyInserted = false;
+		while (i < nLSee.getLength() && !seeAlreadyInserted) {
+			if (((org.w3c.dom.Element) nLSee.item(i)).getAttribute(XMLElements.ATT_SEE_ID).equals(opName)) {
+				seeAlreadyInserted = true;
+			}
+			i++;
+		}
+		if (!seeAlreadyInserted) {
+			final org.w3c.dom.Element seesElt = doc.createElement(XMLElements.SEE);
+			seesElt.setAttribute(XMLElements.ATT_SEE_ID, opName);
+			seeAlsoElt.appendChild(seesElt);
+		}
+	}
+	
+	
 	/**
 	 * Gets the doc elt.
 	 *
