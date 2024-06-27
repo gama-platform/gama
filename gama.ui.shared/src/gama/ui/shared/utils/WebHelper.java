@@ -65,7 +65,7 @@ public class WebHelper implements IWebHelper {
 		if (HOME_URL == null)
 			try {
 				final var welcomePage = "/welcome/" + (isDark() ? "dark" : "light") + "/welcome.html";
-				HOME_URL = toFileURL(getBundle("gama.ui.shared.shared").getEntry(welcomePage));
+				HOME_URL = toFileURL(getBundle("gama.ui.shared").getEntry(welcomePage));
 			} catch (final IOException e) {
 				e.printStackTrace();
 			}
