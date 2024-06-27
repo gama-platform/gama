@@ -16,6 +16,11 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 <xsl:variable name="fileSpecies" select="'BuiltInSpecies'" />
 <xsl:variable name="fileSkills" select="'BuiltInSkills'" />
 
+<xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
+<xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
+<xsl:variable name="space" select="' '" />
+<xsl:variable name="minus" select="'-'" />
+
 
 <xsl:template match="/">
 
@@ -96,6 +101,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 	<xsl:value-of select="@name" />
 	<xsl:text>](</xsl:text>
 	<xsl:value-of select="$fileUnitsConstants" />
+	<xsl:text>#</xsl:text>
+	<xsl:value-of select="translate(translate(categories/category/@id, $uppercase, $lowercase), $space, $minus)" />	
 	<xsl:text>)</xsl:text>
 	<xsl:if test="@altNames">
 		<xsl:text> (</xsl:text>
@@ -219,7 +226,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 
 ## Other concepts
 [scheduling](RuntimeConcepts#Scheduling_of_Agents ), [step](RuntimeConcepts#agents-step), [Key concepts](BasicProgrammingConceptsInGAML),
-[Object-oriented paradigm to GAML](Introduction#vocabulary-correspondence-with-the-object-oriented-paradigm-as-in-java), [Correspondence GAML and Netlogo](/Introduction#vocabulary-correspondence-with-the-agent-based-paradigm-as-in-netlogo)
+[Object-oriented paradigm to GAML](Introduction#vocabulary-correspondence-with-the-object-oriented-paradigm-as-in-java), [Correspondence GAML and Netlogo](Introduction#vocabulary-correspondence-with-the-agent-based-paradigm-as-in-netlogo)
 
 
 </xsl:template>
