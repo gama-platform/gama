@@ -127,6 +127,10 @@ public class GAMA {
 	public static void flushWritePerAgent(final AbstractAgent owner) {
 		bufferingController.flushWriteOfOwner(owner);
 	}
+	public static void flushAllBufferings() {
+		bufferingController.flushAllBufferings();
+	}
+	
 
 	
 	/**
