@@ -15,9 +15,11 @@ import static gama.core.common.preferences.GamaPreferences.Runtime.TESTS_SORTED;
 import static gama.ui.shared.resources.IGamaIcons.TEST_FILTER;
 import static gama.ui.shared.resources.IGamaIcons.TEST_SORT;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -261,7 +263,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		final String path = dialog.open();
 		if (path == null) return;
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		String file = path + "/" + "tests_" + timestamp.toString() + ".txt";
+		String file = path + File.separator + "tests_" + new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(timestamp) + ".txt";
 		file = FileUtils.constructAbsoluteFilePath(GAMA.getRuntimeScope(), file, false);
 		try (PrintWriter out = new PrintWriter(file)) {
 			for (AbstractSummary summary : experiments) {
