@@ -5,7 +5,9 @@
 * Tags: 
 */
 
+@no_warning
 model test_lists
+
 
 species dummy {
 			
