@@ -64,7 +64,7 @@ experiment FirstModel type: gui {
 				draw circle(1) color: (state = "I")? #red : ((state="R") ? #blue : #green);
 			}
 		}
-		display "Chart" {
+		display "Chart" type:2d {
 			chart "Infected people" {
 				loop s over: ["S","I","R"] {
 					data s value: people count (each.state = s) color: colors[s];
