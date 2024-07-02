@@ -46,32 +46,8 @@ jobs:
           echo "$ mvn -version"
           mvn -version
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
       - name: Compiling GAMA
-        run: bash travis/build.sh -B -T 4 -Dorg.slf4j.simpleLogger.defaultLogLevel=error
-
-      - name: SonarCloud analysis
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          cd $GITHUB_WORKSPACE/gama.parent && pwd
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=gama-platform_new.gama
-
-      #- name: Get linux testing releases
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    name: gama-compiled-archive
-      #    
-      #- name: Extract GAMA w/o JDK
-      #  run: tar xvf $GITHUB_WORKSPACE/gama.application-linux.gtk.x86_64.tar.gz
-      #  
+        run: bash travis/build.sh -B -T 4
       
       - name: Generate documentation
         run:  |
