@@ -59,7 +59,6 @@ import gama.gaml.types.GamaFloatType;
 import gama.gaml.types.GamaPointType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
-import gama.gaml.variables.NumberVariable;
 
 /**
  * The Class AExplorationAlgorithm.
