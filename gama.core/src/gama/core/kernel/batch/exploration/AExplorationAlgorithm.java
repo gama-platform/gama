@@ -398,15 +398,23 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
 				double stepFloatValue = 0.1;
 				if (var.getStepValue(scope) != null) {
-					stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope));
+					stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
 				} else {
-					stepFloatValue = (maxFloatValue - minFloatValue) / __DEFAULT_STEP_FACTOR;
+					stepFloatValue = (maxFloatValue - minFloatValue) / (__DEFAULT_STEP_FACTOR-1);
 				}
-				double val = stepFloatValue >= 0 ? minFloatValue : maxFloatValue;
+				
+				// Do we need to account for min > max ???
+				
 				while (minFloatValue <= maxFloatValue) {
-					res.add(val);
-					val += stepFloatValue;
+					minFloatValue += stepFloatValue;
+					res.add(minFloatValue);
 				}
+				// Do we need to control for errors ????
+				// Do we have to use Math.ulp() ???
+//				if (Math.abs(Cast.asFloat(scope, res.get(res.size()-1)) - maxFloatValue) < stepFloatValue) {
+//					res.remove(res.size()-1);
+//					res.add(maxFloatValue);
+//				}
 				break;
 			case IType.DATE:
 				GamaDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
