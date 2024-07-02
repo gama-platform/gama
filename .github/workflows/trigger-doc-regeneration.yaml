@@ -78,6 +78,17 @@ jobs:
           git clone --depth 1 https://github.com/gama-platform/gama.wiki.git  $GITHUB_WORKSPACE/../gama.wiki  
           cd $GITHUB_WORKSPACE/gama.documentation/
           java -cp ".:libs/jdom-2.0.1.jar:target/classes:../gama.annotations/target/classes" gama.documentation.MainGenerateWiki -online
+      
+      - name: Commit updated documentation files
+        run:  |
+          git config --global user.email "my.gama.bot@gmail.com"
+          git config --global user.name "GAMA Bot"
+          cd $GITHUB_WORKSPACE/../gama.wiki
+          git remote set-url origin https://gama-bot:$BOT_TOKEN@github.com/gama-platform/gama.wiki.git
+          git status
+          git add -A
+          git commit -m "Regenerate operators artifacts on wiki  - $(date)"
+          git push
 
       - name: Trigger documentation website rebuild
         run: |
