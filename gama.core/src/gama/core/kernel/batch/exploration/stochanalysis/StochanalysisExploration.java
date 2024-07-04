@@ -92,7 +92,12 @@ import gama.gaml.types.IType;
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written"))
+						doc = @doc ("The path to the file where the automatic batch report will be written")),
+				@facet (
+						name = Exploration.ITERATIONS,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of iteration for orthogonal sampling, 5 by default"))
 
 		},
 		omissible = IKeyword.NAME)
@@ -186,7 +191,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 				hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
 		
 		/** If any of the two facet is missing pop up a warning */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ||
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) &&
 				hasFacet(IKeyword.BATCH_OUTPUT)) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(
 					"Facet "+(hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? 

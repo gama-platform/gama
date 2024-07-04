@@ -175,7 +175,6 @@ public class Exploration extends AExplorationAlgorithm {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void explore(final IScope scope) throws GamaRuntimeException {
 
