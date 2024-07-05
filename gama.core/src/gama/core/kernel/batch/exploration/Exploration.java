@@ -186,6 +186,9 @@ public class Exploration extends AExplorationAlgorithm {
 		
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
 		
+		if (sets.isEmpty()) {
+			sets.add(new ParametersSet());
+		}
 		sample_size = sets.size();
 
 		IMap<ParametersSet, Map<String, List<Object>>> res = null;
