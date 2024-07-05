@@ -350,17 +350,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			int nbr = res.values().stream().findAny().get().size();
 			if (!res.values().stream().allMatch(r -> r.size()==nbr)) { 
 				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Not all sample of stochastic analysis have the same number of replicates", scope), false); 
+				continue;
 			}
-			else {
-				// Swipe over the replication of each parameter sets, writing a line for each
-				for (int r = 0; r < nbr; r++) {
-					sb.append(Strings.LN);
-					sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(CSV_SEP)));
-					for (var entrySet : res.entrySet()) { 
-						sb.append(CSV_SEP).append(entrySet.getValue().get(r)); 
-					}
-				}				
-			}
+
+			// Swipe over the replication of each parameter sets, writing a line for each
+			for (int r = 0; r < nbr; r++) {
+				sb.append(Strings.LN);
+				sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(CSV_SEP)));
+				for (var entrySet : res.entrySet()) { 
+					sb.append(CSV_SEP).append(entrySet.getValue().get(r)); 
+				}
+			}				
 		}
 
 		return sb.toString();
@@ -410,9 +410,11 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		List<Object> res = new ArrayList<>();
 		GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
 		GamaPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
-		GamaPoint increment = null;
 		Double stepV = null;
 
+		GamaPoint increment =  new GamaPoint( 	(maxPointValue.x - pointValue.x) / 10.0,
+												(maxPointValue.y - pointValue.y) / 10.0, 
+												(maxPointValue.z - pointValue.z) / 10.0);
 		if (var.getStepValue(scope) != null) {
 			increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
 
@@ -424,11 +426,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				stepV = (increment.x + increment.y + increment.z) / 3.0;
 			}
 
-		} else {
-			increment = new GamaPoint((maxPointValue.x - pointValue.x) / 10.0,
-					(maxPointValue.y - pointValue.y) / 10.0, (maxPointValue.z - pointValue.z) / 10.0);
-
 		}
+		
 		while (pointValue.smallerThanOrEqualTo(maxPointValue)) {
 			if (stepV == null || stepV > 0) {
 				res.add(pointValue);
