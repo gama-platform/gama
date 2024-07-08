@@ -149,12 +149,12 @@ public class BinarySerialisation implements ISerialisationConstants {
 			byte[] all = string.getBytes(ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET);
 			restoreFromBytes(agent, all);
 		} catch (Throwable e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			// The string is maybe a path ?
 			try {
 				restoreFromFile(agent, string);
 			} catch (Throwable ex) {
-				throw GamaRuntimeException.create(ex, agent.getScope());
+				GAMA.reportAndThrowIfNeeded(agent.getScope(),GamaRuntimeException.create(ex, agent.getScope()), true);
 			}
 		}
 	}
