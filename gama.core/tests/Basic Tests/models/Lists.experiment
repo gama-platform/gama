@@ -5,7 +5,9 @@
 * Tags: 
 */
 
+@no_warning
 model test_lists
+
 
 species dummy {
 			
@@ -13,9 +15,11 @@ species dummy {
 	
 experiment Lists  type:test {
 	
+	init {
+		rng <- "mersenne";	
+	}
 	
-	test accessing_tests{
-		
+	test accessing_tests{	
 		seed <- 0.0327;
 		
 		list<int> l1 <- [1,2,3,4,5,6,7,8,9,10];
@@ -84,7 +88,6 @@ experiment Lists  type:test {
 	
 	
 	test modifying {
-		
 		seed <- 1.234;
 		
 		list<int> l1;
@@ -133,19 +136,20 @@ experiment Lists  type:test {
 		l1[0] <- -100;
 		assert l1 = [-100,  1, 100, 100, 0, 4 , 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
-//TODO: uncomment when the bug is fixed		
-//		// Trying to put an element outside the bounds of the list will yield an error
-//		try {
-//			l1[20] <- 10;
-//			assert false; // an exception must be raised so this line should never be reached
-//		}
-//		catch{
-//			assert true; // the exception is caught
-//		}
+		// Trying to put an element outside the bounds of the list will yield an error
+		try {
+			l1[20] <- 10;
+			assert false; // an exception must be raised so this line should never be reached
+		}
+		catch{
+			write "An exception was raised but was expected: " + #current_error;
+			assert true; // the exception is caught
+		}
 
 		// And what about replacing all the values with a new one ?
 		l1[] <- 0;
 		assert l1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
 
 		// Well, l1 is a bit boring now, isnt't it ?
 		// Let's fill it again with fresh values
@@ -153,6 +157,7 @@ experiment Lists  type:test {
 			l1[i] <- rnd(3);
 		}
 		assert l1 = [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+//		l1 <- [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
 		// To remove values from it, the "remove" statement (and its compact forms) can be used
 		// For instance, let's try to remove its first element
 		remove first(l1) from: l1;
@@ -181,6 +186,7 @@ experiment Lists  type:test {
 			l1 <+ rnd(3);
 		}
 		assert l1 = [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+//		l1 <- [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
 		// It is also possible to remove an index rather than a value (this will remove the 
 		// value present at this index )
 		l1[] >- 3;

@@ -331,7 +331,8 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 					.add(new XtextLinkingDiagnostic(getNode(faulty), "Impossible to locate import", IMPORT_ERROR, ""));
 			return;
 		}
-		getLinker().linkModel(getParseResult().getRootASTElement(), this);
+		EObject model = getParseResult().getRootASTElement();
+		if (model != null) { getLinker().linkModel(model, this); }
 	}
 
 	/**

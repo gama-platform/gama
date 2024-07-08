@@ -15,6 +15,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -57,7 +60,6 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.constants.ColorCSS;
 import gama.annotations.precompiler.doc.utils.TypeConverter;
 import gama.annotations.precompiler.doc.utils.XMLElements;
 import gama.processor.Constants;
@@ -289,34 +291,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 				eltConstants.appendChild(eltConstant);
 			}
-
-			if (e.getAnnotation(constant.class).category() != null
-					&& IConstantCategory.COLOR_CSS.equals(e.getAnnotation(constant.class).category()[0])) {
-				final Object[] colorTab = ColorCSS.array;
-				for (int i = 0; i < colorTab.length; i += 2) {
-					final org.w3c.dom.Element constantElt = document.createElement(XMLElements.CONSTANT);
-					constantElt.setAttribute(XMLElements.ATT_CST_NAME, PREFIX_CONSTANT + colorTab[i]);
-					constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
-							"r=" + ((int[]) colorTab[i + 1])[0] + ", g=" + ((int[]) colorTab[i + 1])[1] + ", b="
-									+ ((int[]) colorTab[i + 1])[2] + ", alpha=" + ((int[]) colorTab[i + 1])[3]);
-					constantElt.appendChild(
-							getCategories(e, document, document.createElement(XMLElements.CATEGORIES), tc));
-
-					// Concept
-					org.w3c.dom.Element conceptsElt;
-					if (constantElt.getElementsByTagName(XMLElements.CONCEPTS).getLength() == 0) {
-						conceptsElt = getConcepts(e, document, document.createElement(XMLElements.CONCEPTS), tc);
-					} else {
-						conceptsElt = getConcepts(e, document,
-								(org.w3c.dom.Element) constantElt.getElementsByTagName(XMLElements.CONCEPTS).item(0),
-								tc);
-					}
-					constantElt.appendChild(conceptsElt);
-
-					eltConstants.appendChild(constantElt);
-				}
-			}
 		}
+		
 		return eltConstants;
 	}
 
@@ -618,165 +594,238 @@ public class DocProcessor extends ElementProcessor<doc> {
 		final org.w3c.dom.Element operators = document.createElement(XMLElements.OPERATORS);
 
 		for (final ExecutableElement e : set) {
+			
+			// we ignore internal documentation, deprecated and objects without documentation
 			if (e.getAnnotation(operator.class).internal() == true
 					|| e.getAnnotation(doc.class) != null && !"".equals(e.getAnnotation(doc.class).deprecated())) {
 				// Just omit it
-			} else {
+				continue;
+			} 
 
-				nbrOperators++;
-				final List<? extends VariableElement> args = e.getParameters();
-				final Set<Modifier> m = e.getModifiers();
-				final boolean isStatic = m.contains(Modifier.STATIC);
-				int arity = 0;
+			nbrOperators++;
+			final List<? extends VariableElement> args = e.getParameters();
+			final Set<Modifier> m = e.getModifiers();
+			final boolean isStatic = m.contains(Modifier.STATIC);
 
-				if (e.getAnnotation(doc.class) != null && !"".equals(e.getAnnotation(doc.class).deprecated())) {
-					// We just omit it
+//			TODO: this was already done a few lines above so I comment it, but maybe it makes sense ?
+//			if (e.getAnnotation(doc.class) != null && !"".equals(e.getAnnotation(doc.class).deprecated())) {
+//				// We just omit it
+//			} else {
+			
+			// Look for an already parsed operator with the same name
+			org.w3c.dom.Element operator = getOperatorElement(operators, e.getAnnotation(operator.class).value()[0]);
+			if (operator == null) {
+				operator = document.createElement(XMLElements.OPERATOR);
+				operator.setAttribute(XMLElements.ATT_OP_ID,
+						tc.getProperOperatorName(e.getAnnotation(operator.class).value()[0]));
+				operator.setAttribute(XMLElements.ATT_OP_NAME,
+						tc.getProperOperatorName(e.getAnnotation(operator.class).value()[0]));
+
+				operator.setAttribute(XMLElements.ATT_ALPHABET_ORDER,
+						Constants.getAlphabetOrder(e.getAnnotation(operator.class).value()[0]));
+			}
+			// Parse the alternative names of the operator
+			// we will create one operator markup per alternative name
+			for (final String name : e.getAnnotation(operator.class).value()) {
+				// we ignore empty names and the first one
+				if ("".equals(name) || name.equals(e.getAnnotation(operator.class).value()[0])) {
+					continue;
+				}
+				// Look for an already parsed operator with the same
+				// name
+				org.w3c.dom.Element altElt = getOperatorElement(operators, name);
+				if (altElt == null) {
+					altElt = document.createElement(XMLElements.OPERATOR);
+					altElt.setAttribute(XMLElements.ATT_OP_ID, name);
+					altElt.setAttribute(XMLElements.ATT_OP_NAME, name);
+					altElt.setAttribute(XMLElements.ATT_OP_ALT_NAME,
+							e.getAnnotation(operator.class).value()[0]);
+					altElt.setAttribute(XMLElements.ATT_ALPHABET_ORDER, Constants.getAlphabetOrder(name));
+
+					altElt.appendChild(getCategories(e, document, tc));
+					operators.appendChild(altElt);
 				} else {
-					// Look for an already parsed operator with the same name
-					org.w3c.dom.Element operator =
-							getOperatorElement(operators, e.getAnnotation(operator.class).value()[0]);
-					if (operator == null) {
-						operator = document.createElement(XMLElements.OPERATOR);
-						operator.setAttribute(XMLElements.ATT_OP_ID,
-								tc.getProperOperatorName(e.getAnnotation(operator.class).value()[0]));
-						operator.setAttribute(XMLElements.ATT_OP_NAME,
-								tc.getProperOperatorName(e.getAnnotation(operator.class).value()[0]));
-
-						operator.setAttribute(XMLElements.ATT_ALPHABET_ORDER,
-								Constants.getAlphabetOrder(e.getAnnotation(operator.class).value()[0]));
-					}
-					// Parse the alternative names of the operator
-					// we will create one operator markup per alternative name
-					for (final String name : e.getAnnotation(operator.class).value()) {
-						if (!"".equals(name) && !name.equals(e.getAnnotation(operator.class).value()[0])) {
-							// Look for an already parsed operator with the same
-							// name
-							org.w3c.dom.Element altElt = getOperatorElement(operators, name);
-							if (altElt == null) {
-								altElt = document.createElement(XMLElements.OPERATOR);
-								altElt.setAttribute(XMLElements.ATT_OP_ID, name);
-								altElt.setAttribute(XMLElements.ATT_OP_NAME, name);
-								altElt.setAttribute(XMLElements.ATT_OP_ALT_NAME,
-										e.getAnnotation(operator.class).value()[0]);
-								altElt.setAttribute(XMLElements.ATT_ALPHABET_ORDER, Constants.getAlphabetOrder(name));
-
-								altElt.appendChild(getCategories(e, document, tc));
-								operators.appendChild(altElt);
-							} else {
-								// Show an error in the case where two
-								// alternative names do not refer to
-								// the same operator
-								// if (!e.getAnnotation(operator.class).value()[0]
-								// .equals(altElt.getAttribute(XMLElements.ATT_OP_ALT_NAME))) {
-								// mes.printMessage(Kind.WARNING,
-								// "The alternative name __" + name
-								// + "__ is used for two different operators: "
-								// + e.getAnnotation(operator.class).value()[0] + " and "
-								// + altElt.getAttribute("alternativeNameOf"));
-								// }
-							}
-						}
-					}
-
-					// Parse of categories
-
-					// Category
-					org.w3c.dom.Element categoriesElt;
-					if (operator.getElementsByTagName(XMLElements.OPERATOR_CATEGORIES).getLength() == 0) {
-						categoriesElt =
-								getCategories(e, document, document.createElement(XMLElements.OPERATOR_CATEGORIES), tc);
-					} else {
-						categoriesElt = getCategories(e, document, (org.w3c.dom.Element) operator
-								.getElementsByTagName(XMLElements.OPERATOR_CATEGORIES).item(0), tc);
-					}
-					operator.appendChild(categoriesElt);
-
-					// Concept
-					org.w3c.dom.Element conceptsElt;
-
-					if (operator.getElementsByTagName(XMLElements.CONCEPTS).getLength() == 0) {
-						conceptsElt = getConcepts(e, document, document.createElement(XMLElements.CONCEPTS), tc);
-					} else {
-						conceptsElt = getConcepts(e, document,
-								(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.CONCEPTS).item(0), tc);
-					}
-					operator.appendChild(conceptsElt);
-
-					// Parse the combination operands / result
-					org.w3c.dom.Element combinaisonOpResElt;
-					if (operator.getElementsByTagName(XMLElements.COMBINAISON_IO).getLength() == 0) {
-						combinaisonOpResElt = document.createElement(XMLElements.COMBINAISON_IO);
-					} else {
-						combinaisonOpResElt =
-								(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.COMBINAISON_IO).item(0);
-					}
-
-					final org.w3c.dom.Element operands = document.createElement(XMLElements.OPERANDS);
-					operands.setAttribute("returnType", tc.getProperType(e.getReturnType().toString()));
-					operands.setAttribute("contentType", "" + e.getAnnotation(operator.class).content_type());
-					operands.setAttribute("type", "" + e.getAnnotation(operator.class).type());
-
-					// To specify where we can find the source code of the class
-					// defining the operator
-					String pkgName = "" + ((TypeElement) e.getEnclosingElement()).getQualifiedName();
-					// Now we have to deal with Spatial operators, that are
-					// defined in inner classes
-					if (pkgName.contains("Spatial")) {
-						// We do not take into account what is after 'Spatial'
-						pkgName = pkgName.split("Spatial")[0] + "Spatial";
-					}
-					pkgName = pkgName.replace('.', '/');
-					pkgName = pkgName + ".java";
-					operands.setAttribute("class", pkgName);
-
-					if (!isStatic) {
-						final org.w3c.dom.Element operand = document.createElement(XMLElements.OPERAND);
-						operand.setAttribute(XMLElements.ATT_OPERAND_TYPE,
-								tc.getProperType(e.getEnclosingElement().asType().toString()));
-						operand.setAttribute(XMLElements.ATT_OPERAND_POSITION, "" + arity);
-						arity++;
-						operand.setAttribute(XMLElements.ATT_OPERAND_NAME,
-								e.getEnclosingElement().asType().toString().toLowerCase());
-						operands.appendChild(operand);
-					}
-					if (args.size() > 0) {
-						final int first_index = args.get(0).asType().toString().contains("IScope") ? 1 : 0;
-						for (int i = first_index; i <= args.size() - 1; i++) {
-							final org.w3c.dom.Element operand = document.createElement(XMLElements.OPERAND);
-							operand.setAttribute(XMLElements.ATT_OPERAND_TYPE,
-									tc.getProperType(args.get(i).asType().toString()));
-							operand.setAttribute(XMLElements.ATT_OPERAND_POSITION, "" + arity);
-							arity++;
-							operand.setAttribute(XMLElements.ATT_OPERAND_NAME, args.get(i).getSimpleName().toString());
-							operands.appendChild(operand);
-						}
-					}
-					// operator.setAttribute("arity", ""+arity);
-					combinaisonOpResElt.appendChild(operands);
-					operator.appendChild(combinaisonOpResElt);
-
-					// /////////////////////////////////////////////////////
-					// Parsing of the documentation
-					org.w3c.dom.Element docElt;
-					if (operator.getElementsByTagName(XMLElements.DOCUMENTATION).getLength() == 0) {
-						docElt = getDocElt(e.getAnnotation(doc.class), document, mes,
-								"Operator " + operator.getAttribute("name"), tc, e, operator);
-					} else {
-						docElt = getDocElt(e.getAnnotation(doc.class), document,
-								(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.DOCUMENTATION).item(0),
-								mes, "Operator " + operator.getAttribute("name"), tc, e, operator);
-					}
-
-					if (docElt != null) {
-						operator.appendChild(docElt);
-					}
-
-					operators.appendChild(operator);
+					// Show an error in the case where two
+					// alternative names do not refer to
+					// the same operator
+					// if (!e.getAnnotation(operator.class).value()[0]
+					// .equals(altElt.getAttribute(XMLElements.ATT_OP_ALT_NAME))) {
+					// mes.printMessage(Kind.WARNING,
+					// "The alternative name __" + name
+					// + "__ is used for two different operators: "
+					// + e.getAnnotation(operator.class).value()[0] + " and "
+					// + altElt.getAttribute("alternativeNameOf"));
+					// }
 				}
 			}
+
+			// Parsing and adding the different children nodes of the operator
+			
+			addCategories(operator, e);
+
+			addConcepts(operator, e);
+
+			addCombinationOperandsResult(operator, e, isStatic, args);
+
+			addDocumentation(operator, e);
+			
+			operators.appendChild(operator);
+//			}
 		}
+		
+		processSeeAlso(operators);
+		
 		return operators;
 	}
+	
+	private void addDocumentation(org.w3c.dom.Element operator, ExecutableElement e) {
+		org.w3c.dom.Element docElt;
+		if (operator.getElementsByTagName(XMLElements.DOCUMENTATION).getLength() == 0) {
+			docElt = getDocElt(e.getAnnotation(doc.class), document, mes,
+					"Operator " + operator.getAttribute("name"), tc, e, operator);
+		} else {
+			docElt = getDocElt(e.getAnnotation(doc.class), document,
+					(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.DOCUMENTATION).item(0),
+					mes, "Operator " + operator.getAttribute("name"), tc, e, operator);
+		}
+
+		if (docElt != null) {
+			operator.appendChild(docElt);
+		}
+	}
+
+	private void addCombinationOperandsResult(org.w3c.dom.Element operator, ExecutableElement e, boolean isStatic, List<? extends VariableElement> args) {
+		int arity = 0;
+		org.w3c.dom.Element combinaisonOpResElt;
+		if (operator.getElementsByTagName(XMLElements.COMBINAISON_IO).getLength() == 0) {
+			combinaisonOpResElt = document.createElement(XMLElements.COMBINAISON_IO);
+		} else {
+			combinaisonOpResElt =
+					(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.COMBINAISON_IO).item(0);
+		}
+
+		final org.w3c.dom.Element operands = document.createElement(XMLElements.OPERANDS);
+		operands.setAttribute("returnType", tc.getProperType(e.getReturnType().toString()));
+		operands.setAttribute("contentType", "" + e.getAnnotation(operator.class).content_type());
+		operands.setAttribute("type", "" + e.getAnnotation(operator.class).type());
+
+		// To specify where we can find the source code of the class
+		// defining the operator
+		String pkgName = "" + ((TypeElement) e.getEnclosingElement()).getQualifiedName();
+		// Now we have to deal with Spatial operators, that are
+		// defined in inner classes
+		if (pkgName.contains("Spatial")) {
+			// We do not take into account what is after 'Spatial'
+			pkgName = pkgName.split("Spatial")[0] + "Spatial";
+		}
+		pkgName = pkgName.replace('.', '/');
+		pkgName = pkgName + ".java";
+		operands.setAttribute("class", pkgName);
+
+		if (!isStatic) {
+			final org.w3c.dom.Element operand = document.createElement(XMLElements.OPERAND);
+			operand.setAttribute(XMLElements.ATT_OPERAND_TYPE,
+					tc.getProperType(e.getEnclosingElement().asType().toString()));
+			operand.setAttribute(XMLElements.ATT_OPERAND_POSITION, "" + arity);
+			arity++;
+			operand.setAttribute(XMLElements.ATT_OPERAND_NAME,
+					e.getEnclosingElement().asType().toString().toLowerCase());
+			operands.appendChild(operand);
+		}
+		if (args.size() > 0) {
+			final int first_index = args.get(0).asType().toString().contains("IScope") ? 1 : 0;
+			for (int i = first_index; i <= args.size() - 1; i++) {
+				final org.w3c.dom.Element operand = document.createElement(XMLElements.OPERAND);
+				operand.setAttribute(XMLElements.ATT_OPERAND_TYPE,
+						tc.getProperType(args.get(i).asType().toString()));
+				operand.setAttribute(XMLElements.ATT_OPERAND_POSITION, "" + arity);
+				arity++;
+				operand.setAttribute(XMLElements.ATT_OPERAND_NAME, args.get(i).getSimpleName().toString());
+				operands.appendChild(operand);
+			}
+		}
+		// operator.setAttribute("arity", ""+arity);
+		combinaisonOpResElt.appendChild(operands);
+		operator.appendChild(combinaisonOpResElt);
+
+	}
+
+	private void addConcepts(org.w3c.dom.Element operator, ExecutableElement e) {
+		org.w3c.dom.Element conceptsElt;
+
+		if (operator.getElementsByTagName(XMLElements.CONCEPTS).getLength() == 0) {
+			conceptsElt = getConcepts(e, document, document.createElement(XMLElements.CONCEPTS), tc);
+		} else {
+			conceptsElt = getConcepts(e, document,
+					(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.CONCEPTS).item(0), tc);
+		}
+		operator.appendChild(conceptsElt);
+
+	}
+
+	private void addCategories(org.w3c.dom.Element operator, ExecutableElement e) {
+		org.w3c.dom.Element categoriesElt;
+		if (operator.getElementsByTagName(XMLElements.OPERATOR_CATEGORIES).getLength() == 0) {
+			categoriesElt =
+					getCategories(e, document, document.createElement(XMLElements.OPERATOR_CATEGORIES), tc);
+		} else {
+			categoriesElt = getCategories(e, document, (org.w3c.dom.Element) operator
+					.getElementsByTagName(XMLElements.OPERATOR_CATEGORIES).item(0), tc);
+		}
+		operator.appendChild(categoriesElt);
+
+	}
+
+	private void processSeeAlso(org.w3c.dom.Element operators) {
+		// To manage see Also bidirectional, we need to go through all of the operators
+		NodeList ops = operators.getElementsByTagName(XMLElements.OPERATOR);
+		for(int i = 0; i < ops.getLength(); i++) {		
+			org.w3c.dom.Element eltOperator = (org.w3c.dom.Element) ops.item(i);
+			String eltName = eltOperator.getAttribute(XMLElements.ATT_OP_NAME);
+			NodeList sees = eltOperator.getElementsByTagName(XMLElements.SEE);
+			
+			// For each see, 
+			//	find the element with the proper name
+			//	add to each of them a see to the current element, if it is not present yet
+			for(int j = 0; j < sees.getLength(); j++) {	
+				List<Node> l_elts = searchForElementOfInterest(operators, ((org.w3c.dom.Element) sees.item(j)).getAttribute(XMLElements.ATT_SEE_ID));
+				if(l_elts.size() > 0) {
+					NodeList seeAlsoList = ((org.w3c.dom.Element) l_elts.get(0)).getElementsByTagName(XMLElements.SEEALSO);
+					org.w3c.dom.Element seeAlsoElt = seeAlsoList.getLength() > 0 ? (org.w3c.dom.Element) seeAlsoList.item(0) : document.createElement(XMLElements.SEEALSO);
+					DocProcessor.addIfNotExistSee(document, seeAlsoElt, eltName);					
+				}
+			}
+		}		
+	}
+
+	// from https://stackoverflow.com/questions/23360278/how-to-use-org-w3c-dom-nodelist-with-java-8-stream-api
+	public List<Node> searchForElementOfInterest(org.w3c.dom.Element elt, String eltName) {
+	        NodeList nList = elt.getElementsByTagName(XMLElements.OPERATOR);
+
+	        // since NodeList does not have stream implemented, then use this hack
+	        Stream<Node> nodeStream = IntStream.range(0, nList.getLength()).mapToObj(nList::item);
+	        // search for element of interest in the NodeList
+	        List<Node> l = nodeStream.parallel()
+	        						.filter( x -> DocProcessor.isElementOfInterestWithName(x,eltName))
+	        						.collect(Collectors.toList());
+
+	        return l;
+	}
+
+	private static boolean isElementOfInterestWithName(Node nNode, String n) {
+	        boolean bFound=false;
+	        if ((nNode != null) && (nNode.getNodeType() == Node.ELEMENT_NODE)) {
+	        	org.w3c.dom.Element eElement = (org.w3c.dom.Element) nNode;
+	        	
+	            if(n.equals(eElement.getAttribute("name"))) {
+                    bFound = true;	            	
+	            }
+	        }
+	        return bFound;
+	}
+
+	
+	
 
 	/**
 	 * Process doc XML architectures.
@@ -1257,9 +1306,6 @@ public class DocProcessor extends ElementProcessor<doc> {
 		return statementsElt;
 	}
 
-	/** The Constant PREFIX_CONSTANT. */
-	public static final String PREFIX_CONSTANT = "#";
-
 	/**
 	 * Gets the doc elt.
 	 *
@@ -1372,20 +1418,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 				seeAlsoElt = doc.createElement(XMLElements.SEEALSO);
 			}
 			for (final String see : docAnnot.see()) {
-				final NodeList nLSee = seeAlsoElt.getElementsByTagName(XMLElements.SEE);
-				int i = 0;
-				boolean seeAlreadyInserted = false;
-				while (i < nLSee.getLength() && !seeAlreadyInserted) {
-					if (((org.w3c.dom.Element) nLSee.item(i)).getAttribute(XMLElements.ATT_SEE_ID).equals(see)) {
-						seeAlreadyInserted = true;
-					}
-					i++;
-				}
-				if (!seeAlreadyInserted) {
-					final org.w3c.dom.Element seesElt = doc.createElement(XMLElements.SEE);
-					seesElt.setAttribute(XMLElements.ATT_SEE_ID, see);
-					seeAlsoElt.appendChild(seesElt);
-				}
+				DocProcessor.addIfNotExistSee(doc, seeAlsoElt, see);
 			}
 			if (docAnnot.see().length != 0) {
 				docElt.appendChild(seeAlsoElt);
@@ -1485,6 +1518,24 @@ public class DocProcessor extends ElementProcessor<doc> {
 		return docElt;
 	}
 
+	public static void addIfNotExistSee(final Document doc, org.w3c.dom.Element seeAlsoElt, String opName) {
+		final NodeList nLSee = seeAlsoElt.getElementsByTagName(XMLElements.SEE);
+		int i = 0;
+		boolean seeAlreadyInserted = false;
+		while (i < nLSee.getLength() && !seeAlreadyInserted) {
+			if (((org.w3c.dom.Element) nLSee.item(i)).getAttribute(XMLElements.ATT_SEE_ID).equals(opName)) {
+				seeAlreadyInserted = true;
+			}
+			i++;
+		}
+		if (!seeAlreadyInserted) {
+			final org.w3c.dom.Element seesElt = doc.createElement(XMLElements.SEE);
+			seesElt.setAttribute(XMLElements.ATT_SEE_ID, opName);
+			seeAlsoElt.appendChild(seesElt);
+		}
+	}
+	
+	
 	/**
 	 * Gets the doc elt.
 	 *
@@ -1584,7 +1635,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			final Messager mes, final TypeConverter tc) {
 		final org.w3c.dom.Element constantElt = doc.createElement(XMLElements.CONSTANT);
 
-		constantElt.setAttribute(XMLElements.ATT_CST_NAME, PREFIX_CONSTANT + constant.value());
+		constantElt.setAttribute(XMLElements.ATT_CST_NAME, IConstantCategory.PREFIX_CONSTANT + constant.value());
 		// constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
 		// ((VariableElement)e).getConstantValue().toString());
 		final Object valCst = ((VariableElement) e).getConstantValue();
@@ -1600,7 +1651,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 			else {
 				str.append(",");
 			}
-			str.append(PREFIX_CONSTANT);
+			str.append(IConstantCategory.PREFIX_CONSTANT);
 			str.append(n); 
 		}
 		

@@ -82,8 +82,8 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 
 if exist ..\jdk\ (
 	echo "JDK"
-	call ..\jdk\bin\java -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.core.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
+	call ..\jdk\bin\java -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
 ) else (
 	echo "JAVA_HOME"
-  	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.core.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
+  	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
 )

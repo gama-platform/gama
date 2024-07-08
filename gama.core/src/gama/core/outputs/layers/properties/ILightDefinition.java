@@ -151,7 +151,7 @@ public interface ILightDefinition extends INamed {
 	 *
 	 * @return the quadratic attenuation
 	 */
-	default double getConstantAttenuation() { return 0; }
+	default double getConstantAttenuation() { return 1; }
 
 	/**
 	 * Refresh.

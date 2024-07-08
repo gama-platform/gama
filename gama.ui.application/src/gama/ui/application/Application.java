@@ -154,6 +154,7 @@ public class Application implements IApplication {
 				if (display != null) { display.dispose(); }
 				final Location instanceLoc = Platform.getInstanceLocation();
 				if (instanceLoc != null) { instanceLoc.release(); }
+				GAMA.flushAllBufferings();
 			}
 		}
 		return EXIT_OK;
@@ -269,6 +270,7 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
+		GAMA.flushAllBufferings();
 		final IWorkbench workbench = getWorkbench();
 		if (workbench == null) return;
 		final Display display = workbench.getDisplay();

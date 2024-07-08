@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.runtime;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +33,20 @@ import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
+import gama.core.runtime.concurrent.BufferingController;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
+import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.statements.save.SaveOptions;
 
 /**
  * Written by drogoul Modified on 23 nov. 2009
@@ -98,6 +104,35 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
+	private static final BufferingController bufferingController = new BufferingController();
+	
+	
+
+	public static boolean askWriteFile(final IScope scope, final File f, final CharSequence content, final SaveOptions options) {
+		return bufferingController.askWriteFile(f.getAbsolutePath(), scope, content, options);
+	}
+	public static boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies strategy) {
+		return bufferingController.askWriteConsole(scope, content, color, strategy);
+	}
+	
+	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
+		return bufferingController.flushSaveFilesOfOwner(owner);
+	}
+	public static boolean flushSaveFileStep(final SimulationAgent owner) {
+		return bufferingController.flushSaveFilesInCycle(owner);
+	}
+	public static void flushWriteStep(final SimulationAgent owner) {
+		bufferingController.flushWriteInCycle(owner);
+	}
+	public static void flushWritePerAgent(final AbstractAgent owner) {
+		bufferingController.flushWriteOfOwner(owner);
+	}
+	public static void flushAllBufferings() {
+		bufferingController.flushAllBufferings();
+	}
+	
+
+	
 	/**
 	 * Gets the controllers.
 	 *

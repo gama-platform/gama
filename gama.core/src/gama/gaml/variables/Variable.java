@@ -512,9 +512,9 @@ public class Variable extends Symbol implements IVariable {
 	public Variable(final IDescription sd) {
 		super(sd);
 		final VariableDescription desc = (VariableDescription) sd;
-		setName(sd.getName());
-		parameter = null;
-		category = null;
+		setName(sd.getName());		
+		parameter = desc.getParameterName();
+		category = getLiteral(IKeyword.CATEGORY, null);
 		updateExpression = getFacet(IKeyword.UPDATE);
 		functionExpression = getFacet(IKeyword.FUNCTION);
 		initExpression = getFacet(IKeyword.INIT);
@@ -522,13 +522,8 @@ public class Variable extends Symbol implements IVariable {
 		onChangeExpression = getFacet(IKeyword.ON_CHANGE);
 		isNotModifiable = desc.isNotModifiable();
 		type = desc.getGamlType();
-		// computeSpeciesConst();
 	}
 
-	// private void computeSpeciesConst() {
-	// isSpeciesConst = isNotModifiable && updateExpression == null && functionExpression == null && getter == null
-	// && setter == null && (initExpression == null || initExpression.isConst());
-	// }
 
 	/**
 	 * Builds the helpers.
@@ -557,9 +552,7 @@ public class Variable extends Symbol implements IVariable {
 
 		// }
 
-		// VariableDescription var = (VariableDescription) description;
 		SpeciesDescription sp = species.getDescription();
-		// if (var.isBuiltIn()) return;
 		Class base = sp.getJavaBase();
 		if (base == null) return;
 		List<GamaHelper> helpers = new ArrayList<>();

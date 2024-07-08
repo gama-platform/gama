@@ -26,6 +26,7 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -60,11 +61,14 @@ public class GeoTiffSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws IOException {
 		if (file == null) return;
 		File f = file;
-		if (f.exists()) { f.delete(); }
+		// in case it already exists we delete it, if deletion fail we cancel the saving
+		if (f.exists() && !f.delete()) {
+			return;
+		}
+		
 		try {
 			Object v = item.value(scope);
 			if (v instanceof GamaField gf) {

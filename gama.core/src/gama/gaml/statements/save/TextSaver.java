@@ -10,11 +10,7 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -23,48 +19,17 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import gama.core.common.interfaces.ISerialisationConstants;
+import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
 
 /**
  * The Class TextSaver.
  */
 public class TextSaver extends AbstractSaver {
-
-	/**
-	 * Save.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param item
-	 *            the item
-	 * @param os
-	 *            the os
-	 * @param header
-	 *            the header
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
-			throws GamaRuntimeException {
-		if (os == null) return;
-		String toSave = Cast.asString(scope, item.value(scope));
-		char id = toSave.charAt(0);
-		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
-				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
-						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		final Writer fw = new OutputStreamWriter(os, ch);
-		try (fw) {
-			fw.write(toSave);
-		} catch (final GamaRuntimeException e) {
-			throw e;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.create(e, scope);
-		}
-	}
 
 	/**
 	 * Save.
@@ -89,16 +54,17 @@ public class TextSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final String code,
-			final boolean addHeader, final String type, final Object attributesToSave)
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
 			throws GamaRuntimeException {
 		String toSave = Cast.asString(scope, item.value(scope));
 		char id = toSave.charAt(0);
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		try (final Writer fw = new FileWriter(file, ch, true)) {
-			fw.write(Cast.asString(scope, item.value(scope)) + Strings.LN);
+		options.setCharSet(ch);
+		
+		try  {
+			GAMA.askWriteFile(scope, file, toSave, options);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

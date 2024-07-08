@@ -20,11 +20,11 @@ jobs:
       - name: Extract GAMA w/o JDK
         run: tar xvf $GITHUB_WORKSPACE/gama.application-linux.gtk.x86_64.tar.gz
 
-      - name: Set up Adopt OpenJDK 17
+      - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           java-package: jdk
 
       - name: Test release

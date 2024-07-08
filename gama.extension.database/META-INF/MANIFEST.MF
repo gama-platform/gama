@@ -11,7 +11,7 @@ Export-Package: gama.extension.database.gaml.skills,
  gama.extension.database.utils,
  gama.extension.database.utils.sql
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: gama.extension.database.Activator
 Automatic-Module-Name: gama.extension.database
 Bundle-ClassPath: .

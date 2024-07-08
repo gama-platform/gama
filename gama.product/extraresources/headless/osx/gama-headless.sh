@@ -72,7 +72,7 @@ fi
 
 ini_arguments=$(read_from_ini)
 
-if ! $java -cp "$( dirname "${BASH_SOURCE[0]}" )"/../Eclipse/plugins/org.eclipse.equinox.launcher*.jar -Xms512m $memory ${ini_arguments[@]} -Djava.awt.headless=true org.eclipse.core.launcher.Main -configuration "$( dirname "${BASH_SOURCE[0]}" )"/configuration -application gama.headless.product -data $passWork "$@"; then
+if ! $java -cp "$( dirname "${BASH_SOURCE[0]}" )"/../Eclipse/plugins/org.eclipse.equinox.launcher*.jar -Xms512m $memory ${ini_arguments[@]} -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration "$( dirname "${BASH_SOURCE[0]}" )"/configuration -application gama.headless.product -data $passWork "$@"; then
     echo "Error in you command, here's the log :"
     cat $passWork/.metadata/.log
     exit 1
