@@ -14,9 +14,12 @@ species dummy {
 }
 	
 experiment Lists  type:test {
-
+	
+	init {
+		rng <- "mersenne";	
+	}
+	
 	test accessing_tests{	
-			
 		seed <- 0.0327;
 		
 		list<int> l1 <- [1,2,3,4,5,6,7,8,9,10];
@@ -30,8 +33,8 @@ experiment Lists  type:test {
 		assert mean(l1) = 5.5;
 		assert max(l1) = 10;
 		assert min(l1) = 1;
-//		assert any(l1) = 3; // tested with this seed, just for reference
-//		assert 3 among l2 = ['list','a','is']; // same as above
+		assert any(l1) = 2; // tested with this seed, just for reference
+		assert 3 among l2 = ['this','of','list']; // same as above
 		assert l1 contains 1 = true;
 		assert l1 contains_all [1,4,6] = true;
 		assert l1 contains_all [1,4,6, 14] = false;
@@ -148,13 +151,13 @@ experiment Lists  type:test {
 		assert l1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 
-//		// Well, l1 is a bit boring now, isnt't it ?
-//		// Let's fill it again with fresh values
-//		loop i from: 0 to: length(l1) -1 {
-//			l1[i] <- rnd(3);
-//		}
-//		assert l1 = [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
-		l1 <- [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+		// Well, l1 is a bit boring now, isnt't it ?
+		// Let's fill it again with fresh values
+		loop i from: 0 to: length(l1) -1 {
+			l1[i] <- rnd(3);
+		}
+		assert l1 = [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
+//		l1 <- [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
 		// To remove values from it, the "remove" statement (and its compact forms) can be used
 		// For instance, let's try to remove its first element
 		remove first(l1) from: l1;
@@ -179,11 +182,11 @@ experiment Lists  type:test {
 		assert l1 = [];
 		
 		// By all means, l1 should now be empty! Let's fill it again
-//		loop times: 20 {
-//			l1 <+ rnd(3);
-//		}
-//		assert l1 = [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
-		l1 <- [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+		loop times: 20 {
+			l1 <+ rnd(3);
+		}
+		assert l1 = [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
+//		l1 <- [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
 		// It is also possible to remove an index rather than a value (this will remove the 
 		// value present at this index )
 		l1[] >- 3;
