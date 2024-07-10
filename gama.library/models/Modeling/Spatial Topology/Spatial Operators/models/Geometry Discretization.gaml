@@ -17,7 +17,7 @@ global
 experiment to_squares type: gui {
 	output {
 		//Display that will show a circle converted in squares
-		display decretization_squares type: 3d{
+		display decretization_squares type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial circle into squares of 5.0 
@@ -27,7 +27,7 @@ experiment to_squares type: gui {
 			} 
 		}
 		//Display that will show a circle converted in squares overlapping the shape
-		display squares_overlapping type: 3d{
+		display squares_overlapping type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "squares" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and keep the squares going out of the borders of the circle but still overlapping it
@@ -37,7 +37,7 @@ experiment to_squares type: gui {
 			} 
 		}
 		//Display that will show a circle converted in squares inside the shape
-		display squares_inside type: 3d{
+		display squares_inside type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "squares" transparency: 0.5{
 				//Convert the initial circle into squares of 5.0 and remove the squares going out of the borders of the circle
@@ -52,7 +52,7 @@ experiment to_squares type: gui {
 experiment to_rectangles type: gui {
 	output {
 		//Display that will show a circle converted in rectangles with a size of 10.0 and 5.0
-		display decretization_rectangles type: 3d{
+		display decretization_rectangles type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: to_rectangles(init_geom, {10.0,5.0}) {
@@ -61,7 +61,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles forming a grid of 15 cols and 20 rows
-		display decretization_rectangles_grid type: 3d{
+		display decretization_rectangles_grid type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: to_rectangles(init_geom, 15,20) {
@@ -70,7 +70,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles overlapping the shape
-		display rectangles_overlapping type: 3d{
+		display rectangles_overlapping type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "rectangles" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and keep the rectangles going out of the borders of the circle but still overlapping it
@@ -80,7 +80,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles inside the shape
-		display rectangles_inside type: 3d{
+		display rectangles_inside type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "rectangles" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and remove the rectanges going out of the borders of the circle
@@ -96,7 +96,7 @@ experiment to_rectangles type: gui {
 experiment point_on_contours type: gui {
 	output{
 		//Display that will show a circle with points on its perimeter every 10.0
-		display points_on_contours type: 3d{
+		display points_on_contours type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: points_on(init_geom,10.0) {
@@ -109,7 +109,7 @@ experiment point_on_contours type: gui {
 experiment triangles_voronoi type: gui {
 	output{
 		//Display that will show a circle triangulated
-		display triangles type: 3d{
+		display triangles type: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "triangles" transparency: 0.5{
 				loop g over: triangulate(init_geom, 0.01) {
@@ -118,7 +118,7 @@ experiment triangles_voronoi type: gui {
 			} 
 		}
 		
-		display voronoi type: 3d{
+		display voronoi type: 2d{
 			//Creates a voronoi diagram from the points given and display them
 			graphics "geoms" transparency: 0.5{
 				loop g over: voronoi([{10,10},{10,10},{80,80},{80,10},{10,80}, {40,40}]) {

@@ -99,10 +99,11 @@ experiment "Color sort" type: gui{
 	parameter "Number of similar colors in perception necessary to pick up:" var: number_of_objects_around category: "Agents" ;
 	parameter "Width and height of the grid:" var: width_and_height_of_grid category: "Environment" ;
 	parameter "Number of agents:" var: ants category: "Agents" ;
+	 
+	float minimum_cycle_duration <- 0.05#s;
 	
 	output synchronized:true{
-		display view type: 3d antialias:false axes:false{
-			camera 'default' location: {50.0,50.0022,125.3708} target: {50.0,50.0,0.0};
+		display view type: 2d antialias:false{
 			grid ant_grid border: #black;
 			species ant transparency: 0.05;
 		}

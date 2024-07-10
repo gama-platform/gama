@@ -229,7 +229,7 @@ experiment "Classic" type: gui record: every(10) parent:base{
 	user_command "Save" {	save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
-		display Ants antialias: false type: 3d {
+		display Ants antialias: false type: 2d {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			image terrain refresh: false;
@@ -276,7 +276,7 @@ experiment "3 Simulations" type: gui record: every(10#cycle) parent:base{
 
 	permanent {
 		
-		display Comparison background: #white {
+		display Comparison background: #white type:2d{
 			chart "Food Gathered" type: series {
 				loop s over: simulations {
 					if (!dead(s)) {
