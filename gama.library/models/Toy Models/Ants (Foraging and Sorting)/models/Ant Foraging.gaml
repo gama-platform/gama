@@ -178,7 +178,7 @@ species ant skills: [moving] control: fsm {
 	} 
 }
 
-experiment base {
+experiment base virtual:true {
 		
 	parameter 'Evaporation of the signal (unit/cycle):' var:evaporation_per_cycle category: 'Signals';
 	parameter 'Rate of diffusion of the signal (%/cycle):' var:diffusion_rate category: 'Signals';

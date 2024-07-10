@@ -42,7 +42,7 @@ global {
 
 grid cell file: grid_data;
 
-experiment base {
+experiment base virtual:true {
 	parameter 'DEM' var:dem_file ;
 	parameter 'Texture' var:texture;	
 }
