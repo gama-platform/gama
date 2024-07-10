@@ -16,6 +16,7 @@ experiment "Raise a normal warning"
 		// To be sure, the global preference to consider warnings as errors is set to false
 		gama.pref_errors_warnings_errors <- false;
 		warn "This warning is reported but does not interrupt the execution";
+		write "so this message should be visible in console";
 	}
 
 }
