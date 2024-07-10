@@ -54,6 +54,9 @@ for targetPlatform in "linux.gtk.x86_64" "win32.win32.x86_64" "macosx.cocoa.x86_
 	jdkLocation=$RUNNER_TMP
 	if [[ "$os" == "macosx"* ]]; then
 		jdkLocation=$RUNNER_TMP/Gama.app/Contents
+		# Create symlink of jdk next to GAMA's executable
+		# Fix #229
+		ln -sf ../jdk $RUNNER_TMP/Gama.app/Contents/MacOS/jdk
 	fi
 
 	#
@@ -78,7 +81,7 @@ for targetPlatform in "linux.gtk.x86_64" "win32.win32.x86_64" "macosx.cocoa.x86_
 	# Make GAMA use embedded JDK
 	sed -i '1s/^/-vm\n/' $folderEclipse/Gama.ini
 	if [[ "$os" == "macosx"* ]]; then
-		sed -i '2s/^/..\/jdk\/Contents\/Home\/bin\/java\n/' $folderEclipse/Gama.ini
+		sed -i '2s/^/.\/jdk\/Contents\/Home\/bin\/java\n/' $folderEclipse/Gama.ini
 	elif [[ "$os" == "win32"* ]]; then
 		sed -i '2s/^/.\/jdk\/bin\/javaw\n/' $folderEclipse/Gama.ini
 	else
