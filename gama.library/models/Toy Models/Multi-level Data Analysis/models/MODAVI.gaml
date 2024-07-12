@@ -287,10 +287,14 @@ experiment MODAVI type: gui {
 	parameter 'Node size' var:nodeSize category: 'Aspect';
 	parameter 'Macro Node size' var:macroNodeSize category: 'Aspect';
 	
+	float minimum_cycle_duration <- 0.2#s;
+	
 	
 	output synchronized: true {			
 		display MODAVI type:3d axes:false {
-			camera #default location:{world.shape.width*1.5, world.shape.height,world.shape.width*4} target:{world.shape.width*1.5, world.shape.height,0};
+//			camera #default location:{world.shape.width*1.5, world.shape.height,world.shape.width*4} target:{world.shape.width*1.5, world.shape.height,0};
+			camera 'default' location: {150.0,100,300} target: {150.0,100.0,0.0};
+			
 			graphics 'ReferenceModel'{
 				draw "Reference model" at:{200,50,0} size:5 color: #black perspective:false;
 			}

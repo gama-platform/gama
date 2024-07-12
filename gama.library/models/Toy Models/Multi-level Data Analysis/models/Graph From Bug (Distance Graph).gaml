@@ -48,8 +48,11 @@ experiment spatialGraph type: gui {
 	
 	parameter 'Distance' var:distance  min: 1.0 <- 10.0 category: 'Model';
 	
+	float minimum_cycle_duration <- 0.05#s;
+	
 	output {	
 		display graph_view type: 3d {
+			camera 'default' location: {-15.7912,153.2715,67.8712} target: {50.0,50.0,0.0};
 	 	    species bug aspect:base;
 			species node_agent aspect: base position:{0,0,0.1};
 			species edge_agent aspect: base position:{0,0,0.1};

@@ -168,9 +168,12 @@ experiment "3D" type: gui {
 	parameter 'Follow Goal ?' var:apply_goal;
 	parameter 'Direction of the wind' var:wind_vector;
 	
+	float minimum_cycle_duration <- 0.05#s;
+	
 	output synchronized: true {
 		
 		display Sky1 type:3d {
+			camera 'default' location: {555.5176,1479.257,750.4308} target: {442.2293,184.3665,0.0};
 			species boids aspect: image;
 			species boids_goal;	
 		}
