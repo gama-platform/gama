@@ -504,10 +504,12 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 					}
 				}
 			}
+		} else {
+			currentLocation = source.getLocation();
 		}
 		final IShape lineEnd = segments.get(nb - 1);
 		int endIndexSegment = lineEnd.getInnerGeometry().getNumPoints();
-		GamaPoint falseTarget = null;//target.getLocation();
+		GamaPoint falseTarget = null;
 		if (!keepTarget) {
 			falseTarget = SpatialPunctal._closest_point_to(getEndVertex(), lineEnd);
 			endIndexSegment = 1;
@@ -528,6 +530,8 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 					}
 				}
 			}
+		} else {
+			falseTarget = target.getLocation();
 		}
 		
 		for (int i = index; i < nb; i++) {
