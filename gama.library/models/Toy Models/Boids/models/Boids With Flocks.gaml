@@ -206,7 +206,6 @@ experiment boids_flocks type: gui {
 	parameter "Number of boids" var: number_of_agents <- 300;
 	parameter "Environment size" var: width_and_height_of_environment <- 1600;
 	parameter "Moving obstacles?" var: moving_obstacles <- true;
-	parameter "Torus environment?" var: torus_environment <- false;
 	parameter "Number of obstacles" var: number_of_obstacles <- 5;
 	output {
 		display default_display {
