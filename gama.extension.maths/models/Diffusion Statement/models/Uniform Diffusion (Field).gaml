@@ -23,8 +23,8 @@ global {
 	}
 }
 
-experiment diffusion type: gui {
-	output  synchronized: true{
+experiment diffusion type: gui autorun:true {
+	output  synchronized: true {
 		display uniform_diffusion_in_8_neighbors_grid type: 3d camera:#from_up_front axes: false {
 			mesh cells color: #green triangulation: true scale: 1 smooth: true ;
 		}

@@ -92,16 +92,16 @@ grid cell width: 50 height: 50 {
 experiment mapcomparison type: gui {
 	output {
 		layout #split;
-		display map_sim type: 3d antialias:false{
+		display map_sim type: 2d antialias:false{
 			grid cell;
 		}
-		display map_observed type: 3d{
+		display map_observed type: 2d{
 			species cell aspect: observed refresh: false;
 		}
-		display map_init type: 3d{
+		display map_init type: 2d{
 			species cell aspect: init refresh: false;
 		}
-		display map_fuzzy type: 3d{
+		display map_fuzzy type: 2d{
 			species cell aspect: fuzzy_sim ;
 		}
 	}

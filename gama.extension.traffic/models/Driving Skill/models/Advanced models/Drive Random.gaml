@@ -125,7 +125,7 @@ experiment ring type: gui {
 	}
 
 	output synchronized: true {
-		display map type: 3d background: #gray {
+		display map type: 2d background: #gray {
 			species road aspect: base;
 			species car_random aspect: base;
 			species motorbike_random aspect: base;
@@ -145,7 +145,7 @@ experiment city type: gui {
 	}
 
 	output synchronized: true {
-		display map type: 3d background: #gray {
+		display map type: 2d background: #gray {
 			species road aspect: base;
 			species car_random aspect: base;
 			species motorbike_random aspect: base;
