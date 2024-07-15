@@ -137,34 +137,34 @@ jobs:
           force_push_tag: true
 
       - name: Publish alpha to Github
-        uses: svenstaro/upload-release-action@2.7.0
+        uses: softprops/action-gh-release@v2
         if: "${{ !inputs.IS_STABLE_RELEASE }}"
         with:
+          prerelease: true
+          make_latest: false
+          tag_name: ${{ inputs.RELEASE_VERSION }}
+          name: Alpha Version ${{ inputs.RELEASE_VERSION }}
           body: |
             Alpha release for GAMA ${{ inputs.RELEASE_VERSION }}. Please test and report issues.
             Last updated on ${{ steps.setup_new_release_data.outputs.date }}.
             It has been built on the commit ${{ inputs.COMMIT_SHA }}.
-          file: ${{ runner.temp }}/files/*
-          file_glob: true
-          make_latest: false
-          promote: false
-          prerelease: true
-          release_name: Alpha Version ${{ inputs.RELEASE_VERSION }}
-          tag: ${{ inputs.RELEASE_VERSION }}
-          repo_token: ${{ secrets.BOT_TOKEN }}
+          generate_release_notes: true
+          files: ${{ runner.temp }}/files/*
+          fail_on_unmatched_files: true
+          #token: ${{ secrets.BOT_TOKEN }}
 
       - name: Publish stable to Github
-        uses: svenstaro/upload-release-action@2.7.0
+        uses: softprops/action-gh-release@v2
         if: "${{ inputs.IS_STABLE_RELEASE }}"
         with:
+          prerelease: false
+          make_latest: true
+          tag_name: ${{ inputs.RELEASE_VERSION }}
+          name: Version ${{ inputs.RELEASE_VERSION }}
           body: |
             Release for GAMA ${{ inputs.RELEASE_VERSION }}.
             Published on ${{ steps.setup_new_release_data.outputs.date }}.
-          file: ${{ runner.temp }}/files/*
-          file_glob: true
-          make_latest: true
-          promote: true
-          prerelease: false
-          release_name: Version ${{ inputs.RELEASE_VERSION }}
-          tag: ${{ inputs.RELEASE_VERSION }}
-          repo_token: ${{ secrets.BOT_TOKEN }}
+          generate_release_notes: true
+          files: ${{ runner.temp }}/files/*
+          fail_on_unmatched_files: true
+          #token: ${{ secrets.BOT_TOKEN }}
