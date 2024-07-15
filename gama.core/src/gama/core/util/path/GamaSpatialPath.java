@@ -457,6 +457,9 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		return getDistanceComplex(scope, keepSource, keepTarget);
 	}
 
+	
+	
+	
 	/**
 	 * Gets the distance complex.
 	 *
@@ -472,8 +475,8 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		double distance = 0;
 		int index = 0;
 		int indexSegment = 0;
-		GamaPoint currentLocation = null;
 		final int nb = segments.size();
+		GamaPoint currentLocation = source.getLocation();
 		if (!keepSource) {
 			double distanceS = Double.MAX_VALUE;
 			IShape line = null;
@@ -487,51 +490,15 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 			}
 			line = segments.get(index);
 			currentLocation = SpatialPunctal._closest_point_to(source, line);
-			final Point pointGeom = (Point) currentLocation.getInnerGeometry();
-			if (line.getInnerGeometry().getNumPoints() >= 3) {
-				distanceS = Double.MAX_VALUE;
-				final Coordinate coords[] = line.getInnerGeometry().getCoordinates();
-				final int nbSp = coords.length;
-				final Coordinate[] temp = new Coordinate[2];
-				for (int i = 0; i < nbSp - 1; i++) {
-					temp[0] = coords[i];
-					temp[1] = coords[i + 1];
-					final LineString segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(temp);
-					final double distS = segment.distance(pointGeom);
-					if (distS < distanceS) {
-						distanceS = distS;
-						indexSegment = i + 1;
-					}
-				}
-			}
-		} else {
-			currentLocation = source.getLocation();
+			indexSegment = getIndexSegment(line, currentLocation, indexSegment, distanceS);
 		}
+		
 		final IShape lineEnd = segments.get(nb - 1);
 		int endIndexSegment = lineEnd.getInnerGeometry().getNumPoints();
-		GamaPoint falseTarget = null;
+		GamaPoint falseTarget = target.getLocation();
 		if (!keepTarget) {
 			falseTarget = SpatialPunctal._closest_point_to(getEndVertex(), lineEnd);
-			endIndexSegment = 1;
-			final Point pointGeom = (Point) falseTarget.getInnerGeometry();
-			if (lineEnd.getInnerGeometry().getNumPoints() >= 3) {
-				double distanceT = Double.MAX_VALUE;
-				final Coordinate coords[] = lineEnd.getInnerGeometry().getCoordinates();
-				final int nbSp = coords.length;
-				final Coordinate[] temp = new Coordinate[2];
-				for (int i = 0; i < nbSp - 1; i++) {
-					temp[0] = coords[i];
-					temp[1] = coords[i + 1];
-					final LineString segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(temp);
-					final double distT = segment.distance(pointGeom);
-					if (distT < distanceT) {
-						distanceT = distT;
-						endIndexSegment = i + 1;
-					}
-				}
-			}
-		} else {
-			falseTarget = target.getLocation();
+			endIndexSegment = getIndexSegment(lineEnd, falseTarget, 1, Double.MAX_VALUE);
 		}
 		
 		for (int i = index; i < nb; i++) {
@@ -560,6 +527,29 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 			index++;
 		}
 		return distance;
+	}
+
+	
+	private int getIndexSegment(IShape line, GamaPoint targetLocation, int defaultIdx, double initDistance) {		
+		int index = defaultIdx;
+		if (line.getInnerGeometry().getNumPoints() >= 3) {
+			final Point pointGeom = (Point) targetLocation.getInnerGeometry();
+			double distanceS = initDistance;
+			final Coordinate coords[] = line.getInnerGeometry().getCoordinates();
+			final int nbSp = coords.length;
+			final Coordinate[] temp = new Coordinate[2];
+			for (int i = 0; i < nbSp - 1; i++) {
+				temp[0] = coords[i];
+				temp[1] = coords[i + 1];
+				final LineString segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(temp);
+				final double distS = segment.distance(pointGeom);
+				if (distS < distanceS) {
+					distanceS = distS;
+					index = i + 1;
+				}
+			}
+		}
+		return index;
 	}
 
 	@Override
