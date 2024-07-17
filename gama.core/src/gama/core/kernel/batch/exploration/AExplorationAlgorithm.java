@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import gama.annotations.precompiler.GamlAnnotations.inside;
@@ -178,8 +179,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IKeyword.FACTORIAL: yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
 							RandomSampling.factorialUniformSampling(scope, getFactorial(scope, parameters), parameters)
 							: RandomSampling.factorialUniformSampling(scope, sample_size, parameters);
-			case Exploration.FROM_LIST: yield buildParameterFromMap(scope, new ArrayList<>(), 0);
-			case Exploration.FROM_FILE: yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)), new ArrayList<>());
+			case Exploration.FROM_LIST: yield buildParameterFromMap(scope);
+			case Exploration.FROM_FILE: yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)));
 			default: yield buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 		
@@ -204,6 +205,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param index
 	 * @return
 	 */
+	@SuppressWarnings ("rawtypes")
 	public List<ParametersSet> buildParameterSets(IScope scope, List<ParametersSet> sets, int index) {
 		if (sets == null) throw GamaRuntimeException.error("Cannot build a sample with empty parameter set", scope);
 		final List<Batch> variables = currentExperiment.getParametersToExplore();
@@ -212,8 +214,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		if (sets.isEmpty()) { sets.add(new ParametersSet()); }
 		final IParameter.Batch var = variables.get(index);
 		for (ParametersSet solution : sets) {
-			@SuppressWarnings ("rawtypes") List vals =
-					var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getParameterSwip(scope, var);
+			List vals = var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getParameterSwip(scope, var);
 			for (final Object val : vals) {
 				ParametersSet ps = new ParametersSet(solution);
 				ps.put(var.getName(), val);
@@ -255,28 +256,28 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * written in a file
 	 *
 	 * @param scope
-	 * @param sets
-	 * @param index
 	 * @return
 	 */
 	@SuppressWarnings ("unchecked")
-	private List<ParametersSet> buildParameterFromMap(final IScope scope, final List<ParametersSet> sets,
-			final int index) {
+	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
 		if (psexp.getDenotedType() != Types.LIST) throw GamaRuntimeException.error(
 				"You cannot use " + IKeyword.WITH + " facet without input a list of maps as parameters inputs", scope);
 		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
 
+		return buildParametersSetList(scope, parameterSets);
+	}
+
+	private List<ParametersSet> buildParametersSetList(IScope scope, List<Map<String, Object>> parameterSets) {
+		var sets = new ArrayList<ParametersSet>();
 		for (Map<String, Object> parameterSet : parameterSets) {
 			ParametersSet p = new ParametersSet();
-			for (String v : parameterSet.keySet()) {
-				Object val = parameterSet.get(v);
-				p.put(v, val instanceof IExpression ? ((IExpression) val).value(scope) : val);
+			for (Entry<String, Object> entry : parameterSet.entrySet()) {
+				p.put(entry.getKey(), entry.getValue() instanceof IExpression ? ((IExpression) entry.getValue()).value(scope) : entry.getValue());
 			}
 			sets.add(p);
 		}
 		return sets;
-
 	}
 
 	/**
@@ -284,12 +285,11 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 *
 	 * @param scope
 	 * @param path
-	 * @param sets
 	 * @return
 	 */
-	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) throws GamaRuntimeException {
+	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
+
 		try {
 			File file = new File(path);
 			try (FileReader fr = new FileReader(file, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
@@ -314,16 +314,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			throw GamaRuntimeException.error("Error during the reading of the CSV file", scope);
 		}
 
-		for (Map<String, Object> parameterSet : parameters) {
-			ParametersSet p = new ParametersSet();
-			for (String v : parameterSet.keySet()) {
-				Object val = parameterSet.get(v);
-				p.put(v, val instanceof IExpression ? ((IExpression) val).value(scope) : val);
-			}
-			sets.add(p);
-		}
-
-		return sets;
+		return buildParametersSetList(scope, parameters);
 	}
 	
 	/**
@@ -345,8 +336,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		sb.append(String.join(CSV_SEP, outputs));
 		
 		// Find results and append to global string
-		for (ParametersSet ps : results.keySet()) {
-			Map<String, List<Object>> res = results.get(ps);
+		for (var entry : results.entrySet()) {
+			Map<String, List<Object>> res = entry.getValue();
+			var ps = entry.getKey();
 			int nbr = res.values().stream().findAny().get().size();
 			if (!res.values().stream().allMatch(r -> r.size()==nbr)) { 
 				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Not all sample of stochastic analysis have the same number of replicates", scope), false); 
