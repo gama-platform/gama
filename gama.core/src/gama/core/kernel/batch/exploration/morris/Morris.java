@@ -131,24 +131,20 @@ public class Morris {
 		 this.parametersNames = new ArrayList<>();
 		 this.outputs = new LinkedHashMap<>();
 
-		 FileReader fr = null;
 		 try {
+			 
+			 FileReader fr = null;
 			 fr = new FileReader(file, StandardCharsets.UTF_8);
+			 BufferedReader br = new BufferedReader(fr);
+			 List<String> listNames = readMorrisCsvHeader(br, nbParams); 
+			 readMorrisCsvContent(br, nbParams, listNames);
+			 
 		 } catch (FileNotFoundException e) {
 			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
 		 } catch (IOException e) {
 			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
 		}		
 
-		 BufferedReader br = new BufferedReader(fr);
-		 try {
-			 List<String> listNames = readMorrisCsvHeader(br, nbParams);
-			 
-			 readMorrisCsvContent(br, nbParams, listNames);
-			 
-		 } catch (IOException e) {
-			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
-		 }
 	 }
 	 
 	 /**
@@ -213,7 +209,9 @@ public class Morris {
 	  * @param scope
 	  */
 	 public void setOutputs(Map<String, List<Double>> outputs, IScope scope) {
-		 if (simulationSamples == null && simulationSamples.isEmpty()) { GamaRuntimeException.error("[MORRIS] Cannot setup outputs before the morris sample", scope); }
+		 if (simulationSamples == null || simulationSamples.isEmpty()) { 
+			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Cannot setup outputs before the morris sample", scope), true); 
+		 }
 		 this.outputs = outputs;
 	 }
 
