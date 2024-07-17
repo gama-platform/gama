@@ -65,6 +65,8 @@ jobs:
           git add -A
           git commit -m "Regenerate operators artifacts on wiki  - $(date)"
           git push
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 
       - name: Trigger documentation website rebuild
         run: |
