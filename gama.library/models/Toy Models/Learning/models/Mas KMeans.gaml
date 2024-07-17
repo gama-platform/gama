@@ -23,7 +23,7 @@ global
 	int dimensions <- 2;
 	float globalIntraDistance <- 0.0;
 	bool converged <- false;
-	font regular <- font("Helvetica", 14, # bold);
+	font regular <- font("Helvetica", 12, # bold);
 	init
 	{
 		//create datapoints agents
@@ -162,36 +162,35 @@ experiment clustering2D type: gui
 	output
 	{
 		
-		display map_kmeans 
-		{
+		display map_kmeans type:3d axes:false{
 
+			species datapoints aspect: kmeans_aspect2D transparency:0.4;
+			species centroids aspect: kmeans_aspect2D;
+			
 			graphics "Full target"
 			{
-				draw rectangle(120, 4) color: # yellow  at: { 50, 2 };
-				draw rectangle(120, 4) color: # yellow at: target + { 30, 2 };
+				draw rectangle(100, 5) color: # yellow  at: { 50, 2.5 };
+				draw rectangle(100, 4) color: # yellow at: { 50, target.y + 3 };
 				if (not even(cycle))
 				{
 				// the "update step" as maximization step, (a mean is done to recenter)
 					if ! (globalIntraDistance = 0) {
-						draw "Current step was an estimation Step (each point is assigned the color of his nearest centroid" at:{ 12, 2 } font: regular color: # green;
-						draw "Current sum of cluster intra-distance " + globalIntraDistance with_precision(1)  at:{ 12, 4 } font: regular color: # black;
+						draw "Current step was an estimation Step (each point is assigned the color of his nearest centroid" at:{ 8, 2 } font: regular color: # green;
+						draw "Current sum of cluster intra-distance " + globalIntraDistance with_precision(1)  at:{ 8, 4 } font: regular color: # black;
 						}
-					if converged {draw "Algorithm has converged !" + " cycle "+ cycle at:{ 60, 4 } font: regular color: # red;}
-					draw "Next step is a maximisation step the centroid will move to the center of its  associated points" at: target + { 0, 3 } font: regular color: # red;
+					if converged {draw "Algorithm has converged !" + " cycle "+ cycle at:{ 58, 4 } font: regular color: # red;}
+					draw "Next step is a maximisation step the centroid will move to the center of its  associated points" at: target + { -10, 3.5 } font: regular color: # red;
 				} else
 				{
 					if ! (globalIntraDistance = 0) {
-						draw "Current step was a maximisation step the centroid moved to the center of its associated points" at: { 12, 2 } font: regular color: # red;
-						draw "Current sum of cluster intra-distance " + globalIntraDistance with_precision(1)  at:{ 12, 4 } font: regular color: # black;
+						draw "Current step was a maximisation step the centroid moved to the center of its associated points" at: { 8, 2 } font: regular color: # red;
+						draw "Current sum of cluster intra-distance " + globalIntraDistance with_precision(1)  at:{ 8, 4 } font: regular color: # black;
 						}
-					if converged {draw "Algorithm has converged !"  at:{ 60, 4 } font: regular color: # red;}
-					draw "Next step is an estimation Step (each point is assigned the color of his nearest centroid" at: target + { 0, 3 } font: regular color: # green;
+					if converged {draw "Algorithm has converged !"  at:{ 60, 3.5 } font: regular color: # red;}
+					draw "Next step is an estimation Step (each point is assigned the color of his nearest centroid" at: target + { -10, 3.5 } font: regular color: # green;
 				}
 
 			}
-			species datapoints aspect: kmeans_aspect2D transparency:0.4;
-			species centroids aspect: kmeans_aspect2D;
-
 		}
 
 	}

@@ -102,7 +102,7 @@ species lamp {
 
 }
 
-experiment specular_light type: gui {
+experiment specular_light type: gui autorun:true{
 	parameter "turn on/off the ligth" var:button init:true;
 	output {
 		layout #split;

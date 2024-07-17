@@ -15,7 +15,6 @@ global {
 	int nb_people <- 100;
 	string scenario <- "frontal crossing" among: ["big crowd", "frontal crossing", "perpendicular crossing"] ;
 		
-	bool display_free_space <- false;
 	bool display_force <- false;
 	bool display_circle_min_dist <- true ;
 	
@@ -168,7 +167,6 @@ species obstacle {
 }
 experiment big_crowd type: gui {
 	
-	parameter var:display_free_space;
 	parameter var:display_force;
 	parameter var:display_circle_min_dist;
 	parameter var:P_shoulder_length;

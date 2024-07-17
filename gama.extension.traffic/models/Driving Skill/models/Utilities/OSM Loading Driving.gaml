@@ -105,9 +105,9 @@ species intersection {
 
 experiment fromOSMtoShapefiles type: gui {
 	output {
-		display map type: 3d {
+		display map type: 2d {
 			graphics "world" {
-				draw world.shape.contour;
+				draw world.shape.contour color:#black;
 			}
 			species road aspect: base_ligne  refresh: false  ;
 			species intersection aspect: base   refresh: false ;

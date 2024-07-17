@@ -1,7 +1,7 @@
 /**
 * Name: Issue3660
 * Verifies that the absence of a format for a file to save does not prevent from saving simple text files
-* See https://github.com/gama-platform/gama/issues/3660 
+* See https://github.com/gama-platform/gama.old/issues/3660 
 * Author: Alexis Drogoul
 * Tags: save, data, file
 */

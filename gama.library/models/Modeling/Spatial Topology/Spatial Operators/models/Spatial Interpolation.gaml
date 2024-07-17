@@ -67,7 +67,7 @@ experiment spatialinterpolation type: gui {
 	parameter "nb of rows" var: nb_rows;
 	parameter "power parameter" var: power;
 	output {
-		display map_shape {
+		display map_shape type:2d{
 			grid cell_shape;
 			graphics "points" {
 				loop pt over: pts.keys {
@@ -77,7 +77,7 @@ experiment spatialinterpolation type: gui {
 				}
 			}
 		}
-		display map_location {
+		display map_location type:2d{
 			grid cell_location;
 			graphics "points" {
 				loop pt over: pts.keys {

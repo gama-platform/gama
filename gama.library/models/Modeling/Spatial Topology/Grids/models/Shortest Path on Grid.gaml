@@ -71,6 +71,9 @@ experiment goto_grid type: gui {
 	parameter var:obstacle_rate;
 	parameter var:grid_size;
 	
+	float minimum_cycle_duration <- 0.5#s;
+	
+	
 	output {
 		display objects_display type: 2d antialias:false{
 			grid cell border: #black;

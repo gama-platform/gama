@@ -17,10 +17,12 @@ global {
 		write "\nIndividually serialized and deserialized:";
 		loop o over: objects {
 			string s <- serialize(o);
-			write deserialize(s);
+			write "\nserializing " + o + " => " + s;
+			write "deserialized: " + deserialize(s);
 		}
-
-		write "\nThe whole list serialized and deserialized: " + deserialize(serialize(objects));
+	
+		assert objects = deserialize(serialize(objects));
+		write "\nserializing and deserializing a list containing all the objects returns a list strictly identical to the initial one";
 	}  
 }
 

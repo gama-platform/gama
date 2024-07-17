@@ -18,10 +18,10 @@ species cast_to_int {
 		write sample(int(false));
 		write sample(int(self));
 		write sample(int([]));
-		write sample(int([10]));
+		write sample(int([10,11]));
 		write sample(int({1,2,3}));
-		write sample(int(1::2));
-		write sample(int([1::2]));
+		write sample(int(3::4));
+		write sample(int([3::4]));
 		write sample(int(#meter));				
 	}
 }

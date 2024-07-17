@@ -45,9 +45,10 @@ global
  
 experiment main type: gui
 {
+	float minimum_cycle_duration <- 0.05#s;
 	output synchronized: true
 	{
-		display "Comodel Display"  
+		display "Comodel Display"  type:2d
 		{
 			agents "cell" value: (Voronoi."Adapter 2" accumulate each.get_cell()) transparency:0.5;
 			

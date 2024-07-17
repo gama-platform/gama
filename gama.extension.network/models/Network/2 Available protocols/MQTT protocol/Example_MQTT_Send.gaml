@@ -11,7 +11,7 @@ global {
 	list<string> clients <-["sender","receiver"];
 	init {
 		write "A MQTT server should run." color: #red;
-		write "Another instance of GAMA should run the model Example_MQTT_Receive.gaml, too show how agents receive messages.";
+		write "Another instance of GAMA should run the model Example_MQTT_Receive.gaml, to show how agents receive messages.";
 		
 		create NetworkingAgent number:1{
 			name <-clients[0];
