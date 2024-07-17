@@ -1,7 +1,7 @@
 /**
 * Name: Issue3570
 * Tests whether the two fixes provided in Issue #3570 are working on every combination of OS and hardware. 
-* See https://github.com/gama-platform/gama/issues/3570
+* See https://github.com/gama-platform/gama.old/issues/3570
 * Author: A. Drogoul
 * Tags: chart, display, snapshot
 */
