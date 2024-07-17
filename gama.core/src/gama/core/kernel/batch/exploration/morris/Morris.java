@@ -292,65 +292,72 @@ public class Morris {
 	/** ########################## SAVING/LOADING METHODS ############################# */
 
 	public String buildReportString(final String extension) {
-		StringBuilder sb = new StringBuilder();
-		char sep = ',';
 		
 		if ("txt".equalsIgnoreCase(extension)) {
-			
-			sb.append("MORRIS ANALYSIS :").append(Strings.LN);
-			for (String o : outputs.keySet()) {
-				
-				sb.append(Strings.LN);
-				sb.append("Result for output :" + o).append(Strings.LN);
-				Map<String, Double> _mu = mu.get(o);
-				sb.append("\u00B5 :").append(Strings.LN); 
-				for (String n : _mu.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_mu.get(n)).append(Strings.LN);
-				}
-				
-				Map<String, Double> _mu_star = mu_star.get(o);
-				sb.append("\u00B5 * :").append(Strings.LN);
-				for (String n : _mu_star.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_mu_star.get(n)).append(Strings.LN);
-				}
-				
-				Map<String, Double> _sigma = sigma.get(o);
-				sb.append("\u03C3 :").append(Strings.LN);
-				for (String n : _sigma.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_sigma.get(n)).append(Strings.LN);
-				}
-			}
-			
+			return buildTextReportString();			
 		} else {
-			// Build header
-			sb.append("output").append(sep);
-			sb.append("parameter").append(sep); 
-			sb.append("\u00B5").append(sep);
-			sb.append("\u00B5").append("*").append(sep);
-			sb.append("\u03C3").append(Strings.LN);
-			
-			for (String output_name : outputs.keySet()) {
-				for (String param : parametersNames) {
-					// The output & parameter
-					sb.append(output_name).append(sep);
-					sb.append(param).append(sep);
-					sb.append(mu.get(output_name).get(param)).append(sep);
-					sb.append(mu_star.get(output_name).get(param)).append(sep);
-					sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
-				}
+			return buildOtherReportString();
+		}
+	}
+	
+	private String buildOtherReportString() {
+		StringBuilder sb = new StringBuilder();
+		char sep = ',';
+		// Build header
+		sb.append("output").append(sep);
+		sb.append("parameter").append(sep); 
+		sb.append("\u00B5").append(sep);
+		sb.append("\u00B5").append("*").append(sep);
+		sb.append("\u03C3").append(Strings.LN);
+		
+		for (String output_name : outputs.keySet()) {
+			for (String param : parametersNames) {
+				// The output & parameter
+				sb.append(output_name).append(sep);
+				sb.append(param).append(sep);
+				sb.append(mu.get(output_name).get(param)).append(sep);
+				sb.append(mu_star.get(output_name).get(param)).append(sep);
+				sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
 			}
-
 		}
 
 		return sb.toString();
-		
 	}
-	
+
 	/** ########################## MORRIS GAMA RE-IMPLEMENTATION ############################# */
 	
+	private String buildTextReportString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("MORRIS ANALYSIS :").append(Strings.LN);
+		for (String o : outputs.keySet()) {
+			
+			sb.append(Strings.LN);
+			sb.append("Result for output :" + o).append(Strings.LN);
+			Map<String, Double> _mu = mu.get(o);
+			sb.append("\u00B5 :").append(Strings.LN); 
+			for (String n : _mu.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_mu.get(n)).append(Strings.LN);
+			}
+			
+			Map<String, Double> _mu_star = mu_star.get(o);
+			sb.append("\u00B5 * :").append(Strings.LN);
+			for (String n : _mu_star.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_mu_star.get(n)).append(Strings.LN);
+			}
+			
+			Map<String, Double> _sigma = sigma.get(o);
+			sb.append("\u03C3 :").append(Strings.LN);
+			for (String n : _sigma.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_sigma.get(n)).append(Strings.LN);
+			}
+		}
+		return sb.toString();
+	}
+
 	/**
 	 * Convert a List of Map into a Map of List
 	 *

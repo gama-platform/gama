@@ -290,23 +290,20 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 
-		try {
-			File file = new File(path);
-			try (FileReader fr = new FileReader(file, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
-				String line = " ";
-				String[] tempArr;
-				List<String> list_name = new ArrayList<>();
-				int i = 0;
-				while ((line = br.readLine()) != null) {
-					tempArr = line.split(CSV_SEP);
-					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
-					if (i > 0) {
-						Map<String, Object> temp_map = new HashMap<>();
-						for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
-						parameters.add(temp_map);
-					}
-					i++;
+		try (FileReader fr = new FileReader(new File(path), StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
+			String line = " ";
+			String[] tempArr;
+			List<String> list_name = new ArrayList<>();
+			int i = 0;
+			while ((line = br.readLine()) != null) {
+				tempArr = line.split(CSV_SEP);
+				for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
+				if (i > 0) {
+					Map<String, Object> temp_map = new HashMap<>();
+					for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
+					parameters.add(temp_map);
 				}
+				i++;
 			}
 		} catch (FileNotFoundException nfe) {
 			throw GamaRuntimeException.error("CSV file not found: " + path, scope);
