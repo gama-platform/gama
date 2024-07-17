@@ -257,7 +257,7 @@ public class FileUtils {
 
 				ex.addContext(file.getAbsolutePath());
 			}
-			// We havent found the file, but it may not exist. In that case, the
+			// We haven't found the file, but it may not exist. In that case, the
 			// first directory is used as a reference.
 			if (!mustExist) {
 				try {
@@ -418,6 +418,11 @@ public class FileUtils {
 		} catch (final Exception e) {
 			return null;
 		}
+	}
+	
+	public static String escapeFilePath(String path) {
+		return path	.replace("\\", "\\\\")
+					.replace("\"", "\\\"");
 	}
 
 	/**

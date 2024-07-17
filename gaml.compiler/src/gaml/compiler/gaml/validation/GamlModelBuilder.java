@@ -26,6 +26,7 @@ import com.google.inject.Injector;
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.kernel.model.IModel;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamlModelBuilder;
@@ -113,7 +114,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 */
 	@Override
 	public synchronized IModel compile(final File myFile, final List<GamlCompilationError> errors,
-			final GamlProperties metaProperties) throws IOException, IllegalArgumentException {
+			final GamlProperties metaProperties) throws IOException, GamaCompilationFailedException {
 		if (myFile == null) throw new IOException("Model file is null");
 		final String fileName = myFile.getAbsolutePath();
 		if (!myFile.exists()) throw new IOException("Model file does not exist: " + fileName);
@@ -121,9 +122,9 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 
 		final IModel model = GamlModelBuilder.getDefaultInstance().compile(URI.createFileURI(fileName), errors);
 		if (model == null) {
-			DEBUG.LOG("Model not compiled because of the following compilation errors: \n"
+			DEBUG.LOG("Model didn't compile because of the following compilation errors: \n"
 					+ (errors == null ? "" : StreamEx.of(errors).joining("\n")));
-			throw new IllegalArgumentException("Compilation errors: \n" + StreamEx.of(errors).joining("\n"));
+			throw new GamaCompilationFailedException(errors);
 		}
 		if (metaProperties != null) { model.getDescription().collectMetaInformation(metaProperties); }
 		return model;

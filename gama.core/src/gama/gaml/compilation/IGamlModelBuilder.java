@@ -65,12 +65,12 @@ public interface IGamlModelBuilder {
 	 * @return the compiled model or null if errors occur
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
-	 * @throws IllegalArgumentException
+	 * @throws GamaCompilationFailedException
 	 *             Signals that errors occured
 	 * @date 15 oct. 2023
 	 */
 	IModel compile(final File myFile, final List<GamlCompilationError> errors, final GamlProperties metaProperties)
-			throws IOException, IllegalArgumentException;
+			throws IOException, GamaCompilationFailedException;
 
 	/**
 	 * Compile.

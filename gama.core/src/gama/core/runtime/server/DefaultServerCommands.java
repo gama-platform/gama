@@ -55,6 +55,7 @@ import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.gaml.operators.Cast;
@@ -98,7 +99,11 @@ public class DefaultServerCommands {
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
-		} catch (IllegalArgumentException | IOException e) {
+		}
+		catch (GamaCompilationFailedException compError) {
+			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
+		}
+		catch (IOException e) {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}

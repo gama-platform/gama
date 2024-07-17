@@ -337,7 +337,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 					"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
 		}
 		plan = getExperiment(socket_id, exp_id);
-		if (plan == null || plan.getAgent() == null || plan.getAgent().dead() || plan.getCurrentSimulation() == null) {
+		if (plan == null || plan.getAgent() == null || plan.getAgent().dead()) {
 			throw new CommandException(new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));
 		}

@@ -46,6 +46,7 @@ import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaWebSocketServer;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.headless.batch.ModelLibraryRunner;
 import gama.headless.batch.ModelLibraryTester;
@@ -61,7 +62,6 @@ import gama.headless.server.GamaServerGUIHandler;
 import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
-
 import gaml.compiler.GamlStandaloneSetup;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
@@ -656,7 +656,7 @@ public class HeadlessApplication implements IApplication {
 	 * @throws InterruptedException
 	 */
 	public void runGamlSimulation(final List<String> args)
-			throws IOException, GamaHeadlessException, InterruptedException {
+			throws IOException, GamaCompilationFailedException, InterruptedException {
 		final String pathToModel = args.get(args.size() - 1);
 		assertIsAModelFile(pathToModel);
 		final String argExperimentName = args.get(args.size() - 2);

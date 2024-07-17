@@ -21,6 +21,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.model.IModel;
 import gama.gaml.compilation.GAML;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.types.Types;
 import gama.headless.core.GamaHeadlessException;
@@ -48,7 +49,7 @@ public class JobListFactory {
 	 * @throws IOException
 	 */
 	public static List<IExperimentJob> constructAllJobs(final String modelPath, final long[] seeds,
-			final long finalStep, final Integer numberOfCores) throws IOException, GamaHeadlessException {
+			final long finalStep, final Integer numberOfCores) throws IOException, GamaCompilationFailedException {
 		IModel model = GamlModelBuilder.getDefaultInstance().compile(new File(modelPath), null, null);
 		Map<JobPlanExperimentID, IExperimentJob> originalJobs = new LinkedHashMap<>();
 		if (numberOfCores != null && numberOfCores > 0) {
