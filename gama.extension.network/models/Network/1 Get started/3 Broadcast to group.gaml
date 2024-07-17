@@ -63,6 +63,8 @@ species Teacher skills:[network]{
 }
 
 experiment start type: gui {
+	
+	float minimum_cycle_duration <- 1#s;
 	output {
 	}
 }

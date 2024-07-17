@@ -1,6 +1,7 @@
 /**
 * Name: Issue3776
 * Demonstrates how very small fields can be displayed 
+* See https://github.com/gama-platform/gama.old/issues/3776
 * Author: drogoul
 * Tags: 
 */

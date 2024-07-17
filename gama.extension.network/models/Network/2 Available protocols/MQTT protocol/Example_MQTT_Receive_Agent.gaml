@@ -10,7 +10,7 @@ model MQTT_Receiver
 global skills:[network] {	
 	init {   
 		write "A MQTT server should run." color: #red;
-		write "Another instance of GAMA should run the model Example_MQTT_Send_Agent.gaml, too show how agents can send messages.";
+		write "Another instance of GAMA should run the model Example_MQTT_Send_Agent.gaml, to show how agents can send messages.";
 		/**
 		 * Demo connection based on the demo gama server. 
 		 * Using the demo gama server requires an available internet connection. Depending on your web access, It could be slow down the simulation. 

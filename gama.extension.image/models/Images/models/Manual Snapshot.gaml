@@ -73,6 +73,9 @@ experiment "Copy Snapshot to Clipboard" type: gui {
 	
 	int i <- 0;
 	
+	init {
+		write "press 'c' to copy the snapshot to your clipboard";
+	}
 	
 	output synchronized: true {
 		display "My Display" type:3d axes: false{

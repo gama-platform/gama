@@ -1,6 +1,7 @@
 /**
 * Name: Issue3579
 * Verifies that the fields are correctly loaded and gathered for GAML files 
+* See https://github.com/gama-platform/gama.old/issues/3579
 * Author: A. Drogoul
 * Tags: files,attributes,metadata
 */
@@ -8,7 +9,7 @@
 
 model Issue3579
 
-import "Issue3570.gaml"
+import "Issue 3570.gaml"
 
 global {
 	init {
