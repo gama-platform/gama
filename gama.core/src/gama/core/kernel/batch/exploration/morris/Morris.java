@@ -255,9 +255,9 @@ public class Morris {
 		num_trajectories = (int) Math.round(simulationSamples.size() / (num_vars + 1.0));
 		trajectory_size = (int) Math.round(simulationSamples.size() / (double)num_trajectories);
 		
-		for (String o : outputs.keySet()) {
+		for (var entry : outputs.entrySet()) {
 			List<Map<String, Double>> elementary_effects =
-					compute_elementary_effects(MySampleTemp, outputs.get(o), trajectory_size, delta, parametersNames, simulationSamples);
+					compute_elementary_effects(MySampleTemp, entry.getValue(), trajectory_size, delta, parametersNames, simulationSamples);
 			Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, parametersNames);
 			Map<String, Double> mu = new LinkedHashMap<>();
 			IntStream.range(0, parametersNames.size()).forEach(i -> {
@@ -266,7 +266,7 @@ public class Morris {
 				for (Double aDouble : listtmp) { val = val + aDouble; }
 				mu.put(parametersNames.get(i), val / listtmp.size());
 			});
-			this.mu.put(o,mu);
+			this.mu.put(entry.getKey(), mu);
 			
 			Map<String, Double> mu_star = new LinkedHashMap<>();
 			IntStream.range(0, parametersNames.size()).forEach(i -> {
@@ -275,7 +275,7 @@ public class Morris {
 				for (Double aDouble : listtmp) { val = val + abs(aDouble); }
 				mu_star.put(parametersNames.get(i), val / listtmp.size());
 			});
-			this.mu_star.put(o, mu_star);
+			this.mu_star.put(entry.getKey(), mu_star);
 			
 			Map<String, Double> sigma = new LinkedHashMap<>();
 			IntStream.range(0, parametersNames.size()).forEach(i -> {
@@ -285,7 +285,7 @@ public class Morris {
 				val = Math.sqrt(val / (listtmp.size() - 1));
 				sigma.put(parametersNames.get(i), val);
 			});
-			this.sigma.put(o, sigma);
+			this.sigma.put(entry.getKey(), sigma);
 		}
 		
 		return List.of(mu,mu_star,sigma);
