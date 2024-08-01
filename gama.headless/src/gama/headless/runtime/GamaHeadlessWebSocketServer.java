@@ -213,6 +213,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		if (getLaunchedExperiments().get(socketId) != null) {
 			for (IExperimentPlan e : getLaunchedExperiments().get(socketId).values()) {
 				e.getController().processPause(true);
+				e.getController().close();
 				e.getController().dispose();
 			}
 			getLaunchedExperiments().get(socketId).clear();
