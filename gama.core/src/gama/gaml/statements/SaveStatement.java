@@ -34,6 +34,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.BufferingController;
 import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
@@ -467,7 +468,7 @@ public class SaveStatement extends AbstractStatementSequence{
 		
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
-			boolean exists = fileToSave.exists();
+			boolean exists = fileToSave.exists() || GAMA.fileWillBeWritten(fileToSave);
 			final boolean rewrite = shouldOverwrite(scope);
 
 			IExpression header = getFacet(IKeyword.HEADER);
