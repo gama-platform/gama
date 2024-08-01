@@ -407,16 +407,12 @@ public class BufferingController {
 	 */
 	public boolean isFileWaitingToBeWritten(File f) {
 		// visits all files that are registered by agents
-		for (String registeredFile : fileBufferPerAgent.keySet()) {
-			if (registeredFile.equals(f.getAbsolutePath())) {
-				return true;
-			}
+		if (fileBufferPerAgent.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
 		}
 		// visits all files that are registered by cycle
-		for (String registeredFile : fileBufferPerAgentForCycles.keySet()) {
-			if (registeredFile.equals(f.getAbsolutePath())) {
-				return true;
-			}
+		if (fileBufferPerAgentForCycles.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
 		}
 		return false;
 	}
