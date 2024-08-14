@@ -12,11 +12,13 @@ package gama.core.kernel.batch.exploration.betadistribution;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.math3.distribution.BetaDistribution;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -41,6 +43,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
+import gama.core.util.random.GamaRNG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
@@ -149,12 +152,17 @@ public class BetaExploration extends AExplorationAlgorithm {
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
 		}
+		if (sample_size < 1) {sample_size = 2;}
 
 		// == Build sample of parameter inputs ==
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
+		
+		// TODO : expend parameter set to include variation over target input, 
+		// ====> i.e. various parameter combinations for one parameter value 
+		// 		to assess how simulation behave when a parameter stay the same, while everything
+		//		else is moving
+		sets = expendExperimentPlan(sets, scope);
 
-		// == Launch simulations ==
-		currentExperiment.setSeeds(new Double[1]);
 		// TODO : why doesn't it take into account the value of 'keep_simulations:' ?
 		currentExperiment.setKeepSimulations(false);
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
@@ -217,6 +225,44 @@ public class BetaExploration extends AExplorationAlgorithm {
 			}
 		});
 		
+	}
+	
+	/**
+	 * Duplicates values of parameter to put them in various context
+	 * 
+	 * @param sets
+	 * @param scope
+	 * @return
+	 */
+	private List<ParametersSet> expendExperimentPlan(List<ParametersSet> sets, IScope scope) {
+		
+		List<ParametersSet> returnedSet = new ArrayList<>(sets);
+		
+		// How many times a parameter value should be reproduced in the plan
+		int fact = Betadistribution.DEFAULT_FACTORIAL;
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			fact = Cast.asInt(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope));
+		} 
+		
+		// Ensure that there is enough sample points to expand the parameter space
+		fact = fact > sample_size ? sample_size-1 : fact;
+		
+		// For each parameter, duplicates 'fact' times all sampled values
+		for (Batch b : parameters) {
+			
+			// Target the parameter values and put them in another parameter context
+			for (ParametersSet ps : sets) {
+				List<ParametersSet> subspace = new ArrayList<>(sets);
+				subspace.remove(ps);
+				for (int i=0; i<fact; i++) {
+					ParametersSet cross = new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
+					cross.addValueAtIndex(scope, b, ps.get(b.getName()));
+					returnedSet.add(cross);
+				}
+			}
+		}
+		
+		return returnedSet;
 	}
 	
 	/**

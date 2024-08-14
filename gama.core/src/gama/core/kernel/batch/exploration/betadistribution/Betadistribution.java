@@ -12,7 +12,9 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 
-public class Betadistribution {
+public final class Betadistribution {
+	
+	public static final int DEFAULT_FACTORIAL = 4;
 	
 	double objMin = Double.MAX_VALUE; double objMax = Double.MIN_VALUE;
 	double[] empiricalCDFGranularity;

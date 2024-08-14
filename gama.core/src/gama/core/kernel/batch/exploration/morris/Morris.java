@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
@@ -56,7 +57,7 @@ import gama.gaml.operators.Strings;
  * sigma indicate if a factor has interactions with others.
  */
 
-public class Morris {
+public final class Morris {
 	
 	public static final int DEFAULT_LEVELS = 4;
 	
@@ -108,7 +109,7 @@ public class Morris {
 	  */
 	 public Morris(List<Map<String, Object>> sample, int nblevels) {
 		 this(nblevels);
-		 this.simulationSamples = sample;
+		 this.simulationSamples = new ArrayList<>(sample);
 		 this.parametersNames = this.simulationSamples.stream().findAny().get().keySet().stream().toList();
 	 }
 	 
@@ -330,25 +331,25 @@ public class Morris {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("MORRIS ANALYSIS :").append(Strings.LN);
-		for (String o : outputs.keySet()) {
+		for (Entry<String, List<Double>> o : outputs.entrySet()) {
 			
 			sb.append(Strings.LN);
 			sb.append("Result for output :" + o).append(Strings.LN);
-			Map<String, Double> _mu = mu.get(o);
+			Map<String, Double> _mu = mu.get(o.getKey());
 			sb.append("\u00B5 :").append(Strings.LN); 
 			for (String n : _mu.keySet()) {
 				sb.append("\t").append(n).append(" : ")
 					.append(_mu.get(n)).append(Strings.LN);
 			}
 			
-			Map<String, Double> _mu_star = mu_star.get(o);
+			Map<String, Double> _mu_star = mu_star.get(o.getKey());
 			sb.append("\u00B5 * :").append(Strings.LN);
 			for (String n : _mu_star.keySet()) {
 				sb.append("\t").append(n).append(" : ")
 					.append(_mu_star.get(n)).append(Strings.LN);
 			}
 			
-			Map<String, Double> _sigma = sigma.get(o);
+			Map<String, Double> _sigma = sigma.get(o.getKey());
 			sb.append("\u03C3 :").append(Strings.LN);
 			for (String n : _sigma.keySet()) {
 				sb.append("\t").append(n).append(" : ")

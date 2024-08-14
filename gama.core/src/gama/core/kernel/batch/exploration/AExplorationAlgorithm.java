@@ -239,8 +239,16 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		String path_to = Cast.asString(scope, outputFilePath.value(scope));
 		final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 		final File parento = fo.getParentFile();
-		if (!parento.exists()) { parento.mkdirs(); }
-		if (fo.exists()) { fo.delete(); }
+		if (!parento.exists()) { 
+			try {parento.mkdirs();} catch (Exception e) {
+				throw GamaRuntimeException.error("Cannot create a folder at " + parento.toString() + " because: "+e.getMessage(), scope);
+			}
+		}
+		if (fo.exists()) {
+			try { fo.delete(); } catch (Exception e) {
+				throw GamaRuntimeException.error("File " + fo.toString() + " cannot be deleted because: "+e.getMessage(), scope);
+			} 
+		}
 		try (FileWriter fw = new FileWriter(fo, StandardCharsets.UTF_8, false)) {
 			fw.write(buildSimulationCsv(results, scope));
 		} catch (Exception e) {

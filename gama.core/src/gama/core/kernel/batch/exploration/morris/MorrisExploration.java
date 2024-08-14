@@ -321,8 +321,6 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public List<ParametersSet> buildParameterSetsFromCSV(final IScope scope, final String path,
 			final List<ParametersSet> sets) throws GamaRuntimeException{
 		
-		GamaRuntimeException.error("Launch Morris analysis from a precomputed sampled is under reconstruction", scope);
-		
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);
