@@ -186,6 +186,10 @@ public class Exploration extends AExplorationAlgorithm {
 		
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
 		
+		// Because Test in Gama is using batch experiment without any experiment plan !
+		// TODO : Should probably do a proper Test experiment 
+		if (sets.isEmpty()) { sets.add(new ParametersSet()); } 
+		
 		sample_size = sets.size();
 
 		IMap<ParametersSet, Map<String, List<Object>>> res = null;
