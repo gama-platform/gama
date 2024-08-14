@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import gama.annotations.precompiler.GamlAnnotations.inside;
@@ -178,8 +179,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IKeyword.FACTORIAL: yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
 							RandomSampling.factorialUniformSampling(scope, getFactorial(scope, parameters), parameters)
 							: RandomSampling.factorialUniformSampling(scope, sample_size, parameters);
-			case Exploration.FROM_LIST: yield buildParameterFromMap(scope, new ArrayList<>(), 0);
-			case Exploration.FROM_FILE: yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)), new ArrayList<>());
+			case Exploration.FROM_LIST: yield buildParameterFromMap(scope);
+			case Exploration.FROM_FILE: yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)));
 			default: yield buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 		
@@ -204,6 +205,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param index
 	 * @return
 	 */
+	@SuppressWarnings ("rawtypes")
 	public List<ParametersSet> buildParameterSets(IScope scope, List<ParametersSet> sets, int index) {
 		if (sets == null) throw GamaRuntimeException.error("Cannot build a sample with empty parameter set", scope);
 		final List<Batch> variables = currentExperiment.getParametersToExplore();
@@ -212,8 +214,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		if (sets.isEmpty()) { sets.add(new ParametersSet()); }
 		final IParameter.Batch var = variables.get(index);
 		for (ParametersSet solution : sets) {
-			@SuppressWarnings ("rawtypes") List vals =
-					var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getParameterSwip(scope, var);
+			List vals = var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getParameterSwip(scope, var);
 			for (final Object val : vals) {
 				ParametersSet ps = new ParametersSet(solution);
 				ps.put(var.getName(), val);
@@ -255,28 +256,28 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * written in a file
 	 *
 	 * @param scope
-	 * @param sets
-	 * @param index
 	 * @return
 	 */
 	@SuppressWarnings ("unchecked")
-	private List<ParametersSet> buildParameterFromMap(final IScope scope, final List<ParametersSet> sets,
-			final int index) {
+	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
 		if (psexp.getDenotedType() != Types.LIST) throw GamaRuntimeException.error(
 				"You cannot use " + IKeyword.WITH + " facet without input a list of maps as parameters inputs", scope);
 		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
 
+		return buildParametersSetList(scope, parameterSets);
+	}
+
+	private List<ParametersSet> buildParametersSetList(IScope scope, List<Map<String, Object>> parameterSets) {
+		var sets = new ArrayList<ParametersSet>();
 		for (Map<String, Object> parameterSet : parameterSets) {
 			ParametersSet p = new ParametersSet();
-			for (String v : parameterSet.keySet()) {
-				Object val = parameterSet.get(v);
-				p.put(v, val instanceof IExpression ? ((IExpression) val).value(scope) : val);
+			for (Entry<String, Object> entry : parameterSet.entrySet()) {
+				p.put(entry.getKey(), entry.getValue() instanceof IExpression ? ((IExpression) entry.getValue()).value(scope) : entry.getValue());
 			}
 			sets.add(p);
 		}
 		return sets;
-
 	}
 
 	/**
@@ -284,29 +285,25 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 *
 	 * @param scope
 	 * @param path
-	 * @param sets
 	 * @return
 	 */
-	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) throws GamaRuntimeException {
+	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path) throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
-		try {
-			File file = new File(path);
-			try (FileReader fr = new FileReader(file, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
-				String line = " ";
-				String[] tempArr;
-				List<String> list_name = new ArrayList<>();
-				int i = 0;
-				while ((line = br.readLine()) != null) {
-					tempArr = line.split(CSV_SEP);
-					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
-					if (i > 0) {
-						Map<String, Object> temp_map = new HashMap<>();
-						for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
-						parameters.add(temp_map);
-					}
-					i++;
+
+		try (FileReader fr = new FileReader(new File(path), StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
+			String line = " ";
+			String[] tempArr;
+			List<String> list_name = new ArrayList<>();
+			int i = 0;
+			while ((line = br.readLine()) != null) {
+				tempArr = line.split(CSV_SEP);
+				for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
+				if (i > 0) {
+					Map<String, Object> temp_map = new HashMap<>();
+					for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
+					parameters.add(temp_map);
 				}
+				i++;
 			}
 		} catch (FileNotFoundException nfe) {
 			throw GamaRuntimeException.error("CSV file not found: " + path, scope);
@@ -314,16 +311,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			throw GamaRuntimeException.error("Error during the reading of the CSV file", scope);
 		}
 
-		for (Map<String, Object> parameterSet : parameters) {
-			ParametersSet p = new ParametersSet();
-			for (String v : parameterSet.keySet()) {
-				Object val = parameterSet.get(v);
-				p.put(v, val instanceof IExpression ? ((IExpression) val).value(scope) : val);
-			}
-			sets.add(p);
-		}
-
-		return sets;
+		return buildParametersSetList(scope, parameters);
 	}
 	
 	/**
@@ -345,20 +333,23 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		sb.append(String.join(CSV_SEP, outputs));
 		
 		// Find results and append to global string
-		for (ParametersSet ps : results.keySet()) {
-			Map<String, List<Object>> res = results.get(ps);
+		for (var entry : results.entrySet()) {
+			Map<String, List<Object>> res = entry.getValue();
+			var ps = entry.getKey();
 			int nbr = res.values().stream().findAny().get().size();
 			if (!res.values().stream().allMatch(r -> r.size()==nbr)) { 
 				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Not all sample of stochastic analysis have the same number of replicates", scope), false); 
+				continue;
 			}
-			else {
-				// Swipe over the replication of each parameter sets, writing a line for each
-				for (int r = 0; r < nbr; r++) {
-					sb.append(Strings.LN);
-					sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(CSV_SEP)));
-					for (String output : res.keySet()) { sb.append(CSV_SEP).append(res.get(output).get(r)); }
-				}				
-			}
+
+			// Swipe over the replication of each parameter sets, writing a line for each
+			for (int r = 0; r < nbr; r++) {
+				sb.append(Strings.LN);
+				sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(CSV_SEP)));
+				for (var entrySet : res.entrySet()) { 
+					sb.append(CSV_SEP).append(entrySet.getValue().get(r)); 
+				}
+			}				
 		}
 
 		return sb.toString();
@@ -374,116 +365,138 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @return
 	 */
 	private List<Object> getParameterSwip(final IScope scope, final Batch var) {
-		List<Object> res = new ArrayList<>();
 		switch (var.getType().id()) {
 			case IType.INT:
-				int minValue = Cast.asInt(scope, var.getMinValue(scope));
-				int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
-				double stepValue = 1;
-				int nbIterNeeded = 0;
-				if (var.getStepValue(scope) != null) {
-					stepValue = Cast.asInt(scope, var.getStepValue(scope));
-				} else if (maxValue - minValue > __DEFAULT_STEP_FACTOR) {
-					stepValue = (maxValue - minValue) / (double)__DEFAULT_STEP_FACTOR;
-				}
-				//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
-				nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
-				double start = stepValue >= 0 ? minValue : maxValue;
-				for(int i = 0 ; i <= nbIterNeeded ; i++) {
-					res.add(start + (int)(stepValue * i));
-				}
-				break;
+				return getIntParameterSwip(scope, var);
 			case IType.FLOAT:
-				double minFloatValue = Cast.asFloat(scope, var.getMinValue(scope));
-				double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
-				double stepFloatValue = 0.1;
-				if (var.getStepValue(scope) != null) {
-					stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
-				} else {
-					stepFloatValue = (maxFloatValue - minFloatValue) / (__DEFAULT_STEP_FACTOR-1);
-				}
-				
-				// Do we need to account for min > max ???
-				
-				while (minFloatValue <= maxFloatValue) {
-					minFloatValue += stepFloatValue;
-					res.add(minFloatValue);
-				}
-				// Do we need to control for errors ????
-				// Do we have to use Math.ulp() ???
-//				if (Math.abs(Cast.asFloat(scope, res.get(res.size()-1)) - maxFloatValue) < stepFloatValue) {
-//					res.remove(res.size()-1);
-//					res.add(maxFloatValue);
-//				}
-				break;
+				return getFloatParameterSwip(scope, var);
 			case IType.DATE:
-				GamaDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
-				GamaDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
-				Double stepVal = Cast.asFloat(scope, var.getStepValue(scope));
-				while (dateValue.isSmallerThan(maxDateValue, false)) {
-					if (stepVal > 0) {
-						res.add(dateValue);
-						dateValue = dateValue.plus(stepVal, ChronoUnit.SECONDS);
-					} else {
-						res.add(maxDateValue);
-						maxDateValue = maxDateValue.minus(Math.abs(stepVal.longValue()), ChronoUnit.SECONDS);
-					}
-				}
-				break;
+				return getDateParameterSwip(scope, var);
 			case IType.POINT:
-				GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
-				GamaPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
-				GamaPoint increment = null;
-				Double stepV = null;
-
-				if (var.getStepValue(scope) != null) {
-					increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
-
-					if (increment == null) {
-						double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
-						stepV = d;
-						increment = new GamaPoint(d, d, d);
-					} else {
-						stepV = (increment.x + increment.y + increment.z) / 3.0;
-
-					}
-
-				} else {
-					increment = new GamaPoint((maxPointValue.x - pointValue.x) / 10.0,
-							(maxPointValue.y - pointValue.y) / 10.0, (maxPointValue.z - pointValue.z) / 10.0);
-
-				}
-				while (pointValue.smallerThanOrEqualTo(maxPointValue)) {
-					if (stepV == null || stepV > 0) {
-						res.add(pointValue);
-						pointValue = pointValue.plus(Cast.asPoint(scope, increment));
-					} else {
-						res.add(maxPointValue);
-						maxPointValue = maxPointValue.plus(Cast.asPoint(scope, increment));
-					}
-				}
-				break;
+				return getPointParameterSwip(scope, var);
 			default:
-				double varValue = Cast.asFloat(scope, var.getMinValue(scope));
-				double maxVarValue = Cast.asFloat(scope, var.getMaxValue(scope));
-				double floatcrement = 1;
-				if (hasFacet(IKeyword.STEP)) {
-					floatcrement = Cast.asFloat(scope, var.getStepValue(scope));
-				} else {
-					floatcrement = (maxVarValue - varValue) / __DEFAULT_STEP_FACTOR;
-				}
-				
-				double v = floatcrement >= 0 ? varValue : maxVarValue;
-				
-				while (varValue <= maxVarValue) {
+				return getDefaultParameterSwip(scope, var);		
+		}
+	}
 
-					if (var.getType().id() == IType.INT) {
-						res.add((int) v);
-					} else if (var.getType().id() == IType.FLOAT) {
-						res.add(v);
-					}
-					v += floatcrement;
-				}
+	private List<Object> getDateParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+		GamaDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
+		GamaDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
+		Double stepVal = Cast.asFloat(scope, var.getStepValue(scope));
+		while (dateValue.isSmallerThan(maxDateValue, false)) {
+			if (stepVal > 0) {
+				res.add(dateValue);
+				dateValue = dateValue.plus(stepVal, ChronoUnit.SECONDS);
+			} else {
+				res.add(maxDateValue);
+				maxDateValue = maxDateValue.minus(Math.abs(stepVal.longValue()), ChronoUnit.SECONDS);
+			}
+		}
+		return res;
+	}
+	private List<Object> getPointParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+		GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
+		GamaPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
+		Double stepV = null;
+
+		GamaPoint increment =  new GamaPoint( 	(maxPointValue.x - pointValue.x) / 10.0,
+												(maxPointValue.y - pointValue.y) / 10.0, 
+												(maxPointValue.z - pointValue.z) / 10.0);
+		if (var.getStepValue(scope) != null) {
+			increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
+
+			if (increment == null) {
+				double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
+				stepV = d;
+				increment = new GamaPoint(d, d, d);
+			} else {
+				stepV = (increment.x + increment.y + increment.z) / 3.0;
+			}
+
+		}
+		
+		while (pointValue.smallerThanOrEqualTo(maxPointValue)) {
+			if (stepV == null || stepV > 0) {
+				res.add(pointValue);
+				pointValue = pointValue.plus(Cast.asPoint(scope, increment));
+			} else {
+				res.add(maxPointValue);
+				maxPointValue = maxPointValue.plus(Cast.asPoint(scope, increment));
+			}
+		}
+		return res;
+	}
+	private List<Object> getDefaultParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+		double varValue = Cast.asFloat(scope, var.getMinValue(scope));
+		double maxVarValue = Cast.asFloat(scope, var.getMaxValue(scope));
+		double floatcrement = 1;
+		if (hasFacet(IKeyword.STEP)) {
+			floatcrement = Cast.asFloat(scope, var.getStepValue(scope));
+		} else {
+			floatcrement = (maxVarValue - varValue) / __DEFAULT_STEP_FACTOR;
+		}
+		
+		double v = floatcrement >= 0 ? varValue : maxVarValue;
+		
+		while (varValue <= maxVarValue) {
+
+			if (var.getType().id() == IType.INT) {
+				res.add((int) v);
+			} else if (var.getType().id() == IType.FLOAT) {
+				res.add(v);
+			}
+			v += floatcrement;
+		}
+		return res;
+	}
+	
+	private List<Object> getFloatParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+
+		double minFloatValue = Cast.asFloat(scope, var.getMinValue(scope));
+		double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
+		double stepFloatValue = 0.1;
+		if (var.getStepValue(scope) != null) {
+			stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
+		} else {
+			stepFloatValue = (maxFloatValue - minFloatValue) / (__DEFAULT_STEP_FACTOR-1);
+		}
+		
+		// Do we need to account for min > max ???
+		
+		while (minFloatValue <= maxFloatValue) {
+			minFloatValue += stepFloatValue;
+			res.add(minFloatValue);
+		}
+		// Do we need to control for errors ????
+		// Do we have to use Math.ulp() ???
+//		if (Math.abs(Cast.asFloat(scope, res.get(res.size()-1)) - maxFloatValue) < stepFloatValue) {
+//			res.remove(res.size()-1);
+//			res.add(maxFloatValue);
+//		}
+		return res;
+	}
+
+	private List<Object> getIntParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+
+		int minValue = Cast.asInt(scope, var.getMinValue(scope));
+		int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
+		double stepValue = 1;
+		int nbIterNeeded = 0;
+		if (var.getStepValue(scope) != null) {
+			stepValue = Cast.asInt(scope, var.getStepValue(scope));
+		} else if (maxValue - minValue > __DEFAULT_STEP_FACTOR) {
+			stepValue = (maxValue - minValue) / (double)__DEFAULT_STEP_FACTOR;
+		}
+		//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
+		nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
+		double start = stepValue >= 0 ? minValue : maxValue;
+		for(int i = 0 ; i <= nbIterNeeded ; i++) {
+			res.add(start + (int)(stepValue * i));
 		}
 		return res;
 	}

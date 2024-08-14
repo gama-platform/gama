@@ -234,13 +234,12 @@ public class BetaExploration extends AExplorationAlgorithm {
 			sb.append("BETA b Kuiper based estimator :").append(Strings.LN);
 			sb.append("##############################").append(Strings.LN);
 			sb.append("inputs" + AExplorationAlgorithm.CSV_SEP + String.join(AExplorationAlgorithm.CSV_SEP, outputs)).append(Strings.LN);
-			String line = "";
 			for (Batch param : parameters) {
-				line = param.getName();
+				sb.append(param.getName());
 				for (String output_name : outputs) {
-					line = line + AExplorationAlgorithm.CSV_SEP + res.get(output_name).get(param).toString(); 
+					sb.append(AExplorationAlgorithm.CSV_SEP).append(res.get(output_name).get(param)); 
 				}
-				sb.append(line).append(Strings.LN);
+				sb.append(Strings.LN);
 			}
 			
 		} else {

@@ -62,8 +62,8 @@ public class Morris {
 	
 	/**
 	 * Attributes 
-	 * MySample -> List of samples for simulation 
-	 * ParametersNames-> List of names of inputs 
+	 * simulationSamples -> List of samples for simulation 
+	 * parametersNames-> List of names of inputs 
 	 * mu -> mu indicates the mean of the distribution 
 	 * mu_star -> mu_star indicates the mean of the distribution of absolute values 
 	 * sigma -> The standard deviation of the distribution
@@ -71,8 +71,8 @@ public class Morris {
 	 * Example: MySample=[{Var1=1,Var2=1},{Var1=4,Var2=5}] ParametersName=[Var1,Var2]
 	 *
 	 */
-	 protected List<Map<String, Object>> MySample; // Experiment plan defined using Morris sampling
-	 protected List<String> ParametersNames;
+	 protected List<Map<String, Object>> simulationSamples; // Experiment plan defined using Morris sampling
+	 protected List<String> parametersNames;
 	 
 	 final private int nblevels;
 	  
@@ -108,8 +108,8 @@ public class Morris {
 	  */
 	 public Morris(List<Map<String, Object>> sample, int nblevels) {
 		 this(nblevels);
-		 this.MySample = sample;
-		 this.ParametersNames = this.MySample.stream().findAny().get().keySet().stream().toList();
+		 this.simulationSamples = sample;
+		 this.parametersNames = this.simulationSamples.stream().findAny().get().keySet().stream().toList();
 	 }
 	 
 	 /**
@@ -121,62 +121,87 @@ public class Morris {
 	  * 5) First row should be the corresponding name of inputs and outputs </p>
 	  * 
 	  * @param file : the file containing I/O of all simulations
-	  * @param nbparams : the number of input parameter of the simulation
+	  * @param nbParams : the number of input parameter of the simulation
 	  * @param nblevels : the number of level used for the Morris sample
 	  * @param scope
 	  */
-	 public Morris (File file, int nbparams, int nblevels, IScope scope) {
+	 public Morris (File file, int nbParams, int nblevels, IScope scope) {
 		 this(nblevels);
-		 this.MySample = new ArrayList<>();
-		 this.ParametersNames = new ArrayList<>();
+		 this.simulationSamples = new ArrayList<>();
+		 this.parametersNames = new ArrayList<>();
 		 this.outputs = new LinkedHashMap<>();
 
-		 FileReader fr = null;
 		 try {
+			 
+			 FileReader fr = null;
 			 fr = new FileReader(file, StandardCharsets.UTF_8);
+			 BufferedReader br = new BufferedReader(fr);
+			 List<String> listNames = readMorrisCsvHeader(br, nbParams); 
+			 readMorrisCsvContent(br, nbParams, listNames);
+			 
 		 } catch (FileNotFoundException e) {
 			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
 		 } catch (IOException e) {
 			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(e.getMessage(), scope), true);
 		}		
 
-		 BufferedReader br = new BufferedReader(fr);
-		 String line = " ";
-		 String[] tempArr;
-		 List<String> list_name = new ArrayList<>();
-		 int i = 0;
-		 try {
-			 while ((line = br.readLine()) != null) {
-				 tempArr = line.split(",");
-				 if (i == 0) {
-					 for (int idx = 0; idx < tempArr.length; idx++) {
-						 list_name.add(tempArr[idx]);
-						 if (idx < nbparams) {
-							 ParametersNames.add(tempArr[idx]);
-						 } else {
-							 outputs.put(tempArr[idx], new ArrayList<>());
-						 }
-					 }
-				 } else {
-					 Map<String, Object> temp_map = new LinkedHashMap<>();
-					 for (int idx = 0; idx < tempArr.length; idx++) {
-						 String var = list_name.get(idx);
-						 if (idx < nbparams) {
-							 temp_map.put(var, tempArr[idx]);
-						 } else {
-							 outputs.get(var).add(Double.parseDouble(tempArr[idx].toString()));
-						 }
-					 }
-					 MySample.add(temp_map);
-				 }
-				 i++;
-			 }
-		 } catch (IOException e) {
-			 GamaRuntimeException.error(e.getMessage(), scope);
-		 }
 	 }
 	 
 	 /**
+	  * Reads all the content lines (after the header) of the csv file used to create an instance of Morris. 
+	  * This must be called after readMorrisCsvHeader
+	  * @param br the BufferedReader used to read the csv
+	  * @param nbParams the number of parameter columns
+	  * @param listNames the list of names of each column
+	  * @throws NumberFormatException
+	  * @throws IOException
+	  */
+	 private void readMorrisCsvContent(final BufferedReader br, int nbParams, final List<String> listNames) throws NumberFormatException, IOException {
+		 String line;
+		 String[] tempArr;
+		 while ((line = br.readLine()) != null) {
+			 tempArr = line.split(",");
+			 Map<String, Object> temp_map = new LinkedHashMap<>();
+			 for (int idx = 0; idx < tempArr.length; idx++) {
+				 String var = listNames.get(idx);
+				 if (idx < nbParams) {
+					 temp_map.put(var, tempArr[idx]);
+				 } else {
+					 outputs.get(var).add(Double.parseDouble(tempArr[idx].toString()));
+				 }
+			 }
+			 simulationSamples.add(temp_map);
+		 }
+	}
+
+	 /**
+	  * Read the first line of the csv used to create the Morris class and use it to fill parameterNames and outputs.
+	  * It returns the list of column names.
+	  * @param br the BufferedReader used to read the csv file
+	  * @param nbParams the number parameters
+	  * @return the list of names of every column
+	  * @throws IOException
+	  */
+	 private List<String> readMorrisCsvHeader(final BufferedReader br, int nbParams) throws IOException {
+		 String line = br.readLine();
+		 String[] tempArr;
+		 List<String> listNames = new ArrayList<>();
+		 if (line!= null) {
+			 tempArr = line.split(",");
+			 for (int idx = 0; idx < tempArr.length; idx++) {
+				 listNames.add(tempArr[idx]);
+				 if (idx < nbParams) {
+					 parametersNames.add(tempArr[idx]);
+				 } else {
+					 outputs.put(tempArr[idx], new ArrayList<>());
+				 }
+			 }
+		 }
+		 return listNames;
+		 
+	}
+
+	/**
 	  * When using Morris within an experiment, the class is created, sampling is made and then Gama runs simulations
 	  * then results is given back to Morris class for analysis. This setter is meant to do that !
 	  * 
@@ -184,7 +209,9 @@ public class Morris {
 	  * @param scope
 	  */
 	 public void setOutputs(Map<String, List<Double>> outputs, IScope scope) {
-		 if (MySample == null && MySample.isEmpty()) { GamaRuntimeException.error("[MORRIS] Cannot setup outputs before the morris sample", scope); }
+		 if (simulationSamples == null || simulationSamples.isEmpty()) { 
+			 GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Cannot setup outputs before the morris sample", scope), true); 
+		 }
 		 this.outputs = outputs;
 	 }
 
@@ -203,16 +230,16 @@ public class Morris {
 	public List<Map<String, Map<String, Double>>> evaluate() {
 
 		List<Map<String, Double>> MySampleTemp = new ArrayList<>();
-		MySample.forEach(m -> {
+		simulationSamples.forEach(m -> {
 			Map<String, Double> maptmp = new LinkedHashMap<>();
-			IntStream.range(0, ParametersNames.size()).forEach(i -> {
-				Object o = m.get(ParametersNames.get(i));
+			IntStream.range(0, parametersNames.size()).forEach(i -> {
+				Object o = m.get(parametersNames.get(i));
 				if (Objects.equals(o.toString(), "false")) {
-					maptmp.put(ParametersNames.get(i), 0.0);
+					maptmp.put(parametersNames.get(i), 0.0);
 				} else if (Objects.equals(o.toString(), "true")) {
-					maptmp.put(ParametersNames.get(i), 1.0);
+					maptmp.put(parametersNames.get(i), 1.0);
 				} else {
-					maptmp.put(ParametersNames.get(i), Double.parseDouble(o.toString()));
+					maptmp.put(parametersNames.get(i), Double.parseDouble(o.toString()));
 				}
 			});
 			MySampleTemp.add(maptmp);
@@ -223,40 +250,40 @@ public class Morris {
 		int num_trajectories;
 		int trajectory_size;
 		
-		num_trajectories = (int) Math.round(MySample.size() / (num_vars + 1.0));
-		trajectory_size = (int) Math.round(MySample.size() / (double)num_trajectories);
+		num_trajectories = (int) Math.round(simulationSamples.size() / (num_vars + 1.0));
+		trajectory_size = (int) Math.round(simulationSamples.size() / (double)num_trajectories);
 		
-		for (String o : outputs.keySet()) {
+		for (var entry : outputs.entrySet()) {
 			List<Map<String, Double>> elementary_effects =
-					compute_elementary_effects(MySampleTemp, outputs.get(o), trajectory_size, delta, ParametersNames, MySample);
-			Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, ParametersNames);
+					compute_elementary_effects(MySampleTemp, entry.getValue(), trajectory_size, delta, parametersNames, simulationSamples);
+			Map<String, List<Double>> elementary = transformListMapToMapList(elementary_effects, parametersNames);
 			Map<String, Double> mu = new LinkedHashMap<>();
-			IntStream.range(0, ParametersNames.size()).forEach(i -> {
+			IntStream.range(0, parametersNames.size()).forEach(i -> {
 				double val = 0;
-				List<Double> listtmp = elementary.get(ParametersNames.get(i));
+				List<Double> listtmp = elementary.get(parametersNames.get(i));
 				for (Double aDouble : listtmp) { val = val + aDouble; }
-				mu.put(ParametersNames.get(i), val / listtmp.size());
+				mu.put(parametersNames.get(i), val / listtmp.size());
 			});
-			this.mu.put(o,mu);
+			this.mu.put(entry.getKey(), mu);
 			
 			Map<String, Double> mu_star = new LinkedHashMap<>();
-			IntStream.range(0, ParametersNames.size()).forEach(i -> {
+			IntStream.range(0, parametersNames.size()).forEach(i -> {
 				double val = 0;
-				List<Double> listtmp = elementary.get(ParametersNames.get(i));
+				List<Double> listtmp = elementary.get(parametersNames.get(i));
 				for (Double aDouble : listtmp) { val = val + abs(aDouble); }
-				mu_star.put(ParametersNames.get(i), val / listtmp.size());
+				mu_star.put(parametersNames.get(i), val / listtmp.size());
 			});
-			this.mu_star.put(o, mu_star);
+			this.mu_star.put(entry.getKey(), mu_star);
 			
 			Map<String, Double> sigma = new LinkedHashMap<>();
-			IntStream.range(0, ParametersNames.size()).forEach(i -> {
+			IntStream.range(0, parametersNames.size()).forEach(i -> {
 				double val = 0;
-				List<Double> listtmp = elementary.get(ParametersNames.get(i));
-				for (Double aDouble : listtmp) { val = val + pow(aDouble - mu.get(ParametersNames.get(i)), 2); }
+				List<Double> listtmp = elementary.get(parametersNames.get(i));
+				for (Double aDouble : listtmp) { val = val + pow(aDouble - mu.get(parametersNames.get(i)), 2); }
 				val = Math.sqrt(val / (listtmp.size() - 1));
-				sigma.put(ParametersNames.get(i), val);
+				sigma.put(parametersNames.get(i), val);
 			});
-			this.sigma.put(o, sigma);
+			this.sigma.put(entry.getKey(), sigma);
 		}
 		
 		return List.of(mu,mu_star,sigma);
@@ -265,65 +292,72 @@ public class Morris {
 	/** ########################## SAVING/LOADING METHODS ############################# */
 
 	public String buildReportString(final String extension) {
-		StringBuilder sb = new StringBuilder();
-		char sep = ',';
 		
 		if ("txt".equalsIgnoreCase(extension)) {
-			
-			sb.append("MORRIS ANALYSIS :").append(Strings.LN);
-			for (String o : outputs.keySet()) {
-				
-				sb.append(Strings.LN);
-				sb.append("Result for output :" + o).append(Strings.LN);
-				Map<String, Double> _mu = mu.get(o);
-				sb.append("\u00B5 :").append(Strings.LN); 
-				for (String n : _mu.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_mu.get(n)).append(Strings.LN);
-				}
-				
-				Map<String, Double> _mu_star = mu_star.get(o);
-				sb.append("\u00B5 * :").append(Strings.LN);
-				for (String n : _mu_star.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_mu_star.get(n)).append(Strings.LN);
-				}
-				
-				Map<String, Double> _sigma = sigma.get(o);
-				sb.append("\u03C3 :").append(Strings.LN);
-				for (String n : _sigma.keySet()) {
-					sb.append("\t").append(n).append(" : ")
-						.append(_sigma.get(n)).append(Strings.LN);
-				}
-			}
-			
+			return buildTextReportString();			
 		} else {
-			// Build header
-			sb.append("output").append(sep);
-			sb.append("parameter").append(sep); 
-			sb.append("\u00B5").append(sep);
-			sb.append("\u00B5").append("*").append(sep);
-			sb.append("\u03C3").append(Strings.LN);
-			
-			for (String output_name : outputs.keySet()) {
-				for (String param : ParametersNames) {
-					// The output & parameter
-					sb.append(output_name).append(sep);
-					sb.append(param).append(sep);
-					sb.append(mu.get(output_name).get(param)).append(sep);
-					sb.append(mu_star.get(output_name).get(param)).append(sep);
-					sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
-				}
+			return buildOtherReportString();
+		}
+	}
+	
+	private String buildOtherReportString() {
+		StringBuilder sb = new StringBuilder();
+		char sep = ',';
+		// Build header
+		sb.append("output").append(sep);
+		sb.append("parameter").append(sep); 
+		sb.append("\u00B5").append(sep);
+		sb.append("\u00B5").append("*").append(sep);
+		sb.append("\u03C3").append(Strings.LN);
+		
+		for (String output_name : outputs.keySet()) {
+			for (String param : parametersNames) {
+				// The output & parameter
+				sb.append(output_name).append(sep);
+				sb.append(param).append(sep);
+				sb.append(mu.get(output_name).get(param)).append(sep);
+				sb.append(mu_star.get(output_name).get(param)).append(sep);
+				sb.append(sigma.get(output_name).get(param)).append(Strings.LN);
 			}
-
 		}
 
 		return sb.toString();
-		
 	}
-	
+
 	/** ########################## MORRIS GAMA RE-IMPLEMENTATION ############################# */
 	
+	private String buildTextReportString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("MORRIS ANALYSIS :").append(Strings.LN);
+		for (String o : outputs.keySet()) {
+			
+			sb.append(Strings.LN);
+			sb.append("Result for output :" + o).append(Strings.LN);
+			Map<String, Double> _mu = mu.get(o);
+			sb.append("\u00B5 :").append(Strings.LN); 
+			for (String n : _mu.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_mu.get(n)).append(Strings.LN);
+			}
+			
+			Map<String, Double> _mu_star = mu_star.get(o);
+			sb.append("\u00B5 * :").append(Strings.LN);
+			for (String n : _mu_star.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_mu_star.get(n)).append(Strings.LN);
+			}
+			
+			Map<String, Double> _sigma = sigma.get(o);
+			sb.append("\u03C3 :").append(Strings.LN);
+			for (String n : _sigma.keySet()) {
+				sb.append("\t").append(n).append(" : ")
+					.append(_sigma.get(n)).append(Strings.LN);
+			}
+		}
+		return sb.toString();
+	}
+
 	/**
 	 * Convert a List of Map into a Map of List
 	 *
