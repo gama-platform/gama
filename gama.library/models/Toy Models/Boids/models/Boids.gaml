@@ -7,7 +7,7 @@
 */
 
 model boids 
-global torus: torus_environment{ 
+global { 
 	//Number of boids that will be created
 	int number_of_agents <- 50 min: 1 max: 500;
 	//Number of obstacles for the boids movement to represent
@@ -21,7 +21,6 @@ global torus: torus_environment{
 	float minimal_distance <- 30.0; 
 	
 	int width_and_height_of_environment <- 1000;  
-	bool torus_environment <- false; 
 	bool apply_cohesion <- true ;
 	bool apply_alignment <- true ;
 	bool apply_separation <- true;
@@ -120,32 +119,17 @@ species boids skills: [moving] {
 	
 	//action to represent the bounding of the environment considering the velocity of the boid
 	action bounding {
-		if  !(torus_environment) {
-			if  (location.x) < xmin {
-				velocity <- velocity + {bounds,0};
-			} else if (location.x) > xmax {
-				velocity <- velocity - {bounds,0};
-			}
-			
-			if (location.y) < ymin {
-				velocity <- velocity + {0,bounds};
-			} else if (location.y) > ymax {
-				velocity <- velocity - {0,bounds};
-			}
-		} else {
-			if (location.x) < 0.0 {
-				location <- {width_and_height_of_environment + location.x,location.y};
-			} else if (location.x) > width_and_height_of_environment {
-				location <- {location.x - width_and_height_of_environment ,location.y};
-			}
-			
-			if (location.y) < 0.0 {
-				location <- {location.x, width_and_height_of_environment + location.y};
-			} else if (location.y) > width_and_height_of_environment {
-				location <- {location.x,location.y - width_and_height_of_environment};
-			}
-			
+		if  (location.x) < xmin {
+			velocity <- velocity + {bounds,0};
+		} else if (location.x) > xmax {
+			velocity <- velocity - {bounds,0};
 		}
+		
+		if (location.y) < ymin {
+			velocity <- velocity + {0,bounds};
+		} else if (location.y) > ymax {
+			velocity <- velocity - {0,bounds};
+		}	
 	}
 	//Reflex to follow the goal 
 	reflex follow_goal {
@@ -217,7 +201,6 @@ experiment "Basic" type: gui {
 	parameter 'Alignment Factor' var: alignment_factor; 
 	parameter 'Minimal Distance'  var: minimal_distance; 
 	parameter 'Width/Height of the Environment' var: width_and_height_of_environment ;  
-	parameter 'Toroidal Environment ?'  var: torus_environment ; 
 	parameter 'Apply Cohesion ?' var: apply_cohesion ;
 	parameter 'Apply Alignment ?' var: apply_alignment ;   
 	parameter 'Apply Separation ?' var: apply_separation ;   
@@ -249,7 +232,6 @@ experiment "Interactive" type: gui autorun: true{
 	parameter 'Alignment Factor' var: alignment_factor; 
 	parameter 'Minimal Distance'  var: minimal_distance; 
 	parameter 'Width/Height of the Environment' var: width_and_height_of_environment ;  
-	parameter 'Toroidal Environment ?'  var: torus_environment ; 
 	parameter 'Apply Cohesion ?' var: apply_cohesion ;
 	parameter 'Apply Alignment ?' var: apply_alignment ;   
 	parameter 'Apply Separation ?' var: apply_separation ;   

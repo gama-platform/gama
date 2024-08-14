@@ -25,6 +25,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -153,10 +154,10 @@ public class SerialisationOperators {
 	@test ("to_json(font('Helvetica')) = '{\"gaml_type\":\"font\",\"name\":\"Helvetica\",\"style\":0,\"size\":12}'")
 	@test ("to_json(point(20,10)) = '{\"gaml_type\":\"point\",\"x\":20.0,\"y\":10.0,\"z\":0.0}'")
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (false by default)."
-					+ "The format used by GAMA follows simple rules. int, float, bool, string values are outputted as they are. nil is outputted as 'null'. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the \"gaml_type\" attribute, "
-					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the \"agent_reference\" attribute, its value represent the reference to an agent. If any reference to an agent is found, the "
-					+ "json string returned will be an object with two attributes: \"gama_object\", the object containing the references, and \"reference_table\" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). "
+			value = "Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default)."
+					+ "The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, "
+					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the "
+					+ "json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). "
 					+ "This choice allows to manage cross references between agents",
 			see = { "serialize", "to_gaml" })
 	public static String toJson(final IScope scope, final Object obj, final boolean pretty) {
@@ -297,8 +298,8 @@ public class SerialisationOperators {
 			final IExpression e = GAML.getExpressionFactory().createExpr(gaml, d);
 			return scope.evaluate(e, agent).getValue();
 		} catch (final GamaRuntimeException e) {
-			scope.getGui().getConsole().informConsole("Error in evaluating Gaml code : '" + gaml + "' in "
-					+ scope.getAgent() + Strings.LN + "Reason: " + e.getMessage(), scope.getRoot());
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml + "' in "
+					+ scope.getAgent() + Strings.LN + "Reason: " + e.getMessage(), scope), false);
 
 			return null;
 		}

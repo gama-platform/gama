@@ -19,7 +19,7 @@ experiment "Different radars" type: gui
 		layout #split;
 		display "nice_radar_chart"  type: 2d 
 		{
-			chart "Nice Cumulative Radar Chart" type: radar background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 32.0 #italic)
+			chart "Nice Cumulative Radar Chart" type: radar background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 10 #italic)
 			 tick_font: font('Monospaced',14 #bold) label_font: font('Arial', 18 #bold) legend_font: font('SanSerif', 14 ,#bold)
 			{
 				data "BCC" value: 10 * cos(100 * cycle) accumulate_values: true color: # yellow;

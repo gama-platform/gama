@@ -14,7 +14,7 @@ global {
 	int attribute_2 <- 1000;
 }
 
-experiment base_experiment {
+experiment base_experiment virtual:true {
 	// This parameter definition in an experiment will be found in all the experiments that inherit from it
 	parameter "Experiment attribute directly declared as parameter" var:attribute_2;	
 }

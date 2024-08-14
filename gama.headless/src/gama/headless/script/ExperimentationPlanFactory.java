@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.job.IExperimentJob;
 import gama.headless.job.JobListFactory;
@@ -165,7 +166,7 @@ public class ExperimentationPlanFactory {
 	 *             the gama headless exception
 	 */
 	public static List<IExperimentJob> buildExperiment(final String modelFileName, final Integer numberOfCores)
-			throws IOException, GamaHeadlessException {
+			throws IOException, GamaCompilationFailedException {
 		final long[] seeds = { DEFAULT_SEED };
 		return JobListFactory.constructAllJobs(modelFileName, seeds, DEFAULT_FINAL_STEP, numberOfCores);
 	}
@@ -182,7 +183,7 @@ public class ExperimentationPlanFactory {
 	 *             the gama headless exception
 	 */
 	public static List<IExperimentJob> buildExperiment(final String modelFileName)
-			throws IOException, GamaHeadlessException {
+			throws IOException, GamaCompilationFailedException {
 		return buildExperiment(modelFileName, null);
 	}
 

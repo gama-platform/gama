@@ -54,7 +54,7 @@ experiment "Repeated Simulations" type: gui {
 		saved_step <- serialize(self.simulation);
 	}
 	
-	reflex restore when: (cycle = 4) {
+	reflex restore when: (cycle mod 4) = 0 {
 		write "================ begin restore " + self + " - " + cycle;
 		restore simulation from: saved_step;
 		write "================ end restore " + self + " - " + cycle;			

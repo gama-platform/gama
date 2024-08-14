@@ -13,7 +13,6 @@ package gama.documentation;
 import java.io.File;
 
 import gama.annotations.precompiler.doc.utils.Constants;
-import gama.documentation.transform.XmlToCategoryXML;
 import gama.documentation.transform.XmlToWiki;
 import gama.documentation.transform.XmlTransform;
 import gama.documentation.util.GamaStyleGeneration;
@@ -50,9 +49,9 @@ public class MainGenerateWiki {
 			XmlToWiki.createExtentionsWiki();
 			System.out.println("DONE\n");
 
-			System.out.print("Creation of the page for keywords.....");
-			XmlToCategoryXML.createCategoryWiki();
-			System.out.println("DONE\n");				
+//			System.out.print("Creation of the page for keywords.....");
+//			XmlToCategoryXML.createCategoryWiki();
+//			System.out.println("DONE\n");				
 			
 			
 			System.out.print("GENERATION of the prism highlight JS file.....");

@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.headless.listener;
 
+import static gama.core.runtime.server.GamaServerMessage.Type.UnableToExecuteRequest;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -25,6 +27,7 @@ import gama.core.runtime.server.ISocketCommand;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.server.GamaServerExperimentJob;
 
@@ -45,7 +48,12 @@ public class LoadCommand implements ISocketCommand {
 		try {
 			return launchGamlSimulation(server, socket, (IList) map.get(PARAMETERS),
 					map.get(UNTIL) != null ? map.get(UNTIL).toString() : "", map);
-		} catch (Exception e) {
+		} 
+		catch (GamaCompilationFailedException compError) {
+			DEBUG.OUT(compError);
+			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
+		}
+		catch (Exception e) {
 			DEBUG.OUT(e);
 			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, e, map, false);
 		}
@@ -74,7 +82,7 @@ public class LoadCommand implements ISocketCommand {
 	 */
 	public CommandResponse launchGamlSimulation(final GamaWebSocketServer gamaWebSocketServer, final WebSocket socket,
 			final IList params, final String end, final IMap<String, Object> map)
-			throws IOException, GamaHeadlessException {
+			throws IOException, GamaCompilationFailedException {
 
 		final String pathToModel = map.get("model").toString();
 		final String socketId = map.get("socket_id") != null ? map.get("socket_id").toString()

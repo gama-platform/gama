@@ -1,7 +1,7 @@
 /**
 * Name: prey_predator_coupling
 * Author: HUYNH Quang Nghi
-* Description: This is the coupling of Prey Predator  model. It is supposed to use in the Comodeling Example as an interface. 
+* Description: This is the coupling of Prey Predator  model. It is supposed to be used in the Comodeling Example as an interface. 
 * Tags: comodel
 */
 model prey_predator_coupling

@@ -31,38 +31,42 @@ jobs:
         run: |
           echo "MAVEN_OPTS='-Xmx15g'" >> ~/.mavenrc
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Update Maven to 3.9.X
+        run: |
+          # Needed for Tycho 4.X.X and support for JDK 21
+          wget https://dlcdn.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz
+          tar -xvf apache-maven-3.9.7-bin.tar.gz
+          mv apache-maven-3.9.7 /opt/
+          M2_HOME='/opt/apache-maven-3.9.7'
+          PATH="$M2_HOME/bin:$PATH"
+          export PATH
+          # Overwrite PATH with updated maven install
+          echo $PATH > $GITHUB_PATH
+          echo "=== Check if well installed ==="
+          echo "$ mvn -version"
+          mvn -version
 
       - name: Compiling GAMA
-        run: bash travis/build.sh -B -T 4 -Dorg.slf4j.simpleLogger.defaultLogLevel=error
-
-      - name: SonarCloud analysis
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          cd $GITHUB_WORKSPACE/gama.parent && pwd
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=gama-platform_new.gama
-
-      #- name: Get linux testing releases
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    name: gama-compiled-archive
-      #    
-      #- name: Extract GAMA w/o JDK
-      #  run: tar xvf $GITHUB_WORKSPACE/gama.application-linux.gtk.x86_64.tar.gz
-      #  
+        run: bash travis/build.sh -B -T 4
       
       - name: Generate documentation
         run:  |
           git clone --depth 1 https://github.com/gama-platform/gama.wiki.git  $GITHUB_WORKSPACE/../gama.wiki  
           cd $GITHUB_WORKSPACE/gama.documentation/
           java -cp ".:libs/jdom-2.0.1.jar:target/classes:../gama.annotations/target/classes" gama.documentation.MainGenerateWiki -online
+      
+      - name: Commit updated documentation files
+        run:  |
+          git config --global user.email "my.gama.bot@gmail.com"
+          git config --global user.name "GAMA Bot"
+          cd $GITHUB_WORKSPACE/../gama.wiki
+          git remote set-url origin https://gama-bot:$BOT_TOKEN@github.com/gama-platform/gama.wiki.git
+          git status
+          git add -A
+          git commit -m "Regenerate operators artifacts on wiki  - $(date)"
+          git push
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 
       - name: Trigger documentation website rebuild
         run: |

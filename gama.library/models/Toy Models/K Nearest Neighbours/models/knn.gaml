@@ -76,7 +76,7 @@ experiment demo {
 	parameter "Initial numbers of agent for each group: " var:init_amount min:1 max:50;
 	parameter "Number of neighbours considered (K)" var:k min:1;
 	output {
-		display main {
+		display main type:2d{
 			species special_point aspect: base;
 			event #mouse_down {ask simulation {do createAgent;}} 
 		}

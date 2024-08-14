@@ -23,6 +23,8 @@ global
 		write sample(gama.free_memory) + " bytes" ;
 		// The maximum amount of memory GAMA can be allocated
 		write sample(gama.max_memory) + " bytes";
+		// gama.info could be used to get a summary of the current computer configuration (hardware and software)
+		write gama.info;
 	}
 
 }

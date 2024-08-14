@@ -59,12 +59,12 @@ experiment FirstModel type: gui {
 	parameter "Contact radius" var: contact_distance min: 1.0 max: 10.0;
 	
 	output {
-		display "My Display" {
+		display "My Display" type:2d{
 			species people {
 				draw circle(1) color: (state = "I")? #red : ((state="R") ? #blue : #green);
 			}
 		}
-		display "Chart" {
+		display "Chart" type:2d {
 			chart "Infected people" {
 				loop s over: ["S","I","R"] {
 					data s value: people count (each.state = s) color: colors[s];

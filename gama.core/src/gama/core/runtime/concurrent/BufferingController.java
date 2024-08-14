@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -61,7 +62,12 @@ public class BufferingController {
 		}
 	}
 
-		
+	/**
+	 * Represents a buffer of text on a file or on the console.
+	 * Buffers for console text have a color.
+	 * Buffers for files have an encoding charset and also contain a variable rewrite that should be used to indicate if the
+	 * file must be recreated or just appended (when rewrite is false).
+	 */
 	public static class TextBuffer {	
 
 		final public StringBuilder content;
@@ -92,9 +98,14 @@ public class BufferingController {
 			return rewrite;
 		}
 	}
-
+	
+	// those are the maps that are mapping a file to one or multiple agents each responsible for a buffer of text.
+	// the files in those maps MUST be absolute paths for it to work
 	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgent;
 	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgentForCycles;
+	
+	// the maps that manage console writing, per agent and per agent for cycle buffering.
+	// each agent is responsible for a list of buffers (one each color change)
 	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgent;
 	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles;
 	
@@ -360,4 +371,49 @@ public class BufferingController {
 		flushAllWriteOfOwner(owner, consoleBufferListPerAgent);		
 	}
 	
+	/**
+	 * Flushes all bufferings that are waiting.
+	 * Flushes write and save bufferings, whether registered per cycle or per agent
+	 */
+	public void flushAllBufferings() {
+		// flushes the console per cycle first
+		for (var agent : consoleBufferListPerAgentForCycles.keySet()) {
+			flushWriteInCycle(agent);
+		}
+		// flushes the others for the console
+		for (var agent : consoleBufferListPerAgent.keySet()) {
+			flushWriteOfOwner(agent);
+		}
+		// flushes the files registered for the cycle
+		var agents = fileBufferPerAgentForCycles.entrySet().stream().map(s -> s.getValue().keySet())
+					.collect(Collectors.toSet())
+					.toArray(new AbstractAgent[0]);
+		for (AbstractAgent agent : agents) {
+			flushSaveFilesInCycle(agent);
+		}
+		// finally flushes the files registered per agent
+		agents = fileBufferPerAgent.entrySet().stream().map(s -> s.getValue().keySet())
+				.collect(Collectors.toSet())
+				.toArray(new AbstractAgent[0]);
+		for (AbstractAgent agent : agents) {
+			flushSaveFilesOfOwner(agent);
+		}
+	}
+
+	/**
+	 * Check if a file is currently buffered, which means it may not exist yet on the disk, but will be at some point
+	 * @param f the file to test
+	 * @return true if there are pending writing operations for this file, false otherwise
+	 */
+	public boolean isFileWaitingToBeWritten(File f) {
+		// visits all files that are registered by agents
+		if (fileBufferPerAgent.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
+		}
+		// visits all files that are registered by cycle
+		if (fileBufferPerAgentForCycles.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
+		}
+		return false;
+	}
 }

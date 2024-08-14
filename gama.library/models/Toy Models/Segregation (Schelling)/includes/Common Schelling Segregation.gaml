@@ -77,7 +77,7 @@ species base {
 	bool is_happy -> similar_nearby >= (percent_similar_wanted * total_nearby ) ;
 }
 
-experiment base_exp {
+experiment base_exp virtual:true{
 	
 	parameter "Color of group 1:" category: "User interface" var:color_1;
 	parameter "Color of group 2:" category: "User interface" var:color_2;

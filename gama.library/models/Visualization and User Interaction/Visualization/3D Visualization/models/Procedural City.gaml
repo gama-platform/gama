@@ -52,7 +52,7 @@ species Building{
 }	
 
 
-experiment base {
+experiment base virtual:true{
 
 	parameter 'Number of Agents' var:number_of_building  category: 'Initialization';
 	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';

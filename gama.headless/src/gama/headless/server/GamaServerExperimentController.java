@@ -30,8 +30,8 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.operators.Cast;
-import gama.headless.core.GamaHeadlessException;
 
 /**
  * The Class ExperimentController.
@@ -134,7 +134,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			case _OPEN:
 				try {
 					_job.loadAndBuildWithJson(parameters, stopCondition);
-				} catch (IOException | GamaHeadlessException e) {
+				} catch (IOException | GamaCompilationFailedException e) {
 					DEBUG.OUT(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 					return false;

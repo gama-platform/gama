@@ -88,6 +88,8 @@ experiment voronoi type: gui autorun: true {
 	parameter 'Height of the environment:' var: env_height;
 	parameter "Simple blur" var: blur1;
 	parameter "Complex blur" var: blur2;
+	
+	float minimum_cycle_duration <- 0.05#s;
 	output {
 		layout #split navigator: false tray: false toolbars: false consoles: false editors: false;
 		display "Voronoi 2D" background: #black type: 3d axes:false{

@@ -33,7 +33,7 @@ species river {
 
 experiment testStrahler type: gui {
 	output {
-		display map {
+		display map type:2d {
 			species river;
 		}
 	}

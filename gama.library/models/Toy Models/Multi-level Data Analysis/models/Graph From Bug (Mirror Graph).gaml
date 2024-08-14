@@ -74,6 +74,7 @@ experiment AdvancedView type: gui {
 	
 	parameter 'Distance' var:distance category: 'Model';
 	parameter 'Start Animation ' var:startAnimation category: 'Animation View';
+	float minimum_cycle_duration <- 0.05#s;
 	
 	output {
 		display graph_plus_bug_layered type: 3d {

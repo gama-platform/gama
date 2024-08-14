@@ -112,7 +112,7 @@ experiment clustering type: gui {
 	parameter "Minimum number of points needed for a cluster " var: minPoints category: "DBSCAN";
 	output {
 		layout horizontal([1::5000,0::5000]) tabs:true editors: false;
-		display map_dbscan{
+		display map_dbscan type:2d{
             //define a new overlay layer positioned at the coordinate half-space/0
             overlay position: { world.shape.width/2, 0 } size: { 180 #px, 50 #px } background: #black transparency: 0.2 border: #black rounded: true
             {
@@ -122,7 +122,7 @@ experiment clustering type: gui {
 
 			species dummy aspect: dbscan_aspect;
 		}
-		display map_kmeans{
+		display map_kmeans type:2d{
 			overlay position: { world.shape.width/2, 0 } size: { 180 #px, 50 #px } background: #black transparency: 0.2 border: #black rounded: true
             {
 					//draw square(5#px) at: { 0, 0 } color: #red border: #white;

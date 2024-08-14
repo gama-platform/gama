@@ -30,6 +30,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
@@ -226,7 +227,7 @@ public class ExperimentJob implements IExperimentJob {
 
 	@Override
 	public void loadAndBuild() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
-			IOException, GamaHeadlessException {
+			IOException, GamaCompilationFailedException {
 
 		this.load();
 		this.listenedVariables = new ListenedVariable[outputs.size()];
@@ -262,7 +263,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public void load() throws IOException, GamaHeadlessException {
+	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
 		final List<GamlCompilationError> errors = new ArrayList<>();
 		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);

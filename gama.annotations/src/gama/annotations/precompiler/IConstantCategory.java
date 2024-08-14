@@ -18,6 +18,10 @@ package gama.annotations.precompiler;
  */
 public interface IConstantCategory {
 
+	/** The Constant PREFIX_CONSTANT. */
+	public static final String PREFIX_CONSTANT = "#";	
+	
+	
 	/** The Constant LENGTH. */
 	// Units
 	public static final String LENGTH		= "Length units";
@@ -45,7 +49,7 @@ public interface IConstantCategory {
 	// Math
 	public static final String MATH			= "Math constants";
 	
-	
 	/** The Constant COLOR_CSS. */
 	public static final String COLOR_CSS 	= "Colors";
+	
 }

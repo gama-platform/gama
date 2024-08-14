@@ -26,9 +26,9 @@ import org.java_websocket.WebSocket;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.model.IModel;
-import gama.core.runtime.server.GamaWebSocketServer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
+import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.types.Types;
 import gama.headless.core.GamaHeadlessException;
@@ -36,7 +36,6 @@ import gama.headless.core.RichExperiment;
 import gama.headless.core.RichOutput;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.ListenedVariable;
-
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
@@ -102,7 +101,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	}
 
 	@Override
-	public void load() throws IOException, GamaHeadlessException {
+	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
 		final List<GamlCompilationError> errors = new ArrayList<>();
 		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
@@ -125,7 +124,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 *             the gama headless exception
 	 */
 	public void loadAndBuildWithJson(final IList params, final String endCond)
-			throws IOException, GamaHeadlessException {
+			throws IOException, GamaCompilationFailedException {
 		if (this.simulator == null) { this.load(); }
 		this.setup();
 		controller.setExperiment(simulator.getModel().getExperiment(experimentName));
