@@ -39,6 +39,7 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.Strings;
 
 /**
  *
@@ -75,7 +76,6 @@ public class Stochanalysis {
 	
 	// UTILS 
 	final static String SEP = ",";
-	final static String RL = "\n";
 
 	/**
 	 * Build the report with result for each method and each output
@@ -91,22 +91,22 @@ public class Stochanalysis {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("== STOCHASTICITY ANALYSIS ==");
-		sb.append(RL);
+		sb.append(Strings.LN);
 		sb.append(Out.size()+" outputs | "+nbsample+" samples | "+nbreplicates+" max replications")
 			.append(" | Thresholds: ").append(Arrays.toString(STOCHThresholds))
 			.append(" | T test alpha: 0.01").append(" | T test beta: 0.05")
 			.append(" | Critical effect size: ").append(Arrays.toString(FISHEREffectSize))
-			.append(RL);
-		sb.append("Threshold maning: threshold represent the marginal decrease of concerned statistic to decide on the number of replicates").append(RL);
-		sb.append("Exemple: increase one replicates decreases standard error, if marginal decrease is under a given threshold, then select this number of replicates").append(RL);
-		sb.append("Critical effect size: look at False negative (alpha) & False positive (beta) hypothesis - according to https://www.jasss.org/18/4/4.html").append(RL);
-		sb.append(RL).append(RL);
+			.append(Strings.LN);
+		sb.append("Threshold meaning: threshold represent the marginal decrease of concerned statistic to decide on the number of replicates").append(Strings.LN);
+		sb.append("Exemple: increase one replicates decreases standard error, if marginal decrease is under a given threshold, then select this number of replicates").append(Strings.LN);
+		sb.append("Critical effect size: look at False negative (alpha) & False positive (beta) hypothesis - according to https://www.jasss.org/18/4/4.html").append(Strings.LN);
+		sb.append(Strings.LN).append(Strings.LN);
 
 		for (String outputs : Out.keySet()) {
 			Map<ParametersSet, Map<String, List<Double>>> pso = Out.get(outputs);
 			sb.append("## Output : ");
 			sb.append(outputs);
-			sb.append(RL);
+			sb.append(Strings.LN);
 			
 			for (String method : SA) {
 				if (pso.values().stream().noneMatch(m -> m.containsKey(method))) { continue; }
@@ -120,15 +120,15 @@ public class Stochanalysis {
 						for(ParametersSet ps : pso.keySet()) { lres.add(findWithRelativeThreshold(pso.get(ps).get(method), thresh)); }
 						res.put(thresh, lres);
 					}
-					sb.append(method).append(RL);
+					sb.append(method).append(Strings.LN);
 					for (Double threshold : STOCHThresholds) {
 						sb.append(threshold).append(" : ");
 						sb.append("min = ").append(Collections.min(res.get(threshold))).append(" | ");
 						sb.append("max = ").append(Collections.max(res.get(threshold))).append(" | ");
-						sb.append("avr = ").append(Math.round(res.get(threshold).stream().mapToInt(i -> i).average().getAsDouble())).append(RL);
+						sb.append("avr = ").append(Math.round(res.get(threshold).stream().mapToInt(i -> i).average().getAsDouble())).append(Strings.LN);
 					}
 				}
-				case ES -> {
+				case ES, PT -> {
 					IMap<Double, List<List<Integer>>> res = GamaMapFactory.create();
 					for (Double es : FISHEREffectSize) {
 						int idx = DoubleStream.of(FISHEREffectSize).boxed().toList().indexOf(es) * 2;
@@ -143,14 +143,14 @@ public class Stochanalysis {
 					List<Double> pt = pso.values().stream().filter(m -> m.containsKey(PT)).findFirst().get().get(PT);
 					if (pt.isEmpty() || pt.get(0).isNaN() || pt.size() != 2) {throw GamaRuntimeException.error("Trying to retriev Power Test n estimates but failed to find results: ["+pt.stream().map(d->d.toString()).collect(Collectors.joining(","))+"]", scope);}
 					
-					sb.append(method).append(RL);
-					sb.append(PT).append(" with  alpha=0.01 (0.05), beta=0.05 (0.2) and effect sized based on (ANOVA) f="+pt.get(1)+", theoretical number of replicate is ").append(pt.get(0)).append(RL);
+					sb.append(method).append(Strings.LN);
+					sb.append(PT).append(" with  alpha=0.01 (0.05), beta=0.05 (0.2) and effect sized based on (ANOVA) f="+pt.get(1)+", theoretical number of replicate is ").append(pt.get(0)).append(Strings.LN);
 					for (int i = 0; i < FISHEREffectSize.length; i++) {
 						
 						if (res.get(FISHEREffectSize[i]).stream().flatMap(List::stream).distinct().count() == 1) {
 							sb.append(FISHERES[i]).append(" (").append(FISHEREffectSize[i])
 								.append(") : "+res.get(FISHEREffectSize[i]).get(0).get(0)+" replicates is not enough")
-								.append(RL);
+								.append(Strings.LN);
 						} else {
 							sb.append(FISHERES[i]).append(" (").append(FISHEREffectSize[i]).append(") : ");
 							sb.append("min = ").append(Collections.min(res.get(FISHEREffectSize[i]).get(0)))
@@ -158,16 +158,15 @@ public class Stochanalysis {
 							sb.append("max = ").append(Collections.max(res.get(FISHEREffectSize[i]).get(0)))
 								.append(" (").append(Collections.max(res.get(FISHEREffectSize[i]).get(1))).append(") | ");
 							sb.append("avr = ").append(Math.round(res.get(FISHEREffectSize[i]).get(0).stream().mapToInt(e->e).average().getAsDouble()))
-							.append(" (").append(Math.round(res.get(FISHEREffectSize[i]).get(1).stream().mapToInt(e->e).average().getAsDouble())).append(")"+RL);
+							.append(" (").append(Math.round(res.get(FISHEREffectSize[i]).get(1).stream().mapToInt(e->e).average().getAsDouble())).append(")"+Strings.LN);
 						}
 					}
 				}
-				case PT -> { /* Have been put in the Critical Effect Size analysis */ }
 				default -> throw new IllegalArgumentException("Unexpected stochastic analysis: " + method);
 				}
 				
 			}
-			sb.append(RL).append(RL);
+			sb.append(Strings.LN).append(Strings.LN);
 		}
 		return sb.toString();
 
@@ -193,7 +192,7 @@ public class Stochanalysis {
 		
 		sb.append("Indicator").append(SEP);
 		sb.append(IntStream.range(1,nbreplicates).boxed().map(i -> String.valueOf(i)).collect(Collectors.joining(SEP)));
-		sb.append(RL);
+		sb.append(Strings.LN);
 		
 		for (String o : Out.keySet()) {
 			Map<ParametersSet, Map<String, List<Double>>> om = Out.get(o);
@@ -205,7 +204,7 @@ public class Stochanalysis {
 					sb.append(lineP).append(SEP);
 					sb.append(m).append(SEP);
 					sb.append(cr.get(m).stream().skip(1).map(d -> String.valueOf(d)).collect(Collectors.joining(SEP)));
-					sb.append(RL);
+					sb.append(Strings.LN);
 				}
 			}
 		}
@@ -248,7 +247,6 @@ public class Stochanalysis {
 	public static String buildSimulationCsv(final IMap<ParametersSet, Map<String, List<Object>>> outputs, IScope scope) {
 		StringBuilder sb = new StringBuilder();
 		String sep = ";";
-		String linesep = "\n";
 		
 		// Write the header
 		for (String param : outputs.keySet().stream().findFirst().get().keySet()) { sb.append(param).append(sep); }
@@ -263,7 +261,7 @@ public class Stochanalysis {
 			}
 			else {
 				for (int r = 0; r < nbr; r++) {
-					sb.append(linesep);
+					sb.append(Strings.LN);
 					for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
 					for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
 				}				
@@ -410,6 +408,7 @@ public class Stochanalysis {
 	public static IMap<ParametersSet, List<Double>> stochasticityAnalysis(final IMap<ParametersSet, List<Object>> sample,
 			final String method, final IScope scope) {
 		
+		@SuppressWarnings("unchecked")
 		IMap<ParametersSet,List<Double>> res = GamaMapFactory.create();
 		switch (method) {
 		case CV -> {

@@ -12,7 +12,9 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 
-public class Betadistribution {
+public final class Betadistribution {
+	
+	public static final int DEFAULT_FACTORIAL = 4;
 	
 	double objMin = Double.MAX_VALUE; double objMax = Double.MIN_VALUE;
 	double[] empiricalCDFGranularity;
@@ -25,16 +27,28 @@ public class Betadistribution {
 	Map<ParametersSet,List<Double>> sample;
 	final EmpiricalDistribution Y;
 	
-	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, String obj) { 
-		this(sample,inputs,10,obj); 
+	/**
+	 * Build the empirical distribution of results based on an experimental plan 
+	 * @param sample: the experimental plan and results
+	 * @param inputs: the input parameters
+	 */
+	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs) { 
+		this(sample,inputs,100); 
 	}
 	
-	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity, String obj) {
+	/**
+	 * Build the empirical distribution (with user defined granularity - discretisation of distribution) of results based on an experimental plan
+	 * @param sample
+	 * @param inputs
+	 * @param granularity
+	 * @param obj
+	 */
+	public Betadistribution(IMap<ParametersSet,List<Object>> sample, List<Batch> inputs, int granularity) {
 		this.sample = new HashMap<>();
-		for (ParametersSet ps : sample.keySet()) { 
-			this.sample.put(ps, sample.get(ps).stream().mapToDouble(v -> Double.parseDouble(v.toString())).boxed().toList());
-			double min = Collections.min(this.sample.get(ps));
-			double max = Collections.max(this.sample.get(ps));
+		for (var entry : sample.entrySet()) { 
+			this.sample.put(entry.getKey(), entry.getValue().stream().mapToDouble(v -> Double.parseDouble(v.toString())).boxed().toList());
+			double min = Collections.min(this.sample.get(entry.getKey()));
+			double max = Collections.max(this.sample.get(entry.getKey()));
 			if (min < this.objMin) {this.objMin=min;}
 			if (max > this.objMax) {this.objMax=max;}
 		}
