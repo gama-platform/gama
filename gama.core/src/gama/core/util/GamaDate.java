@@ -797,6 +797,25 @@ public class GamaDate implements IValue, Temporal, Comparable<GamaDate> {
 		return nextByStep.isGreaterThan(nextByPeriod, true);
 
 	}
+	
+	public boolean isIntervalReachedOptimized(final IScope scope, final IExpression period) {
+			// We get the current date from the model
+			final GamaDate current = scope.getClock().getCurrentDate();
+			// Exact date ?
+			if (this.equals(current)) return true;
+			
+			// Not yet reached ?
+			if (isGreaterThan(current, true)) return false;
+			long tStep = (long)(scope.getSimulation().getTimeStep(scope) * 1000);
+			long periodToMilliSecond = (long) (Cast.asFloat(scope, period.value(scope)) * 1000);
+			if (tStep >= periodToMilliSecond) return true;
+			long sinceBeginning = scope.getSimulation().getStartingDate().until(scope.getSimulation().getCurrentDate(), ChronoUnit.MILLIS);
+			long r = sinceBeginning % periodToMilliSecond;
+			if (r  == 0) return true;
+			return(((r - tStep) > 0)
+						&& (r + tStep > periodToMilliSecond));		
+			
+	}
 
 	// class Amount {
 	// Duration d;
