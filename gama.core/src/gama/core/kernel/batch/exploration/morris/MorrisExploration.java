@@ -15,13 +15,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
+import org.apache.commons.compress.utils.FileNameUtils;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -29,14 +30,17 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
+import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.batch.exploration.sampling.MorrisSampling;
 import gama.core.kernel.experiment.BatchAgent;
+import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -47,7 +51,6 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
 
 /**
@@ -70,7 +73,7 @@ import gama.gaml.types.IType;
 				internal = true,
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
-						name = MorrisExploration.SAMPLE_SIZE,
+						name = Exploration.SAMPLE_SIZE,
 						type = IType.ID,
 						optional = false,
 						doc = @doc ("The size of the sample for Morris samples")),
@@ -111,11 +114,9 @@ import gama.gaml.types.IType;
 						isExecutable = false) }) })
 
 public class MorrisExploration extends AExplorationAlgorithm {
-	/** The Constant SAMPLE_SIZE */
-	protected static final String SAMPLE_SIZE = "sample";
 
 	/** The Constant NB_LEVELS */
-	protected static final String NB_LEVELS = "levels";
+	public static final String NB_LEVELS = "levels";
 
 	/** The Constant PARAMETER_CSV_PATH. */
 	protected static final String PARAMETER_CSV_PATH = "csv";
@@ -145,6 +146,9 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	/** The samples. */
 	private List<Map<String, Object>> samples;
+	
+	/** Main Morris **/
+	private Morris momo;
 
 	/**
 	 * Instantiates a new morris exploration.
@@ -158,22 +162,23 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
+	
+	
+	/** ######################### EVALUATE MORRIS INDEXES ######################### */
 
+	
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) {
-		this.sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
+		this.sample = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
 		this.nb_levels = Cast.asInt(scope, getFacet(NB_LEVELS).value(scope));
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
-			String path = Cast.asString(scope, path_facet.value(scope));
-			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-			List<ParametersSet> solutions = this.solutions == null
-					? buildParameterSetsFromCSV(scope, new_path, new ArrayList<>()) : this.solutions;
-			this.solutions = solutions;
+			String path = FileUtils.constructAbsoluteFilePath(scope, Cast.asString(scope, path_facet.value(scope)), false);
+			this.solutions = this.solutions == null
+					? buildParameterSetsFromCSV(scope, path, new ArrayList<>()) : this.solutions;
 		} else {
-			List<ParametersSet> solutions = buildParameterSets(scope, new ArrayList<>(), 0);
-			this.solutions = solutions;
+			this.solutions = buildParameterSets(scope, new ArrayList<>(), 0);
 		}
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
@@ -190,6 +195,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		
 		// The output of simulations
 		Map<String, List<Double>> rebuilt_output = rebuildOutput(scope, res_outputs);
+		momo.setOutputs(rebuilt_output, scope);
 		
 		// TODO : verify if Morris sampling can lead to several identical points in the parameter space
 		int outsize = 0;
@@ -197,35 +203,25 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			outsize += m.values().stream().findFirst().get().size();
 		}
 		
+		/* Save the simulation values in the provided .csv file (input and corresponding output) */
+		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
 		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
-		
-			List<String> output_names = rebuilt_output.keySet().stream().toList();
+			
+			momo.evaluate();
 			
 			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 			final File fm = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parentm = fm.getParentFile();
 			if (!parentm.exists()) { parentm.mkdirs(); }
 			if (fm.exists()) { fm.delete(); }
-			
-			for (int i = 0; i < rebuilt_output.size(); i++) {
-				String tmp_name = output_names.get(i);
-				List<Map<String, Double>> morris_coefficient =
-						Morris.morrisAggregation(nb_levels, rebuilt_output.get(tmp_name), samples);
-				Morris.writeAndTellResult(tmp_name, fm.getAbsolutePath(), scope, morris_coefficient);
-			}
-			/* Save the simulation values in the provided .csv file (input and corresponding output) */
-			if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-				path_to = Cast.asString(scope, outputFilePath.value(scope));
-				final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
-				final File parento = fo.getParentFile();
-				if (!parento.exists()) { parento.mkdirs(); }
-				if (fo.exists()) { fo.delete(); }
-				saveSimulation(rebuilt_output, fo, scope);
-			}
+			saveResults(fm, scope);
 			
 		}
 	}
+	
+	/** ######################### EXPLORATION OVERRIDES ######################### */
 
 	/**
 	 * Here we create samples for simulations with MorrisSampling Class
@@ -239,8 +235,15 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
 		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		
+		// Puck Fython
 		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
+		
+		// Design sample to be used by Morris
 		this.samples = Cast.asList(scope, morris_samplings.get(0));
+		momo = new Morris(this.samples, this.nb_levels);
+		
+		// Same sample to execute in Gama experiment
 		return Cast.asList(scope, morris_samplings.get(1));
 	}
 	
@@ -248,7 +251,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
-		int s = Cast.asInt(agent.getScope(), getFacet(SAMPLE_SIZE).value(agent.getScope()));
+		int s = Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
 		int l = Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
 		
 		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
@@ -287,56 +290,25 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		return rebuilt_output;
 	}
-
+	
 	/**
-	 * Save simulation.
+	 * Save the report of the Sobol analysis (sobol indexes) in a .csv file
 	 *
-	 * @param rebuilt_output
-	 *            the rebuilt output
 	 * @param file
-	 *            the file
-	 * @param scope
-	 *            the scope
+	 *            : .csv file
 	 */
-	private void saveSimulation(final Map<String, List<Double>> rebuilt_output, final File file, final IScope scope) throws GamaRuntimeException {
-		try (FileWriter fw = new FileWriter(file, false)) {
-			fw.write(this.buildSimulationCsv(rebuilt_output));
+	private void saveResults(final File file, final IScope scope) throws GamaRuntimeException {
+		try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8, false)) {
+			fw.write(momo.buildReportString(FileNameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
 		}
 	}
 
 	/**
-	 * Builds the simulation csv.
-	 *
-	 * @param rebuilt_output
-	 *            the rebuilt output
-	 * @return the string
-	 */
-	private String buildSimulationCsv(final Map<String, List<Double>> rebuilt_output) {
-		StringBuilder sb = new StringBuilder();
-		String sep = ",";
-		// Headers
-		for (String sol : ParametersNames) { sb.append(sol).append(sep); }
-		for (String output : outputs) { sb.append(output).append(sep); }
-
-		sb.deleteCharAt(sb.length() - 1).append(Strings.LN); // new line
-
-		// Values
-		for (ParametersSet ps : res_outputs.keySet().stream().toList()) {
-			for (String sol : ParametersNames) {
-				sb.append(ps.get(sol)).append(sep); // inputs values
-			}
-			for (String output : outputs) {
-				sb.append(res_outputs.get(ps).get(output)).append(sep); // outputs values
-			}
-			sb.deleteCharAt(sb.length() - 1).append(Strings.LN); // new line
-		}
-		return sb.toString();
-	}
-
-	/**
 	 * Builds the parameter sets from CSV.
+	 * 
+	 * TODO : create a Morris instance !!!
 	 *
 	 * @param scope
 	 *            the scope
@@ -348,6 +320,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 */
 	public List<ParametersSet> buildParameterSetsFromCSV(final IScope scope, final String path,
 			final List<ParametersSet> sets) throws GamaRuntimeException{
+		
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);

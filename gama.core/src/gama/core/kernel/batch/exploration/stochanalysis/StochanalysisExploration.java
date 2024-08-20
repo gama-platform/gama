@@ -31,13 +31,11 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.exploration.Exploration;
-import gama.core.kernel.batch.exploration.sampling.LatinhypercubeSampling;
-import gama.core.kernel.batch.exploration.sampling.OrthogonalSampling;
-import gama.core.kernel.batch.exploration.sampling.RandomSampling;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -94,7 +92,12 @@ import gama.gaml.types.IType;
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written"))
+						doc = @doc ("The path to the file where the automatic batch report will be written")),
+				@facet (
+						name = Exploration.ITERATIONS,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of iteration for orthogonal sampling, 5 by default"))
 
 		},
 		omissible = IKeyword.NAME)
@@ -106,12 +109,6 @@ import gama.gaml.types.IType;
 						value = "method stochanalyse sampling:'latinhypercube' outputs:['my_var'] replicat:10 report:'../path/to/report/file.txt'; ",
 						isExecutable = false) }) })
 public class StochanalysisExploration extends AExplorationAlgorithm {
-
-	/** The method. */
-	public String method = "";
-
-	/** The sample size. */
-	public int sample_size = 10;
 
 	/** Theoretical inputs */
 	private List<Batch> parameters;
@@ -133,45 +130,19 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void explore(final IScope scope) throws GamaRuntimeException {
 
-		List<Batch> params = new ArrayList<>(currentExperiment.getParametersToExplore());
-
-		parameters = parameters == null ? params : parameters;
-
-		List<ParametersSet> sets;
+		parameters = parameters == null ? 
+				new ArrayList<>(currentExperiment.getParametersToExplore()) 
+				: parameters;
 
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			this.sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
 		}
-		if (hasFacet(Exploration.METHODS)) {
-			method = Cast.asString(scope, getFacet(Exploration.METHODS).value(scope));
-		}
-		sets = switch (method) {
-			case IKeyword.LHS -> LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
-					scope.getRandom().getGenerator(), scope);
-			case IKeyword.ORTHOGONAL -> {
-				int iterations = hasFacet(Exploration.ITERATIONS)
-						? Cast.asInt(scope, getFacet(Exploration.ITERATIONS).value(scope)) : 5;
-				yield OrthogonalSampling.orthogonalSamples(sample_size, iterations, parameters,
-						scope.getRandom().getGenerator(), scope);
-			}
-			case IKeyword.FACTORIAL -> {
-				List<ParametersSet> ps = null;
-				if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
-					@SuppressWarnings ("unchecked") int[] factors =
-							Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope)).stream()
-									.mapToInt(o -> Integer.parseInt(o.toString())).toArray();
-					ps = RandomSampling.factorialUniformSampling(scope, factors, params);
-				} else {
-					ps = RandomSampling.factorialUniformSampling(scope, sample_size, params);
-				}
 
-				yield ps;
-			}
-			default -> RandomSampling.uniformSampling(scope, sample_size, params);
-		};
+		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
 
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
 			res_outputs = currentExperiment.launchSimulationsWithSolution(sets);
@@ -216,20 +187,16 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		Stochanalysis.writeAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
 		
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) {
-			String path_to = Cast.asString(scope, outputFilePath.value(scope));
-			final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
-			final File parento = fo.getParentFile();
-			if (!parento.exists()) { parento.mkdirs(); }
-			if (fo.exists()) { fo.delete(); }
-			Stochanalysis.writeAndTellResult(fo, res_outputs, scope);
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) &&
+				hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		
+		/** If any of the two facet is missing pop up a warning */
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) &&
+				hasFacet(IKeyword.BATCH_OUTPUT)) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(
+					"Facet "+(hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? 
+							IKeyword.BATCH_OUTPUT:IKeyword.BATCH_VAR_OUTPUTS)+" is missing - raw results won't be saved", scope), false);
 		}
-	}
-
-	@Override
-	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
-
-		return null;
 	}
 	
 	@Override
@@ -238,7 +205,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 
 		exp.add(new ParameterAdapter("Sampling method", IKeyword.STO, IType.STRING) {
 				@Override public Object value() { return hasFacet(Exploration.METHODS) ? 
-						Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : "exhaustive"; }
+						Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : Exploration.DEFAULT_SAMPLING; }
 		});
 		
 		exp.add(new ParameterAdapter("Sample size", IKeyword.STO, IType.STRING) {

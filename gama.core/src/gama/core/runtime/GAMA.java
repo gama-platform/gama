@@ -115,6 +115,10 @@ public class GAMA {
 			final BufferingStrategies strategy) {
 		return bufferingController.askWriteConsole(scope, content, color, strategy);
 	}
+	
+	public static boolean fileWillBeWritten(final File f) {
+		return bufferingController.isFileWaitingToBeWritten(f);
+	}
 
 	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
 		return bufferingController.flushSaveFilesOfOwner(owner);

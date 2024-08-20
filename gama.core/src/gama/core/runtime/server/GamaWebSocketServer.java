@@ -82,6 +82,8 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 */
 	protected GamaWebSocketServer(final int port, final int interval) {
 		super(new InetSocketAddress(port));
+		// Should solve the problem with the address being still used after relaunching
+		this.setReuseAddr(true);
 		canPing = interval >= 0;
 		pingInterval = interval;
 		configureErrorStream();

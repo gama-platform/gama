@@ -62,7 +62,12 @@ public class BufferingController {
 		}
 	}
 
-		
+	/**
+	 * Represents a buffer of text on a file or on the console.
+	 * Buffers for console text have a color.
+	 * Buffers for files have an encoding charset and also contain a variable rewrite that should be used to indicate if the
+	 * file must be recreated or just appended (when rewrite is false).
+	 */
 	public static class TextBuffer {	
 
 		final public StringBuilder content;
@@ -93,9 +98,14 @@ public class BufferingController {
 			return rewrite;
 		}
 	}
-
+	
+	// those are the maps that are mapping a file to one or multiple agents each responsible for a buffer of text.
+	// the files in those maps MUST be absolute paths for it to work
 	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgent;
 	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgentForCycles;
+	
+	// the maps that manage console writing, per agent and per agent for cycle buffering.
+	// each agent is responsible for a list of buffers (one each color change)
 	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgent;
 	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles;
 	
@@ -361,6 +371,10 @@ public class BufferingController {
 		flushAllWriteOfOwner(owner, consoleBufferListPerAgent);		
 	}
 	
+	/**
+	 * Flushes all bufferings that are waiting.
+	 * Flushes write and save bufferings, whether registered per cycle or per agent
+	 */
 	public void flushAllBufferings() {
 		// flushes the console per cycle first
 		for (var agent : consoleBufferListPerAgentForCycles.keySet()) {
@@ -384,5 +398,22 @@ public class BufferingController {
 		for (AbstractAgent agent : agents) {
 			flushSaveFilesOfOwner(agent);
 		}
+	}
+
+	/**
+	 * Check if a file is currently buffered, which means it may not exist yet on the disk, but will be at some point
+	 * @param f the file to test
+	 * @return true if there are pending writing operations for this file, false otherwise
+	 */
+	public boolean isFileWaitingToBeWritten(File f) {
+		// visits all files that are registered by agents
+		if (fileBufferPerAgent.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
+		}
+		// visits all files that are registered by cycle
+		if (fileBufferPerAgentForCycles.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
+			return true;
+		}
+		return false;
 	}
 }

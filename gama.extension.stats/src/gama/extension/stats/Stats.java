@@ -16,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -38,15 +37,15 @@ import cern.jet.math.Arithmetic;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Gamma;
 import cern.jet.stat.Probability;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.util.FileUtils;
 import gama.core.common.util.StringUtils;
 import gama.core.kernel.batch.exploration.morris.Morris;
@@ -2354,26 +2353,12 @@ public class Stats {
 			value = "Return a string containing the Report of the morris analysis for the corresponding CSV file")
 	@no_test
 	public static String morrisAnalysis(final IScope scope, final String path, final int nb_levels,
-			final int id_firstOutput) {
+			final int nb_parameters) {
 
-		String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-		List<Object> morris_simulation = Morris.readSimulation(new_path, id_firstOutput, scope);
-		List<Map<String, Object>> MySamples = Cast.asList(scope, morris_simulation.get(0));
-		// True or false ? Have to be tested
-		Map<String, List<Double>> output = Cast.asMap(scope, morris_simulation, false);
-		List<String> OutputsNames = output.keySet().stream().toList();
-		StringBuilder s = new StringBuilder();
-
-		for (String name : OutputsNames) {
-			List<Map<String, Double>> morris_coefficient =
-					Morris.morrisAggregation_CSV(nb_levels, output.get(name), MySamples);
-			Map<String, Double> mu = morris_coefficient.get(0);
-			Map<String, Double> mu_star = morris_coefficient.get(1);
-			Map<String, Double> sigma = morris_coefficient.get(2);
-			s.append(Morris.buildResultTxt(name, mu, mu_star, sigma));
-		}
-
-		return s.toString();
+		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+		Morris momo = new Morris(f, nb_parameters, nb_levels, scope);
+		momo.evaluate();
+		return momo.buildReportString(FileNameUtils.getExtension(path));
 
 	}
 

@@ -434,6 +434,25 @@ public class Dates {
 	@validator (EveryValidator.class)
 	@no_test
 	public static Boolean every(final IScope scope, final IExpression period) {
+		return scope.getClock().getStartingDate().isIntervalReachedOptimized(scope, period);
+	}
+	
+	@operator (
+			value = "every",
+			category = { IOperatorCategory.DATE },
+			concept = { IConcept.DATE, IConcept.CYCLE })
+	@doc (
+			see = { "since", "after" },
+			value = "expects a frequency (expressed in seconds of simulated time) as argument and a bool to use (default) the optimzied version (true) and the old one (false). Will return true every time the current_date matches with this frequency",
+			comment = "Used to do something at regular intervals of time. Can be used in conjunction with 'since', 'after', 'before', 'until' or 'between', so that this computation only takes place in the temporal segment defined by these operators. In all cases, the starting_date of the model is used as a reference starting point",
+			examples = { @example (
+					value = "reflex when: every(2#days, false) since date('2000-01-01') { .. }",
+					isExecutable = false)})
+	@validator (EveryValidator.class)
+	@no_test
+	public static Boolean every(final IScope scope, final IExpression period, final boolean optimized) {
+		if (optimized)
+			return scope.getClock().getStartingDate().isIntervalReachedOptimized(scope, period);
 		return scope.getClock().getStartingDate().isIntervalReached(scope, period);
 	}
 

@@ -34,8 +34,8 @@ experiment batch_abstract type:batch virtual:true until:(time > end_cycle) {
 	parameter "Predator energy reproduce:" var: predator_energy_reproduce min: 0.1 max: 1.0 step: 0.1;
 }
 
-// This experiment runs the full factorial experiment (each combination of parameter) 5 times, that is 14k simulations :) see exhaustive exploration
-// At the end of each simulation, the people agents are saved in a shapefile
+// This experiment runs the full factorial experiment (each combination of parameter) 5 times, that is 14k simulations :) see exhaustive_exploration experiment
+// At the end of each simulation (replicated 5 times), the people agents are saved in a shapefile
 experiment 'Run 5 simulations' parent: batch_abstract type: batch repeat: 5 keep_seed: true until: world.stop_sim() or (time > end_cycle){
 	
 	// the reflex will be activated at the end of each run; in this experiment a run consists of the execution of 5 simulations (repeat: 5)
@@ -97,18 +97,16 @@ experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 kee
 // Latin Hypercube Sampling
 experiment exploration_with_sampling  parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
 	method exploration sampling:"latinhypercube" sample:100;
-	//the permanent section allows to define a output section that will be kept during all the batch experiment
-	permanent {
-		display Comparison  type: 2d {
-			chart "Number of people infected" type: series {
-				//we can access to all the simulations of a run (here composed of 5 simulation -> repeat: 5) by the variable "simulations" of the experiment.
-				//here we display for the 5 simulations, the mean, min and max values of the nb_infected variable.
-				data "Mean" value: mean(simulations collect each.nb_predators ) style: spline color: #blue ;
-				data "Min" value:  min(simulations collect each.nb_predators ) style: spline color: #darkgreen ;
-				data "Max" value:  max(simulations collect each.nb_predators ) style: spline color: #red ;
-			}
-		}	
-	}
+}
+
+experiment exploration_with_factorial  parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+	method exploration sampling:"factorial" factorial:4 sample:100;
+}
+
+// This experiment iterate over 100 point randomly drawn from the parameter space
+// Then the model global variables "nb_preys" and "nb_predators" are saved un a csv for each simulation run (including potential replicates)
+experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+	method exploration sampling:"uniform" sample:10 outputs:["nb_preys","nb_predators"] results:"Results/exploration.csv";
 }
 
 // This experiment samples from the parameter space (Saltelli methods) to establish
@@ -123,12 +121,16 @@ experiment Sobol parent: batch_abstract type: batch until:( time > end_cycle ) {
 // to screen and rank parameters based on elementary effect (changes on outputs due to a small modification of 
 // one paameter value)
 experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method morris outputs:["nb_preys","nb_predators"] sample:100 levels:4 report:"Results/morris.txt" results:"Results/morris_raw.csv";
+	method morris outputs:["nb_preys","nb_predators"] sample:10 levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
 }
 
 // This experiment computed beta d kuiper statistics to estimate the impact of parameters
 // on the distribution of outputs. It has been retro-engineered based on the description in
 // Borgonovo et al. 2022 doi:10.1007/s10588-021-09358-5
+// ---------------
+// sample facet = number of sampled points
+// factorial facet = how many time a parameter value is duplicated in the final experiment plan (maximum value for factorial is sample-1)
+// Hence, final sample size is 'sample + sample * factorial * |parameter|', with default sample and factorial, respectively 132 and 4
 experiment Beta_distribution parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method betad outputs:["nb_preys","nb_predators"] sample:100 sampling:"factorial" report:"Results/betad.txt" results:"Results/betad_raw.csv";
+	method betad outputs:["nb_preys","nb_predators"] sampling:"uniform" sample:10 factorial:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
 }
