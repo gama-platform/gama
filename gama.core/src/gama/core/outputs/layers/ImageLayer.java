@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.awt.image.BufferedImage;
-
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IGraphics;
@@ -25,7 +23,6 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.types.GamaFileType;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -43,7 +40,7 @@ public class ImageLayer extends AbstractLayer {
 	IImageProvider cachedImageProvider;
 
 	/** The provider. */
-	IExpression provider;
+	IExpression providerExpression;
 
 	/** The is potentially variable. */
 	boolean isProviderPotentiallyVariable;
@@ -64,12 +61,12 @@ public class ImageLayer extends AbstractLayer {
 	 */
 	public ImageLayer(final IScope scope, final ILayerStatement layer) {
 		super(layer);
-		provider = ((ImageLayerStatement) definition).imageExpression;
-		isImageProvider = isImageProvider();
-		isProviderPotentiallyVariable = !provider.isContextIndependant();
+		providerExpression = ((ImageLayerStatement) definition).imageExpression;
+		isImageProvider = isImageProvider(scope);
+		isProviderPotentiallyVariable = !providerExpression.isContextIndependant();
 		if (!isImageProvider) {
-			if (provider.isConst() || !isProviderPotentiallyVariable) {
-				Object value = provider.value(scope);
+			if (providerExpression.isConst() || !isProviderPotentiallyVariable) {
+				Object value = providerExpression.value(scope);
 				if (value instanceof String s) {
 					cachedImageProvider = createFileFromString(scope, s);
 				} else if (value instanceof IImageProvider p) {
@@ -81,7 +78,7 @@ public class ImageLayer extends AbstractLayer {
 				isImageProvider = true;
 			}
 		} else if (!isProviderPotentiallyVariable) {
-			cachedImageProvider = createImageProviderFromFileExpression(scope);
+			cachedImageProvider = getImageFromProvider(scope, providerExpression.value(scope));
 			isImageProvider = true;
 		}
 
@@ -92,25 +89,14 @@ public class ImageLayer extends AbstractLayer {
 	 *
 	 * @return true, if is image provider
 	 */
-	private boolean isImageProvider() {
-		IType<?> providerType = provider.getGamlType();
-		return IImageProvider.class.isAssignableFrom(providerType.toClass());
+	private boolean isImageProvider(IScope scope) {
+		var providerClass = providerExpression.value(scope).getClass(); // Needs to be evaluated else what is GamaIntMatrix at runtime is considered GamaMatrix
+		return IImageProvider.class.isAssignableFrom(providerClass); 
 	}
 
 	@Override
 	protected ILayerData createData() {
 		return new ImageLayerData(definition);
-	}
-
-	/**
-	 * Creates the file from file expression.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the gama image file
-	 */
-	private IImageProvider createImageProviderFromFileExpression(final IScope scope) {
-		return verifyFile(scope, provider.value(scope));
 	}
 
 	/**
@@ -124,22 +110,22 @@ public class ImageLayer extends AbstractLayer {
 	 */
 	private IImageProvider createFileFromString(final IScope scope, final String imageFileName) {
 		final IGamaFile<?, ?> result = GamaFileType.createFile(scope, imageFileName, false, null);
-		return verifyFile(scope, result);
+		return getImageFromProvider(scope, result);
 	}
 
 	/**
-	 * Verify file.
+	 * Verify that the provider and the environment is well setup and use it to generate an image (reuse the previous one in case it should be cached)
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param input
 	 *            the input
-	 * @return the gama image file
+	 * @return the gama image provider after the image generation
 	 */
-	private IImageProvider verifyFile(final IScope scope, final Object input) throws GamaRuntimeFileException, GamaRuntimeException {
+	private IImageProvider getImageFromProvider(final IScope scope, final Object input) throws GamaRuntimeFileException, GamaRuntimeException {
 		if (input == cachedImageProvider) return cachedImageProvider;
 		if (!(input instanceof IImageProvider result))
-			throw GamaRuntimeException.error("Not a provider of images: " + provider.serializeToGaml(false), scope);
+			throw GamaRuntimeException.error("Not a provider of images: " + providerExpression.serializeToGaml(false), scope);
 		try {
 			result.getImage(scope, !getData().getRefresh());
 		} catch (final GamaRuntimeFileException ex) {
@@ -167,16 +153,17 @@ public class ImageLayer extends AbstractLayer {
 	}
 
 	/**
-	 * Builds the image.
+	 * Builds the image and returns the provider
 	 *
 	 * @param scope
 	 *            the scope
-	 * @return the gama image file
+	 * @return the gama image provider
 	 */
 	protected IImageProvider buildImage(final IScope scope) {
 		if (!isProviderPotentiallyVariable) return cachedImageProvider;
-		return isImageProvider ? createImageProviderFromFileExpression(scope)
-				: createFileFromString(scope, Cast.asString(scope, provider.value(scope)));
+		return 		isImageProvider 
+				? getImageFromProvider(scope, providerExpression.value(scope))
+				: createFileFromString(scope, Cast.asString(scope, providerExpression.value(scope)));
 	}
 
 
@@ -187,20 +174,21 @@ public class ImageLayer extends AbstractLayer {
 		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(null, true);
 		attributes.setUseCache(!getData().getRefresh());
 
-		final IImageProvider file = buildImage(scope);
+		final IImageProvider actualProvider = buildImage(scope);
 		if (env != null) {
 			final GamaPoint loc;
 			if (dg.is2D()) {
 				loc = new GamaPoint(env.getMinX(), env.getMinY());
 			} else {
-				loc = new GamaPoint(env.getWidth() / 2 + env.getMinX(), env.getHeight() / 2 + env.getMinY());
+				loc = new GamaPoint(env.getMinX() + env.getWidth() / 2, env.getMinY() + env.getHeight() / 2);
 			}
 			attributes.setLocation(loc);
 			attributes.setSize(Scaling3D.of(env.getWidth(), env.getHeight(), 0));
 		}
 
-		if (file != null) {
-			dg.drawAsset(file, attributes);				
+		if (actualProvider != null) {
+			// TODO: possibly drawn a second time ? shouldn't we use drawImage and return a BufferedImage from buildImage instead ?
+			dg.drawAsset(actualProvider, attributes);				
 		}
 		else {
 			//TODO: should probably raise some kind of error/warning
