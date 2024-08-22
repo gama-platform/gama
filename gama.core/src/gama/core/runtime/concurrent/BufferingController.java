@@ -130,7 +130,7 @@ public class BufferingController {
 	 * @param options the saving options (rewrite, buffering strategy etc. )
 	 * @return true if the operation was successful, false otherwise
 	 */
-	public boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content, final SaveOptions options) {
+	public synchronized boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content, final SaveOptions options) {
 		AbstractAgent owner = scope.getSimulation();
 		switch (options.bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING: 
@@ -145,7 +145,8 @@ public class BufferingController {
 			case NO_BUFFERING:
 				return directWriteFile(fileId, content, options.getCharset(), !options.rewrite);
 			default:
-				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + options.bufferingStrategy.toString()), owner.getScope());
+			IScope ownerScope = owner.getScope();
+			throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + options.bufferingStrategy.toString()), ownerScope);
 		}
 	}
 	
@@ -163,7 +164,7 @@ public class BufferingController {
 	 * @param bufferingStrategy the buffering strategy to apply
 	 * @return true if the operation is successful, false otherwise
 	 */
-	public boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies bufferingStrategy) {
+	public synchronized boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies bufferingStrategy) {
 		AbstractAgent owner = scope.getSimulation();
 		switch (bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
@@ -179,7 +180,8 @@ public class BufferingController {
 				scope.getGui().getConsole().informConsole(content.toString(), scope.getRoot(), color);
 				return true;
 			default:
-				throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + bufferingStrategy.toString()), owner.getScope());
+			IScope ownerScope = owner.getScope();
+			throw GamaRuntimeException.create(new NotImplementedException("This buffering strategie has not been implemented yet: " + bufferingStrategy.toString()), ownerScope);
 		}
 	}
 	
@@ -190,7 +192,7 @@ public class BufferingController {
 	 * @param map the map in which to look in
 	 * @return the corresponding map of agent/buffer
 	 */
-	protected Map<AbstractAgent, TextBuffer> getOrInitBufferingMap(final String fileId, final  Map<String, Map<AbstractAgent, TextBuffer>> map){
+	protected synchronized Map<AbstractAgent, TextBuffer> getOrInitBufferingMap(final String fileId, final  Map<String, Map<AbstractAgent, TextBuffer>> map){
 		// If we don't have any map for this file yet we create one
 		Map<AbstractAgent, TextBuffer> bufferingMap = map.get(fileId);
 		if (bufferingMap == null) {
@@ -210,7 +212,7 @@ public class BufferingController {
 	 * @param options the saving options (used to get the rewrite option)
 	 * @return true if the operation was successful, false otherwise
 	 */
-	protected boolean appendSaveFileRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, TextBuffer> bufferingMap, final CharSequence content, final SaveOptions options) {
+	protected static boolean appendSaveFileRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, TextBuffer> bufferingMap, final CharSequence content, final SaveOptions options) {
 		
 		// We look up for the previous request of the owner simulation in the map
 		// if there's already one we append our content or rewrite, depending on the append parameter
@@ -246,7 +248,7 @@ public class BufferingController {
 	 * @param color the color in which the text should be printed
 	 * @return true if the operation was successful, false otherwise
 	 */
-	protected boolean appendWriteConsoleRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> bufferingMap, final StringBuilder content, final GamaColor color) {
+	protected static boolean appendWriteConsoleRequestToMap(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> bufferingMap, final StringBuilder content, final GamaColor color) {
 		
 		// We look up for the previous request of the owner simulation in the map
 		List<TextBuffer> requests = bufferingMap.get(owner);
@@ -283,7 +285,7 @@ public class BufferingController {
 	 * @param append if true the content will be appened, else it will replace the current file content (if any)
 	 * @return true if no exception, false otherwise
 	 */
-	protected boolean directWriteFile(final String fileId, final CharSequence content, final Charset charset, final boolean append) {
+	protected static boolean directWriteFile(final String fileId, final CharSequence content, final Charset charset, final boolean append) {
 		try {
 			FileUtils.write(new File(fileId), content, charset, append);
 			return true;
@@ -301,7 +303,7 @@ public class BufferingController {
 	 * @param map the map in which to look up
 	 * @return true if everything went well, false in case of error
 	 */
-	protected boolean flushAllFilesOfOwner(AbstractAgent owner, Map<String, Map<AbstractAgent, TextBuffer>> map) {
+	protected static boolean flushAllFilesOfOwner(AbstractAgent owner, Map<String, Map<AbstractAgent, TextBuffer>> map) {
 		boolean success = true;
 		for(var entry : map.entrySet()) {
 			var writeTask = entry.getValue().get(owner);
@@ -324,7 +326,7 @@ public class BufferingController {
 	 * @param owner the agent in which the write statements have been executed
 	 * @param map the map in which to look up
 	 */
-	protected void flushAllWriteOfOwner(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> map) {
+	protected static void flushAllWriteOfOwner(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> map) {
 		var tasks = map.get(owner);
 		if (tasks != null) {
 			var scope = owner.getScope();
@@ -342,7 +344,7 @@ public class BufferingController {
 	 * @param owner the simulation or agent in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public boolean flushSaveFilesOfOwner(AbstractAgent owner) {
+	public synchronized boolean flushSaveFilesOfOwner(AbstractAgent owner) {
 		return flushAllFilesOfOwner(owner, fileBufferPerAgent);		
 	}
 	
@@ -351,7 +353,7 @@ public class BufferingController {
 	 * @param owner the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public boolean flushSaveFilesInCycle(AbstractAgent owner) {
+	public synchronized boolean flushSaveFilesInCycle(AbstractAgent owner) {
 		return flushAllFilesOfOwner(owner, fileBufferPerAgentForCycles);
 	}
 	
@@ -359,7 +361,7 @@ public class BufferingController {
 	 * Flushes all the write statement requests made in a simulation with the 'per_cycle' strategy
 	 * @param owner the simulation in which the write statements have been executed
 	 */
-	public void flushWriteInCycle(AbstractAgent owner) {
+	public synchronized void flushWriteInCycle(AbstractAgent owner) {
 		flushAllWriteOfOwner(owner, consoleBufferListPerAgentForCycles);
 	}
 
@@ -367,7 +369,7 @@ public class BufferingController {
 	 * Flushes all the write requests made by an agent with the 'per_simulation' or 'per_agent' strategy
 	 * @param owner: the agent or simulation in which the write statements have been executed
 	 */
-	public void flushWriteOfOwner(AbstractAgent owner) {
+	public synchronized void flushWriteOfOwner(AbstractAgent owner) {
 		flushAllWriteOfOwner(owner, consoleBufferListPerAgent);		
 	}
 	
@@ -375,7 +377,7 @@ public class BufferingController {
 	 * Flushes all bufferings that are waiting.
 	 * Flushes write and save bufferings, whether registered per cycle or per agent
 	 */
-	public void flushAllBufferings() {
+	public synchronized void flushAllBufferings() {
 		// flushes the console per cycle first
 		for (var agent : consoleBufferListPerAgentForCycles.keySet()) {
 			flushWriteInCycle(agent);
@@ -405,7 +407,7 @@ public class BufferingController {
 	 * @param f the file to test
 	 * @return true if there are pending writing operations for this file, false otherwise
 	 */
-	public boolean isFileWaitingToBeWritten(File f) {
+	public synchronized boolean isFileWaitingToBeWritten(File f) {
 		// visits all files that are registered by agents
 		if (fileBufferPerAgent.keySet().parallelStream().anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))) {
 			return true;
