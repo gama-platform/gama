@@ -10,20 +10,31 @@
 </head>
 <body>
     <div class="title">
+      
+      <div class="headless">
+        <label class="switch">
+          <input type="checkbox" id="ignore-states" onchange="changeIgnoreState()">
+          <span class="slider"></span>
+        </label>
+        <label for="ignore-states">Headless mode</label>
+      </div>
+
       <h1>Gama Server Connector</h1>
       <a href="help.html">
         <button class="help-button">
             <img src="help.png" alt="Icône de retour">
         </button>
-    </a>
+      </a>
+
     </div>
     
 
     <div class="content">
     <div class="content-item">
-    
+
     <div class="control-panel">
       <h2>General informations</h2>
+
     <div class="grid-container">
         <div class="grid-item">
             <div class="name-container">Connection information</div>

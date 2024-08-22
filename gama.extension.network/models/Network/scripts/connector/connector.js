@@ -3,6 +3,7 @@
 // Default values
 const DEFAULT_GAMA_WS_PORT = "1000"
 const DEFAULT_GAMA_IP_ADDRESS = "localhost"
+const DEFAULT_IGNORE_STATES = false
 
 // Connection state
 const CONNECTED = "CONNECTED"
@@ -24,6 +25,7 @@ var gama_ws_port = DEFAULT_GAMA_WS_PORT
 var gama_ip_address = DEFAULT_GAMA_IP_ADDRESS
 
 var connection_state = DISCONNECTED
+var ignore_states = DEFAULT_IGNORE_STATES
 var gama_state
 var model_file 
 var experiment_name 
@@ -126,6 +128,9 @@ function setGamaState(newState) {
 }
 
 function createWebSocketClient() {
+
+    document.querySelector("#ignore-states").checked = ignore_states;
+
     let gama_full_address = 'ws://'+gama_ip_address+':'+gama_ws_port
     document.querySelector("#gama-address").innerHTML = gama_full_address;
     let gama_socket = new WebSocket(gama_full_address);
@@ -148,6 +153,11 @@ function createWebSocketClient() {
                         case PAUSED: setGamaState(PAUSED); break;
                         case RUNNING: setGamaState(RUNNING); break;
                         default: setGamaState(UNKNOWN); break;
+                    }
+                    break;
+                case "CommandExecutedSuccessfully":
+                    if (["load", "reload"].includes(message.command.type)){
+                        experiment_id = message.content
                     }
                     break;
                 default: break;
@@ -176,7 +186,16 @@ function createWebSocketClient() {
     return gama_socket
 }
 
+function changeIgnoreState() {
+    ignore_states = document.querySelector("#ignore-states").checked;
+}
+
 function load() {
+    if (ignore_states){
+        socket.send(JSON.stringify(load_experiment()))
+        logRequestResponse(load_experiment(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -197,6 +216,11 @@ function load() {
 }
 
 function start() {
+    if (ignore_states){
+        socket.send(JSON.stringify(play_experiment()))
+        logRequestResponse(play_experiment(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -211,6 +235,11 @@ function start() {
 }
 
 function pause() {
+    if (ignore_states){
+        socket.send(JSON.stringify(pause_experiment()))
+        logRequestResponse(pause_experiment(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -225,6 +254,11 @@ function pause() {
 }
 
 function end() {
+    if (ignore_states){
+        socket.send(JSON.stringify(stop_experiment()))
+        logRequestResponse(stop_experiment(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected",REQUEST)
         return
@@ -239,6 +273,11 @@ function end() {
 }
 
 function expression() {
+    if (ignore_states){
+        socket.send(JSON.stringify(send_expression()))
+        logRequestResponse(send_expression(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -253,6 +292,11 @@ function expression() {
 }
 
 function ask() {
+    if (ignore_states){
+        socket.send(JSON.stringify(send_ask()))
+        logRequestResponse(send_ask(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -267,6 +311,11 @@ function ask() {
 }
 
 function step() {
+    if (ignore_states){
+        socket.send(JSON.stringify(send_step()))
+        logRequestResponse(send_step(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
@@ -281,6 +330,11 @@ function step() {
 }
 
 function stepBack() {
+    if (ignore_states){
+        socket.send(JSON.stringify(send_step_back()))
+        logRequestResponse(send_step_back(), REQUEST)
+        return
+    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
