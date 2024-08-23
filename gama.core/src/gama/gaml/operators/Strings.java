@@ -15,14 +15,14 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -108,6 +108,24 @@ public class Strings {
 		return a + Cast.asString(scope, b);
 	}
 
+	@operator (
+			value = "concatenate",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			usages = @usage (
+					value = "concatenates a list of string into a string. More efficient than looping over the list and adding the strings individually",
+					examples = @example (
+							value = "concatenate(['a','bc']",
+							equals = "'abc'")))
+	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
+		StringBuilder sb = new StringBuilder();
+		for (String s : strings) { sb.append(s); }
+		return sb.toString();
+		// return StreamEx.of(strings).joining();
+	}
+
 	/**
 	 * Op in.
 	 *
@@ -123,7 +141,9 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
-			usages = @usage (
+			usages =
+
+			@usage (
 					value = "if both operands are strings, returns true if the left-hand operand patterns is included in to the right-hand string;"),
 			examples = @example (
 					value = " 'bc' in 'abcded'",
