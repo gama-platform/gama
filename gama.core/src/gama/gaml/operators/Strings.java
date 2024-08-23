@@ -10,6 +10,7 @@
 package gama.gaml.operators;
 
 import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 import java.util.StringTokenizer;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
@@ -117,13 +118,30 @@ public class Strings {
 			usages = @usage (
 					value = "concatenates a list of string into a string. More efficient than looping over the list and adding the strings individually",
 					examples = @example (
-							value = "concatenate(['a','bc']",
+							value = "concatenate(['a','bc'])",
 							equals = "'abc'")))
 	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
 		StringBuilder sb = new StringBuilder();
 		for (String s : strings) { sb.append(s); }
 		return sb.toString();
-		// return StreamEx.of(strings).joining();
+	}
+
+	@operator (
+			value = "concatenate",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			usages = @usage (
+					value = "concatenates a list of string into a string, inserting the separator between each. More efficient than looping over the list and adding the strings individually",
+					examples = @example (
+							value = "concatenate(['a','bc', 'cd'], '--')",
+							equals = "'a--bc--cd'")))
+	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
+			throws GamaRuntimeException {
+		StringJoiner sj = new StringJoiner(separator);
+		for (String s : strings) { sj.add(s); }
+		return sj.toString();
 	}
 
 	/**
