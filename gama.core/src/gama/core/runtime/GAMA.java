@@ -105,13 +105,14 @@ public class GAMA {
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
 	private static final BufferingController bufferingController = new BufferingController();
-	
-	
 
-	public static boolean askWriteFile(final IScope scope, final File f, final CharSequence content, final SaveOptions options) {
+	public static boolean askWriteFile(final IScope scope, final File f, final CharSequence content,
+			final SaveOptions options) {
 		return bufferingController.askWriteFile(f.getAbsolutePath(), scope, content, options);
 	}
-	public static boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color, final BufferingStrategies strategy) {
+
+	public static boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color,
+			final BufferingStrategies strategy) {
 		return bufferingController.askWriteConsole(scope, content, color, strategy);
 	}
 	
@@ -122,21 +123,23 @@ public class GAMA {
 	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
 		return bufferingController.flushSaveFilesOfOwner(owner);
 	}
+
 	public static boolean flushSaveFileStep(final SimulationAgent owner) {
 		return bufferingController.flushSaveFilesInCycle(owner);
 	}
+
 	public static void flushWriteStep(final SimulationAgent owner) {
 		bufferingController.flushWriteInCycle(owner);
 	}
+
 	public static void flushWritePerAgent(final AbstractAgent owner) {
 		bufferingController.flushWriteOfOwner(owner);
 	}
+
 	public static void flushAllBufferings() {
 		bufferingController.flushAllBufferings();
 	}
-	
 
-	
 	/**
 	 * Gets the controllers.
 	 *
@@ -362,22 +365,22 @@ public class GAMA {
 	public static void reportAndThrowIfNeeded(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
 		// See #3641 -- move this sentence to reportError(): if (g.isReported()) return;
-		if (getExperiment() == null && !(g instanceof GamaRuntimeFileException) && scope != null
-				&& !scope.reportErrors()) {
+
+		if (scope == null
+				|| getExperiment() == null && !(g instanceof GamaRuntimeFileException) && !scope.reportErrors()) {
 			// AD: we still throw exceptions related to files (Issue #1281)
 			g.printStackTrace();
 			return;
 		}
 
-		// DEBUG.LOG("reportAndThrowIfNeeded : " + g.getMessage());
-		if (scope != null) {
-			if (scope.getAgent() != null) {
-				final String name = scope.getAgent().getName();
-				if (!g.getAgentsNames().contains(name)) { g.addAgent(name); }
-			}
-			scope.setCurrentError(g);
-			if (scope.isInTryMode()) throw g;
+		if (scope.getAgent() != null) {
+			final String name = scope.getAgent().getName();
+			if (!g.getAgentsNames().contains(name)) { g.addAgent(name); }
 		}
+		scope.setCurrentError(g);
+		if (scope.isInTryMode()) throw g;
+
+		// DEBUG.LOG("reportAndThrowIfNeeded : " + g.getMessage());
 		final boolean shouldStop = !reportError(scope, g, shouldStopSimulation);
 		if (shouldStop) {
 			if (isInHeadLessMode() && !isInServerMode()) throw g;

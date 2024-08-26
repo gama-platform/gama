@@ -228,7 +228,7 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	 * @return the gama image
 	 */
 	public static GamaImage from(final GamaSpatialMatrix g) {
-		GamaImage gi = new GamaImage(g.numCols, g.numRows, TYPE_INT_RGB, "matrix" + System.currentTimeMillis());
+		GamaImage gi = new GamaImage(g.numCols, g.numRows, TYPE_INT_ARGB, "matrix" + System.currentTimeMillis());
 		final int[] imageData = ((DataBufferInt) gi.getRaster().getDataBuffer()).getData();
 		System.arraycopy(g.getDisplayData(), 0, imageData, 0, imageData.length);
 		return gi;
@@ -243,7 +243,7 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	 */
 	public static GamaImage from(final IScope scope, final GamaIntMatrix g) {
 		BufferedImage im = g.getImage(scope);
-		return from(im, false, "matrix" + System.currentTimeMillis());
+		return from(im, true, "matrix" + System.currentTimeMillis());
 	}
 
 	/**
