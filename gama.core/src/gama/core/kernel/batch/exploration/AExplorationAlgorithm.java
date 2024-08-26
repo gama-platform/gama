@@ -457,24 +457,24 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		double minFloatValue = Cast.asFloat(scope, var.getMinValue(scope));
 		double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
 		double stepFloatValue = 0.1;
-		if (var.getStepValue(scope) != null) {
+		double df = Exploration.DEFAULT_FACTORIAL-1;
+		
+		
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			List<Batch> b = currentExperiment.getParametersToExplore();
+			df = getFactorial(scope,b)[b.indexOf(var)];
+			stepFloatValue = (maxFloatValue - minFloatValue) / df;
+		} else if (var.getStepValue(scope) != null) {
 			stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
 		} else {
-			stepFloatValue = (maxFloatValue - minFloatValue) / (Exploration.DEFAULT_FACTORIAL-1);
+			stepFloatValue = (maxFloatValue - minFloatValue) / df;
 		}
-		
-		// Do we need to account for min > max ???
 		
 		while (minFloatValue <= maxFloatValue) {
 			minFloatValue += stepFloatValue;
 			res.add(minFloatValue);
 		}
-		// Do we need to control for errors ????
-		// Do we have to use Math.ulp() ???
-//		if (Math.abs(Cast.asFloat(scope, res.get(res.size()-1)) - maxFloatValue) < stepFloatValue) {
-//			res.remove(res.size()-1);
-//			res.add(maxFloatValue);
-//		}
+
 		return res;
 	}
 
@@ -484,12 +484,21 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		int minValue = Cast.asInt(scope, var.getMinValue(scope));
 		int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
 		double stepValue = 1;
-		int nbIterNeeded = 0;
-		if (var.getStepValue(scope) != null) {
+		double df = Exploration.DEFAULT_FACTORIAL-1;
+		
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			List<Batch> b = currentExperiment.getParametersToExplore();
+			df = getFactorial(scope,b)[b.indexOf(var)];
+			if (maxValue - minValue > df) {
+				stepValue = (maxValue - minValue) / df;
+			}
+		} else if (var.getStepValue(scope) != null) {
 			stepValue = Cast.asInt(scope, var.getStepValue(scope));
-		} else if (maxValue - minValue > (Exploration.DEFAULT_FACTORIAL-1)) {
-			stepValue = (maxValue - minValue) / (double)(Exploration.DEFAULT_FACTORIAL-1);
+		} else if (maxValue - minValue > df) {
+			stepValue = (maxValue - minValue) / df;
 		}
+		
+		int nbIterNeeded = 0;
 		//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
 		nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
 		double start = stepValue >= 0 ? minValue : maxValue;
