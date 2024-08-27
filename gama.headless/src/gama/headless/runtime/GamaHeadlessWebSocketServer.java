@@ -188,7 +188,10 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	public void infiniteLoop() {
 		try {
 			// empty loop to keep alive the server and catch exceptions
-			while (true) {}
+			while (true) {
+				Thread.sleep(999999);
+			}
+			
 		} catch (Exception ex) {
 			ex.printStackTrace(); // will be broadcasted to every client
 		}
