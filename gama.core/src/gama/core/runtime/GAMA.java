@@ -136,8 +136,8 @@ public class GAMA {
 		bufferingController.flushWriteOfOwner(owner);
 	}
 
-	public static void flushAllBufferings() {
-		bufferingController.flushAllBufferings();
+	public static void flushAllBuffers() {
+		bufferingController.flushAllBuffers();
 	}
 
 	/**

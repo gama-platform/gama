@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -374,10 +374,10 @@ public class BufferingController {
 	}
 	
 	/**
-	 * Flushes all bufferings that are waiting.
-	 * Flushes write and save bufferings, whether registered per cycle or per agent
+	 * Flushes all buffers that are waiting.
+	 * Flushes write and save buffers, whether registered per cycle or per agent
 	 */
-	public synchronized void flushAllBufferings() {
+	public synchronized void flushAllBuffers() {
 		// flushes the console per cycle first
 		for (var agent : consoleBufferListPerAgentForCycles.keySet()) {
 			flushWriteInCycle(agent);
@@ -387,19 +387,21 @@ public class BufferingController {
 			flushWriteOfOwner(agent);
 		}
 		// flushes the files registered for the cycle
-		var agents = fileBufferPerAgentForCycles.entrySet().stream().map(s -> s.getValue().keySet())
-					.collect(Collectors.toSet())
-					.toArray(new AbstractAgent[0]);
+		var agents = fileBufferPerAgentForCycles.entrySet().stream()
+				.map( s -> s.getValue().keySet())
+				.flatMap(Collection::stream)
+				.toArray(length -> new AbstractAgent[length]);
 		for (AbstractAgent agent : agents) {
 			flushSaveFilesInCycle(agent);
 		}
 		// finally flushes the files registered per agent
-		agents = fileBufferPerAgent.entrySet().stream().map(s -> s.getValue().keySet())
-				.collect(Collectors.toSet())
-				.toArray(new AbstractAgent[0]);
+		agents = fileBufferPerAgent.entrySet().stream()
+				.map( s -> s.getValue().keySet())
+				.flatMap(Collection::stream)
+				.toArray(length -> new AbstractAgent[length]);
 		for (AbstractAgent agent : agents) {
 			flushSaveFilesOfOwner(agent);
-		}
+		}	
 	}
 
 	/**
