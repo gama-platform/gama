@@ -113,7 +113,7 @@ public class ErrorPopUpMenu extends PopupDialog {
 			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(labelComposite);
 			labelButton = new Label(labelComposite, SWT.NONE);
 			labelButton.setImage(GamaIcon.named("experiment/errors.show").image());
-			labelText = new Label(labelComposite, SWT.NONE);
+			labelText = new Label(labelComposite, SWT.WRAP);
 
 			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, true).applyTo(labelButton);
 			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(labelText);
@@ -215,6 +215,7 @@ public class ErrorPopUpMenu extends PopupDialog {
 		createContents(parent);
 		labelText.setText(ex.getAllText());
 		labelText.setData(ex.getEditorContext());
+		labelComposite.requestLayout();
 		shell.setLocation(getDefaultLocation(null));
 		shell.setSize(getDefaultSize());
 		shell.setVisible(true);
