@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ExperimentParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ExperimentParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -19,8 +18,6 @@ import java.util.Set;
 
 import org.locationtech.jts.util.NumberUtil;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -28,8 +25,9 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -804,8 +802,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return GAMA.run(scope -> StringUtils.toGaml(getValue(scope), includingBuiltIn));
-
+		return varName;
+		// return GAMA.run(scope -> StringUtils.toGaml(getValue(scope), includingBuiltIn));
 	}
 
 	@Override

@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.experiment.factories;
 
+import gama.core.common.ErrorStatusMessage;
 import gama.core.common.StatusMessage;
 import gama.core.common.SubTaskMessage;
 import gama.core.common.UserStatusMessage;
@@ -87,8 +88,8 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void errorStatus(final IScope scope, final String error) {
-		setStatus(error, IGui.ERROR);
+	public void errorStatus(final IScope scope, final Exception error) {
+		setStatus(error);
 	}
 
 	/**
@@ -114,6 +115,10 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	private void setStatus(final String msg, final int code) {
 		status.updateWith(new StatusMessage(msg, code));
+	}
+
+	private void setStatus(final Exception error) {
+		status.updateWith(new ErrorStatusMessage(error));
 	}
 
 	/**

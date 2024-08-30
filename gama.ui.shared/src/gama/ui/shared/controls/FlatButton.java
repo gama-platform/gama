@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * FlatButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FlatButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -29,9 +28,9 @@ import org.eclipse.swt.widgets.TypedListener;
 
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 
 /**
  * The Class FlatButton.
@@ -432,6 +431,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	public FlatButton setImageWithoutRecomputingSize(final Image image) {
+		if (this.image == image) return this;
+		this.image = image;
+		redraw();
+		return this;
+	}
+
 	/**
 	 * Show menu sign.
 	 *
@@ -548,6 +554,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		if (text == null || text.equals(this.text)) return this;
 		this.text = text;
 		computePreferredSize();
+		redraw();
+		return this;
+	}
+
+	public FlatButton setTextWithoutRecomputingSize(final String text) {
+		if (text == null || text.equals(this.text)) return this;
+		this.text = text;
 		redraw();
 		return this;
 	}

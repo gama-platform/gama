@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaServerStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaServerStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -47,9 +47,9 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	}
 
 	@Override
-	public void errorStatus(final IScope scope, final String message) {
+	public void errorStatus(final IScope scope, final Exception error) {
 		if (!canSendMessage(scope.getExperiment())) return;
-		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + message + "\"" + "}",
+		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + error.getMessage() + "\"" + "}",
 				GamaServerMessage.Type.SimulationStatusError);
 	}
 

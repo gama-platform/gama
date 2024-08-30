@@ -292,7 +292,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public void reset() {
 		ownClock.reset();
 		// We close any simulation that might be running
-		closeSimulations();
+		closeSimulations(false);
 		initialize();
 	}
 
@@ -322,7 +322,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	}
 
 	@Override
-	public void closeSimulations() {
+	public void closeSimulations(final boolean andLeaveExperimentPerspective) {
 		// We unschedule the simulation if any
 		executer.executeDisposeActions();
 		if (getSimulationPopulation() != null) { getSimulationPopulation().dispose(); }
@@ -333,7 +333,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			// AD: Fix for issue #1342 -- verify that it does not break
 			// something else in the dynamics of closing/opening
 			ownScope.getGui().closeDialogs(ownScope);
-			ownScope.getGui().closeSimulationViews(ownScope, false, true);
+			ownScope.getGui().closeSimulationViews(ownScope, andLeaveExperimentPerspective, true);
 		}
 	}
 
@@ -358,7 +358,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (dying || dead) return;
 		dying = true;
 		getSpecies().getArchitecture().abort(ownScope);
-		closeSimulations();
+		closeSimulations(true);
 		GAMA.releaseScope(ownScope);
 		super.dispose();
 	}
@@ -722,7 +722,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		}
 	}
 
-
 	/**
 	 * Gets the parameters.
 	 *
@@ -742,7 +741,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@getter (PROJECT_PATH)
 	public String getProjectPath() { return getModel().getProjectPath() + "/"; }
 
-	
 	/**
 	 * Gets the cycle.
 	 *
@@ -755,7 +753,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (ownClock != null) return ownClock.getCycle();
 		return 0;
 	}
-	
+
 	/**
 	 * Update displays.
 	 *
@@ -1079,7 +1077,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		@Override
 		public IScope copy(final String additionalName) {
-			return new ExperimentAgentScope(additionalName);
+			ExperimentAgentScope copy = new ExperimentAgentScope(additionalName);
+			copy.push(getCurrentSymbol());
+			return copy;
 		}
 
 		/**

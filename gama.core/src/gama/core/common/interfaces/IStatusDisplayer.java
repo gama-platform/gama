@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -59,7 +58,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param message
 	 *            the message
 	 */
-	default void errorStatus(final IScope scope, final String message) {}
+	default void errorStatus(final IScope scope, final Exception error) {}
 
 	/**
 	 * Sets the sub status completion.
