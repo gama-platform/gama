@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.ui.experiment.controls;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -40,7 +40,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Strings;
 import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.controls.IPopupProvider.PopupText;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
@@ -103,9 +102,6 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The instance. */
 	static StatusControlContribution INSTANCE;
 
-	/** The listening agent. Either gama, the experiment or the current simulation */
-	// ITopLevelAgent listeningAgent;
-
 	/**
 	 * Gets the single instance of StatusControlContribution.
 	 *
@@ -142,16 +138,10 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	@Override
 	protected Control createControl(final Composite parent) {
 		final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
-		final GridLayout layout = new GridLayout(1, false);
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
-		compo.setLayout(layout);
-		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, true);
-		data.widthHint = WIDTH;
-		data.heightHint = 24;
+		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
 		label = FlatButton.label(compo, IGamaColors.NEUTRAL, "No experiment running", WIDTH)
 				.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image());
-		label.setLayoutData(data);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
 		popup = new SimulationPopupMenu(this);
 		errorPopup = new ErrorPopUpMenu(this);
 		label.addMouseListener(new MouseAdapter() {
@@ -196,27 +186,6 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		if (agent instanceof IExperimentAgent exp) {
 			GAMA.changeCurrentTopLevelAgent(exp, false);
 		} else if (agent instanceof SimulationAgent sim) { GAMA.getExperiment().getAgent().setCurrentSimulation(sim); }
-	}
-
-	/**
-	 * Append popup text for.
-	 *
-	 * @param exp
-	 *            the exp
-	 * @param result
-	 *            the result
-	 */
-	void appendPopupTextFor(final ITopLevelAgent exp, final PopupText result) {
-		if (exp == null) return;
-		text.setLength(0);
-		// text.append(Strings.LN);
-		final SimulationClock clock = exp.getClock();
-		clock.getInfo(text).append(Strings.LN);
-		text.append("Durations: cycle ").append(clock.getDuration()).append("ms; average ")
-				.append((int) clock.getAverageDuration()).append("ms; total ").append(clock.getTotalDuration())
-				.append("ms");
-		// text.append(Strings.LN);
-		result.add(GamaColors.get(exp.getColor()), text.toString());
 	}
 
 	/**
@@ -300,68 +269,18 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	@Override
 	public void updateWith(final IStatusMessage m) {
 		if (isUpdating) return;
-		currentException = null;
-		inErrorStatus = false;
-		if (GAMA.getExperiment() == null) {
-			label.removeMenuSign();
-			popup.wipe();
-			if (popup.isVisible()) { popup.hide(); }
-		} else {
-			label.addMenuSign();
-		}
-		isUpdating = true;
-		if (m instanceof SubTaskMessage) {
+		prepareForUpdate();
+		if (m instanceof SubTaskMessage m2) {
 			if (inUserStatus) return;
-			final SubTaskMessage m2 = (SubTaskMessage) m;
-			final Boolean beginOrEnd = m2.getBeginOrEnd();
-			if (beginOrEnd == null) {
-				// completion
-				subTaskCompletion = ((SubTaskMessage) m).getCompletion();
-			} else {
-				if (beginOrEnd) {
-					// begin task
-					subTaskName = m.getText();
-					inSubTask = true;
-				} else {
-					// end task
-					inSubTask = false;
-				}
-				subTaskCompletion = null;
-			}
-		} else if (m instanceof UserStatusMessage) {
-			final String s = m.getText();
-			if (s == null) {
-				resume();
-			} else {
-				inSubTask = false; // in case
-				inUserStatus = true;
-				final java.awt.Color c = m.getColor();
-				if (c == null) {
-					color = null;
-					state = IGui.NEUTRAL;
-				} else {
-					color = GamaColors.get(c);
-				}
-				mainTaskName = m.getText();
-			}
-		} else if (m instanceof StatusMessage) {
+			processSubTaskMessage(m2);
+		} else if (m instanceof UserStatusMessage usm) {
+			processUserStatusMessage(usm);
+		} else if (m instanceof StatusMessage sm) {
 			if (inUserStatus) return;
-			inSubTask = false; // in case
-			mainTaskName = m.getText();
-			state = m.getCode();
-		} else if (m instanceof ErrorStatusMessage e) {
-			inErrorStatus = true;
-			inSubTask = false; // in case
-			state = m.getCode();
-			mainTaskName = "Error in previous experiment";
-			currentException = e.getException();
-		}
+			processStatusMessage(sm);
+		} else if (m instanceof ErrorStatusMessage esm) { processErrorStatusMessage(esm); }
 
-		if (m.getIcon() != null) {
-			label.setImageWithoutRecomputingSize(GamaIcon.named(m.getIcon()).image());
-		} else {
-			label.setImageWithoutRecomputingSize(null);
-		}
+		label.setImageWithoutRecomputingSize(m.getIcon() == null ? null : GamaIcon.named(m.getIcon()).image());
 		label.setColor(getPopupBackground());
 		if (!inUserStatus && !inSubTask && mainTaskName == null) {
 			label.setColor(GamaColors.get(GAMA.getCurrentTopLevelAgent().getColor()));
@@ -378,6 +297,69 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		if (popup.isVisible()) { popup.display(); }
 		isUpdating = false;
 		inUserStatus = false;
+	}
+
+	private void processErrorStatusMessage(final ErrorStatusMessage esm) {
+		inErrorStatus = true;
+		inSubTask = false; // in case
+		state = esm.getCode();
+		mainTaskName = "Error in previous experiment";
+		currentException = esm.getException();
+	}
+
+	private void processStatusMessage(final StatusMessage sm) {
+		inSubTask = false; // in case
+		mainTaskName = sm.getText();
+		state = sm.getCode();
+	}
+
+	private void processUserStatusMessage(final UserStatusMessage usm) {
+		final String s = usm.getText();
+		if (s == null) {
+			resume();
+		} else {
+			inSubTask = false; // in case
+			inUserStatus = true;
+			final java.awt.Color c = usm.getColor();
+			if (c == null) {
+				color = null;
+				state = IGui.NEUTRAL;
+			} else {
+				color = GamaColors.get(c);
+			}
+			mainTaskName = usm.getText();
+		}
+	}
+
+	private void processSubTaskMessage(final SubTaskMessage m2) {
+		final Boolean beginOrEnd = m2.getBeginOrEnd();
+		if (beginOrEnd == null) {
+			// completion
+			subTaskCompletion = m2.getCompletion();
+		} else {
+			if (beginOrEnd) {
+				// begin task
+				subTaskName = m2.getText();
+				inSubTask = true;
+			} else {
+				// end task
+				inSubTask = false;
+			}
+			subTaskCompletion = null;
+		}
+	}
+
+	private void prepareForUpdate() {
+		currentException = null;
+		inErrorStatus = false;
+		if (GAMA.getExperiment() == null) {
+			label.removeMenuSign();
+			popup.wipe();
+			if (popup.isVisible()) { popup.hide(); }
+		} else {
+			label.addMenuSign();
+		}
+		isUpdating = true;
 	}
 
 	/**
