@@ -148,13 +148,17 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 			@Override
 			public void mouseDown(final MouseEvent e) {
+
 				if (inErrorStatus) {
 					if (errorPopup.isVisible()) {
 						errorPopup.hide();
 					} else {
 						WorkbenchHelper.asyncRun(() -> errorPopup.display(currentException));
 					}
-				} else if (popup.isVisible()) {
+					return;
+				}
+
+				if (popup.isVisible()) {
 					popup.hide();
 				} else {
 					final ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
