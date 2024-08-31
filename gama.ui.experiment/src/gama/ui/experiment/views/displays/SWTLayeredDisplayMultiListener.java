@@ -152,7 +152,18 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 			case SWT.CR, SWT.KEYPAD_CR:
 				delegate.specialKeyPressed(IEventLayerListener.KEY_RETURN);
 				return;
-
+			case SWT.COMMAND:
+				delegate.specialKeyPressed(IEventLayerListener.KEY_CMD);
+				return;
+			case SWT.SHIFT:
+				delegate.specialKeyPressed(IEventLayerListener.KEY_SHIFT);
+				return;
+			case SWT.ALT:
+				delegate.specialKeyPressed(IEventLayerListener.KEY_ALT);
+				return;
+			case SWT.CTRL:
+				delegate.specialKeyPressed(IEventLayerListener.KEY_CTRL);
+				return;
 		}
 		delegate.keyPressed(e.character, GamaKeyBindings.ctrl(e));
 	}
@@ -187,6 +198,18 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				return;
 			case SWT.CR, SWT.KEYPAD_CR:
 				delegate.specialKeyReleased(IEventLayerListener.KEY_RETURN);
+				return;
+			case SWT.COMMAND:
+				delegate.specialKeyReleased(IEventLayerListener.KEY_CMD);
+				return;
+			case SWT.SHIFT:
+				delegate.specialKeyReleased(IEventLayerListener.KEY_SHIFT);
+				return;
+			case SWT.ALT:
+				delegate.specialKeyReleased(IEventLayerListener.KEY_ALT);
+				return;
+			case SWT.CTRL:
+				delegate.specialKeyReleased(IEventLayerListener.KEY_CTRL);
 				return;
 
 		}
@@ -324,6 +347,10 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 						case java.awt.event.KeyEvent.VK_ESCAPE -> IEventLayerListener.KEY_ESC;
 						case java.awt.event.KeyEvent.VK_ENTER -> IEventLayerListener.KEY_RETURN;
 						case java.awt.event.KeyEvent.VK_TAB -> IEventLayerListener.KEY_TAB;
+						case java.awt.event.KeyEvent.VK_SHIFT -> IEventLayerListener.KEY_SHIFT;
+						case java.awt.event.KeyEvent.VK_ALT -> IEventLayerListener.KEY_ALT;
+						case java.awt.event.KeyEvent.VK_CONTROL -> IEventLayerListener.KEY_CTRL;
+						case java.awt.event.KeyEvent.VK_META -> IEventLayerListener.KEY_CMD;
 						default -> 0;
 					});
 				}
