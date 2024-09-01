@@ -180,7 +180,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 5 août 2023
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings ("rawtypes")
 	protected void registerSerialisers(final FSTConfiguration conf) {
 
 		register(conf, GamaShape.class, new FSTIndividualSerialiser<GamaShape>() {
@@ -199,7 +199,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 				out.writeDouble(d == null ? 0d : d);
 				out.writeInt(t.ordinal());
 				out.writeObject(toWrite.getInnerGeometry());
-				out.writeObject(AgentReference.of(toWrite.getAgent()));
+				// out.writeObject(AgentReference.of(toWrite.getAgent()));
 			}
 
 			@Override
@@ -207,8 +207,8 @@ public class BinarySerialiser implements ISerialisationConstants {
 				double d = in.readDouble();
 				IShape.Type t = IShape.Type.values()[in.readInt()];
 				GamaShape result = GamaShapeFactory.createFrom((Geometry) in.readObject());
-				AgentReference agent = (AgentReference) in.readObject();
-				if (agent != AgentReference.NULL) { result.setAgent(agent.getReferencedAgent(scope)); }
+				// AgentReference agent = (AgentReference) in.readObject();
+				// if (agent != AgentReference.NULL) { result.setAgent(agent.getReferencedAgent(scope)); }
 				if (d > 0d) { result.setDepth(d); }
 				if (t != Type.NULL) { result.setGeometricalType(t); }
 				return result;
@@ -399,7 +399,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 
 		register(conf, IMap.class, new FSTIndividualSerialiser<IMap>() {
 
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings ("unchecked")
 			@Override
 			public void serialise(final FSTObjectOutput out, final IMap o) throws Exception {
 				out.writeObject(o.getGamlType().getKeyType());
@@ -416,7 +416,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 				});
 			}
 
-			@SuppressWarnings({ "unchecked" })
+			@SuppressWarnings ({ "unchecked" })
 			@Override
 			public IMap deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				IType k = (IType) in.readObject();
@@ -437,7 +437,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 				return false;
 			}
 
-			@SuppressWarnings({ "unchecked" })
+			@SuppressWarnings ({ "unchecked" })
 			@Override
 			public void serialise(final FSTObjectOutput out, final IList o) throws Exception {
 				out.writeObject(o.getGamlType().getContentType());
@@ -516,7 +516,6 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 */
 	abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 
-
 		/**
 		 * Should register.
 		 *
@@ -547,7 +546,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 		 *             the exception
 		 * @date 7 août 2023
 		 */
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings ("rawtypes")
 		@Override
 		public final T instantiate(final Class objectClass, final FSTObjectInput in,
 				final FSTClazzInfo serializationInfo, final FSTFieldInfo referencee, final int streamPosition)
