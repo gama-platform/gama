@@ -1114,7 +1114,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			// value, as no simulations can be made available (see #2727)
 			if (this.getModel().getSpecies().hasVar(varName)) {
 				final IVariable var = getModel().getSpecies().getVar(varName);
-				if (!var.isNotModifiable() && !getExperiment().getSpecies().keepsSimulations())
+				boolean variableIsNotConst = !var.isNotModifiable();
+				boolean simulationsAreNotKept = !getExperiment().getSpecies().keepsSimulations();
+				// Addition of a condition for #287, in order to not trigger the error when we compute parameters
+				boolean isInParametersUpdate = getCurrentSymbol() instanceof ExperimentParameter;
+
+				if (variableIsNotConst && simulationsAreNotKept && !isInParametersUpdate)
 					throw GamaRuntimeException.error("This experiment does not keep its simulations. " + varName
 							+ " cannot be retrieved in this context", this);
 				return var.getInitialValue(this);

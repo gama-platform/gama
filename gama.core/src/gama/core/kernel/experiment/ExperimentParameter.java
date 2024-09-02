@@ -270,7 +270,6 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		type = desc.getGamlType();
 		title = sd.getName();
 		unitLabel = getLiteral(IKeyword.UNIT);
-
 		min = getFacet(IKeyword.MIN);
 		final IScope runtimeScope = GAMA.getRuntimeScope();
 		if (min != null && min.isConst()) { getMinValue(runtimeScope); }
@@ -445,16 +444,26 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 	@Override
 	public List<GamaColor> getColors(final IScope scope) {
-		final IExpression exp = getFacet("colors");
-		return exp == null ? null
-				: (List<GamaColor>) Types.LIST.cast(scope, exp.value(scope), null, Types.INT, Types.COLOR, false);
+		try {
+			if (scope != null) { scope.push(this); }
+			final IExpression exp = getFacet("colors");
+			return exp == null ? null
+					: (List<GamaColor>) Types.LIST.cast(scope, exp.value(scope), null, Types.INT, Types.COLOR, false);
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public GamaColor getColor(final IScope scope) {
-		List<GamaColor> colors = getColors(scope);
-		if (colors == null || colors.isEmpty()) return null;
-		return colors.get(0);
+		try {
+			if (scope != null) { scope.push(this); }
+			List<GamaColor> colors = getColors(scope);
+			if (colors == null || colors.isEmpty()) return null;
+			return colors.get(0);
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
@@ -497,10 +506,15 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 */
 	@SuppressWarnings ("unchecked")
 	private Object verifyMin(final IScope scope, final Object newValue) {
-		if (!(newValue instanceof Comparable nc)) return newValue;
-		Comparable mc = getMinValue(scope);
-		if (mc != null && mc.compareTo(nc) > 0) return mc;
-		return newValue;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (!(newValue instanceof Comparable nc)) return newValue;
+			Comparable mc = getMinValue(scope);
+			if (mc != null && mc.compareTo(nc) > 0) return mc;
+			return newValue;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	/**
@@ -512,10 +526,15 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 */
 	@SuppressWarnings ("unchecked")
 	private Object verifyMax(final IScope scope, final Object newValue) {
-		if (!(newValue instanceof Comparable nc)) return newValue;
-		Comparable mc = getMaxValue(scope);
-		if (mc != null && mc.compareTo(nc) < 0) return mc;
-		return newValue;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (!(newValue instanceof Comparable nc)) return newValue;
+			Comparable mc = getMaxValue(scope);
+			if (mc != null && mc.compareTo(nc) < 0) return mc;
+			return newValue;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	/**
@@ -527,12 +546,17 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 *            the val
 	 */
 	public void setAndVerifyValue(final IScope scope, final Object val) {
-		Object newValue = verifyMin(scope, verifyMax(scope, type.cast(scope, val, null, false)));
-		newValue = filterWithAmong(scope, newValue);
-		if (value != UNDEFINED) {
-			for (final ParameterChangeListener listener : listeners) { listener.changed(scope, newValue); }
+		try {
+			if (scope != null) { scope.push(this); }
+			Object newValue = verifyMin(scope, verifyMax(scope, type.cast(scope, val, null, false)));
+			newValue = filterWithAmong(scope, newValue);
+			if (value != UNDEFINED) {
+				for (final ParameterChangeListener listener : listeners) { listener.changed(scope, newValue); }
+			}
+			value = newValue;
+		} finally {
+			if (scope != null) { scope.pop(this); }
 		}
-		value = newValue;
 	}
 
 	@Override
@@ -548,54 +572,57 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 * @return the object
 	 */
 	private Object filterWithAmong(final IScope scope, final Object newValue) {
-		List amongValue = getAmongValue(scope);
-		if (amongValue == null || amongValue.isEmpty()) return newValue;
-		if (Types.FLOAT.equals(this.getType())) {
-			final double newDouble = Cast.asFloat(scope, newValue);
-			for (final Object o : amongValue) {
-				final Double d = Cast.asFloat(scope, o);
-				final Double tolerance = 0.0000001d;
-				if (NumberUtil.equalsWithTolerance(d, newDouble, tolerance)) return d;
-			}
+		try {
+			if (scope != null) { scope.push(this); }
+			List amongValue = getAmongValue(scope);
+			if (amongValue == null || amongValue.isEmpty()) return newValue;
+			if (Types.FLOAT.equals(this.getType())) {
+				final double newDouble = Cast.asFloat(scope, newValue);
+				for (final Object o : amongValue) {
+					final Double d = Cast.asFloat(scope, o);
+					final Double tolerance = 0.0000001d;
+					if (NumberUtil.equalsWithTolerance(d, newDouble, tolerance)) return d;
+				}
 
-		} else if (amongValue.contains(newValue)) return newValue;
-		return amongValue.get(0);
+			} else if (amongValue.contains(newValue)) return newValue;
+			return amongValue.get(0);
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public void setValue(final IScope scope, final Object val) {
-		if (val == UNDEFINED) {
-			List amongValue = getAmongValue(scope);
-			if (amongValue != null) {
-				value = amongValue.get(scope.getRandom().between(0, amongValue.size() - 1));
-			} else if (type.id() == IType.INT || type.id() == IType.FLOAT || type.id() == IType.POINT
-					|| type.id() == IType.DATE) {
-				value = drawRandomValue(scope);
-			} else if (type.id() == IType.BOOL) {
-				value = scope.getRandom().between(1, 100) > 50;
-			} else {
-				value = null;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (val == UNDEFINED) {
+				List amongValue = getAmongValue(scope);
+				if (amongValue != null) {
+					value = amongValue.get(scope.getRandom().between(0, amongValue.size() - 1));
+				} else if (type.id() == IType.INT || type.id() == IType.FLOAT || type.id() == IType.POINT
+						|| type.id() == IType.DATE) {
+					value = drawRandomValue(scope);
+				} else if (type.id() == IType.BOOL) {
+					value = scope.getRandom().between(1, 100) > 50;
+				} else {
+					value = null;
+				}
+				return;
 			}
-			return;
+			setAndVerifyValue(scope, val);
+		} finally {
+			if (scope != null) { scope.pop(this); }
 		}
-		setAndVerifyValue(scope, val);
 	}
 
 	@Override
 	public void reinitRandomly(final IScope scope) {
-		setValue(scope, UNDEFINED);
-	}
-
-	/**
-	 * Try to init.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
-	public void tryToInit(final IScope scope) {
-		if (value != UNDEFINED || init == null) return;
-		setValue(scope, init.value(scope));
-
+		try {
+			if (scope != null) { scope.push(this); }
+			setValue(scope, UNDEFINED);
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	/**
@@ -606,51 +633,60 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 * @return the comparable
 	 */
 	private Comparable drawRandomValue(final IScope scope) {
-		Object minValue = getMinValue(scope);
-		Object maxValue = getMaxValue(scope);
-		Object stepValue = getStepValue(scope);
-		return switch (type.id()) {
-			case IType.INT -> {
-				final int iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
-				final int iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
-				final int iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
-				yield scope.getRandom().between(iMin, iMax, iStep);
-			}
-			case IType.POINT -> {
-				final GamaPoint pStep = stepValue == null ? new GamaPoint(1, 1, 1) : Cast.asPoint(scope, stepValue);
-				final GamaPoint pMin =
-						minValue == null ? new GamaPoint(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
-								: Cast.asPoint(scope, minValue);
-				final GamaPoint pMax =
-						maxValue == null ? new GamaPoint(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
-								: Cast.asPoint(scope, maxValue);
-				yield scope.getRandom().between(pMin, pMax, pStep);
-			}
-			case IType.DATE -> {
-				final double dStep =
-						stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
-				final GamaDate dMin =
-						minValue == null ? GamaDate.of(LocalDateTime.now()).minus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
-								: GamaDateType.staticCast(scope, minValue, null, false);
-				final GamaDate dMax =
-						maxValue == null ? GamaDate.of(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
-								: GamaDateType.staticCast(scope, maxValue, null, false);
-				yield new GamaDateInterval(dMin, dMax, Duration.of((long) dStep, ChronoUnit.SECONDS)).anyValue(scope);
-			}
-			default -> {
-				final double fStep = stepValue == null ? 1.0 : Cast.asFloat(scope, stepValue);
-				final double fMin = minValue == null ? Double.MIN_VALUE : Cast.asFloat(scope, minValue);
-				final double fMax = maxValue == null ? Double.MAX_VALUE : Cast.asFloat(scope, maxValue);
-				yield scope.getRandom().between(fMin, fMax, fStep);
-			}
-		};
+		try {
+			if (scope != null) { scope.push(this); }
+			Object minValue = getMinValue(scope);
+			Object maxValue = getMaxValue(scope);
+			Object stepValue = getStepValue(scope);
+			return switch (type.id()) {
+				case IType.INT -> {
+					final int iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
+					final int iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
+					final int iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
+					yield scope.getRandom().between(iMin, iMax, iStep);
+				}
+				case IType.POINT -> {
+					final GamaPoint pStep = stepValue == null ? new GamaPoint(1, 1, 1) : Cast.asPoint(scope, stepValue);
+					final GamaPoint pMin =
+							minValue == null ? new GamaPoint(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
+									: Cast.asPoint(scope, minValue);
+					final GamaPoint pMax =
+							maxValue == null ? new GamaPoint(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
+									: Cast.asPoint(scope, maxValue);
+					yield scope.getRandom().between(pMin, pMax, pStep);
+				}
+				case IType.DATE -> {
+					final double dStep =
+							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
+					final GamaDate dMin = minValue == null
+							? GamaDate.of(LocalDateTime.now()).minus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
+							: GamaDateType.staticCast(scope, minValue, null, false);
+					final GamaDate dMax = maxValue == null
+							? GamaDate.of(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
+							: GamaDateType.staticCast(scope, maxValue, null, false);
+					yield new GamaDateInterval(dMin, dMax, Duration.of((long) dStep, ChronoUnit.SECONDS))
+							.anyValue(scope);
+				}
+				default -> {
+					final double fStep = stepValue == null ? 1.0 : Cast.asFloat(scope, stepValue);
+					final double fMin = minValue == null ? Double.MIN_VALUE : Cast.asFloat(scope, minValue);
+					final double fMax = maxValue == null ? Double.MAX_VALUE : Cast.asFloat(scope, maxValue);
+					yield scope.getRandom().between(fMin, fMax, fStep);
+				}
+			};
+		} finally {
+			if (scope != null) { scope.pop(this); }
+
+		}
 	}
 
 	@Override
 	// AD TODO Will not work with points and dates for the moment
 
 	public Set<Object> neighborValues(final IScope scope) throws GamaRuntimeException {
+
 		try (Collector.AsOrderedSet<Object> neighborValues = Collector.getOrderedSet()) {
+			if (scope != null) { scope.push(this); }
 			if (getAmongValue(scope) != null && !getAmongValue(scope).isEmpty()) {
 				final int index = getAmongValue(scope).indexOf(this.value(scope));
 				if (index > 0) { neighborValues.add(getAmongValue(scope).get(index - 1)); }
@@ -736,6 +772,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			}
 
 			return neighborValues.items();
+		} finally {
+			if (scope != null) { scope.pop(this); }
 		}
 
 	}
@@ -770,31 +808,49 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 	@Override
 	public Comparable getMinValue(final IScope scope) {
-		if (min == null) return null;
-		Object minValue = type.cast(scope, min.value(scope), null, false);
-		if (!(minValue instanceof Comparable mc)) return null;
-		return mc;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (min == null) return null;
+			Object minValue = type.cast(scope, min.value(scope), null, false);
+			if (!(minValue instanceof Comparable mc)) return null;
+			return mc;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public Comparable getMaxValue(final IScope scope) {
-		if (max == null) return null;
-		Object maxValue = type.cast(scope, max.value(scope), null, false);
-		if (!(maxValue instanceof Comparable mc)) return null;
-		return mc;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (max == null) return null;
+			Object maxValue = type.cast(scope, max.value(scope), null, false);
+			if (!(maxValue instanceof Comparable mc)) return null;
+			return mc;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public List getAmongValue(final IScope scope) {
-		if (among != null) return Cast.asList(scope, among.value(scope));
-		return null;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (among != null) return Cast.asList(scope, among.value(scope));
+			return null;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public Comparable getStepValue(final IScope scope) {
-		return step == null ? null : (Comparable) step.value(scope);
-		// if (stepValue == null && step != null) { stepValue = step.value(scope); }
-		// return (Comparable) stepValue;
+		try {
+			if (scope != null) { scope.push(this); }
+			return step == null ? null : (Comparable) step.value(scope);
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
@@ -840,21 +896,17 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 	@Override
 	public String getUnitLabel(final IScope scope) {
-		if (unitLabel == null && canBeExplored()) return computeExplorableLabel(scope);
-		return unitLabel;
-	}
-
-	/**
-	 * Compute explorable label.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the string
-	 */
-	private String computeExplorableLabel(final IScope scope) {
-		final List l = getAmongValue(scope);
-		if (l != null) return "among " + l;
-		return "between " + getMinValue(scope) + " and " + getMaxValue(scope) + " every " + getStepValue(scope);
+		try {
+			if (scope != null) { scope.push(this); }
+			if (unitLabel == null && canBeExplored()) {
+				final List l = getAmongValue(scope);
+				if (l != null) return "among " + l;
+				return "between " + getMinValue(scope) + " and " + getMaxValue(scope) + " every " + getStepValue(scope);
+			}
+			return unitLabel;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
@@ -868,14 +920,24 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 * @return the value
 	 */
 	Object getValue(final IScope scope) {
-		tryToInit(scope);
-		return value;
+		try {
+			if (scope != null) { scope.push(this); }
+			if (value == UNDEFINED && init != null) { setValue(scope, init.value(scope)); }
+			return value;
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
 	public boolean acceptsSlider(final IScope scope) {
-		if (slider == null) return true;
-		return Cast.asBool(scope, slider.value(scope));
+		try {
+			if (scope != null) { scope.push(this); }
+			if (slider == null) return true;
+			return Cast.asBool(scope, slider.value(scope));
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
 	}
 
 	@Override
