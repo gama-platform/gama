@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * BulletPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * BulletPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.physics.java_version;
 
@@ -41,14 +41,15 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 
 	/** The config. */
 	private final CollisionConfiguration config = new DefaultCollisionConfiguration();
-	
+
 	/** The dispatcher. */
 	private final CollisionDispatcher dispatcher = new CollisionDispatcher(config);
 
 	/**
 	 * Instantiates a new bullet physical world.
 	 *
-	 * @param physicalSimulationAgent the physical simulation agent
+	 * @param physicalSimulationAgent
+	 *            the physical simulation agent
 	 */
 	public BulletPhysicalWorld(final PhysicalSimulationAgent physicalSimulationAgent) {
 		super(physicalSimulationAgent);
@@ -91,12 +92,8 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	@Override
 	public void updateAgentsShape() {
 		// We update the agents
-		for (IAgent a : updatableAgents) {
-			unregisterAgent(a);
-		}
-		for (IAgent a : updatableAgents) {
-			registerAgent(a);
-		}
+		for (IAgent a : updatableAgents) { unregisterAgent(a); }
+		for (IAgent a : updatableAgents) { registerAgent(a); }
 		updatableAgents.clear();
 	}
 
@@ -145,7 +142,7 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 
 	@Override
 	public void updatePositionsAndRotations() {
-		world.getCollisionObjectArray().forEach((b) -> {
+		world.getCollisionObjectArray().forEach(b -> {
 			RigidBody rb = (RigidBody) b;
 			IBody bw = (IBody) rb.getUserPointer();
 			if (rb.isActive() && !rb.isStaticObject()) { bw.transferLocationAndRotationToAgent(); }
