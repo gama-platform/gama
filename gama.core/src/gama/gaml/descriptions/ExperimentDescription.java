@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ExperimentDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ExperimentDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -65,8 +64,8 @@ public class ExperimentDescription extends SpeciesDescription {
 	public ExperimentDescription(final String keyword, final SpeciesDescription enclosing,
 			final Iterable<IDescription> cp, final EObject source, final Facets facets) {
 		super(keyword, null, enclosing, null, cp, source, facets);
-		// String type = getLitteral(IKeyword.TYPE);
-		// setIf(Flag.isBatch, IKeyword.BATCH.equals(type));
+		String type = getLitteral(IKeyword.TYPE);
+		setIf(Flag.isBatch, IKeyword.BATCH.equals(type));
 		setIf(Flag.isMemorize, facets.containsKey(RECORD));
 	}
 
@@ -366,5 +365,7 @@ public class ExperimentDescription extends SpeciesDescription {
 	public boolean visitMicroSpecies(final DescriptionVisitor<SpeciesDescription> visitor) {
 		return true;
 	}
+
+	public boolean isBatch() { return isSet(Flag.isBatch); }
 
 }

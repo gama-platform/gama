@@ -28,6 +28,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.kernel.experiment.ExperimentParameter.ExperimentParameterValidator;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -47,6 +48,7 @@ import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Dates;
 import gama.gaml.statements.ActionStatement;
@@ -190,7 +192,7 @@ import gama.gaml.variables.Variable;
 		concept = { IConcept.EXPERIMENT, IConcept.PARAMETER })
 @inside (
 		kinds = { ISymbolKind.EXPERIMENT })
-@validator (Variable.VarValidator.class)
+@validator (ExperimentParameterValidator.class)
 @doc (
 		value = "The parameter statement specifies which global attributes (i) will change through the successive simulations (in batch experiments), (ii) can be modified by user via the interface (in gui experiments). In GUI experiments, parameters are displayed depending on their type.",
 		usages = { @usage (
@@ -209,20 +211,26 @@ import gama.gaml.variables.Variable;
 @SuppressWarnings ({ "rawtypes" })
 public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
+	public static class ExperimentParameterValidator extends Variable.VarValidator {
+		@Override
+		public void validate(final IDescription vd) {
+			super.validate(vd);
+			String varName = vd.getLitteral(IKeyword.VAR);
+			final VariableDescription targetedGlobalVar = findTargetedVar(vd, varName);
+			final ExperimentDescription ed = (ExperimentDescription) vd.getEnclosingDescription();
+			if (targetedGlobalVar != null && targetedGlobalVar.isDefinedInExperiment() && ed.isBatch()) {
+				vd.info("This parameter will not be explored as " + varName
+						+ " is an attribute of the experiment. Only attributes of the model/simulation, defined in 'global', can be explored by batch experiments.",
+						IGamlIssue.WRONG_CONTEXT);
+			}
+		}
+	}
+
 	/** The undefined. */
 	static final Object UNDEFINED = new Object();
 
 	/** The value. */
 	private Object value = UNDEFINED;
-
-	/** The max value. */
-	// Object minValue, maxValue;
-
-	/** The step value. */
-	// Object stepValue;
-
-	/** The among value. */
-	// private List amongValue;
 
 	/** The enables. */
 	final private String[] disables, enables, extensions, updates, labels;
@@ -303,7 +311,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		updates = g != null ? g.getStrings(getDescription(), false).toArray(new String[0]) : EMPTY_STRINGS;
 		String[] tab = h != null ? h.getStrings(getDescription(), false).toArray(new String[0]) : SWITCH_STRINGS;
 		labels = tab.length != 2 ? SWITCH_STRINGS : tab;
-		final VariableDescription targetedGlobalVar = findTargetedVar(sd);
+		final VariableDescription targetedGlobalVar = findTargetedVar(sd, varName);
 		init = hasFacet(IKeyword.INIT) ? getFacet(IKeyword.INIT) : targetedGlobalVar.getFacetExpr(IKeyword.INIT);
 		isEditable = !targetedGlobalVar.isNotModifiable();
 		if (isEditable) {
@@ -322,14 +330,13 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 *            the parameter description
 	 * @return the variable description
 	 */
-	private VariableDescription findTargetedVar(final IDescription parameterDescription) {
+	public static VariableDescription findTargetedVar(final IDescription parameterDescription, final String varName) {
 		// We look first in the model to make sure that built-in parameters (like seed) are correctly retrieved
 		final ModelDescription wd = parameterDescription.getModelDescription();
 		VariableDescription targetedGlobalVar = wd.getAttribute(varName);
 		if (targetedGlobalVar == null) {
 			final ExperimentDescription ed = (ExperimentDescription) parameterDescription.getEnclosingDescription();
 			targetedGlobalVar = ed.getAttribute(varName);
-			isExperiment = true;
 		}
 		return targetedGlobalVar;
 	}
