@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ImageOperators.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ImageOperators.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -24,13 +24,14 @@ import java.awt.image.ColorModel;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.interfaces.IDisplaySurface;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -186,7 +187,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the gama image
 	 */
-	@operator ("darker")
+	@operator (IKeyword.DARKER)
 	@doc ("Used to return an image 10% darker. This operation can be applied multiple times in a row if greater than 10% changes in brightness are desired.")
 	@no_test
 	public static GamaImage darker(final IScope scope, final GamaImage image) {
@@ -210,8 +211,8 @@ public class ImageOperators implements ImageConstants {
 	 * @return the gama image
 	 * @date 15 sept. 2023
 	 */
-	@operator ("darker")
-	@doc ("Used to return an image darker by a percentage (between 0 - no change - and 1 - 100% darker). If the percentage is below zero or abovde 1, returns the image untouched")
+	@operator (IKeyword.DARKER)
+	@doc ("Used to return an image darker by a percentage (between 0 - no change - and 1 - 100% darker). If the percentage is below zero or above 1, returns the image untouched")
 	@no_test
 	public static GamaImage darker(final IScope scope, final GamaImage image, final double percentage) {
 		try {
@@ -232,12 +233,25 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the gama image
 	 */
-	@operator ("brighter")
+	@operator (IKeyword.BRIGHTER)
 	@doc ("Used to return an image 10% brigther. This operation can be applied multiple times in a row if greater than 10% changes in brightness are desired.")
 	@no_test
 	public static GamaImage brigther(final IScope scope, final GamaImage image) {
 		try {
 			return apply(image, OP_BRIGHTER);
+		} catch (Exception e) {
+			return image;
+		}
+	}
+
+	@operator (IKeyword.BRIGHTER)
+	@doc ("Used to return an image brighter by a percentage (between 0 - no change - and 1 - 100% brighter). If the percentage is below zero or above 1, returns the image untouched")
+	@no_test
+	public static GamaImage brigther(final IScope scope, final GamaImage image, final double percentage) {
+		try {
+			if (percentage < 0 || percentage > 1) return image;
+			float scale = (float) percentage;
+			return apply(image, new RescaleOp(1f + scale, 0, HINTS));
 		} catch (Exception e) {
 			return image;
 		}
