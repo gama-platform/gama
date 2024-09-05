@@ -246,11 +246,12 @@ public class WorkspacePreferences {
 				if (askBeforeUsingOutdatedWorkspace()) {
 					create = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
 							"Different version of the models library",
-							"The workspace contains a different version of the models library. Do you want to proceed anyway ?");
+							"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
 				}
 				if (create) {
 					try {
 						dotFile.createNewFile();
+						Application.clearWorkspace(true);
 					} catch (final IOException e) {
 						return "Error updating the models library";
 					}
@@ -262,7 +263,7 @@ public class WorkspacePreferences {
 		}
 		if (cloning) {
 			final boolean b = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "Existing workspace",
-					"The path entered is a path to an existing workspace. All its contents will be erased and replaced by the current workspace contents. Proceed anyway ?");
+					"The path entered is a path to an existing workspace. Its contents will be erased and replaced by the current workspace contents. Proceed anyway ?");
 			if (!b) return "";
 		}
 		return null;
