@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -348,7 +347,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return GamaExecutorService.step(scope, this, getSpecies());
 	}
 
-
 	/**
 	 * Take copy into account and always creates a list (necessary for #2254)
 	 */
@@ -524,7 +522,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return listAgt.firstValue(scope);
 	}
 
-	@SuppressWarnings ("unchecked") 
+	@SuppressWarnings ("unchecked")
 	@Override
 	public IList<T> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
@@ -816,7 +814,8 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	 * @param container
 	 *            the container
 	 */
-	protected <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {
+	@Override
+	public <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {
 		notifier.notifyAgentsAdded(scope, this, agents);
 	}
 

@@ -11,12 +11,12 @@
 package gama.extension.serialize.binary;
 
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.kernel.experiment.ISimulationRecorder;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.SerialisedAgent;
+import gama.core.util.ByteArrayZipper;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
@@ -29,7 +29,7 @@ import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 public class SimulationSerialiser implements ISimulationRecorder, ISerialisationConstants {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The processor. */
@@ -46,12 +46,9 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 	@Override
 	public void record(final SimulationAgent sim) {
 		try {
-			// long startTime = System.nanoTime();
 			byte[] state = processor.saveAgentToBytes(sim.getScope(), sim);
 			SimulationHistory history = getSimulationHistory(sim);
-			SimulationHistoryNode node = new SimulationHistoryNode(state, sim.getClock().getCycle());
-			history.push(node);
-			// asyncZip(node, startTime);
+			history.push(state, sim.getClock().getCycle());
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -89,12 +86,12 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 			synchronized (sim) {
 				LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
 				SimulationHistoryNode node = history.pop();
-				if (node != null && node.cycle == sim.getClock().getCycle()) { node = history.pop(); }
+				if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
 				if (node != null) {
-					long startTime = System.nanoTime();
-					processor.restoreAgentFromBytes(sim, node.bytes);
-
-					DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
+					// long startTime = System.nanoTime();
+					processor.restoreAgentFromBytes(sim, ByteArrayZipper.unzip(node.bytes()));
+					// DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) +
+					// "ms");
 				}
 			}
 		} catch (Throwable e) {

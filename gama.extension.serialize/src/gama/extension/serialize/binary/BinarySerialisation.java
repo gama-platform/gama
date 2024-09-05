@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
@@ -55,7 +55,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 			byte[] all = Files.readAllBytes(Path.of(FileUtils.constructAbsoluteFilePath(scope, path, true)));
 			return createFromBytes(scope, all);
 		} catch (IOException e) {
-			throw GamaRuntimeException.create(e, GAMA.getRuntimeScope());
+			throw GamaRuntimeException.create(e, scope);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 			try {
 				restoreFromFile(agent, string);
 			} catch (Throwable ex) {
-				GAMA.reportAndThrowIfNeeded(agent.getScope(),GamaRuntimeException.create(ex, agent.getScope()), true);
+				GAMA.reportAndThrowIfNeeded(agent.getScope(), GamaRuntimeException.create(ex, agent.getScope()), true);
 			}
 		}
 	}

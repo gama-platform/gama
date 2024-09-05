@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * RemoteSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * RemoteSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -55,12 +54,6 @@ public class RemoteSequence extends AbstractStatementSequence {
 		super.leaveScope(scope);
 	}
 
-	// @Override
-	// public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-	// scope.addVarWithValue(IKeyword.MYSELF, myself.get());
-	// return super.privateExecuteIn(scope);
-	// }
-
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		scope.addVarWithValue(IKeyword.MYSELF, myself.get());
@@ -69,10 +62,7 @@ public class RemoteSequence extends AbstractStatementSequence {
 			final ExecutionResult result = scope.execute(command);
 			if (!result.passed()) return lastResult;
 			FlowStatus fs = scope.getAndClearContinueStatus();
-			if (scope.interrupted() || fs == FlowStatus.BREAK) // scope.setFlowStatus(IScope.FlowStatus.BREAK); // we
-																// set it again for
-				// the outer statement
-				return lastResult;
+			if (scope.interrupted() || fs == FlowStatus.BREAK) return lastResult;
 			if (fs == FlowStatus.CONTINUE) { continue; }
 			lastResult = result.getValue();
 		}
