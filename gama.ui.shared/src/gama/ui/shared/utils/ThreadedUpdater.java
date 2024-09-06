@@ -48,6 +48,7 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 	public ThreadedUpdater(final String name) {
 		super(WorkbenchHelper.getDisplay(), name);
 		setPriority(DECORATE);
+		setSystem(true);
 	}
 
 	@Override
@@ -62,9 +63,6 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 		message = m;
 		schedule();
 	}
-
-	@Override
-	public int getCurrentState() { return control.getCurrentState(); }
 
 	/**
 	 * Sets the target.

@@ -69,4 +69,7 @@ public class StatusMessage implements IStatusMessage {
 	@Override
 	public String getIcon() { return icon; }
 
+	@Override
+	public StatusMessageType getType() { return StatusMessageType.STATUS; }
+
 }

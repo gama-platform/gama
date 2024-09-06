@@ -26,4 +26,7 @@ public class ErrorStatusMessage implements IStatusMessage {
 		return null;
 	}
 
+	@Override
+	public StatusMessageType getType() { return StatusMessageType.ERROR; }
+
 }

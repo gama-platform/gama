@@ -20,6 +20,10 @@ import java.awt.Color;
  */
 public interface IStatusMessage extends IUpdaterMessage {
 
+	public enum StatusMessageType {
+		ERROR, STATUS, USER, SUBTASK
+	}
+
 	/**
 	 * Gets the text.
 	 *
@@ -47,4 +51,6 @@ public interface IStatusMessage extends IUpdaterMessage {
 	 * @return the icon
 	 */
 	String getIcon();
+
+	StatusMessageType getType();
 }
