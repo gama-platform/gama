@@ -32,7 +32,7 @@ jobs:
           echo "\nPrint `needToSign.txt` :"
           cat needToSign.txt
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: gama-mac-what2sign
           path: |
@@ -54,7 +54,7 @@ jobs:
       matrix:
         zipName: [gama.application-macosx.cocoa.x86_64, gama.application-macosx.cocoa.x86_64_withJDK, gama.application-macosx.cocoa.aarch64, gama.application-macosx.cocoa.aarch64_withJDK]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Prepare vm
         shell: bash
@@ -63,7 +63,7 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_21_X64
           mkdir -p ${{ github.workspace }}/artifacts/work
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: gama-mac-what2sign
 
@@ -127,10 +127,10 @@ jobs:
           xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         env: 
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
-          name: gama-mac-signed
+          name: gama-mac-signed-${{ matrix.zipName }}
           path: ./${{ matrix.zipName }}.dmg
           if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 

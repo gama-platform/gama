@@ -34,17 +34,20 @@ jobs:
           name: gama-zip-builds
 
       # Get Mac dmg signed archives
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-mac-signed
+          #name: gama-mac-signed
+          path: gama-mac-signed
+          pattern: gama-mac-signed-*
+          merge-multiple: true
 
       # Get Linux deb archive
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: gama-linux-deb
 
       # Get Windows exe
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: gama-windows-exe
 

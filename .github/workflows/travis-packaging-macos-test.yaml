@@ -9,9 +9,12 @@ jobs:
     runs-on: macos-latest
     steps:
       # Get Linux deb archive
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-mac-signed
+          #name: gama-mac-signed
+          path: gama-mac-signed
+          pattern: gama-mac-signed-*
+          merge-multiple: true
 
       - name: Test Gama w/ JDK
         run: |
