@@ -59,8 +59,11 @@ jobs:
       - name: Prepare vm
         shell: bash
         run: |
-          # Change XCode version 
+          # Enforce JAVA version
           export JAVA_HOME=$JAVA_HOME_21_X64
+          # Change XCode version 
+          sudo xcode-select -s '/Applications/Xcode_15.0.1.app/Contents/Developer'
+          # Else
           mkdir -p ${{ github.workspace }}/artifacts/work
 
       - uses: actions/download-artifact@v4
