@@ -15,7 +15,10 @@ jobs:
       # Get Linux deb archive
       - uses: actions/download-artifact@v4
         with:
-          name: gama-linux-deb
+          #name: gama-linux-deb
+          path: gama-linux-deb
+          pattern: gama-linux-deb-*
+          merge-multiple: true
 
       - name: Update apt databse
         run: |

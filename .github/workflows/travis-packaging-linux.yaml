@@ -56,6 +56,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: gama-linux-deb
+          name: gama-linux-deb-${{ matrix.zipName }}
           path: |
             ${{ github.workspace }}/${{ matrix.zipName }}.deb
