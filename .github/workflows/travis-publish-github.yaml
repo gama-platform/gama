@@ -37,7 +37,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           #name: gama-mac-signed
-          path: gama-mac-signed
+          path: ${{ github.workspace }}
           pattern: gama-mac-signed-*
           merge-multiple: true
 
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           #name: gama-linux-deb
-          path: gama-linux-deb
+          path: ${{ github.workspace }}
           pattern: gama-linux-deb-*
           merge-multiple: true
 
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           #name: gama-windows-exe
-          path: gama-windows-exe
+          path: ${{ github.workspace }}
           pattern: gama-windows-exe-*
           merge-multiple: true
 

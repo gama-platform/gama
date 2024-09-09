@@ -16,7 +16,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           #name: gama-linux-deb
-          path: gama-linux-deb
+          path: ${{ github.workspace }}
           pattern: gama-linux-deb-*
           merge-multiple: true
 
