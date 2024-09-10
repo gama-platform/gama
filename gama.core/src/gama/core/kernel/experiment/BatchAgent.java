@@ -358,10 +358,11 @@ public class BatchAgent extends ExperimentAgent {
 					IMap<String, Object> localRes = manageOutputAndCloseSimulation(agent, ps, false, simDispose);
 
 					if (!res.containsKey(ps)) { res.put(ps, GamaMapFactory.create()); }
-					for (String output : localRes.keySet()) {
+					localRes.forEachKey(output -> {
 						if (!res.get(ps).containsKey(output)) { res.get(ps).put(output, GamaListFactory.create()); }
 						res.get(ps).get(output).add(localRes.get(output));
-					}
+						return true;
+					});
 
 					if (!sims.isEmpty()) { createSimulation(sims.remove(0), simToParameter); }
 
@@ -393,19 +394,18 @@ public class BatchAgent extends ExperimentAgent {
 			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getSpecies().getExplorationAlgorithm();
 			final short fitnessCombination = oAlgo.getCombination();
 
-			for (ParametersSet p : res.keySet()) {
+			res.forEach((p, map) -> {
 				lastSolution = p;
 				try (DoubleStream fit =
-						res.get(p).get(IKeyword.FITNESS).stream().mapToDouble(o -> Double.parseDouble(o.toString()))) {
+						map.get(IKeyword.FITNESS).stream().mapToDouble(o -> Double.parseDouble(o.toString()))) {
 					lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? fit.max().getAsDouble()
 							: fitnessCombination == AOptimizationAlgorithm.C_MIN ? fit.min().getAsDouble()
 							: fit.average().getAsDouble();
 				}
-				res.get(p).put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
+				map.put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
 				// we update the best solution found so far
 				oAlgo.updateBestFitness(lastSolution, lastFitness);
-
-			}
+			});
 		}
 
 		// At last, we update the parameters (last fitness and best fitness)
@@ -477,10 +477,10 @@ public class BatchAgent extends ExperimentAgent {
 						pop.unscheduleSimulation(agent);
 						Map<String, Object> out =
 								manageOutputAndCloseSimulation(agent, currentSolution, true, simDispose);
-						for (String out_vars : out.keySet()) {
+						out.forEach((out_vars, obj) -> {
 							if (!outputs.containsKey(out_vars)) { outputs.put(out_vars, GamaListFactory.create()); }
 							outputs.get(out_vars).add(out.get(out_vars));
-						}
+						});
 					}
 				}
 				// We inform the status line
