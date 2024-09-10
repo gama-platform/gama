@@ -12,26 +12,21 @@ package gaml.compiler.ui.editor.toolbar;
 
 import static gama.ui.shared.utils.WorkbenchHelper.executeCommand;
 import static gama.ui.shared.utils.WorkbenchHelper.getCommand;
-import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY;
-
-import java.util.function.Consumer;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
+import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
 
 /**
@@ -55,28 +50,17 @@ public class EditorToolbar {
 	/** The searching. */
 	volatile boolean searching;
 
-	/**
-	 * Selected.
-	 *
-	 * @param event
-	 *            the event
-	 * @return the selection listener
-	 */
-	static SelectionListener selected(final Consumer<SelectionEvent> event) {
-		return widgetSelectedAdapter(event);
-	}
-
 	/** The global previous. */
-	final SelectionListener globalPrevious = selected(e -> executeCommand(NAVIGATE_BACKWARD_HISTORY));
+	final Selector globalPrevious = e -> executeCommand(NAVIGATE_BACKWARD_HISTORY);
 
 	/** The global next. */
-	final SelectionListener globalNext = selected(e -> executeCommand(NAVIGATE_FORWARD_HISTORY));
+	final Selector globalNext = e -> executeCommand(NAVIGATE_FORWARD_HISTORY);
 
 	/** The search previous. */
-	final SelectionListener searchPrevious = selected(e -> find.findPrevious());
+	final Selector searchPrevious = e -> find.findPrevious();
 
 	/** The search next. */
-	final SelectionListener searchNext = selected(e -> find.findNext());
+	final Selector searchNext = e -> find.findNext();
 
 	/**
 	 * Instantiates a new editor toolbar.
@@ -100,23 +84,15 @@ public class EditorToolbar {
 		previous = toolbar.button("editor/command.lastedit", null, "Previous edit location", globalPrevious);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
 		find = new EditorSearchControls(editor).fill(toolbar);
-		toolbar.menu("editor/command.outline", null, "Show outline", new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				// final GamlEditor editor = getEditor();
-				if (editor == null) return;
-				editor.openOutlinePopup();
-			}
+		toolbar.menu("editor/command.outline", null, "Show outline", e -> {
+			// final GamlEditor editor = getEditor();
+			if (editor == null) return;
+			editor.openOutlinePopup();
 		});
 		if (GamaBundleLoader.isDiagramEditorLoaded()) {
-			diagram = toolbar.button("editor/command.graphical", null, "Switch to diagram", new SelectionAdapter() {
-
-				@Override
-				public void widgetSelected(final SelectionEvent e) {
-					if (editor == null) return;
-					editor.switchToDiagram();
-				}
+			diagram = toolbar.button("editor/command.graphical", null, "Switch to diagram", e -> {
+				if (editor == null) return;
+				editor.switchToDiagram();
 			});
 		}
 

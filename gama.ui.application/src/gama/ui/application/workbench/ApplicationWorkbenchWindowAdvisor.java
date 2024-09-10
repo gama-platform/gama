@@ -24,6 +24,7 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
 import gama.core.common.preferences.GamaPreferences;
@@ -141,6 +142,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 			// });
 			// }
 		}
+		PerspectiveHelper.showBottomTray((WorkbenchWindow) window, false);
 	}
 
 	@Override
