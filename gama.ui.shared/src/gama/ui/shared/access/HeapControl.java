@@ -21,7 +21,8 @@ public class HeapControl {
 	protected void updateToolTip() {
 		Runtime runtime = Runtime.getRuntime();
 		long totalMem = convertToMeg(runtime.totalMemory());
-		item.setToolTipText("" + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M");
+		item.setToolTipText(
+				"Memory used: " + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M");
 	}
 
 	private long convertToMeg(final long numBytes) {
