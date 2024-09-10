@@ -368,6 +368,4 @@ public class ExperimentDescription extends SpeciesDescription {
 		return true;
 	}
 
-	public boolean isBatch() { return isSet(Flag.isBatch); }
-
 }
