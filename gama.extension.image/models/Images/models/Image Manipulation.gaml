@@ -25,8 +25,8 @@ global {
 		do create_agent(((im1 * 0.1) * 10), "(Size / 10) * 10");
 		do create_agent((im1 rotated_by 90) * 0.5, "Rotation 90° / 2");
 		do create_agent((im1 rotated_by -33) * 0.7, "Rotation -33° * 0.7");
-		do create_agent(darker(darker(im1)), "2 x darker");
-		do create_agent(brighter(brighter(im1)), "2 x brighter");
+		do create_agent(darker(im1,0.5), "50% darker");
+		do create_agent(brighter(im1, 0.5), "50% brighter");
 		do create_agent((im1 * #lightgreen), "Light green tint");
 		do create_agent((im1 * #lightskyblue), "Light blue tint");
 		do create_agent(im1 tinted_with (#red, 0.15), "15% red tint");

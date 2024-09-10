@@ -279,6 +279,8 @@ public class ExperimentDescription extends SpeciesDescription {
 	 */
 	public Boolean isMemorize() { return isSet(Flag.isMemorize); }
 
+	public Boolean isBatch() { return isSet(Flag.isBatch); }
+
 	@Override
 	public Class<? extends IExperimentAgent> getJavaBase() {
 		String type = getLitteral(IKeyword.TYPE);

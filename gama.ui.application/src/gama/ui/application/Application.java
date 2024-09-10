@@ -241,8 +241,9 @@ public class Application implements IApplication {
 				// this stage
 				if (ret != null) {
 					remember = "models".equals(ret) && WorkspacePreferences.askBeforeUsingOutdatedWorkspace()
-							&& !openQuestion(null, "Different version of the models library",
-									"The workspace contains a different version of the models library. Do you want to use another workspace ?");
+							&& openQuestion(null, "Different version of the models library",
+									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					if (remember) { clearWorkspace(true); }
 				}
 			}
 		}
@@ -255,7 +256,7 @@ public class Application implements IApplication {
 			if (pick == 1 /* Window.CANCEL */ || wr == null) {
 				openError(null, IKeyword.ERROR, "GAMA can not start without a workspace and will now exit.");
 				// System.exit(0);
-				return IApplication.EXIT_OK;
+				return EXIT_OK;
 			}
 			/* Tell Eclipse what the selected location was and continue */
 			instanceLoc.set(new URL("file", null, wr), false);
