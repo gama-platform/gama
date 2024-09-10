@@ -34,6 +34,7 @@ import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
@@ -277,6 +278,18 @@ public class BatchAgent extends ExperimentAgent {
 		return s;
 	}
 
+	public IMap<ParametersSet, Map<String, List<Object>>>
+			runSimulationsAndReturnResults(final List<ParametersSet> sets) {
+		IMap<ParametersSet, Map<String, List<Object>>> res;
+		if (GamaExecutorService.shouldRunAllSimulationsInParallel(this)) {
+			res = launchSimulationsInParallelWithParametersSets(sets);
+		} else {
+			res = GamaMapFactory.create();
+			for (ParametersSet sol : sets) { res.put(sol, launchSimulationsWithSingleParametersSet(sol)); }
+		}
+		return res;
+	}
+
 	/**
 	 * Launch simulations with solution.
 	 *
@@ -286,8 +299,8 @@ public class BatchAgent extends ExperimentAgent {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public IMap<ParametersSet, Map<String, List<Object>>> launchSimulationsWithSolution(final List<ParametersSet> sols)
-			throws GamaRuntimeException {
+	private IMap<ParametersSet, Map<String, List<Object>>>
+			launchSimulationsInParallelWithParametersSets(final List<ParametersSet> sols) throws GamaRuntimeException {
 		// We first reset the currentSolution and the fitness values
 		final SimulationPopulation pop = getSimulationPopulation();
 
@@ -325,7 +338,6 @@ public class BatchAgent extends ExperimentAgent {
 		Map<IAgent, ParametersSet> simToParameter = GamaMapFactory.create();
 		Iterator<Map<String, Object>> it = simsToRun.iterator();
 		while (it.hasNext()) { createSimulation(it.next(), simToParameter); }
-
 		while (pop.hasScheduledSimulations() && !dead) {
 			// We step all the simulations
 			pop.step(getScope());
@@ -355,6 +367,7 @@ public class BatchAgent extends ExperimentAgent {
 
 				}
 			}
+			if (!dead) { informStatus(pop, sims.size()); }
 			// We then verify that the front scheduler has not been paused
 			while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(100); }
 		}
@@ -410,7 +423,7 @@ public class BatchAgent extends ExperimentAgent {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public Map<String, List<Object>> launchSimulationsWithSolution(final ParametersSet sol)
+	public Map<String, List<Object>> launchSimulationsWithSingleParametersSet(final ParametersSet sol)
 			throws GamaRuntimeException {
 		// We first reset the currentSolution and the fitness values
 		final SimulationPopulation pop = getSimulationPopulation();
@@ -444,7 +457,6 @@ public class BatchAgent extends ExperimentAgent {
 				repeatIndex++;
 				if (repeatIndex == getSeeds().length || dead) { break; }
 			}
-			String suffix = "";
 			while (pop.hasScheduledSimulations() && !dead) {
 				// We step all the simulations
 				pop.step(getScope());
@@ -472,13 +484,8 @@ public class BatchAgent extends ExperimentAgent {
 					}
 				}
 				// We inform the status line
-				if (!dead) {
-					getScope().getGui().getStatus().setStatus(getScope(),
-							"Run " + runNumber + " | " + repeatIndex + "/" + seeds.length + " simulations (using "
-									+ pop.getNumberOfActiveThreads() + " threads)",
-							"overlays/small.exp.batch.white" + suffix);
-				}
-				suffix = "".equals(suffix) ? "2" : "";
+				if (!dead) { informStatus(pop, repeatIndex); }
+
 				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}
@@ -519,6 +526,16 @@ public class BatchAgent extends ExperimentAgent {
 
 		return outputs;
 
+	}
+
+	boolean pairIcon;
+
+	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
+		getScope().getGui().getStatus().setStatus(getScope(),
+				"Run " + runNumber + " | " + repeatIndex + "/" + seeds.length + " simulations (using "
+						+ pop.getNumberOfActiveThreads() + " threads)",
+				"overlays/small.exp.batch.white" + (pairIcon ? "2" : ""));
+		pairIcon = !pairIcon;
 	}
 
 	/**

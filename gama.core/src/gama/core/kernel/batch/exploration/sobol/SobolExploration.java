@@ -34,9 +34,7 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.compilation.ISymbol;
@@ -149,15 +147,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		currentExperiment.setSeeds(new Double[1]);
 		// TODO : why doesnt it take into account the value of 'keep_simulations:' ?
 		currentExperiment.setKeepSimulations(false);
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
-			res_outputs = currentExperiment.launchSimulationsWithSolution(solutions);
-		} else {
-			res_outputs = GamaMapFactory.create();
-			for (ParametersSet sol : solutions) {
-				res_outputs.put(sol, currentExperiment.launchSimulationsWithSolution(sol));
-			}
-		}
-
+		res_outputs = currentExperiment.runSimulationsAndReturnResults(solutions);
 		Map<String, List<Object>> rebuilt_output = rebuildOutput(res_outputs);
 
 		sobol_analysis.setOutputs(rebuilt_output);

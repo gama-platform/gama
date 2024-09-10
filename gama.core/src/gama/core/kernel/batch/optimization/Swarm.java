@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -26,6 +24,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.StoppingCriterion;
 import gama.core.kernel.batch.StoppingCriterionMaxIt;
@@ -261,7 +261,7 @@ public class Swarm extends AOptimizationAlgorithm {
 				solTotest.add(sol);
 			}
 		}
-		Map<ParametersSet, Double> res = batch.launchSimulationsWithSolution(solTotest).entrySet().stream()
+		Map<ParametersSet, Double> res = batch.runSimulationsAndReturnResults(solTotest).entrySet().stream()
 				.collect(Collectors.toMap(Entry::getKey, e -> getFirstFitness(e.getValue())));
 		testedSolutions.putAll(res);
 		results.putAll(res);
@@ -278,18 +278,15 @@ public class Swarm extends AOptimizationAlgorithm {
 	 *            the solution to test
 	 */
 	public void evaluation(final Particle[] particles, final Map<ParametersSet, List<Particle>> soltTotest) {
-		
+
 		BatchAgent batch = getCurrentExperiment();
-		
+
 		if (batch == null) return;
-		
-		
+
 		if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch) && !batch.getParametersToExplore().isEmpty()) {
 			Map<ParametersSet, Double> res = testSolutions(soltTotest.keySet());
 			for (ParametersSet ps : res.keySet()) {
-				for (Particle particle : soltTotest.get(ps)) {
-					particle.updatePersonalBest();
-				}
+				for (Particle particle : soltTotest.get(ps)) { particle.updatePersonalBest(); }
 			}
 
 		} else {

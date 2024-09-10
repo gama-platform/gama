@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * MorrisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MorrisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -42,9 +41,7 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.compilation.ISymbol;
@@ -102,8 +99,7 @@ import gama.gaml.types.IType;
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")) 
-		},
+						doc = @doc ("The path to the file where the automatic batch report will be written")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",
@@ -146,7 +142,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	/** The samples. */
 	private List<Map<String, Object>> samples;
-	
+
 	/** Main Morris **/
 	private Morris momo;
 
@@ -162,11 +158,9 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
-	
-	
+
 	/** ######################### EVALUATE MORRIS INDEXES ######################### */
 
-	
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) {
@@ -174,53 +168,48 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		this.nb_levels = Cast.asInt(scope, getFacet(NB_LEVELS).value(scope));
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
-			String path = FileUtils.constructAbsoluteFilePath(scope, Cast.asString(scope, path_facet.value(scope)), false);
-			this.solutions = this.solutions == null
-					? buildParameterSetsFromCSV(scope, path, new ArrayList<>()) : this.solutions;
+			String path =
+					FileUtils.constructAbsoluteFilePath(scope, Cast.asString(scope, path_facet.value(scope)), false);
+			this.solutions =
+					this.solutions == null ? buildParameterSetsFromCSV(scope, path, new ArrayList<>()) : this.solutions;
 		} else {
 			this.solutions = buildParameterSets(scope, new ArrayList<>(), 0);
 		}
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
-		// TODO : why doesn't it take into account the value of 'keep_simulations:' ? because, by design, there is to many simulation to keep in memory... 
+		// TODO : why doesn't it take into account the value of 'keep_simulations:' ? because, by design, there is to
+		// many simulation to keep in memory...
 		currentExperiment.setKeepSimulations(false);
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
-			res_outputs = currentExperiment.launchSimulationsWithSolution(solutions);
-		} else {
-			res_outputs = GamaMapFactory.create();
-			for (ParametersSet sol : solutions) {
-				res_outputs.put(sol, currentExperiment.launchSimulationsWithSolution(sol));
-			}
-		}
-		
+		res_outputs = currentExperiment.runSimulationsAndReturnResults(solutions);
+
 		// The output of simulations
 		Map<String, List<Double>> rebuilt_output = rebuildOutput(scope, res_outputs);
 		momo.setOutputs(rebuilt_output, scope);
-		
+
 		// TODO : verify if Morris sampling can lead to several identical points in the parameter space
 		int outsize = 0;
 		for (Map<String, List<Object>> m : res_outputs.values()) {
 			outsize += m.values().stream().findFirst().get().size();
 		}
-		
+
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
 		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
-		
+
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
 		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
-			
+
 			momo.evaluate();
-			
+
 			String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 			final File fm = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 			final File parentm = fm.getParentFile();
 			if (!parentm.exists()) { parentm.mkdirs(); }
 			if (fm.exists()) { fm.delete(); }
 			saveResults(fm, scope);
-			
+
 		}
 	}
-	
+
 	/** ######################### EXPLORATION OVERRIDES ######################### */
 
 	/**
@@ -235,35 +224,41 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
 		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
-		
+
 		// Puck Fython
 		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
-		
+
 		// Design sample to be used by Morris
 		this.samples = Cast.asList(scope, morris_samplings.get(0));
 		momo = new Morris(this.samples, this.nb_levels);
-		
+
 		// Same sample to execute in Gama experiment
 		return Cast.asList(scope, morris_samplings.get(1));
 	}
-	
+
 	@Override
-	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
+	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
 		int s = Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
 		int l = Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
-		
+
 		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
-				@Override public Object value() { return l; }
+			@Override
+			public Object value() {
+				return l;
+			}
 		});
-		
+
 		exp.add(new ParameterAdapter("Morris sample", IKeyword.MORRIS, IType.STRING) {
-			@Override public Object value() { return solutions==null?s*l:(solutions.size()==0?sample:solutions.size()); }
+			@Override
+			public Object value() {
+				return solutions == null ? s * l : solutions.size() == 0 ? sample : solutions.size();
+			}
 		});
-		
+
 	}
-	
+
 	// ************************* END OF SUPER CLASS CONTRACT ************************* //
 
 	/**
@@ -290,7 +285,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 		return rebuilt_output;
 	}
-	
+
 	/**
 	 * Save the report of the Sobol analysis (sobol indexes) in a .csv file
 	 *
@@ -307,7 +302,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	/**
 	 * Builds the parameter sets from CSV.
-	 * 
+	 *
 	 * TODO : create a Morris instance !!!
 	 *
 	 * @param scope
@@ -319,8 +314,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 * @return the list
 	 */
 	public List<ParametersSet> buildParameterSetsFromCSV(final IScope scope, final String path,
-			final List<ParametersSet> sets) throws GamaRuntimeException{
-		
+			final List<ParametersSet> sets) throws GamaRuntimeException {
+
 		List<Map<String, Object>> parameters = new ArrayList<>();
 		try {
 			File file = new File(path);

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GeneticAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GeneticAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -17,8 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -26,6 +23,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.Neighborhood;
 import gama.core.kernel.batch.Neighborhood1Var;
@@ -320,7 +319,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 			paramToCh.put(chromosome, sol);
 			if (!testedSolutions.containsKey(sol)) { solTotest.add(sol); }
 		}
-		Map<ParametersSet, Double> fitnessRes = batch.launchSimulationsWithSolution(solTotest).entrySet().stream()
+		Map<ParametersSet, Double> fitnessRes = batch.runSimulationsAndReturnResults(solTotest).entrySet().stream()
 				.collect(Collectors.toMap(Entry::getKey, e -> getFirstFitness(e.getValue())));
 		testedSolutions.putAll(fitnessRes);
 		for (final Chromosome chromosome : population) {
@@ -361,7 +360,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 		if (batch == null) return;
 		final ParametersSet sol = chromosome.convertToSolution(scope, batch.getParametersToExplore());
 		Double fitness = testedSolutions.get(sol);
-		if (fitness == null) { fitness = getFirstFitness(batch.launchSimulationsWithSolution(sol)); }
+		if (fitness == null) { fitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(sol)); }
 		testedSolutions.put(sol, fitness);
 		chromosome.setFitness(fitness);
 	}
@@ -432,7 +431,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 		}
 		BatchAgent batch = getCurrentExperiment();
 		if (batch == null) return results;
-		Map<ParametersSet, Double> res = batch.launchSimulationsWithSolution(solTotest).entrySet().stream()
+		Map<ParametersSet, Double> res = batch.runSimulationsAndReturnResults(solTotest).entrySet().stream()
 				.collect(Collectors.toMap(Entry::getKey, e -> getFirstFitness(e.getValue())));
 		testedSolutions.putAll(res);
 		results.putAll(res);
@@ -478,7 +477,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 					if (neighborSol == null) { continue; }
 					Double neighborFitness = testedSolutions.get(neighborSol);
 					if (neighborFitness == null) {
-						neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
+						neighborFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(neighborSol));
 						testedSolutions.put(neighborSol, neighborFitness);
 					}
 

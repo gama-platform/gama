@@ -91,7 +91,7 @@ class Particle {
 	public double eval() {
 		Double fitness = testedSolutions.get(position);
 		if (fitness == null) {
-			fitness = algo.getFirstFitness(currentExperiment.launchSimulationsWithSolution(position));
+			fitness = algo.getFirstFitness(currentExperiment.launchSimulationsWithSingleParametersSet(position));
 			testedSolutions.put(position, fitness);
 		}
 		return fitness.doubleValue();
