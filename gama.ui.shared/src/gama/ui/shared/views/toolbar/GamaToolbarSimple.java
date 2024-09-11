@@ -11,7 +11,6 @@
 package gama.ui.shared.views.toolbar;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
@@ -58,7 +57,7 @@ public class GamaToolbarSimple extends ToolBar {
 	 *            the listener
 	 * @return the tool item
 	 */
-	public ToolItem button(final String image, final String text, final String tip, final SelectionListener listener) {
+	public ToolItem button(final String image, final String text, final String tip, final Selector listener) {
 		return create(image, text, tip, listener, SWT.PUSH);
 	}
 
@@ -75,7 +74,7 @@ public class GamaToolbarSimple extends ToolBar {
 	 *            the listener
 	 * @return the tool item
 	 */
-	public ToolItem menu(final String image, final String text, final String tip, final SelectionListener listener) {
+	public ToolItem menu(final String image, final String text, final String tip, final Selector listener) {
 		return create(image, text, tip, listener, SWT.DROP_DOWN);
 	}
 
@@ -114,7 +113,7 @@ public class GamaToolbarSimple extends ToolBar {
 	 *            the style
 	 * @return the tool item
 	 */
-	private ToolItem create(final String i, final String text, final String tip, final SelectionListener listener,
+	private ToolItem create(final String i, final String text, final String tip, final Selector listener,
 			final int style) {
 		final ToolItem button = new ToolItem(this, style, getItems().length);
 		if (tip != null) { button.setToolTipText(tip); }
