@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamlAnnotations.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlAnnotations.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -443,7 +442,6 @@ public final class GamlAnnotations {
 		 */
 		doc[] doc() default {};
 	}
-
 
 	/**
 	 *
@@ -1096,9 +1094,16 @@ public final class GamlAnnotations {
 	 * An @usage can also be used for defining a template for a GAML structure, and in that case requires the following
 	 * to be defined :
 	 *
-	 * A name (attribute "name"), optional, but better A description (attribute "value"), optional A menu name
-	 * (attribute "menu"), optional A hierarchical path within this menu (attribute "path"), optional A pattern
-	 * (attribute "pattern" or concatenation of the @example present in "examples" that define "isPattern" as true)
+	 * A name (attribute "name"), optional, but better
+	 *
+	 * A description (attribute "value"), optional
+	 *
+	 * A menu name (attribute "menu"), optional
+	 *
+	 * A hierarchical path within this menu (attribute "path"), optional
+	 *
+	 * A pattern (attribute "pattern" or concatenation of the @example present in "examples" that define "isPattern" as
+	 * true)
 	 *
 	 * (see <code>org.eclipse.jface.text.templates.Template</code>) These templates are then classified and accessible
 	 * during runtime for editing models
