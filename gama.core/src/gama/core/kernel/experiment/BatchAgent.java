@@ -358,10 +358,9 @@ public class BatchAgent extends ExperimentAgent {
 					IMap<String, Object> localRes = manageOutputAndCloseSimulation(agent, ps, false, simDispose);
 
 					if (!res.containsKey(ps)) { res.put(ps, GamaMapFactory.create()); }
-					localRes.forEachKey(output -> {
+					localRes.forEach((output, obj) -> {
 						if (!res.get(ps).containsKey(output)) { res.get(ps).put(output, GamaListFactory.create()); }
-						res.get(ps).get(output).add(localRes.get(output));
-						return true;
+						res.get(ps).get(output).add(obj);
 					});
 
 					if (!sims.isEmpty()) { createSimulation(sims.remove(0), simToParameter); }
@@ -479,7 +478,7 @@ public class BatchAgent extends ExperimentAgent {
 								manageOutputAndCloseSimulation(agent, currentSolution, true, simDispose);
 						out.forEach((out_vars, obj) -> {
 							if (!outputs.containsKey(out_vars)) { outputs.put(out_vars, GamaListFactory.create()); }
-							outputs.get(out_vars).add(out.get(out_vars));
+							outputs.get(out_vars).add(obj);
 						});
 					}
 				}
