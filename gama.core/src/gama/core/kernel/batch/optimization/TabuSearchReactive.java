@@ -240,7 +240,7 @@ public class TabuSearchReactive extends ALocalSearchAlgorithm {
 		if (batch == null) return solutionInit;
 		final List<ParametersSet> tabuList = new ArrayList<>();
 		tabuList.add(bestSolutionAlgo);
-		double currentFitness = getFirstFitness(batch.launchSimulationsWithSolution(bestSolutionAlgo));
+		double currentFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(bestSolutionAlgo));
 		testedSolutions.put(bestSolutionAlgo, currentFitness);
 
 		setBestSolution(new ParametersSet(bestSolutionAlgo));
@@ -289,7 +289,7 @@ public class TabuSearchReactive extends ALocalSearchAlgorithm {
 					}
 					Double neighborFitness = testedSolutions.get(neighborSol);
 					if (neighborFitness == null || neighborFitness == Double.MAX_VALUE) {
-						neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
+						neighborFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(neighborSol));
 					}
 					testedSolutions.put(neighborSol, neighborFitness);
 					if (keepSol(neighborSol, neighborFitness, bestFitnessAlgo)) { bestNeighbor = neighborSol; }
@@ -319,7 +319,7 @@ public class TabuSearchReactive extends ALocalSearchAlgorithm {
 						if (tabuList.size() == tabuListSize) { tabuList.remove(0); }
 						tabuList.add(bestSolutionAlgo);
 					}
-					currentFitness = getFirstFitness(batch.launchSimulationsWithSolution(bestSolutionAlgo));
+					currentFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(bestSolutionAlgo));
 					testedSolutions.put(bestSolutionAlgo, currentFitness);
 					if (nbIt > iterMax) { break; }
 				}

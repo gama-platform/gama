@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ALocalSearchAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ALocalSearchAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -76,7 +75,7 @@ public abstract class ALocalSearchAlgorithm extends AOptimizationAlgorithm {
 		}
 		BatchAgent agent = getCurrentExperiment();
 		if (agent != null) {
-			Map<ParametersSet, Double> res = agent.launchSimulationsWithSolution(solTotest).entrySet().stream()
+			Map<ParametersSet, Double> res = agent.runSimulationsAndReturnResults(solTotest).entrySet().stream()
 					.collect(Collectors.toMap(Entry::getKey, e -> getFirstFitness(e.getValue())));
 			testedSolutions.putAll(res);
 			results.putAll(res);

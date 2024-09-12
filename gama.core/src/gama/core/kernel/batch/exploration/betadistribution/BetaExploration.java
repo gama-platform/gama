@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * BetaExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * BetaExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.math3.distribution.BetaDistribution;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -38,12 +36,10 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.core.util.random.GamaRNG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
@@ -81,9 +77,8 @@ import gama.gaml.types.IType;
 						type = IType.ID,
 						optional = false,
 						doc = @doc ("The sampling method to build parameters sets that must be factorial based to some extends - available are: "
-								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " 
-								+ IKeyword.FACTORIAL + ", "+ IKeyword.UNIFORM + ", " 
-								+ IKeyword.SALTELLI + ", "+ IKeyword.MORRIS)),
+								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", "
+								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
@@ -134,7 +129,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 	 * @param desc
 	 *            the desc
 	 */
-	public BetaExploration(final IDescription desc) { super(desc); }
+	public BetaExploration(final IDescription desc) {
+		super(desc);
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
@@ -152,27 +149,20 @@ public class BetaExploration extends AExplorationAlgorithm {
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
 		}
-		if (sample_size < 1) {sample_size = 2;}
+		if (sample_size < 1) { sample_size = 2; }
 
 		// == Build sample of parameter inputs ==
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
-		
-		// TODO : expend parameter set to include variation over target input, 
-		// ====> i.e. various parameter combinations for one parameter value 
-		// 		to assess how simulation behave when a parameter stay the same, while everything
-		//		else is moving
+
+		// TODO : expend parameter set to include variation over target input,
+		// ====> i.e. various parameter combinations for one parameter value
+		// to assess how simulation behave when a parameter stay the same, while everything
+		// else is moving
 		sets = expendExperimentPlan(sets, scope);
 
 		// TODO : why doesn't it take into account the value of 'keep_simulations:' ?
 		currentExperiment.setKeepSimulations(false);
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
-			res_outputs = currentExperiment.launchSimulationsWithSolution(sets);
-		} else {
-			res_outputs = GamaMapFactory.create();
-			for (ParametersSet sol : sets) {
-				res_outputs.put(sol, currentExperiment.launchSimulationsWithSolution(sol));
-			}
-		}
+		res_outputs = currentExperiment.runSimulationsAndReturnResults(sets);
 
 		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
 
@@ -186,7 +176,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
 		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
-		
+
 		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 		final File parent = f.getParentFile();
@@ -201,70 +191,72 @@ public class BetaExploration extends AExplorationAlgorithm {
 	}
 
 	@Override
-	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
+	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
 		exp.add(new ParameterAdapter("Sampled points", IKeyword.BETAD, IType.STRING) {
-				@Override public Object value() { 
-					if (hasFacet(Exploration.SAMPLE_SIZE)) {
-						return Cast.asInt(agent.getScope(), 
-							getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
-					} else if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
-						return (int) Math.round(Math.pow(Cast.asFloat(agent.getScope(),
-								getFacet(Exploration.SAMPLE_FACTORIAL)), exp.size()));
-					} else {
-						return sample_size;
-					}
-				}
+			@Override
+			public Object value() {
+				if (hasFacet(Exploration.SAMPLE_SIZE))
+					return Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
+				if (hasFacet(Exploration.SAMPLE_FACTORIAL))
+					return (int) Math.round(Math
+							.pow(Cast.asFloat(agent.getScope(), getFacet(Exploration.SAMPLE_FACTORIAL)), exp.size()));
+				else
+					return sample_size;
+			}
 		});
 
 		exp.add(new ParameterAdapter("Sampling method", IKeyword.BETAD, IType.STRING) {
-			@Override public Object value() {
-				return hasFacet(Exploration.METHODS) ? 
-						Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : Exploration.DEFAULT_SAMPLING;
+			@Override
+			public Object value() {
+				return hasFacet(Exploration.METHODS)
+						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
+						: Exploration.DEFAULT_SAMPLING;
 			}
 		});
-		
+
 	}
-	
+
 	/**
 	 * Duplicates values of parameter to put them in various context
-	 * 
+	 *
 	 * @param sets
 	 * @param scope
 	 * @return
 	 */
-	private List<ParametersSet> expendExperimentPlan(List<ParametersSet> sets, IScope scope) {
-		
+	private List<ParametersSet> expendExperimentPlan(final List<ParametersSet> sets, final IScope scope) {
+
 		List<ParametersSet> returnedSet = new ArrayList<>(sets);
-		
+
 		// How many times a parameter value should be reproduced in the plan
 		int fact = Betadistribution.DEFAULT_FACTORIAL;
 		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
 			fact = Cast.asInt(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope));
-		} 
-		
+		}
+
 		// Ensure that there is enough sample points to expand the parameter space
-		fact = fact > sample_size ? sample_size-1 : fact;
-		
+		fact = fact > sample_size ? sample_size - 1 : fact;
+
 		// For each parameter, duplicates 'fact' times all sampled values
 		for (Batch b : parameters) {
-			
+
 			// Target the parameter values and put them in another parameter context
 			for (ParametersSet ps : sets) {
 				List<ParametersSet> subspace = new ArrayList<>(sets);
 				subspace.remove(ps);
-				for (int i=0; i<fact; i++) {
-					ParametersSet cross = new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
+				for (int i = 0; i < fact; i++) {
+					ParametersSet cross =
+							new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
 					cross.addValueAtIndex(scope, b, ps.get(b.getName()));
 					returnedSet.add(cross);
 				}
 			}
 		}
-		
+
 		return returnedSet;
 	}
-	
+
 	/**
 	 * Builds the report string.
 	 *
@@ -274,27 +266,28 @@ public class BetaExploration extends AExplorationAlgorithm {
 	 */
 	public String buildReportString(final Map<String, Map<Batch, Double>> res, final String extension) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		if ("txt".equalsIgnoreCase(extension)) {
-		
+
 			sb.append("BETA b Kuiper based estimator :").append(Strings.LN);
 			sb.append("##############################").append(Strings.LN);
-			sb.append("inputs" + AExplorationAlgorithm.CSV_SEP + String.join(AExplorationAlgorithm.CSV_SEP, outputs)).append(Strings.LN);
+			sb.append("inputs" + AExplorationAlgorithm.CSV_SEP + String.join(AExplorationAlgorithm.CSV_SEP, outputs))
+					.append(Strings.LN);
 			for (Batch param : parameters) {
 				sb.append(param.getName());
 				for (String output_name : outputs) {
-					sb.append(AExplorationAlgorithm.CSV_SEP).append(res.get(output_name).get(param)); 
+					sb.append(AExplorationAlgorithm.CSV_SEP).append(res.get(output_name).get(param));
 				}
 				sb.append(Strings.LN);
 			}
-			
+
 		} else {
-			
+
 			// Build header
 			sb.append("output").append(AExplorationAlgorithm.CSV_SEP);
-			sb.append("parameter").append(AExplorationAlgorithm.CSV_SEP); 
+			sb.append("parameter").append(AExplorationAlgorithm.CSV_SEP);
 			sb.append("\u03B2").append(Strings.LN);
-			
+
 			for (String output_name : outputs) {
 				for (Batch param : parameters) {
 					// The output & parameter
@@ -303,9 +296,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 					sb.append(res.get(output_name).get(param)).append(Strings.LN);
 				}
 			}
-			
+
 		}
-		
+
 		return sb.toString();
 	}
 

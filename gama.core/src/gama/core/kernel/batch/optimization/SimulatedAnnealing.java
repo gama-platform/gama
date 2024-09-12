@@ -167,7 +167,7 @@ public class SimulatedAnnealing extends ALocalSearchAlgorithm {
 		setBestSolution(new ParametersSet(this.solutionInit));
 		BatchAgent batch = getCurrentExperiment();
 		if (batch == null) return getBestSolution();
-		double currentFitness = getFirstFitness(batch.launchSimulationsWithSolution(getBestSolution()));
+		double currentFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(getBestSolution()));
 		ParametersSet bestSolutionAlgo = this.solutionInit;
 		testedSolutions.put(getBestSolution(), getBestFitness());
 		setBestFitness(currentFitness);
@@ -186,7 +186,7 @@ public class SimulatedAnnealing extends ALocalSearchAlgorithm {
 				}
 				Double neighborFitness = testedSolutions.get(neighborSol);
 				if (neighborFitness == null || neighborFitness == Double.MAX_VALUE) {
-					neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
+					neighborFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(neighborSol));
 					testedSolutions.put(neighborSol, neighborFitness);
 				}
 
