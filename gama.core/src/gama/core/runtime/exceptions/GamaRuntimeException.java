@@ -162,6 +162,8 @@ public class GamaRuntimeException extends RuntimeException {
 	 */
 	protected GamaRuntimeException(final IScope scope, final Throwable ex) {
 		super(ex == null ? "Error" : "Java error: " + getExceptionName(ex), ex);
+		// AD: 18/01/16 Adding this to address Issue #1411
+		this.scope = scope;
 		if (scope != null) {
 			final ISymbol symbol = scope.getCurrentSymbol();
 			if (symbol != null) { addContext(symbol); }
@@ -176,8 +178,6 @@ public class GamaRuntimeException extends RuntimeException {
 			}
 		}
 		cycle = computeCycle(scope);
-		// AD: 18/01/16 Adding this to address Issue #1411
-		this.scope = scope;
 
 	}
 
@@ -193,14 +193,15 @@ public class GamaRuntimeException extends RuntimeException {
 	 */
 	protected GamaRuntimeException(final IScope scope, final String s, final boolean warning) {
 		super(s);
+		// AD: 18/01/16 Adding this to address Issue #1411
+		this.scope = scope;
 		if (scope != null) {
 			final ISymbol symbol = scope.getCurrentSymbol();
 			if (symbol != null) { addContext(symbol); }
 		}
 		cycle = computeCycle(scope);
 		isWarning = warning;
-		// AD: 18/01/16 Adding this to address Issue #1411
-		this.scope = scope;
+
 	}
 
 	/**

@@ -411,6 +411,7 @@ public class WorkbenchHelper {
 			}
 
 		};
+		job.setSystem(true);
 		job.schedule(scheduleTime);
 	}
 

@@ -619,7 +619,7 @@ public class BatchAgent extends ExperimentAgent {
 	public void setKeepSimulations(final boolean keepSim) { this.simDispose = !keepSim; }
 
 	@Override
-	public void closeSimulations() {
+	public void closeSimulations(final boolean andLeaveExperimentPerspective) {
 		// We interrupt the simulation scope directly (as it cannot be
 		// interrupted by the global scheduler)
 		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
