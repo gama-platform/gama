@@ -64,6 +64,7 @@ import gama.core.util.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.IField;
+import gama.core.util.matrix.IMatrix;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
@@ -353,7 +354,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 						ascInfo[2] = xCorner;
 					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
 						yCorner = doubleVal(line);
-						//TODO: very suspicious, probably xllcenter and yllcenter 
+						// TODO: very suspicious, probably xllcenter and yllcenter
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) { // AD To verify: the
 																									// conditions are
 																									// the same as two
@@ -847,6 +848,13 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		createCoverage(scope);
 		read(scope, true, false);
 		return Arrays.copyOf(records.bands.get(index), length(scope));
+	}
+
+	@Override
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+			final boolean copy) throws GamaRuntimeException {
+		getContents(scope);
+		return new GamaField(scope, this);
 	}
 
 }
