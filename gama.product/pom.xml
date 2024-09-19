@@ -66,7 +66,7 @@
 									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless/configuration">
 									<fileset dir="./target/products/gama.headless.product/macosx/cocoa/x86_64/Eclipse.app/Contents/Eclipse/configuration" />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Eclipse.app/Contents/Eclipse/x86_64/dropins"/>
+								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Eclipse/dropins"/>
 
 								<!-- aarch64 -->
 								<copy file="./extraresources/Model.icns"
@@ -87,7 +87,7 @@
 									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless/configuration">
 									<fileset dir="./target/products/gama.headless.product/macosx/cocoa/aarch64/Eclipse.app/Contents/Eclipse/configuration" />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Eclipse.app/Contents/Eclipse/x86_64/dropins"/>
+								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Eclipse/dropins"/>
 								
 								<!--
 								Windows
