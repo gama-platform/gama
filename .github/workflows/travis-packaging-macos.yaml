@@ -69,6 +69,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: gama-mac-what2sign
+          path: ./artifacts/work
 
       - uses: actions/download-artifact@v4
         with:
