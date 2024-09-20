@@ -91,7 +91,10 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 			case KeyboardEventLayerDelegate.KEY_PAGE_UP -> KEY_PAGE_UP;
 			case KeyboardEventLayerDelegate.KEY_ENTER -> KEY_RETURN;
 			case KeyboardEventLayerDelegate.KEY_TAB -> KEY_TAB;
-
+			case KeyboardEventLayerDelegate.SHIFT_MODIFIER -> KEY_SHIFT;
+			case KeyboardEventLayerDelegate.CMD_MODIFIER -> KEY_CMD;
+			case KeyboardEventLayerDelegate.CONTROL_MODIFIER -> KEY_CTRL;
+			case KeyboardEventLayerDelegate.ALT_MODIFIER -> KEY_ALT;
 			default -> KEY_PRESSED;
 		};
 
