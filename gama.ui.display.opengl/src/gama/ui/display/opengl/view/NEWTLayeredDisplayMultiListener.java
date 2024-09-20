@@ -109,6 +109,10 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 				case KeyEvent.VK_ESCAPE -> IEventLayerListener.KEY_ESC;
 				case KeyEvent.VK_ENTER -> IEventLayerListener.KEY_RETURN;
 				case KeyEvent.VK_TAB -> IEventLayerListener.KEY_TAB;
+				case KeyEvent.VK_SHIFT -> IEventLayerListener.KEY_SHIFT;
+				case KeyEvent.VK_ALT -> IEventLayerListener.KEY_ALT;
+				case KeyEvent.VK_CONTROL -> IEventLayerListener.KEY_CTRL;
+				case KeyEvent.VK_META -> IEventLayerListener.KEY_CMD;
 				default -> 0;
 			});
 		}
