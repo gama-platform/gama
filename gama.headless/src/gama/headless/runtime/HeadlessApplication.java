@@ -643,6 +643,7 @@ public class HeadlessApplication implements IApplication {
 		assertIsExperiment(experimentName, expPlan);
 		expPlan.setHeadless(true);
 		expPlan.open();
+		GAMA.getControllers().add(expPlan.getController());
 		expPlan.getController().processStart(false);
 
 		System.exit(0);
