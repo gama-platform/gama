@@ -77,20 +77,12 @@ jobs:
           path: ./artifacts/
 
       - name: Create Keychain
-        shell: bash
-        env: 
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          MACOS_KEYCHAIN_PWD: ${{ secrets.MACOS_KEYCHAIN_PWD }}
-        run: |
-          # Prepare the keychain - Based on https://localazy.com/blog/how-to-automatically-sign-macos-apps-using-github-actions
-          security create-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
-          # Prepare certificate
-          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
-          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_KEYCHAIN_PWD" build.keychain
+        uses: apple-actions/import-codesign-certs@v3
+        with: 
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          keychain: "build"
+          keychain-password: ${{ secrets.MACOS_KEYCHAIN_PWD }}
 
       - name: Sign Application
         shell: bash
@@ -102,14 +94,23 @@ jobs:
           IS_WITH_JDK: ${{ secrets.IS_WITH_JDK }}
         run: |
           # Unlock
+          echo "=== Unlock Keychain ==="
           security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
           unzip -q ${{ github.workspace }}/artifacts/${{ matrix.zipName }}.zip -d . && rm ${{ github.workspace }}/artifacts/*.zip
           # Sign everything inside app
+          echo "=== Start signing ==="
           bash ${{ github.workspace }}/artifacts/mac-sign.sh
+          echo "=== End signing ==="
+          echo "=== Entitlements ==="
           wget https://raw.githubusercontent.com/gama-platform/gama/2024-06/gama.product/extraresources/entitlements.plist && plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
           codesign --entitlements "./entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
 
-      - name: Packaging signed Application w/o JDK
+      - name: Get tools to create ✨beautiful✨ DMG
+        run: |
+          brew install graphicsmagick imagemagick
+          npm install --global create-dmg
+
+      - name: Packaging and Signing DMG
         shell: bash
         env: 
           working_directory: ${{ github.workspace }}/artifacts/work
@@ -122,13 +123,19 @@ jobs:
           NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
         run: |
           # Unlock
+          echo "=== Unlock Keychain ==="
           security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
-          # Make DMG - Based on : https://developer.apple.com/forums/thread/128166
-          hdiutil create -verbose -srcFolder ./Gama.app -o ./${{ matrix.zipName }}.dmg
-          codesign -s "$MACOS_DEV_ID" --timestamp -f -v ./${{ matrix.zipName }}.dmg
+          # Make DMG - Based on : https://github.com/sindresorhus/create-dmg
+          echo "=== Create DMG ==="
+          create-dmg ./Gama.app --overwrite
+          mv ./*.dmg ./${{ matrix.zipName }}.dmg
+          # Signing DMG by hand
+          #codesign -s "$MACOS_DEV_ID" --timestamp -f -v ./${{ matrix.zipName }}.dmg
           # Notarize dmg - Based on : https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow#3087734
+          echo "=== Notarize ==="
           xcrun -v notarytool store-credentials "AC_PASSWORD" --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD"
           xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
+          echo "=== Staple DMG ==="
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
       - uses: actions/upload-artifact@v4
