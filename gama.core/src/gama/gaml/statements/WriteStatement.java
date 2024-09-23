@@ -177,7 +177,7 @@ public class WriteStatement extends AbstractStatement {
 			
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
-			GAMA.askWriteConsole(scope, messageToSend, rgb, strategy);
+			GAMA.getBufferingController().askWriteConsole(scope, messageToSend, rgb, strategy);
 		}
 		return mes;
 	}

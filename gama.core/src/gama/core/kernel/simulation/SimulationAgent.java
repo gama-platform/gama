@@ -403,8 +403,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		executer.executeOneShotActions();
 		if (outputs != null) { outputs.step(this.getScope()); }
 		ownClock.step();
-		GAMA.flushSaveFileStep(this);
-		GAMA.flushWriteStep(this);
+		GAMA.getBufferingController().flushSaveFilesInCycle(this);
+		GAMA.getBufferingController().flushWriteInCycle(this);
 	}
 
 	@Override
@@ -456,8 +456,8 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
 
 		//we make sure that all pending write operations are flushed
-		GAMA.flushSaveFilePerOwner(this);
-		GAMA.flushWritePerAgent(this);
+		GAMA.getBufferingController().flushSaveFilesOfAgent(this);
+		GAMA.getBufferingController().flushWriteOfAgent(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
 		super.dispose();
@@ -789,6 +789,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param iOutputManager
 	 *            the new outputs
 	 */
+	@SuppressWarnings("unchecked")
 	public void setOutputs(final IOutputManager iOutputManager) {
 		if (iOutputManager == null) return;
 		// AD : condition removed for Issue #3748
@@ -968,6 +969,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void updateWith(final IScope scope, final ISerialisedAgent sa) {
 

@@ -361,7 +361,7 @@ public class HeadlessApplication implements IApplication {
 	 *             the exception
 	 * @date 17 oct. 2023
 	 */
-	@SuppressWarnings ("unused")
+	@SuppressWarnings ({ "unchecked" })
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
 

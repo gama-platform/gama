@@ -104,41 +104,6 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
-	private static final BufferingController bufferingController = new BufferingController();
-
-	public static boolean askWriteFile(final IScope scope, final File f, final CharSequence content,
-			final SaveOptions options) {
-		return bufferingController.askWriteFile(f.getAbsolutePath(), scope, content, options);
-	}
-
-	public static boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color,
-			final BufferingStrategies strategy) {
-		return bufferingController.askWriteConsole(scope, content, color, strategy);
-	}
-	
-	public static boolean fileWillBeWritten(final File f) {
-		return bufferingController.isFileWaitingToBeWritten(f);
-	}
-
-	public static boolean flushSaveFilePerOwner(final AbstractAgent owner) {
-		return bufferingController.flushSaveFilesOfOwner(owner);
-	}
-
-	public static boolean flushSaveFileStep(final SimulationAgent owner) {
-		return bufferingController.flushSaveFilesInCycle(owner);
-	}
-
-	public static void flushWriteStep(final SimulationAgent owner) {
-		bufferingController.flushWriteInCycle(owner);
-	}
-
-	public static void flushWritePerAgent(final AbstractAgent owner) {
-		bufferingController.flushWriteOfOwner(owner);
-	}
-
-	public static void flushAllBuffers() {
-		bufferingController.flushAllBuffers();
-	}
 
 	/**
 	 * Gets the controllers.
@@ -155,6 +120,12 @@ public class GAMA {
 	public static IExperimentController getFrontmostController() {
 		return controllers.isEmpty() ? null : controllers.get(0);
 	}
+	
+	private static final BufferingController bufferingController = new BufferingController();
+
+	public static BufferingController getBufferingController() {return bufferingController;}
+	
+	
 
 	/**
 	 * New control architecture

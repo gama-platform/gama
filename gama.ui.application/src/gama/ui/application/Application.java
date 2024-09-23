@@ -154,7 +154,7 @@ public class Application implements IApplication {
 				if (display != null) { display.dispose(); }
 				final Location instanceLoc = Platform.getInstanceLocation();
 				if (instanceLoc != null) { instanceLoc.release(); }
-				GAMA.flushAllBuffers();
+				GAMA.getBufferingController().flushAllBuffers();
 			}
 		}
 		return EXIT_OK;
@@ -271,7 +271,7 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
-		GAMA.flushAllBuffers();
+		GAMA.getBufferingController().flushAllBuffers();
 		final IWorkbench workbench = getWorkbench();
 		if (workbench == null) return;
 		final Display display = workbench.getDisplay();

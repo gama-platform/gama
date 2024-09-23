@@ -164,7 +164,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 		else {
 			messageToSend.append(Strings.LN);
 		}
-		GAMA.askWriteConsole(scope, messageToSend, rgb, strategy);
+		GAMA.getBufferingController().askWriteConsole(scope, messageToSend, rgb, strategy);
 //		scope.getGui().getConsole().informConsole(result, scope.getRoot(), null);
 		return messageToSend.toString();
 	}
