@@ -1502,7 +1502,7 @@ public class DrivingSkill extends MovingSkill {
 		// additional conditions to cross the intersection, defined by the user
 		IStatement.WithArgs actionTNR = context.getAction("test_next_road");
 		Arguments argsTNR = new Arguments();
-		argsTNR.put("new_road", ConstantExpressionDescription.create(newRoad));
+		argsTNR.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
 		actionTNR.setRuntimeArgs(scope, argsTNR);
 		if (!(Boolean) actionTNR.executeOn(scope)) return false;
 
@@ -2005,7 +2005,7 @@ public class DrivingSkill extends MovingSkill {
 				// Choose a lane on the new road
 				IStatement.WithArgs actionCL = context.getAction(ACT_CHOOSE_LANE);
 				Arguments argsCL = new Arguments();
-				argsCL.put("new_road", ConstantExpressionDescription.create(newRoad));
+				argsCL.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
 				actionCL.setRuntimeArgs(scope, argsCL);
 				int lowestLane = (int) actionCL.executeOn(scope);
 				laneAndAccPair = MOBIL.chooseLane(scope, vehicle, newRoad, lowestLane);
@@ -2029,8 +2029,8 @@ public class DrivingSkill extends MovingSkill {
 				actionOnNewRoad.executeOn(scope);
 
 				// external factor that affects remaining time when entering a new road
-				argsEF.put("remaining_time", ConstantExpressionDescription.create(remainingTime));
-				argsEF.put("new_road", ConstantExpressionDescription.create(newRoad));
+				argsEF.put("remaining_time", ConstantExpressionDescription.createNoCache(remainingTime));
+				argsEF.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
 				actionImpactEF.setRuntimeArgs(scope, argsEF);
 				remainingTime = (Double) actionImpactEF.executeOn(scope);
 				if (remainingTime <= 0.0) return false;
