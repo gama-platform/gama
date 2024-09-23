@@ -456,7 +456,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	 */
 	protected FlowStatus loopBody(final IScope scope, final Object theVar, final Object[] result) {
 		scope.push(this);
-		// We set it explicitely to the newly created scope
+		// We set it explicitly to the newly created scope
 		if (varName != null) { scope.setVarValue(varName, theVar, true); }
 		result[0] = super.privateExecuteIn(scope);
 		scope.pop(this);

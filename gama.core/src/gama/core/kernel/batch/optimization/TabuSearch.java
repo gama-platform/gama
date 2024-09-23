@@ -153,7 +153,7 @@ public class TabuSearch extends ALocalSearchAlgorithm {
 		if (batch == null) return bestSolutionAlgo;
 		final List<ParametersSet> tabuList = new ArrayList<>();
 		tabuList.add(bestSolutionAlgo);
-		final double currentFitness = getFirstFitness(batch.launchSimulationsWithSolution(bestSolutionAlgo));
+		final double currentFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(bestSolutionAlgo));
 		testedSolutions.put(bestSolutionAlgo, currentFitness);
 		setBestSolution(new ParametersSet(bestSolutionAlgo));
 		setBestFitness(currentFitness);
@@ -191,7 +191,7 @@ public class TabuSearch extends ALocalSearchAlgorithm {
 					if (neighborSol == null) { continue; }
 					Double neighborFitness = testedSolutions.get(neighborSol);
 					if (neighborFitness != null && neighborFitness != Double.MAX_VALUE) { continue; }
-					neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
+					neighborFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(neighborSol));
 					testedSolutions.put(neighborSol, neighborFitness);
 					if (keepSol(neighborSol, neighborFitness, bestFitnessAlgo)) { bestNeighbor = neighborSol; }
 				}

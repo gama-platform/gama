@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * SubTaskMessage.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SubTaskMessage.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.common;
 
@@ -25,18 +24,20 @@ public class SubTaskMessage implements IStatusMessage {
 
 	/** The completion. */
 	Double completion;
-	
+
 	/** The name. */
 	String name;
-	
+
 	/** The begin or end. */
 	Boolean beginOrEnd;
 
 	/**
 	 * Instantiates a new sub task message.
 	 *
-	 * @param name the name
-	 * @param begin the begin
+	 * @param name
+	 *            the name
+	 * @param begin
+	 *            the begin
 	 */
 	public SubTaskMessage(final String name, final boolean begin) {
 		this.name = name;
@@ -47,7 +48,8 @@ public class SubTaskMessage implements IStatusMessage {
 	/**
 	 * Instantiates a new sub task message.
 	 *
-	 * @param completion the completion
+	 * @param completion
+	 *            the completion
 	 */
 	public SubTaskMessage(final Double completion) {
 		this.completion = completion;
@@ -56,60 +58,51 @@ public class SubTaskMessage implements IStatusMessage {
 
 	/**
 	 * Method getText()
-	 * 
+	 *
 	 * @see gama.core.common.interfaces.IStatusMessage#getText()
 	 */
 	@Override
-	public String getText() {
-		return name;
-	}
+	public String getText() { return name; }
 
 	/**
 	 * Method getCode()
-	 * 
+	 *
 	 * @see gama.core.common.interfaces.IStatusMessage#getCode()
 	 */
 	@Override
-	public int getCode() {
-		return IGui.NEUTRAL;
-	}
+	public int getCode() { return IGui.NEUTRAL; }
 
 	/**
 	 * Gets the completion.
 	 *
 	 * @return the completion
 	 */
-	public Double getCompletion() {
-		return completion;
-	}
+	public Double getCompletion() { return completion; }
 
 	/**
 	 * Gets the begin or end.
 	 *
 	 * @return the begin or end
 	 */
-	public Boolean getBeginOrEnd() {
-		return beginOrEnd;
-	}
+	public Boolean getBeginOrEnd() { return beginOrEnd; }
 
 	/**
 	 * Method getColor()
-	 * 
+	 *
 	 * @see gama.core.common.interfaces.IStatusMessage#getColor()
 	 */
 	@Override
-	public GamaColor getColor() {
-		return null;
-	}
+	public GamaColor getColor() { return null; }
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see gama.core.common.IStatusMessage#getIcon()
 	 */
 	@Override
-	public String getIcon() {
-		return null;
-	}
+	public String getIcon() { return null; }
+
+	@Override
+	public StatusMessageType getType() { return StatusMessageType.SUBTASK; }
 
 }

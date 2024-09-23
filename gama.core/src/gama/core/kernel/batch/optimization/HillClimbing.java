@@ -141,7 +141,7 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 		setBestSolution(this.solutionInit);
 		BatchAgent batch = getCurrentExperiment();
 		if (batch == null) return getBestSolution();
-		double currentFitness = getFirstFitness(batch.launchSimulationsWithSolution(getBestSolution()));
+		double currentFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(getBestSolution()));
 		initializeTestedSolutions();
 		testedSolutions.put(getBestSolution(), currentFitness);
 		int nbIt = 0;
@@ -162,7 +162,7 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 					if (neighborSol == null) { continue; }
 					Double neighborFitness = testedSolutions.get(neighborSol);
 					if (neighborFitness == null) {
-						neighborFitness = getFirstFitness(batch.launchSimulationsWithSolution(neighborSol));
+						neighborFitness = getFirstFitness(batch.launchSimulationsWithSingleParametersSet(neighborSol));
 					}
 					testedSolutions.put(neighborSol, neighborFitness);
 					//TODO: if the goal of this for loop was only to find the best neighbor, we should break here

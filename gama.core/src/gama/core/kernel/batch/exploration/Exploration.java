@@ -27,9 +27,7 @@ import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
@@ -57,10 +55,9 @@ import gama.gaml.types.IType;
 						name = Exploration.METHODS,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The name of the sampling method among: "
-								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " 
-								+ IKeyword.FACTORIAL + ", "+ IKeyword.UNIFORM + ", " 
-								+ IKeyword.SALTELLI + ", "+ IKeyword.MORRIS)),
+						doc = @doc ("The name of the sampling method among: " + IKeyword.LHS + ", "
+								+ IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", " + IKeyword.UNIFORM + ", "
+								+ IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
 				@facet (
 						name = IKeyword.FROM,
 						type = IType.STRING,
@@ -156,7 +153,7 @@ public class Exploration extends AExplorationAlgorithm {
 
 	/** The Constant FROM_LIST. */
 	public static final String FROM_LIST = "FROMLIST";
-	
+
 	/** The Constant DEFAULT_SAMPLING */
 	public static final String DEFAULT_SAMPLING = "Exhaustive";
 	
@@ -177,7 +174,6 @@ public class Exploration extends AExplorationAlgorithm {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void explore(final IScope scope) throws GamaRuntimeException {
 
@@ -186,25 +182,19 @@ public class Exploration extends AExplorationAlgorithm {
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			this.sample_size = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
 		}
-		
+
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
-		
+
 		// Because Test in Gama is using batch experiment without any experiment plan !
-		// TODO : Should probably do a proper Test experiment 
-		if (sets.isEmpty()) { sets.add(new ParametersSet()); } 
-		
+		// TODO : Should probably do a proper Test experiment
+		if (sets.isEmpty()) { sets.add(new ParametersSet()); }
+
 		sample_size = sets.size();
 
-		IMap<ParametersSet, Map<String, List<Object>>> res = null;
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
-			 res = currentExperiment.launchSimulationsWithSolution(sets);
-		} else {
-			res = GamaMapFactory.create();
-			for (ParametersSet sol : sets) { res.put(sol, currentExperiment.launchSimulationsWithSolution(sol)); }
-		}
+		IMap<ParametersSet, Map<String, List<Object>>> res = currentExperiment.runSimulationsAndReturnResults(sets);
 
 		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) { saveRawResults(scope, res); }
-		
+
 	}
 
 	@Override

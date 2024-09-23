@@ -37,7 +37,6 @@ import org.eclipse.ui.IWorkbenchPartSite;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IOverlayProvider;
 import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.outputs.LayeredDisplayOutput;
@@ -379,8 +378,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		return String.format("%dm", (int) real);
 	}
 
-
-
 	/** The listener. */
 	OverlayListener listener = new OverlayListener();
 
@@ -507,14 +504,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 
 		getPopup().layout(true);
 	}
-
-	/**
-	 * Method getCurrentState()
-	 *
-	 * @see gama.core.common.interfaces.IUpdaterTarget#getCurrentState()
-	 */
-	@Override
-	public int getCurrentState() { return IGui.NEUTRAL; }
 
 	/**
 	 * Method resume()

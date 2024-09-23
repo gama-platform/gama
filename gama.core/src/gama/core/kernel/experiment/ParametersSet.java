@@ -63,6 +63,7 @@ public class ParametersSet extends GamaMap<String, Object> {
 		this();
 		for (final String var : variables.keySet()) {
 			final IParameter varBat = variables.get(var);
+			if (varBat instanceof ExperimentParameter ep) { scope.setCurrentSymbol(ep); }
 			if (reinit && varBat instanceof IParameter.Batch) { ((IParameter.Batch) varBat).reinitRandomly(scope); }
 			put(var, varBat.value(scope));
 		}
@@ -85,6 +86,7 @@ public class ParametersSet extends GamaMap<String, Object> {
 			throws GamaRuntimeException {
 		this();
 		for (final IParameter p : parameters) {
+			if (p instanceof ExperimentParameter ep) { scope.setCurrentSymbol(ep); }
 			if (reinit && p instanceof IParameter.Batch) { ((IParameter.Batch) p).reinitRandomly(scope); }
 			put(p.getName(), p.value(scope));
 		}

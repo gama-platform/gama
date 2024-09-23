@@ -35,7 +35,7 @@ public class SimulationPerspectiveDescriptor extends PerspectiveDescriptor {
 	Boolean keepControls = true;
 
 	/** The keep tray. */
-	Boolean keepTray = true;
+	Boolean keepTray = false;
 
 	/** The show consoles. */
 	Boolean showConsoles = true;

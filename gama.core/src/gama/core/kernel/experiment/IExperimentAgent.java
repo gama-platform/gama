@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * IExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * IExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -63,7 +62,7 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	/**
 	 * Close simulations.
 	 */
-	void closeSimulations();
+	void closeSimulations(boolean andLeaveExperimentPerspective);
 
 	/**
 	 * Close simulation.

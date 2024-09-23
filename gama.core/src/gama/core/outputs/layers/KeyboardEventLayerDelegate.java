@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.interfaces.IEventLayerDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
@@ -31,25 +31,25 @@ public class KeyboardEventLayerDelegate implements IEventLayerDelegate {
 	@constant (
 			value = "shift",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the shift key modifier")) final static public String SHIFT_MODIFIER = "|shift|";
+			doc = @doc ("Represents the shift key modifier")) final static public String SHIFT_MODIFIER = "shift";
 
 	/** The Constant CONTROL_MODIFIER. */
 	@constant (
 			value = "ctrl",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the control key modifier")) final static public String CONTROL_MODIFIER = "|ctrl|";
+			doc = @doc ("Represents the control key modifier")) final static public String CONTROL_MODIFIER = "ctrl";
 
 	/** The Constant ALT_MODIFIER. */
 	@constant (
 			value = "alt",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the alt key modifier")) final static public String ALT_MODIFIER = "|alt|";
+			doc = @doc ("Represents the alt key modifier")) final static public String ALT_MODIFIER = "alt";
 
 	/** The Constant CMD_MODIFIER. */
 	@constant (
 			value = "cmd",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the command key modifier")) final static public String CMD_MODIFIER = "|cmd|";
+			doc = @doc ("Represents the command key modifier")) final static public String CMD_MODIFIER = "cmd";
 	/** The mouse press const. */
 	@constant (
 			value = "arrow_down",
@@ -114,8 +114,9 @@ public class KeyboardEventLayerDelegate implements IEventLayerDelegate {
 					"tab";
 
 	/** The Constant EVENTS. */
-	public static final Set<String> EVENTS = new HashSet<>(Arrays.asList(KEY_ENTER, KEY_ESC, KEY_PAGE_DOWN, KEY_PAGE_UP,
-			KEY_TAB, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP));
+	public static final Set<String> EVENTS =
+			new HashSet<>(Arrays.asList(KEY_ENTER, KEY_ESC, KEY_PAGE_DOWN, KEY_PAGE_UP, KEY_TAB, ARROW_DOWN, ARROW_LEFT,
+					ARROW_RIGHT, ARROW_UP, ALT_MODIFIER, CONTROL_MODIFIER, CMD_MODIFIER, SHIFT_MODIFIER));
 
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {

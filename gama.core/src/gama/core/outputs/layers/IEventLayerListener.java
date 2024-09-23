@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * IEventLayerListener.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * IEventLayerListener.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -73,6 +72,14 @@ public interface IEventLayerListener {
 	/** The key return. */
 	int KEY_RETURN = 18;
 
+	int KEY_CTRL = 19;
+
+	int KEY_CMD = 20;
+
+	int KEY_ALT = 21;
+
+	int KEY_SHIFT = 22;
+
 	// x and y screen coordinates, button = 1 (left button) or 2 (right button)
 
 	/**
@@ -124,11 +131,12 @@ public interface IEventLayerListener {
 	/**
 	 * Mouse drag.
 	 *
-	 * @param x the x
-	 * @param y the y
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
 	 */
 	void mouseDrag(int x, int y, int button);
-
 
 	/**
 	 * Mouse enter.

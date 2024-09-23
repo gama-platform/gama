@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * NativeBulletPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * NativeBulletPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
+ * simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.physics.native_version;
 
+import java.lang.Thread.State;
 import java.util.concurrent.Semaphore;
 
 import com.jme3.bullet.PhysicsSpace;
@@ -93,7 +94,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	Thread thread = new Thread(this);
 
 	/** The lock. */
-	Semaphore semaphore = new Semaphore(1);
+	volatile Semaphore semaphore = new Semaphore(1);
 
 	@Override
 	public void run() {
@@ -112,7 +113,8 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			getWorld().update(timeStep.floatValue(), maxSubSteps, false, false, true);
+			PhysicsSpace world = getWorld();
+			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
 			continueStep = true;
 		}
@@ -137,7 +139,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	public void updateEngine(final Double timeStep, final int maxSubSteps) {
 		this.timeStep = timeStep;
 		this.maxSubSteps = maxSubSteps;
-		DEBUG.OUT("Asking to update the world in thread " + Thread.currentThread().getName());
+		// DEBUG.OUT("Asking to update the world in thread " + Thread.currentThread().getName());
 		continueStep = false;
 		semaphore.release();
 		while (!continueStep) { Thread.yield(); }
@@ -151,22 +153,26 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	@Override
 	public PhysicsSpace createWorld() {
 		if (world != null) return world;
-		thread.start();
+		if (thread.getState() == State.NEW) { thread.start(); }
 		while (doInit) { Thread.yield(); }
 		return world;
 	}
 
 	@Override
 	public void registerAgent(final IAgent agent) {
-		NativeBulletBodyWrapper b = new NativeBulletBodyWrapper(agent, this);
-		getWorld().addCollisionObject(b.getBody());
-		b.setCCD(simulation.getCCD(simulation.getScope()));
+		PhysicsSpace world = getWorld();
+		if (world != null) {
+			NativeBulletBodyWrapper b = new NativeBulletBodyWrapper(agent, this);
+			world.addCollisionObject(b.getBody());
+			b.setCCD(simulation.getCCD(simulation.getScope()));
+		}
 	}
 
 	@Override
 	public void unregisterAgent(final IAgent agent) {
-		NativeBulletBodyWrapper wrapper = (NativeBulletBodyWrapper) agent.getAttribute(BODY);
-		getWorld().remove(wrapper.getBody());
+		Object body = agent.getAttribute(BODY);
+		PhysicsSpace world = getWorld();
+		if (world != null && body instanceof NativeBulletBodyWrapper wrapper) { world.remove(wrapper.getBody()); }
 	}
 
 	@Override
@@ -182,13 +188,18 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 
 	@Override
 	public void setGravity(final GamaPoint g) {
+		PhysicsSpace world = getWorld();
 		if (world != null) { world.setGravity(toVector(g)); }
 	}
 
 	@Override
 	public void dispose() {
 		if (world == null) return;
-		world.getRigidBodyList().forEach(world::removeCollisionObject);
+		// Doesnt seem to be necessary as the "CleanerThread" is running. See
+		// https://hub.jmonkeyengine.org/t/solved-how-to-close-a-physics-space-to-free-up-ram/47684/9
+		// world.destroy();
+		// NativePhysicsObject.freeUnusedObjects();
+		// CollisionSpace.physicsSpaceTL;
 		doUpdate = false;
 		semaphore.release();
 		try {
@@ -197,11 +208,15 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			e.printStackTrace();
 		}
 		world = null;
+		// The goal here is to get rid of bridge Java/C++ objects as soon as possible
+		System.gc();
 
 	}
 
 	@Override
 	public void updatePositionsAndRotations() {
+		PhysicsSpace world = getWorld();
+		if (world == null) return;
 		for (PhysicsRigidBody b : world.getRigidBodyList()) {
 			NativeBulletBodyWrapper bw = (NativeBulletBodyWrapper) b.getUserObject();
 			if (b.isActive() && !b.isStatic()) { bw.transferLocationAndRotationToAgent(); }

@@ -179,12 +179,18 @@ public class GamlSearchField {
 	 */
 	public Control createWidget(final Composite parent) {
 		composite = new Composite(parent, SWT.NONE);
-		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
+		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(3)
 				.equalWidth(false).applyTo(composite);
 		text = createText(composite);
-		final int height = 16;// PlatformHelper.isWindows() ? 16 : ;
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).hint(250, height).applyTo(text);
+		final int height = 24;// PlatformHelper.isWindows() ? 16 : ;
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).hint(250, SWT.DEFAULT)
+				.applyTo(text);
 
+		new HeapControl().displayOn(composite);
+
+		// GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
+		// bar.button("generic/garbage.collect", "", "60M on 4096M", e -> { System.gc(); });
+		// GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(30, 0).applyTo(bar);
 		parent.getShell().addControlListener(new ControlListener() {
 			@Override
 			public void controlResized(final ControlEvent e) {

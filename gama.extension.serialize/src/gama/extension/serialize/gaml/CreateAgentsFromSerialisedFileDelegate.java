@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * CreateAgentsFromSerialisedFileDelegate.java, in gama.serialize, is part of the source code of the GAMA
- * modeling and simulation platform .
+ * CreateAgentsFromSerialisedFileDelegate.java, in gama.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -50,7 +50,8 @@ public class CreateAgentsFromSerialisedFileDelegate implements ICreateDelegate {
 		String path = (String) inits.get(0).get("saved_file");
 		BinarySerialisation.restoreFromFile(agent, path);
 		// The sequence is executed only after the restoration
-		scope.execute(sequence, agent, null);
+		if (sequence != null && !sequence.isEmpty()) { scope.execute(sequence, agent, null); }
+		pop.fireAgentsAdded(scope, agents);
 		return agents;
 	}
 
@@ -61,7 +62,7 @@ public class CreateAgentsFromSerialisedFileDelegate implements ICreateDelegate {
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
-		return source instanceof GamaSavedSimulationFile;
+		return source instanceof GamaSavedAgentFile;
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class CreateAgentsFromSerialisedFileDelegate implements ICreateDelegate {
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
 			final Object source, final Arguments init, final CreateStatement statement) {
-		inits.add(Map.of("saved_file", ((GamaSavedSimulationFile) source).getPath(scope)));
+		inits.add(Map.of("saved_file", ((GamaSavedAgentFile) source).getPath(scope)));
 		return true;
 	}
 

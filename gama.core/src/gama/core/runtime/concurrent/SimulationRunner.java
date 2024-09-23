@@ -98,16 +98,16 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public void add(final SimulationAgent agent) {
-		DEBUG.OUT("Adding " + agent);
+		// DEBUG.OUT("Adding " + agent);
 		Thread t = new Thread("Thread of " + agent.getName()) {
 			@Override
 			public void run() {
-				DEBUG.OUT("Launching " + agent + " shutdown = " + shutdown);
-				while (!shutdown) {
+				// DEBUG.OUT("Launching " + agent + " shutdown = " + shutdown);
+				while (!shutdown && !agent.dead()) {
 
 					// synchronized (lock) {
 					try {
-						DEBUG.OUT("Waiting for " + agent);
+						// DEBUG.OUT("Waiting for " + agent);
 						// lock.wait();
 						simulationsSemaphore.acquire();
 					} catch (InterruptedException e) {
@@ -134,7 +134,7 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void step() {
 		// synchronized (lock) {
-		DEBUG.OUT("Releasing to all simulations");
+		// DEBUG.OUT("Releasing to all simulations");
 		int nb = getActiveThreads();
 		simulationsSemaphore.release(nb);
 		try {
@@ -155,7 +155,7 @@ public class SimulationRunner implements ISimulationRunner {
 		shutdown = true;
 		int nb = runnables.size();
 		runnables.clear();
-		DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
+		// DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
 		experimentSemaphore.release(nb);
 		simulationsSemaphore.release(nb);
 	}

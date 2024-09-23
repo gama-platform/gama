@@ -5,7 +5,7 @@ function signInJar(){
     local nJ
 
     # TODO : Prevent gathering META-INF folder
-    jar tf "$1" | grep '\.so\|\.dylib\|\.jnilib\'  > filelist.txt
+    jar tf "$1" | grep '\.so\|\.dylib\|\.jnilib' > filelist.txt
 
     sed -i -e '/META-INF/d' filelist.txt
 
@@ -22,7 +22,7 @@ function signInJar(){
 
     fi
 
-    grep "^\[$f" needToSign.txt | cut -d " " -f 2 > nestedJar.txt
+    grep "^\[$1" $needToSignFile | cut -d " " -f 2 > nestedJar.txt
     if [[ -s "nestedJar.txt" ]]; then
         while read nJ
         do
@@ -36,10 +36,18 @@ function signInJar(){
             
             jar uf "$1" "$nJ"
         done < nestedJar.txt
+    else
+        echo "No nested file to sign in $1"
     fi
 }
 
-grep "^./" needToSign.txt > jar.txt
+# Use absolute path of this file
+needToSignFile=$(find $(pwd) -name "needToSign.txt")
+echo $needToSignFile
+
+echo "=== Now ==="
+
+grep "^./" $needToSignFile > jar.txt
 
 # Sign .jar files
 while read j
@@ -47,7 +55,7 @@ do
     if [  -f "$j" ]; then
         echo "Signing in $j"
         signInJar "$j"
-        find . -not -wholename "*Gama.app*" -not -name "needToSign.txt" -not -name "jar.txt" -delete
+        find $(pwd) -not -wholename "*Gama.app*" -not -name "$needToSignFile" -not -name "*needToSign.txt" -not -name "jar.txt" -delete
         echo "xxx"
     fi
 done < jar.txt
@@ -56,4 +64,4 @@ done < jar.txt
 find ./ \( -name "*dylib" -o -name "*.so" -o -name "*.jnilib" \) -exec codesign --timestamp --force -s "$MACOS_DEV_ID" -v {} \;
 
 # Clean-up apple mess
-find ./Gama.app -name "jar*.tmp" -exec rm -fr {} \;
+find ./Gama.app -name "jar*.tmp" -delete
