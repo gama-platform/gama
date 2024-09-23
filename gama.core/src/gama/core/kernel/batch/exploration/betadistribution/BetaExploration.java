@@ -91,11 +91,11 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("The number of sample required.")),
 				@facet (
-						name = Exploration.SAMPLE_FACTORIAL,
+						name = BetaExploration.BOOTSTRAP,
 						type = IType.LIST,
 						of = IType.INT,
 						optional = true,
-						doc = @doc ("The number of automated steps to swip over, when step facet is missing in parameter definition. Default is 9")),
+						doc = @doc ("The number of time each parameter value is boostraped (or resampled in another context)")),
 				@facet (
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
@@ -115,6 +115,9 @@ import gama.gaml.types.IType;
 						value = "method sobol sample_size:100 outputs:['my_var'] report:'../path/to/report/file.txt'; ",
 						isExecutable = false) }) })
 public class BetaExploration extends AExplorationAlgorithm {
+	
+	private int bootstrap = Betadistribution.DEFAULT_BOOTSTRAP;
+	public static final String BOOTSTRAP = "bootstrap";
 
 	/** Theoretical inputs */
 	private List<Batch> parameters;
@@ -140,11 +143,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 	@Override
 	public void explore(final IScope scope) {
 
-		// == Parameters ==
-		List<Batch> params = currentExperiment.getParametersToExplore().stream()
-				.filter(p -> p.getMinValue(scope) != null && p.getMaxValue(scope) != null).map(p -> p).toList();
-
-		parameters = parameters == null ? params : parameters;
+		parameters = parameters == null ? getParams(currentExperiment) : parameters;
 
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
@@ -193,18 +192,24 @@ public class BetaExploration extends AExplorationAlgorithm {
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-
+		
 		exp.add(new ParameterAdapter("Sampled points", IKeyword.BETAD, IType.STRING) {
-			@Override
-			public Object value() {
-				if (hasFacet(Exploration.SAMPLE_SIZE))
-					return Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
-				if (hasFacet(Exploration.SAMPLE_FACTORIAL))
-					return (int) Math.round(Math
-							.pow(Cast.asFloat(agent.getScope(), getFacet(Exploration.SAMPLE_FACTORIAL)), exp.size()));
-				else
+				@Override public Object value() {
+					if (hasFacet(BOOTSTRAP)) {
+						return Cast.asInt(agent.getScope(), 
+								getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()))
+								+ Cast.asInt(agent.getScope(), 
+										getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()))
+								* Cast.asInt(agent.getScope(), getFacet(BOOTSTRAP).value(agent.getScope())) 
+								* getParams(agent).size();
+					}
+					if (hasFacet(Exploration.SAMPLE_SIZE)) {
+						return Cast.asInt(agent.getScope(), 
+							getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
+					} 
+					
 					return sample_size;
-			}
+				}
 		});
 
 		exp.add(new ParameterAdapter("Sampling method", IKeyword.BETAD, IType.STRING) {
@@ -217,7 +222,21 @@ public class BetaExploration extends AExplorationAlgorithm {
 		});
 
 	}
-
+	
+	// ================================== //
+	
+	/**
+	 * Get back the list of 'explorable' parameters (numerical variable with min and max values)
+	 *  
+	 * @param xp
+	 * @return
+	 */
+	private List<Batch> getParams(BatchAgent xp) {
+		return xp.getParametersToExplore().stream()
+				.filter(p -> p.getMinValue(xp.getScope()) != null && p.getMaxValue(xp.getScope()) != null)
+				.map(p -> p).toList();
+	}
+	
 	/**
 	 * Duplicates values of parameter to put them in various context
 	 *
@@ -228,16 +247,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 	private List<ParametersSet> expendExperimentPlan(final List<ParametersSet> sets, final IScope scope) {
 
 		List<ParametersSet> returnedSet = new ArrayList<>(sets);
-
-		// How many times a parameter value should be reproduced in the plan
-		int fact = Betadistribution.DEFAULT_FACTORIAL;
-		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
-			fact = Cast.asInt(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope));
-		}
-
-		// Ensure that there is enough sample points to expand the parameter space
-		fact = fact > sample_size ? sample_size - 1 : fact;
-
+		
+		if (hasFacet(BOOTSTRAP)) {bootstrap = Cast.asInt(scope, getFacet(BOOTSTRAP).value(scope));}
+		
 		// For each parameter, duplicates 'fact' times all sampled values
 		for (Batch b : parameters) {
 
@@ -245,9 +257,8 @@ public class BetaExploration extends AExplorationAlgorithm {
 			for (ParametersSet ps : sets) {
 				List<ParametersSet> subspace = new ArrayList<>(sets);
 				subspace.remove(ps);
-				for (int i = 0; i < fact; i++) {
-					ParametersSet cross =
-							new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
+				for (int i=0; i<bootstrap; i++) {
+					ParametersSet cross = new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
 					cross.addValueAtIndex(scope, b, ps.get(b.getName()));
 					returnedSet.add(cross);
 				}
@@ -256,7 +267,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 
 		return returnedSet;
 	}
-
+	
+	// ================================== //
+	
 	/**
 	 * Builds the report string.
 	 *

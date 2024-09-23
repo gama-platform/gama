@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaDate;
+import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
@@ -60,6 +62,7 @@ import gama.gaml.types.GamaFloatType;
 import gama.gaml.types.GamaPointType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
+import one.util.streamex.IntStreamEx;
 
 /**
  * The Class AExplorationAlgorithm.
@@ -79,9 +82,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	
 	/** The sample size. */
 	protected int sample_size = 132;
-	
-	/** The default step factor. */
-	private final int __DEFAULT_STEP_FACTOR = 10;
 	
 	public static final String CSV_SEP = ",";
 	
@@ -190,11 +190,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * Gives the factorial plan based on SAMPLE_FACTORIAL facets of experiment
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public int[] getFactorial(IScope scope, List<Batch> parameters) {
-		Object o = getFacet(Exploration.SAMPLE_FACTORIAL).value(scope);
-		int[] r = new int[parameters.size()];
-		Arrays.fill(r, Integer.parseInt(o.toString()));
-		return r;
+	
+		IList<Integer> fact = Cast.asList(scope, getFacet(Exploration.SAMPLE_FACTORIAL).value(scope));
+		if (fact.size() < parameters.size()) {
+			fact.addAll(Collections.nCopies(parameters.size()-fact.size(), Exploration.DEFAULT_FACTORIAL));
+		} else if (fact.size() > parameters.size()) {
+			fact = Cast.asList(scope, fact.subList(0,parameters.size()));
+		}
+		
+		return IntStreamEx.of(fact).toArray();
 	}
 	
 	/**
@@ -444,15 +450,79 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		}
 		return res;
 	}
+	
+	private List<Object> getFloatParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+
+		double minFloatValue = Cast.asFloat(scope, var.getMinValue(scope));
+		double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
+		double stepFloatValue = 0.1;
+		double df = Exploration.DEFAULT_FACTORIAL-1;
+		
+		
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			List<Batch> b = currentExperiment.getParametersToExplore();
+			df = getFactorial(scope,b)[b.indexOf(var)];
+			stepFloatValue = (maxFloatValue - minFloatValue) / df;
+		} else if (var.getStepValue(scope) != null) {
+			stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
+		} else {
+			stepFloatValue = (maxFloatValue - minFloatValue) / df;
+		}
+		
+		while (minFloatValue <= maxFloatValue) {
+			minFloatValue += stepFloatValue;
+			res.add(minFloatValue);
+		}
+
+		return res;
+	}
+
+	private List<Object> getIntParameterSwip(IScope scope, Batch var) {
+		List<Object> res = new ArrayList<>();
+
+		int minValue = Cast.asInt(scope, var.getMinValue(scope));
+		int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
+		double stepValue = 1;
+		double df = Exploration.DEFAULT_FACTORIAL-1;
+		
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			List<Batch> b = currentExperiment.getParametersToExplore();
+			df = getFactorial(scope,b)[b.indexOf(var)];
+			if (maxValue - minValue > df) {
+				stepValue = (maxValue - minValue) / df;
+			}
+		} else if (var.getStepValue(scope) != null) {
+			stepValue = Cast.asInt(scope, var.getStepValue(scope));
+		} else if (maxValue - minValue > df) {
+			stepValue = (maxValue - minValue) / df;
+		}
+		
+		int nbIterNeeded = 0;
+		//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
+		nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
+		double start = stepValue >= 0 ? minValue : maxValue;
+		for(int i = 0 ; i <= nbIterNeeded ; i++) {
+			res.add(start + (int)(stepValue * i));
+		}
+		return res;
+	}
+	
 	private List<Object> getDefaultParameterSwip(IScope scope, Batch var) {
 		List<Object> res = new ArrayList<>();
 		double varValue = Cast.asFloat(scope, var.getMinValue(scope));
 		double maxVarValue = Cast.asFloat(scope, var.getMaxValue(scope));
 		double floatcrement = 1;
-		if (hasFacet(IKeyword.STEP)) {
+		double dfactor = (Exploration.DEFAULT_FACTORIAL-1);
+		
+		if (hasFacet(Exploration.SAMPLE_FACTORIAL)) {
+			List<Batch> b = currentExperiment.getParametersToExplore();
+			dfactor = getFactorial(scope,b)[b.indexOf(var)];
+			floatcrement = (maxVarValue - varValue) / dfactor;
+		} else if (var.getStepValue(scope) != null) {
 			floatcrement = Cast.asFloat(scope, var.getStepValue(scope));
 		} else {
-			floatcrement = (maxVarValue - varValue) / __DEFAULT_STEP_FACTOR;
+			floatcrement = (maxVarValue - varValue) / dfactor;
 		}
 		
 		double v = floatcrement >= 0 ? varValue : maxVarValue;
@@ -465,54 +535,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				res.add(v);
 			}
 			v += floatcrement;
-		}
-		return res;
-	}
-	
-	private List<Object> getFloatParameterSwip(IScope scope, Batch var) {
-		List<Object> res = new ArrayList<>();
-
-		double minFloatValue = Cast.asFloat(scope, var.getMinValue(scope));
-		double maxFloatValue = Cast.asFloat(scope, var.getMaxValue(scope));
-		double stepFloatValue = 0.1;
-		if (var.getStepValue(scope) != null) {
-			stepFloatValue = Cast.asFloat(scope, var.getStepValue(scope))-1;
-		} else {
-			stepFloatValue = (maxFloatValue - minFloatValue) / (__DEFAULT_STEP_FACTOR-1);
-		}
-		
-		// Do we need to account for min > max ???
-		
-		while (minFloatValue <= maxFloatValue) {
-			minFloatValue += stepFloatValue;
-			res.add(minFloatValue);
-		}
-		// Do we need to control for errors ????
-		// Do we have to use Math.ulp() ???
-//		if (Math.abs(Cast.asFloat(scope, res.get(res.size()-1)) - maxFloatValue) < stepFloatValue) {
-//			res.remove(res.size()-1);
-//			res.add(maxFloatValue);
-//		}
-		return res;
-	}
-
-	private List<Object> getIntParameterSwip(IScope scope, Batch var) {
-		List<Object> res = new ArrayList<>();
-
-		int minValue = Cast.asInt(scope, var.getMinValue(scope));
-		int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
-		double stepValue = 1;
-		int nbIterNeeded = 0;
-		if (var.getStepValue(scope) != null) {
-			stepValue = Cast.asInt(scope, var.getStepValue(scope));
-		} else if (maxValue - minValue > __DEFAULT_STEP_FACTOR) {
-			stepValue = (maxValue - minValue) / (double)__DEFAULT_STEP_FACTOR;
-		}
-		//This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
-		nbIterNeeded = Math.abs((int)((maxValue - minValue) / stepValue));
-		double start = stepValue >= 0 ? minValue : maxValue;
-		for(int i = 0 ; i <= nbIterNeeded ; i++) {
-			res.add(start + (int)(stepValue * i));
 		}
 		return res;
 	}

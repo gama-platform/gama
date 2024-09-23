@@ -140,6 +140,7 @@ public class Exploration extends AExplorationAlgorithm {
 
 	/** The factorial sampling */
 	public static final String SAMPLE_FACTORIAL = "factorial";
+	public static final int DEFAULT_FACTORIAL = 9;
 
 	/** The Constant NB_LEVELS */
 	public static final String NB_LEVELS = "levels";
@@ -155,6 +156,7 @@ public class Exploration extends AExplorationAlgorithm {
 
 	/** The Constant DEFAULT_SAMPLING */
 	public static final String DEFAULT_SAMPLING = "Exhaustive";
+	
 
 	/** The parameters. */
 	private List<Batch> parameters;
