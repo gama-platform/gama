@@ -342,4 +342,11 @@ public interface IExperimentPlan extends ISpecies {
 	 * @date 15 oct. 2023
 	 */
 	void setParameterValues(IList params);
+
+	/**
+	 * Whether the current experiment is reloading or not (see #344)
+	 *
+	 * @return
+	 */
+	boolean isReloading();
 }

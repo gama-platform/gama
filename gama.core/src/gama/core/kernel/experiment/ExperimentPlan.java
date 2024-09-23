@@ -771,11 +771,25 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		open(seed);
 	}
 
+	// Horrible workaround for #334
+	// ----------------------------------------------------------------------------------
+	private volatile boolean reloading;
+
 	@Override
 	public void reload() {
-		agent.dispose();
+		try {
+
+			reloading = true;
+			agent.dispose();
+		} finally {
+			reloading = false;
+		}
 		open();
 	}
+
+	@Override
+	public boolean isReloading() { return reloading; }
+	// ----------------------------------------------------------------------------------
 
 	@Override
 	public boolean hasParametersOrUserCommands() {
