@@ -657,7 +657,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	@setter (ExperimentAgent.MINIMUM_CYCLE_DURATION)
 	public void setMinimumDuration(final Double d) {
-		// d is in seconds, but the slider expects milleseconds
+		// d is in seconds, but the slider expects milliseconds
 		// DEBUG.LOG("Minimum duration set to " + d);
 		if (d > currentMaximumDuration) { currentMaximumDuration = d; }
 		setMinimumDurationExternal(d);

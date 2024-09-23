@@ -218,7 +218,7 @@ public class Application implements IApplication {
 			final String ret = WorkspacePreferences.checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
 				// if ( ret.equals("Restart") ) { return EXIT_RESTART; }
-				/* If we dont or cant remember and the location is set, we cant do anything as we need a workspace */
+				/* If we don't or can't remember and the location is set, we can't do anything as we need a workspace */
 				openError(null, IKeyword.ERROR, "The workspace provided cannot be used. Please change it");
 				if (isWorkbenchRunning()) { getWorkbench().close(); }
 				System.exit(0);
