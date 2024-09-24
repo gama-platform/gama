@@ -358,7 +358,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (dying || dead) return;
 		dying = true;
 		getSpecies().getArchitecture().abort(ownScope);
-		closeSimulations(getSpecies().isReloading());
+		closeSimulations(!getSpecies().isReloading());
 		GAMA.releaseScope(ownScope);
 		super.dispose();
 	}
