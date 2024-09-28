@@ -12,6 +12,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 
+import gama.ui.shared.controls.StatusControlContribution;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 
@@ -21,12 +22,15 @@ public class HeapControl {
 
 	Control displayOn(final Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
-		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(3)
+		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
 				.equalWidth(false).applyTo(composite);
 		GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
+		bar.button("spacer", "", "", null);
 		item = bar.button("generic/garbage.collect", "", "", e -> { System.gc(); });
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(30, 0).applyTo(bar);
 		bar.addListener(SWT.MouseEnter, e -> updateToolTip());
+
+		new StatusControlContribution().fill(bar, 0);
 		return composite;
 	}
 
@@ -42,7 +46,7 @@ public class HeapControl {
 	}
 
 	public static void install() {
-		WorkbenchHelper.runInUI("Install GAML Search", 0, m -> {
+		WorkbenchHelper.runInUI("Install GAMA Status and Heap Controls", 0, m -> {
 			final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			if (window instanceof WorkbenchWindow) {
 				final MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
