@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * SimulationAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SimulationAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -455,7 +454,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		}
 		if (externalInitsAndParameters != null) { externalInitsAndParameters.clear(); }
 
-		//we make sure that all pending write operations are flushed
+		// we make sure that all pending write operations are flushed
 		GAMA.getBufferingController().flushSaveFilesOfAgent(this);
 		GAMA.getBufferingController().flushWriteOfAgent(this);
 		GAMA.releaseScope(getScope());
@@ -789,7 +788,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param iOutputManager
 	 *            the new outputs
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	public void setOutputs(final IOutputManager iOutputManager) {
 		if (iOutputManager == null) return;
 		// AD : condition removed for Issue #3748
@@ -800,8 +799,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		if (des == null) return;
 		outputs = (SimulationOutputManager) des.compile();
 		final Map<String, IOutput> mm = GamaMapFactory.create();
-		for (final Map.Entry<String, ? extends IOutput> entry : outputs.getOutputs().entrySet()) {
-			final IOutput output = entry.getValue();
+		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
 				keyName = output.getName() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
@@ -809,14 +807,15 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 				newOutputName = keyName;
 			} else {
 				final String postfix = buildPostfix();
-				keyName = entry.getKey() + postfix;
+				keyName = oName + postfix;
 				newOutputName = output.getName() + postfix;
 			}
 			mm.put(keyName, output);
 			output.setName(newOutputName);
-		}
+		});
 		outputs.clear();
 		outputs.putAll(mm);
+
 		// AD : reverted for Issue #3748
 		// } else {
 		// outputs = (SimulationOutputManager) iOutputManager;
@@ -969,7 +968,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	@Override
 	public void updateWith(final IScope scope, final ISerialisedAgent sa) {
 
@@ -998,14 +997,19 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 			}
 
 			// If attributes are related to the RNG, we keep them to initialise the RNG later, in the proper order.
-			if (IKeyword.SEED.equals(varName)) {
-				seedValue = (Double) attrValue;
-			} else if (IKeyword.RNG.equals(varName)) {
-				rngValue = (String) attrValue;
-			} else if (SimulationAgent.USAGE.equals(varName)) {
-				usageValue = (Integer) attrValue;
-			} else {
-				this.setDirectVarValue(scope, varName, attrValue);
+			switch (varName) {
+				case IKeyword.SEED:
+					seedValue = (Double) attrValue;
+					break;
+				case IKeyword.RNG:
+					rngValue = (String) attrValue;
+					break;
+				case SimulationAgent.USAGE:
+					usageValue = (Integer) attrValue;
+					break;
+				default:
+					this.setDirectVarValue(scope, varName, attrValue);
+					break;
 			}
 
 		}

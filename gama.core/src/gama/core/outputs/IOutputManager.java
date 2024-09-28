@@ -12,6 +12,7 @@ package gama.core.outputs;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import gama.core.common.interfaces.IStepable;
 import gama.core.runtime.IScope;
@@ -78,13 +79,13 @@ public interface IOutputManager extends IStepable, Iterable<IOutput> {
 	 */
 	IOutput getOutputWithOriginalName(final String name);
 
-	/**
-	 * Returns the map of outputs managed by this IOutputManager. Keys are the identifiers, values the outputs
-	 * themselves. Any modification to this map will alter the output manager
-	 *
-	 * @return the map of <id, output>
-	 */
-	Map<String, ? extends IOutput> getOutputs();
+	// /**
+	// * Returns the map of outputs managed by this IOutputManager. Keys are the identifiers, values the outputs
+	// * themselves. Any modification to this map will alter the output manager
+	// *
+	// * @return the map of <id, output>
+	// */
+	// Map<String, ? extends IOutput> getOutputs();
 
 	/**
 	 * Forces all the outputs to update themselves whatever their refreshable state (see {@link IOutput#update()}
@@ -132,5 +133,9 @@ public interface IOutputManager extends IStepable, Iterable<IOutput> {
 	 * @return true, if successful
 	 */
 	boolean hasMonitors();
+
+	boolean isEmpty();
+
+	void forEach(final BiConsumer<? super String, ? super IOutput> action);
 
 }
