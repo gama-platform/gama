@@ -11,7 +11,6 @@
 package gama.extension.physics.native_version;
 
 import java.lang.Thread.State;
-import java.util.concurrent.Semaphore;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PersistentManifolds;
@@ -20,6 +19,7 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Vector3f;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.dev.DEBUG;
@@ -94,7 +94,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	Thread thread = new Thread(this);
 
 	/** The lock. */
-	volatile Semaphore semaphore = new Semaphore(1);
+	volatile GeneralSynchronizer semaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	@Override
 	public void run() {
@@ -108,11 +108,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			// DEBUG.OUT("Creating world in thread " + Thread.currentThread().getName());
 		}
 		while (doUpdate) {
-			try {
-				semaphore.acquire();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			semaphore.acquire();
 			PhysicsSpace world = getWorld();
 			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
@@ -128,11 +124,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	 */
 	public NativeBulletPhysicalWorld(final PhysicalSimulationAgent physicalSimulationAgent) {
 		super(physicalSimulationAgent);
-		try {
-			semaphore.acquire();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		semaphore.acquire();
 	}
 
 	@Override

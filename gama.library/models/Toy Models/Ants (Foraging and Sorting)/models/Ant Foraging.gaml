@@ -229,7 +229,7 @@ experiment "Classic" type: gui record: every(10) parent:base{
 	user_command "Save" {	save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
-		display Ants antialias: false type: 2d {
+		display Ants antialias: false type: 3d {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			image terrain refresh: false;
@@ -260,7 +260,7 @@ experiment "3D View" type: gui parent:base{
 }
 
 //Experiment to show how to make multi simulations
-experiment "3 Simulations" type: gui record: every(10#cycle) parent:base{
+experiment "3 Simulations" type: gui  parent:base{
 	
 	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';

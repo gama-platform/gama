@@ -16,8 +16,8 @@ import static gama.core.runtime.concurrent.GamaExecutorService.getParallelism;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
@@ -40,10 +40,10 @@ public class SimulationRunner implements ISimulationRunner {
 	final Object lock = new Object();
 
 	/** The simulationsSemaphore. */
-	final Semaphore simulationsSemaphore = new Semaphore(0);
+	final GeneralSynchronizer simulationsSemaphore = GeneralSynchronizer.withInitialPermits(0);
 
 	/** The experiment semaphore. */
-	final Semaphore experimentSemaphore = new Semaphore(0);
+	final GeneralSynchronizer experimentSemaphore = GeneralSynchronizer.withInitialPermits(0);
 	/** The concurrency. */
 	final int concurrency;
 
@@ -98,22 +98,13 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public void add(final SimulationAgent agent) {
-		// DEBUG.OUT("Adding " + agent);
 		Thread t = new Thread("Thread of " + agent.getName()) {
 			@Override
 			public void run() {
-				// DEBUG.OUT("Launching " + agent + " shutdown = " + shutdown);
 				while (!shutdown && !agent.dead()) {
 
-					// synchronized (lock) {
-					try {
-						// DEBUG.OUT("Waiting for " + agent);
-						// lock.wait();
-						simulationsSemaphore.acquire();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					// }
+					// DEBUG.OUT("Waiting for " + agent);
+					simulationsSemaphore.acquire();
 					try {
 						agent.step();
 						experimentSemaphore.release();
@@ -133,18 +124,10 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public void step() {
-		// synchronized (lock) {
 		// DEBUG.OUT("Releasing to all simulations");
 		int nb = getActiveThreads();
 		simulationsSemaphore.release(nb);
-		try {
-			experimentSemaphore.acquire(nb);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// lock.notifyAll();
-		// }
+		experimentSemaphore.acquire(nb);
 	}
 
 	/**

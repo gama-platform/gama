@@ -121,7 +121,7 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
+		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: false toolbar: false{
 			
 			 overlay position: { 50#px,50#px} size: { 1 #px, 1 #px } background: # black border: #black rounded: false 
             	{

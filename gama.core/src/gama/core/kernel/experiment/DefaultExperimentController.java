@@ -46,9 +46,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		executionThread = new Thread(() -> { while (experimentAlive) { step(); } }, "Front end scheduler");
 		executionThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-		try {
-			lock.acquire();
-		} catch (final InterruptedException e) {}
+		lock.acquire();
 		commandThread.start();
 		executionThread.start();
 	}
@@ -212,11 +210,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	protected void step() {
 		if (paused) {
-			try {
-				lock.acquire();
-			} catch (InterruptedException e) {
-				experimentAlive = false;
-			}
+			lock.acquire();
+			// experimentAlive = false;
 		}
 		try {
 			if (scope == null) return;
