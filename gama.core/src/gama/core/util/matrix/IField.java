@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
-import javax.annotation.Nonnull;
-
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
@@ -179,7 +177,6 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 *            a world location (location of an agent, for instance)
 	 * @return A list of values at this location. Never null nor empty (as there is at least one band).
 	 */
-	@Nonnull
 	IList<Double> getValuesIntersecting(IScope scope, IShape shape);
 
 	/**

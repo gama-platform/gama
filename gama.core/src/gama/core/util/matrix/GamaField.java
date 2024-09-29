@@ -13,7 +13,6 @@ import static gama.gaml.types.GamaGeometryType.buildRectangle;
 
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Doubles;
@@ -148,7 +147,6 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	 * grid coordinates is already taken in charge by matrices
 	 */
 	@Override
-	@Nullable
 	public Double get(final IScope scope, final GamaPoint p) {
 		computeDimensions(scope);
 		GamaPoint gp = new GamaPoint(p);
@@ -262,7 +260,6 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		return Iterables.filter(Doubles.asList(getMatrix()), e -> e != noDataValue);
 	}
 
-	@Nullable
 	@Override
 	public IShape getCellShapeAt(final IScope scope, final GamaPoint gp) {
 		computeDimensions(scope);

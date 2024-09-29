@@ -12,8 +12,6 @@ package gama.core.kernel.experiment;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.types.IType;
@@ -177,7 +175,6 @@ public interface IParameter extends IExperimentDisplayable {
 	 *
 	 * @return the enablement
 	 */
-	@Nonnull
 	default String[] getEnablement() { return EMPTY_STRINGS; }
 
 	/**
@@ -186,7 +183,6 @@ public interface IParameter extends IExperimentDisplayable {
 	 *
 	 * @return the disablement
 	 */
-	@Nonnull
 	default String[] getDisablement() { return EMPTY_STRINGS; }
 
 	/**
@@ -195,7 +191,6 @@ public interface IParameter extends IExperimentDisplayable {
 	 *
 	 * @return the refreshment
 	 */
-	@Nonnull
 	default String[] getRefreshment() { return EMPTY_STRINGS; }
 
 	/**
@@ -203,7 +198,6 @@ public interface IParameter extends IExperimentDisplayable {
 	 *
 	 * @return the file extensions
 	 */
-	@Nonnull
 	default String[] getFileExtensions() { return EMPTY_STRINGS; }
 
 	/**
