@@ -23,6 +23,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import gama.core.common.StatusMessage;
 import gama.core.common.interfaces.IStatusDisplayer;
+import gama.core.common.interfaces.IUpdaterMessage;
 import gama.core.common.interfaces.IUpdaterMessage.StatusType;
 import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -65,6 +66,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	static StatusControlContribution INSTANCE;
 
 	private GamaUIColor inactiveColor;
+
+	private double progress = 1d;
 
 	/**
 	 * Gets the single instance of ExperimentControlContribution.
@@ -190,7 +193,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				taskCompletion = m.completion();
 				currentException = m.exception();
 				currentStatus = m.getType();
-				String icon = m.icon();
+				String icon = getIcon(m.icon());
 
 				label.setImageWithoutRecomputingSize(icon == null ? null : GamaIcon.named(icon).image());
 				// label.setColor(getLabelBackground(m));
@@ -200,6 +203,17 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			isUpdating = false;
 		}
 
+	}
+
+	private String getIcon(final String icon) {
+		if (icon == null) return null;
+		if (IUpdaterMessage.PROGRESS_ICON.equals(icon)) {
+			if (progress > 6) { progress = 1; }
+			progress += 0.3;
+			return "status/progress" + Math.round(progress);
+
+		}
+		return icon;
 	}
 
 	private String getLabelText(final StatusMessage m) {

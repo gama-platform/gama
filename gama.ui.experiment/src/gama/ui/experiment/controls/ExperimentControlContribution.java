@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.experiment.controls;
 
-import static gama.core.runtime.GAMA.getCurrentTopLevelAgent;
 import static gama.ui.shared.resources.GamaColors.get;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -39,7 +38,6 @@ import gama.dev.DEBUG;
 import gama.gaml.operators.Strings;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.factories.StatusDisplayer;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -85,6 +83,8 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 */
 	public ExperimentControlContribution() {
 		INSTANCE = this;
+		((StatusDisplayer) WorkbenchHelper.getService(IStatusDisplayer.class)).getThreadedUpdater()
+				.setExperimentTarget(this);
 	}
 
 	/**
@@ -218,33 +218,26 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	@Override
 	public void updateWith(final StatusMessage m) {
 		if (isUpdating) return;
-		prepareForUpdate();
-		label.setImageWithoutRecomputingSize(m.icon() == null ? null : GamaIcon.named(m.icon()).image());
-		label.setColor(getLabelBackground());
-		label.setTextWithoutRecomputingSize(getClockMessage());
-		if (popup.isVisible()) { popup.display(); }
-		isUpdating = false;
-	}
-
-	/**
-	 * Gets the popup background.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the popup background
-	 * @date 26 août 2023
-	 */
-	// @Override
-	public GamaUIColor getLabelBackground() { return get(getCurrentTopLevelAgent().getColor()); }
-
-	private void prepareForUpdate() {
-		if (GAMA.getExperiment() == null) {
-			label.removeMenuSign();
-			popup.wipe();
-			if (popup.isVisible()) { popup.hide(); }
-		} else {
-			label.addMenuSign();
+		try {
+			isUpdating = true;
+			DEBUG.OUT("Updating with current experiment " + GAMA.getExperiment());
+			if (GAMA.getExperiment() == null) {
+				label.removeMenuSign();
+				popup.wipe();
+				if (popup.isVisible()) { popup.hide(); }
+			} else {
+				label.addMenuSign();
+			}
+			ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
+			label.setImageWithoutRecomputingSize(m.icon() == null ? null : GamaIcon.named(m.icon()).image());
+			label.setColor(get(agent.getColor()));
+			label.setTextWithoutRecomputingSize(getClockMessage(agent));
+			if (popup.isVisible()) { popup.display(); }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			isUpdating = false;
 		}
-		isUpdating = true;
 	}
 
 	/**
@@ -256,8 +249,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @return the clock message
 	 * @date 26 août 2023
 	 */
-	private String getClockMessage() {
-		ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
+	private String getClockMessage(final ITopLevelAgent agent) {
 		if (agent == null) return "";
 		if (agent instanceof PlatformAgent) return "No experiment running";
 		final IExperimentAgent exp = agent.getExperiment();

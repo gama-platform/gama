@@ -43,15 +43,15 @@ public record StatusMessage(String message, StatusType type, String icon, GamaCo
 	}
 
 	public static StatusMessage BEGIN(final String msg) {
-		return new StatusMessage(msg, StatusType.SUBTASK, null, WAIT_AND_TASK_COLOR, true, null, null);
+		return new StatusMessage(msg, StatusType.SUBTASK, PROGRESS_ICON, WAIT_AND_TASK_COLOR, true, null, null);
 	}
 
 	public static StatusMessage END(final String msg) {
-		return new StatusMessage(msg, StatusType.SUBTASK, null, WAIT_AND_TASK_COLOR, false, null, null);
+		return new StatusMessage(msg, StatusType.SUBTASK, PROGRESS_ICON, WAIT_AND_TASK_COLOR, false, null, null);
 	}
 
 	public static StatusMessage COMPLETION(final String msg, final Double completion) {
-		return new StatusMessage(msg, StatusType.SUBTASK, null, WAIT_AND_TASK_COLOR, false, completion, null);
+		return new StatusMessage(msg, StatusType.SUBTASK, PROGRESS_ICON, WAIT_AND_TASK_COLOR, false, completion, null);
 	}
 
 	public static StatusMessage CUSTOM(final String msg, final StatusType s, final String icon) {
@@ -62,8 +62,11 @@ public record StatusMessage(String message, StatusType type, String icon, GamaCo
 		return new StatusMessage(msg, s, icon, color, null, null, null);
 	}
 
+	private static StatusMessage EXPERIMENT =
+			new StatusMessage(null, StatusType.EXPERIMENT, null, null, null, null, null);
+
 	public static StatusMessage EXPERIMENT() {
-		return new StatusMessage(null, StatusType.EXPERIMENT, null, null, null, null, null);
+		return EXPERIMENT;
 	}
 
 	@Override

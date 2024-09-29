@@ -14,6 +14,8 @@ package gama.core.common.interfaces;
  */
 public interface IUpdaterMessage {
 
+	String PROGRESS_ICON = "progress";
+
 	public enum StatusType {
 		ERROR, INFORM, USER, SUBTASK, EXPERIMENT, WAIT, NONE;
 	}

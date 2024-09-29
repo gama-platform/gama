@@ -74,8 +74,10 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 
 	@Override
 	public boolean isBusy() {
-		return message != null && message.getType() == StatusType.EXPERIMENT
-				&& (experimentControl.isBusy() || statusControl.isBusy());
+		return false;
+
+		// message != null
+		// && (message.getType() == StatusType.EXPERIMENT && experimentControl.isBusy() || statusControl.isBusy());
 	}
 
 	@Override
