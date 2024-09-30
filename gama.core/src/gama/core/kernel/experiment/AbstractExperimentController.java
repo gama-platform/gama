@@ -11,8 +11,8 @@
 package gama.core.kernel.experiment;
 
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Semaphore;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
@@ -48,7 +48,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	protected volatile boolean acceptingCommands = true;
 
 	/** The lock. Used to pause the experiment */
-	protected final Semaphore lock = new Semaphore(1);
+	protected final GeneralSynchronizer lock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	/** The experiment. */
 	protected IExperimentPlan experiment;

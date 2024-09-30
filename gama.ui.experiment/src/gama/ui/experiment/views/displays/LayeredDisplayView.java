@@ -11,7 +11,6 @@
 package gama.ui.experiment.views.displays;
 
 import java.awt.Color;
-import java.util.concurrent.Semaphore;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -32,6 +31,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IGamaView;
@@ -90,7 +90,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	 * The display semaphore. Acquired when the view is updating, supposed to be released when the actual surface has
 	 * been rendered
 	 */
-	protected Semaphore displaySemaphore = new Semaphore(1);
+	protected GeneralSynchronizer displaySemaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	@Override
 	public void setIndex(final int index) { realIndex = index; }
@@ -372,13 +372,9 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		final Job job = getUpdateJob();
 		job.schedule();
 		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
-			try {
-				// Shoyld We put a time out in case ?
-				// displaySemaphore.tryAcquire(5, TimeUnit.SECONDS);
-				displaySemaphore.acquire();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			// Should we put a time out in case ?
+			// displaySemaphore.tryAcquire(5, TimeUnit.SECONDS);
+			displaySemaphore.acquire();
 		}
 
 		updateSnapshot();

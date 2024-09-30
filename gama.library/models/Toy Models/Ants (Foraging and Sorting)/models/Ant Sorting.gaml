@@ -27,7 +27,7 @@ global  {
 	int number_of_different_colors <- 5 max: 9 min:1 ;
 	int density_percent <- 30 min: 0 max: 99 ;
 	int number_of_objects_in_history <- 3 min: 0 ;
-	int number_of_objects_around  <- 4 min: 0 max: 8;
+	int number_of_objects_around  <- 5 min: 0 max: 8;
 	int width_and_height_of_grid <- 60 max: 400 min: 10 ;  
 	int ants <- 200 min: 1 ;
 	list<rgb> all_colors <- [#yellow,#red, #orange, #blue, #green,#cyan, #gray,#pink,#magenta] ;
@@ -103,7 +103,7 @@ experiment "Color sort" type: gui{
 	float minimum_cycle_duration <- 0.05#s;
 	
 	output synchronized:true{
-		display view type: 2d antialias:false{
+		display view type: 3d antialias:false{
 			grid ant_grid border: #black;
 			species ant transparency: 0.05;
 		}

@@ -16,12 +16,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -141,9 +141,9 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	}
 
 	@Override
-	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
+	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
 		drawAllDisplays();
-		if (synchronizer != null) synchronizer.release();
+		if (synchronizer != null) { synchronizer.release(); }
 	}
 
 	/**
