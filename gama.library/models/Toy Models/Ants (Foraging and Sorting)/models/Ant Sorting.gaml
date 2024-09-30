@@ -1,7 +1,7 @@
 /**
 * Name: Ant Sorting
-* Author: 
-* Description: This model is loosely based on the behavior of ants sorting different elements in their nest. 
+* Author: Alexis Drogoul
+* Description: This model is loosely based on the behavior of ants sorting different elements in their nest . 
 *	
 * 	A group of mobile agents - the ants - is placed on a grid. 
 * 	
@@ -16,7 +16,7 @@
 * 	*number_of_objects_in_history* cells with the same color.
 * 	
 * 	After a while, colors begin to be aggregated.
-* 
+*  
 * Tags: gui, skill, grid
 */
 
@@ -27,7 +27,7 @@ global  {
 	int number_of_different_colors <- 5 max: 9 min:1 ;
 	int density_percent <- 30 min: 0 max: 99 ;
 	int number_of_objects_in_history <- 3 min: 0 ;
-	int number_of_objects_around  <- 4 min: 0 max: 8;
+	int number_of_objects_around  <- 5 min: 0 max: 8;
 	int width_and_height_of_grid <- 60 max: 400 min: 10 ;  
 	int ants <- 200 min: 1 ;
 	list<rgb> all_colors <- [#yellow,#red, #orange, #blue, #green,#cyan, #gray,#pink,#magenta] ;
@@ -100,7 +100,6 @@ experiment "Color sort" type: gui{
 	parameter "Width and height of the grid:" var: width_and_height_of_grid category: "Environment" ;
 	parameter "Number of agents:" var: ants category: "Agents" ;
 	 
-	float minimum_cycle_duration <- 0.05#s;
 	
 	output synchronized:true{
 		display view type: 2d antialias:false{

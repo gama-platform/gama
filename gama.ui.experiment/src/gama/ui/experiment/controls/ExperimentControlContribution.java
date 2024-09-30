@@ -34,7 +34,6 @@ import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
-import gama.dev.DEBUG;
 import gama.gaml.operators.Strings;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.factories.StatusDisplayer;
@@ -50,7 +49,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		implements IUpdaterTarget<StatusMessage> {
 
 	static {
-		DEBUG.ON();
+		// DEBUG.ON();
 	}
 
 	/** The is updating. */
@@ -220,7 +219,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (isUpdating) return;
 		try {
 			isUpdating = true;
-			DEBUG.OUT("Updating with current experiment " + GAMA.getExperiment());
+			// DEBUG.OUT("Updating with current experiment " + GAMA.getExperiment());
 			if (GAMA.getExperiment() == null) {
 				label.removeMenuSign();
 				popup.wipe();

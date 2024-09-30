@@ -77,7 +77,7 @@ public class GamlResourceValidator implements IResourceValidator {
 		// DEBUG.OUT("GamlResourceValidator beginning validation job of " + resource.getURI().lastSegment());
 		String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
 		ArrayList<Issue> result = new ArrayList<>();
-		GAMA.getGui().getStatus().setStatus(null, "Compilation of " + name, "navigator/files/file.model",
+		GAMA.getGui().getStatus().setStatus(null, "Compilation of " + name, "navigator/files/file.text",
 				GamaColor.get(200, 200, 200));
 		DEBUG.TIMER("COMPIL", name, "in", () -> {
 			final IAcceptor<Issue> acceptor = issue -> {
