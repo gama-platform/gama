@@ -49,7 +49,7 @@ import gama.gaml.types.Types;
  */
 public abstract class AbstractOutputManager extends Symbol implements IOutputManager {
 
-	class OutputMap implements Map<String, IOutput> {
+	static class OutputMap implements Map<String, IOutput> {
 		// an internal data structure that preserves concurrency and the definition order of outputs
 		int monitorOrder;
 		final Map<String, IOutput> actualOutputs = new ConcurrentHashMap<>();
