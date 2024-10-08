@@ -87,10 +87,9 @@ import gama.gaml.types.IType;
 						doc = @doc ("The number of sample required, 132 by default")),
 				@facet (
 						name = Exploration.SAMPLE_FACTORIAL,
-						type = IType.LIST,
-						of = IType.INT,
+						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number slices (value) applied to each parameter to build the factorial experimental plan.")),
+						doc = @doc ("The number of slice (value) applied to each parameter to build the factorial experimental plan.")),
 				@facet (
 						name = Exploration.NB_LEVELS,
 						type = IType.INT,
