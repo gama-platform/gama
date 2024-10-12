@@ -102,7 +102,13 @@ public class ZoomController {
 						// toolbar
 					}
 				}
-				if (cameraLocked != null) { tb.setSelection(cameraLocked, view.isLocked()); }
+				if (cameraLocked != null) {
+					boolean locked = view.isLocked();
+					tb.setSelection(cameraLocked, locked);
+					// If locked at the beginning, it means that the camera is dynamic.
+					// We disable the control (see #350)
+					cameraLocked.setEnabled(!locked);
+				}
 				tb.removeControlListener(this);
 			}
 
@@ -149,6 +155,7 @@ public class ZoomController {
 		}
 		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view", e -> { view.toggleLock(); },
 				SWT.RIGHT);
+
 	}
 
 }
