@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GenericCameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GenericCameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -28,7 +27,7 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	Integer lens = 45;
 
 	/** The is interactive. */
-	Boolean isInteractive = true;
+	Boolean isLocked = false;
 
 	/** The name. */
 	final String name;
@@ -83,11 +82,14 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	public Integer getLens() { return lens; }
 
 	@Override
-	public Boolean isInteractive() { return isInteractive; }
+	public Boolean isLocked() { return isLocked; }
 
 	@Override
-	public void setInteractive(final Boolean b) {
-		isInteractive = b;
+	public Boolean isDynamic() { return false; }
+
+	@Override
+	public void setLocked(final Boolean b) {
+		isLocked = b;
 
 	}
 
@@ -112,6 +114,7 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	public void reset() {
 		currentLocation.setLocation(initialLocation);
 		currentTarget.setLocation(initialTarget);
+		isLocked = false;
 	}
 
 	@Override

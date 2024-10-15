@@ -320,7 +320,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public void toggleLock() {
-		renderer.getCameraHelper().toggleCamera();
+		renderer.getCameraHelper().toggleCameraLock();
 	}
 
 	/**

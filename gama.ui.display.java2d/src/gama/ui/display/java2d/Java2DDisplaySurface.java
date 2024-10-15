@@ -450,7 +450,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 *
 	 * @return true, if is locked
 	 */
-	public boolean isLocked() { return isLocked; }
+	public boolean isCameraLocked() { return isLocked; }
+
+	public boolean isCameraDynamic() { return false; }
 
 	/**
 	 * Checks if is image edge in panel.

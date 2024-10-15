@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -95,7 +94,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 		if (temp instanceof String pos) {
 			// If it is a symbolic position
 			double coeff = 1.4;
-			if ((scope instanceof GraphicsScope gs) && (gs.getGraphics() != null)) {
+			if (scope instanceof GraphicsScope gs && gs.getGraphics() != null) {
 				coeff = gs.getGraphics().getSurface().getData().getCameraDistanceCoefficient();
 			}
 			double w = scope.getSimulation().getWidth();
@@ -144,7 +143,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 */
 	@Override
 	public boolean setLocation(final GamaPoint loc) {
-		if (!isInteractive() || loc == null) return false;
+		if (isLocked() || isDynamic() || loc == null) return false;
 		locationAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setLocation(loc);
 	}
@@ -159,7 +158,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 */
 	@Override
 	public boolean setTarget(final GamaPoint loc) {
-		if (!isInteractive() || loc == null) return false;
+		if (isLocked() || isDynamic() || loc == null) return false;
 		targetAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setTarget(loc);
 	}
@@ -180,7 +179,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	public Integer getLens() { return lens.get(); }
 
 	@Override
-	public Boolean isInteractive() { return !locked.get() && !isDynamic(); }
+	public Boolean isLocked() { return locked.get(); }
 
 	/**
 	 * Sets the interactive.
@@ -189,11 +188,11 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 *            the new interactive
 	 */
 	@Override
-	public void setInteractive(final Boolean b) { this.locked = new ConstantAttribute<>(b == null ? false : !b); }
+	public void setLocked(final Boolean b) { this.locked = new ConstantAttribute<>(b == null ? false : b); }
 
 	@Override
 	public boolean setDistance(final Double d) {
-		if (!isInteractive() || d == null) return false;
+		if (isLocked() || isDynamic() || d == null) return false;
 		distanceAttribute = new ConstantAttribute<>(d);
 		return current.setDistance(d);
 	}
