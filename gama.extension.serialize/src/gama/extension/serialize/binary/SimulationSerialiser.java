@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import static gama.core.util.ByteArrayZipper.zip;
+
 import java.util.LinkedList;
 
 import gama.core.common.interfaces.ISerialisationConstants;
@@ -46,7 +48,7 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 	@Override
 	public void record(final SimulationAgent sim) {
 		try {
-			byte[] state = processor.saveAgentToBytes(sim.getScope(), sim);
+			byte[] state = zip(processor.saveObjectToBytes(sim.getScope(), sim));
 			SimulationHistory history = getSimulationHistory(sim);
 			history.push(state, sim.getClock().getCycle());
 		} catch (Throwable e) {
