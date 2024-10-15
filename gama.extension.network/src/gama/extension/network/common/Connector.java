@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * Connector.java, in gama.extension.network, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * Connector.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.network.common;
 
@@ -17,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.messaging.GamaMessage;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -189,11 +188,9 @@ public abstract class Connector implements IConnector {
 				if (cmsg.getSender() instanceof IAgent) {
 					cmsg.setSender(sender.getAttribute(INetworkSkill.NET_AGENT_NAME));
 				}
-				final NetworkMessage msg = MessageFactory
-						.buildNetworkMessage((String) sender.getAttribute(INetworkSkill.NET_AGENT_NAME), receiver,
-								BinarySerialisation.saveToString(sender.getScope(), cmsg,
-										ISerialisationConstants.BINARY_FORMAT,
-										true) /* StreamConverter.convertObjectToStream(sender.getScope(), cmsg) */);
+				final NetworkMessage msg =
+						MessageFactory.buildNetworkMessage((String) sender.getAttribute(INetworkSkill.NET_AGENT_NAME),
+								receiver, BinarySerialisation.saveToString(sender.getScope(), cmsg));
 				this.sendMessage(sender, receiver, MessageFactory.packMessage(msg));
 			} else {
 				this.sendMessage(sender, receiver, content.getContents(sender.getScope()).toString());
