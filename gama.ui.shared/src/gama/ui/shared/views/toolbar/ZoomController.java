@@ -103,11 +103,11 @@ public class ZoomController {
 					}
 				}
 				if (cameraLocked != null) {
-					boolean locked = view.isLocked();
-					tb.setSelection(cameraLocked, locked);
-					// If locked at the beginning, it means that the camera is dynamic.
-					// We disable the control (see #350)
-					cameraLocked.setEnabled(!locked);
+					boolean locked = view.isCameraLocked();
+					boolean dynamic = view.isCameraDynamic();
+					tb.setSelection(cameraLocked, locked || dynamic);
+					// If the camera is dynamic, we disable the control (see #350)
+					cameraLocked.setEnabled(!dynamic);
 				}
 				tb.removeControlListener(this);
 			}
@@ -131,7 +131,7 @@ public class ZoomController {
 								@Override
 								public void widgetSelected(final SelectionEvent e) {
 									view.getCameraHelper().setCameraName(p);
-									cameraLocked.setSelection(view.isLocked());
+									cameraLocked.setSelection(view.isCameraLocked());
 								}
 
 							}, p.equals(view.getCameraHelper().getCameraName())
