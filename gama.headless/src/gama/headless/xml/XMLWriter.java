@@ -12,6 +12,7 @@ package gama.headless.xml;
 
 import java.io.*;
 
+import gama.headless.common.DataType;
 import gama.headless.core.*;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.ListenedVariable;
@@ -66,7 +67,9 @@ public class XMLWriter implements Writer {
 	public void writeResultStep(final long step, final ListenedVariable[] vars) {
 		StringBuilder sb = new StringBuilder().append("\t<Step id='").append(step).append("' >\n");
 		for ( int i = 0; i < vars.length; i++ ) {
-			sb.append("\t\t<Variable name='").append(vars[i].getName()).append("' type='").append(vars[i].getDataType().name()).append("'>").append(vars[i].getValue())
+			sb.append("\t\t<Variable name='").append(vars[i].getName())
+								.append("' type='").append((vars[i].getDataType() == null ? DataType.UNDEFINED : vars[i].getDataType()).name())
+								.append("'>").append(vars[i].getValue())
 				.append("</Variable>\n");
 		}
 		sb.append("\t</Step>\n");
