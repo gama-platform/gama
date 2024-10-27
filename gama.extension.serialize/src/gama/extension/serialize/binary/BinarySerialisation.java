@@ -11,8 +11,6 @@
 package gama.extension.serialize.binary;
 
 import static gama.core.common.util.FileUtils.constructAbsoluteFilePath;
-import static gama.core.util.ByteArrayZipper.unzip;
-import static gama.core.util.ByteArrayZipper.zip;
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -23,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.nustaq.serialization.FSTConfiguration;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -39,6 +39,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
  * @date 31 oct. 2023
  */
 public class BinarySerialisation implements ISerialisationConstants {
+
+	private static FSTConfiguration FST = FSTConfiguration.createDefaultConfiguration();
 
 	/** The processor. */
 	private static BinarySerialiser PROCESSOR = new BinarySerialiser();
@@ -99,7 +101,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 31 oct. 2023
 	 */
 	public static Object createFromBytes(final IScope scope, final byte[] bytes) {
-		return PROCESSOR.createObjectFromBytes(scope, unzip(bytes));
+		return PROCESSOR.createObjectFromBytes(scope, bytes);
 	}
 
 	/**
@@ -153,7 +155,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 8 août 2023
 	 */
 	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) throws IOException {
-		PROCESSOR.restoreAgentFromBytes(sim, unzip(bytes));
+		PROCESSOR.restoreAgentFromBytes(sim, bytes);
 	}
 
 	/**
@@ -208,7 +210,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 21 août 2023
 	 */
 	public static final byte[] saveToBytes(final IScope scope, final Object object) {
-		return zip(PROCESSOR.saveObjectToBytes(scope, object));
+		return PROCESSOR.saveObjectToBytes(scope, object);
 	}
 
 	/**
