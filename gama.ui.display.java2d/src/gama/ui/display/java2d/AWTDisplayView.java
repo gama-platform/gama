@@ -76,6 +76,9 @@ public class AWTDisplayView extends LayeredDisplayView {
 	}
 
 	@Override
-	public boolean isLocked() { return getDisplaySurface().isLocked(); }
+	public boolean isCameraLocked() { return getDisplaySurface().isCameraLocked(); }
+
+	@Override
+	public boolean isCameraDynamic() { return getDisplaySurface().isCameraDynamic(); }
 
 }

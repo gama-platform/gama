@@ -688,7 +688,12 @@ public class LayeredDisplayData {
 	public void update(final IScope scope, final Facets facets) {
 
 		if (cameraNameExpression != null) {
+			boolean isLocked = camera == null ? false : camera.isLocked();
 			setCameraNameFromGaml(Cast.asString(scope, cameraNameExpression.value(scope)));
+			if (camera != null) {
+				// camera.reset();
+				camera.setLocked(isLocked);
+			}
 		}
 
 		if (camera != null) { camera.refresh(scope); }
@@ -885,7 +890,7 @@ public class LayeredDisplayData {
 	 *            the disable cam interact
 	 */
 	public void setCameraLocked(final boolean disableCamInteract) {
-		camera.setInteractive(!disableCamInteract);
+		camera.setLocked(disableCamInteract);
 	}
 
 	/**
@@ -893,7 +898,9 @@ public class LayeredDisplayData {
 	 *
 	 * @return true, if successful
 	 */
-	public boolean isCameraLocked() { return !camera.isInteractive(); }
+	public boolean isCameraLocked() { return camera.isLocked(); }
+
+	public boolean isCameraDynamic() { return camera.isDynamic(); }
 
 	// ************************************************************************************************
 	// ************************************************************************************************
