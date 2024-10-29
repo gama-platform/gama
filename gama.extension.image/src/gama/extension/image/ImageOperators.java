@@ -186,9 +186,7 @@ public class ImageOperators implements ImageConstants {
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
-	@doc ("Takes a snapshot of the display whose name is passed in parameter and returns the image. "
-			+ "The search for the display begins in the agent passed in parameter and, if not found, its experiment. A custom size (a point representing width x height) can be given "
-			+ "Returns nil if no display can be found or the snapshot cannot be taken.")
+	@doc ("Send the given image to the websocket using Base64.")
 	@no_test
 	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image) {
 		PlatformAgent pa = GAMA.getPlatformAgent();

@@ -534,7 +534,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @date 3 nov. 2023
 	 */
 	public void sendMessage(final IScope scope, final Object message) {
-		sendMessage(scope,GamaServerMessage.Type.SimulationOutput);
+		sendMessage(scope, message,GamaServerMessage.Type.SimulationOutput);
 	}
 	
 	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.GamaServerMessage.Type type) {
