@@ -29,15 +29,15 @@ public abstract class HeadLessErrors {
 	
 	/** The Constant NOT_EXIST_FILE_ERROR. */
 	public static final int NOT_EXIST_FILE_ERROR = 4;
-	
-	/** The Constant HPC_PARAMETER_ERROR. */
-	public static final int HPC_PARAMETER_ERROR = 5;
+//	
+//	/** The Constant HPC_PARAMETER_ERROR. */
+//	public static final int HPC_PARAMETER_ERROR = 5;
 	
 	/** The Constant INPUT_NOT_DEFINED. */
-	public static final int INPUT_NOT_DEFINED = 6;
+	public static final int INPUT_NOT_DEFINED = 5 /* 6 */;
 	
 	/** The Constant OUTPUT_NOT_DEFINED. */
-	public static final int OUTPUT_NOT_DEFINED = 7;
+	public static final int OUTPUT_NOT_DEFINED = 6 /* 7 */;
 
 	/** The Constant ERRORS. */
 	private final static String[] ERRORS =
@@ -46,7 +46,7 @@ public abstract class HeadLessErrors {
 			"Launching error... try again",
 			"Unable to create directory at #. Check your file permission!",
 			"Unable to create directory at #. Directory already exist!",
-			"Unable to read input file #. File not exist!",
+			"Unable to read input file #. File does not exist!",
 			"Input file is not defined",
 			"Output directory is not defined"};
 
