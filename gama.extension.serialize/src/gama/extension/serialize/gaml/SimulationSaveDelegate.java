@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SimulationSaveDelegate.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * SimulationSaveDelegate.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -35,11 +35,10 @@ import gama.gaml.types.Types;
 public class SimulationSaveDelegate implements ISaveDelegate, ISerialisationConstants {
 
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
+			throws IOException {
 		Object toSave = item.value(scope);
-		if (toSave instanceof IAgent sa) {
-			BinarySerialisation.saveToFile(scope, sa, file.getPath(), options.type, true, true);
-		}
+		if (toSave instanceof IAgent sa) { BinarySerialisation.saveToFile(scope, sa, file.getPath(), true); }
 	}
 
 	@Override

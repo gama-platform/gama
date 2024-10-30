@@ -102,19 +102,6 @@ public class BinarySerialiser implements ISerialisationConstants {
 	}
 
 	/**
-	 * Save simulation to bytes.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param sim
-	 *            the sim
-	 * @return the byte[]
-	 * @date 8 août 2023
-	 */
-	public byte[] saveAgentToBytes(final IScope newScope, final IAgent sim) {
-		return saveObjectToBytes(newScope, SerialisedAgent.of(sim, true));
-	}
-
-	/**
 	 * Save object to bytes.
 	 *
 	 * @param newScope
@@ -125,7 +112,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 */
 	public byte[] saveObjectToBytes(final IScope newScope, final Object obj) {
 		inAgent = false;
-		return fst.asByteArray(obj);
+		return fst.asByteArray(obj instanceof IAgent a ? SerialisedAgent.of(a, true) : obj);
 	}
 
 	/**
@@ -142,30 +129,9 @@ public class BinarySerialiser implements ISerialisationConstants {
 	public Object createObjectFromBytes(final IScope newScope, final byte[] input) {
 		try {
 			scope = newScope;
-			return fst.asObject(input);
-		} catch (Exception e) {
-			throw GamaRuntimeException.create(e, scope);
-		} finally {
-			scope = null;
-		}
-
-	}
-
-	/**
-	 * Creates the agent from bytes.
-	 *
-	 * @param newScope
-	 *            the new scope
-	 * @param input
-	 *            the input
-	 * @return the i agent
-	 */
-	public IAgent createAgentFromBytes(final IScope newScope, final byte[] input) {
-		try {
-			scope = newScope;
 			Object o = fst.asObject(input);
 			if (o instanceof SerialisedAgent sa) return sa.recreateIn(scope);
-			return null;
+			return o;
 		} catch (Exception e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
