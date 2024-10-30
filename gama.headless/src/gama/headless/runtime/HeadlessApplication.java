@@ -305,6 +305,10 @@ public class HeadlessApplication implements IApplication {
 			size = size - 4;
 			mustContainInFile = mustContainOutFolder = false;
 		}
+		
+		if (args.contains(GAML_PARAMETER)) {
+			size = size - 2;
+		}
 
 		// Runner verification
 		// ========================
@@ -319,11 +323,15 @@ public class HeadlessApplication implements IApplication {
 			// Check and create output folder
 			Globals.OUTPUT_PATH = args.get(args.size() - 1);
 			final File output = new File(Globals.OUTPUT_PATH);
-			if (!output.exists()) { output.mkdir(); }
+			if (!output.exists() && !output.mkdir()) {
+				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.OUTPUT_PATH);					
+			}
 			// Check and create output image folder
 			Globals.IMAGES_PATH = Globals.OUTPUT_PATH + "/snapshot";
 			final File images = new File(Globals.IMAGES_PATH);
-			if (!images.exists()) { images.mkdir(); }
+			if (!images.exists() && !images.mkdir()) {
+					return showError(HeadLessErrors.PERMISSION_ERROR, Globals.IMAGES_PATH);
+			}
 		}
 		if (mustContainInFile) {
 			final int inIndex = args.size() - (mustContainOutFolder ? 2 : 1);
@@ -658,10 +666,11 @@ public class HeadlessApplication implements IApplication {
 	 */
 	public void runGamlSimulation(final List<String> args)
 			throws IOException, GamaCompilationFailedException, InterruptedException {
-		final String pathToModel = args.get(args.size() - 1);
-		assertIsAModelFile(pathToModel);
-		final String argExperimentName = args.get(args.size() - 2);
-		final String argGamlFile = args.get(args.size() - 1);
+
+		final String argExperimentName = args.get(args.size() - 3);
+		final String argGamlFile = args.get(args.size() - 2);
+		final String argOutDir = args.get(args.size() - 1);
+		assertIsAModelFile(argGamlFile);
 
 		Integer numberOfCores =
 				args.contains(THREAD_PARAMETER) ? Integer.parseInt(after(args, THREAD_PARAMETER)) : null;
@@ -674,7 +683,7 @@ public class HeadlessApplication implements IApplication {
 			}
 		}
 		if (selectedJob == null) return;
-		Globals.OUTPUT_PATH = args.get(args.size() - 3);
+		Globals.OUTPUT_PATH = argOutDir;
 
 		selectedJob.setBufferedWriter(new XMLWriter(Globals.OUTPUT_PATH + "/" + Globals.OUTPUT_FILENAME + ".xml"));
 		processorQueue.setNumberOfThreads(numberOfCores != null ? numberOfCores : SimulationRuntime.DEFAULT_NB_THREADS);

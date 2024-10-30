@@ -10,10 +10,12 @@
  ********************************************************************************************************/
 package gama.headless.xml;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import gama.headless.common.DataType;
-import gama.headless.core.*;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.ListenedVariable;
 
