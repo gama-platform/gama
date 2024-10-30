@@ -121,6 +121,9 @@ public class HeadlessApplication implements IApplication {
 	/** The Constant THREAD_PARAMETER. */
 	final public static String THREAD_PARAMETER = "-hpc";
 
+	/** The Constant THREAD_PARAMETER. */
+	final public static String STEPS_PARAMETER = "-steps";
+
 	/** The Constant PING_INTERVAL. */
 	final public static String PING_INTERVAL = "-ping_interval";
 
@@ -667,14 +670,17 @@ public class HeadlessApplication implements IApplication {
 	public void runGamlSimulation(final List<String> args)
 			throws IOException, GamaCompilationFailedException, InterruptedException {
 
+
 		final String argExperimentName = args.get(args.size() - 3);
 		final String argGamlFile = args.get(args.size() - 2);
 		final String argOutDir = args.get(args.size() - 1);
+		final Integer numberOfSteps = args.contains(STEPS_PARAMETER)	? Integer.parseInt(after(args, STEPS_PARAMETER)) : null;
+		final Integer numberOfCores = args.contains(THREAD_PARAMETER) 	? Integer.parseInt(after(args, THREAD_PARAMETER)) : null;
+		
 		assertIsAModelFile(argGamlFile);
 
-		Integer numberOfCores =
-				args.contains(THREAD_PARAMETER) ? Integer.parseInt(after(args, THREAD_PARAMETER)) : null;
-		final List<IExperimentJob> jb = ExperimentationPlanFactory.buildExperiment(argGamlFile, numberOfCores);
+		final List<IExperimentJob> jb = ExperimentationPlanFactory.buildExperiment(argGamlFile,numberOfSteps, numberOfCores);
+
 		ExperimentJob selectedJob = null;
 		for (final IExperimentJob j : jb) {
 			if (j.getExperimentName().equals(argExperimentName)) {
