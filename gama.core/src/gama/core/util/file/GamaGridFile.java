@@ -634,7 +634,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 						records.fill(i, bands);
 						rect.setAttribute("grid_value", bands.get(0));
 						rect.setAttribute("bands", bands);
-						((IList) getBuffer()).add(rect);
+						getBuffer().add(rect);
 					}
 				}
 			}
@@ -822,7 +822,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public double getNoData(final IScope scope) {
-		return noData.doubleValue();
+		return noData == null ? IField.NO_NO_DATA : noData.doubleValue();
 	}
 
 	@Override

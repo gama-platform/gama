@@ -30,13 +30,13 @@ import com.google.inject.Singleton;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.resource.GamlResource;
-import gaml.compiler.gaml.resource.ImportedResources;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.impl.ModelImpl;
+import gaml.compiler.gaml.resource.GamlResource;
+import gaml.compiler.gaml.resource.ImportedResources;
 
 /**
  * The Class GamlResourceIndexer.
@@ -113,7 +113,8 @@ public class GamlResourceIndexer {
 	static private EObject findImport(final EObject contents, final URI baseURI, final URI uri) {
 		if (contents instanceof ExperimentFileStructure expe) {
 			String u = expe.getExp().getImportURI();
-			if (u.contains(URI.decode(uri.lastSegment())) || uri.equals(baseURI) && u.isEmpty()) return contents;
+			String lastSegment = URI.decode(uri.lastSegment());
+			if (lastSegment != null && u.contains(lastSegment) || uri.equals(baseURI) && u.isEmpty()) return contents;
 		} else if (contents instanceof Model model) {
 			for (final Import imp : model.getImports()) {
 				if (imp.getImportURI().contains(URI.decode(uri.lastSegment()))) return imp;
