@@ -2601,7 +2601,8 @@ public class Containers {
 	@doc (
 			value = "Returns true if all the elements of the left-hand operand make the right-hand operand evaluate to true. Returns true if the left-hand operand is empty. 'c all_match each.property' is strictly equivalent to '(c count each.property)  = length(c)' but faster in most cases (as it is a shortcircuited operator)",
 			comment = "in the right-hand operand, the keyword each can be used to represent, in turn, each of the elements.",
-			usages = { @usage ("if the left-hand operand is nil, all_match throws an error") },
+			usages = { @usage ("if the left-hand operand is nil, all_match throws an error"),
+					@usage ("if the left-hand operand is empty, all_match returns true") },
 			examples = { @example (
 					value = "[1,2,3,4,5,6,7,8] all_match (each > 3)",
 					equals = "false"),
@@ -2727,7 +2728,8 @@ public class Containers {
 			see = {})
 	public static IMap create_map(final IScope scope, final IList keys, final IList values) {
 		if (keys.length(scope) != values.length(scope)) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope), false);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope), false);
 		}
 		// final HashSet newSet = new HashSet(keys);
 		// if (newSet.size() < keys.length(scope))
