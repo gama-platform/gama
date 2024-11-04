@@ -23,6 +23,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Base64;
+
+import javax.imageio.ImageIO;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -33,11 +40,14 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ITopLevelAgent;
+import gama.core.kernel.root.PlatformAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.server.GamaServerMessage;
 import gama.core.util.GamaColor;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IMatrix;
@@ -157,7 +167,47 @@ public class ImageOperators implements ImageConstants {
 		IDisplaySurface surface = ldo.getSurface();
 		return SnapshotMaker.getInstance().captureImage(surface, customDimensions);
 	}
+	
+	public static String imgToBase64String(final GamaImage img, final String formatName)
+	{
+	  final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
+	  try
+	  {
+	    ImageIO.write(img, formatName, os);
+	    return Base64.getEncoder().encodeToString(os.toByteArray());
+	  }
+	  catch (final IOException ioe)
+	  {
+	    throw new UncheckedIOException(ioe);
+	  }
+	}
+	
+	@operator (
+			value = "send_image_to_websocket",
+			can_be_const = false)
+	@doc ("Send the given image to the websocket in Base64 using the given format.")
+	@no_test
+	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image, final String format) {
+		
+		PlatformAgent pa = GAMA.getPlatformAgent();
+		
+		pa.sendMessage(scope, imgToBase64String(image, format), GamaServerMessage.Type.SimulationImage);
+		return image;
+	}
+
+	
+
+	@operator (
+			value = "send_image_to_websocket",
+			can_be_const = false)
+	@doc ("Send the given image to the websocket using Base64 assuming the format is png.")
+	@no_test
+	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image) {
+		return sendImageWebsocket(scope, image, "png");
+	}
+	
+	
 	/**
 	 * Grayscale.
 	 *
