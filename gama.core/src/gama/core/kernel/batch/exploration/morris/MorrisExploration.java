@@ -161,7 +161,6 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	/** ######################### EVALUATE MORRIS INDEXES ######################### */
 
-	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) {
 		this.sample = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
