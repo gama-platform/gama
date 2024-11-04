@@ -186,15 +186,28 @@ public class ImageOperators implements ImageConstants {
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
-	@doc ("Send the given image to the websocket using Base64.")
+	@doc ("Send the given image to the websocket in Base64 using the given format.")
 	@no_test
-	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image) {
+	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image, final String format) {
+		
 		PlatformAgent pa = GAMA.getPlatformAgent();
 		
-		pa.sendMessage(scope, imgToBase64String(image, "png"), GamaServerMessage.Type.SimulationImage);
+		pa.sendMessage(scope, imgToBase64String(image, format), GamaServerMessage.Type.SimulationImage);
 		return image;
 	}
 
+	
+
+	@operator (
+			value = "send_image_to_websocket",
+			can_be_const = false)
+	@doc ("Send the given image to the websocket using Base64 assuming the format is png.")
+	@no_test
+	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image) {
+		return sendImageWebsocket(scope, image, "png");
+	}
+	
+	
 	/**
 	 * Grayscale.
 	 *
