@@ -150,7 +150,7 @@ public class ZoomController {
 						}, GamaIcon.named(IGamaIcons.PASTE).image());
 					}
 				};
-				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.height, 96);
+				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.getToolbar(SWT.RIGHT).getSize().y, 96);
 			}, SWT.RIGHT);
 		}
 		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view", e -> { view.toggleLock(); },

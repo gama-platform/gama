@@ -57,58 +57,59 @@ public class GamaToolbar2 extends Composite {
 	/** The has tooltip. */
 	private boolean hasTooltip;
 
-	/** The height. */
-	int height;
-
 	/** The is visible. */
 	boolean isVisible = true;
 
 	/**
 	 * Instantiates a new gama toolbar 2.
 	 *
-	 * @param parent
-	 *            the parent
-	 * @param style
-	 *            the style
-	 * @param height
-	 *            the height
+	 * @param parent the parent
+	 * @param style  the style
+	 * @param height the height
 	 */
-	public GamaToolbar2(final Composite parent, final int style, final int height) {
+	public GamaToolbar2(final Composite parent, final int style) {
 		super(parent, SWT.NONE);
-		this.height = height;
 		createLayout();
 		createToolbars();
 	}
 
 	/**
-	 * Empty to prevent the CSS engine from changing the color now and then (apparently randomly)
+	 * Empty to prevent the CSS engine from changing the color now and then
+	 * (apparently randomly)
 	 */
 	@Override
 	public void setBackground(final Color c) {
-		// DEBUG.OUT("setBackground() Called by " + DEBUG.CALLER() + "." + DEBUG.METHOD());
+		// DEBUG.OUT("setBackground() Called by " + DEBUG.CALLER() + "." +
+		// DEBUG.METHOD());
 	}
 
 	/**
 	 * Sets the background color.
 	 *
-	 * @param c
-	 *            the new background color
+	 * @param c the new background color
 	 */
 	// Necessary to have the background color "stick"
 	public void setBackgroundColor(final Color c) {
-		// DEBUG.OUT("setBackgroundColor() called by = " + DEBUG.METHOD() + " of " + DEBUG.CALLER());
+		// DEBUG.OUT("setBackgroundColor() called by = " + DEBUG.METHOD() + " of " +
+		// DEBUG.CALLER());
 		// Calls super explicitly
 		Color color = c;
-		if (color == null) { color = isDark() ? getShell().getBackground() : IGamaColors.WHITE.color(); }
+		if (color == null) {
+			color = isDark() ? getShell().getBackground() : IGamaColors.WHITE.color();
+		}
 		super.setBackground(color);
 		GamaColors.setBackground(color, this, left, right);
 	}
 
 	@Override
-	public void setVisible(final boolean visible) { isVisible = visible; }
+	public void setVisible(final boolean visible) {
+		isVisible = visible;
+	}
 
 	@Override
-	public boolean isVisible() { return isVisible; }
+	public boolean isVisible() {
+		return isVisible;
+	}
 
 	/**
 	 * Creates the layout.
@@ -128,11 +129,9 @@ public class GamaToolbar2 extends Composite {
 	public void createToolbars() {
 		left = new GamaToolbarSimple(this, SWT.FLAT | SWT.HORIZONTAL | SWT.WRAP | SWT.NO_FOCUS | SWT.INHERIT_FORCE);
 		var data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
-		data.minimumWidth = height * 2;
 		left.setLayoutData(data);
 		right = new GamaToolbarSimple(this, SWT.FLAT | SWT.HORIZONTAL | SWT.NO_FOCUS);
 		data = new GridData(SWT.RIGHT, SWT.FILL, true, false);
-		data.minimumWidth = height * 2;
 		right.setLayoutData(data);
 		setBackgroundColor(null);
 	}
@@ -150,15 +149,14 @@ public class GamaToolbar2 extends Composite {
 	}
 
 	@Override
-	protected void checkSubclass() {}
+	protected void checkSubclass() {
+	}
 
 	/**
 	 * Sep. Width is not used anymore
 	 *
-	 * @param width
-	 *            the n
-	 * @param side
-	 *            the side
+	 * @param width the n
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem sep(final int width, final int side /* SWT.LEFT or SWT.RIGHT */) {
@@ -168,8 +166,7 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Sep.
 	 *
-	 * @param side
-	 *            the side
+	 * @param side the side
 	 * @return the tool item
 	 */
 	public ToolItem sep(final int side /* SWT.LEFT or SWT.RIGHT */) {
@@ -179,14 +176,10 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Status.
 	 *
-	 * @param image
-	 *            the image
-	 * @param s
-	 *            the s
-	 * @param color
-	 *            the color
-	 * @param side
-	 *            the side
+	 * @param image the image
+	 * @param s     the s
+	 * @param color the color
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem status(final Image image, final String s, final GamaUIColor color,
@@ -200,16 +193,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Status.
 	 *
-	 * @param image
-	 *            the image
-	 * @param s
-	 *            the s
-	 * @param l
-	 *            the l
-	 * @param color
-	 *            the color
-	 * @param side
-	 *            the side
+	 * @param image the image
+	 * @param s     the s
+	 * @param l     the l
+	 * @param color the color
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem status(final Image image, final String s, final Selector l, final GamaUIColor color,
@@ -224,17 +212,15 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Tooltip.
 	 *
-	 * @param s
-	 *            the s
-	 * @param rgb
-	 *            the rgb
-	 * @param side
-	 *            the side
+	 * @param s    the s
+	 * @param rgb  the rgb
+	 * @param side the side
 	 * @return the tool item
 	 */
 	public ToolItem tooltip(final String s, final GamaUIColor rgb, final int side /* SWT.LEFT or SWT.RIGHT */) {
 		Color color = rgb == null ? getBackground() : rgb.color();
-		if (s == null) return null;
+		if (s == null)
+			return null;
 		hasTooltip = true;
 		final var tb = getToolbar(side);
 		wipe(side, false);
@@ -257,10 +243,13 @@ public class GamaToolbar2 extends Composite {
 			final var reader = new BufferedReader(new StringReader(s));
 			var line = reader.readLine();
 			while (line != null) {
-				if (!line.trim().isEmpty()) { newString.append(line).append(System.lineSeparator()); }
+				if (!line.trim().isEmpty()) {
+					newString.append(line).append(System.lineSeparator());
+				}
 				line = reader.readLine();
 			}
-		} catch (final IOException exc) {}
+		} catch (final IOException exc) {
+		}
 		label.setText(newString.toString());
 		// label.setFont(GamaFonts.getSmallFont());
 		label.setBackground(color/* .inactive() */);
@@ -272,16 +261,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Check.
 	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tip
-	 *            the tip
-	 * @param listener
-	 *            the listener
-	 * @param side
-	 *            the side
+	 * @param image    the image
+	 * @param text     the text
+	 * @param tip      the tip
+	 * @param listener the listener
+	 * @param side     the side
 	 * @return the tool item
 	 */
 	public ToolItem check(final String image, final String text, final String tip, final Selector listener,
@@ -292,10 +276,8 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Check.
 	 *
-	 * @param command
-	 *            the command
-	 * @param side
-	 *            the side
+	 * @param command the command
+	 * @param side    the side
 	 * @return the tool item
 	 */
 	public ToolItem check(final GamaCommand command, final int side) {
@@ -305,16 +287,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Button.
 	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tip
-	 *            the tip
-	 * @param listener
-	 *            the listener
-	 * @param side
-	 *            the side
+	 * @param image    the image
+	 * @param text     the text
+	 * @param tip      the tip
+	 * @param listener the listener
+	 * @param side     the side
 	 * @return the tool item
 	 */
 	public ToolItem button(final String image, final String text, final String tip, final Selector listener,
@@ -325,10 +302,8 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Button.
 	 *
-	 * @param command
-	 *            the command
-	 * @param side
-	 *            the side
+	 * @param command the command
+	 * @param side    the side
 	 * @return the tool item
 	 */
 	public ToolItem button(final GamaCommand command, final int side) {
@@ -338,14 +313,10 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Button.
 	 *
-	 * @param color
-	 *            the color
-	 * @param text
-	 *            the text
-	 * @param listener
-	 *            the listener
-	 * @param side
-	 *            the side
+	 * @param color    the color
+	 * @param text     the text
+	 * @param listener the listener
+	 * @param side     the side
 	 * @return the tool item
 	 */
 	public ToolItem button(final GamaUIColor color, final String text, final Selector listener, final int side) {
@@ -357,14 +328,10 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Button.
 	 *
-	 * @param color
-	 *            the color
-	 * @param text
-	 *            the text
-	 * @param image
-	 *            the image
-	 * @param side
-	 *            the side
+	 * @param color the color
+	 * @param text  the text
+	 * @param image the image
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem button(final GamaUIColor color, final String text, final Image image, final int side) {
@@ -375,16 +342,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Button.
 	 *
-	 * @param color
-	 *            the color
-	 * @param text
-	 *            the text
-	 * @param image
-	 *            the image
-	 * @param listener
-	 *            the listener
-	 * @param side
-	 *            the side
+	 * @param color    the color
+	 * @param text     the text
+	 * @param image    the image
+	 * @param listener the listener
+	 * @param side     the side
 	 * @return the tool item
 	 */
 	public ToolItem button(final GamaUIColor color, final String text, final Image image, final Selector listener,
@@ -397,12 +359,9 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Menu.
 	 *
-	 * @param color
-	 *            the color
-	 * @param text
-	 *            the text
-	 * @param side
-	 *            the side
+	 * @param color the color
+	 * @param text  the text
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem menu(final GamaUIColor color, final String text, final int side) {
@@ -413,16 +372,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Menu.
 	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tip
-	 *            the tip
-	 * @param listener
-	 *            the listener
-	 * @param side
-	 *            the side
+	 * @param image    the image
+	 * @param text     the text
+	 * @param tip      the tip
+	 * @param listener the listener
+	 * @param side     the side
 	 * @return the tool item
 	 */
 	public ToolItem menu(final String image, final String text, final String tip, final Selector listener,
@@ -433,12 +387,9 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Control.
 	 *
-	 * @param c
-	 *            the c
-	 * @param width
-	 *            the width
-	 * @param side
-	 *            the side
+	 * @param c     the c
+	 * @param width the width
+	 * @param side  the side
 	 * @return the tool item
 	 */
 	public ToolItem control(final Control c, final int width, final int side /* SWT.LEFT or SWT.RIGHT */) {
@@ -454,8 +405,7 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Refresh.
 	 *
-	 * @param layout
-	 *            the layout
+	 * @param layout the layout
 	 */
 	@Override
 	public void requestLayout() {
@@ -474,8 +424,8 @@ public class GamaToolbar2 extends Composite {
 	// }
 
 	/**
-	 * Wipes the toolbar (left or right), including or not the simple tool items. Retuns the width of the toolbar once
-	 * wiped.
+	 * Wipes the toolbar (left or right), including or not the simple tool items.
+	 * Retuns the width of the toolbar once wiped.
 	 *
 	 * @param side
 	 * @param includingToolItems
@@ -486,7 +436,9 @@ public class GamaToolbar2 extends Composite {
 		for (final ToolItem t : items) {
 			final var c = t.getControl();
 			if (c == null && includingToolItems || c != null) {
-				if (c != null) { c.dispose(); }
+				if (c != null) {
+					c.dispose();
+				}
 				t.dispose();
 			}
 		}
@@ -498,10 +450,8 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Item.
 	 *
-	 * @param item
-	 *            the item
-	 * @param side
-	 *            the side
+	 * @param item the item
+	 * @param side the side
 	 */
 	public void item(final IContributionItem item, final int side) {
 		item.fill(getToolbar(side), getToolbar(side).getItemCount());
@@ -510,42 +460,35 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Creates the.
 	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tip
-	 *            the tip
-	 * @param listener
-	 *            the listener
-	 * @param style
-	 *            the style
-	 * @param forceText
-	 *            the force text
-	 * @param control
-	 *            the control
-	 * @param side
-	 *            the side
+	 * @param image     the image
+	 * @param text      the text
+	 * @param tip       the tip
+	 * @param listener  the listener
+	 * @param style     the style
+	 * @param forceText the force text
+	 * @param control   the control
+	 * @param side      the side
 	 * @return the tool item
 	 */
 	private ToolItem create(final String image, final String text, final String tip, final SelectionListener listener,
 			final int style, final boolean forceText, final Control control,
 			final int side /* SWT.LEFT or SWT.RIGHT */) {
 		final var tb = getToolbar(side);
-		// DOES NOT SEEM TO BE NECESSARY ANYMORE (SEE #3677)
-		// if ( tb.getItemCount() == 0 && PlatformHelper.isWindows()) {
-		// int h = height;
-		// if (control != null) { h = Math.max(h, control.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + 4; }
-		// final var icon = GamaIcon.ofSize(getBackground(), 2, h);
-		// final var button = new ToolItem(tb, SWT.NONE);
-		// final var im = icon.image();
-		// button.setImage(im);
-		// button.setDisabledImage(im);
-		// button.setEnabled(false);
-		// }
+		if (tb.getItemCount() == 0 && PlatformHelper.isWindows() && control != null) {
+			final var icon = GamaIcon.ofSize(2, GamaToolbarFactory.TOOLBAR_HEIGHT);
+			final var button = new ToolItem(tb, SWT.NONE);
+			final var im = icon.image();
+			button.setImage(im);
+			button.setDisabledImage(im);
+			button.setEnabled(false);
+		}
 		final var button = new ToolItem(tb, style);
-		if (text != null && forceText) { button.setText(text); }
-		if (tip != null) { button.setToolTipText(tip); }
+		if (text != null && forceText) {
+			button.setText(text);
+		}
+		if (tip != null) {
+			button.setToolTipText(tip);
+		}
 		if (image != null) {
 			button.setData(image);
 			GamaIcon icon = GamaIcon.named(image);
@@ -578,7 +521,9 @@ public class GamaToolbar2 extends Composite {
 	private void normalizeToolbars() {
 		// final int n = right.getItemCount();
 		var size = 0;
-		for (final ToolItem t : right.getItems()) { size += t.getWidth(); }
+		for (final ToolItem t : right.getItems()) {
+			size += t.getWidth();
+		}
 		((GridData) right.getLayoutData()).minimumWidth = size;
 	}
 
@@ -603,10 +548,11 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Sets the toogle action.
 	 *
-	 * @param toggle
-	 *            the new toogle action
+	 * @param toggle the new toogle action
 	 */
-	public void setToogleAction(final ToggleAction toggle) { this.toggle = toggle; }
+	public void setToogleAction(final ToggleAction toggle) {
+		this.toggle = toggle;
+	}
 
 	/**
 	 * Hide.
@@ -625,27 +571,15 @@ public class GamaToolbar2 extends Composite {
 	}
 
 	/**
-	 * Sets the default height.
-	 *
-	 * @param height
-	 *            the new default height
-	 */
-	public void setDefaultHeight(final int height) {
-		this.height = height;
-
-	}
-
-	/**
 	 * Check selection icon.
 	 *
-	 * @param button
-	 *            the button
-	 * @param tb
-	 *            the tb
+	 * @param button the button
+	 * @param tb     the tb
 	 */
 	private void checkSelectionIcon(final ToolItem button) {
 		String image = (String) button.getData();
-		if (image == null) return;
+		if (image == null)
+			return;
 		if (PlatformHelper.isMac() && GamaColors.isDark(getBackground()) && !ThemeHelper.isDark()) {
 			if (button.getSelection()) {
 				button.setImage(GamaIcon.named(image).checked());
@@ -658,10 +592,8 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Sets the selection.
 	 *
-	 * @param item
-	 *            the item
-	 * @param selected
-	 *            the selected
+	 * @param item     the item
+	 * @param selected the selected
 	 */
 	public void setSelection(final ToolItem item, final boolean selected) {
 		item.setSelection(selected);
