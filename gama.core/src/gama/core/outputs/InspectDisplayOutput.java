@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * InspectDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * InspectDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -15,8 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -24,6 +21,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
@@ -333,22 +332,34 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		return EMPTY;
 	}
 
-	/**
-	 * Gets the species.
-	 *
-	 * @return the species
-	 */
-	public ISpecies getSpecies() {
+	// /**
+	// * Gets the species.
+	// *
+	// * @return the species
+	// */
+	// public ISpecies getSpecies() {
+	// final IExpression valueExpr = getValue();
+	// if (valueExpr == null) return null;
+	// final IType theType = valueExpr.getGamlType().getContentType();
+	// if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getSpecies();
+	// final SpeciesDescription sd = theType.getSpecies();
+	// if (sd == null) return getScope().getModel().getSpecies(IKeyword.AGENT);
+	// if (sd.equals(getScope().getModel().getDescription())) return getScope().getModel().getSpecies();
+	// String speciesName = sd.getName();
+	// if (speciesName == null) { speciesName = IKeyword.AGENT; }
+	// return rootAgent.getSpecies().getMicroSpecies(speciesName);
+	// }
+
+	public SpeciesDescription getSpeciesDescription() {
 		final IExpression valueExpr = getValue();
 		if (valueExpr == null) return null;
 		final IType theType = valueExpr.getGamlType().getContentType();
-		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getSpecies();
+		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
 		final SpeciesDescription sd = theType.getSpecies();
-		if (sd == null) return getScope().getModel().getSpecies(IKeyword.AGENT);
-		if (sd.equals(getScope().getModel().getDescription())) return getScope().getModel().getSpecies();
+		if (sd == null) return Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();
-		if (speciesName == null) { speciesName = IKeyword.AGENT; }
-		return rootAgent.getSpecies().getMicroSpecies(speciesName);
+		if (speciesName == null) return Types.AGENT.getDenotedSpecies();
+		return rootAgent.getSpecies().getDescription().getMicroSpecies(speciesName);
 	}
 
 	/**
