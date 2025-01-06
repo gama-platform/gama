@@ -110,7 +110,9 @@ public class ClientService extends Thread implements SocketService {
 		if (sender != null) { sender.close(); }
 		try {
 			if (receiver != null) { receiver.close(); }
-			socket.close();
+			if (socket != null) {
+				socket.close();				
+			}
 		} catch (final IOException e) {
 			
 			e.printStackTrace();
