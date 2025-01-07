@@ -13,12 +13,12 @@
 		<repository>
 			<uniqueVersion>true</uniqueVersion>
 			<id>p2Repo</id>
-			<url>scp://51.255.46.42/./var/www/gama_updates/0.0.0</url>
+			<url>scp://152.228.133.219/./var/www/gama_updates/0.0.0</url>
 		</repository>
 		<snapshotRepository>
 			<uniqueVersion>true</uniqueVersion>
 			<id>p2Repo</id>
-			<url>scp://51.255.46.42/./var/www/gama_updates/0.0.0</url>
+			<url>scp://152.228.133.219/./var/www/gama_updates/0.0.0</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -48,7 +48,7 @@
 			<id>p2Repo</id>
 			<properties>
 				<!-- Properties relative to the distant host where to upload the repo -->
-				<ftp.url>scp://51.255.46.42</ftp.url>
+				<ftp.url>scp://152.228.133.219</ftp.url>
 				<ftp.toDir>/var/www/gama_updates/0.0.0</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
