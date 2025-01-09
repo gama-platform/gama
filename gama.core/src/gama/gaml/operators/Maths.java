@@ -805,7 +805,7 @@ public class Maths {
 					equals = "1.0"),
 			see = "ln")
 	public static Double log(final IScope scope, final Double x) {
-		if (x <= 0) throw GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope);
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x.doubleValue());
 	}
@@ -830,11 +830,78 @@ public class Maths {
 					value = "log(1)",
 					equals = "0.0"))
 	public static Double log(final IScope scope, final Integer x) {
-		if (x <= 0) throw GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope);
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x);
 	}
 
+	
+	@operator (
+			value = "log",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			value = "returns the logarithm in base b of the operand.",
+			examples = @example (
+					value = "log(100, 100)",
+					equals = "1.0"))
+	public static Double log(final IScope scope, final Integer x, final Integer b) {
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
+		// return Double.MAX_VALUE; // A compromise...
+		return Math.log(x)/Math.log(b);
+	}
+	
+	@operator (
+			value = "log",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			value = "returns the logarithm in base b of the operand.",
+			examples = @example (
+					value = "log(100, 100.0)",
+					equals = "1.0"))
+	public static Double log(final IScope scope, final Integer x, final Double b) {
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
+		// return Double.MAX_VALUE; // A compromise...
+		return Math.log(x)/Math.log(b);
+	}
+	
+	@operator (
+			value = "log",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			value = "returns the logarithm in base b of the operand.",
+			examples = @example (
+					value = "log(100.0, 100.0)",
+					equals = "1.0"))
+	public static Double log(final IScope scope, final Double x, final Double b) {
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
+		// return Double.MAX_VALUE; // A compromise...
+		return Math.log(x)/Math.log(b);
+	}
+	
+	
+	@operator (
+			value = "log",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			value = "returns the logarithm in base b of the operand.",
+			examples = @example (
+					value = "log(100.0, 100)",
+					equals = "1.0"))
+	public static Double log(final IScope scope, final Double x, final Integer b) {
+		if (x <= 0) throw GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope);
+		// return Double.MAX_VALUE; // A compromise...
+		return Math.log(x)/Math.log(b);
+	}
+	
+	
 	/**
 	 * Negate.
 	 *
