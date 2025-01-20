@@ -916,7 +916,7 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "If it is used as an unary operator, it returns the opposite of the operand.",
+			value = "If it is used as a unary operator, it returns the opposite of the operand.",
 			masterDoc = true)
 	@test ("-(-90.0) = 90.0")
 	public static Double negate(final Double x) {
