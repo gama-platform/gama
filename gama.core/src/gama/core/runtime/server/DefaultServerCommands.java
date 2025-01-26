@@ -65,6 +65,7 @@ import gama.gaml.species.ISpecies;
 import gama.gaml.statements.ActionStatement;
 import gama.gaml.statements.Arguments;
 import gama.gaml.statements.IExecutable;
+import gama.gaml.variables.IVariable;
 
 /**
  * The Class DefaultServerCommands.
@@ -530,6 +531,14 @@ public class DefaultServerCommands {
 				continue;
 			}
 			resSpecie.put("name", specie.getName());
+			// Variables
+			List<Object> resAllVariables = new ArrayList<Object>();		
+			for (IVariable variable: specie.getVars()) {
+				Map<String, Object> resVariable = new HashMap<String, Object>();
+				resVariable.put("name", variable.getName());
+				resVariable.put("type", variable.getType().getName());
+				resAllVariables.add(resVariable);
+			}
 			// Actions
 			List<Object> resAllActions = new ArrayList<Object>();		
 			for (ActionStatement action : specie.getActions()) {
@@ -548,9 +557,8 @@ public class DefaultServerCommands {
 				resAction.put("parameters", resAllCommands);
 				resAllActions.add(resAction);
 			}
-			
+			resSpecie.put("variables", resAllVariables);
 			resSpecie.put("actions", resAllActions);
-
 			resAllSpecies.add(resSpecie);
 		}
 		res.put("species", resAllSpecies);
