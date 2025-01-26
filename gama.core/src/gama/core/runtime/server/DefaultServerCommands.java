@@ -482,7 +482,7 @@ public class DefaultServerCommands {
 		// Check the parameters
 		final Object modelPath = map.get("model");
 		if (modelPath == null) return new CommandResponse(MalformedRequest,
-				"For 'description', mandatory parameter is: 'model'", map, false);
+				"For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		File ff = new File(pathToModel);
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
@@ -543,9 +543,7 @@ public class DefaultServerCommands {
 						resAllCommands.add(command);
 					}
 				}
-				if (action.getCommands() != null) {
-					resAction.put("commands", resAllCommands);
-				}
+				resAction.put("parameters", resAllCommands);
 				resAllActions.add(resAction);
 			}
 			
