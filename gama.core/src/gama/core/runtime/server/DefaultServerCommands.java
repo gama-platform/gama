@@ -560,6 +560,8 @@ public class DefaultServerCommands {
 		}
 		res.put("species", resAllSpecies);
 		res.put("experiments", resAllExperiments);
+		res.put("name", model.getName());
+		res.put("path", pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 
