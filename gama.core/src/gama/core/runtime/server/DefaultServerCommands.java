@@ -527,9 +527,6 @@ public class DefaultServerCommands {
 		for (Map.Entry<String,ISpecies> specieEntry : model.getAllSpecies().entrySet()) {
 			ISpecies specie = specieEntry.getValue();
 			Map<String, Object> resSpecie = new HashMap<String, Object>();
-			if (specie.getName() == model.getName()) {
-				continue;
-			}
 			resSpecie.put("name", specie.getName());
 			// Variables
 			List<Object> resAllVariables = new ArrayList<Object>();		
