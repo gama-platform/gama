@@ -125,7 +125,7 @@ global {
 			} else {
 				point top_left <- CRS_transform({0,0}, "EPSG:4326").location;
 				point bottom_right <- CRS_transform({shape.width, shape.height}, "EPSG:4326").location;
-				string adress <-"http://overpass.openstreetmap.ru/cgi/xapi_meta?*[bbox="+top_left.x+"," + bottom_right.y + ","+ bottom_right.x + "," + top_left.y+"]";
+				string adress <-"http://overpass-api.de/api/xapi_meta?*[bbox="+top_left.x+"," + bottom_right.y + ","+ bottom_right.x + "," + top_left.y+"]";
 				write "adress: " + adress;
 				osmfile <- osm_file<geometry> (adress, osm_data_to_generate);
 			}
