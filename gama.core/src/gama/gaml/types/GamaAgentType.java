@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaAgentType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaAgentType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -110,7 +109,11 @@ public class GamaAgentType extends GamaType<IAgent> {
 	}
 
 	@Override
-	public String getSupportName() { return ", type of agents instances of species " + species.getName(); }
+	public Doc getDocumentation() {
+		Doc result = new RegularDoc("Represents instances of species " + species.getName());
+		species.documentAttributes(result);
+		return result;
+	}
 
 	@Override
 	public IType<String> getKeyType() { return Types.STRING; }
