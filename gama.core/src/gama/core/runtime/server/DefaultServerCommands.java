@@ -503,16 +503,86 @@ public class DefaultServerCommands {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
+
+		// get the parameters of what to include in the return message
+		boolean readExperiments = map.get("experiments") == null ? true : (boolean) map.get("experiments");
+		boolean readSpeciesNames = map.get("speciesNames") == null ? true : (boolean) map.get("speciesNames");
+		boolean readspeciesVariables = map.get("speciesVariables") == null ? true : (boolean) map.get("speciesVariables");
+		boolean readSpeciesActions = map.get("speciesActions") == null ? true : (boolean) map.get("speciesActions");
+		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the actions of a species were asked we have to include the name
+		
+		// Gathering information
 		Map<String, Object> res = new HashMap<String, Object>();
-		List<Object> resAllExperiments = new ArrayList<Object>();
+		
+		if (readExperiments) {
+			res.put("experiments", getExperiments(model));			
+		}
+		
+		if (readSpeciesNames) {
+			res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables));
+		}
+
+		res.put("name", model.getName());
+		res.put("path", pathToModel);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
+	}
+	
+	private static List<Map<String, Object>> readSpecies(IModel model, boolean readSpeciesActions, boolean readspeciesVariables) {
+		List<Map<String, Object>> resAllSpecies = new ArrayList<Map<String, Object>>();		
+		for (ISpecies specie : model.getAllSpecies().values()) {
+			// Name
+			Map<String, Object> resSpecie = new HashMap<String, Object>();
+			resSpecie.put("name", specie.getName());
+			
+			// Variables
+			if (readspeciesVariables) {
+				List<Map<String, String>> resAllVariables = new ArrayList<Map<String, String>>();		
+				for (IVariable variable: specie.getVars()) {
+					Map<String, String> resVariable = new HashMap<String, String>();
+					resVariable.put("name", variable.getName());
+					resVariable.put("type", variable.getType().getName());
+					resAllVariables.add(resVariable);
+				}				
+				resSpecie.put("variables", resAllVariables);
+			}
+			
+			// Actions
+			if (readSpeciesActions) {
+				List<Object> resAllActions = new ArrayList<Object>();		
+				for (ActionStatement action : specie.getActions()) {
+					Map<String, Object> resAction = new HashMap<String, Object>();
+					resAction.put("name", action.getName());
+					List<Map<String, String>> resAllCommands  = new ArrayList<Map<String, String>>();
+					var actionDescription = action.getDescription();
+					for (var arg : actionDescription.getFormalArgs()) {
+						Map<String, String> command = new HashMap<String, String>();
+						command.put("name", arg.getName());
+						command.put("type", arg.getGamlType().getName());
+						resAllCommands.add(command);
+					}
+					
+					resAction.put("parameters", resAllCommands);
+					resAction.put("type", actionDescription.getGamlType().getName());
+					resAllActions.add(resAction);
+				}
+				resSpecie.put("actions", resAllActions);				
+			}
+			
+			resAllSpecies.add(resSpecie);
+		}
+		return resAllSpecies;
+	}
+
+	private static List<Map<String, Object>> getExperiments(final IModel model) {
+		List<Map<String, Object>> resAllExperiments = new ArrayList<Map<String, Object>>();
 		// Get the experiments informations
 		for (IExperimentPlan ittExp : model.getExperiments()) {
 			// Get the parameters
 			Map<String, Object> resExp = new HashMap<String, Object>();
 			resExp.put("name", ittExp.getName());
-			List<Object> resAllParams = new ArrayList<Object>();
+			List<Map<String, String>> resAllParams = new ArrayList<Map<String,String>>();
 			for (Map.Entry<String,IParameter> paramEntry : ittExp.getParameters().entrySet()) {
-				Map<String, Object> resParam = new HashMap<String, Object>();
+				Map<String, String> resParam = new HashMap<String, String>();
 				IParameter param = paramEntry.getValue();
 				resParam.put("name", param.getName());
 				resParam.put("description", param.getTitle());
@@ -522,47 +592,7 @@ public class DefaultServerCommands {
 			resExp.put("parameters", resAllParams);
 			resAllExperiments.add(resExp);
 		}
-		// Get the species informations
-		List<Object> resAllSpecies = new ArrayList<Object>();		
-		for (Map.Entry<String,ISpecies> specieEntry : model.getAllSpecies().entrySet()) {
-			ISpecies specie = specieEntry.getValue();
-			Map<String, Object> resSpecie = new HashMap<String, Object>();
-			resSpecie.put("name", specie.getName());
-			// Variables
-			List<Object> resAllVariables = new ArrayList<Object>();		
-			for (IVariable variable: specie.getVars()) {
-				Map<String, Object> resVariable = new HashMap<String, Object>();
-				resVariable.put("name", variable.getName());
-				resVariable.put("type", variable.getType().getName());
-				resAllVariables.add(resVariable);
-			}
-			// Actions
-			List<Object> resAllActions = new ArrayList<Object>();		
-			for (ActionStatement action : specie.getActions()) {
-				Map<String, Object> resAction = new HashMap<String, Object>();
-				resAction.put("name", action.getName());
-				List<Object> resAllCommands  = new ArrayList<Object>();
-				gama.gaml.statements.IStatement[] aCommands = action.getCommands();
-				if (aCommands != null) {
-					for (gama.gaml.statements.IStatement c : aCommands) {
-						Map<String, Object> command = new HashMap<String, Object>();
-						command.put("name", c.getDescription().getName());
-						command.put("type", c.getDescription().getGamlType().getName());
-						resAllCommands.add(command);
-					}
-				}
-				resAction.put("parameters", resAllCommands);
-				resAllActions.add(resAction);
-			}
-			resSpecie.put("variables", resAllVariables);
-			resSpecie.put("actions", resAllActions);
-			resAllSpecies.add(resSpecie);
-		}
-		res.put("species", resAllSpecies);
-		res.put("experiments", resAllExperiments);
-		res.put("name", model.getName());
-		res.put("path", pathToModel);
-		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
+		return resAllExperiments;
 	}
 
 	/**
