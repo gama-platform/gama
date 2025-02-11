@@ -505,10 +505,10 @@ public class DefaultServerCommands {
 		}
 
 		// get the parameters of what to include in the return message
-		boolean readExperiments = map.get("experiments") == null ? true : (boolean) map.get("experiments");
-		boolean readSpeciesNames = map.get("speciesNames") == null ? true : (boolean) map.get("speciesNames");
-		boolean readspeciesVariables = map.get("speciesVariables") == null ? true : (boolean) map.get("speciesVariables");
-		boolean readSpeciesActions = map.get("speciesActions") == null ? true : (boolean) map.get("speciesActions");
+		boolean readExperiments = (boolean) map.getOrDefault("experiments", true);
+		boolean readSpeciesNames = (boolean) map.getOrDefault("speciesNames", true);
+		boolean readspeciesVariables = (boolean) map.getOrDefault("speciesVariables", true);
+		boolean readSpeciesActions = (boolean) map.getOrDefault("speciesActions", true) ;
 		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the actions of a species were asked we have to include the name
 		
 		// Gathering information
