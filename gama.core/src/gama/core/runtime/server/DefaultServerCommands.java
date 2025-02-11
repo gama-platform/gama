@@ -412,7 +412,7 @@ public class DefaultServerCommands {
 	}
 
 	/**
-	 * n Download.
+	 * Download.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param socket
@@ -527,45 +527,53 @@ public class DefaultServerCommands {
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 	
+	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species){
+		List<Map<String, String>> allVariables = new ArrayList<Map<String, String>>();		
+		for (IVariable variable: species.getVars()) {
+			Map<String, String> resVariable = new HashMap<String, String>();
+			resVariable.put("name", variable.getName());
+			resVariable.put("type", variable.getType().getName());
+			allVariables.add(resVariable);
+		}	
+		return allVariables;
+	}
+	
+	private static List<Map<String, Object>> getSpeciesActions(final ISpecies species) {
+		List<Map<String, Object>> allActions = new ArrayList<Map<String, Object>>();		
+		for (ActionStatement action : species.getActions()) {
+			Map<String, Object> resAction = new HashMap<String, Object>();
+			resAction.put("name", action.getName());
+			List<Map<String, String>> resAllCommands  = new ArrayList<Map<String, String>>();
+			var actionDescription = action.getDescription();
+			for (var arg : actionDescription.getFormalArgs()) {
+				Map<String, String> command = new HashMap<String, String>();
+				command.put("name", arg.getName());
+				command.put("type", arg.getGamlType().getName());
+				resAllCommands.add(command);
+			}
+			
+			resAction.put("parameters", resAllCommands);
+			resAction.put("type", actionDescription.getGamlType().getName());
+			allActions.add(resAction);
+		}
+		return allActions;
+	}
+	
 	private static List<Map<String, Object>> readSpecies(IModel model, boolean readSpeciesActions, boolean readspeciesVariables) {
 		List<Map<String, Object>> resAllSpecies = new ArrayList<Map<String, Object>>();		
-		for (ISpecies specie : model.getAllSpecies().values()) {
+		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
 			Map<String, Object> resSpecie = new HashMap<String, Object>();
-			resSpecie.put("name", specie.getName());
+			resSpecie.put("name", species.getName());
 			
 			// Variables
-			if (readspeciesVariables) {
-				List<Map<String, String>> resAllVariables = new ArrayList<Map<String, String>>();		
-				for (IVariable variable: specie.getVars()) {
-					Map<String, String> resVariable = new HashMap<String, String>();
-					resVariable.put("name", variable.getName());
-					resVariable.put("type", variable.getType().getName());
-					resAllVariables.add(resVariable);
-				}				
-				resSpecie.put("variables", resAllVariables);
+			if (readspeciesVariables) {			
+				resSpecie.put("variables", getSpeciesVariables(species));
 			}
 			
 			// Actions
 			if (readSpeciesActions) {
-				List<Object> resAllActions = new ArrayList<Object>();		
-				for (ActionStatement action : specie.getActions()) {
-					Map<String, Object> resAction = new HashMap<String, Object>();
-					resAction.put("name", action.getName());
-					List<Map<String, String>> resAllCommands  = new ArrayList<Map<String, String>>();
-					var actionDescription = action.getDescription();
-					for (var arg : actionDescription.getFormalArgs()) {
-						Map<String, String> command = new HashMap<String, String>();
-						command.put("name", arg.getName());
-						command.put("type", arg.getGamlType().getName());
-						resAllCommands.add(command);
-					}
-					
-					resAction.put("parameters", resAllCommands);
-					resAction.put("type", actionDescription.getGamlType().getName());
-					resAllActions.add(resAction);
-				}
-				resSpecie.put("actions", resAllActions);				
+				resSpecie.put("actions", getSpeciesActions(species));				
 			}
 			
 			resAllSpecies.add(resSpecie);
