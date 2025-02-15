@@ -9,13 +9,10 @@
  ********************************************************************************************************/
 package gama.extension.image;
 
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +21,7 @@ import java.util.Map;
 
 import org.locationtech.jts.awt.ShapeReader;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
@@ -40,7 +38,6 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
@@ -154,18 +151,21 @@ public class GamaSVGFile extends GamaGeometryFile {
 	 * @date 18 juil. 2023
 	 */
 	private void addShape(final Shape shape) {
-		PathIterator it = shape.getPathIterator(null, 1.0);
-		Geometry g = ShapeReader.read(it, GeometryUtils.GEOMETRY_FACTORY);
-		g = GeometryUtils.cleanGeometry(g);
-		int n = g.getNumGeometries();
-		for (int i = 0; i < n; i++) {
-			GamaShape gs = GamaShapeFactory.createFrom(g.getGeometryN(i));
-			DEBUG.OUT("Adding shape with type " + gs.getInnerGeometry().getGeometryType() + " envelope "
-					+ gs.getEnvelope().getWidth() + " " + gs.getEnvelope().getHeight() + " at "
-					+ gs.getEnvelope().getMinX() + " " + gs.getEnvelope().getMinY());
-			getBuffer().add(gs);
-		}
+		addShape(ShapeReader.read(shape.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY));
+	}
 
+	private void addShape(Geometry g) {
+		g = GeometryUtils.cleanGeometryCollection(g);
+		int n = g.getNumGeometries();
+		if (n == 1) {
+			if (g instanceof GeometryCollection gc) {
+				addShape(gc.getGeometryN(0));
+			} else {
+				getBuffer().add(GamaShapeFactory.createFrom(g));
+			}
+		} else {
+			for (int i = 0; i < n; i++) { addShape(g.getGeometryN(i)); }
+		}
 	}
 
 	@Override
@@ -175,8 +175,6 @@ public class GamaSVGFile extends GamaGeometryFile {
 		try {
 			addShape(getDocument(scope).computeShape());
 			Envelope3D env = Envelope3D.of(getBuffer());
-			DEBUG.OUT("Total resulting envelope " + env.getWidth() + " " + env.getHeight() + " at " + env.getMinX()
-					+ " " + env.getMinY());
 			for (IShape s : getBuffer()) { s.setLocation(s.getLocation().minus(env.getMinX(), env.getMinY(), 0)); }
 		} catch (final Exception e) {
 			throw GamaRuntimeException.create(e, scope);
@@ -195,8 +193,8 @@ public class GamaSVGFile extends GamaGeometryFile {
 	 * @date 16 juil. 2023
 	 */
 	public BufferedImage getImage(final IScope scope, final boolean useCache) {
-		Dimension dim = correctSize(scope);
-		return getImage(scope, useCache, dim.width, dim.height);
+		FloatSize node = getDocument(scope).size();
+		return getImage(scope, useCache, Math.round(node.width), Math.round(node.height));
 	}
 
 	/**
@@ -207,51 +205,34 @@ public class GamaSVGFile extends GamaGeometryFile {
 	 *            the scope
 	 * @param useCache
 	 *            the use cache
-	 * @param x
+	 * @param width
 	 *            the x
-	 * @param y
+	 * @param height
 	 *            the y
 	 * @return the image
 	 * @date 21 juil. 2023
 	 */
 
-	public BufferedImage getImage(final IScope scope, final boolean useCache, final int x, final int y) {
+	public BufferedImage getImage(final IScope scope, final boolean useCache, final int width, final int height) {
 		if (useCache) {
-			String key = getPath(scope) + x + "x" + y;
+			String key = getPath(scope) + width + "x" + height;
 			BufferedImage im = ImageCache.getInstance().getImage(key);
 			if (im == null) {
-				im = getImage(scope, false, x, y);
+				im = getImage(scope, false, width, height);
 				ImageCache.getInstance().forceCacheImage(im, key);
 			}
 			return im;
 		}
-		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();) {
-			SVGDocument svg = getDocument(scope);
-			GamaImage gi = ImageHelper.createPremultipliedBlankImage(x, y);
-			Graphics2D g2 = gi.createGraphics();
+		SVGDocument svg = getDocument(scope);
+		GamaImage gi = ImageHelper.createPremultipliedBlankImage(width, height);
+		Graphics2D g2 = gi.createGraphics();
+		try {
 			g2.addRenderingHints(RENDER_HINTS);
-			svg.renderWithPlatform(NullPlatformSupport.INSTANCE, g2, new ViewBox(y, y));
+			svg.renderWithPlatform(NullPlatformSupport.INSTANCE, g2, new ViewBox(width, height));
+		} finally {
 			g2.dispose();
-			return gi;
-		} catch (IOException e) {
-			throw GamaRuntimeException.create(e, scope);
 		}
-	}
-
-	/**
-	 * Correct size of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param name
-	 *            the name
-	 * @param svg
-	 *            the svg
-	 * @return the dimension
-	 * @date 16 juil. 2023
-	 */
-	private Dimension correctSize(final IScope scope) {
-		FloatSize node = getDocument(scope).size();
-		return new Dimension((int) node.width, (int) node.height);
+		return gi;
 	}
 
 	/**
