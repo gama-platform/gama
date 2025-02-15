@@ -9,9 +9,10 @@
  ********************************************************************************************************/
 package gama.extension.image;
 
+import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
@@ -53,7 +53,7 @@ import gama.gaml.types.Types;
 
 /**
  * Class GamaSVGFile. Only loads vector shapes right now (and none of the associated elements: textures, colors, fonts,
- * etc.)
+ * etc., unless the 'image' operator is invoked on the file)
  *
  * @author drogoul
  * @since 30 déc. 2013
@@ -66,7 +66,7 @@ import gama.gaml.types.Types;
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.SVG },
-		doc = @doc ("Represents 2D geometries described in a SVG file. The internal representation is a list of geometries"))
+		doc = @doc ("Represents 2D geometries described in a SVG file. The internal representation is a list of geometries. Using the 'image' operator on the file allows to retrieve the full image"))
 public class GamaSVGFile extends GamaGeometryFile {
 	static RenderingHints RENDER_HINTS = new RenderingHints(null);
 	static {
@@ -138,24 +138,7 @@ public class GamaSVGFile extends GamaGeometryFile {
 		return document;
 	}
 
-	/**
-	 * Adds the shape.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param shape
-	 *            the shape
-	 * @param current
-	 *            the current
-	 * @param shapes
-	 *            the shapes
-	 * @date 18 juil. 2023
-	 */
-	private void addShape(final Shape shape) {
-		addShape(ShapeReader.read(shape.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY));
-	}
-
-	private void addShape(Geometry g) {
-		g = GeometryUtils.cleanGeometryCollection(g);
+	private void addShape(final Geometry g) {
 		int n = g.getNumGeometries();
 		if (n == 1) {
 			if (g instanceof GeometryCollection gc) {
@@ -173,7 +156,7 @@ public class GamaSVGFile extends GamaGeometryFile {
 		if (getBuffer() != null) return;
 		setBuffer(GamaListFactory.create());
 		try {
-			addShape(getDocument(scope).computeShape());
+			addShape(ShapeReader.read(getDocument(scope).computeShape().getPathIterator(null, 1.0), GEOMETRY_FACTORY));
 			Envelope3D env = Envelope3D.of(getBuffer());
 			for (IShape s : getBuffer()) { s.setLocation(s.getLocation().minus(env.getMinX(), env.getMinY(), 0)); }
 		} catch (final Exception e) {
@@ -193,8 +176,8 @@ public class GamaSVGFile extends GamaGeometryFile {
 	 * @date 16 juil. 2023
 	 */
 	public BufferedImage getImage(final IScope scope, final boolean useCache) {
-		FloatSize node = getDocument(scope).size();
-		return getImage(scope, useCache, Math.round(node.width), Math.round(node.height));
+		FloatSize size = getDocument(scope).size();
+		return getImage(scope, useCache, Math.round(size.width), Math.round(size.height));
 	}
 
 	/**
