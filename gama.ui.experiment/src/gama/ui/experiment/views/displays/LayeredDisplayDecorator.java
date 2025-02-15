@@ -68,7 +68,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class LayeredDisplayDecorator implements DisplayDataListener, IExperimentStateListener {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The key and mouse listener. */
@@ -85,7 +85,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	/** The normal parent of full screen control. */
 	protected Composite normalParentOfFullScreenControl, normalParentOfToolbar;
-
 
 	/** The full screen shell. */
 	protected Shell fullScreenShell;
@@ -432,7 +431,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		final Rectangle bounds = monitors[monitorId1].getBounds();
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
-			shell.setBounds(bounds);
+			shell.setFullScreen(true);
+			// shell.setBounds(bounds);
 			// For DEBUG purposes:
 			// fullScreenShell.setBounds(new Rectangle(0, 0, bounds.width / 2, bounds.height / 2));
 			shell.setLayout(shellLayout());
@@ -446,6 +446,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	private void destroyFullScreenShell() {
 		if (fullScreenShell == null) return;
+		DEBUG.OUT("Destroying full screen shell");
 		fullScreenShell.close();
 		fullScreenShell.dispose();
 		fullScreenShell = null;
