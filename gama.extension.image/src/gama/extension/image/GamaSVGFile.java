@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.extension.image;
 
+import static java.lang.Integer.MAX_VALUE;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -21,6 +23,7 @@ import java.util.Map;
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
 import com.github.weisj.jsvg.geometry.size.FloatSize;
+import com.github.weisj.jsvg.parser.DocumentLimits;
 import com.github.weisj.jsvg.parser.LoaderContext;
 import com.github.weisj.jsvg.parser.SVGLoader;
 import com.github.weisj.jsvg.renderer.awt.NullPlatformSupport;
@@ -106,7 +109,8 @@ public class GamaSVGFile extends GamaGeometryFile {
 
 	/** The document. */
 	private SVGDocument document;
-	static LoaderContext lc = LoaderContext.builder().build();
+	static LoaderContext lc =
+			LoaderContext.builder().documentLimits(new DocumentLimits(MAX_VALUE, MAX_VALUE, MAX_VALUE)).build();
 
 	/**
 	 * Gets the root.
@@ -134,7 +138,7 @@ public class GamaSVGFile extends GamaGeometryFile {
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
 		if (getBuffer() != null) return;
 		try {
-			MultiShapeOutput shapes = new MultiShapeOutput();
+			GamaShapeSVGOutput shapes = new GamaShapeSVGOutput();
 			getDocument(scope).renderWithPlatform(NullPlatformSupport.INSTANCE, shapes, null);
 			setBuffer(GamaListFactory.createWithoutCasting(Types.GEOMETRY, shapes));
 		} catch (final Exception e) {
