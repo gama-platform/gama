@@ -212,7 +212,9 @@ public class GamaSVGFile extends GamaGeometryFile {
 		try {
 			g2.addRenderingHints(RENDER_HINTS);
 			svg.renderWithPlatform(NullPlatformSupport.INSTANCE, g2, new ViewBox(width, height));
-		} finally {
+		} catch (RuntimeException e) {}
+
+		finally {
 			g2.dispose();
 		}
 		return gi;
