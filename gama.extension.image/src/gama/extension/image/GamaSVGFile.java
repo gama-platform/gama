@@ -9,10 +9,9 @@
  ********************************************************************************************************/
 package gama.extension.image;
 
-import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
-
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +36,7 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
+import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
@@ -138,6 +138,8 @@ public class GamaSVGFile extends GamaGeometryFile {
 	}
 
 	private void addShape(final Geometry g) {
+		// Necessary to keep this code as some SVG geometries are the result of groups of groups, and hence may appear
+		// as null once converted
 		int n = g.getNumGeometries();
 		if (n == 1) {
 			if (g instanceof GeometryCollection gc) {
@@ -155,9 +157,11 @@ public class GamaSVGFile extends GamaGeometryFile {
 		if (getBuffer() != null) return;
 		setBuffer(GamaListFactory.create());
 		try {
-			addShape(ShapeReader.read(getDocument(scope).computeShape().getPathIterator(null, 1.0), GEOMETRY_FACTORY));
-			// Envelope3D env = Envelope3D.of(getBuffer());
-			// for (IShape s : getBuffer()) { s.setLocation(s.getLocation().minus(env.getMinX(), env.getMinY(), 0)); }
+			MultiShapeOutput shapes = new MultiShapeOutput();
+			getDocument(scope).renderWithPlatform(NullPlatformSupport.INSTANCE, shapes, null);
+			for (Shape shape : shapes) {
+				addShape(ShapeReader.read(shape.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY));
+			}
 		} catch (final Exception e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
