@@ -52,7 +52,7 @@ grid the_grid cell_width: cell_dimension cell_height: cell_dimension*2;
 experiment Emojis {
 	
 	output {
-		layout #split consoles: false toolbars: false tabs: false background: #black controls: false;
+		layout #split consoles: false toolbars: false tabs: false background: #black controls: true;
 		display "Show vector emojis" type: 3d axes: false{
 			species emoji aspect: shape_aspect;
 		}
