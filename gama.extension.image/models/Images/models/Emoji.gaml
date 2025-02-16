@@ -9,7 +9,7 @@
 model Emojis
 
 global {
-	int shape_width <- 100;
+	int shape_width <- 200;
 	geometry shape <- square(shape_width);
 	font text_font <- font("Arial", 10, #bold);
 	file emoji_folder <- folder("../includes/emoji/"); 

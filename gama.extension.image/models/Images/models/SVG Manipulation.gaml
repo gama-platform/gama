@@ -10,7 +10,7 @@ model SVGManipulation
 global {
 	
 	
-	svg_file geometries <- svg_file("../includes/geometries.svg"); // try different files, like city.svg, ant.svg... 
+	svg_file geometries <- svg_file("../includes/europe.svg"); // try different files, like city.svg, ant.svg... 
 	geometry shape <- envelope(geometries);
 	
 	init {
