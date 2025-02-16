@@ -11,17 +11,12 @@ package gama.extension.image;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Map;
-
-import org.locationtech.jts.awt.ShapeReader;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
@@ -36,8 +31,6 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -137,31 +130,13 @@ public class GamaSVGFile extends GamaGeometryFile {
 		return document;
 	}
 
-	private void addShape(final Geometry g) {
-		// Necessary to keep this code as some SVG geometries are the result of groups of groups, and hence may appear
-		// as null once converted
-		int n = g.getNumGeometries();
-		if (n == 1) {
-			if (g instanceof GeometryCollection gc) {
-				addShape(gc.getGeometryN(0));
-			} else {
-				getBuffer().add(GamaShapeFactory.createFrom(g));
-			}
-		} else {
-			for (int i = 0; i < n; i++) { addShape(g.getGeometryN(i)); }
-		}
-	}
-
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
 		if (getBuffer() != null) return;
-		setBuffer(GamaListFactory.create());
 		try {
 			MultiShapeOutput shapes = new MultiShapeOutput();
 			getDocument(scope).renderWithPlatform(NullPlatformSupport.INSTANCE, shapes, null);
-			for (Shape shape : shapes) {
-				addShape(ShapeReader.read(shape.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY));
-			}
+			setBuffer(GamaListFactory.createWithoutCasting(Types.GEOMETRY, shapes));
 		} catch (final Exception e) {
 			throw GamaRuntimeException.create(e, scope);
 		}

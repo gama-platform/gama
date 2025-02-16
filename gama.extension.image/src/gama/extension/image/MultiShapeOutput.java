@@ -12,21 +12,27 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.locationtech.jts.awt.ShapeReader;
+import org.locationtech.jts.geom.Geometry;
+
 import com.github.weisj.jsvg.renderer.Output;
 import com.github.weisj.jsvg.util.Provider;
 import com.github.weisj.jsvg.util.ShapeUtil;
 
-class MultiShapeOutput implements Output, Iterable<Area> {
+import gama.core.common.geometry.GeometryUtils;
+import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IShape;
+import gama.core.util.GamaListFactory;
 
-	List<Area> shapes = new ArrayList<>();
+class MultiShapeOutput implements Output, Iterable<IShape> {
 
-	// private final Area accumulatorShape;
+	List<IShape> shapes = GamaListFactory.create();
+
 	private AffineTransform currentTransform;
 	private Stroke currentStroke;
 	private Shape currentClip;
@@ -47,7 +53,8 @@ class MultiShapeOutput implements Output, Iterable<Area> {
 	private void addShape(final Shape shape) {
 		// NOTE: ShapeUtil.transformShape always returns a new shape hence we can safely modify shape.
 		Shape s = currentClip != null ? ShapeUtil.intersect(currentClip, shape, true, false) : shape;
-		shapes.add(new Area(s));
+		Geometry g = ShapeReader.read(s.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY);
+		shapes.add(GamaShapeFactory.createFrom(g));
 	}
 
 	private void append(final Shape shape, final AffineTransform transform) {
@@ -243,7 +250,7 @@ class MultiShapeOutput implements Output, Iterable<Area> {
 	}
 
 	@Override
-	public Iterator<Area> iterator() {
+	public Iterator<IShape> iterator() {
 		return shapes.iterator();
 	}
 
