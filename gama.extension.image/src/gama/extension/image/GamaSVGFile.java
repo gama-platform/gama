@@ -34,6 +34,7 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
+import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -224,6 +225,12 @@ public class GamaSVGFile extends GamaGeometryFile {
 		if (file instanceof GamaImageFile f) return ImageOperators.with_size(scope,
 				GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath()), w, h);
 		return null;
+	}
+
+	@Override
+	public Envelope3D computeEnvelope(final IScope scope) {
+		FloatSize size = getDocument(scope).size();
+		return Envelope3D.of(0, size.getWidth(), 0, size.getHeight(), 0, 0);
 	}
 
 }
