@@ -42,7 +42,7 @@ species emoji {
 	}
 	
 	aspect shape_aspect {
-		draw shape border: false color: color size: (ratio > 1) ? {size_max, size_max/ratio}: {size_max*ratio, size_max};
+		draw shape border: #black color: color size: (ratio > 1) ? {size_max, size_max/ratio}: {size_max*ratio, size_max};
 		draw replace(name,'_',"\n") font: text_font at: location + {0,cell_dimension/2} anchor: #top_center color: #black;
 	}
 }
