@@ -59,15 +59,11 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 	}
 
 	private void addShape(final Geometry g) {
-		int n = g.getNumGeometries();
-		if (n == 1) {
-			if (g instanceof GeometryCollection gc) {
-				addShape(gc.getGeometryN(0));
-			} else {
-				shapes.add(GamaShapeFactory.createFrom(g));
-			}
+		if (g instanceof GeometryCollection gc) {
+			int n = gc.getNumGeometries();
+			for (int i = 0; i < n; i++) { addShape(gc.getGeometryN(i)); }
 		} else {
-			for (int i = 0; i < n; i++) { addShape(g.getGeometryN(i)); }
+			shapes.add(GamaShapeFactory.createFrom(g));
 		}
 	}
 
