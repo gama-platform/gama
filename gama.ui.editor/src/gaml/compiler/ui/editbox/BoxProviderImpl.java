@@ -17,7 +17,7 @@ import java.util.Map;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.internal.misc.TextMatcher;
+import org.eclipse.core.text.StringMatcher;
 
 /**
  * The Class BoxProviderImpl.
@@ -225,7 +225,7 @@ public class BoxProviderImpl implements IBoxProvider {
 	class Matcher {
 
 		/** The m. */
-		TextMatcher m;
+		StringMatcher m;
 
 		/**
 		 * Instantiates a new matcher.
@@ -233,7 +233,7 @@ public class BoxProviderImpl implements IBoxProvider {
 		 * @param pattern the pattern
 		 */
 		Matcher(final String pattern) {
-			m = new TextMatcher(pattern, true, false);
+			m = new StringMatcher(pattern.trim(), true, false);
 		}
 
 		/**
@@ -243,7 +243,7 @@ public class BoxProviderImpl implements IBoxProvider {
 		 * @return true, if successful
 		 */
 		boolean matches(final String text) {
-			return m.match(text);
+			return m.matchWords(text);
 		}
 	}
 }
