@@ -25,7 +25,7 @@
 	<repositories>
 		<repository>
 			<id>eclipse-swt</id>
-			<url>https://download.eclipse.org/releases/2024-06</url>
+			<url>https://download.eclipse.org/releases/2025-03/202501311001/</url>
 			<layout>p2</layout>
 			<releases>
 				<enabled>true</enabled>
