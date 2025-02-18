@@ -68,6 +68,8 @@ public class Activator implements BundleActivator {
 			BANNER("JAI", "ImageIO extensions", "loaded for",
 					StreamEx.of(ImageIO.getReaderFileSuffixes()).remove(String::isBlank).sorted().joining("|"));
 		}
+		// Installs the new RelateNG JTS library (supposedly more efficient that RelateOp).
+		System.setProperty("jts.relate", "ng");
 	}
 
 	/*

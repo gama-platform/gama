@@ -695,8 +695,6 @@ Require-Bundle: org.eclipse.osgi,
 Bundle-ClassPath: .,
  compress 1.24/commons-compress-1.24.0.jar,
  protobuf-java-3.6.1.jar,
- jts/jts-core-1.19.0.jar,
- jts/jts-io-common-1.19.0.jar,
  geotools/commons-collections4-4.4.jar,
  geotools/commons-dbcp-1.4.jar,
  geotools/commons-pool-1.5.4.jar,
@@ -833,6 +831,8 @@ Bundle-ClassPath: .,
  jgrapht 1.5.2/jgrapht-io-1.5.2.jar,
  jgrapht 1.5.2/jgrapht-opt-1.5.2.jar,
  jgrapht 1.5.2/jheaps-0.14.jar,
- geotools/commons-io-2.6.jar
+ geotools/commons-io-2.6.jar,
+ jts/jts-core-1.20.0.jar,
+ jts/jts-io-common-1.20.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.dependencies
