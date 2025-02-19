@@ -4,6 +4,8 @@
 * Description: Tests various spatial property operators
 * Tags: topology, grid, property, test
 */
+@no_warning
+
 
 model PropertyTest
 
