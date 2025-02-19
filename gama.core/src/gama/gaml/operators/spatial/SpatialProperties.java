@@ -1,12 +1,12 @@
 package gama.gaml.operators.spatial;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 
@@ -167,7 +167,8 @@ public class SpatialProperties {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_PROPERTIES },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION })
 	@doc (
-			value = "A boolean, equal to true if the left-geometry (or agent/point) touches the right-geometry (or agent/point).",
+			deprecated = "It is not advised to use this operator as its semantic is not clear and has changed recently in the JTS library (see https://github.com/gama-platform/gama/pull/415). `intersects` should be preferred. ",
+			value = "A boolean, equal to true if the left-geometry (or agent/point) touches the right-geometry (or agent/point), i.e. if they have at least one point in common, but their interiors do not intersect.",
 			usages = { @usage ("if one of the operand is null, returns false.") },
 			comment = "returns true when the left-operand only touches the right-operand. When one geometry covers partially (or fully) the other one, it returns false.",
 			examples = {

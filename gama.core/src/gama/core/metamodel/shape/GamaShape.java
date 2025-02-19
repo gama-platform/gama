@@ -128,7 +128,6 @@ public class GamaShape implements IShape {
 		this(geom == null ? source.getInnerGeometry().copy() : geom);
 		withAttributesOf(source);
 	}
-	
 
 	/**
 	 * This is where the attributes of this shape and the attributes of an incoming shape are mixed. The default
@@ -274,7 +273,7 @@ public class GamaShape implements IShape {
 		if (isPoint()) return getLocation().serializeToGaml(includingBuiltIn) + " as geometry";
 		if (isMultiple()) return getGeometries().serializeToGaml(includingBuiltIn) + " as geometry";
 		final IList<GamaShape> holes = getHoles();
-		//String result = "";
+		// String result = "";
 		StringBuilder strBuilder = new StringBuilder();
 		if (getInnerGeometry() instanceof LineString) {
 			strBuilder.append("polyline (");
@@ -283,14 +282,14 @@ public class GamaShape implements IShape {
 		}
 		strBuilder.append(getPoints().serializeToGaml(includingBuiltIn));
 		strBuilder.append(")");
-		
+
 		if (holes.isEmpty()) return strBuilder.toString();
-		
-		for (final GamaShape g : holes) { 
-			strBuilder.insert(0, "("); //TODO: this is weird, are we sure this is the way we want to output this ?
+
+		for (final GamaShape g : holes) {
+			strBuilder.insert(0, "("); // TODO: this is weird, are we sure this is the way we want to output this ?
 			strBuilder.append(") - (");
 			strBuilder.append(g.serializeToGaml(includingBuiltIn));
-			strBuilder.append(")"); 
+			strBuilder.append(")");
 		}
 		return strBuilder.toString();
 	}
@@ -516,7 +515,7 @@ public class GamaShape implements IShape {
 			// Fix a possible NPE when calling equalsExact with a null shape
 			if (shape == null) return geometry == null;
 			if (geometry == null) return false;
-			return geometry.equalsExact(((GamaShape) o).geometry);
+			return geometry.equalsExact(shape);
 		}
 		return false;
 	}
@@ -588,17 +587,11 @@ public class GamaShape implements IShape {
 	@Override
 	public Type getGeometricalType() {
 		final ShapeData data = getData(false);
-		if (data != null && data.type != null) {
-			return data.type;			
-		}
+		if (data != null && data.type != null) return data.type;
 		final String tt = getInnerGeometry().getGeometryType();
 		Type type = JTS_TYPES.get(tt);
-		if (type == null) {
-			type = Type.NULL;
-		}
-		if (data != null) { 
-			data.type = type; 
-		}
+		if (type == null) { type = Type.NULL; }
+		if (data != null) { data.type = type; }
 		return type;
 	}
 
