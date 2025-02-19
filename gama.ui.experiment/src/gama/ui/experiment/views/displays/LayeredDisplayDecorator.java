@@ -68,7 +68,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class LayeredDisplayDecorator implements DisplayDataListener, IExperimentStateListener {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The key and mouse listener. */
@@ -85,7 +85,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	/** The normal parent of full screen control. */
 	protected Composite normalParentOfFullScreenControl, normalParentOfToolbar;
-
 
 	/** The full screen shell. */
 	protected Shell fullScreenShell;
@@ -446,6 +445,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	private void destroyFullScreenShell() {
 		if (fullScreenShell == null) return;
+		DEBUG.OUT("Destroying full screen shell");
 		fullScreenShell.close();
 		fullScreenShell.dispose();
 		fullScreenShell = null;
