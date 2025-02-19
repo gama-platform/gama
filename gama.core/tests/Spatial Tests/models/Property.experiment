@@ -81,7 +81,8 @@ experiment TopologyTests type: test {
 	}
 	
 	test "Touch"{
-		assert (short_line_2 touches long_line);
+		//This test has been changed due to a semantic change in JTS 1.20 (see https://github.com/gama-platform/gama/pull/415)
+		assert not(short_line_2 touches long_line);
 		assert not(short_line touches long_line);
 		assert not(pt_0 touches pt_center);
 		assert (pt_center touches short_line);
