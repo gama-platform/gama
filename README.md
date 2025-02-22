@@ -67,11 +67,9 @@ There are a few tutorials explaining how to create new functionalities in gama t
 
 To contribute to the code you just have to submit a pull-request to this repository, if you encounter any problem to do so, feel free to ask about it either on the [github discussions](https://github.com/gama-platform/gama/discussions) or the [mailing list](https://groups.google.com/g/gama-platform).
 
- ##Acknowledgments
+ ## Acknowledgments
 
- ![YourKit logo](https://www.yourkit.com/images/yk_logo.svg)  
-
-GAMA is actively supported by YourKit LLC, with its full-featured <a href="https://www.yourkit.com/java/profiler/index.jsp">Java Profiler</a>.
+ ![YourKit logo](https://www.yourkit.com/images/yk_logo.svg) GAMA is actively supported by YourKit LLC, with its full-featured <a href="https://www.yourkit.com/java/profiler/index.jsp">Java Profiler</a>.
 
 
  
