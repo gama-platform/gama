@@ -108,7 +108,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	public GamaGLAnimator(final GLAutoDrawable window) {
 		this.canvas = window;
 		window.setAnimator(this);
-		this.animatorThread = Thread.ofVirtual().name("Animator thread").unstarted(this);
+		this.animatorThread = Thread.ofPlatform().name("Animator thread").unstarted(this);
 		GamaPreferences.Displays.OPENGL_FPS.onChange(fpsChanged);
 		setUpdateFPSFrames(FPSCounter.DEFAULT_FRAMES_PER_INTERVAL, null);
 	}
