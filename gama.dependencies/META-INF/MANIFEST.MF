@@ -690,8 +690,6 @@ Export-Package: com.conversantmedia.util.collection,
  tech.uom.lib.common.function,
  tech.uom.lib.common.util
 Require-Bundle: org.eclipse.osgi,
- org.apache.commons.jxpath,
- org.eclipse.xsd,
  gama.annotations,
  com.google.guava;visibility:=reexport
 Bundle-ClassPath: .,

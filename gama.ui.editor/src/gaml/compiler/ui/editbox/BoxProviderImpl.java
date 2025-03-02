@@ -38,7 +38,7 @@ public class BoxProviderImpl implements IBoxProvider {
 	protected BoxSettingsStoreImpl settingsStore;
 
 	/** The builders. */
-	protected Map<String, Class> builders;
+	protected Map<String, Class<? extends IBoxBuilder>> builders;
 
 	/** The default settings catalog. */
 	protected Collection<String> defaultSettingsCatalog;
@@ -187,15 +187,15 @@ public class BoxProviderImpl implements IBoxProvider {
 	 * @param newBuilders
 	 *            the new builders
 	 */
-	public void setBuilders(final Map<String, Class> newBuilders) { builders = newBuilders; }
+	public void setBuilders(final Map<String, Class<? extends IBoxBuilder>> newBuilders) { builders = newBuilders; }
 
 	@Override
-	public IBoxBuilder createBoxBuilder(final String name) {
-		Class c = null;
-		if (name != null && builders != null) { c = builders.get(name); }
+	public IBoxBuilder createBoxBuilder(final String theName) {
+		Class<? extends IBoxBuilder> c = null;
+		if (theName != null && builders != null) { c = builders.get(theName); }
 		if (c == null) return new BoxBuilderImpl();
 		try {
-			return (IBoxBuilder) c.newInstance();
+			return c.getConstructor().newInstance();
 		} catch (final Exception e) {
 			// EditBox.logError(this, "Cannot create box builder: " + name, e);
 		}
