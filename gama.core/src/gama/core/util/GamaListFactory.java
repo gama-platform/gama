@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaListFactory.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaListFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -24,11 +24,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
@@ -56,8 +51,7 @@ public class GamaListFactory {
 	public static final IList EMPTY_LIST = wrap(Types.NO_TYPE, Collections.EMPTY_LIST);
 
 	/** The ch. */
-	static final Set<Collector.Characteristics> CH =
-			ImmutableSet.<Collector.Characteristics> of(Collector.Characteristics.IDENTITY_FINISH);
+	static final Set<Collector.Characteristics> CH = Collections.singleton(Collector.Characteristics.IDENTITY_FINISH);
 
 	/**
 	 * Transform a stream of objects into a GamaList.
@@ -166,7 +160,7 @@ public class GamaListFactory {
 	 */
 	public static IList<Integer> createWithoutCasting(final IType contentType, final int[] objects) {
 		final IList<Integer> list = create(contentType, objects.length);
-		list.addAll(Arrays.asList(ArrayUtils.toObject(objects)));
+		for (int i : objects) { list.add(i); }
 		return list;
 	}
 
@@ -180,7 +174,7 @@ public class GamaListFactory {
 	 */
 	public static IList<Double> createWithoutCasting(final IType contentType, final double[] objects) {
 		final IList<Double> list = create(contentType, objects.length);
-		list.addAll(Arrays.asList(ArrayUtils.toObject(objects)));
+		for (double i : objects) { list.add(i); }
 		return list;
 	}
 
@@ -195,7 +189,7 @@ public class GamaListFactory {
 
 	public static <T> IList<T> createWithoutCasting(final IType contentType, final Iterable<T> objects) {
 		final IList<T> list = create(contentType);
-		Iterables.addAll(list, objects);
+		objects.forEach(list::add);
 		return list;
 	}
 
