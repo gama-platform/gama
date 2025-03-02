@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * RandomUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * RandomUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -67,7 +66,7 @@ public class RandomUtils {
 				" is a very fast generator, based on the DotMix algorithm, that can be safely used in parallel simulations as it creates one instance per thread. However, determinism cannot be guaranteed and this algorithm does not accept a seed as each instance will compute its own; ");
 
 		/** The name. */
-		private String name;
+		private final String name;
 
 		/**
 		 * Environment.
@@ -170,6 +169,8 @@ public class RandomUtils {
 	 *            the new usage
 	 */
 	public void setUsage(final Integer usage) {
+		// Explicitly call the method to ensure that the generator is reinitialized
+		initGenerator();
 		generator.setUsage(usage);
 	}
 
@@ -190,7 +191,7 @@ public class RandomUtils {
 	 *
 	 * @return the gaussian generator
 	 */
-	public double createGaussian(final double mean, final double stdv) { //TODO: check that this is counted in usage too
+	public double createGaussian(final double mean, final double stdv) { // TODO: check that this is counted in usage
 		return generator.nextGaussian() * stdv + mean;
 	}
 
@@ -432,25 +433,33 @@ public class RandomUtils {
 		return val - low < high - val ? low : high;
 	}
 
-//	public int nextInt() {
-//		return generator.nextInt();
-//	}
-	
+	// public int nextInt() {
+	// return generator.nextInt();
+	// }
+
 	/**
 	 * Returns an integer between 0 (inclusive) and i (exclusive)
+	 *
 	 * @param i
 	 * @return
 	 */
-	public int nextInt(int i) {
+	public int nextInt(final int i) {
 		return generator.nextInt(i);
 	}
-	
-	public int nextInt(int lower, int upper) {
+
+	/**
+	 * Next int.
+	 *
+	 * @param lower
+	 *            the lower
+	 * @param upper
+	 *            the upper
+	 * @return the int
+	 */
+	public int nextInt(final int lower, final int upper) {
 		return generator.nextInt(lower, upper);
 	}
-	
-	
-	
+
 	/**
 	 * Next.
 	 *
