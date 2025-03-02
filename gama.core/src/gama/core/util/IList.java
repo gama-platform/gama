@@ -1,11 +1,12 @@
 /*******************************************************************************************************
  *
- * IList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IList.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -22,7 +23,6 @@ import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaIntegerType;
 import gama.gaml.types.GamaMatrixType;
 import gama.gaml.types.GamaPairType;
 import gama.gaml.types.GamaType;
@@ -521,8 +521,10 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default E buildValue(final IScope scope, final Object object) {
-		final IType ct = getGamlType().getContentType();
-		return (E) ct.cast(scope, object, null, false);
+		return (E) object;
+
+		// final IType ct = getGamlType().getContentType();
+		// return (E) ct.cast(scope, object, null, false);
 	}
 
 	/**
@@ -532,7 +534,9 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default IList<E> buildValues(final IScope scope, final IContainer objects) {
-		return (IList<E>) getGamlType().cast(scope, objects, null, false);
+		return (IList<E>) objects;
+
+		// return (IList<E>) getGamlType().cast(scope, objects, null, false);
 	}
 
 	/**
@@ -542,7 +546,8 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default Integer buildIndex(final IScope scope, final Object object) {
-		return GamaIntegerType.staticCast(scope, object, null, false);
+		return (Integer) object;
+		// return GamaIntegerType.staticCast(scope, object, null, false);
 	}
 
 	/**

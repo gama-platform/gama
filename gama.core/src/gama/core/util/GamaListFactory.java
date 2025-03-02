@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaListFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * GamaListFactory.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -33,8 +33,6 @@ import com.google.common.collect.Iterables;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -62,7 +60,7 @@ public class GamaListFactory {
 			ImmutableSet.<Collector.Characteristics> of(Collector.Characteristics.IDENTITY_FINISH);
 
 	/**
-	 * To gama list.
+	 * Transform a stream of objects into a GamaList.
 	 *
 	 * @param <T>
 	 *            the generic type
@@ -105,7 +103,7 @@ public class GamaListFactory {
 	public static final Collector<Object, IList<Object>, IList<Object>> TO_GAMA_LIST = toGamaList();
 
 	/**
-	 * The Class GamaListSupplier.
+	 * Supplier for GamaList.
 	 */
 	public static class GamaListSupplier implements Supplier<IList> {
 
@@ -130,7 +128,7 @@ public class GamaListFactory {
 	}
 
 	/**
-	 * Creates the.
+	 * Creates a GamaList from a stream of objects.
 	 *
 	 * @param <T>
 	 *            the generic type
@@ -212,7 +210,9 @@ public class GamaListFactory {
 	 *            the o
 	 */
 	private static void castAndAdd(final IScope scope, final IList list, final Object o) {
-		list.addValue(scope, o);
+		// list.addValue(scope, o);
+		// To remove the casting in lists, simply replace by this :
+		list.add(o);
 	}
 
 	/**
@@ -228,8 +228,8 @@ public class GamaListFactory {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final IContainer container) {
 		if (container == null) return create(contentType);
-		if (GamaType.requiresCasting(contentType, container.getGamlType().getContentType()))
-			return create(scope, contentType, container.iterable(scope));
+		// if (GamaType.requiresCasting(contentType, container.getGamlType().getContentType()))
+		// return create(scope, contentType, container.iterable(scope));
 		return createWithoutCasting(contentType, container.iterable(scope));
 	}
 
@@ -248,9 +248,12 @@ public class GamaListFactory {
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final IList<T> container) {
 		if (container == null) return create(contentType);
-		if (GamaType.requiresCasting(contentType, container.getGamlType().getContentType()))
-			return create(scope, contentType, (Collection) container);
+
 		return createWithoutCasting(contentType, container);
+
+		// if (GamaType.requiresCasting(contentType, container.getGamlType().getContentType()))
+		// return create(scope, contentType, (Collection) container);
+		// return createWithoutCasting(contentType, container);
 	}
 
 	/**
@@ -267,9 +270,10 @@ public class GamaListFactory {
 	 * @return the i list
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Iterable<T> iterable) {
-		final IList<T> list = create(contentType);
-		for (final Object o : iterable) { castAndAdd(scope, list, o); }
-		return list;
+		return createWithoutCasting(contentType, iterable);
+		// final IList<T> list = create(contentType);
+		// for (final Object o : iterable) { castAndAdd(scope, list, o); }
+		// return list;
 	}
 
 	/**
@@ -327,13 +331,15 @@ public class GamaListFactory {
 	 */
 	@SafeVarargs
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final T... objects) {
-		final IList<T> list = create(contentType, objects == null ? 0 : objects.length);
-		if (objects != null) { for (final Object o : objects) { castAndAdd(scope, list, o); } }
-		return list;
+
+		return createWithoutCasting(contentType, objects);
+		// final IList<T> list = create(contentType, objects == null ? 0 : objects.length);
+		// if (objects != null) { for (final Object o : objects) { castAndAdd(scope, list, o); } }
+		// return list;
 	}
 
 	/**
-	 * Creates a list with characters inside
+	 * Creates a list with characters inside. Characters must be casted because they do not exist in GAML
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param <T>
@@ -349,7 +355,10 @@ public class GamaListFactory {
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final char[] objects) {
 		final IList<T> list = create(contentType, objects == null ? 0 : objects.length);
-		if (objects != null) { for (final Object o : objects) { castAndAdd(scope, list, o); } }
+		// if (objects != null) { for (final Object o : objects) { castAndAdd(scope, list, o); } }
+		if (objects != null) {
+			for (final Object o : objects) { list.addValue(scope, (T) contentType.cast(scope, o, null, false)); }
+		}
 		return list;
 	}
 
@@ -575,20 +584,6 @@ public class GamaListFactory {
 		final Iterator<Object> it2 = two.iterator();
 		while (it1.hasNext() && it2.hasNext()) { if (!Objects.equals(it1.next(), it2.next())) return false; }
 		return !it1.hasNext() && !it2.hasNext();
-	}
-
-	/**
-	 * Creates a list with the same content as the parameter (a container type), for instance a list of maps, etc.
-	 * Simply calls create(IType, int)
-	 *
-	 * @param ct
-	 *            the type of the container
-	 * @param size
-	 *            the size of the list to create
-	 * @return
-	 */
-	public static List create(final IContainerType ct, final int size) {
-		return create((IType) ct.getGamlType(), size);
 	}
 
 }

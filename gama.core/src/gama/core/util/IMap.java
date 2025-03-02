@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IMap.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IMap.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,9 +20,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -30,6 +27,9 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -42,7 +42,6 @@ import gama.gaml.interfaces.IJsonable;
 import gama.gaml.types.GamaMapType;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Interface IMap.
@@ -122,8 +121,8 @@ public interface IMap<K, V>
 	 */
 	@Override
 	default void addValue(final IScope scope, final V v) {
-		if (v instanceof GamaPair) {
-			setValueAtIndex(scope, (K) ((GamaPair) v).key, (V) ((GamaPair) v).value);
+		if (v instanceof GamaPair gp) {
+			setValueAtIndex(scope, (K) gp.key, (V) gp.value);
 		} else {
 			setValueAtIndex(scope, v, v);
 		}
@@ -307,9 +306,9 @@ public interface IMap<K, V>
 	default V buildValue(final IScope scope, final Object object) {
 		// If we pass a pair to this method, but the content type is not a pair,
 		// then it is is interpreted as a key + a value by addValue()
-		if (object instanceof GamaPair && !getGamlType().getContentType().isTranslatableInto(Types.PAIR))
-			return (V) object;
-		return (V) getGamlType().getContentType().cast(scope, object, null, false);
+		// if (object instanceof GamaPair && !getGamlType().getContentType().isTranslatableInto(Types.PAIR)) {}
+		return (V) object;
+		// return (V) getGamlType().getContentType().cast(scope, object, null, false);
 	}
 
 	/**
@@ -330,7 +329,8 @@ public interface IMap<K, V>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default K buildIndex(final IScope scope, final Object object) {
-		return (K) getGamlType().getKeyType().cast(scope, object, null, false);
+		return (K) object;
+		// return (K) getGamlType().getKeyType().cast(scope, object, null, false);
 	}
 
 	/**
