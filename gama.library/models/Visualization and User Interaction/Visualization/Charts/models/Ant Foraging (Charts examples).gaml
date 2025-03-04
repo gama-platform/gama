@@ -8,7 +8,7 @@ model ants
 
 global {
 	
-	list<rgb> colors <- (brewer_colors(any(brewer_palettes(0)), 11));	// try  "Spectral", "PRGn" / "BrBG" / "RdYlGn" or any(brewer_palettes(0))
+	list<rgb> colors <- reverse(brewer_colors("Spectral", 11));	
 	
 	//Number of ants
 	int ants_number <- 100 min: 1 max: 2000 ;
