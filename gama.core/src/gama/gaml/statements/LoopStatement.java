@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
+import java.util.EnumSet;
+import java.util.function.Function;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -41,6 +44,10 @@ import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
 // A group of commands that can be executed repeatedly.
+
+/**
+ * The Class LoopStatement.
+ */
 
 /**
  * The Class LoopStatement.
@@ -423,6 +430,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	private final String varName;
 	// private final Object[] result = new Object[1];
 
+	/** The status. */
+	static final EnumSet<FlowStatus> BREAK_STATUSES =
+			EnumSet.of(FlowStatus.BREAK, FlowStatus.RETURN, FlowStatus.DIE, FlowStatus.DISPOSE);
+
 	/**
 	 * Instantiates a new loop statement.
 	 *
@@ -607,34 +618,15 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final Integer from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
 			final Integer to = constantTo == null ? value(scope, toExpression) : constantTo;
 			Integer step = constantStep == null ? value(scope, stepExpression) : constantStep;
-			boolean shouldBreak = false;
+			boolean reverse = from > to;
+			Function<Integer, Boolean> test = reverse ? i -> i >= to : i -> i <= to;
 			if (from.equals(to)) {
 				loopBody(scope, from, result);
-			} else if (from > to) {
-				if (step > 0 && !stepDefined) { step = -step; }
-				for (int i = from, n = to; i >= n && !shouldBreak; i += step) {
-					FlowStatus status = loopBody(scope, i, result);
-					switch (status) {
-						case CONTINUE:
-							continue;
-						case BREAK, RETURN, DIE, DISPOSE:
-							shouldBreak = true;
-							break;
-						default:
-					}
-				}
-
 			} else {
-				for (int i = from, n = to; i <= n && !shouldBreak; i += step) {
+				if (reverse && !stepDefined) { step = -step; }
+				for (int i = from; test.apply(i); i += step) {
 					FlowStatus status = loopBody(scope, i, result);
-					switch (status) {
-						case CONTINUE:
-							continue;
-						case BREAK, RETURN, DIE, DISPOSE:
-							shouldBreak = true;
-							break;
-						default:
-					}
+					if (BREAK_STATUSES.contains(status)) { break; }
 				}
 			}
 			return result[0];
@@ -673,33 +665,15 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final Double from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
 			final Double to = constantTo == null ? value(scope, toExpression) : constantTo;
 			Double step = constantStep == null ? value(scope, stepExpression) : constantStep;
-			boolean shouldBreak = false;
+			boolean reverse = from > to;
+			Function<Double, Boolean> test = reverse ? i -> i >= to : i -> i <= to;
 			if (from.equals(to)) {
 				loopBody(scope, from, result);
-			} else if (from > to) {
-				if (step > 0 && !stepDefined) { step = -step; }
-				for (double i = from, n = to; i >= n && !shouldBreak; i += step) {
-					FlowStatus status = loopBody(scope, i, result);
-					switch (status) {
-						case CONTINUE:
-							continue;
-						case BREAK, RETURN, DIE, DISPOSE:
-							shouldBreak = true;
-							break;
-						default:
-					}
-				}
 			} else {
-				for (double i = from, n = to; i <= n && !shouldBreak; i += step) {
+				if (reverse && !stepDefined) { step = -step; }
+				for (double i = from; test.apply(i); i += step) {
 					FlowStatus status = loopBody(scope, i, result);
-					switch (status) {
-						case CONTINUE:
-							continue;
-						case BREAK, RETURN, DIE, DISPOSE:
-							shouldBreak = true;
-							break;
-						default:
-					}
+					if (BREAK_STATUSES.contains(status)) { break; }
 				}
 			}
 			return result[0];
@@ -804,6 +778,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			}
 			return result[0];
 		}
+
 	}
 
 	/**
