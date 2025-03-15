@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaGisFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaGisFile.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -33,7 +33,6 @@ import com.google.common.cache.CacheBuilder;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
-import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.metamodel.shape.GamaGisGeometry;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
@@ -201,8 +200,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 		final CoordinateReferenceSystem crs = getExistingCRS(scope);
 		final ProjectionFactory pf;
 		if (scope.getSimulation().isMicroSimulation()) {
-			pf = ((IExperimentAgent) scope.getExperiment().getPopulation().getHost()).getSimulation()
-					.getProjectionFactory();
+			pf = scope.getExperiment().getPopulation().getHost().getSimulation().getProjectionFactory();
 		} else {
 			pf = scope.getSimulation() == null ? new ProjectionFactory() : scope.getSimulation().getProjectionFactory();
 		}
@@ -217,9 +215,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 * @return the geometry
 	 */
 	protected Geometry multiPolygonManagement(final Geometry geom) {
-		if (! (geom instanceof MultiPolygon)) {
-			return geom;
-		}
+		if (!(geom instanceof MultiPolygon)) return geom;
 		final Polygon gs[] = new Polygon[geom.getNumGeometries()];
 		for (int i = 0; i < geom.getNumGeometries(); i++) {
 			final Polygon p = (Polygon) geom.getGeometryN(i);

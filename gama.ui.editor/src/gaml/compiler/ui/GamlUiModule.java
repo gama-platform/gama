@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlUiModule.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlUiModule.java, in gama.ui.editor, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gaml.compiler.ui;
 
@@ -54,6 +54,7 @@ import org.eclipse.xtext.ui.editor.outline.actions.IOutlineContribution;
 import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreInitializer;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.ITextAttributeProvider;
+import org.eclipse.xtext.ui.refactoring.ui.SyncUtil;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.resource.SimpleResourceSetProvider;
 
@@ -73,10 +74,10 @@ import gaml.compiler.ui.decorators.GamlMarkerUpdater;
 import gaml.compiler.ui.editor.GamaAutoEditStrategyProvider;
 import gaml.compiler.ui.editor.GamaSourceViewerFactory;
 import gaml.compiler.ui.editor.GamlEditor;
+import gaml.compiler.ui.editor.GamlEditor.GamaSourceViewerConfiguration;
 import gaml.compiler.ui.editor.GamlEditorTickUpdater;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
 import gaml.compiler.ui.editor.GamlMarkOccurrenceActionContributor;
-import gaml.compiler.ui.editor.GamlEditor.GamaSourceViewerConfiguration;
 import gaml.compiler.ui.editor.folding.GamaFoldingActionContributor;
 import gaml.compiler.ui.editor.folding.GamaFoldingRegionProvider;
 import gaml.compiler.ui.highlight.GamlHighlightingConfiguration;
@@ -91,6 +92,7 @@ import gaml.compiler.ui.outline.GamlLinkWithEditorOutlineContribution;
 import gaml.compiler.ui.outline.GamlOutlinePage;
 import gaml.compiler.ui.outline.GamlSortOutlineContribution;
 import gaml.compiler.ui.templates.GamlTemplateStore;
+import gaml.compiler.ui.utils.GamlSyncUtil;
 import gaml.compiler.ui.utils.ModelRunner;
 
 /**
@@ -130,6 +132,7 @@ public class GamlUiModule extends gaml.compiler.ui.AbstractGamlUiModule {
 		binder.bind(IMarkerUpdater.class).to(GamlMarkerUpdater.class);
 		binder.bind(IGamlLabelProvider.class).to(GamlLabelProvider.class);
 		binder.bind(XtextElementLinks.class).to(GamlElementLinks.class);
+		binder.bind(SyncUtil.class).to(GamlSyncUtil.class);
 		// binder.bind(IHighlightingConfiguration.class).to(GamlHighlightingConfiguration.class).asEagerSingleton();
 		DEBUG.OUT("Initialization of GAML XText UI module finished");
 	}
