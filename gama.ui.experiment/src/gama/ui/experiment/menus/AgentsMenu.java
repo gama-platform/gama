@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AgentsMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AgentsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -66,6 +66,7 @@ public class AgentsMenu extends ContributionItem {
 	 */
 	public static MenuItem cascadingAgentMenuItem(final Menu parent, final IAgent agent, final String title,
 			final MenuAction... actions) {
+		if (agent == null || agent.dead()) return null;
 		final MenuItem result = new MenuItem(parent, SWT.CASCADE);
 		result.setText(title);
 		Image image;
@@ -398,16 +399,15 @@ public class AgentsMenu extends ContributionItem {
 		int subMenuSize = Math.max(2, GamaPreferences.Interface.CORE_MENU_SIZE.getValue());
 		final List<IAgent> agents = species == null ? new ArrayList<>() : new ArrayList<>(species);
 		final int size = agents.size();
-		// if (size > 1 && !isSimulations) { GamaMenu.separate(menu, "Actions"); }
-		if (size >= 1) { browsePopulationMenuItem(menu, species, GamaIcon.named(IGamaIcons.MENU_BROWSE).image()); }
-		if (size >= 1 && !isSimulations) {
-			GamaMenu.separate(menu);
-			GamaMenu.separate(menu, "Agents");
+		if (size >= 1) {
+			browsePopulationMenuItem(menu, species, GamaIcon.named(IGamaIcons.MENU_BROWSE).image());
+			if (!isSimulations) {
+				GamaMenu.separate(menu);
+				GamaMenu.separate(menu, "Agents");
+			}
 		}
 		if (size < subMenuSize) {
-			for (final IAgent agent : agents) {
-				if (agent != null) { cascadingAgentMenuItem(menu, agent, agent.getName(), actions); }
-			}
+			for (final IAgent agent : agents) { cascadingAgentMenuItem(menu, agent, agent.getName(), actions); }
 		} else {
 			int nb = size / subMenuSize + 1;
 			// See Issue #2967
@@ -421,28 +421,47 @@ public class AgentsMenu extends ContributionItem {
 				final int end = Math.min((i + 1) * subMenuSize, size);
 				if (begin >= end) { break; }
 				try {
-					final MenuItem rangeItem = new MenuItem(menu, SWT.CASCADE);
-					final Menu rangeMenu = new Menu(rangeItem);
-					rangeItem.setMenu(rangeMenu);
-					rangeItem.setText("From " + agents.get(begin).getName() + " to " + agents.get(end - 1).getName());
-					rangeItem.setImage(GamaIcon.named(IGamaIcons.MENU_POPULATION).image());
-					rangeMenu.addListener(SWT.Show, e -> {
-						if (!menu.isVisible()) return;
-						final MenuItem[] items = rangeMenu.getItems();
-						for (final MenuItem item : items) { item.dispose(); }
-						for (int j = begin; j < end; j++) {
-							final IAgent ag = agents.get(j);
-							if (ag != null && !ag.dead()) {
-								cascadingAgentMenuItem(rangeMenu, ag, ag.getName(), actions);
-							}
-						}
-					});
+					buildAndFillRangeSubMenu(menu, agents, begin, end, actions);
 				} catch (SWTError e) {
 					if (e.code == SWT.ERROR_ITEM_NOT_ADDED) { continue; }
 				}
 
 			}
 		}
+	}
+
+	/**
+	 * Builds the and fill range sub menu.
+	 *
+	 * @param menu
+	 *            the menu
+	 * @param agents
+	 *            the agents
+	 * @param begin
+	 *            the begin
+	 * @param end
+	 *            the end
+	 * @param actions
+	 *            the actions
+	 * @throws SWTError
+	 *             the SWT error
+	 */
+	private static void buildAndFillRangeSubMenu(final Menu menu, final List<IAgent> agents, final int begin,
+			final int end, final MenuAction... actions) throws SWTError {
+		final MenuItem rangeItem = new MenuItem(menu, SWT.CASCADE);
+		final Menu rangeMenu = new Menu(rangeItem);
+		rangeItem.setMenu(rangeMenu);
+		rangeItem.setText("From " + agents.get(begin).getName() + " to " + agents.get(end - 1).getName());
+		rangeItem.setImage(GamaIcon.named(IGamaIcons.MENU_POPULATION).image());
+		rangeMenu.addListener(SWT.Show, e -> {
+			if (!menu.isVisible()) return;
+			final MenuItem[] items = rangeMenu.getItems();
+			for (final MenuItem item : items) { item.dispose(); }
+			for (int j = begin; j < end; j++) {
+				final IAgent ag = agents.get(j);
+				cascadingAgentMenuItem(rangeMenu, ag, ag.getName(), actions);
+			}
+		});
 	}
 
 	/**
