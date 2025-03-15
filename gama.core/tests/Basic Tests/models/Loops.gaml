@@ -339,6 +339,22 @@ experiment loop_from_to type:test{
 		assert sum = 4.0;	
 	}
 	
+	test loop_from_to_equal_int {
+		int iterations <- 0;
+		loop i from: 1 to: 1 {
+			iterations <- iterations+1;
+		}
+		assert iterations = 1;
+	}
+	
+		test loop_from_to_equal_float{
+		int iterations <- 0;
+		loop i from: 1.0 to: 1.0 {
+			iterations <- iterations+1;
+		}
+		assert iterations = 1;
+	}
+	
 	
 }
 

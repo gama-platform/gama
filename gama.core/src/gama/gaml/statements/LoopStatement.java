@@ -619,12 +619,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			boolean reverse = from > to;
 			final int step = (constantStep == null ? value(scope, stepExpression) : constantStep)
 					* (reverse && !stepDefined ? -1 : 1);
-			if (from == to) {
-				loopBody(scope, from, result);
-			} else {
-				for (int i = from; reverse ? i >= to : i <= to; i += step) {
-					if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
-				}
+			for (int i = from; reverse ? i >= to : i <= to; i += step) {
+				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
 			return result[0];
 		}
@@ -664,12 +660,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			boolean reverse = from > to;
 			final double step = (constantStep == null ? value(scope, stepExpression) : constantStep)
 					* (reverse && !stepDefined ? -1 : 1);
-			if (Double.compare(from, to) == 0) {
-				loopBody(scope, from, result);
-			} else {
-				for (double i = from; reverse ? i >= to : i <= to; i += step) {
-					if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
-				}
+			for (double i = from; reverse ? i >= to : i <= to; i += step) {
+				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
 			return result[0];
 		}
@@ -689,19 +681,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final Object[] result = new Object[1];
 			final Object obj = overExpression.value(scope);
 			final Iterable list = !(obj instanceof IContainer c) ? Cast.asList(scope, obj) : c.iterable(scope);
-			boolean shouldBreak = false;
-
-			for (final Object each : list) {
-				switch (loopBody(scope, each, result)) {
-					case CONTINUE:
-						continue;
-					case BREAK, RETURN, DIE, DISPOSE:
-						shouldBreak = true;
-						break;
-					default:
-				}
-				if (shouldBreak) { break; }
-			}
+			for (final Object each : list) { if (BREAK_STATUSES.contains(loopBody(scope, each, result))) { break; } }
 			return result[0];
 		}
 	}
@@ -733,17 +713,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
 			final int max = constantTimes == null ? Cast.asInt(scope, timesExpression.value(scope)) : constantTimes;
-			boolean shouldBreak = false;
-			for (int i = 0; i < max && !shouldBreak; i++) {
-				switch (loopBody(scope, null, result)) {
-					case CONTINUE:
-						continue;
-					case BREAK, RETURN, DIE, DISPOSE:
-						shouldBreak = true;
-						break;
-					default:
-				}
-			}
+			for (int i = 0; i < max; i++) { if (BREAK_STATUSES.contains(loopBody(scope, null, result))) { break; } }
 			return result[0];
 		}
 
@@ -760,16 +730,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			boolean shouldBreak = false;
-			while (Boolean.TRUE.equals(Cast.asBool(scope, cond.value(scope))) && !shouldBreak) {
-				switch (loopBody(scope, null, result)) {
-					case CONTINUE:
-						continue;
-					case BREAK, RETURN, DIE, DISPOSE:
-						shouldBreak = true;
-						break;
-					default:
-				}
+			while (Cast.asBool(scope, cond.value(scope))) {
+				if (BREAK_STATUSES.contains(loopBody(scope, null, result))) { break; }
 			}
 			return result[0];
 		}
