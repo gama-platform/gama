@@ -11,7 +11,6 @@
 package gama.gaml.statements;
 
 import java.util.EnumSet;
-import java.util.function.Function;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -615,18 +614,16 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final Integer from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
-			final Integer to = constantTo == null ? value(scope, toExpression) : constantTo;
-			Integer step = constantStep == null ? value(scope, stepExpression) : constantStep;
+			final int from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
+			final int to = constantTo == null ? value(scope, toExpression) : constantTo;
 			boolean reverse = from > to;
-			Function<Integer, Boolean> test = reverse ? i -> i >= to : i -> i <= to;
-			if (from.equals(to)) {
+			final int step = (constantStep == null ? value(scope, stepExpression) : constantStep)
+					* (reverse && !stepDefined ? 1 : -1);
+			if (from == to) {
 				loopBody(scope, from, result);
 			} else {
-				if (reverse && !stepDefined) { step = -step; }
-				for (int i = from; test.apply(i); i += step) {
-					FlowStatus status = loopBody(scope, i, result);
-					if (BREAK_STATUSES.contains(status)) { break; }
+				for (int i = from; reverse ? i >= to : i <= to; i += step) {
+					if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 				}
 			}
 			return result[0];
@@ -662,18 +659,16 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final Double from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
-			final Double to = constantTo == null ? value(scope, toExpression) : constantTo;
-			Double step = constantStep == null ? value(scope, stepExpression) : constantStep;
+			final double from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
+			final double to = constantTo == null ? value(scope, toExpression) : constantTo;
 			boolean reverse = from > to;
-			Function<Double, Boolean> test = reverse ? i -> i >= to : i -> i <= to;
-			if (from.equals(to)) {
+			final double step = (constantStep == null ? value(scope, stepExpression) : constantStep)
+					* (reverse && !stepDefined ? 1 : -1);
+			if (Double.compare(from, to) == 0) {
 				loopBody(scope, from, result);
 			} else {
-				if (reverse && !stepDefined) { step = -step; }
-				for (double i = from; test.apply(i); i += step) {
-					FlowStatus status = loopBody(scope, i, result);
-					if (BREAK_STATUSES.contains(status)) { break; }
+				for (double i = from; reverse ? i >= to : i <= to; i += step) {
+					if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 				}
 			}
 			return result[0];
