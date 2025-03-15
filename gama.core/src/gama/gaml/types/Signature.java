@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Signature.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Signature.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +29,6 @@ import gama.gaml.expressions.IExpression;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 
 public record Signature(IType[] list) implements Iterable<IType> {
-
 
 	/** The empty types. */
 	static IType[] EMPTY_TYPES = {};
@@ -181,7 +180,17 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	 * @return true, if successful
 	 */
 	public boolean matchesDesiredSignature(final Signature types) {
-		return matchesDesiredSignature(types.list);
+		if (types.list.length != list.length) return false;
+		for (int i = 0; i < list.length; i++) {
+			final IType localType = list[i];
+			final IType requestedType = types.get(i);
+			if (Types.intFloatCase(localType, requestedType) || requestedType.isAssignableFrom(localType)
+					|| !localType.isNumber() && requestedType == Types.NO_TYPE) {
+				continue;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -219,8 +228,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 		for (int i = 0; i < list.length; i++) {
 			final IType ownType = list[i];
 			final IType desiredType = types[i];
-			if (Types.intFloatCase(ownType, desiredType)
-					|| desiredType.isAssignableFrom(ownType)  || !desiredType.isNumber() && ownType == Types.NO_TYPE) {
+			if (Types.intFloatCase(ownType, desiredType) || desiredType.isAssignableFrom(ownType)
+					|| !desiredType.isNumber() && ownType == Types.NO_TYPE) {
 				continue;
 			}
 			return false;
