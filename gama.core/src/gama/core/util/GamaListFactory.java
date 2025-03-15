@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaListFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,6 +34,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.GamaType;
+import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -574,6 +575,20 @@ public class GamaListFactory {
 		final Iterator<Object> it2 = two.iterator();
 		while (it1.hasNext() && it2.hasNext()) { if (!Objects.equals(it1.next(), it2.next())) return false; }
 		return !it1.hasNext() && !it2.hasNext();
+	}
+
+	/**
+	 * Creates a list with the same content as the parameter (a container type), for instance a list of maps, etc.
+	 * Simply calls create(IType, int)
+	 *
+	 * @param ct
+	 *            the type of the container
+	 * @param size
+	 *            the size of the list to create
+	 * @return
+	 */
+	public static List create(final IContainerType ct, final int size) {
+		return create((IType) ct.getGamlType(), size);
 	}
 
 }

@@ -150,7 +150,7 @@ public class SerialisationOperators {
 	@test ("to_json(font('Helvetica')) = '{\"gaml_type\":\"font\",\"name\":\"Helvetica\",\"style\":0,\"size\":12}'")
 	@test ("to_json(point(20,10)) = '{\"gaml_type\":\"point\",\"x\":20.0,\"y\":10.0,\"z\":0.0}'")
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default)."
+			value = "Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).\n"
 					+ "The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, "
 					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the "
 					+ "json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). "
@@ -177,8 +177,8 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the json format and no pretty printing."
-					+ "The format used by GAMA follows simple rules. int, float, bool, string values are outputted as they are. nil is outputted as 'null'. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the \"gaml_type\" attribute, "
+			value = "Serializes any object/agent/simulation into a string, using the json format and no pretty printing.\n"
+					+ "The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the \"gaml_type\" attribute, "
 					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the \"agent_reference\" attribute, its value represent the reference to an agent. If any reference to an agent is found, the "
 					+ "json string returned will be an object with two attributes: \"gama_object\", the object containing the references, and \"reference_table\" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). "
 					+ "This choice allows to manage cross references between agents",
@@ -204,8 +204,8 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the 'binary' format"
-					+ "The result of this operator can be then used in the `from:` facet of `restore` or `create` statements in case of agents, or using `deserialize` for other items",
+			value = "Serializes any object/agent/simulation into a string, using the `binary` format\n"
+					+ "The result of this operator can be then used in the `from` facet of `restore` or `create` statements in case of agents, or using `deserialize` for other items",
 			see = { "to_json", "to_gaml" })
 	@no_test ()
 	public static String serialize(final IScope scope, final Object obj) {

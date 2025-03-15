@@ -7,7 +7,7 @@ on:
         description: "The tag of the release to publish"
         type: string
         required: true
-        default: 2024.03.0
+        default: 2025.03.0
       IS_STABLE_RELEASE:
         required: true
         type: string

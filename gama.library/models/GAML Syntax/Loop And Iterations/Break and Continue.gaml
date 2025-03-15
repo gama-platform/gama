@@ -1,6 +1,3 @@
-
-@requires [msi.gama.core]
-
 /**
 * Name: break_and_continue
 * This model shows how (and where) to use break and continue inside loops and other GAML statements. 
