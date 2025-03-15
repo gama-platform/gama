@@ -55,42 +55,6 @@ import gama.gaml.types.Types;
 /**
  * The Class LoopStatement.
  */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
-
-/**
- * The Class LoopStatement.
- */
 @symbol (
 		name = IKeyword.LOOP,
 		kind = ISymbolKind.SEQUENCE_STATEMENT,
@@ -427,7 +391,6 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	/** The var name. */
 	private final String varName;
-	// private final Object[] result = new Object[1];
 
 	/** The status. */
 	static final EnumSet<FlowStatus> BREAK_STATUSES =
@@ -441,17 +404,21 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	 */
 	public LoopStatement(final IDescription desc) {
 		super(desc);
-		final boolean isWhile = getFacet(IKeyword.WHILE) != null;
-		final boolean isList = getFacet(IKeyword.OVER) != null;
+		IExpression over = getFacet(IKeyword.OVER);
+		IExpression times = getFacet(IKeyword.TIMES);
+		IExpression cond = getFacet(IKeyword.WHILE);
+		final boolean isWhile = cond != null;
+		final boolean isList = over != null;
 		IExpression from = getFacet(IKeyword.FROM);
 		IExpression to = getFacet(IKeyword.TO);
 		IExpression step = getFacet(IKeyword.STEP);
 		final boolean isBounded = from != null && to != null;
-		boolean isInt = isBounded && from.getGamlType() == Types.INT && to.getGamlType() == Types.INT
-				&& (step == null || step.getGamlType() == Types.INT);
+		@SuppressWarnings ("null") boolean isInt = isBounded && from.getGamlType() == Types.INT
+				&& to.getGamlType() == Types.INT && (step == null || step.getGamlType() == Types.INT);
 		varName = desc.getName();
-		executer = isWhile ? new While() : isList ? new Over()
-				: isBounded ? isInt ? new IntBounded(from, to, step) : new FloatBounded(from, to, step) : new Times();
+		executer = isWhile ? new While(cond) : isList ? new Over(over)
+				: isBounded ? isInt ? new IntBounded(from, to, step) : new FloatBounded(from, to, step)
+				: new Times(times);
 	}
 
 	@Override
@@ -483,19 +450,21 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param theVar
+	 * @param currentValue
 	 *            the var
 	 * @param result
 	 *            the result
 	 * @return true, if successful
 	 */
-	protected FlowStatus loopBody(final IScope scope, final Object theVar, final Object[] result) {
+	protected FlowStatus loopBody(final IScope scope, final Object currentValue, final Object[] result) {
 		scope.push(this);
-		// We set it explicitly toExpression the newly created scope
-		if (varName != null) { scope.setVarValue(varName, theVar, true); }
-		result[0] = super.privateExecuteIn(scope);
-		scope.pop(this);
-		// return !scope.interrupted();
+		try {
+			// We set it explicitly to the newly created scope
+			if (varName != null) { scope.setVarValue(varName, currentValue, true); }
+			result[0] = super.privateExecuteIn(scope);
+		} finally {
+			scope.pop(this);
+		}
 		return scope.getAndClearContinueStatus();
 	}
 
@@ -505,7 +474,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	interface LoopExecuter {
 
 		/**
-		 * Run in.
+		 * Main method for the loop executers.
 		 *
 		 * @param scope
 		 *            the scope
@@ -584,6 +553,50 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 */
 		abstract T defaultStep();
 
+		/**
+		 * Compute from.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @return the t
+		 */
+		T computeFrom(final IScope scope) {
+			return constantFrom == null ? value(scope, fromExpression) : constantFrom;
+		}
+
+		/**
+		 * Compute to.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @return the t
+		 */
+		T computeTo(final IScope scope) {
+			return constantTo == null ? value(scope, toExpression) : constantTo;
+		}
+
+		/**
+		 * Compute step.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @return the t
+		 */
+		T computeStep(final IScope scope) {
+			return constantStep == null ? value(scope, stepExpression) : constantStep;
+		}
+
+		/**
+		 * Step sign.
+		 *
+		 * @param isReverse
+		 *            the is reverse
+		 * @return the int
+		 */
+		int stepSign(final boolean isReverse) {
+			return isReverse && !stepDefined ? -1 : 1;
+		}
+
 	}
 
 	/**
@@ -614,11 +627,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final int from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
-			final int to = constantTo == null ? value(scope, toExpression) : constantTo;
+			final int from = computeFrom(scope);
+			final int to = computeTo(scope);
 			boolean reverse = from > to;
-			final int step = (constantStep == null ? value(scope, stepExpression) : constantStep)
-					* (reverse && !stepDefined ? -1 : 1);
+			final int step = computeStep(scope) * stepSign(reverse);
 			for (int i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -655,11 +667,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final double from = constantFrom == null ? value(scope, fromExpression) : constantFrom;
-			final double to = constantTo == null ? value(scope, toExpression) : constantTo;
+			final double from = computeFrom(scope);
+			final double to = computeTo(scope);
 			boolean reverse = from > to;
-			final double step = (constantStep == null ? value(scope, stepExpression) : constantStep)
-					* (reverse && !stepDefined ? -1 : 1);
+			final double step = computeStep(scope) * stepSign(reverse);
 			for (double i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -673,8 +684,20 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	 */
 	class Over implements LoopExecuter {
 
+		/** The over expression. */
+		private final IExpression overExpression;
+
+		/**
+		 * Instantiates a new over.
+		 *
+		 * @param over
+		 *            the over
+		 */
+		Over(final IExpression over) {
+			overExpression = getFacet(IKeyword.OVER);
+		}
+
 		/** The over. */
-		private final IExpression overExpression = getFacet(IKeyword.OVER);
 
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
@@ -692,18 +715,18 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	class Times implements LoopExecuter {
 
 		/** The times. */
-		private final IExpression timesExpression = getFacet(IKeyword.TIMES);
-
+		private final IExpression timesExpression;
 		/** The constant times. */
 		private Integer constantTimes;
 
 		/**
 		 * Instantiates a new times.
 		 *
-		 * @throws GamaRuntimeException
-		 *             the gama runtime exception
+		 * @param times
+		 *            the times
 		 */
-		Times() throws GamaRuntimeException {
+		Times(final IExpression times) {
+			this.timesExpression = times;
 			if (timesExpression.isConst()) {
 				constantTimes = Types.INT.cast(null, timesExpression.getConstValue(), null, false);
 			}
@@ -725,7 +748,17 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	class While implements LoopExecuter {
 
 		/** The cond. */
-		private final IExpression cond = getFacet(IKeyword.WHILE);
+		private final IExpression cond;
+
+		/**
+		 * Instantiates a new while.
+		 *
+		 * @param cond
+		 *            the cond.
+		 */
+		While(final IExpression cond) {
+			this.cond = cond;
+		}
 
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
