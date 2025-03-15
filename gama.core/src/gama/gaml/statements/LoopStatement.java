@@ -618,7 +618,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final int to = constantTo == null ? value(scope, toExpression) : constantTo;
 			boolean reverse = from > to;
 			final int step = (constantStep == null ? value(scope, stepExpression) : constantStep)
-					* (reverse && !stepDefined ? 1 : -1);
+					* (reverse && !stepDefined ? -1 : 1);
 			if (from == to) {
 				loopBody(scope, from, result);
 			} else {
@@ -663,7 +663,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final double to = constantTo == null ? value(scope, toExpression) : constantTo;
 			boolean reverse = from > to;
 			final double step = (constantStep == null ? value(scope, stepExpression) : constantStep)
-					* (reverse && !stepDefined ? 1 : -1);
+					* (reverse && !stepDefined ? -1 : 1);
 			if (Double.compare(from, to) == 0) {
 				loopBody(scope, from, result);
 			} else {
