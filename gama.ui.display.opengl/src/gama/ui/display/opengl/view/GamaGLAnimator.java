@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaGLAnimator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -43,8 +43,10 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	protected final Thread animatorThread;
 
 	/** The canvas. */
-	private final GLAutoDrawable canvas;
+	// private final GLAutoDrawable canvas;
 
+	/** The display runnable. */
+	private final Runnable displayRunnable;
 	/** The stop requested. */
 	protected volatile boolean stopRequested = false;
 
@@ -106,7 +108,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	 *            the canvas
 	 */
 	public GamaGLAnimator(final GLAutoDrawable window) {
-		this.canvas = window;
+		this.displayRunnable = () -> { if (window.isRealized()) { window.display(); } };
 		window.setAnimator(this);
 		this.animatorThread = Thread.ofPlatform().name("Animator thread").unstarted(this);
 		GamaPreferences.Displays.OPENGL_FPS.onChange(fpsChanged);
@@ -175,11 +177,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 
 				// });
 
-				WorkbenchHelper.run(() -> {
-
-					if (canvas.isRealized()) { canvas.display(); }
-
-				});
+				WorkbenchHelper.run(displayRunnable);
 				// } else if (canvas.isRealized()) { canvas.display(); }
 				if (capFPS) {
 					final long frameDuration = 1000 / targetFPS;
@@ -187,7 +185,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 					if (timeSleep >= 0) { THREADS.WAIT(timeSleep); }
 				}
 			} catch (final RuntimeException ex) {
-				uncaughtException(this, canvas, ex);
+				uncaughtException(this, null, ex);
 			}
 			tickFPS();
 		}
