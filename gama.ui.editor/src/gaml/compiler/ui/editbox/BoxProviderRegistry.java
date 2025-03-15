@@ -170,8 +170,8 @@ public class BoxProviderRegistry {
 	 *
 	 * @return the map
 	 */
-	protected Map<String, Class> defaultBuilders() {
-		final Map<String, Class> result = new HashMap<>();
+	protected Map<String, Class<? extends IBoxBuilder>> defaultBuilders() {
+		final Map<String, Class<? extends IBoxBuilder>> result = new HashMap<>();
 		result.put("Text", BoxBuilderImpl.class);
 		result.put("GAML", JavaBoxBuilder.class);
 		// result.put("Markup", MarkupBuilder2.class);

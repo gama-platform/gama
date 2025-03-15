@@ -49,7 +49,6 @@ import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.runtime.GAMA;
@@ -92,9 +91,6 @@ import gama.gaml.types.ITypesManager;
 import gama.gaml.types.ParametricType;
 import gama.gaml.types.Signature;
 import gama.gaml.types.Types;
-import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.resource.GamlResource;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentPair;
@@ -102,6 +98,7 @@ import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.BooleanLiteral;
 import gaml.compiler.gaml.DoubleLiteral;
+import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.EquationRef;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
@@ -123,6 +120,8 @@ import gaml.compiler.gaml.Unit;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
+import gaml.compiler.gaml.resource.GamlResource;
+import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
 
 /**
@@ -369,7 +368,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 				currentTypesManager = savedTypesManager;
 			}
 		}
-
+		getContext().document(object, t);
 		if (t.isAgentType()) return t;
 
 		// /

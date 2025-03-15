@@ -501,9 +501,13 @@ public class NetworkSkill extends MessagingSkill {
 				/*
 				 * if (!(connection instanceof MQTTConnector)) { mailbox.clear(); }
 				 */
+				var list = messages.containsKey(agt) ? messages.get(agt) : null;
+				if (list == null) {
+					return true;
+				}
 				for (final ConnectorMessage msg : messages.get(agt)) {
 					mailbox.addMessage(scope, msg.getContents(scope));
-				}
+				}	
 			}
 		}
 		return true;

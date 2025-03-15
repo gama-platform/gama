@@ -10,7 +10,7 @@ model SVGManipulation
 global {
 	
 	
-	svg_file geometries <- svg_file("../includes/city.svg"); // try different files, like city.svg, ant.svg... 
+	svg_file geometries <- svg_file("../includes/geometries.svg"); // try different files, like city.svg, europe.svg, ant.svg... 
 	geometry shape <- envelope(geometries);
 	
 	init {
@@ -18,8 +18,12 @@ global {
 		create images number: 30;
 	}
 	
-	species shapes {
+	species shapes skills: [moving] {
 		rgb color <- rnd_color(256);
+		
+		reflex {
+			do wander speed: 0.01 amplitude: 10.0;
+		}
 		
 		
 		aspect default {
@@ -27,11 +31,9 @@ global {
 		}
 	}
 	
-	species s;
 	
 	species images {
-		point size <- rnd({200,200}) + {1,1};
-		image im <- image(geometries, rnd(200)+100, rnd(200)+100);		
+		image im <- image(geometries, rnd(world.shape.width / 2)+1, rnd(world.shape.height / 2)+1);		
 		aspect default {
 			draw im size: {im.width, im.height};
 		}
@@ -46,18 +48,16 @@ experiment "Open me" type: gui {
 	output {
 	
 		display "Loop on geometries" type: 3d {
-			species s;
 			graphics g {
 				loop gg over: geometries {
-					draw gg border: #black;
+					draw gg border: #black width: 0.3;
 				}
 			}
 		}
 		
 		display "Wireframe geometry" type: 3d {
-			species s;
 			graphics g {
-				draw geometry(geometries) wireframe: true border: #black;
+				draw geometry(geometries) wireframe: true border: #black width: 0.3;
 			}
 		}
 		

@@ -14,8 +14,6 @@ This is the official repository of the GAMA platform, an open-source modeling an
 
 For more detailed information about it, visit our [website](https://gama-platform.org).
 
-![diffusion](https://github.com/user-attachments/assets/d37b34b6-1164-4028-b129-0af51f40e8a7)
-
 
 https://github.com/user-attachments/assets/8cb6f189-3bfe-42c1-a162-3c8abd5dec8b
 
@@ -69,7 +67,10 @@ There are a few tutorials explaining how to create new functionalities in gama t
 
 To contribute to the code you just have to submit a pull-request to this repository, if you encounter any problem to do so, feel free to ask about it either on the [github discussions](https://github.com/gama-platform/gama/discussions) or the [mailing list](https://groups.google.com/g/gama-platform).
 
- 
+ ## Acknowledgments
+
+ ![YourKit logo](https://www.yourkit.com/images/yk_logo.svg) GAMA is actively supported by YourKit LLC, with its full-featured <a href="https://www.yourkit.com/java/profiler/index.jsp">Java Profiler</a>.
+
 
  
  
