@@ -678,24 +678,25 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
+	 * T
+	 *
 	 * @param result
 	 * @return
 	 */
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
 		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
 		if (!tt.isContainer()) return tt;
-		final boolean isContainerWithNoContentsType = ct == Types.NO_TYPE;
-		final boolean isContainerWithNoKeyType = kt == Types.NO_TYPE;
-		if (!isContainerWithNoContentsType && !isContainerWithNoKeyType) return tt;
-		IExpressionDescription ed = getFacet(dynamicTypeProviders);
-		if (ed != null) {
-			IExpression expr = ed.compile(this);
-			final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
-			if (tt.isAssignableFrom(exprType)) {
-				tt = exprType;
-			} else {
-				if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
-				if (isContainerWithNoContentsType) { ct = exprType.getContentType(); }
+		if (ct == Types.NO_TYPE || kt == Types.NO_TYPE) {
+			IExpressionDescription ed = getFacet(dynamicTypeProviders);
+			if (ed != null) {
+				IExpression expr = ed.compile(this);
+				IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+				if (tt.isAssignableFrom(exprType)) {
+					tt = exprType;
+				} else {
+					if (kt == Types.NO_TYPE) { kt = exprType.getKeyType(); }
+					if (ct == Types.NO_TYPE) { ct = exprType.getContentType(); }
+				}
 			}
 		}
 		return GamaType.from(tt, kt, ct);
