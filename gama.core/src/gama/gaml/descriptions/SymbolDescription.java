@@ -678,10 +678,16 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * T
+	 * This method is used to infer the types of a symbol from the types of its facets. It is used when the type,
+	 * keyType, and contentType are not defined in the declaration.
 	 *
-	 * @param result
-	 * @return
+	 * @param tt
+	 *            the initial type
+	 * @param kt
+	 *            the key type
+	 * @param ct
+	 *            the content type
+	 * @return the inferred type
 	 */
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
 		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
