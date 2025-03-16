@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IKeyword.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * IKeyword.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -152,7 +152,8 @@ public interface IKeyword {
 
 	/** The browse. */
 	String BROWSE = "browse";
-	
+
+	/** The buffering. */
 	String BUFFERING = "buffering";
 
 	/** The camera. */
@@ -226,7 +227,7 @@ public interface IKeyword {
 
 	/** The Constant CYCLE. */
 	String CYCLE = "cycle";
-	
+
 	/** The cycle length. */
 	String CYCLE_LENGTH = "cycle_length";
 
@@ -304,7 +305,8 @@ public interface IKeyword {
 
 	/** The enables. */
 	String ENABLES = "enables";
-	
+
+	/** The end. */
 	String END = "end";
 
 	/** The enter. */
@@ -516,7 +518,8 @@ public interface IKeyword {
 
 	/** The int. */
 	String INT = "int";
-	
+
+	/** The intensity. */
 	String INTENSITY = "intensity";
 
 	/** The internal. */
@@ -745,6 +748,9 @@ public interface IKeyword {
 
 	/** The origin. */
 	String ORIGIN = "**origin**";
+
+	/** The no type inference keyword. Used to flag declarations that have a type explicitly set */
+	String NO_TYPE_INFERENCE = "**no_type_inference**";
 
 	/** The orthogonal sampling */
 	String ORTHOGONAL = "orthogonal";

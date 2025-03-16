@@ -260,12 +260,6 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createOperator(final String op, final IDescription context, final EObject eObject,
 			final IExpression... args) {
-		if ("+".equals(op)) {
-
-			DEBUG.OUT("");
-
-		}
-
 		if (args == null || args.length == 0 || !GAML.OPERATORS.containsKey(op))
 			return emitError(op, context, eObject, args == null ? new IExpression[0] : args);
 		for (final IExpression exp : args) { if (exp == null) return emitError(op, context, eObject, args); }
@@ -283,9 +277,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			for (Map.Entry<Signature, OperatorProto> entry : ops.entrySet()) {
 				Signature s = entry.getKey();
 
-				boolean matches = originalUserSignature.matchesDesiredSignature(s);
-
-				if (matches && originalUserSignature.matchesDesiredSignature(s)) {
+				if (originalUserSignature.matchesDesiredSignature(s)) {
 					final int dist = s.distanceTo(originalUserSignature);
 					if (dist == 0) {
 						distance = 0;

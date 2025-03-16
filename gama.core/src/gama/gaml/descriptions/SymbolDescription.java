@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SymbolDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,8 +27,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlDescription;
@@ -57,7 +57,6 @@ public abstract class SymbolDescription implements IDescription {
 
 	/** The state. */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
-
 
 	/** The facets. */
 	private Facets facets;
@@ -104,6 +103,12 @@ public abstract class SymbolDescription implements IDescription {
 		this.facets = facets;
 		element = source;
 		setIf(Flag.BuiltIn, element == null);
+		// See #385 -- we need to remove the NO_TYPE_INFERENCE facet from the list of facets if it is present, after
+		// having set the flag
+		if (facets != null && facets.containsKey(NO_TYPE_INFERENCE)) {
+			set(Flag.NoTypeInference);
+			facets.remove(NO_TYPE_INFERENCE);
+		}
 		if (facets != null && facets.containsKey(ORIGIN)) {
 			originName = facets.getLabel(ORIGIN);
 			facets.remove(ORIGIN);
@@ -369,8 +374,9 @@ public abstract class SymbolDescription implements IDescription {
 	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
 
-		if (type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()) return;
-		if (type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue()) return;
+		if (type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()
+				|| type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue())
+			return;
 
 		IDescription desc = this;
 		EObject e = source;
@@ -383,7 +389,8 @@ public abstract class SymbolDescription implements IDescription {
 		// the source
 		// (i.e. we are probably in a runtime scenario)
 		if (e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX)) {
-			if (type == GamlCompilationErrorType.Error) throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
+			if (type == GamlCompilationErrorType.Error)
+				throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
 			return;
 
 		}
@@ -424,7 +431,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationErrorType.Error, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Error,
+				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
@@ -456,7 +464,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationErrorType.Warning, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Warning,
+				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
@@ -632,14 +641,25 @@ public abstract class SymbolDescription implements IDescription {
 	static final String[] dynamicTypeProviders = { INIT, VALUE, UPDATE, FUNCTION, DEFAULT };
 
 	/**
-	 * Compute type.
+	 * Compute type. Returns the type of the symbol. If the type is not defined, it will try by default to infer it from
+	 * the facets, unlese the flag NoTypeInference is set. See #385
+	 *
+	 * @return the type of the symbol
+	 */
+	protected IType<?> computeType() {
+		return computeType(!isSet(Flag.NoTypeInference));
+	}
+
+	/**
+	 * Compute the type of the symbol. If the type is not defined, it will try by default to infer it from the facets,
+	 * unless the parameter doTypeInference is set to false. See #385
 	 *
 	 * @return the i type
 	 */
-	protected IType<?> computeType() {
+	protected IType<?> computeType(final boolean doTypeInference) {
 		// Adapter ca pour prendre en compte les ITypeProvider
 		IType<?> tt = getTypeDenotedByFacet(staticTypeProviders);
-		if (tt == Types.NO_TYPE) {
+		if (doTypeInference && tt == Types.NO_TYPE) {
 			IExpressionDescription ed = getFacet(dynamicTypeProviders);
 			if (ed != null) {
 				IExpression expr = ed.compile(this);
@@ -648,19 +668,21 @@ public abstract class SymbolDescription implements IDescription {
 		}
 		IType<?> kt = getTypeDenotedByFacet(INDEX, tt.getKeyType());
 		IType<?> ct = getTypeDenotedByFacet(OF, tt.getContentType());
-		final boolean isContainerWithNoContentsType = tt.isContainer() && ct == Types.NO_TYPE;
-		final boolean isContainerWithNoKeyType = tt.isContainer() && kt == Types.NO_TYPE;
-		if (isContainerWithNoContentsType || isContainerWithNoKeyType) {
-			IExpressionDescription ed = getFacet(dynamicTypeProviders);
-			if (ed != null) {
-				IExpression expr = ed.compile(this);
-				final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
-				if (tt.isAssignableFrom(exprType)) {
-					tt = exprType;
-				} else {
-					if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
-					if (isContainerWithNoContentsType /* || isSpeciesWithAgentType */) {
-						ct = exprType.getContentType();
+		if (doTypeInference) {
+			final boolean isContainerWithNoContentsType = tt.isContainer() && ct == Types.NO_TYPE;
+			final boolean isContainerWithNoKeyType = tt.isContainer() && kt == Types.NO_TYPE;
+			if (isContainerWithNoContentsType || isContainerWithNoKeyType) {
+				IExpressionDescription ed = getFacet(dynamicTypeProviders);
+				if (ed != null) {
+					IExpression expr = ed.compile(this);
+					final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+					if (tt.isAssignableFrom(exprType)) {
+						tt = exprType;
+					} else {
+						if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
+						if (isContainerWithNoContentsType /* || isSpeciesWithAgentType */) {
+							ct = exprType.getContentType();
+						}
 					}
 				}
 			}

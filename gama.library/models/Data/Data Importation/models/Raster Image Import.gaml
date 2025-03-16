@@ -19,7 +19,7 @@ global {
 	file mntImageRaster <- image_file('../images/mnt/testAG.jpg') ;
 	
 	int nbIzard <- 250 ; 
-	file izardShape <- file('../images/icons/izard.gif');
+	image_file izardShape <- image_file('../images/icons/izard.gif');
 			
 	// Initialization of grid and creation of the izard agents
 	// - we use the as_matrix operator to resize the image file into a matrix of colors with the same size of the grid

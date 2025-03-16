@@ -12,7 +12,7 @@ global {
 	int shape_width <- 200;
 	geometry shape <- square(shape_width);
 	font text_font <- font("Arial", 10, #bold);
-	file emoji_folder <- folder("../includes/emoji/"); 
+	directory emoji_folder <- folder("../includes/emoji/"); 
 	// Filter the file names that end up with "svg"
 	list<svg_file> file_list <- emoji_folder select (each contains (".svg")) collect (the_file: svg_file(emoji_folder.path + "/" + the_file));
 	int cell_dimension <- 10;

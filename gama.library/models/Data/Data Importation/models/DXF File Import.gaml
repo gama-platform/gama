@@ -9,7 +9,7 @@ model DXFAgents
 
 global
 {
-	file house_file <- dxf_file("../includes/house.dxf",#m);
+	dxf_file house_file <- dxf_file("../includes/house.dxf",#m);
 
 	//compute the environment size from the dxf file envelope
 	geometry shape <- envelope(house_file);

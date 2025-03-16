@@ -13,8 +13,8 @@ global
 	float perceipt_radius <- 20.0;
 	int preyinit <- 500;
 	int predatorinit <- 3;
-	list<agent> lstPredator;// <- list<agent> (predator);
-	list<agent> lstPrey; //<- list<agent> (prey);
+	list<predator> lstPredator;// <- list<agent> (predator);
+	list<prey> lstPrey; //<- list<agent> (prey);
 	init
 	{
 		create prey number: preyinit;
@@ -108,7 +108,7 @@ species predator parent: generic_species
 	{
 		if (goal = nil)
 		{
-			list tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
+			let tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
 			if (length(tmp) > 0)
 			{
 				agent a <- first(tmp sort (each.shape distance_to self.shape));

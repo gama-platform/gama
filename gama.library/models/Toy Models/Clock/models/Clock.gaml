@@ -11,13 +11,13 @@ global {
 	//Time value for a cycle by default 1s/cycle
 	float stepDuration<-1000.0#ms min: 100.0#ms max: 600000#ms;
 	//Background of the clock
-	file clock_normal     const: true <- image_file("../images/clock.png");
+	image_file clock_normal     const: true <- image_file("../images/clock.png");
 	//Image for the big hand 
-	file clock_big_hand   const: true <- image_file("../images/big_hand.png");
+	image_file clock_big_hand   const: true <- image_file("../images/big_hand.png");
 	//Image for the small hand
-	file clock_small_hand const: true <- image_file("../images/small_hand.png");
+	image_file clock_small_hand const: true <- image_file("../images/small_hand.png");
 	//Image for the clock alarm
-	file clock_alarm 	  const: true <- image_file("../images/alarm_hand.png");
+	image_file clock_alarm 	  const: true <- image_file("../images/alarm_hand.png");
 	//Zoom to take in consideration the zoom in the display, to better write the cycle values
 	int zoom <- 4 min:2 max:10;
 	//Postion of the clock

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * StatementDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * StatementDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -316,7 +317,8 @@ public class StatementDescription extends SymbolDescription {
 			ct = t;
 			t = Types.LIST;
 
-		} else if (t == NO_TYPE) {
+		} else if (t == NO_TYPE && !isSet(Flag.NoTypeInference)) {
+			// If the type is not defined, we try to infer it from the facets only if the flag is not set (see #385)
 			if (hasFacet(VALUE)) {
 				final IExpression value = getFacetExpr(VALUE);
 				if (value != null) { t = value.getGamlType(); }

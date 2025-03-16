@@ -20,7 +20,7 @@ global {
 	// graph (a set of nodes and edges between these nodes)
 	graph<point,geometry> graph_of_points <- as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]);		
 	// file
-	file file_of_text <- text_file("created_file",["First line","Second line","last sentence"]);
+	text_file file_of_text <- text_file("created_file",["First line","Second line","last sentence"]);
 	// population (the list of all the agents of a given species).	
 	// point (2 or 3 float coordinates)
 	point point_3D <- {12,45,2};

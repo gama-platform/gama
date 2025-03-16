@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,7 +37,6 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -55,10 +54,8 @@ import gama.gaml.types.Types;
  * @todo Description
  *
  */
-@SuppressWarnings ({ "rawtypes"})
+@SuppressWarnings ({ "rawtypes" })
 public class Files {
-
-
 
 	/**
 	 * From.
@@ -132,7 +129,6 @@ public class Files {
 
 		return f.exists() && !f.isDirectory();
 	}
-
 
 	/**
 	 * Extract folder.
@@ -470,7 +466,7 @@ public class Files {
 	 * @return true, if successful
 	 */
 	@operator (
-			value = "folder_exists",
+			value = { "folder_exists", "directory_exists" },
 			can_be_const = false,
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE })
@@ -509,27 +505,28 @@ public class Files {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = IKeyword.FOLDER,
+			value = { "directory", IKeyword.FOLDER },
 			can_be_const = false,
 			index_type = IType.INT,
+			type = IType.DIRECTORY,
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE },
 			content_type = IType.STRING)
 	@doc (
-			value = "opens an existing repository",
-			usages = @usage ("If the specified string does not refer to an existing repository, an exception is risen."),
+			value = "opens an existing directory",
+			usages = @usage ("If the specified string does not refer to an existing directory, an exception is risen."),
 			examples = {
 					// @example(value = "folder(\"../includes/\")", raises = "error"),
 					@example (
-							value = "file dirT <- folder(\"../includes/\");",
+							value = "file dirT <- directory(\"../includes/\");",
 							isExecutable = false),
 					@example (
-							value = "				// dirT represents the repository \"../includes/\""),
+							value = "				// dirT represents the directory \"../includes/\""),
 					@example (
 							value = "				// dirT.contents here contains the list of the names of included files") },
 			see = { "file", "new_folder" })
 	@no_test
-	public static IGamaFile folderFile(final IScope scope, final String s) throws GamaRuntimeException {
+	public static GamaFolderFile folderFile(final IScope scope, final String s) throws GamaRuntimeException {
 		return new GamaFolderFile(scope, s);
 	}
 
@@ -546,7 +543,7 @@ public class Files {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static IGamaFile folderFile(final IScope scope, final String s, final boolean modify)
+	public static GamaFolderFile folderFile(final IScope scope, final String s, final boolean modify)
 			throws GamaRuntimeException {
 		return new GamaFolderFile(scope, s, modify);
 	}
@@ -684,7 +681,7 @@ public class Files {
 	@no_test
 	public static Object opRead(final IScope scope, final IShape g, final String s) throws GamaRuntimeException {
 		if (g == null) return null;
-		return ((GamaShape) g.getGeometry()).getAttribute(s);
+		return g.getGeometry().getAttribute(s);
 	}
 
 	/**
@@ -701,6 +698,7 @@ public class Files {
 	@operator (
 			value = { "new_folder" },
 			index_type = IType.INT,
+			type = IType.DIRECTORY,
 			content_type = IType.STRING,
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE })
@@ -714,9 +712,8 @@ public class Files {
 					@example ("file dirNewT <- new_folder(\"incl/\");   	// dirNewT represents the repository \"../incl/\""),
 					@example ("															// eventually creates the directory ../incl") },
 			see = { "folder", "file", "folder_exists" })
-	public static IGamaFile newFolder(final IScope scope, final String folder) throws GamaRuntimeException {
-		String theName;
-		theName = FileUtils.constructAbsoluteFilePath(scope, folder, false);
+	public static GamaFolderFile newFolder(final IScope scope, final String folder) throws GamaRuntimeException {
+		String theName = FileUtils.constructAbsoluteFilePath(scope, folder, false);
 
 		final File file = new File(theName);
 		if (file.exists() && !file.isDirectory()) throw GamaRuntimeException
@@ -728,6 +725,7 @@ public class Files {
 
 	/**
 	 * Flushes all the pending save operations in the current simulation
+	 *
 	 * @param scope
 	 * @return true if everything went well, false if there was a problem while flushing
 	 * @throws GamaRuntimeException
@@ -736,23 +734,22 @@ public class Files {
 			value = { "flush_all_files" },
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE },
-			type = IType.BOOL
-			)
+			type = IType.BOOL)
 	@doc (
 			value = "Flushes all the pending save operations in the current simulation. ",
 			comment = "",
 			usages = {
 					@usage ("This operator is only useful in simulations that save files using a buffering strategy."),
 					@usage ("If a file writing fails it returns false, else it returns true."),
-					@usage ("If a file writing fails it still tries to write the others."), 
-					},
+					@usage ("If a file writing fails it still tries to write the others."), },
 			examples = {
-					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments")},
-			see = { "save"})
-	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation) throws GamaRuntimeException {
+					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments") },
+			see = { "save" })
+	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation)
+			throws GamaRuntimeException {
 		boolean success = GAMA.getBufferingController().flushSaveFilesInCycle(simulation);
 		success &= GAMA.getBufferingController().flushSaveFilesOfAgent(simulation);
 		return success;
 	}
-	
+
 }

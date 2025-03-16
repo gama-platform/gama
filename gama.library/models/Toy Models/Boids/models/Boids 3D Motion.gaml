@@ -82,7 +82,7 @@ species boids skills: [moving3D] {
 	point velocity <- {0,0, 0} ;
 	
 	//List of the others boids in the range distance of the agent
-	list others update: ((boids at_distance range)  - self);
+	list<boids> others update: ((boids at_distance range)  - self);
 	//Mass center of the "flock" represented as the other boids in the sensing range
 	point mass_center update:  (length(others) > 0) ? (mean (others collect (each.location)) )  : location;
 	

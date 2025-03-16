@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlSyntacticConverter.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -268,7 +268,11 @@ public class GamlSyntacticConverter {
 		} else if (stm instanceof S_Definition def && !DescriptionFactory.isStatementProto(keyword)) {
 			// If we define a variable with this statement
 			final TypeRef t = (TypeRef) def.getTkey();
-			if (t != null) { addFacet(elt, TYPE, convExpr(t, errors), errors); }
+			if (t != null) {
+				addFacet(elt, TYPE, convExpr(t, errors), errors);
+				// If the type should not be inferred, we add a facet to specify it (see #385)
+				elt.setFacet(IKeyword.NO_TYPE_INFERENCE, ConstantExpressionDescription.TRUE_EXPR_DESCRIPTION);
+			}
 			if (t != null && !upperContainsAttributes) {
 				// Translation of "type var ..." to "let var type: type ..." if
 				// we are not in a
@@ -629,8 +633,9 @@ public class GamlSyntacticConverter {
 		// 20/1/14: Translation of container[index] +<- value" to
 		// "add item: value in: container at: index"
 		if (expr instanceof Access && "[".equals(((Access) expr).getOp())) {
-			final String kw = "+<-".equals(keyword) ? ADD : PUT;
-			final String to = "+<-".equals(keyword) ? TO : IN;
+			boolean isAdd = "+<-".equals(keyword);
+			final String kw = isAdd ? ADD : PUT;
+			final String to = isAdd ? TO : IN;
 			elt.setKeyword(kw);
 			addFacet(elt, ITEM, value, errors);
 			addFacet(elt, to, convExpr(((Access) expr).getLeft(), errors), errors);
@@ -695,6 +700,9 @@ public class GamlSyntacticConverter {
 			final IExpressionDescription ed = findExpr(stm, errors);
 			if (ed != null) { elt.setFacet(def, ed); }
 		}
+		if (LET.equals(keyword) && elt.hasFacet(TYPE)) {
+			elt.setFacet(IKeyword.NO_TYPE_INFERENCE, ConstantExpressionDescription.TRUE_EXPR_DESCRIPTION);
+		}
 	}
 
 	/**
@@ -738,11 +746,20 @@ public class GamlSyntacticConverter {
 		if ((BATCH.equals(upper) || EXPERIMENT.equals(upper)) && SAVE.equals(keyword)) {
 			keyword = SAVE_BATCH;
 		} else if (DISPLAY.equals(upper) || SPECIES_LAYER.equals(upper)) {
-			if (SPECIES.equals(keyword)) {
-				keyword = SPECIES_LAYER;
-			} else if (GRID.equals(keyword)) {
-				keyword = IKeyword.GRID_LAYER;
-			} else if (IKeyword.IMAGE.equals(keyword)) { keyword = IKeyword.IMAGE_LAYER; }
+			switch (keyword) {
+				case SPECIES:
+					keyword = SPECIES_LAYER;
+					break;
+				case GRID:
+					keyword = IKeyword.GRID_LAYER;
+					break;
+				case IKeyword.IMAGE:
+					keyword = IKeyword.IMAGE_LAYER;
+					break;
+				case null:
+				default:
+					break;
+			}
 		}
 		return keyword;
 	}

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -109,7 +109,16 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 
 		/** The is memorize. */
 		isMemorize,
+
+		/** The is batch. */
 		isBatch,
+
+		/**
+		 * The No type inference. A flag that signifies that type inference should not be used when computing the type
+		 * of the description. Type inference is useful when the type of the description is not known at the time of
+		 * parsing, but it should not be used when the type is known. See #385
+		 */
+		NoTypeInference
 
 	}
 

@@ -771,35 +771,4 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	}
 
-	/**
-	 * The main method.
-	 *
-	 * @param args
-	 *            the arguments
-	 */
-	public static void main(final String[] args) {
-
-		// same as the previous one but looping in the other direction
-		boolean success = false;
-		for (int i = 5; i >= 1; i++) {
-			if (i > 10) {// arbitrary number just toExpression make sure we have made a few iterations already
-				success = true;
-				break;
-			}
-		}
-		System.out.println("SUCCESS = " + success); // as it's infinite loop we should never reach this
-
-		// same as the previous one but with floats
-		success = false;
-		for (double i = 5d; i >= 1d; i++) {
-			if (i > 10) {// arbitrary number just toExpression make sure we have made a few iterations already
-				success = true;
-				break;
-			}
-
-		}
-		System.out.println("SUCCESS = " + success); // as it's infinite loop we should never reach this
-
-	}
-
 }
