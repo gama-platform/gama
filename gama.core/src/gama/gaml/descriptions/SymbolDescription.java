@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
+import static gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType.Info;
+import static gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType.Warning;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -374,9 +377,9 @@ public abstract class SymbolDescription implements IDescription {
 	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
 
-		if (type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()
-				|| type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue())
-			return;
+		boolean shouldNotRaise = type == Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()
+				|| type == Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue();
+		if (shouldNotRaise) return;
 
 		IDescription desc = this;
 		EObject e = source;
@@ -386,9 +389,8 @@ public abstract class SymbolDescription implements IDescription {
 			if (desc != null) { e = desc.getUnderlyingElement(); }
 		}
 		// throws a runtime exception if there is no way to signal the error in
-		// the source
-		// (i.e. we are probably in a runtime scenario)
-		if (e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX)) {
+		// the source (i.e. we are probably in a runtime scenario)
+		if (isSynthetic(e)) {
 			if (type == GamlCompilationErrorType.Error)
 				throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
 			return;
@@ -400,6 +402,17 @@ public abstract class SymbolDescription implements IDescription {
 			return;
 		}
 		c.add(new GamlCompilationError(s, code, e, type, data));
+	}
+
+	/**
+	 * Checks if is synthetic.
+	 *
+	 * @param e
+	 *            the e
+	 * @return true, if is synthetic
+	 */
+	private boolean isSynthetic(final EObject e) {
+		return e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX);
 	}
 
 	/**
