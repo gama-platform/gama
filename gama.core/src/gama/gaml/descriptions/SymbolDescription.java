@@ -682,30 +682,39 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return
 	 */
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
-		if (tt == Types.NO_TYPE) {
-			IExpressionDescription ed = getFacet(dynamicTypeProviders);
-			if (ed != null) {
-				IExpression expr = ed.compile(this);
-				if (expr != null) { tt = expr.getGamlType(); }
-			}
-		}
+		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
 		if (!tt.isContainer()) return tt;
 		final boolean isContainerWithNoContentsType = ct == Types.NO_TYPE;
 		final boolean isContainerWithNoKeyType = kt == Types.NO_TYPE;
-		if (isContainerWithNoContentsType || isContainerWithNoKeyType) {
-			IExpressionDescription ed = getFacet(dynamicTypeProviders);
-			if (ed != null) {
-				IExpression expr = ed.compile(this);
-				final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
-				if (tt.isAssignableFrom(exprType)) {
-					tt = exprType;
-				} else {
-					if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
-					if (isContainerWithNoContentsType) { ct = exprType.getContentType(); }
-				}
+		if (!isContainerWithNoContentsType && !isContainerWithNoKeyType) return tt;
+		IExpressionDescription ed = getFacet(dynamicTypeProviders);
+		if (ed != null) {
+			IExpression expr = ed.compile(this);
+			final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+			if (tt.isAssignableFrom(exprType)) {
+				tt = exprType;
+			} else {
+				if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
+				if (isContainerWithNoContentsType) { ct = exprType.getContentType(); }
 			}
 		}
 		return GamaType.from(tt, kt, ct);
+	}
+
+	/**
+	 * Find in dynamic type providers.
+	 *
+	 * @param tt
+	 *            the tt
+	 * @return the i type
+	 */
+	private IType<?> findInDynamicTypeProviders(final IType<?> tt) {
+		IExpressionDescription ed = getFacet(dynamicTypeProviders);
+		if (ed != null) {
+			IExpression expr = ed.compile(this);
+			if (expr != null) return expr.getGamlType();
+		}
+		return tt;
 	}
 
 	@Override
