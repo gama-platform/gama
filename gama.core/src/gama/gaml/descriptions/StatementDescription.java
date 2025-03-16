@@ -306,38 +306,14 @@ public class StatementDescription extends SymbolDescription {
 
 	@Override
 	protected IExpression createVarWithTypes(final String tag) {
-
 		compileTypeProviderFacets();
-
-		// Definition of the type
 		IType t = super.getGamlType();
 		final String kw = getKeyword();
 		IType ct = t.getContentType();
 		if (RESTORE.equals(kw) || CREATE.equals(kw) || CAPTURE.equals(kw) || RELEASE.equals(kw)) {
 			ct = t;
 			t = Types.LIST;
-
-		} else if (t == NO_TYPE && !isSet(Flag.NoTypeInference)) {
-			// If the type is not defined, we try to infer it from the facets only if the flag is not set (see #385)
-			if (hasFacet(VALUE)) {
-				final IExpression value = getFacetExpr(VALUE);
-				if (value != null) { t = value.getGamlType(); }
-			} else if (hasFacet(OVER)) {
-				final IExpression expr = getFacetExpr(OVER);
-				if (expr != null) {
-					// If of type pair, find the common supertype of key and contents
-					if (Types.PAIR.isAssignableFrom(expr.getGamlType())) {
-						t = GamaType.findCommonType(expr.getGamlType().getContentType(),
-								expr.getGamlType().getKeyType());
-					} else {
-						t = expr.getGamlType().getContentType();
-					}
-				}
-			} else if (hasFacet(FROM) && hasFacet(TO)) {
-				t = GamaType.findCommonType(getFacetExpr(FROM), getFacetExpr(TO), getFacetExpr(STEP));
-			}
-		}
-
+		} else if (t == NO_TYPE && !isSet(Flag.NoTypeInference)) { t = inferType(); }
 		IType kt = t.getKeyType();
 		// Definition of the content type and key type
 		if (hasFacet(AS)) {
@@ -349,9 +325,37 @@ public class StatementDescription extends SymbolDescription {
 				kt = expr.getGamlType().getKeyType();
 			}
 		}
-
 		return addNewTempIfNecessary(tag, GamaType.from(t, kt, ct));
 
+	}
+
+	/**
+	 * Infer type.
+	 *
+	 * @param t
+	 *            the t
+	 * @return the i type
+	 */
+	private IType inferType() {
+		IType t = NO_TYPE;
+		// If the type is not defined, we try to infer it from the facets only if the flag is not set (see #385)
+		if (hasFacet(VALUE)) {
+			final IExpression value = getFacetExpr(VALUE);
+			if (value != null) { t = value.getGamlType(); }
+		} else if (hasFacet(OVER)) {
+			final IExpression expr = getFacetExpr(OVER);
+			if (expr != null) {
+				// If of type pair, find the common supertype of key and contents
+				if (Types.PAIR.isAssignableFrom(expr.getGamlType())) {
+					t = GamaType.findCommonType(expr.getGamlType().getContentType(), expr.getGamlType().getKeyType());
+				} else {
+					t = expr.getGamlType().getContentType();
+				}
+			}
+		} else if (hasFacet(FROM) && hasFacet(TO)) {
+			t = GamaType.findCommonType(getFacetExpr(FROM), getFacetExpr(TO), getFacetExpr(STEP));
+		}
+		return t;
 	}
 
 	/**
