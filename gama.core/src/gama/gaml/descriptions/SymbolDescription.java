@@ -690,21 +690,27 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the inferred type
 	 */
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
+		// If the initial type is NO_TYPE, try to find it in dynamic type providers
 		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
+		// If the type is not a container, return it as is
 		if (!tt.isContainer()) return tt;
+		// If the content type or key type is NO_TYPE, try to infer them
 		if (ct == Types.NO_TYPE || kt == Types.NO_TYPE) {
 			IExpressionDescription ed = getFacet(dynamicTypeProviders);
 			if (ed != null) {
 				IExpression expr = ed.compile(this);
 				IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+				// If the initial type is assignable from the expression type, use the expression type
 				if (tt.isAssignableFrom(exprType)) {
 					tt = exprType;
 				} else {
+					// Otherwise, infer the key type and content type from the expression type
 					if (kt == Types.NO_TYPE) { kt = exprType.getKeyType(); }
 					if (ct == Types.NO_TYPE) { ct = exprType.getContentType(); }
 				}
 			}
 		}
+		// Return the combined type
 		return GamaType.from(tt, kt, ct);
 	}
 
