@@ -1,15 +1,25 @@
+/*******************************************************************************************************
+ *
+ * SpatialThreeD.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ * 
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFilter;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -50,7 +60,7 @@ public class SpatialThreeD {
 		if (geom == null) return null;
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;
-		if (index < 0 || index > g.getNumPoints() - 1) 
+		if (index < 0 || index > g.getNumPoints() - 1)
 			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
 		g.apply(new CoordinateSequenceFilter() {
 
@@ -95,13 +105,13 @@ public class SpatialThreeD {
 					value = "triangle(3) set_z [5,10,14]",
 					test = false) },
 			see = {})
-	@test ("list zzz <- (triangle(3) set_z [5,10,14]).points collect each.z; zzz[1] = 10")
+	@test ("list<int> zzz <- (triangle(3) set_z [5,10,14]).points collect each.z; zzz[1] = 10")
 	public static IShape set_z(final IScope scope, final IShape geom, final IContainer<?, Double> coords) {
 		if (geom == null) return null;
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;
 		if (coords == null || coords.isEmpty(scope)) return null;
-		if (coords.length(scope) > g.getNumPoints()) 
+		if (coords.length(scope) > g.getNumPoints())
 			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
 		final Double[] zs = coords.listValue(scope, Types.FLOAT, false).toArray(new Double[0]);
 		g.apply(new CoordinateSequenceFilter() {
@@ -120,6 +130,5 @@ public class SpatialThreeD {
 
 		return geom;
 	}
-
 
 }

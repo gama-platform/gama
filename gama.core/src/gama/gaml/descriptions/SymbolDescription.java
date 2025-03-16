@@ -659,35 +659,39 @@ public abstract class SymbolDescription implements IDescription {
 	protected IType<?> computeType(final boolean doTypeInference) {
 		// Adapter ca pour prendre en compte les ITypeProvider
 		IType<?> tt = getTypeDenotedByFacet(staticTypeProviders);
-		if (doTypeInference && tt == Types.NO_TYPE) {
+		IType<?> kt = getTypeDenotedByFacet(INDEX, tt.getKeyType());
+		IType<?> ct = getTypeDenotedByFacet(OF, tt.getContentType());
+		return doTypeInference ? inferTypesOf(tt, kt, ct) : GamaType.from(tt, kt, ct);
+	}
+
+	/**
+	 * @param result
+	 * @return
+	 */
+	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
+		if (tt == Types.NO_TYPE) {
 			IExpressionDescription ed = getFacet(dynamicTypeProviders);
 			if (ed != null) {
 				IExpression expr = ed.compile(this);
 				if (expr != null) { tt = expr.getGamlType(); }
 			}
 		}
-		IType<?> kt = getTypeDenotedByFacet(INDEX, tt.getKeyType());
-		IType<?> ct = getTypeDenotedByFacet(OF, tt.getContentType());
-		if (doTypeInference) {
-			final boolean isContainerWithNoContentsType = tt.isContainer() && ct == Types.NO_TYPE;
-			final boolean isContainerWithNoKeyType = tt.isContainer() && kt == Types.NO_TYPE;
-			if (isContainerWithNoContentsType || isContainerWithNoKeyType) {
-				IExpressionDescription ed = getFacet(dynamicTypeProviders);
-				if (ed != null) {
-					IExpression expr = ed.compile(this);
-					final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
-					if (tt.isAssignableFrom(exprType)) {
-						tt = exprType;
-					} else {
-						if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
-						if (isContainerWithNoContentsType /* || isSpeciesWithAgentType */) {
-							ct = exprType.getContentType();
-						}
-					}
+		if (!tt.isContainer()) return tt;
+		final boolean isContainerWithNoContentsType = ct == Types.NO_TYPE;
+		final boolean isContainerWithNoKeyType = kt == Types.NO_TYPE;
+		if (isContainerWithNoContentsType || isContainerWithNoKeyType) {
+			IExpressionDescription ed = getFacet(dynamicTypeProviders);
+			if (ed != null) {
+				IExpression expr = ed.compile(this);
+				final IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+				if (tt.isAssignableFrom(exprType)) {
+					tt = exprType;
+				} else {
+					if (isContainerWithNoKeyType) { kt = exprType.getKeyType(); }
+					if (isContainerWithNoContentsType) { ct = exprType.getContentType(); }
 				}
 			}
 		}
-
 		return GamaType.from(tt, kt, ct);
 	}
 
