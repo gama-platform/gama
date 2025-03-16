@@ -15,13 +15,14 @@ import static gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorTyp
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.common.preferences.GamaPreferences;
@@ -54,8 +55,8 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/** The type provider facets. */
-	protected static final Set<String> typeProviderFacets = Collections.unmodifiableSet(new HashSet<>(
-			Arrays.asList(VALUE, TYPE, AS, SPECIES, OF, OVER, FROM, INDEX, FUNCTION, UPDATE, INIT, DEFAULT)));
+	protected static final Set<String> typeProviderFacets = ImmutableSet
+			.copyOf(Arrays.asList(VALUE, TYPE, AS, SPECIES, OF, OVER, FROM, INDEX, FUNCTION, UPDATE, INIT, DEFAULT));
 
 	/** The state. */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
@@ -1095,25 +1096,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public Iterable<IDescription> getChildrenWithKeyword(final String aKeyword) {
-		List<IDescription> result = new ArrayList<>();
-		visitChildren(desc -> {
-			if (desc.getKeyword().equals(aKeyword)) { result.add(desc); }
-			return true;
-		});
-		return result;
+		return Iterables.filter(getOwnChildren(), each -> each.getKeyword().equals(aKeyword));
 	}
 
 	@Override
 	public IDescription getChildWithKeyword(final String aKeyword) {
-		IDescription[] result = new IDescription[1];
-		visitChildren(desc -> {
-			if (desc.getKeyword().equals(aKeyword)) {
-				result[0] = desc;
-				return false;
-			}
-			return true;
-		});
-		return result[0];
+		return Iterables.find(getOwnChildren(), each -> each.getKeyword().equals(aKeyword), null);
 	}
 	//
 	// @Override
