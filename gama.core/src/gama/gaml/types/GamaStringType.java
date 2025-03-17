@@ -1,19 +1,19 @@
 /*******************************************************************************************************
  *
- * GamaStringType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaStringType.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.types;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
@@ -61,11 +61,13 @@ public class GamaStringType extends GamaType<String> {
 	 */
 	public static String staticCast(final IScope scope, final Object obj, final boolean copy)
 			throws GamaRuntimeException {
-		if (obj == null) return null;
-		if (obj instanceof String s) return s;
-		if (obj instanceof IValue i) return i.stringValue(scope);
-		if (obj instanceof INamed n) return n.getName();
-		return obj.toString();
+		return switch (obj) {
+			case null -> null;
+			case String s -> s;
+			case IValue i -> i.stringValue(scope);
+			case INamed n -> n.getName();
+			default -> obj.toString();
+		};
 	}
 
 	@Override

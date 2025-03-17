@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaPointType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,10 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -45,9 +45,10 @@ import gama.gaml.operators.Cast;
 public class GamaPointType extends GamaType<GamaPoint> {
 
 	@Override
-	@doc ("Transforms the parameter into a point. If it is already a point, returns it. "
-			+ "If it is a geometry, returns its location. If it is a list, interprets its elements as float values and use up to the first 3 ones to return a point. "
-			+ "If it is a map, tries to find 'x', 'y' and 'z' keys in it. If it is a number, returns a point with the x, y and equal to this value")
+	@doc ("""
+			Transforms the parameter into a point. If it is already a point, returns it. \
+			If it is a geometry, returns its location. If it is a list, interprets its elements as float values and use up to the first 3 ones to return a point. \
+			If it is a map, tries to find 'x', 'y' and 'z' keys in it. If it is a number, returns a point with the x, y and equal to this value""")
 	public GamaPoint cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		return staticCast(scope, obj, copy);
@@ -65,38 +66,41 @@ public class GamaPointType extends GamaType<GamaPoint> {
 	 * @return the gama point
 	 */
 	public static GamaPoint staticCast(final IScope scope, final Object obj, final boolean copy) {
-		if (obj instanceof GamaPoint gp) if (copy)
-			return new GamaPoint(gp);
-		else
-			return gp;
-		if (obj instanceof IShape) return ((IShape) obj).getLocation();
-		if (obj instanceof List l) {
-			if (l.size() > 2) return new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)),
-					Cast.asFloat(scope, l.get(2)));
-			if (l.size() > 1) return new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)));
-			if (l.size() > 0) return staticCast(scope, l.get(0), copy);
-			return new GamaPoint(0, 0, 0);
-		}
-		if (obj instanceof GamaColor c) return new GamaPoint(c.getRed(), c.getGreen(), c.getBlue());
-		if (obj instanceof Map m) {
-			final double x = Cast.asFloat(scope, m.get("x"));
-			final double y = Cast.asFloat(scope, m.get("y"));
-			final double z = Cast.asFloat(scope, m.get("z"));
-			return new GamaPoint(x, y, z);
-		}
-		// Decodes the stringValue() of GamaPoint
-		if (obj instanceof String) {
-			String s = ((String) obj).trim();
-			if (s.startsWith("{") && s.endsWith("}")) {
-				s = s.replace("{", "").replace("}", "").trim();
-				return staticCast(scope, Arrays.asList(s.split(",")), false);
+		return switch (obj) {
+			case null -> null;
+			case GamaPoint gp -> copy ? new GamaPoint(gp) : gp;
+			case IShape s -> s.getLocation();
+			case List l -> {
+				if (l.size() > 2) {
+					yield new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)),
+							Cast.asFloat(scope, l.get(2)));
+				}
+				if (l.size() > 1) { yield new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1))); }
+				if (l.size() > 0) { yield staticCast(scope, l.get(0), copy); }
+				yield new GamaPoint(0, 0, 0);
+
 			}
-		}
-		if (obj instanceof GamaPair) return new GamaPoint(Cast.asFloat(scope, ((GamaPair) obj).first()),
-				Cast.asFloat(scope, ((GamaPair) obj).last()));
-		if (obj == null) return null;
-		final double dval = Cast.asFloat(scope, obj);
-		return new GamaPoint(dval, dval, dval);
+			case GamaColor c -> new GamaPoint(c.getRed(), c.getGreen(), c.getBlue());
+			case Map m -> {
+				final double x = Cast.asFloat(scope, m.get("x"));
+				final double y = Cast.asFloat(scope, m.get("y"));
+				final double z = Cast.asFloat(scope, m.get("z"));
+				yield new GamaPoint(x, y, z);
+			}
+			case String s -> {
+				String str = s.trim();
+				if (str.startsWith("{") && str.endsWith("}")) {
+					str = str.replace("{", "").replace("}", "").trim();
+					yield staticCast(scope, Arrays.asList(str.split(",")), false);
+				}
+				throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);
+			}
+			case GamaPair p -> new GamaPoint(Cast.asFloat(scope, p.first()), Cast.asFloat(scope, p.last()));
+			default -> {
+				Double dval = Cast.asFloat(scope, obj);
+				yield new GamaPoint(dval, dval, dval);
+			}
+		};
 	}
 
 	@Override

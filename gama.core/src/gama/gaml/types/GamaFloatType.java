@@ -1,19 +1,19 @@
 /*******************************************************************************************************
  *
- * GamaFloatType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaFloatType.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.types;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
@@ -57,18 +57,21 @@ public class GamaFloatType extends GamaType<Double> {
 	 * @return the double
 	 */
 	public static Double staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
-		if (obj instanceof Double) return (Double) obj;
-		if (obj instanceof Number) return ((Number) obj).doubleValue();
-		if (obj instanceof String s) {
-			try {
-				return Double.parseDouble(s);
-			} catch (final NumberFormatException e) {
-				return 0d;
+		return switch (obj) {
+			case null -> 0d;
+			case Double d -> d;
+			case Number n -> n.doubleValue();
+			case String s -> {
+				try {
+					yield Double.parseDouble(s);
+				} catch (final NumberFormatException e) {
+					yield 0d;
+				}
 			}
-		}
-		if (obj instanceof Boolean) return (Boolean) obj ? 1d : 0d;
-		if (obj instanceof IValue v) return v.floatValue(scope);
-		return 0d;
+			case Boolean b -> b ? 1d : 0d;
+			case IValue v -> v.floatValue(scope);
+			default -> 0d;
+		};
 	}
 
 	@Override

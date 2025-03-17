@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaGeometryType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaGeometryType.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.types;
 
@@ -98,12 +98,13 @@ public class GamaGeometryType extends GamaType<IShape> {
 	public static final WKTReader SHAPE_READER = new WKTReader();
 
 	@Override
-	@doc ("Cast the argument into a geometry. If the argument is already a geometry or an agent, returns it; "
-			+ "if it is a species, returns the union of all its agents' geometries; if it is a pair, tries to build a segment from it; "
-			+ "if it is a file containing geometries, returns the union of these geometries; "
-			+ "if it is a container and its contents are points, builds the resulting geometry, "
-			+ "otherwise cast the objects present in the container as geometries and returns their union; "
-			+ "if it is a string, interprets it as a wkt specification; otherwise, returns nil. ")
+	@doc ("""
+			Cast the argument into a geometry. If the argument is already a geometry or an agent, returns it; \
+			if it is a species, returns the union of all its agents' geometries; if it is a pair, tries to build a segment from it; \
+			if it is a file containing geometries, returns the union of these geometries; \
+			if it is a container and its contents are points, builds the resulting geometry, \
+			otherwise cast the objects present in the container as geometries and returns their union; \
+			if it is a string, interprets it as a wkt specification; otherwise, returns nil.\s""")
 	public IShape cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		return staticCast(scope, obj, param, copy);
@@ -126,33 +127,24 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 */
 	public static IShape staticCast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-
-		// if (obj instanceof GamaPoint gp) return createPoint(gp);
-		if (obj instanceof IShape is) if (copy)
-			return is.copy(scope);
-		else
-			return is;
-		if (obj instanceof ISpecies)
-			return geometriesToGeometry(scope, scope.getAgent().getPopulationFor((ISpecies) obj));
-		if (obj instanceof GamaPair) return pairToGeometry(scope, (GamaPair) obj);
-		if (obj instanceof GamaGeometryFile) return ((GamaGeometryFile) obj).getGeometry(scope);
-		if (obj instanceof IContainer) {
-			if (isPoints(scope, (IContainer) obj)) return pointsToGeometry(scope, (IContainer<?, GamaPoint>) obj);
-			return geometriesToGeometry(scope, (IContainer) obj);
-		}
-		if (obj instanceof String) {
-			// Try to decode a WKT representation (the format outputted by the
-			// conversion of geometries to strings)
-			try {
-				final Geometry g = SHAPE_READER.read((String) obj);
-				return GamaShapeFactory.createFrom(g);
-			} catch (final ParseException e) {
-				GAMA.reportError(scope, GamaRuntimeException.warning("WKT Parsing exception: " + e.getMessage(), scope),
-						false);
+		return switch (obj) {
+			case null -> null;
+			case IShape is -> copy ? is.copy(scope) : is;
+			case ISpecies s -> geometriesToGeometry(scope, s.getPopulation(scope));
+			case GamaPair p -> pairToGeometry(scope, p);
+			case GamaGeometryFile f -> f.getGeometry(scope);
+			case IContainer c -> isPoints(scope, c) ? pointsToGeometry(scope, c) : geometriesToGeometry(scope, c);
+			case String s -> {
+				try {
+					yield GamaShapeFactory.createFrom(SHAPE_READER.read(s));
+				} catch (final ParseException e) {
+					GAMA.reportError(scope,
+							GamaRuntimeException.warning("WKT Parsing exception: " + e.getMessage(), scope), false);
+					yield null;
+				}
 			}
-		}
-
-		return null;
+			default -> null;
+		};
 	}
 
 	/**

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * StringUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * StringUtils.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.common.util;
 
@@ -14,8 +14,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -51,7 +49,6 @@ public class StringUtils {
 		SYMBOLS.setNaN("#nan");
 		DEFAULT_DECIMAL_FORMAT = new DecimalFormat("##0.0################", SYMBOLS);
 	}
-
 
 	/**
 	 * To gaml string.
@@ -372,13 +369,15 @@ public class StringUtils {
 	 * @return the string
 	 */
 	public static String toGaml(final Object val, final boolean includingBuiltIn) {
-		if (val == null) return "nil";
-		if (val instanceof IGamlable g) return g.serializeToGaml(includingBuiltIn);
-		if (val instanceof String s) return toGamlString(s);
-		if (val instanceof Double d) return DEFAULT_DECIMAL_FORMAT.format(d);
-		if (val instanceof Collection c) return toGaml(GamaListFactory.wrap(Types.STRING, c), includingBuiltIn);
-		if (val instanceof Map m) return toGaml(GamaMapFactory.wrap(Types.NO_TYPE, Types.NO_TYPE, m), includingBuiltIn);
-		return String.valueOf(val);
+		return switch (val) {
+			case null -> "nil";
+			case IGamlable g -> g.serializeToGaml(includingBuiltIn);
+			case String s -> toGamlString(s);
+			case Double d -> DEFAULT_DECIMAL_FORMAT.format(d);
+			case Collection c -> toGaml(GamaListFactory.wrap(Types.STRING, c), includingBuiltIn);
+			case Map m -> toGaml(GamaMapFactory.wrap(Types.NO_TYPE, Types.NO_TYPE, m), includingBuiltIn);
+			default -> String.valueOf(val);
+		};
 	}
 
 }

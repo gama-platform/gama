@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaBoolType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaBoolType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,10 +11,10 @@ package gama.gaml.types;
 
 import java.io.File;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -61,16 +60,18 @@ public class GamaBoolType extends GamaType<Boolean> {
 	 */
 	@SuppressWarnings ("rawtypes")
 	public static Boolean staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
-		if (obj == null) return false;
-		if (obj instanceof Boolean) return (Boolean) obj;
-		if (obj instanceof IAgent) return !((IAgent) obj).dead();
-		if (obj instanceof GamaFile) return ((GamaFile) obj).exists(scope);
-		if (obj instanceof IContainer) return !((IContainer) obj).isEmpty(scope);
-		if (obj instanceof File) return ((File) obj).exists();
-		if (obj instanceof Integer) return (Integer) obj != 0;
-		if (obj instanceof Double) return (Double) obj != 0d;
-		if (obj instanceof String) return "true".equals(obj);
-		return false;
+		return switch (obj) {
+			case null -> false;
+			case Boolean b -> b;
+			case IAgent a -> !a.dead();
+			case GamaFile f -> f.exists(scope);
+			case IContainer c -> !c.isEmpty(scope);
+			case File f -> f.exists();
+			case Integer i -> i != 0;
+			case Double d -> d != 0d;
+			case String s -> "true".equals(s);
+			default -> false;
+		};
 	}
 
 	@Override

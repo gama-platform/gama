@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaExecutorService.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaExecutorService.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.runtime.concurrent;
 
@@ -173,35 +173,19 @@ public abstract class GamaExecutorService {
 	 *         threshold of n
 	 */
 	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
-		if (concurrency != null) {
-			final Object o = concurrency.value(scope);
-			if (o instanceof Boolean) {
-				if (o.equals(Boolean.FALSE)) return 0;
-				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
-				return CONCURRENCY_THRESHOLD.getValue();
-			}
-			if (o instanceof Integer) return Math.abs((Integer) o);
-			return getParallelism(scope, null, caller);
+		Object c = concurrency.value(scope);
+		if (c instanceof Boolean) {
+			if (c == Boolean.FALSE) return 0;
+			if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
+			return CONCURRENCY_THRESHOLD.getValue();
 		}
-		switch (caller) {
-			case SIMULATION:
-				if (CONCURRENCY_SIMULATIONS.getValue())
-					return THREADS_NUMBER.getValue();
-				else
-					return 0;
-			case SPECIES:
-				if (CONCURRENCY_SPECIES.getValue())
-					return CONCURRENCY_THRESHOLD.getValue();
-				else
-					return 0;
-			case GRID:
-				if (CONCURRENCY_GRID.getValue())
-					return CONCURRENCY_THRESHOLD.getValue();
-				else
-					return 0;
-			default:
-				return 0;
-		}
+		if (c instanceof Integer i) return Math.abs(i);
+		return switch (caller) {
+			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue() : 0;
+			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			case GRID -> CONCURRENCY_GRID.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			default -> 0;
+		};
 	}
 
 	/**

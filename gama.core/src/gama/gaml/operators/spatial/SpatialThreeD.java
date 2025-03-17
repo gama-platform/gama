@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SpatialThreeD.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * SpatialThreeD.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
@@ -106,14 +106,16 @@ public class SpatialThreeD {
 					test = false) },
 			see = {})
 	@test ("list<int> zzz <- (triangle(3) set_z [5,10,14]).points collect each.z; zzz[1] = 10")
-	public static IShape set_z(final IScope scope, final IShape geom, final IContainer<?, Double> coords) {
+	public static IShape set_z(final IScope scope, final IShape geom, final IContainer coords) {
 		if (geom == null) return null;
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;
 		if (coords == null || coords.isEmpty(scope)) return null;
 		if (coords.length(scope) > g.getNumPoints())
 			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
-		final Double[] zs = coords.listValue(scope, Types.FLOAT, false).toArray(new Double[0]);
+		final double[] zs = new double[coords.length(scope)];
+		int i = 0;
+		for (final Object o : coords.iterable(scope)) { zs[i++] = Types.FLOAT.cast(scope, o, null, false); }
 		g.apply(new CoordinateSequenceFilter() {
 
 			@Override
