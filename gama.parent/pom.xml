@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gama</groupId>
 	<artifactId>gama.parent</artifactId>
@@ -35,7 +36,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	
+
 	<profiles>
 		<!-- This profile is used while local compiling
 		Prevent signing error while env variable is not set -->
@@ -85,7 +86,7 @@
 							</execution>
 						</executions>
 					</plugin>
-					
+
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jarsigner-plugin</artifactId>
@@ -102,7 +103,7 @@
 							<keystore>~/gama.keystore</keystore>
 							<alias>gama-platform</alias>
 							<storepass>GAMA_PLATFORM</storepass>
-							<keypass></keypass>
+							<keypass />
 						</configuration>
 					</plugin>
 
@@ -113,7 +114,7 @@
 
 	<modules>
 		<!--
-			Should be compiled independantly before compiling parent 
+			Should be compiled independantly before compiling parent
 		<module>../gama.annotations</module>
 		<module>../gama.processor</module>
 		-->
@@ -140,7 +141,7 @@
 		<module>../gama.extension.database</module>
 		<module>../gama.extension.serialize</module>
 		<module>../gama.extension.pedestrian</module>
-		
+
 		<!--
 			GAMA interfaces modules
 		-->
@@ -178,7 +179,7 @@
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
-		
+
 		<module>../gama.product</module>
 		<!--
 		// @TODO
@@ -194,8 +195,8 @@
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-		<maven.plugins.version>3.1.0</maven.plugins.version>
-		
+		<maven.plugins.version>3.0.0</maven.plugins.version>
+
 		<sonar.organization>gama-platform</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
@@ -267,7 +268,8 @@
 					<target>${jdk.version}</target>
 					<compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
 					<useProjectSettings>false</useProjectSettings>
-					<generatedSourcesDirectory>${project.build.directory}</generatedSourcesDirectory>
+					<generatedSourcesDirectory
+                    >${project.build.directory}</generatedSourcesDirectory>
 					<optimize>true</optimize>
 					<showWarnings>true</showWarnings>
 				</configuration>
@@ -287,9 +289,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<!-- You can see the effect of Execution Environnement here : https://wiki.eclipse.org/Tycho/Execution_Environments 
-				: Tycho ensures that package imports may only be matched against the selected 
-				execution environment , b) Tycho hides packages which are not provided by 
+				<!-- You can see the effect of Execution Environnement here : https://wiki.eclipse.org/Tycho/Execution_Environments
+				: Tycho ensures that package imports may only be matched against the selected
+				execution environment , b) Tycho hides packages which are not provided by
 				the configured execution environment. -->
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
@@ -316,7 +318,7 @@
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
-							<id>org.apache.ant</id> 
+							<id>org.apache.ant</id>
 							<removeAll />
 						</filter>
 						<filter>
@@ -463,7 +465,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- Code Review for PR 
+			<!-- Code Review for PR
 			Execute by running `mvn -B verify spotbugs:spotbugs` -->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
@@ -514,7 +516,7 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 				only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -541,7 +543,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -560,7 +562,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
