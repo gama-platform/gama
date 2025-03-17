@@ -558,6 +558,7 @@ public class GamaListFactory {
 	 * @return
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final Collection<E> wrapped) {
+		if (wrapped instanceof List) return wrap(contentType, (List<E>) wrapped);
 		return new GamaListCollectionWrapper(wrapped, contentType);
 	}
 

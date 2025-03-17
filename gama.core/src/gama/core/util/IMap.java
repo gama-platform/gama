@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IMap.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IMap.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,9 +20,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -30,6 +27,9 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -387,7 +387,8 @@ public interface IMap<K, V>
 	 */
 	@Override
 	default IList<V> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (GamaType.requiresCasting(contentsType, getGamlType().getContentType()))
+		IType myContentsType = getGamlType().getContentType();
+		if (GamaType.requiresCasting(contentsType, myContentsType))
 			return GamaListFactory.create(scope, contentsType, values());
 		if (!copy) return GamaListFactory.wrap(contentsType, values());
 		return GamaListFactory.createWithoutCasting(contentsType, values());
@@ -469,8 +470,10 @@ public interface IMap<K, V>
 	 */
 	@Override
 	default IMap mapValue(final IScope scope, final IType keyType, final IType contentsType, final boolean copy) {
-		final boolean coerceKey = GamaType.requiresCasting(keyType, getGamlType().getKeyType());
-		final boolean coerceValue = GamaType.requiresCasting(contentsType, getGamlType().getContentType());
+		IType myKeyType = getGamlType().getKeyType();
+		IType myContentsType = getGamlType().getContentType();
+		final boolean coerceKey = GamaType.requiresCasting(keyType, myKeyType);
+		final boolean coerceValue = GamaType.requiresCasting(contentsType, myContentsType);
 		if (coerceKey || coerceValue) {
 			final IMap result = GamaMapFactory.create(keyType, contentsType, size());
 			for (final Map.Entry<K, V> entry : entrySet()) {
@@ -480,6 +483,8 @@ public interface IMap<K, V>
 			return result;
 		}
 		if (copy) return copy(scope);
+		if (!keyType.equals(myKeyType) || !contentsType.equals(myContentsType))
+			return GamaMapFactory.wrap(keyType, contentsType, this);
 		return this;
 
 	}
