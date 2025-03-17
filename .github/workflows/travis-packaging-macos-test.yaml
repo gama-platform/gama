@@ -23,12 +23,12 @@ jobs:
           bash ~/Gama.app/Contents/headless/gama-headless.sh -help
           rm -fr ~/Gama.app
           hdiutil detach /Volumes/Gama
-      
+
       - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "23"
           java-package: jdk
 
       - name: Test Gama w/o JDK
