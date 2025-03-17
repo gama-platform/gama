@@ -23,19 +23,19 @@ global
         //explicitly save the orginal population of predator and original population of prey of each micro-model
 
         //the predator population of experiment 0 saved into the list lstpredator0  
-        list<agent> lstpredator0 <- Organism.Simple[0].get_predator(); //PT1
+        list<predator> lstpredator0 <- Organism.Simple[0].get_predator(); //PT1
         //the prey population of experiment 0 saved into the list lstprey0
-        list<agent> lstprey0 <- Organism.Simple[0].get_prey(); //PR1
+        list<prey> lstprey0 <- Organism.Simple[0].get_prey(); //PR1
         
         //the predator population of experiment 1 saved into the list lstpredator1
-        list<agent> lstpredator1 <-Organism.Simple[1].get_predator(); //PT2
+        list<predator> lstpredator1 <-Organism.Simple[1].get_predator(); //PT2
         //the prey population of experiment 1 saved into the list lstprey1
-        list<agent> lstprey1 <- Organism.Simple[1].get_prey(); //PR2
+        list<prey> lstprey1 <- Organism.Simple[1].get_prey(); //PR2
 
         //the predator population of experiment 2 saved into the list lstpredator2
-        list<agent> lstpredator2 <- Organism.Simple[2].get_predator(); //PT3
+        list<predator> lstpredator2 <- Organism.Simple[2].get_predator(); //PT3
         //the prey population of experiment 2 saved into the list lstprey2
-        list<agent> lstprey2 <- Organism.Simple[2].get_prey(); //PR3
+        list<prey> lstprey2 <- Organism.Simple[2].get_prey(); //PR3
         
 
         //mutate the popuplation of micro-model by assigning the list above to  the population of micro-models

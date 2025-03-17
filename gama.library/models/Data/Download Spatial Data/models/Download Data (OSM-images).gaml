@@ -44,7 +44,7 @@ global {
 	string osm_file_path <- "../includes/map.osm";
 	
 	//type of feature considered
-	map osm_data_to_generate <- ["building"::[], "shop"::[], "historic"::[], "amenity"::[], "sport"::[], "military"::[], "leisure"::[], "office"::[],  "highway"::[], "water"::[], "natural"::[], "landuse"::[]];
+	map<string, list> osm_data_to_generate <- ["building"::[], "shop"::[], "historic"::[], "amenity"::[], "sport"::[], "military"::[], "leisure"::[], "office"::[],  "highway"::[], "water"::[], "natural"::[], "landuse"::[]];
 	
 
 	// --------------- google image parameters ------------------------------

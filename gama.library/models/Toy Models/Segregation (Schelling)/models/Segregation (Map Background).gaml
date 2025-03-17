@@ -27,7 +27,7 @@ global {
 	//List of all the available places
 	list<space> available_places ;
 	//Image file to load
-	file bitmap_file_name <- file<unknown, int>("../images/hanoi.png");
+	image_file bitmap_file_name <- image_file("../images/hanoi.png");
 	matrix<int> map_colors;
  
  	//Action to initialize the people agents
