@@ -38,8 +38,8 @@ import gama.core.util.file.json.JsonObject;
 import gama.core.util.file.json.JsonValue;
 import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
+import gama.dev.FLAGS;
 import gama.gaml.interfaces.IJsonable;
-import gama.gaml.types.GamaMapType;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -307,20 +307,10 @@ public interface IMap<K, V>
 	default V buildValue(final IScope scope, final Object object) {
 		// If we pass a pair to this method, but the content type is not a pair,
 		// then it is is interpreted as a key + a value by addValue()
-		if (object instanceof GamaPair && !getGamlType().getContentType().isTranslatableInto(Types.PAIR))
+		if (!FLAGS.CAST_CONTAINER_CONTENTS
+				|| object instanceof GamaPair && !getGamlType().getContentType().isTranslatableInto(Types.PAIR))
 			return (V) object;
 		return (V) getGamlType().getContentType().cast(scope, object, null, false);
-	}
-
-	/**
-	 * Method buildValues()
-	 *
-	 * @see gama.core.util.IContainer.Modifiable#buildValues(gama.core.runtime.IScope, gama.core.util.IContainer,
-	 *      gama.gaml.types.IContainerType)
-	 */
-	default IContainer<?, GamaPair<K, V>> buildValues(final IScope scope, final IContainer objects) {
-		return GamaMapType.staticCast(scope, objects, getGamlType().getKeyType(), getGamlType().getContentType(),
-				false);
 	}
 
 	/**
@@ -330,7 +320,8 @@ public interface IMap<K, V>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default K buildIndex(final IScope scope, final Object object) {
-		return (K) getGamlType().getKeyType().cast(scope, object, null, false);
+		return FLAGS.CAST_CONTAINER_CONTENTS ? (K) getGamlType().getKeyType().cast(scope, object, null, false)
+				: (K) object;
 	}
 
 	/**

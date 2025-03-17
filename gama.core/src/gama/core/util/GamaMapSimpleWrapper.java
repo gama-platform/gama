@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaMapSimpleWrapper.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
@@ -22,23 +22,23 @@ import gama.gaml.types.Types;
 /**
  * The Class GamaMapSimpleWrapper.
  *
- * @param <K> the key type
- * @param <V> the value type
+ * @param <K>
+ *            the key type
+ * @param <V>
+ *            the value type
  */
 @SuppressWarnings ("unchecked")
 public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> implements IMap<K, V> {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o == this) { return true; }
-		if (!(o instanceof IMap)) { return false; }
+		if (o == this) return true;
+		if (!(o instanceof IMap)) return false;
 		return GamaMapFactory.equals(this, (IMap) o);
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() {
-		return Types.MAP;
-	}
+	public IContainerType<?> getGamlType() { return Types.MAP; }
 
 	/**
 	 * Method buildValue()
@@ -49,17 +49,6 @@ public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> imp
 	@Override
 	public V buildValue(final IScope scope, final Object object) {
 		return (V) object;
-	}
-
-	/**
-	 * Method buildValues()
-	 *
-	 * @see gama.core.util.IContainer.Modifiable#buildValues(gama.core.runtime.IScope, gama.core.util.IContainer,
-	 *      gama.gaml.types.IContainerType)
-	 */
-	@Override
-	public IContainer<?, GamaPair<K, V>> buildValues(final IScope scope, final IContainer objects) {
-		return objects;
 	}
 
 	/**
@@ -74,14 +63,10 @@ public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> imp
 	}
 
 	@Override
-	public IList<K> getKeys() {
-		return GamaListFactory.<K> wrap(Types.NO_TYPE, keySet());
-	}
+	public IList<K> getKeys() { return GamaListFactory.<K> wrap(Types.NO_TYPE, keySet()); }
 
 	@Override
-	public IList<V> getValues() {
-		return GamaListFactory.<V> wrap(Types.NO_TYPE, values());
-	}
+	public IList<V> getValues() { return GamaListFactory.<V> wrap(Types.NO_TYPE, values()); }
 
 	@Override
 	public IPairList getPairs() {
@@ -95,7 +80,7 @@ public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> imp
 
 	@Override
 	public IList<V> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (!copy) { return GamaListFactory.wrap(contentsType, values()); }
+		if (!copy) return GamaListFactory.wrap(contentsType, values());
 		return GamaListFactory.create(scope, contentsType, values());
 	}
 
@@ -113,9 +98,7 @@ public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> imp
 	@Override
 	public IMap reverse(final IScope scope) {
 		final IMap map = isOrdered() ? GamaMapFactory.createOrdered() : GamaMapFactory.createUnordered();
-		for (final Map.Entry<K, V> entry : entrySet()) {
-			map.put(entry.getValue(), entry.getKey());
-		}
+		for (final Map.Entry<K, V> entry : entrySet()) { map.put(entry.getValue(), entry.getKey()); }
 		return map;
 	}
 
