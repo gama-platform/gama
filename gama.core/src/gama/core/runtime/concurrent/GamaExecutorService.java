@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaExecutorService.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaExecutorService.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.runtime.concurrent;
 
@@ -32,6 +32,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
+import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;;
 
 /**
@@ -173,13 +174,18 @@ public abstract class GamaExecutorService {
 	 *         threshold of n
 	 */
 	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
-		Object c = concurrency.value(scope);
-		if (c instanceof Boolean) {
-			if (c == Boolean.FALSE) return 0;
-			if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
-			return CONCURRENCY_THRESHOLD.getValue();
+		switch (GamaType.of(concurrency).id()) {
+			case IType.BOOL: {
+				Boolean c = (Boolean) concurrency.value(scope);
+				if (c == Boolean.FALSE) return 0;
+				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
+				return CONCURRENCY_THRESHOLD.getValue();
+			}
+			case IType.INT:
+				return Math.abs((Integer) concurrency.value(scope));
+			default:
+				break;
 		}
-		if (c instanceof Integer i) return Math.abs(i);
 		return switch (caller) {
 			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue() : 0;
 			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
