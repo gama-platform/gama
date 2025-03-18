@@ -11,6 +11,7 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="true">
+        <folder path="/gama.annotations/META-INF"/>
         <folder path="/gama.processor/META-INF"/>
         <file path="/gama.processor/.classpath"/>
         <file path="/gama.processor/.project"/>
@@ -18,5 +19,6 @@
         <file path="/gama.processor/plugin.xml"/>
         <file path="/gama.processor/pom.xml"/>
         <javaElement handleIdentifier="=gama.annotations/src"/>
+        <javaElement handleIdentifier="=gama.processor/src"/>
     </selectedElements>
 </jardesc>

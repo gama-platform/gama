@@ -570,8 +570,8 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 			writer.append("""
 					<?xml version="1.0" encoding="UTF-8"?>
 					<projectDescription>
-						<name>Generated tests in %currentPlugin </name>
-						<comment>%currentPlugin</comment>
+						<name>Generated tests in %s </name>
+						<comment>%s</comment>
 						<projects></projects>
 						<buildSpec>
 							<buildCommand>

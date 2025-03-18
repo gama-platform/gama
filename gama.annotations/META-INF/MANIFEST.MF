@@ -4,7 +4,7 @@ Bundle-Name: Annotations shared by all GAMA plugins
 Bundle-SymbolicName: gama.annotations
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: gama.annotations.precompiler,
  gama.annotations.precompiler.constants,
  gama.annotations.precompiler.doc.utils;uses:="org.w3c.dom",
