@@ -15,5 +15,5 @@ Export-Package: gama.processor;
    javax.annotation.processing,
    javax.lang.model.element"
 Require-Bundle: gama.annotations
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.processor
