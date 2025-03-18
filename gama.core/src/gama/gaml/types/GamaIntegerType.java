@@ -63,28 +63,38 @@ public class GamaIntegerType extends GamaType<Integer> {
 			case null -> 0;
 			case Integer i -> i;
 			case Number n -> n.intValue();
-			case String s -> {
-				String n = s.replaceAll("\\p{Zs}", "");
-				try {
-					if (n.startsWith("#")) { yield Integer.parseInt(n.substring(1), 16); }
-					int radix = 10;
-					if (param instanceof Integer) { radix = (Integer) param; }
-					yield Integer.parseInt(n, radix);
-				} catch (final NumberFormatException e) {
-					Double d = 0d;
-					try {
-						d = Double.parseDouble(n);
-					} catch (final NumberFormatException e1) {
-						yield 0;
-					}
-					yield d.intValue();
-				}
-
-			}
+			case String s -> castFromString(s, param);
 			case Boolean b -> b ? 1 : 0;
 			case IValue v -> v.intValue(scope);
 			default -> 0;
 		};
+	}
+
+	/**
+	 * Cast from string.
+	 *
+	 * @param s
+	 *            the s
+	 * @param param
+	 *            the param
+	 * @return the integer
+	 */
+	private static Integer castFromString(final String s, final Object param) {
+		String n = s.replaceAll("\\p{Zs}", "");
+		try {
+			if (n.startsWith("#")) return Integer.parseInt(n.substring(1), 16);
+			int radix = 10;
+			if (param instanceof Integer) { radix = (Integer) param; }
+			return Integer.parseInt(n, radix);
+		} catch (final NumberFormatException e) {
+			Double d = 0d;
+			try {
+				d = Double.parseDouble(n);
+			} catch (final NumberFormatException e1) {
+				return 0;
+			}
+			return d.intValue();
+		}
 	}
 
 	@Override

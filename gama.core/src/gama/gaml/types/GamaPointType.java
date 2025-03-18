@@ -70,37 +70,67 @@ public class GamaPointType extends GamaType<GamaPoint> {
 			case null -> null;
 			case GamaPoint gp -> copy ? new GamaPoint(gp) : gp;
 			case IShape s -> s.getLocation();
-			case List l -> {
-				if (l.size() > 2) {
-					yield new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)),
-							Cast.asFloat(scope, l.get(2)));
-				}
-				if (l.size() > 1) { yield new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1))); }
-				if (l.size() > 0) { yield staticCast(scope, l.get(0), copy); }
-				yield new GamaPoint(0, 0, 0);
-
-			}
+			case List l -> castFromList(scope, l, copy);
 			case GamaColor c -> new GamaPoint(c.getRed(), c.getGreen(), c.getBlue());
-			case Map m -> {
-				final double x = Cast.asFloat(scope, m.get("x"));
-				final double y = Cast.asFloat(scope, m.get("y"));
-				final double z = Cast.asFloat(scope, m.get("z"));
-				yield new GamaPoint(x, y, z);
-			}
-			case String s -> {
-				String str = s.trim();
-				if (str.startsWith("{") && str.endsWith("}")) {
-					str = str.replace("{", "").replace("}", "").trim();
-					yield staticCast(scope, Arrays.asList(str.split(",")), false);
-				}
-				throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);
-			}
+			case Map m -> castFromMap(scope, m);
+			case String s -> castFromString(scope, s);
 			case GamaPair p -> new GamaPoint(Cast.asFloat(scope, p.first()), Cast.asFloat(scope, p.last()));
 			default -> {
 				Double dval = Cast.asFloat(scope, obj);
 				yield new GamaPoint(dval, dval, dval);
 			}
 		};
+	}
+
+	/**
+	 * Cast from map.
+	 *
+	 * @param scope the scope
+	 * @param m the m
+	 * @return the gama point
+	 */
+	private static GamaPoint castFromMap(final IScope scope, final Map m) {
+		final double x = Cast.asFloat(scope, m.get("x"));
+		final double y = Cast.asFloat(scope, m.get("y"));
+		final double z = Cast.asFloat(scope, m.get("z"));
+		return new GamaPoint(x, y, z);
+	}
+
+	/**
+	 * Cast from string.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the s
+	 * @return the gama point
+	 */
+	private static GamaPoint castFromString(final IScope scope, final String s) {
+		String str = s.trim();
+		if (str.startsWith("{") && str.endsWith("}")) {
+			str = str.replace("{", "").replace("}", "").trim();
+			return staticCast(scope, Arrays.asList(str.split(",")), false);
+		}
+		throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);
+	}
+
+	/**
+	 * Cast from list.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param l
+	 *            the l
+	 * @param copy
+	 *            the copy
+	 * @return the gama point
+	 */
+	private static GamaPoint castFromList(final IScope scope, final List l, final boolean copy) {
+		if (l.size() > 2) return new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)),
+				Cast.asFloat(scope, l.get(2)));
+		if (l.size() > 1) return new GamaPoint(Cast.asFloat(scope, l.get(0)), Cast.asFloat(scope, l.get(1)));
+		if (l.size() > 0) return staticCast(scope, l.get(0), copy);
+		return new GamaPoint(0, 0, 0);
 	}
 
 	@Override

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaFloatType.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaFloatType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.types;
 
@@ -61,17 +61,26 @@ public class GamaFloatType extends GamaType<Double> {
 			case null -> 0d;
 			case Double d -> d;
 			case Number n -> n.doubleValue();
-			case String s -> {
-				try {
-					yield Double.parseDouble(s);
-				} catch (final NumberFormatException e) {
-					yield 0d;
-				}
-			}
+			case String s -> castFromString(s);
 			case Boolean b -> b ? 1d : 0d;
 			case IValue v -> v.floatValue(scope);
 			default -> 0d;
 		};
+	}
+
+	/**
+	 * Cast from string.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the double
+	 */
+	private static Double castFromString(final String s) {
+		try {
+			return Double.parseDouble(s);
+		} catch (final NumberFormatException e) {
+			return 0d;
+		}
 	}
 
 	@Override
