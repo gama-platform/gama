@@ -834,5 +834,5 @@ Bundle-ClassPath: .,
  jts/jts-io-common-1.20.0.jar,
  jfreechart/jfreechart-1.5.5.jar,
  streamex/streamex-0.8.3.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.dependencies

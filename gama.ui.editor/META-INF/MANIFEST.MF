@@ -50,6 +50,6 @@ Export-Package: gama.ui.editor,
  gaml.compiler.ide.contentassist.antlr.internal,
  gama.ui.editor.internal
 Bundle-Activator: gama.ui.editor.internal.EditorActivator
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.ui.editor
 Import-Package: org.apache.log4j

@@ -176,5 +176,5 @@ Export-Package:
  jogamp.opengl.windows.wgl.awt,
  jogamp.opengl.x11.glx
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.ui.display.opengl

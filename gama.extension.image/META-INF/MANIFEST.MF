@@ -11,6 +11,6 @@ Require-Bundle: org.eclipse.core.runtime,
  gama.dependencies
 Bundle-ClassPath: .,
  lib/jsvg-1.7.0.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy

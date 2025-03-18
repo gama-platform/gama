@@ -4,7 +4,7 @@ Bundle-Name: Experiment UI
 Bundle-SymbolicName: gama.ui.experiment;singleton:=true
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Require-Bundle: gama.ui.application,
  gama.ui.shared,
  gama.core,

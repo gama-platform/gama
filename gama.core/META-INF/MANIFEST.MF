@@ -877,6 +877,6 @@ Export-Package: gama.core.common;
    gama.core.runtime"
 Bundle-ClassPath: .
 Bundle-Activator: gama.core.common.Activator
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.core
 Bundle-Vendor: UMMISCO

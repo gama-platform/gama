@@ -5,7 +5,7 @@ Bundle-SymbolicName: gama.ui.shared;singleton:=true
 Bundle-Vendor: UMMISCO
 Eclipse-BundleShape: dir
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.swt,
  org.eclipse.jface,

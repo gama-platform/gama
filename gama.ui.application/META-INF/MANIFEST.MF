@@ -35,5 +35,5 @@ Export-Package: gama.ui.application;uses:="org.eclipse.ui,org.eclipse.equinox.ap
  gama.ui.application.workspace
 Import-Package: org.w3c.css.sac
 Bundle-ClassPath: .
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.ui.application

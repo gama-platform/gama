@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaProcessor.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,7 +33,7 @@ import gama.processor.tests.TestProcessor;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @SupportedAnnotationTypes ({ "*" })
-@SupportedSourceVersion (SourceVersion.RELEASE_11)
+@SupportedSourceVersion (SourceVersion.RELEASE_23)
 public class GamaProcessor extends AbstractProcessor implements Constants {
 
 	/** The context. */

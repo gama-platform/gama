@@ -9,7 +9,7 @@ Require-Bundle: gama.core,
 Bundle-ClassPath: .,
  lib/Libbulletjme-21.2.1.jar
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: gama.extension.physics
 Eclipse-BundleShape: dir
 Bundle-NativeCode: os/Linux/x86_64/libbulletjme.so;osname=Linux;processor=x86_64,os/MacOS/x86_64/libbulletjme.dylib;osname=MacOS;processor=x86_64,os/Win32/x86_64/bulletjme.dll;osname=Win32;processor=x86_64,*
