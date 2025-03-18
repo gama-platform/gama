@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: GAMA Processor
 Bundle-SymbolicName: gama.processor;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Bundle-Vendor: MSI
+Bundle-Vendor: UMMISCO
 Export-Package: gama.processor;
   uses:="org.w3c.dom,
    javax.lang.model.util,

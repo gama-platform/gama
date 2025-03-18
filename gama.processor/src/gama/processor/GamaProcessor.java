@@ -33,7 +33,7 @@ import gama.processor.tests.TestProcessor;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @SupportedAnnotationTypes ({ "*" })
-@SupportedSourceVersion (SourceVersion.RELEASE_23)
+@SupportedSourceVersion (SourceVersion.RELEASE_11)
 public class GamaProcessor extends AbstractProcessor implements Constants {
 
 	/** The context. */
@@ -67,6 +67,8 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment env) {
 		if (complete == 0) { complete = System.currentTimeMillis(); }
 		context.setRoundEnvironment(env);
+		// context.emit(Kind.NOTE, "GAML Processor: Entering the production of sources for " + context.currentPlugin,
+		// (Element) null);
 
 		if (context.getRoots().size() > 0) {
 			try {

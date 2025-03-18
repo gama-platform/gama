@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ProcessorContext.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -567,16 +567,26 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 		}
 		try (final OutputStream output = obj.openOutputStream();
 				final Writer writer = new OutputStreamWriter(output, CHARSET);) {
-			writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<projectDescription>\n"
-					+ "	<name>Generated tests in " + currentPlugin + "</name>\n" + "	<comment>" + currentPlugin
-					+ "</comment>\n" + "	<projects>\n" + "	</projects>\n" + "	<buildSpec>\n"
-					+ "		<buildCommand>\n" + "			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>\n"
-					+ "			<arguments>\n" + "			</arguments>\n" + "		</buildCommand>\n"
-					+ "	</buildSpec>\n" + "	<natures>\n"
-					+ "		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>\n"
-					+ "		<nature>gama.ui.application.gamaNature</nature>\n"
-					+ "		<nature>gama.ui.application.testNature</nature>\n" + "	</natures>\n"
-					+ "</projectDescription>\n" + "");
+			writer.append("""
+					<?xml version="1.0" encoding="UTF-8"?>
+					<projectDescription>
+						<name>Generated tests in %currentPlugin </name>
+						<comment>%currentPlugin</comment>
+						<projects></projects>
+						<buildSpec>
+							<buildCommand>
+								<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+								<arguments></arguments>
+							</buildCommand>
+						</buildSpec>
+						<natures>
+							<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+							<nature>gama.ui.application.gamaNature</nature>
+							<nature>gama.ui.application.testNature</nature>
+						</natures>
+					</projectDescription>
+					""".formatted(currentPlugin, currentPlugin));
+
 		} catch (final IOException t) {
 			emitWarning("", t);
 		}
