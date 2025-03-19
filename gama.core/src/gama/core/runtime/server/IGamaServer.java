@@ -12,7 +12,6 @@ package gama.core.runtime.server;
 import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.runtime.server.GamaWebSocketServer.IServerListener;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.util.IMap;
 
@@ -20,6 +19,25 @@ import gama.core.util.IMap;
  *
  */
 public interface IGamaServer {
+
+	/**
+	 * The listener interface for processing messages received by the server. See #438
+	 *
+	 * @see IServerEvent
+	 */
+	public interface Listener {
+
+		/**
+		 * Process a message received by the server before the server has a chance to process it. Returns true to allow
+		 * the message to be processed by the server, false to skip it. Listeners can also alterate the message in any
+		 * way they want (adding parameters, changing values, etc.)
+		 *
+		 * @param message
+		 *            the message
+		 * @return true, if successful
+		 */
+		boolean process(ReceivedMessage message);
+	}
 
 	/** The Constant DEFAULT_PING_INTERVAL. */
 	int DEFAULT_PING_INTERVAL = 10000;
@@ -30,7 +48,7 @@ public interface IGamaServer {
 	 * @param listener
 	 *            the listener
 	 */
-	void addListener(IServerListener listener);
+	void addListener(Listener listener);
 
 	/**
 	 * Removes the listener.
@@ -38,7 +56,7 @@ public interface IGamaServer {
 	 * @param listener
 	 *            the listener
 	 */
-	void removeListener(IServerListener listener);
+	void removeListener(Listener listener);
 
 	/**
 	 * Gets the experiment.

@@ -60,27 +60,8 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	/** The console. */
 	protected final IConsoleListener console = new GamaServerConsoleListener();
 
-	/**
-	 * The listener interface for processing messages received by the server. See #438
-	 *
-	 * @see IServerEvent
-	 */
-	public interface IServerListener {
-
-		/**
-		 * Process a message received by the server before the server has a chance to process it. Returns true to allow
-		 * the message to be processed by the server, false to skip it. Listeners can also alterate the message in any
-		 * way they want (adding parameters, changing values, etc.)
-		 *
-		 * @param message
-		 *            the message
-		 * @return true, if successful
-		 */
-		boolean process(ReceivedMessage message);
-	}
-
 	/** The listeners. */
-	protected final ListenerList<IServerListener> listeners = new ListenerList<>(ListenerList.IDENTITY);
+	protected final ListenerList<Listener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
 	/**
 	 * Instantiates a new gama web socket server.
@@ -118,7 +99,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 *            the listener
 	 */
 	@Override
-	public void addListener(final IServerListener listener) {
+	public void addListener(final Listener listener) {
 		listeners.add(listener);
 	}
 
@@ -129,7 +110,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 *            the listener
 	 */
 	@Override
-	public void removeListener(final IServerListener listener) {
+	public void removeListener(final Listener listener) {
 		listeners.remove(listener);
 	}
 
@@ -204,21 +185,17 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 */
 	@SuppressWarnings ("unchecked")
 	public ReceivedMessage extractParam(final WebSocket socket, final String message) {
-		ReceivedMessage received = null;
 		try {
 			final Object o = Json.getNew().parse(message).toGamlValue(GAMA.getRuntimeScope());
-			if (o instanceof IMap map) {
-				received = new ReceivedMessage(map);
-			} else {
-				received = new ReceivedMessage();
-				received.put(IKeyword.CONTENTS, o);
-			}
-			received.put("server", this);
+			ReceivedMessage m = o instanceof IMap map ? new ReceivedMessage(message, map)
+					: new ReceivedMessage(message, Map.of(IKeyword.CONTENTS, o));
+			m.put("server", this);
+			return m;
 		} catch (Exception e1) {
 			DEBUG.OUT(e1.toString());
 			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.MalformedRequest, e1)).toString());
+			return null;
 		}
-		return received;
 	}
 
 	@Override
@@ -226,7 +203,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		try {
 			ReceivedMessage received = extractParam(socket, message);
 			// Gives listeners a chance to process the message. If one returns false, we abort the processing. See #438
-			for (IServerListener listener : listeners) { if (!listener.process(received)) return; }
+			for (Listener listener : listeners) { if (!listener.process(received)) return; }
 			final String expId = received.getOrDefault(EXP_ID, "").toString();
 			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
 			IExperimentPlan exp = getExperiment(socketId, expId);

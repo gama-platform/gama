@@ -10,8 +10,9 @@
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
+import java.util.Map;
+
 import gama.core.util.GamaMap;
-import gama.core.util.IMap;
 import gama.gaml.types.Types;
 
 /**
@@ -20,14 +21,8 @@ import gama.gaml.types.Types;
 @SuppressWarnings ("unchecked")
 public class ReceivedMessage extends GamaMap<String, Object> {
 
-	/**
-	 * @param capacity
-	 * @param key
-	 * @param content
-	 */
-	public ReceivedMessage() {
-		super(16, Types.STRING, Types.NO_TYPE);
-	}
+	/** The json contents. */
+	String jsonContents;
 
 	/**
 	 * Instantiates a new received message.
@@ -35,9 +30,19 @@ public class ReceivedMessage extends GamaMap<String, Object> {
 	 * @param map
 	 *            the map
 	 */
-	public ReceivedMessage(final IMap<String, Object> map) {
-		this();
+	public ReceivedMessage(final String message, final Map<String, Object> map) {
+		super(16, Types.STRING, Types.NO_TYPE);
+		jsonContents = message;
 		this.putAll(map);
+	}
+
+	/**
+	 * Original contents.
+	 *
+	 * @return the string
+	 */
+	public String originalContents() {
+		return jsonContents;
 	}
 
 }
