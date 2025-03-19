@@ -72,6 +72,7 @@ public class SkillDescription extends TypeDescription {
 				addOwnAttribute(vd);
 				break;
 			default:
+				break;
 		}
 		return child;
 	}
