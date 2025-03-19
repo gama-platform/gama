@@ -1,17 +1,22 @@
 /*******************************************************************************************************
  *
  * GamaWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
+import static gama.core.runtime.server.ISocketCommand.EXP_ID;
+
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,7 +31,6 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.dev.DEBUG;
@@ -59,6 +63,28 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 
 	/** The console. */
 	protected final IConsoleListener console = new GamaServerConsoleListener();
+
+	/**
+	 * The listener interface for processing messages received by the server.
+	 *
+	 * @see IServerEvent
+	 */
+	public interface IServerListener {
+
+		/**
+		 * Process a message received by the server before the server has a chance to process it. Returns true to allow
+		 * the message to be processed by the server, false to skip it. Listeners can also alterate the message in any
+		 * way they want (adding parameters, changing values, etc.)
+		 *
+		 * @param message
+		 *            the message
+		 * @return true, if successful
+		 */
+		boolean process(ReceivedMessage message);
+	}
+
+	/** The listeners. */
+	protected final List<IServerListener> listeners = new ArrayList<>();
 
 	/**
 	 * Instantiates a new gama web socket server.
@@ -101,7 +127,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 			@Override
 			public void println(final String x) {
 				super.println(x);
-				broadcast(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.GamaServerError, x)).toString());
+				broadcast(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, x)).toString());
 			}
 		};
 		System.setErr(errorStream);
@@ -127,8 +153,8 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
-		socket.send(Json.getNew().valueOf(
-				new GamaServerMessage(GamaServerMessage.Type.ConnectionSuccessful, String.valueOf(socket.hashCode())))
+		socket.send(Json.getNew()
+				.valueOf(new GamaServerMessage(MessageType.ConnectionSuccessful, String.valueOf(socket.hashCode())))
 				.toString());
 		if (canPing) {
 			var timer = new Timer();
@@ -159,35 +185,31 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
-	public IMap<String, Object> extractParam(final WebSocket socket, final String message) {
-		IMap<String, Object> map = null;
+	public ReceivedMessage extractParam(final WebSocket socket, final String message) {
+		ReceivedMessage received = null;
 		try {
 			final Object o = Json.getNew().parse(message).toGamlValue(GAMA.getRuntimeScope());
-			if (o instanceof IMap) {
-				map = (IMap<String, Object>) o;
+			if (o instanceof IMap map) {
+				received = new ReceivedMessage(map);
 			} else {
-				map = GamaMapFactory.create();
-				map.put(IKeyword.CONTENTS, o);
+				received = new ReceivedMessage();
+				received.put(IKeyword.CONTENTS, o);
 			}
+			received.put("server", this);
 		} catch (Exception e1) {
 			DEBUG.OUT(e1.toString());
-			socket.send(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.MalformedRequest, e1)).toString());
+			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.MalformedRequest, e1)).toString());
 		}
-		return map;
+		return received;
 	}
 
 	@Override
 	public void onMessage(final WebSocket socket, final String message) {
-		// DEBUG.OUT(socket + ": " + message);
 		try {
 			IMap<String, Object> map = extractParam(socket, message);
-			map.put("server", this);
-			DEBUG.OUT(map.get("type"));
-			DEBUG.OUT(map.get("expr"));
-			final String exp_id =
-					map.get(ISocketCommand.EXP_ID) != null ? map.get(ISocketCommand.EXP_ID).toString() : "";
-			final String socketId = map.get(SOCKET_ID) != null ? map.get(SOCKET_ID).toString() : getSocketId(socket);
-			IExperimentPlan exp = getExperiment(socketId, exp_id);
+			final String expId = map.getOrDefault(EXP_ID, "").toString();
+			final String socketId = map.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
+			IExperimentPlan exp = getExperiment(socketId, expId);
 			if (exp != null) {
 				// In order to sync the command with the experiment cycles
 				ExperimentAgent agent = exp.getAgent();
@@ -203,7 +225,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
-			socket.send(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.GamaServerError, e1)).toString());
+			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
 
 		}
 	}

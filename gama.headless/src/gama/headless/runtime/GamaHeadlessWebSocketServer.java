@@ -29,10 +29,10 @@ import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
-import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.GamaWebSocketServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.ISocketCommand.CommandException;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.IMap;
 
 /**
@@ -337,12 +337,12 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 				? map.get(ISocketCommand.SOCKET_ID).toString() : "" + socket.hashCode();
 		IExperimentPlan plan = null;
 		if ("".equals(exp_id)) {
-			throw new CommandException(new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+			throw new CommandException(new CommandResponse(MessageType.MalformedRequest,
 					"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
 		}
 		plan = getExperiment(socket_id, exp_id);
 		if (plan == null || plan.getAgent() == null || plan.getAgent().dead()) {
-			throw new CommandException(new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));
 		}
 		return plan;

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -47,6 +48,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaGuiWebSocketServer;
 import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
@@ -514,9 +516,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			args = @arg (
 					name = IKeyword.MESSAGE,
 					optional = false,
-					doc = @doc ( value = "The message to send")
-					)
-			)
+					doc = @doc (
+							value = "The message to send")))
 	public Object sendMessageThroughServer(final IScope scope) {
 		Object message = scope.getArg(IKeyword.MESSAGE, IType.NONE);
 		sendMessage(scope, message);
@@ -534,10 +535,20 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @date 3 nov. 2023
 	 */
 	public void sendMessage(final IScope scope, final Object message) {
-		sendMessage(scope, message,GamaServerMessage.Type.SimulationOutput);
+		sendMessage(scope, message, MessageType.SimulationOutput);
 	}
-	
-	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.GamaServerMessage.Type type) {
+
+	/**
+	 * Send message.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param message
+	 *            the message
+	 * @param type
+	 *            the type
+	 */
+	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.MessageType type) {
 		try {
 			var socket = scope.getServerConfiguration().socket();
 			// try to get the socket in platformAgent if the request is too soon before agent.schedule()
@@ -547,8 +558,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 						+ message);
 				return;
 			}
-			socket.send(jsonEncoder.valueOf(new GamaServerMessage(type, message,
-					scope.getServerConfiguration().expId())).toString());
+			socket.send(jsonEncoder
+					.valueOf(new GamaServerMessage(type, message, scope.getServerConfiguration().expId())).toString());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			DEBUG.OUT("Unable to send message:" + message);

@@ -1,19 +1,15 @@
 /*******************************************************************************************************
  *
  * DefaultServerCommands.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
-import static gama.core.runtime.server.GamaServerMessage.Type.CommandExecutedSuccessfully;
-import static gama.core.runtime.server.GamaServerMessage.Type.GamaServerError;
-import static gama.core.runtime.server.GamaServerMessage.Type.MalformedRequest;
-import static gama.core.runtime.server.GamaServerMessage.Type.UnableToExecuteRequest;
 import static gama.core.runtime.server.ISocketCommand.ARGS;
 import static gama.core.runtime.server.ISocketCommand.ESCAPED;
 import static gama.core.runtime.server.ISocketCommand.EVALUATE;
@@ -22,6 +18,10 @@ import static gama.core.runtime.server.ISocketCommand.NB_STEP;
 import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
 import static gama.core.runtime.server.ISocketCommand.SYNTAX;
+import static gama.core.runtime.server.MessageType.CommandExecutedSuccessfully;
+import static gama.core.runtime.server.MessageType.GamaServerError;
+import static gama.core.runtime.server.MessageType.MalformedRequest;
+import static gama.core.runtime.server.MessageType.UnableToExecuteRequest;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,17 +98,15 @@ public class DefaultServerCommands {
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
 				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
-		}
-		catch (GamaCompilationFailedException compError) {
+		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
@@ -232,7 +230,7 @@ public class DefaultServerCommands {
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(GamaServerMessage.Type.GamaServerError, e, map, false);
+				return new CommandResponse(MessageType.GamaServerError, e, map, false);
 			}
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
@@ -351,7 +349,7 @@ public class DefaultServerCommands {
 		final Object expr = map.get(EXPR);
 		final Object syntax = map.get(SYNTAX);
 		boolean syntaxOnly = syntax instanceof Boolean b && b;
-		if (expr == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		List<String> errors = GAML.validate(entered, syntaxOnly);
@@ -380,7 +378,7 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final String action = map.get(IKeyword.ACTION) != null ? map.get(IKeyword.ACTION).toString().trim() : null;
-		if (action == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (action == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
 		final String ref = map.get(IKeyword.AGENT) != null ? map.get(IKeyword.AGENT).toString().trim() : null;
 		final ExperimentAgent exp = plan.getAgent();
@@ -425,9 +423,9 @@ public class DefaultServerCommands {
 	public static CommandResponse DOWNLOAD(final GamaWebSocketServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
-		if (filepath == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (filepath == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'download', mandatory parameter is: 'file'", map, false);
-		try (	InputStream is = Files.newInputStream(new File(filepath).toPath());
+		try (InputStream is = Files.newInputStream(new File(filepath).toPath());
 				InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 				BufferedReader br = new BufferedReader(isr)) {
 			StringBuilder sc = new StringBuilder();
@@ -456,14 +454,14 @@ public class DefaultServerCommands {
 			final IMap<String, Object> map) {
 		final String filepath = map.containsKey("file") ? map.get("file").toString() : null;
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
-		if (filepath == null || content == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
 		try (FileWriter myWriter = new FileWriter(filepath)) {
 			myWriter.write(content);
-			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, ex.getMessage(), map, false);
+			return new CommandResponse(MessageType.UnableToExecuteRequest, ex.getMessage(), map, false);
 		}
 	}
 
@@ -482,24 +480,22 @@ public class DefaultServerCommands {
 			final IMap<String, Object> map) {
 		// Check the parameters
 		final Object modelPath = map.get("model");
-		if (modelPath == null) return new CommandResponse(MalformedRequest,
-				"For 'describe', mandatory parameter is: 'model'", map, false);
+		if (modelPath == null)
+			return new CommandResponse(MalformedRequest, "For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		File ff = new File(pathToModel);
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
 				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
-		}
-		catch (GamaCompilationFailedException compError) {
+		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
@@ -508,89 +504,117 @@ public class DefaultServerCommands {
 		boolean readExperiments = (boolean) map.getOrDefault("experiments", true);
 		boolean readSpeciesNames = (boolean) map.getOrDefault("speciesNames", true);
 		boolean readspeciesVariables = (boolean) map.getOrDefault("speciesVariables", true);
-		boolean readSpeciesActions = (boolean) map.getOrDefault("speciesActions", true) ;
-		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the actions of a species were asked we have to include the name
-		
+		boolean readSpeciesActions = (boolean) map.getOrDefault("speciesActions", true);
+		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the
+																							// actions of a species were
+																							// asked we have to include
+																							// the name
+
 		// Gathering information
-		Map<String, Object> res = new HashMap<String, Object>();
-		
-		if (readExperiments) {
-			res.put("experiments", getExperiments(model));			
-		}
-		
-		if (readSpeciesNames) {
-			res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables));
-		}
+		Map<String, Object> res = new HashMap<>();
+
+		if (readExperiments) { res.put("experiments", getExperiments(model)); }
+
+		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
 
 		res.put("name", model.getName());
 		res.put("path", pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
-	
-	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species){
-		List<Map<String, String>> allVariables = new ArrayList<Map<String, String>>();		
-		for (IVariable variable: species.getVars()) {
-			Map<String, String> resVariable = new HashMap<String, String>();
+
+	/**
+	 * Gets the species variables.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the species variables
+	 */
+	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species) {
+		List<Map<String, String>> allVariables = new ArrayList<>();
+		for (IVariable variable : species.getVars()) {
+			Map<String, String> resVariable = new HashMap<>();
 			resVariable.put("name", variable.getName());
 			resVariable.put("type", variable.getType().getName());
 			allVariables.add(resVariable);
-		}	
+		}
 		return allVariables;
 	}
-	
+
+	/**
+	 * Gets the species actions.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the species actions
+	 */
 	private static List<Map<String, Object>> getSpeciesActions(final ISpecies species) {
-		List<Map<String, Object>> allActions = new ArrayList<Map<String, Object>>();		
+		List<Map<String, Object>> allActions = new ArrayList<>();
 		for (ActionStatement action : species.getActions()) {
-			Map<String, Object> resAction = new HashMap<String, Object>();
+			Map<String, Object> resAction = new HashMap<>();
 			resAction.put("name", action.getName());
-			List<Map<String, String>> resAllCommands  = new ArrayList<Map<String, String>>();
+			List<Map<String, String>> resAllCommands = new ArrayList<>();
 			var actionDescription = action.getDescription();
 			for (var arg : actionDescription.getFormalArgs()) {
-				Map<String, String> command = new HashMap<String, String>();
+				Map<String, String> command = new HashMap<>();
 				command.put("name", arg.getName());
 				command.put("type", arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
-			
+
 			resAction.put("parameters", resAllCommands);
 			resAction.put("type", actionDescription.getGamlType().getName());
 			allActions.add(resAction);
 		}
 		return allActions;
 	}
-	
-	private static List<Map<String, Object>> readSpecies(IModel model, boolean readSpeciesActions, boolean readspeciesVariables) {
-		List<Map<String, Object>> resAllSpecies = new ArrayList<Map<String, Object>>();		
+
+	/**
+	 * Read species.
+	 *
+	 * @param model
+	 *            the model
+	 * @param readSpeciesActions
+	 *            the read species actions
+	 * @param readspeciesVariables
+	 *            the readspecies variables
+	 * @return the list
+	 */
+	private static List<Map<String, Object>> readSpecies(final IModel model, final boolean readSpeciesActions,
+			final boolean readspeciesVariables) {
+		List<Map<String, Object>> resAllSpecies = new ArrayList<>();
 		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
-			Map<String, Object> resSpecie = new HashMap<String, Object>();
+			Map<String, Object> resSpecie = new HashMap<>();
 			resSpecie.put("name", species.getName());
-			
+
 			// Variables
-			if (readspeciesVariables) {			
-				resSpecie.put("variables", getSpeciesVariables(species));
-			}
-			
+			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
+
 			// Actions
-			if (readSpeciesActions) {
-				resSpecie.put("actions", getSpeciesActions(species));				
-			}
-			
+			if (readSpeciesActions) { resSpecie.put("actions", getSpeciesActions(species)); }
+
 			resAllSpecies.add(resSpecie);
 		}
 		return resAllSpecies;
 	}
 
+	/**
+	 * Gets the experiments.
+	 *
+	 * @param model
+	 *            the model
+	 * @return the experiments
+	 */
 	private static List<Map<String, Object>> getExperiments(final IModel model) {
-		List<Map<String, Object>> resAllExperiments = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> resAllExperiments = new ArrayList<>();
 		// Get the experiments informations
 		for (IExperimentPlan ittExp : model.getExperiments()) {
 			// Get the parameters
-			Map<String, Object> resExp = new HashMap<String, Object>();
+			Map<String, Object> resExp = new HashMap<>();
 			resExp.put("name", ittExp.getName());
-			List<Map<String, String>> resAllParams = new ArrayList<Map<String,String>>();
-			for (Map.Entry<String,IParameter> paramEntry : ittExp.getParameters().entrySet()) {
-				Map<String, String> resParam = new HashMap<String, String>();
+			List<Map<String, String>> resAllParams = new ArrayList<>();
+			for (Map.Entry<String, IParameter> paramEntry : ittExp.getParameters().entrySet()) {
+				Map<String, String> resParam = new HashMap<>();
 				IParameter param = paramEntry.getValue();
 				resParam.put("name", param.getName());
 				resParam.put("description", param.getTitle());
@@ -617,7 +641,7 @@ public class DefaultServerCommands {
 	public static GamaServerMessage EXIT(final GamaWebSocketServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		try {
-			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		} finally {
 			System.exit(0);
 		}

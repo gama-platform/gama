@@ -134,11 +134,11 @@ public class CommandExecutor {
 				var name = m.get("name");
 				var value = m.get("value");
 				if (name == null) return new CommandResponse(
-						GamaServerMessage.Type.MalformedRequest, "Parameter number " + i
+						MessageType.MalformedRequest, "Parameter number " + i
 								+ " is missing its `name` field. Parameter received: " + jsonEncoder.valueOf(m),
 						commandMap, false);
 				if (value == null) return new CommandResponse(
-						GamaServerMessage.Type.MalformedRequest, "Parameter number " + i
+						MessageType.MalformedRequest, "Parameter number " + i
 								+ " is missing its `value` field. Parameter received: " + jsonEncoder.valueOf(m),
 						commandMap, false);
 				i++;

@@ -43,35 +43,35 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	public void informStatus(final IScope scope, final String string) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + string + "\"" + "}",
-				GamaServerMessage.Type.SimulationStatusInform);
+				MessageType.SimulationStatusInform);
 	}
 
 	@Override
 	public void errorStatus(final IScope scope, final Exception error) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + error.getMessage() + "\"" + "}",
-				GamaServerMessage.Type.SimulationStatusError);
+				MessageType.SimulationStatusError);
 	}
 
 	@Override
 	public void setStatus(final IScope scope, final String msg, final GamaColor color) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), json.object("message", msg, "color", color).toString(),
-				GamaServerMessage.Type.SimulationStatus);
+				MessageType.SimulationStatus);
 	}
 
 	@Override
 	public void informStatus(final IScope scope, final String message, final String icon) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), json.object("message", message, "icon", icon).toString(),
-				GamaServerMessage.Type.SimulationStatusInform);
+				MessageType.SimulationStatusInform);
 	}
 
 	@Override
 	public void setStatus(final IScope scope, final String msg, final String icon) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), json.object("message", msg, "icon", icon).toString(),
-				GamaServerMessage.Type.SimulationStatus);
+				MessageType.SimulationStatus);
 
 	}
 
@@ -79,6 +79,6 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	public void neutralStatus(final IScope scope, final String string) {
 		if (!canSendMessage(scope.getExperiment())) return;
 		sendMessage(scope.getExperiment(), json.object("message", string).toString(),
-				GamaServerMessage.Type.SimulationStatusNeutral);
+				MessageType.SimulationStatusNeutral);
 	}
 }
