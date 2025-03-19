@@ -14,7 +14,7 @@ import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.IMap;
@@ -28,7 +28,7 @@ import gama.core.util.IMap;
 public class PlayCommand implements ISocketCommand {
 
 	@Override
-	public CommandResponse execute(final GamaWebSocketServer server, final WebSocket socket,
+	public CommandResponse execute(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {

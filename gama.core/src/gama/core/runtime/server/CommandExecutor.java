@@ -50,7 +50,7 @@ import gama.gaml.types.Types;
 public class CommandExecutor {
 
 	/** The server. */
-	private final GamaWebSocketServer server;
+	private final IGamaServer server;
 
 	/** The Constant DEFAULT_COMMANDS. */
 	private static Map<String, ISocketCommand> DEFAULT_COMMANDS = null;
@@ -72,7 +72,7 @@ public class CommandExecutor {
 	 * @date 15 oct. 2023
 	 */
 
-	public CommandExecutor(final GamaWebSocketServer server) {
+	public CommandExecutor(final IGamaServer server) {
 		this.server = server;
 		commands = GAMA.getGui().getServerCommands();
 		commandQueue = new LinkedBlockingQueue<>();

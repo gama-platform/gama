@@ -14,13 +14,12 @@ import static gama.core.runtime.server.ISocketCommand.EXP_ID;
 
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -38,13 +37,10 @@ import gama.dev.DEBUG;
 /**
  * The Class GamaWebSocketServer.
  */
-public abstract class GamaWebSocketServer extends WebSocketServer {
+public abstract class GamaWebSocketServer extends WebSocketServer implements IGamaServer {
 
 	/** The Constant SOCKET_ID. */
 	static final String SOCKET_ID = "socket_id";
-
-	/** The Constant DEFAULT_PING_INTERVAL. */
-	public static final int DEFAULT_PING_INTERVAL = 10000;
 
 	/** The cmd helper. */
 	protected final CommandExecutor cmdHelper = new CommandExecutor(this);
@@ -65,7 +61,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	protected final IConsoleListener console = new GamaServerConsoleListener();
 
 	/**
-	 * The listener interface for processing messages received by the server.
+	 * The listener interface for processing messages received by the server. See #438
 	 *
 	 * @see IServerEvent
 	 */
@@ -84,7 +80,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	}
 
 	/** The listeners. */
-	protected final List<IServerListener> listeners = new ArrayList<>();
+	protected final ListenerList<IServerListener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
 	/**
 	 * Instantiates a new gama web socket server.
@@ -113,6 +109,28 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 		canPing = interval >= 0;
 		pingInterval = interval;
 		configureErrorStream();
+	}
+
+	/**
+	 * Adds the listener.
+	 *
+	 * @param listener
+	 *            the listener
+	 */
+	@Override
+	public void addListener(final IServerListener listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Removes the listener.
+	 *
+	 * @param listener
+	 *            the listener
+	 */
+	@Override
+	public void removeListener(final IServerListener listener) {
+		listeners.remove(listener);
 	}
 
 	/**
@@ -172,7 +190,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	public void onClose(final WebSocket conn, final int code, final String reason, final boolean remote) {
 		var timer = pingTimers.remove(conn);
 		if (timer != null) { timer.cancel(); }
-		DEBUG.OUT(conn + " has left the room!");
+		listeners.clear();
 	}
 
 	/**
@@ -250,6 +268,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the experiment
 	 * @date 15 oct. 2023
 	 */
+	@Override
 	public abstract IExperimentPlan getExperiment(final String socket, final String expid);
 
 	/**
@@ -260,6 +279,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *            the t
 	 * @date 15 oct. 2023
 	 */
+	@Override
 	public abstract void execute(final Runnable command);
 
 	/**
@@ -272,6 +292,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *            the experiment id
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public abstract void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan);
 
 	/**
@@ -281,6 +302,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the gama server experiment configuration
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public abstract GamaServerExperimentConfiguration obtainGuiServerConfiguration();
 
 	/**
@@ -298,6 +320,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *             the command exception
 	 * @date 5 déc. 2023
 	 */
+	@Override
 	public abstract IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
 			throws CommandException;
 

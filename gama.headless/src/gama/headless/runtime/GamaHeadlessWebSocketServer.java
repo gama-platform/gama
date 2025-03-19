@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaHeadlessWebSocketServer.java, in gama.headless, is part of the source code of the GAMA modeling and
- * simulation platform.
+ * GamaHeadlessWebSocketServer.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,6 +30,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
 import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.runtime.server.MessageType;
@@ -76,8 +77,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaHeadlessWebSocketServer startForSecureHeadless(final int port, final ThreadPoolExecutor runner,
-			final boolean ssl, final String jksPath, final String spwd, final String kpwd, final int pingInterval) {
+	public static IGamaServer startForSecureHeadless(final int port, final ThreadPoolExecutor runner, final boolean ssl,
+			final String jksPath, final String spwd, final String kpwd, final int pingInterval) {
 		GamaHeadlessWebSocketServer server =
 				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval);
 		try {
@@ -168,8 +169,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 			kmf.init(ks, keyPassword.toCharArray());
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(SUN_X509);
 			tmf.init(ks);
-			SSLContext sslContext = null;
-			sslContext = SSLContext.getInstance(TLS);
+			SSLContext sslContext = SSLContext.getInstance(TLS);
 			sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 			SSLParameters sslParameters = new SSLParameters();
 			sslParameters.setNeedClientAuth(false);
@@ -188,10 +188,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	public void infiniteLoop() {
 		try {
 			// empty loop to keep alive the server and catch exceptions
-			while (true) {
-				Thread.sleep(999999);
-			}
-			
+			while (true) { Thread.sleep(999999); }
+
 		} catch (Exception ex) {
 			ex.printStackTrace(); // will be broadcasted to every client
 		}
@@ -272,11 +270,10 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void execute(final Runnable command) {
-		if (executor == null) { 
-			command.run(); 
-		}
-		else {
-			executor.execute(command);			
+		if (executor == null) {
+			command.run();
+		} else {
+			executor.execute(command);
 		}
 	}
 
@@ -301,7 +298,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 */
 	@Override
 	public void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan) {
-		launchedExperiments.putIfAbsent(socketId,  new ConcurrentHashMap<>());
+		launchedExperiments.putIfAbsent(socketId, new ConcurrentHashMap<>());
 		launchedExperiments.get(socketId).put(experimentId, plan);
 	}
 
@@ -330,21 +327,18 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the experiment plan
 	 * @date 5 déc. 2023
 	 */
+	@Override
 	public IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
 			throws CommandException {
 		final String exp_id = map.get(ISocketCommand.EXP_ID) != null ? map.get(ISocketCommand.EXP_ID).toString() : "";
 		final String socket_id = map.get(ISocketCommand.SOCKET_ID) != null
 				? map.get(ISocketCommand.SOCKET_ID).toString() : "" + socket.hashCode();
-		IExperimentPlan plan = null;
-		if ("".equals(exp_id)) {
-			throw new CommandException(new CommandResponse(MessageType.MalformedRequest,
-					"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
-		}
-		plan = getExperiment(socket_id, exp_id);
-		if (plan == null || plan.getAgent() == null || plan.getAgent().dead()) {
+		if ("".equals(exp_id)) throw new CommandException(new CommandResponse(MessageType.MalformedRequest,
+				"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
+		IExperimentPlan plan = getExperiment(socket_id, exp_id);
+		if (plan == null || plan.getAgent() == null || plan.getAgent().dead())
 			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));
-		}
 		return plan;
 	}
 

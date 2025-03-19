@@ -47,7 +47,7 @@ import gama.core.runtime.MemoryUtils;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaGuiWebSocketServer;
 import gama.core.runtime.server.GamaServerMessage;
-import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaMapFactory;
@@ -154,7 +154,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	private TimerTask currentTask;
 
 	/** The my server. */
-	private GamaWebSocketServer myServer;
+	private IGamaServer myServer;
 
 	/** The json encoder. */
 	private final Json jsonEncoder = Json.getNew();
@@ -191,27 +191,17 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			startPollingMemory();
 		});
 
-		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) {
-			final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-			final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-			myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
-		}
-		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> {
-			if (myServer != null) {
-				try {
-					myServer.stop();
-					myServer = null;
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if (newValue) {
-				final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-				final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-				myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
-			}
-		});
+		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { createGuiServer(); }
+		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> { if (newValue) { createGuiServer(); } });
+	}
+
+	/**
+	 * Creates the gui server.
+	 */
+	private void createGuiServer() {
+		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
+		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
+		setServer(GamaGuiWebSocketServer.startForGUI(port, ping));
 	}
 
 	/**
@@ -500,7 +490,26 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @return the server
 	 * @date 3 nov. 2023
 	 */
-	public GamaWebSocketServer getServer() { return myServer; }
+	public IGamaServer getServer() { return myServer; }
+
+	/**
+	 * Sets the server.
+	 *
+	 * @param server
+	 *            the new server
+	 */
+	public void setServer(final IGamaServer server) {
+		if (myServer != null) {
+			try {
+				myServer.stop();
+				myServer = null;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		myServer = server;
+	}
 
 	/**
 	 * Send message through server.

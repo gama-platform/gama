@@ -20,6 +20,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.server.CommandExecutor;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.IList;
@@ -37,7 +38,7 @@ import gama.headless.server.GamaServerExperimentJob;
  */
 public class LoadCommand implements ISocketCommand {
 	@Override
-	public CommandResponse execute(final GamaWebSocketServer server, final WebSocket socket,
+	public CommandResponse execute(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final Object model = map.get(IKeyword.MODEL);
 		final Object experiment = map.get(IKeyword.EXPERIMENT);
@@ -76,7 +77,7 @@ public class LoadCommand implements ISocketCommand {
 	 *             the gama headless exception
 	 * @date 15 oct. 2023
 	 */
-	public CommandResponse launchGamlSimulation(final GamaWebSocketServer gamaWebSocketServer, final WebSocket socket,
+	public CommandResponse launchGamlSimulation(final IGamaServer gamaWebSocketServer, final WebSocket socket,
 			final IList params, final String end, final IMap<String, Object> map)
 			throws IOException, GamaCompilationFailedException {
 
