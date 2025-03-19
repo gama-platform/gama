@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaShapeFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * GamaShapeFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -470,8 +470,10 @@ public class GamaShapeFile extends GamaGisFile {
 					if (gt.getInnerGeometry() != null) { getBuffer().add(gt); }
 				} else if (g == null) {
 					// See Issue 725
-					reportError(scope, warning("geometry #" + indexOfGeometry[0]
-							+ " could not be added as it is nil (identifier: " + feature.getIdentifier() + ")", scope),
+					reportError(scope,
+							warning("geometry #" + indexOfGeometry[0] + " from " + getName(scope)
+									+ " could not be added as it is nil (identifier: " + feature.getIdentifier() + ")",
+									scope),
 							false);
 				}
 				indexOfGeometry[0]++;
@@ -486,7 +488,8 @@ public class GamaShapeFile extends GamaGisFile {
 					// System.out.println("count:" + reader.getCount(0));
 					while (reader.hasNext()) {
 						Record record = reader.nextRecord();
-						Geometry g = GeometryUtils.cleanGeometry((Geometry) record.shape());
+						Geometry g = (Geometry) record.shape();
+						g = GeometryUtils.cleanGeometry((Geometry) record.shape());
 
 						if (g != null && !g.isEmpty() /* Fix for Issue 725 && 677 */ ) {
 
@@ -511,10 +514,8 @@ public class GamaShapeFile extends GamaGisFile {
 
 						} else if (g == null) {
 							// See Issue 725
-							reportError(scope,
-									warning("geometry #" + indexOfGeometry[0] + " could not be added as it is nil",
-											scope),
-									false);
+							reportError(scope, warning("geometry #" + indexOfGeometry[0] + " from " + getName(scope)
+									+ " could not be added as it is nil", scope), false);
 						}
 						indexOfGeometry[0]++;
 					}
