@@ -173,26 +173,26 @@ public class HeadlessApplication implements IApplication {
 	final public static String WRITE_XMI = "-write-xmi";
 
 	/** The socket. */
-	public int socket = -1;
+	private int socket = -1;
 
 	/** The ping interval. */
 	// the interval between each ping sent by the server, -1 to deactivate this behaviour
-	public int ping = IGamaServer.DEFAULT_PING_INTERVAL;
+	private int ping = IGamaServer.DEFAULT_PING_INTERVAL;
 
 	/** The console mode. */
-	public boolean consoleMode = false;
+	private boolean consoleMode = false;
 
 	/** The tunneling mode. */
-	public boolean tunnelingMode = false;
+	private boolean tunnelingMode = false;
 
 	/** The verbose. */
-	public boolean verbose = false;
+	private boolean verbose = false;
 
 	/** The processor queue. */
-	public final SimulationRuntime processorQueue = new SimulationRuntime();
+	private final SimulationRuntime processorQueue = new SimulationRuntime();
 
 	/** The is server. */
-	static boolean isServer = false;
+	private static boolean isServer = false;
 
 	/**
 	 * Show version.

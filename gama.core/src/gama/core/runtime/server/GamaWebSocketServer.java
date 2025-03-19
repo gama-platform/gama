@@ -43,7 +43,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	static final String SOCKET_ID = "socket_id";
 
 	/** The cmd helper. */
-	protected final CommandExecutor cmdHelper = new CommandExecutor(this);
+	protected final CommandExecutor cmdHelper = new CommandExecutor();
 
 	/** The can ping. false if pingInterval is negative */
 	public final boolean canPing;
@@ -208,21 +208,38 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
 			IExperimentPlan exp = getExperiment(socketId, expId);
 			if (exp != null) {
-				// In order to sync the command with the experiment cycles
-				ExperimentAgent agent = exp.getAgent();
-				if (agent != null && !exp.getController().isPaused()) {
-					agent.postOneShotAction(scope1 -> {
-						cmdHelper.process(socket, received);
-						return null;
-					});
-					return;
-				}
+				processInSyncWithExperiment(socket, received, exp);
+			} else {
+				cmdHelper.process(this, socket, received);
 			}
-			cmdHelper.process(socket, received);
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
 			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
 
+		}
+	}
+
+	/**
+	 * Process in sync with experiment.
+	 *
+	 * @param socket
+	 *            the socket
+	 * @param received
+	 *            the received
+	 * @param exp
+	 *            the exp
+	 */
+	private void processInSyncWithExperiment(final WebSocket socket, final ReceivedMessage received,
+			final IExperimentPlan exp) {
+		ExperimentAgent agent = exp.getAgent();
+		if (agent == null || exp.getController().isPaused()) {
+			cmdHelper.process(this, socket, received);
+		} else {
+			// In order to sync the command with the experiment cycles
+			agent.postOneShotAction(scope1 -> {
+				cmdHelper.process(this, socket, received);
+				return null;
+			});
 		}
 	}
 
