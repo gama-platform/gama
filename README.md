@@ -1,4 +1,4 @@
-# GAMA - official repository of GAMA
+# Official repository of the GAMA modeling platform
 [![Continuous project validation](https://github.com/gama-platform/new.gama/actions/workflows/trigger-compilation.yaml/badge.svg)](https://github.com/gama-platform/gama/actions/workflows/trigger-compilation.yaml)
 [![Language](https://img.shields.io/badge/language-java-brightgreen.svg)](https://www.java.com/)
 [![GitHub issues](https://img.shields.io/github/issues/gama-platform/gama.svg)](https://github.com/gama-platform/gama/issues)
@@ -10,13 +10,7 @@
 [![CodeScene Code Health](https://codescene.io/projects/51964/status-badges/code-health)](https://codescene.io/projects/51964)
 
 
-This is the official repository of the GAMA platform, an open-source modeling and simulation environment for creating spatially explicit agent-based simulations. GAMA provides an IDE for its own language along with embedded powerful vizualisation capabilities. The goal is to provide an easy to learn but yet efficient environment covering the widest possible range of use cases for agent-based modelling.
-
-For more detailed information about it, visit our [website](https://gama-platform.org).
-
-
-https://github.com/user-attachments/assets/8cb6f189-3bfe-42c1-a162-3c8abd5dec8b
-
+This is the official repository of the GAMA platform, an open-source modeling and simulation environment for creating spatially explicit agent-based simulations. 
 
 **See the changelog on the [website](https://gama-platform.org/wiki/next/Changelog) for a detailed list of changes since version 1.9.0**  
 
