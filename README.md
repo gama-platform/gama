@@ -16,14 +16,14 @@ This is the official repository of the GAMA platform, an open-source modeling an
 
 ## Installing GAMA
 
-### Instal a release
+### Install a release
 There's a detailed tutorial that covers all cases in the [documentation](https://gama-platform.org/wiki/Installation), but for most user you can just go straight to the [**releases**](https://github.com/gama-platform/gama/releases) section of this repository and download the version that corresponds to your needs, we recommend you take a version bundled with a JDK.
 
 ### Run it from the source code
 
 To run it from the source code you can either use `maven` to build the program yourself, or run it from `eclipse` in case you want to inspect the code and/or modify it. In both cases you will first need to **clone this repository** and to get the [Temurin distribution of JDK21](https://adoptium.net).
 
-#### using eclipse
+#### Using eclipse
 
 There is a more detailled explanation on the [website](https://gama-platform.org/wiki/InstallingGitVersion) about how to do so, here we will only give a fast and easy approach.
 
@@ -32,7 +32,7 @@ The _highly recommended configuration_ for working on this branch is [Eclipse fo
 Once you have imported the code base into your workspace, simply open the `gama.product` project and open either `gama.headless.product` or `gama.product` depending if you want to run gama with or without GUI.
 In the `Overview` pane of the file, click on `Synchronize` and then `Launch an Eclipse application` and GAMA should start.
 
-#### using maven
+#### Using maven
 
 First install [maven](https://maven.apache.org/) on your computer, then open a terminal at the root of project and follow those steps:
 1. go to the project `gama.annotations`
@@ -47,7 +47,7 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
-## Reporting problems
+## Reporting problems, bugs and issues
 
 If you spot a bug or want to suggest an improvement to GAMA, please do so by posting an issue here: [https://github.com/gama-platform/gama/issues](https://github.com/gama-platform/gama/issues). 
 
