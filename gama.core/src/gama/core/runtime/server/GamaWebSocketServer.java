@@ -206,23 +206,24 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	@Override
 	public void onMessage(final WebSocket socket, final String message) {
 		try {
-			IMap<String, Object> map = extractParam(socket, message);
-			final String expId = map.getOrDefault(EXP_ID, "").toString();
-			final String socketId = map.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
+			ReceivedMessage received = extractParam(socket, message);
+			// Gives listeners a chance to process the message. If one returns false, we abort the processing. See #438
+			for (IServerListener listener : listeners) { if (!listener.process(received)) return; }
+			final String expId = received.getOrDefault(EXP_ID, "").toString();
+			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
 			IExperimentPlan exp = getExperiment(socketId, expId);
 			if (exp != null) {
 				// In order to sync the command with the experiment cycles
 				ExperimentAgent agent = exp.getAgent();
 				if (agent != null && !exp.getController().isPaused()) {
 					agent.postOneShotAction(scope1 -> {
-						cmdHelper.process(socket, map);
+						cmdHelper.process(socket, received);
 						return null;
 					});
 					return;
 				}
 			}
-			cmdHelper.process(socket, map);
-
+			cmdHelper.process(socket, received);
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
 			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
