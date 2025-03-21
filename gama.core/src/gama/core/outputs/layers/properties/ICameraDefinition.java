@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ICameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ICameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,9 +11,9 @@ package gama.core.outputs.layers.properties;
 
 import java.util.List;
 
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.gaml.interfaces.INamed;
@@ -111,7 +110,7 @@ public interface ICameraDefinition extends INamed {
 	 *
 	 * @return the boolean
 	 */
-	Boolean isInteractive();
+	Boolean isLocked();
 
 	/**
 	 * Sets the interactive.
@@ -119,7 +118,7 @@ public interface ICameraDefinition extends INamed {
 	 * @param b
 	 *            the new interactive
 	 */
-	void setInteractive(Boolean b);
+	void setLocked(Boolean b);
 
 	/**
 	 * Sets the location.
@@ -205,5 +204,7 @@ public interface ICameraDefinition extends INamed {
 			default -> new GamaPoint(target.x, target.y, maxZ); // FROM_ABOVE
 		};
 	}
+
+	Boolean isDynamic();
 
 }

@@ -13,11 +13,16 @@ package gama.core.outputs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import gama.core.common.interfaces.IKeyword;
@@ -44,6 +49,91 @@ import gama.gaml.types.Types;
  */
 public abstract class AbstractOutputManager extends Symbol implements IOutputManager {
 
+	static class OutputMap implements Map<String, IOutput> {
+		// an internal data structure that preserves concurrency and the definition order of outputs
+		int monitorOrder;
+		final Map<String, IOutput> actualOutputs = new ConcurrentHashMap<>();
+		final LinkedHashSet<String> outputNames = new LinkedHashSet<>();
+		final IMap<String, IOutput> virtualOutputs = GamaMapFactory.create(); // Necessary ?
+
+		@Override
+		public int size() {
+			return outputNames.size();
+		}
+
+		@Override
+		public boolean isEmpty() { return outputNames.isEmpty(); }
+
+		@Override
+		public boolean containsKey(final Object key) {
+			return actualOutputs.containsKey(key);
+		}
+
+		@Override
+		public boolean containsValue(final Object value) {
+			return actualOutputs.containsValue(value);
+		}
+
+		@Override
+		public IOutput get(final Object key) {
+			return actualOutputs.get(key);
+		}
+
+		@Override
+		public IOutput put(final String key, final IOutput value) {
+			if (value == null) return null;
+			if (value.isVirtual()) return virtualOutputs.put(key, value);
+			if (value instanceof MonitorOutput mo) { mo.setOrder(monitorOrder++); }
+			if (actualOutputs.containsKey(key)) { outputNames.remove(key); }
+			outputNames.add(key);
+			return actualOutputs.put(key, value);
+		}
+
+		@Override
+		public IOutput remove(final Object key) {
+			return outputNames.remove(key) ? actualOutputs.remove(key) : null;
+		}
+
+		@Override
+		public void putAll(final Map<? extends String, ? extends IOutput> m) {
+			m.forEach(this::put);
+		}
+
+		@Override
+		public void clear() {
+			outputNames.clear();
+			actualOutputs.clear();
+		}
+
+		@Override
+		public Set<String> keySet() {
+			return outputNames;
+		}
+
+		@Override
+		public Collection<IOutput> values() {
+			List<IOutput> result = new ArrayList<>();
+			outputNames.forEach(n -> { result.add(actualOutputs.get(n)); });
+			return result;
+		}
+
+		@Override
+		public Set<Entry<String, IOutput>> entrySet() {
+			return actualOutputs.entrySet();
+		}
+
+		@Override
+		public void forEach(final BiConsumer<? super String, ? super IOutput> action) {
+			outputNames.forEach(n -> { action.accept(n, actualOutputs.get(n)); });
+		}
+
+		public IOutput findOutputWith(final Predicate<? super IOutput> condition) {
+			for (IOutput o : actualOutputs.values()) { if (condition.test(o)) return o; }
+			return null;
+		}
+
+	}
+
 	static {
 		DEBUG.OFF();
 	}
@@ -62,13 +152,13 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	LayoutStatement layout;
 
 	/** The outputs. */
-	protected final Map<String, IOutput> outputs = GamaMapFactory.create();
+	protected final OutputMap outputs = new OutputMap();
+	// GamaMapFactory.create();
 	// GamaMapFactory.synchronizedOrderedMap();
 
 	// protected final IList<MonitorOutput> monitors = GamaListFactory.create();
 
 	/** The virtual outputs. */
-	protected final IMap<String, IOutput> virtualOutputs = GamaMapFactory.create();
 
 	/** The display index. */
 	protected int displayIndex;
@@ -90,12 +180,12 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 		if (sync) { GAMA.synchronizeFrontmostExperiment(); }
 	}
 
-	@Override
-	public Map<String, ? extends IOutput> getOutputs() { return outputs; }
+	// @Override
+	// public Map<String, ? extends IOutput> getOutputs() { return outputs; }
 
 	@Override
 	public Iterator<IOutput> iterator() {
-		return Iterators.unmodifiableIterator(outputs.values().iterator());
+		return outputs.values().iterator();
 	}
 
 	@Override
@@ -110,30 +200,28 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public IOutput getOutputWithOriginalName(final String s) {
-		return Iterables.find(this, each -> each.getOriginalName().equals(s), null);
+		return outputs.findOutputWith(each -> each.getOriginalName().equals(s));
 	}
 
 	@Override
 	public void add(final IOutput output) {
 		hasMonitors |= output instanceof MonitorOutput;
-		if (output.isVirtual()) {
-			virtualOutputs.put(output.getId(), output);
-		} else {
-			synchronized (outputs) {
-				outputs.put(output.getId(), output);
-			}
-		}
+		// if (output.isVirtual()) {
+		// virtualOutputs.put(output.getId(), output);
+		// } else {
+		// synchronized (outputs) {
+		outputs.put(output.getId(), output);
+		// }
+		// }
 	}
 
 	@Override
 	public synchronized void dispose() {
 		super.dispose();
 		try {
-			// AD: explicit addition of an ArrayList to prevent dispose errors
-			// (when outputs remove themselves from the list)
 			GAMA.desynchronizeFrontmostExperiment();
 			// synchronized (outputs) {
-			for (final IOutput output : new ArrayList<>(outputs.values())) { output.dispose(); }
+			for (final IOutput output : outputs.values()) { output.dispose(); }
 			// }
 			clear();
 		} catch (final Exception e) {
@@ -146,9 +234,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	// for instant, multi-simulation cannot have their owns outputs display at
 	// same time.
 	public void clear() {
-		synchronized (outputs) {
-			outputs.clear();
-		}
+		// synchronized (outputs) {
+		outputs.clear();
+		// }
 	}
 
 	@Override
@@ -156,7 +244,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 		if (!(o instanceof AbstractOutput)) return;
 		if (((AbstractOutput) o).isUserCreated()) {
 			o.dispose();
-			outputs.values().remove(o);
+			outputs.remove(o.getName());
 		} else {
 			o.setPaused(true);
 		}
@@ -199,8 +287,6 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	@Override
 	public Collection<MonitorOutput> getMonitors() {
 		return Lists.newArrayList(Iterables.filter(outputs.values(), MonitorOutput.class));
-
-		// return monitors;
 	}
 
 	@Override
@@ -211,7 +297,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	@Override
 	public boolean init(final IScope scope) {
 		name = scope.getRoot().getName();
-		for (final IOutput output : ImmutableList.copyOf(this)) { if (!open(scope, output)) return false; }
+		for (final IOutput output : ImmutableList.copyOf(outputs.values())) { if (!open(scope, output)) return false; }
 		evaluateAutoSave(scope);
 		return true;
 	}
@@ -257,7 +343,6 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean open(final IScope scope, final IOutput output) {
-
 		if (scope.init(output).passed()) {
 			output.setPaused(false);
 			if (initialStep(scope, output)) {
@@ -272,7 +357,6 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			}
 		}
 		return true;
-
 	}
 
 	/**
@@ -309,5 +393,13 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	@Override
 	public boolean hasMonitors() {
 		return hasMonitors;
+	}
+
+	@Override
+	public boolean isEmpty() { return outputs.isEmpty(); }
+
+	@Override
+	public void forEach(final BiConsumer<? super String, ? super IOutput> action) {
+		outputs.forEach(action);
 	}
 }

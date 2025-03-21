@@ -18,7 +18,6 @@ import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
@@ -124,7 +123,7 @@ public class CSVSaver extends AbstractSaver {
 				sb.append(Strings.LN);
 			}
 			if (itemType.id() == IType.MATRIX) {
-				GamaMatrix<?> matrix = (GamaMatrix) value;
+				GamaMatrix<?> matrix = (GamaMatrix<?>) value;
 				matrix.rowByRow(scope, v -> sb.append(toCleanString(v)), () -> sb.append(del),
 						() -> sb.append(Strings.LN));
 			} else {
@@ -136,27 +135,9 @@ public class CSVSaver extends AbstractSaver {
 			}
 			sb.append(Strings.LN);
 		}
-		GAMA.askWriteFile(scope, file, sb, saveOptions);
+		GAMA.getBufferingController().askWriteFile(file.getAbsolutePath(), scope, sb, saveOptions);
 	}
 
-	/**
-	 * Save.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param fw
-	 *            the fw
-	 * @param header
-	 *            the header
-	 * @param item
-	 *            the item
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	private void save(final IScope scope, final File file, final boolean header, final IExpression item, final BufferingStrategies bufferingStrategy)
-			throws GamaRuntimeException {
-		
-	}
 
 	/**
 	 * To clean string.

@@ -5,7 +5,7 @@ on:
     inputs:
       RELEASE_VERSION: 
         required: true
-        default: 2024.03.0 
+        default: 2025.03.0 
         type: string
       IS_STABLE_RELEASE: 
         required: true
@@ -34,19 +34,28 @@ jobs:
           name: gama-zip-builds
 
       # Get Mac dmg signed archives
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-mac-signed
+          #name: gama-mac-signed
+          path: ${{ github.workspace }}
+          pattern: gama-mac-signed-*
+          merge-multiple: true
 
       # Get Linux deb archive
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-linux-deb
+          #name: gama-linux-deb
+          path: ${{ github.workspace }}
+          pattern: gama-linux-deb-*
+          merge-multiple: true
 
       # Get Windows exe
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-windows-exe
+          #name: gama-windows-exe
+          path: ${{ github.workspace }}
+          pattern: gama-windows-exe-*
+          merge-multiple: true
 
       - name: Get travis scripts ready to use
         run: |

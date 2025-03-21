@@ -61,6 +61,11 @@ public class GamaServerMessage implements IJsonable {
 		SimulationOutput,
 
 		/**
+		 * Used to send a image of a display of a running simulation
+		 */
+		SimulationImage,
+
+		/**
 		 * Used to describe the content printed using the debug statement in a running simulation
 		 */
 		SimulationDebug,

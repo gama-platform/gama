@@ -94,12 +94,12 @@ public class OutputsMenu extends ContributionItem {
 	 *            the manager
 	 */
 	public void managementSubMenu(final Menu main, final IScope scope, final IOutputManager manager) {
-		if (manager.getOutputs().isEmpty()) return;
+		if (manager.isEmpty()) return;
 		final MenuItem item = new MenuItem(main, SWT.CASCADE);
 		item.setText(manager.toString());
 		final Menu sub = new Menu(item);
 		item.setMenu(sub);
-		for (final IOutput output : manager.getOutputs().values()) { outputSubMenu(sub, scope, manager, output); }
+		manager.forEach(output -> { outputSubMenu(sub, scope, manager, output); });
 	}
 
 	/**

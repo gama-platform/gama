@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * StochanalysisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * StochanalysisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -37,7 +37,6 @@ import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
@@ -70,9 +69,8 @@ import gama.gaml.types.IType;
 						type = IType.ID,
 						optional = true,
 						doc = @doc ("The sampling method to build parameters sets. Available methods are: "
-								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " 
-								+ IKeyword.FACTORIAL + ", "+ IKeyword.UNIFORM + ", " 
-								+ IKeyword.SALTELLI + ", "+ IKeyword.MORRIS)),
+								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", "
+								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
@@ -130,13 +128,11 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) throws GamaRuntimeException {
 
-		parameters = parameters == null ? 
-				new ArrayList<>(currentExperiment.getParametersToExplore()) 
-				: parameters;
+		parameters = parameters == null ? new ArrayList<>(currentExperiment.getParametersToExplore()) : parameters;
 
 		if (hasFacet(Exploration.SAMPLE_SIZE)) {
 			this.sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
@@ -144,40 +140,31 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);
 
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(currentExperiment)) {
-			res_outputs = currentExperiment.launchSimulationsWithSolution(sets);
-		} else {
-			res_outputs = GamaMapFactory.create();
-			for (ParametersSet sol : sets) {
-				res_outputs.put(sol, currentExperiment.launchSimulationsWithSolution(sol));
-			}
-		}
+		res_outputs = currentExperiment.runSimulationsAndReturnResults(sets);
 
 		IExpression outputFacet = getFacet(IKeyword.BATCH_VAR_OUTPUTS);
 		outputs = Cast.asList(scope, scope.evaluate(outputFacet, currentExperiment).getValue());
 		Map<String, Map<ParametersSet, Map<String, List<Double>>>> MapOutput = new LinkedHashMap<>();
 		for (Object out : outputs) {
-			
+
 			IMap<ParametersSet, List<Object>> sp = GamaMapFactory.create();
 			for (ParametersSet ps : res_outputs.keySet()) { sp.put(ps, res_outputs.get(ps).get(out.toString())); }
-			
+
 			Map<ParametersSet, Map<String, List<Double>>> res_val = GamaMapFactory.create();
 			for (String m : Stochanalysis.SA) {
-				Map<ParametersSet,List<Double>> stoch = Stochanalysis.stochasticityAnalysis(sp, m, scope); 
-				for (ParametersSet p : sp.keySet() ) {
-					if (!res_val.containsKey(p)) { 
-						res_val.put(p, 
-								Stochanalysis.SA.stream().collect(
-										Collectors.toMap(Function.identity(), i -> new ArrayList<Double>()))
-							); 
+				Map<ParametersSet, List<Double>> stoch = Stochanalysis.stochasticityAnalysis(sp, m, scope);
+				for (ParametersSet p : sp.keySet()) {
+					if (!res_val.containsKey(p)) {
+						res_val.put(p, Stochanalysis.SA.stream()
+								.collect(Collectors.toMap(Function.identity(), i -> new ArrayList<Double>())));
 					}
-					res_val.get(p).put(m, stoch.get(p)); 
+					res_val.get(p).put(m, stoch.get(p));
 				}
-				
+
 			}
 			MapOutput.put(out.toString(), res_val);
 		}
-		
+
 		// Build report
 		String path = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
@@ -185,33 +172,40 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		if (!parent.exists()) { parent.mkdirs(); }
 		if (f.exists()) { f.delete(); }
 		Stochanalysis.writeAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
-		
+
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) &&
-				hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
-		
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+			saveRawResults(scope, res_outputs);
+		}
+
 		/** If any of the two facet is missing pop up a warning */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) &&
-				hasFacet(IKeyword.BATCH_OUTPUT)) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(
-					"Facet "+(hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? 
-							IKeyword.BATCH_OUTPUT:IKeyword.BATCH_VAR_OUTPUTS)+" is missing - raw results won't be saved", scope), false);
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Facet "
+					+ (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_OUTPUT : IKeyword.BATCH_VAR_OUTPUTS)
+					+ " is missing - raw results won't be saved", scope), false);
 		}
 	}
-	
+
 	@Override
-	public void addParametersTo(List<Batch> exp, BatchAgent agent) {
+	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
 		exp.add(new ParameterAdapter("Sampling method", IKeyword.STO, IType.STRING) {
-				@Override public Object value() { return hasFacet(Exploration.METHODS) ? 
-						Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : Exploration.DEFAULT_SAMPLING; }
+			@Override
+			public Object value() {
+				return hasFacet(Exploration.METHODS)
+						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
+						: Exploration.DEFAULT_SAMPLING;
+			}
 		});
-		
+
 		exp.add(new ParameterAdapter("Sample size", IKeyword.STO, IType.STRING) {
-			@Override public Object value() { return sample_size; }
+			@Override
+			public Object value() {
+				return sample_size;
+			}
 		});
-		
+
 	}
-	
+
 }

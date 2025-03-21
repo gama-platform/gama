@@ -210,8 +210,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 	/** The menu images. */
 	static Map<String, Image> menu_images = new HashMap();
 
-	/** The max image height. */
-	static int maxImageHeight = 0;
 
 	/** The button padding. How much space between each experiment button */
 	static int buttonPadding = 4;
@@ -231,7 +229,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI).image());
 
 		images.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
-		for (Image im : images.values()) { maxImageHeight = Math.max(maxImageHeight, im.getBounds().height); }
+		//for (Image im : images.values()) { maxImageHeight = Math.max(maxImageHeight, im.getBounds().height); }
 	}
 
 	/**
@@ -603,7 +601,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, true);
-				toolbar.setDefaultHeight(maxImageHeight);
 
 				final var c = state.getColor();
 				var msg = state.getStatus();

@@ -3,9 +3,9 @@ name: "[./.github/workflows/travis-packaging-linux-test.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
-        default: 2024.03.0 
+        default: 2024.03.0
         type: string
 
 jobs:
@@ -13,9 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Get Linux deb archive
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-linux-deb
+          #name: gama-linux-deb
+          path: ${{ github.workspace }}
+          pattern: gama-linux-deb-*
+          merge-multiple: true
 
       - name: Update apt databse
         run: |
@@ -26,6 +29,13 @@ jobs:
         run: |
           sudo apt install ./gama-platform-jdk_${{ inputs.RELEASE_VERSION }}-1_amd64.deb
           gama-headless -help
+
+      - name: Set up Adopt OpenJDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "23"
+          java-package: jdk
 
       - name: Install, Run & Remove (w/o JDK)
         shell: bash

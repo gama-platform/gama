@@ -128,9 +128,10 @@ experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) 
 // on the distribution of outputs. It has been retro-engineered based on the description in
 // Borgonovo et al. 2022 doi:10.1007/s10588-021-09358-5
 // ---------------
-// sample facet = number of sampled points
-// factorial facet = how many time a parameter value is duplicated in the final experiment plan (maximum value for factorial is sample-1)
-// Hence, final sample size is 'sample + sample * factorial * |parameter|', with default sample and factorial, respectively 132 and 4
+// sample facet: number of sampled points
+// bootstrap facet: how many time a parameter value is duplicated in the final experiment plan, with bootstrap < sample
+// Hence, final sample size is 'sample + sample * bootstrap * |parameter|', with default sample and bootstrap, respectively 132 and 4
+// Sampled point should be high and at least 2 times higher than bootstrap
 experiment Beta_distribution parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method betad outputs:["nb_preys","nb_predators"] sampling:"uniform" sample:10 factorial:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
+	method betad outputs:["nb_preys","nb_predators"] sampling:"uniform" sample:10 bootstrap:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
 }

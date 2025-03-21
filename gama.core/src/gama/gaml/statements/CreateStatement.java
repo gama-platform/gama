@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CreateStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * CreateStatement.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.gaml.statements;
 
@@ -260,7 +260,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				final boolean mir = sd.isMirror();
 				final boolean gri = sd.isGrid();
 				final boolean bui = sd.isBuiltIn();
-				if (abs || mir || gri || bui) {
+				if (abs || mir || gri /** see #4 || bui**/) {
 					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : bui ? "built-in" : "";
 					cd.error(sd.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
 					return;
@@ -478,8 +478,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
 			throw GamaRuntimeException.error("Simulations can only be created within experiments", scope);
 		final SpeciesDescription sd = pop.getSpecies().getDescription();
-		final String error = sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : sd.isBuiltIn() ? "built-in"
-				: sd.isGrid() ? "a grid" : null;
+		final String error = sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" :**/ sd.isGrid() ? "a grid" : null;
 		if (error != null)
 			throw GamaRuntimeException.error(sd.getName() + "is " + error + " and cannot be instantiated.", scope);
 	}

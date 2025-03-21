@@ -13,9 +13,7 @@ package gama.extension.serialize.binary;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import gama.core.util.ByteArrayZipper;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
@@ -25,91 +23,19 @@ import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 
 	/**
-	 * The Class SimulationHistoryNode.
+	 * The Record SimulationHistoryNode.
 	 */
-	static class SimulationHistoryNode {
-
-		/** The bytes. */
-		byte[] bytes;
-
-		/** The cycle. */
-		long cycle;
-
-		/**
-		 * Instantiates a new history node.
-		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-		 * @param state
-		 *            the state
-		 * @date 22 oct. 2023
-		 */
-		public SimulationHistoryNode(final byte[] state, final long cycle) {
-			bytes = state;
-			this.cycle = cycle;
-		}
-
-	}
+	static record SimulationHistoryNode(byte[] bytes, long cycle) {}
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The executor. */
 	final ExecutorService executor = Executors.newCachedThreadPool();
 
-	/** The delta. Part of https://github.com/mantlik/xdeltaencoder/tree/master to compute diffs */
-	// Delta delta = new Delta();
-
-	/** The diffs. */
-//	LinkedList<SimulationHistoryNode> diffs = new LinkedList<>();
-
-	@Override
-	public void push(final SimulationHistoryNode node) {
-		// SimulationHistoryNode old = peek();
-		asyncProcess(node, System.nanoTime());
-		super.push(node);
-
-	}
-
-	// /**
-	// * Async zip.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param newFrame
-	// * the node
-	// * @date 8 août 2023
-	// */
-	// protected void asyncProcess(final SimulationHistoryNode keyFrame, final SimulationHistoryNode newFrame,
-	// final long startTime) {
-	// if (keyFrame == null) return;
-	// executor.execute(() -> {
-	// try {
-	// byte[] diff = delta.compute(keyFrame.bytes, newFrame.bytes);
-	// SimulationHistoryNode diffNode = new SimulationHistoryNode(diff, newFrame.cycle);
-	// diffs.push(diffNode);
-	// diffNode.bytes = ByteArrayZipper.zip(diff);
-	// DEBUG.OUT("Serialised and compressed to " + diffNode.bytes.length / 1000000d + "Mb in "
-	// + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
-	// } catch (IOException e) {}
-	//
-	// });
-	// }
-
-	/**
-	 * Async process.
-	 *
-	 * @param newFrame
-	 *            the new frame
-	 * @param startTime
-	 *            the start time
-	 */
-	protected void asyncProcess(final SimulationHistoryNode newFrame, final long startTime) {
-		executor.execute(() -> {
-			newFrame.bytes = ByteArrayZipper.zip(newFrame.bytes);
-			DEBUG.OUT("Serialised and compressed to " + newFrame.bytes.length / 1000000d + "Mb in "
-					+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + "ms");
-
-		});
+	public void push(final byte[] state, final int cycle) {
+		executor.execute(() -> { push(new SimulationHistoryNode(state, cycle)); });
 	}
 
 }

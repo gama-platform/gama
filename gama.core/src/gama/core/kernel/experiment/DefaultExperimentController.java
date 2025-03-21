@@ -46,9 +46,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		executionThread = new Thread(() -> { while (experimentAlive) { step(); } }, "Front end scheduler");
 		executionThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-		try {
-			lock.acquire();
-		} catch (final InterruptedException e) {}
+		lock.acquire();
 		commandThread.start();
 		executionThread.start();
 	}
@@ -75,6 +73,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					// https://github.com/gama-platform/gama/commit/8068457d11d25289bf001bb6f29553e4037f1cda#r130876638,
 					// removes the thread
 					// new Thread(() -> experiment.open()).start();
+				} catch (final GamaRuntimeException e) {
+					DEBUG.ERR("Error in previous experiment: " + e.getMessage());
+					closeExperiment(e);
+					return false;
 				} catch (final Exception e) {
 					DEBUG.ERR("Error when opening the experiment: " + e.getMessage());
 					closeExperiment(e);
@@ -165,7 +167,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	public void closeExperiment(final Exception e) {
 		disposing = true;
-		if (e != null) { getScope().getGui().getStatus().errorStatus(scope, e.getMessage()); }
+		if (e != null) { getScope().getGui().getStatus().errorStatus(scope, e); }
 		experiment.dispose(); // will call own dispose() later
 	}
 
@@ -208,11 +210,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	protected void step() {
 		if (paused) {
-			try {
-				lock.acquire();
-			} catch (InterruptedException e) {
-				experimentAlive = false;
-			}
+			lock.acquire();
+			// experimentAlive = false;
 		}
 		try {
 			if (scope == null) return;

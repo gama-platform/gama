@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.core.common.util;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +17,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
@@ -160,13 +157,14 @@ public class FileUtils {
 			if (a == null) return fp;
 			if (!a.isHeadless()) {
 				// Necessary to ask the workspace for the containers as projects might be linked
-				final List<IContainer> paths = a.getWorkingPaths().stream()
-						.map(s -> ROOT.findContainersForLocation(new Path(s))[0]).collect(toList());
-				for (final IContainer folder : paths) {
-					final String file = findInWorkspace(fp, folder, mustExist);
-					if (file != null) {
-						DEBUG.OUT("Hit with workspace-based search: " + file);
-						return file;
+				for (final String folder : a.getWorkingPaths()) {
+					IContainer[] containers = ROOT.findContainersForLocation(new Path(folder));
+					for (IContainer container : containers) {
+						final String file = findInWorkspace(fp, container, mustExist);
+						if (file != null) {
+							DEBUG.OUT("Hit with workspace-based search: " + file);
+							return file;
+						}
 					}
 				}
 			}
@@ -419,10 +417,9 @@ public class FileUtils {
 			return null;
 		}
 	}
-	
-	public static String escapeFilePath(String path) {
-		return path	.replace("\\", "\\\\")
-					.replace("\"", "\\\"");
+
+	public static String escapeFilePath(final String path) {
+		return path.replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 	/**
@@ -478,13 +475,6 @@ public class FileUtils {
 		}
 		return null;
 	}
-
-	// public static IFile linkAndGetExternalFile(final URI uri, final URI
-	// workspaceResource) {
-	// final String path = URI.decode(uri.isFile() ? uri.toFileString() :
-	// uri.toString());
-	// return linkAndGetExternalFile(URI.decode(path), workspaceResource);
-	// }
 
 	/**
 	 * Creates the linked file.

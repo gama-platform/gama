@@ -272,7 +272,7 @@ public class EditorMenu extends ContributionItem implements IWorkbenchContributi
 
 			@Override
 			public void process(final XtextResource resource) throws Exception {
-				Set<URI> uris = GamlResourceIndexer.directImportersOf(((GamlResource) resource).getURI());
+				Set<URI> uris = GamlResourceIndexer.directImportersOf(resource.getURI());
 				DEBUG.OUT("Importers of " + resource.getURI().lastSegment() + ": " + uris);
 				result.addAll(uris);
 			}

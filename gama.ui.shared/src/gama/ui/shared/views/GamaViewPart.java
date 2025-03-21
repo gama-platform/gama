@@ -100,6 +100,7 @@ public abstract class GamaViewPart extends ViewPart
 		 */
 		public GamaUIJob() {
 			super("Updating " + getPartName());
+			setSystem(true);
 			final UpdatePriority p = jobPriority();
 			switch (p) {
 				case HIGHEST:
@@ -286,7 +287,10 @@ public abstract class GamaViewPart extends ViewPart
 	 * @return the update job
 	 */
 	protected final Job getUpdateJob() {
-		if (updateJob == null) { updateJob = createUpdateJob(); }
+		if (updateJob == null) {
+			updateJob = createUpdateJob();
+			if (updateJob != null) { updateJob.setSystem(true); }
+		}
 		return updateJob;
 	}
 

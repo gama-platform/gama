@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.gaml.interfaces;
 
+
 /**
  * The interface IGamlable. Represents objects that can represent themselves in terms of GAML descriptions
  * (serialization).
@@ -31,18 +32,15 @@ public interface IGamlable {
 		return toString();
 	}
 
-	// /**
-	// * Deserialize. Returns the Object represented by this string in GAML. A scope is necessary to know how to
-	// interpret
-	// * it.
-	// *
-	// * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	// * @param gaml
-	// * the gaml
-	// * @return the object
-	// * @date 27 oct. 2023
-	// */
-	// default Object deserializeFromGaml(final IScope scope, final String gaml) {
-	// return GAML.evaluateExpression(gaml, scope.getAgent());
-	// }
+//	/**
+//	 * Returns the serialization in GAML of this object, using a scope if it is provided. Calls the regular function by
+//	 * default
+//	 *
+//	 * @param scope
+//	 * @param includingBuiltIn
+//	 * @return
+//	 */
+//	default String serializeToGaml(final IScope scope, final boolean includingBuiltIn) {
+//		return serializeToGaml(includingBuiltIn);
+//	}
 }

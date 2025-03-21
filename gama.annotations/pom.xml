@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gama</groupId>
 	<artifactId>gama.annotations</artifactId>
@@ -11,24 +13,24 @@
 		<repository>
 			<uniqueVersion>true</uniqueVersion>
 			<id>p2Repo</id>
-			<url>scp://51.255.46.42/./var/www/gama_updates/0.0.0</url>
+			<url>scp://152.228.133.219/./var/www/gama_updates/0.0.0</url>
 		</repository>
 		<snapshotRepository>
 			<uniqueVersion>true</uniqueVersion>
 			<id>p2Repo</id>
-			<url>scp://51.255.46.42/./var/www/gama_updates/0.0.0</url>
+			<url>scp://152.228.133.219/./var/www/gama_updates/0.0.0</url>
 		</snapshotRepository>
 	</distributionManagement>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tycho.version>4.0.8</tycho.version>
-		<jdk.version>21</jdk.version>
+		<tycho.version>4.0.11</tycho.version>
+		<jdk.version>23</jdk.version>
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
-		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven.plugins.version>3.0.0</maven.plugins.version>
-		
+
 		<sonar.organization>gama-platform</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
@@ -45,7 +47,7 @@
 			<id>p2Repo</id>
 			<properties>
 				<!-- Properties relative to the distant host where to upload the repo -->
-				<ftp.url>scp://51.255.46.42</ftp.url>
+				<ftp.url>scp://152.228.133.219</ftp.url>
 				<ftp.toDir>/var/www/gama_updates/0.0.0</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
@@ -84,7 +86,7 @@
 									<toDir>${ftp.toDir}</toDir>
 									<url>${ftp.url}</url>
 									<serverId>p2Repo</serverId>
-									<!-- Points to your settings.xml where the connection settings are 
+									<!-- Points to your settings.xml where the connection settings are
 									stored as shown below -->
 									<!-- <server> -->
 									<!-- <id>p2Repo</id> -->
@@ -112,7 +114,7 @@
 							<keystore>~/gama.keystore</keystore>
 							<alias>gama-platform</alias>
 							<storepass>GAMA_PLATFORM</storepass>
-							<keypass></keypass>
+							<keypass />
 						</configuration>
 					</plugin>
 
@@ -187,7 +189,7 @@
 				<version>${tycho.version}</version>
 			</plugin>
 
-			<!-- Code Review for PR 
+			<!-- Code Review for PR
 			Execute by running `mvn -B verify spotbugs:spotbugs` -->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>

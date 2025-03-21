@@ -154,7 +154,7 @@ public class Application implements IApplication {
 				if (display != null) { display.dispose(); }
 				final Location instanceLoc = Platform.getInstanceLocation();
 				if (instanceLoc != null) { instanceLoc.release(); }
-				GAMA.flushAllBuffers();
+				GAMA.getBufferingController().flushAllBuffers();
 			}
 		}
 		return EXIT_OK;
@@ -218,7 +218,7 @@ public class Application implements IApplication {
 			final String ret = WorkspacePreferences.checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
 				// if ( ret.equals("Restart") ) { return EXIT_RESTART; }
-				/* If we dont or cant remember and the location is set, we cant do anything as we need a workspace */
+				/* If we don't or can't remember and the location is set, we can't do anything as we need a workspace */
 				openError(null, IKeyword.ERROR, "The workspace provided cannot be used. Please change it");
 				if (isWorkbenchRunning()) { getWorkbench().close(); }
 				System.exit(0);
@@ -241,8 +241,9 @@ public class Application implements IApplication {
 				// this stage
 				if (ret != null) {
 					remember = "models".equals(ret) && WorkspacePreferences.askBeforeUsingOutdatedWorkspace()
-							&& !openQuestion(null, "Different version of the models library",
-									"The workspace contains a different version of the models library. Do you want to use another workspace ?");
+							&& openQuestion(null, "Different version of the models library",
+									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					if (remember) { clearWorkspace(true); }
 				}
 			}
 		}
@@ -255,7 +256,7 @@ public class Application implements IApplication {
 			if (pick == 1 /* Window.CANCEL */ || wr == null) {
 				openError(null, IKeyword.ERROR, "GAMA can not start without a workspace and will now exit.");
 				// System.exit(0);
-				return IApplication.EXIT_OK;
+				return EXIT_OK;
 			}
 			/* Tell Eclipse what the selected location was and continue */
 			instanceLoc.set(new URL("file", null, wr), false);
@@ -270,7 +271,7 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
-		GAMA.flushAllBuffers();
+		GAMA.getBufferingController().flushAllBuffers();
 		final IWorkbench workbench = getWorkbench();
 		if (workbench == null) return;
 		final Display display = workbench.getDisplay();

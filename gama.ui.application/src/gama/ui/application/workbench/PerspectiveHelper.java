@@ -478,7 +478,7 @@ public class PerspectiveHelper {
 	public final static Boolean keepTray() {
 		final IPerspectiveDescriptor d = getActivePerspective();
 		if (d instanceof SimulationPerspectiveDescriptor) return ((SimulationPerspectiveDescriptor) d).keepTray();
-		return true;
+		return false;
 	}
 
 	/**

@@ -75,6 +75,11 @@ public class ConstantExpressionDescription extends ConstantExpression implements
 		}
 	}
 
+	public static ConstantExpressionDescription createNoCache(final Object object) {
+		if (object == null) return NULL_EXPR_DESCRIPTION;
+		return new ConstantExpressionDescription(object);
+	}
+
 	/**
 	 * Creates the.
 	 *

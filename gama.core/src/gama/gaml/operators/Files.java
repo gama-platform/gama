@@ -750,8 +750,8 @@ public class Files {
 					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments")},
 			see = { "save"})
 	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation) throws GamaRuntimeException {
-		boolean success = GAMA.flushSaveFileStep(simulation);
-		success &= GAMA.flushSaveFilePerOwner(simulation);
+		boolean success = GAMA.getBufferingController().flushSaveFilesInCycle(simulation);
+		success &= GAMA.getBufferingController().flushSaveFilesOfAgent(simulation);
 		return success;
 	}
 	

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * FlatButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FlatButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -29,9 +28,9 @@ import org.eclipse.swt.widgets.TypedListener;
 
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 
 /**
  * The Class FlatButton.
@@ -43,7 +42,46 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	}
 
 	/** The menu image. */
+
 	static final Image menuImage = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
+	static final Rectangle menuImageBounds = menuImage.getBounds();
+	/** The Constant innerMarginWidth. */
+	private static final int innerMarginWidth = 5;
+	/** The Constant imagePadding. */
+	private static final int imagePadding = 5;
+
+	/** The image. */
+	private Image image;
+
+	/** The add menu sign. */
+	private boolean addMenuSign;
+
+	/** The text. */
+	private String text;
+
+	/** The color code. */
+	private RGB colorCode;
+
+	/** The preferred height. */
+	private int preferredHeight = -1; // DEFAULT_HEIGHT;
+
+	/** The preferred width. */
+	private int preferredWidth = -1;
+
+	/** The enabled. */
+	private boolean enabled = true;
+
+	/** The hovered. */
+	private boolean hovered = false;
+
+	/** The down. */
+	private boolean down = false;
+
+	/** The forced width. */
+	private int forcedWidth = -1;
+
+	/** The right padding */
+	private int rightPadding = 0;
 
 	/**
 	 * Creates the.
@@ -157,56 +195,6 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return button(comp, color, text).addMenuSign();
 	}
 
-	/** The image. */
-	private Image image;
-
-	/** The add menu sign. */
-	private boolean addMenuSign;
-
-	/** The text. */
-	private String text;
-
-	/** The color code. */
-	private RGB colorCode;
-
-	/** The Constant innerMarginWidth. */
-	private static final int innerMarginWidth = 5;
-	/** The preferred height. */
-	private int preferredHeight = -1; // DEFAULT_HEIGHT;
-
-	/** The preferred width. */
-	private int preferredWidth = -1;
-
-	/** The Constant imagePadding. */
-	private static final int imagePadding = 5;
-
-	/** The enabled. */
-	private boolean enabled = true;
-
-	/** The hovered. */
-	private boolean hovered = false;
-
-	/** The down. */
-	private boolean down = false;
-
-	/** The image left. */
-	public static final int IMAGE_LEFT = 0;
-
-	/** The image right. */
-	public static final int IMAGE_RIGHT = 1;
-
-	/** The image style. */
-	private int imageStyle = IMAGE_LEFT;
-
-	/** The forced width. */
-	private int forcedWidth = -1;
-
-	/** The right padding */
-	private int rightPadding = 0;
-
-	/** The forced image height. */
-	private int forcedImageHeight = -1;
-
 	/**
 	 * Instantiates a new flat button.
 	 *
@@ -316,30 +304,21 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			gc.fillRoundRectangle(rect.x, rect.y, rect.width, rect.height, 8, 8);
 		}
 
-		int x = FlatButton.innerMarginWidth;
+		int x = innerMarginWidth;
 		final Image im = getImage();
 		int y_text = 0;
-		final String text = newText();
-		if (text != null) { y_text += (getBounds().height - gc.textExtent(text).y) / 2; }
+		final String contents = newText();
+		if (contents != null) { y_text += (getBounds().height - gc.textExtent(contents).y) / 2; }
 
-		if (imageStyle == IMAGE_RIGHT) {
-			gc.drawString(text, x, y_text);
-			if (im != null) {
-				int y_image = (getBounds().height - im.getBounds().height) / 2;
-				x = rect.width - x - im.getBounds().width;
-				drawImage(im, gc, x, y_image);
-			}
-		} else {
-			if (im != null) {
-				int y_image = (getBounds().height - im.getBounds().height) / 2;
-				x = drawImage(im, gc, x, y_image);
-			}
-			gc.drawString(text, x, y_text);
+		if (im != null) {
+			int y_image = (getBounds().height - im.getBounds().height) / 2;
+			x = drawImage(im, gc, x, y_image);
 		}
+		gc.drawString(contents, x, y_text);
 		if (addMenuSign) {
-			int y_image = (getBounds().height - menuImage.getBounds().height) / 2;
-			x = FlatButton.innerMarginWidth;
-			x = rect.width - x - menuImage.getBounds().width;
+			int y_image = (getBounds().height - menuImageBounds.height) / 2;
+			x = innerMarginWidth;
+			x = rect.width - x - menuImageBounds.width;
 			drawImage(menuImage, gc, x, y_image);
 		}
 	}
@@ -391,18 +370,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			int imageWidth = 0;
 			final Image im = getImage();
 			if (im != null || addMenuSign) {
-				if (im != null) {
-					final Rectangle bounds = im.getBounds();
-					if (imageStyle == IMAGE_LEFT) {
-						imageWidth = bounds.width + imagePadding;
-					} else {
-						imageWidth = (bounds.width + imagePadding) * 2;
-					}
-				}
-				if (addMenuSign) {
-					final Rectangle bounds = menuImage.getBounds();
-					imageWidth += (bounds.width + imagePadding) * 2;
-				}
+				if (im != null) { imageWidth = im.getBounds().width + imagePadding; }
+				if (addMenuSign) { imageWidth += (menuImageBounds.width + imagePadding) * 2; }
 			}
 			float r;
 			if (parentWidth < width) {
@@ -432,6 +401,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	public FlatButton setImageWithoutRecomputingSize(final Image image) {
+		if (this.image == image) return this;
+		this.image = image;
+		redraw();
+		return this;
+	}
+
 	/**
 	 * Show menu sign.
 	 *
@@ -441,7 +417,6 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton addMenuSign() {
 		addMenuSign = true;
-		imageStyle = IMAGE_LEFT;
 		return this;
 	}
 
@@ -483,17 +458,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			Rectangle bounds = new Rectangle(0, 0, 0, 0);
 			if (im != null) {
 				bounds = im.getBounds();
-				if (imageStyle == IMAGE_LEFT) {
-					preferredWidth = bounds.width + imagePadding;
-				} else {
-					preferredWidth = (bounds.width + imagePadding) * 2;
-				}
+				preferredWidth = bounds.width + imagePadding;
 			}
 			if (addMenuSign) {
-				bounds.height = Math.max(bounds.height, menuImage.getBounds().height);
-				preferredWidth += (menuImage.getBounds().width + imagePadding) * 2;
+				bounds.height = Math.max(bounds.height, menuImageBounds.height);
+				preferredWidth += (menuImageBounds.width + imagePadding) * 2;
 			}
-			preferredHeight = (forcedImageHeight == -1 ? bounds.height : forcedImageHeight) + imagePadding;
+			preferredHeight = bounds.height + imagePadding;
 		}
 		if (text != null) {
 			final GC gc = new GC(this);
@@ -504,31 +475,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			preferredHeight = Math.max(preferredHeight, extent.y + innerMarginWidth);
 		}
 		preferredWidth += rightPadding;
-		// DEBUG.OUT("PreferredWidth = " + preferredWidth + " / ForcedWidth = " + forcedWidth);
 		if (forcedWidth > 0) { preferredWidth = forcedWidth; }
-
-		// DEBUG.OUT("Computing min height for button " + text + " = " + preferredHeight);
-
 	}
-
-	/**
-	 * Set the style with which the side image is drawn, either IMAGE_LEFT or IMAGE_RIGHT (default is IMAGE_LEFT).
-	 *
-	 * @param imageStyle
-	 */
-	public FlatButton setImageStyle(final int imageStyle) {
-		this.imageStyle = imageStyle;
-		computePreferredSize(); // The inset is not the same
-		redraw();
-		return this;
-	}
-
-	/**
-	 * Gets the image style.
-	 *
-	 * @return the image style
-	 */
-	public int getImageStyle() { return imageStyle; }
 
 	/**
 	 * Gets the text.
@@ -548,6 +496,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		if (text == null || text.equals(this.text)) return this;
 		this.text = text;
 		computePreferredSize();
+		redraw();
+		return this;
+	}
+
+	public FlatButton setTextWithoutRecomputingSize(final String text) {
+		if (text == null || text.equals(this.text)) return this;
+		this.text = text;
 		redraw();
 		return this;
 	}
@@ -684,16 +639,5 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *            the new padding
 	 */
 	public void setRightPadding(final int buttonPadding) { rightPadding = buttonPadding; }
-
-	/**
-	 * Sets the image height.
-	 *
-	 * @param maxImageHeight
-	 *            the new image height
-	 */
-	public void setImageHeight(final int maxImageHeight) {
-		forcedImageHeight = maxImageHeight;
-		computePreferredSize();
-	}
 
 }

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * TestStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TestStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -14,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -23,6 +20,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaAssertException;
@@ -110,7 +109,7 @@ public class TestStatement extends AbstractStatementSequence implements WithTest
 	 */
 	public TestStatement(final IDescription desc) {
 		super(desc);
-		if (hasFacet(IKeyword.NAME)) { setName("test " + getLiteral(IKeyword.NAME)); }
+		if (hasFacet(IKeyword.NAME)) { setName(getLiteral(IKeyword.NAME)); }
 	}
 
 	@Override
@@ -123,7 +122,7 @@ public class TestStatement extends AbstractStatementSequence implements WithTest
 	public void setEnclosing(final ISymbol enclosing) {
 		super.setEnclosing(enclosing);
 		setup = (SetUpStatement) ((GamlSpecies) enclosing).getBehaviors().stream()
-				.filter(p -> p instanceof SetUpStatement).findAny().orElse(null);
+				.filter(SetUpStatement.class::isInstance).findAny().orElse(null);
 	}
 
 	@Override
@@ -160,7 +159,7 @@ public class TestStatement extends AbstractStatementSequence implements WithTest
 	}
 
 	@Override
-	public String getTitleForSummary() { return "Test " + getName(); }
+	public String getTitleForSummary() { return getName(); }
 
 	@Override
 	public Collection<? extends WithTestSummary<?>> getSubElements() { return assertions; }

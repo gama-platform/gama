@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ import static gama.gaml.compilation.GAML.notNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -574,9 +573,10 @@ public class Containers {
 	@doc (
 			value = "the element at the right operand index of the container",
 			masterDoc = true,
-			comment = "The first element of the container is located at the index 0. "
-					+ "In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException."
-					+ "The at operator behavior depends on the nature of the operand",
+			comment = """
+					The first element of the container is located at the index 0. \
+					In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException.\
+					The at operator behavior depends on the nature of the operand""",
 			usages = { @usage (
 					value = "if it is a list or a matrix, at returns the element at the index specified by the right operand",
 					examples = { @example (
@@ -928,10 +928,8 @@ public class Containers {
 	@test ("last(0,[1,2,3,4,5,6]) = []")
 	@test ("last(10,[1::2, 3::4]) is list")
 	public static IList last(final IScope scope, final Integer number, final IContainer c) {
-		final IList result = GamaListFactory.create(scope, c.getGamlType().getContentType(), Iterables.limit(
-				Lists.reverse(notNull(scope, c).listValue(scope, Types.NO_TYPE, false)), number < 0 ? 0 : number));
-		Collections.reverse(result);
-		return result;
+		int n = number < 0 ? 0 : number;
+		return (IList) stream(scope, c).skip(Math.max(0, c.length(scope) - n)).toCollection(listLike(c));
 	}
 
 	/**
@@ -1470,11 +1468,12 @@ public class Containers {
 			category = IOperatorCategory.SPECIES,
 			concept = { IConcept.SPECIES })
 	@doc (
-			value = "a list, containing the agents of the left-hand operand whose species is the one denoted by the right-hand operand."
-					+ "The expression agents of_species (species self) is equivalent to agents where (species each = species self); "
-					+ "however, the advantage of using the first syntax is that the resulting list is correctly typed with the right species, "
-					+ "whereas, in the second syntax, the parser cannot determine the species of the agents within the list "
-					+ "(resulting in the need to cast it explicitly if it is to be used in an ask statement, for instance).",
+			value = """
+					a list, containing the agents of the left-hand operand whose species is the one denoted by the right-hand operand.\
+					The expression agents of_species (species self) is equivalent to agents where (species each = species self); \
+					however, the advantage of using the first syntax is that the resulting list is correctly typed with the right species, \
+					whereas, in the second syntax, the parser cannot determine the species of the agents within the list \
+					(resulting in the need to cast it explicitly if it is to be used in an ask statement, for instance).""",
 			usages = @usage ("if the right operand is nil, of_species returns the right operand"),
 			examples = { @example (
 					value = "(self neighbors_at 10) of_species (species (self))",
@@ -2601,7 +2600,8 @@ public class Containers {
 	@doc (
 			value = "Returns true if all the elements of the left-hand operand make the right-hand operand evaluate to true. Returns true if the left-hand operand is empty. 'c all_match each.property' is strictly equivalent to '(c count each.property)  = length(c)' but faster in most cases (as it is a shortcircuited operator)",
 			comment = "in the right-hand operand, the keyword each can be used to represent, in turn, each of the elements.",
-			usages = { @usage ("if the left-hand operand is nil, all_match throws an error") },
+			usages = { @usage ("if the left-hand operand is nil, all_match throws an error"),
+					@usage ("if the left-hand operand is empty, all_match returns true") },
 			examples = { @example (
 					value = "[1,2,3,4,5,6,7,8] all_match (each > 3)",
 					equals = "false"),
@@ -2727,7 +2727,8 @@ public class Containers {
 			see = {})
 	public static IMap create_map(final IScope scope, final IList keys, final IList values) {
 		if (keys.length(scope) != values.length(scope)) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope), false);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("'create_map' expects two lists of the same length", scope), false);
 		}
 		// final HashSet newSet = new HashSet(keys);
 		// if (newSet.size() < keys.length(scope))

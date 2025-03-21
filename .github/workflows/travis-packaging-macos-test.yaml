@@ -9,9 +9,12 @@ jobs:
     runs-on: macos-latest
     steps:
       # Get Linux deb archive
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: gama-mac-signed
+          #name: gama-mac-signed
+          path: ${{ github.workspace }}
+          pattern: gama-mac-signed-*
+          merge-multiple: true
 
       - name: Test Gama w/ JDK
         run: |
@@ -20,12 +23,12 @@ jobs:
           bash ~/Gama.app/Contents/headless/gama-headless.sh -help
           rm -fr ~/Gama.app
           hdiutil detach /Volumes/Gama
-      
+
       - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "23"
           java-package: jdk
 
       - name: Test Gama w/o JDK

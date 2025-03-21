@@ -51,7 +51,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	 */
 	public ApplicationWorkbenchAdvisor() {
 		super(Application.getOpenDocumentProcessor());
-		//DEBUG.OUT(DEBUG.CALLER() + " is created");
+		// DEBUG.OUT(DEBUG.CALLER() + " is created");
 	}
 
 	@Override
@@ -120,6 +120,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			}
 
 		}
+
 	}
 
 	/**

@@ -19,13 +19,13 @@ import java.util.Set;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISkill;
 import gama.core.common.interfaces.IVarAndActionSupport;
@@ -221,8 +221,7 @@ public class Variable extends Symbol implements IVariable {
 			// The name is ok. Now verifying the logic of facets
 			// Verifying that 'function' is not used in conjunction with other
 			// "value" facets
-			if (cd.hasFacet(FUNCTION)
-					&& (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {
+			if (cd.hasFacet(FUNCTION) && (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {
 				cd.error("A function cannot have an 'init', 'on_change' or 'update' facet", IGamlIssue.REMOVE_VALUE,
 						FUNCTION);
 				return;
@@ -340,12 +339,20 @@ public class Variable extends Symbol implements IVariable {
 					// AD 07/21 : Adds the possibility for experiment variables to become parameters
 					// We keep on looking after looking in the model so as to make sure that built-in parameters (like
 					// seed, for instance) can be correctly retrieved
-					targetedVar = ((ExperimentDescription) cd.getEnclosingDescription()).getAttribute(varName);
+					ExperimentDescription ed = (ExperimentDescription) cd.getEnclosingDescription();
+					targetedVar = ed.getAttribute(varName);
 					if (targetedVar == null) {
 						final String p = "Parameter '" + cd.getParameterName() + "' ";
 						cd.error(p + "cannot refer to the non-global variable " + varName, IGamlIssue.UNKNOWN_VAR,
 								IKeyword.VAR);
 						return;
+					}
+					if (ed.isBatch()) {
+						final String p = "Parameter '" + cd.getParameterName() + "' ";
+						cd.warning(p
+								+ "refers to an experiment variable, which cannot be explored during batch experiments. Move "
+								+ varName + " to the global section if it makes sense.", IGamlIssue.WRONG_CONTEXT,
+								IKeyword.VAR);
 					}
 				}
 				if (cd.getGamlType().equals(Types.NO_TYPE)) {
@@ -512,7 +519,7 @@ public class Variable extends Symbol implements IVariable {
 	public Variable(final IDescription sd) {
 		super(sd);
 		final VariableDescription desc = (VariableDescription) sd;
-		setName(sd.getName());		
+		setName(sd.getName());
 		parameter = desc.getParameterName();
 		category = getLiteral(IKeyword.CATEGORY, null);
 		updateExpression = getFacet(IKeyword.UPDATE);
@@ -523,7 +530,6 @@ public class Variable extends Symbol implements IVariable {
 		isNotModifiable = desc.isNotModifiable();
 		type = desc.getGamlType();
 	}
-
 
 	/**
 	 * Builds the helpers.

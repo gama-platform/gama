@@ -303,7 +303,7 @@ public class BufferingController {
 	 * @param map the map in which to look up
 	 * @return true if everything went well, false in case of error
 	 */
-	protected static boolean flushAllFilesOfOwner(AbstractAgent owner, Map<String, Map<AbstractAgent, TextBuffer>> map) {
+	protected static boolean flushAllFilesOfAgent(AbstractAgent owner, Map<String, Map<AbstractAgent, TextBuffer>> map) {
 		boolean success = true;
 		for(var entry : map.entrySet()) {
 			var writeTask = entry.getValue().get(owner);
@@ -326,7 +326,7 @@ public class BufferingController {
 	 * @param owner the agent in which the write statements have been executed
 	 * @param map the map in which to look up
 	 */
-	protected static void flushAllWriteOfOwner(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> map) {
+	protected static void flushAllWriteOfAgent(final AbstractAgent owner, final Map<AbstractAgent, List<TextBuffer>> map) {
 		var tasks = map.get(owner);
 		if (tasks != null) {
 			var scope = owner.getScope();
@@ -344,8 +344,8 @@ public class BufferingController {
 	 * @param owner the simulation or agent in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public synchronized boolean flushSaveFilesOfOwner(AbstractAgent owner) {
-		return flushAllFilesOfOwner(owner, fileBufferPerAgent);		
+	public synchronized boolean flushSaveFilesOfAgent(AbstractAgent owner) {
+		return flushAllFilesOfAgent(owner, fileBufferPerAgent);		
 	}
 	
 	/**
@@ -354,7 +354,7 @@ public class BufferingController {
 	 * @return true if everything went well, false in case of error
 	 */
 	public synchronized boolean flushSaveFilesInCycle(AbstractAgent owner) {
-		return flushAllFilesOfOwner(owner, fileBufferPerAgentForCycles);
+		return flushAllFilesOfAgent(owner, fileBufferPerAgentForCycles);
 	}
 	
 	/**
@@ -362,15 +362,15 @@ public class BufferingController {
 	 * @param owner the simulation in which the write statements have been executed
 	 */
 	public synchronized void flushWriteInCycle(AbstractAgent owner) {
-		flushAllWriteOfOwner(owner, consoleBufferListPerAgentForCycles);
+		flushAllWriteOfAgent(owner, consoleBufferListPerAgentForCycles);
 	}
 
 	/**
 	 * Flushes all the write requests made by an agent with the 'per_simulation' or 'per_agent' strategy
 	 * @param owner: the agent or simulation in which the write statements have been executed
 	 */
-	public synchronized void flushWriteOfOwner(AbstractAgent owner) {
-		flushAllWriteOfOwner(owner, consoleBufferListPerAgent);		
+	public synchronized void flushWriteOfAgent(AbstractAgent owner) {
+		flushAllWriteOfAgent(owner, consoleBufferListPerAgent);		
 	}
 	
 	/**
@@ -384,7 +384,7 @@ public class BufferingController {
 		}
 		// flushes the others for the console
 		for (var agent : consoleBufferListPerAgent.keySet()) {
-			flushWriteOfOwner(agent);
+			flushWriteOfAgent(agent);
 		}
 		// flushes the files registered for the cycle
 		var agents = fileBufferPerAgentForCycles.entrySet().stream()
@@ -400,7 +400,7 @@ public class BufferingController {
 				.flatMap(Collection::stream)
 				.toArray(length -> new AbstractAgent[length]);
 		for (AbstractAgent agent : agents) {
-			flushSaveFilesOfOwner(agent);
+			flushSaveFilesOfAgent(agent);
 		}	
 	}
 

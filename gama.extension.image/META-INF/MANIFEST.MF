@@ -10,9 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  gama.core,
  gama.dependencies
 Bundle-ClassPath: .,
- lib/batik 1.16/batik-all-1.16.jar,
- lib/batik 1.16/xml-apis-ext-1.3.04.jar,
- lib/batik 1.16/xmlgraphics-commons-2.7.jar
+ lib/jsvg-1.7.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy

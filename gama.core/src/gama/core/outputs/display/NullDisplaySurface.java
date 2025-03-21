@@ -14,10 +14,10 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
@@ -67,7 +67,7 @@ public class NullDisplaySurface implements IDisplaySurface {
 	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay()
 	 */
 	@Override
-	public void updateDisplay(final boolean force, final Semaphore synchronizer) {}
+	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {}
 
 	/**
 	 * Method zoomIn()

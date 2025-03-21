@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamlAddition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlAddition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -13,6 +12,7 @@ package gama.gaml.compilation;
 import java.lang.reflect.AnnotatedElement;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.gaml.interfaces.IGamlDescription;
 
@@ -76,7 +76,15 @@ public abstract class GamlAddition implements IGamlDescription {
 				String s = d.value();
 				if (s != null && !s.isEmpty()) { documentation.append(s).append("<br/>"); }
 				usage[] usages = d.usages();
-				for (usage u : usages) { documentation.append(u.value()).append("<br/>"); }
+				for (usage u : usages) {
+					documentation.append(u.value()).append("<br/><pre>");
+					for (example e : u.examples()) {
+						s = e.value();
+						if (s != null && !s.isEmpty()) { documentation.append("<t/>&#x09;").append(s).append("<br/>"); }
+					}
+					documentation.append("</pre>");
+
+				}
 				s = d.deprecated();
 				if (s != null && !s.isEmpty()) {
 					documentation.append("<b>Deprecated</b>: ").append("<i>").append(s).append("</i><br/>");

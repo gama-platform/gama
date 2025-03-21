@@ -15,7 +15,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
-import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Envelope;
 
@@ -112,12 +111,13 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 * Asks the surface to update its display, optionnaly forcing it to do so (if it is paused, for instance). A
 	 * synchronizer (possibly null) is passed, that needs to be released when the physical display is done
 	 **/
-	void updateDisplay(boolean force, Semaphore synchronizer);
+	void updateDisplay(boolean force, GeneralSynchronizer synchronizer);
 
 	/**
 	 * Update display.
 	 *
-	 * @param force the force
+	 * @param force
+	 *            the force
 	 */
 	default void updateDisplay(final boolean force) {
 		updateDisplay(force, null);
@@ -419,7 +419,6 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 		return !getManager().hasMouseMenuEventLayer();
 	}
 
-	
 	/**
 	 * Gets the scope.
 	 *

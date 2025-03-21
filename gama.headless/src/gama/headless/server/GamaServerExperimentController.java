@@ -116,9 +116,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		executionThread = new MyRunnable(j);
 
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-		try {
-			lock.acquire();
-		} catch (final InterruptedException e) {}
+		lock.acquire();
 		commandThread.start();
 	}
 
@@ -211,7 +209,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	public void closeExperiment(final Exception e) {
 		disposing = true;
-		if (e != null) { getScope().getGui().getStatus().errorStatus(getScope(), e.getMessage()); }
+		if (e != null) { getScope().getGui().getStatus().errorStatus(getScope(), e); }
 		experiment.dispose(); // will call own dispose() later
 	}
 
@@ -250,11 +248,8 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	public void step() {
 		if (paused) {
-			try {
-				lock.acquire();
-			} catch (InterruptedException e) {
-				experimentAlive = false;
-			}
+			lock.acquire();
+			// experimentAlive = false;
 		}
 		try {
 			_job.doStep();

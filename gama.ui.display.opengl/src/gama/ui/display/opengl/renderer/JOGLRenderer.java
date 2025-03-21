@@ -14,13 +14,13 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IAsset;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IImageProvider;
@@ -229,7 +229,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	boolean first = true;
 
 	/** The synchronizer. */
-	private Semaphore synchronizer;
+	private GeneralSynchronizer synchronizer;
 
 	@Override
 	public void reshape(final GLAutoDrawable drawable, final int arg1, final int arg2, final int w, final int h) {
@@ -265,7 +265,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * IGraphics DRAWING METHODS
 	 *
 	 */
-
 
 	@Override
 	public Rectangle2D drawAsset(final IAsset file, final DrawingAttributes attributes) {
@@ -544,7 +543,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @param synchronizer
 	 *            the new synchronizer
 	 */
-	public void setSynchronizer(final Semaphore synchronizer) {
+	public void setSynchronizer(final GeneralSynchronizer synchronizer) {
 		if (synchronizer == null) return;
 		this.synchronizer = synchronizer;
 

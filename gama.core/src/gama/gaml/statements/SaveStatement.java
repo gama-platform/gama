@@ -468,7 +468,7 @@ public class SaveStatement extends AbstractStatementSequence{
 		
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
-			boolean exists = fileToSave.exists() || GAMA.fileWillBeWritten(fileToSave);
+			boolean exists = fileToSave.exists() || GAMA.getBufferingController().isFileWaitingToBeWritten(fileToSave);
 			final boolean rewrite = shouldOverwrite(scope);
 
 			IExpression header = getFacet(IKeyword.HEADER);

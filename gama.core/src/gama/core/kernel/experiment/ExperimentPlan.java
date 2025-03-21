@@ -573,7 +573,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		addDefaultParameters();
 	}
 
-
 	@Override
 	public IModel getModel() { return model; }
 
@@ -751,7 +750,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		final Boolean showNavigator = layout.getFacetValue(myScope, "navigator", false);
 		final Boolean showControls = layout.getFacetValue(myScope, "controls", null);
 		final Boolean showParameters = layout.getFacetValue(myScope, "parameters", null);
-		final Boolean keepTray = layout.getFacetValue(myScope, "tray", null);
+		final Boolean keepTray = layout.getFacetValue(myScope, "tray", false);
 		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(myScope, "editors", false)
 				: !GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue();
 		Supplier<GamaColor> color = () -> layout.getFacetValue(myScope, "background", null);
@@ -772,11 +771,25 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		open(seed);
 	}
 
+	// Horrible workaround for #334
+	// ----------------------------------------------------------------------------------
+	private volatile boolean reloading;
+
 	@Override
 	public void reload() {
-		agent.dispose();
+		try {
+
+			reloading = true;
+			agent.dispose();
+		} finally {
+			reloading = false;
+		}
 		open();
 	}
+
+	@Override
+	public boolean isReloading() { return reloading; }
+	// ----------------------------------------------------------------------------------
 
 	@Override
 	public boolean hasParametersOrUserCommands() {

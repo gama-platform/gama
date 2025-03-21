@@ -64,7 +64,7 @@ public class TextSaver extends AbstractSaver {
 		options.setCharSet(ch);
 		
 		try  {
-			GAMA.askWriteFile(scope, file, toSave, options);
+			GAMA.getBufferingController().askWriteFile(file.getAbsolutePath(), scope, toSave, options);
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

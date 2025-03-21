@@ -34,6 +34,7 @@ import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
@@ -277,6 +278,18 @@ public class BatchAgent extends ExperimentAgent {
 		return s;
 	}
 
+	public IMap<ParametersSet, Map<String, List<Object>>>
+			runSimulationsAndReturnResults(final List<ParametersSet> sets) {
+		IMap<ParametersSet, Map<String, List<Object>>> res;
+		if (GamaExecutorService.shouldRunAllSimulationsInParallel(this)) {
+			res = launchSimulationsInParallelWithParametersSets(sets);
+		} else {
+			res = GamaMapFactory.create();
+			for (ParametersSet sol : sets) { res.put(sol, launchSimulationsWithSingleParametersSet(sol)); }
+		}
+		return res;
+	}
+
 	/**
 	 * Launch simulations with solution.
 	 *
@@ -286,8 +299,8 @@ public class BatchAgent extends ExperimentAgent {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public IMap<ParametersSet, Map<String, List<Object>>> launchSimulationsWithSolution(final List<ParametersSet> sols)
-			throws GamaRuntimeException {
+	private IMap<ParametersSet, Map<String, List<Object>>>
+			launchSimulationsInParallelWithParametersSets(final List<ParametersSet> sols) throws GamaRuntimeException {
 		// We first reset the currentSolution and the fitness values
 		final SimulationPopulation pop = getSimulationPopulation();
 
@@ -325,7 +338,6 @@ public class BatchAgent extends ExperimentAgent {
 		Map<IAgent, ParametersSet> simToParameter = GamaMapFactory.create();
 		Iterator<Map<String, Object>> it = simsToRun.iterator();
 		while (it.hasNext()) { createSimulation(it.next(), simToParameter); }
-
 		while (pop.hasScheduledSimulations() && !dead) {
 			// We step all the simulations
 			pop.step(getScope());
@@ -346,15 +358,16 @@ public class BatchAgent extends ExperimentAgent {
 					IMap<String, Object> localRes = manageOutputAndCloseSimulation(agent, ps, false, simDispose);
 
 					if (!res.containsKey(ps)) { res.put(ps, GamaMapFactory.create()); }
-					for (String output : localRes.keySet()) {
+					localRes.forEach((output, obj) -> {
 						if (!res.get(ps).containsKey(output)) { res.get(ps).put(output, GamaListFactory.create()); }
-						res.get(ps).get(output).add(localRes.get(output));
-					}
+						res.get(ps).get(output).add(obj);
+					});
 
 					if (!sims.isEmpty()) { createSimulation(sims.remove(0), simToParameter); }
 
 				}
 			}
+			if (!dead) { informStatus(pop, sims.size()); }
 			// We then verify that the front scheduler has not been paused
 			while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(100); }
 		}
@@ -380,19 +393,18 @@ public class BatchAgent extends ExperimentAgent {
 			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getSpecies().getExplorationAlgorithm();
 			final short fitnessCombination = oAlgo.getCombination();
 
-			for (ParametersSet p : res.keySet()) {
+			res.forEach((p, map) -> {
 				lastSolution = p;
 				try (DoubleStream fit =
-						res.get(p).get(IKeyword.FITNESS).stream().mapToDouble(o -> Double.parseDouble(o.toString()))) {
+						map.get(IKeyword.FITNESS).stream().mapToDouble(o -> Double.parseDouble(o.toString()))) {
 					lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? fit.max().getAsDouble()
 							: fitnessCombination == AOptimizationAlgorithm.C_MIN ? fit.min().getAsDouble()
 							: fit.average().getAsDouble();
 				}
-				res.get(p).put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
+				map.put(IKeyword.FITNESS, Collections.singletonList(lastFitness));
 				// we update the best solution found so far
 				oAlgo.updateBestFitness(lastSolution, lastFitness);
-
-			}
+			});
 		}
 
 		// At last, we update the parameters (last fitness and best fitness)
@@ -410,7 +422,7 @@ public class BatchAgent extends ExperimentAgent {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public Map<String, List<Object>> launchSimulationsWithSolution(final ParametersSet sol)
+	public Map<String, List<Object>> launchSimulationsWithSingleParametersSet(final ParametersSet sol)
 			throws GamaRuntimeException {
 		// We first reset the currentSolution and the fitness values
 		final SimulationPopulation pop = getSimulationPopulation();
@@ -444,7 +456,6 @@ public class BatchAgent extends ExperimentAgent {
 				repeatIndex++;
 				if (repeatIndex == getSeeds().length || dead) { break; }
 			}
-			String suffix = "";
 			while (pop.hasScheduledSimulations() && !dead) {
 				// We step all the simulations
 				pop.step(getScope());
@@ -465,20 +476,15 @@ public class BatchAgent extends ExperimentAgent {
 						pop.unscheduleSimulation(agent);
 						Map<String, Object> out =
 								manageOutputAndCloseSimulation(agent, currentSolution, true, simDispose);
-						for (String out_vars : out.keySet()) {
+						out.forEach((out_vars, obj) -> {
 							if (!outputs.containsKey(out_vars)) { outputs.put(out_vars, GamaListFactory.create()); }
-							outputs.get(out_vars).add(out.get(out_vars));
-						}
+							outputs.get(out_vars).add(obj);
+						});
 					}
 				}
 				// We inform the status line
-				if (!dead) {
-					getScope().getGui().getStatus().setStatus(getScope(),
-							"Run " + runNumber + " | " + repeatIndex + "/" + seeds.length + " simulations (using "
-									+ pop.getNumberOfActiveThreads() + " threads)",
-							"overlays/small.exp.batch.white" + suffix);
-				}
-				suffix = "".equals(suffix) ? "2" : "";
+				if (!dead) { informStatus(pop, repeatIndex); }
+
 				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}
@@ -519,6 +525,16 @@ public class BatchAgent extends ExperimentAgent {
 
 		return outputs;
 
+	}
+
+	boolean pairIcon;
+
+	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
+		getScope().getGui().getStatus().setStatus(getScope(),
+				"Run " + runNumber + " | " + repeatIndex + "/" + seeds.length + " simulations (using "
+						+ pop.getNumberOfActiveThreads() + " threads)",
+				"overlays/small.exp.batch.white" + (pairIcon ? "2" : ""));
+		pairIcon = !pairIcon;
 	}
 
 	/**
@@ -603,7 +619,7 @@ public class BatchAgent extends ExperimentAgent {
 	public void setKeepSimulations(final boolean keepSim) { this.simDispose = !keepSim; }
 
 	@Override
-	public void closeSimulations() {
+	public void closeSimulations(final boolean andLeaveExperimentPerspective) {
 		// We interrupt the simulation scope directly (as it cannot be
 		// interrupted by the global scheduler)
 		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
