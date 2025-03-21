@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AgentAttributesEditorsList.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * AgentAttributesEditorsList.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,6 +21,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ItemList;
 import gama.core.kernel.experiment.IExperimentDisplayable;
 import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaColor;
 import gama.ui.shared.interfaces.IParameterEditor;
@@ -45,7 +46,8 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	public String getItemDisplayName(final IAgent ag, final String name) {
 		if (name == null) return AGENT_MARKER + ag.getName();
 		if (ag.dead() && !name.contains(DEAD_MARKER)) {
-			final long cycle = ag.getScope().getClock().getCycle();
+			SimulationClock clock = ag.getScope().getClock();
+			final long cycle = clock == null ? 0 : clock.getCycle();
 			return AGENT_MARKER + ItemList.ERROR_CODE + name.substring(name.indexOf(ItemList.SEPARATION_CODE) + 1)
 					+ DEAD_MARKER + cycle;
 		}
