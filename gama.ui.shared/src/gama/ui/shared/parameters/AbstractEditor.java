@@ -14,9 +14,6 @@ import static gama.core.runtime.exceptions.GamaRuntimeException.create;
 
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -62,7 +59,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	private final int order = ORDER++;
 
 	/** The listener. */
-	@Nullable private final EditorListener<T> listener;
+	private final EditorListener<T> listener;
 
 	/** The agent. */
 	private final IAgent agent;
@@ -74,7 +71,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	protected String name;
 
 	/** The param. */
-	@Nonnull protected final IParameter param;
+	protected final IParameter param;
 
 	/** The different values. */
 	// Values
@@ -104,15 +101,13 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	protected EditorsGroup parent;
 
 	/** The editor toolbar. */
-	@SuppressWarnings("rawtypes")
-	protected EditorToolbar editorToolbar;
+	@SuppressWarnings ("rawtypes") protected EditorToolbar editorToolbar;
 
 	/** The editor label. */
 	protected EditorLabel editorLabel;
 
 	/** The editor control. */
-	@SuppressWarnings("rawtypes")
-	protected EditorControl editorControl;
+	@SuppressWarnings ("rawtypes") protected EditorControl editorControl;
 
 	/**
 	 * Instantiates a new abstract editor.
@@ -126,8 +121,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 * @param l
 	 *            the l
 	 */
-	public AbstractEditor(@Nonnull final IAgent a, @Nonnull final IParameter parameter,
-			@Nullable final EditorListener<T> l) {
+	public AbstractEditor(final IAgent a, final IParameter parameter, final EditorListener<T> l) {
 		param = parameter;
 		agent = a;
 		if (agent == null) throw GamaRuntimeException.error("The parameters view cannot be opened.", a.getScope());
@@ -370,7 +364,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 *
 	 * @return the editor control
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings ("rawtypes")
 	EditorControl createEditorControl() {
 		boolean isCombo = param.getAmongValue(getScope()) != null;
 		boolean isEditable = param.isEditable();
@@ -681,6 +675,7 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 * @return true, if is disposed
 	 * @date 21 févr. 2024
 	 */
+	@Override
 	public boolean isDisposed() {
 		if (editorLabel != null && editorLabel.isDisposed() || editorControl != null && editorControl.isDisposed())
 			return true;

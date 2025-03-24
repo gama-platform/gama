@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * CompositeGamaMessage.java, in gama.extension.network, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * CompositeGamaMessage.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.messaging.GamaMessage;
 import gama.core.runtime.IScope;
 import gama.extension.serialize.binary.BinarySerialisation;
@@ -33,8 +32,7 @@ public class CompositeGamaMessage extends GamaMessage {
 	 */
 	public CompositeGamaMessage(final IScope scope, final GamaMessage message) {
 		super(scope, message.getSender(), message.getReceivers(), message.getContents(scope));
-		this.contents = BinarySerialisation.saveToString(scope, message.getContents(scope),
-				ISerialisationConstants.BINARY_FORMAT, true);
+		this.contents = BinarySerialisation.saveToString(scope, message.getContents(scope));
 		// this.contents = StreamConverter.convertNetworkObjectToStream(scope, message.getContents(scope));
 		this.emissionTimeStamp = message.getEmissionTimestamp();
 		this.setUnread(true);

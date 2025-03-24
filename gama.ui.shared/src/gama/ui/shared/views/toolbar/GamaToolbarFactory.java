@@ -56,10 +56,8 @@ public class GamaToolbarFactory {
 		/**
 		 * Instantiates a new gama composite.
 		 *
-		 * @param parent
-		 *            the parent
-		 * @param displayer
-		 *            the displayer
+		 * @param parent    the parent
+		 * @param displayer the displayer
 		 */
 		public GamaComposite(final Composite parent, final ITooltipDisplayer displayer) {
 			super(parent, SWT.None);
@@ -71,8 +69,7 @@ public class GamaToolbarFactory {
 	/**
 	 * Find tooltip displayer.
 	 *
-	 * @param c
-	 *            the c
+	 * @param c the c
 	 * @return the i tooltip displayer
 	 */
 	public static ITooltipDisplayer findTooltipDisplayer(final Control c) {
@@ -83,13 +80,14 @@ public class GamaToolbarFactory {
 	/**
 	 * Find gama composite.
 	 *
-	 * @param c
-	 *            the c
+	 * @param c the c
 	 * @return the gama composite
 	 */
 	public static GamaComposite findGamaComposite(final Control c) {
-		if (c instanceof Shell) return null;
-		if (c instanceof GamaComposite) return (GamaComposite) c;
+		if (c instanceof Shell)
+			return null;
+		if (c instanceof GamaComposite)
+			return (GamaComposite) c;
 		return findGamaComposite(c.getParent());
 	}
 
@@ -110,8 +108,7 @@ public class GamaToolbarFactory {
 		/**
 		 * Sets the icon.
 		 *
-		 * @param show
-		 *            the new icon
+		 * @param show the new icon
 		 */
 		protected abstract void setIcon(boolean show);
 
@@ -177,7 +174,7 @@ public class GamaToolbarFactory {
 	}
 
 	/** The toolbar height. */
-	public static final int TOOLBAR_HEIGHT = 24; // CORE_ICONS_HEIGHT.getValue();Ì
+	public static final int TOOLBAR_HEIGHT = 24; 
 
 	/** The toolbar sep. */
 	public static final int TOOLBAR_SEP = 4;
@@ -185,10 +182,8 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param view
-	 *            the view
-	 * @param composite
-	 *            the composite
+	 * @param view      the view
+	 * @param composite the composite
 	 * @return the composite
 	 */
 	private static Composite createIntermediateCompositeFor(final IToolbarDecoratedView view,
@@ -240,8 +235,7 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param composite
-	 *            the composite
+	 * @param composite the composite
 	 * @return the composite
 	 */
 	public static Composite createToolbarComposite(final Composite composite) {
@@ -268,10 +262,8 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param view
-	 *            the view
-	 * @param composite
-	 *            the composite
+	 * @param view      the view
+	 * @param composite the composite
 	 * @return the composite
 	 */
 	public static Composite createToolbars(final IToolbarDecoratedView view, final Composite composite) {
@@ -281,8 +273,7 @@ public class GamaToolbarFactory {
 		childComposite.setLayoutData(getLayoutDataForChild());
 		childComposite.setLayout(getLayoutForChild());
 
-		final GamaToolbar2 tb =
-				new GamaToolbar2(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL | SWT.NO_FOCUS, TOOLBAR_HEIGHT);
+		final GamaToolbar2 tb = new GamaToolbar2(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL | SWT.NO_FOCUS);
 		final GridData data = layoutDataForToolbar();
 		tb.setLayoutData(data);
 		composite.addDisposeListener(e -> disposeToolbar(view, tb));
@@ -353,8 +344,8 @@ public class GamaToolbarFactory {
 	 * @return the grid data
 	 */
 	public static GridData layoutDataForToolbar() {
-		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
-		// data.minimumHeight = TOOLBAR_HEIGHT;
+		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		data.minimumHeight = TOOLBAR_HEIGHT;
 		data.minimumWidth = TOOLBAR_HEIGHT * 2;
 		return data;
 	}
@@ -362,22 +353,20 @@ public class GamaToolbarFactory {
 	/**
 	 * Dispose toolbar.
 	 *
-	 * @param view
-	 *            the view
-	 * @param tb
-	 *            the tb
+	 * @param view the view
+	 * @param tb   the tb
 	 */
 	public static void disposeToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
-		if (tb != null && !tb.isDisposed()) { tb.dispose(); }
+		if (tb != null && !tb.isDisposed()) {
+			tb.dispose();
+		}
 	}
 
 	/**
 	 * Builds the toolbar.
 	 *
-	 * @param view
-	 *            the view
-	 * @param tb
-	 *            the tb
+	 * @param view the view
+	 * @param tb   the tb
 	 */
 	public static void buildToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
 		if (view instanceof IToolbarDecoratedView.Sizable) {
@@ -397,13 +386,13 @@ public class GamaToolbarFactory {
 			b.install(tb);
 		}
 		if (view instanceof IToolbarDecoratedView.CSVExportable) {
-			final CSVExportationController csv =
-					new CSVExportationController((IToolbarDecoratedView.CSVExportable) view);
+			final CSVExportationController csv = new CSVExportationController(
+					(IToolbarDecoratedView.CSVExportable) view);
 			csv.install(tb);
 		}
 		if (view instanceof IToolbarDecoratedView.LogExportable) {
-			final LogExportationController log =
-					new LogExportationController((IToolbarDecoratedView.LogExportable) view);
+			final LogExportationController log = new LogExportationController(
+					(IToolbarDecoratedView.LogExportable) view);
 			log.install(tb);
 		}
 
@@ -414,8 +403,7 @@ public class GamaToolbarFactory {
 	/**
 	 * Visually update.
 	 *
-	 * @param tb
-	 *            the tb
+	 * @param tb the tb
 	 */
 	// public static void visuallyUpdate(final ToolBar tb) {
 	// Not needed anymore in Eclipse 2021-09. See issue #3210

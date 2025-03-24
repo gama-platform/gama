@@ -534,6 +534,10 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @date 3 nov. 2023
 	 */
 	public void sendMessage(final IScope scope, final Object message) {
+		sendMessage(scope, message,GamaServerMessage.Type.SimulationOutput);
+	}
+	
+	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.GamaServerMessage.Type type) {
 		try {
 			var socket = scope.getServerConfiguration().socket();
 			// try to get the socket in platformAgent if the request is too soon before agent.schedule()
@@ -543,7 +547,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 						+ message);
 				return;
 			}
-			socket.send(jsonEncoder.valueOf(new GamaServerMessage(GamaServerMessage.Type.SimulationOutput, message,
+			socket.send(jsonEncoder.valueOf(new GamaServerMessage(type, message,
 					scope.getServerConfiguration().expId())).toString());
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SimulationsMenu.java, in gama.ui.experiment, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * SimulationsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.menus;
 
@@ -58,8 +58,7 @@ public class SimulationsMenu extends ContributionItem {
 	public static final GamaCommand duplicateCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
 					"Duplicate the current simulation and add it to the experiment", e -> {
-						byte[] bytes =
-								BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation(), true);
+						byte[] bytes = BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation());
 						final SimulationAgent sim =
 								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 						GAMA.runAndUpdateAll(() -> {
@@ -101,8 +100,7 @@ public class SimulationsMenu extends ContributionItem {
 				// default -> SerialisationConstants.BINARY_FORMAT;
 				// };
 
-				BinarySerialisation.saveToFile(sim.getScope(), sim, open, ISerialisationConstants.BINARY_FORMAT, true,
-						false);
+				BinarySerialisation.saveToFile(sim.getScope(), sim, open, false);
 			});
 
 	/** The save current simulation and history. */
@@ -118,8 +116,7 @@ public class SimulationsMenu extends ContributionItem {
 						fileSave.setFileName(sim.getModel().getName() + "_" + sim.getCycle(sim.getScope()) + "_cycles"
 								+ ".simulation");
 						String open = fileSave.open();
-						BinarySerialisation.saveToFile(sim.getScope(), sim, open, ISerialisationConstants.BINARY_FORMAT,
-								true, true);
+						BinarySerialisation.saveToFile(sim.getScope(), sim, open, true);
 					});
 
 	/** The replace current simulation. */

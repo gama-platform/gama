@@ -5,7 +5,7 @@ on:
     inputs:
       RELEASE_VERSION: 
         required: true
-        default: 2024.03.0 
+        default: 2025.03.0 
         type: string
       IS_STABLE_RELEASE: 
         required: true

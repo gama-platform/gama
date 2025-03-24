@@ -102,7 +102,13 @@ public class ZoomController {
 						// toolbar
 					}
 				}
-				if (cameraLocked != null) { tb.setSelection(cameraLocked, view.isLocked()); }
+				if (cameraLocked != null) {
+					boolean locked = view.isCameraLocked();
+					boolean dynamic = view.isCameraDynamic();
+					tb.setSelection(cameraLocked, locked || dynamic);
+					// If the camera is dynamic, we disable the control (see #350)
+					cameraLocked.setEnabled(!dynamic);
+				}
 				tb.removeControlListener(this);
 			}
 
@@ -125,7 +131,7 @@ public class ZoomController {
 								@Override
 								public void widgetSelected(final SelectionEvent e) {
 									view.getCameraHelper().setCameraName(p);
-									cameraLocked.setSelection(view.isLocked());
+									cameraLocked.setSelection(view.isCameraLocked());
 								}
 
 							}, p.equals(view.getCameraHelper().getCameraName())
@@ -144,11 +150,12 @@ public class ZoomController {
 						}, GamaIcon.named(IGamaIcons.PASTE).image());
 					}
 				};
-				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.height, 96);
+				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.getToolbar(SWT.RIGHT).getSize().y, 96);
 			}, SWT.RIGHT);
 		}
 		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view", e -> { view.toggleLock(); },
 				SWT.RIGHT);
+
 	}
 
 }

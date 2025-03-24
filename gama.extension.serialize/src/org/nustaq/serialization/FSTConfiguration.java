@@ -11,7 +11,6 @@
 package org.nustaq.serialization;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
@@ -55,10 +54,10 @@ import org.nustaq.serialization.serializers.FSTStringSerializer;
 import org.nustaq.serialization.serializers.FSTThrowableSerializer;
 import org.nustaq.serialization.serializers.FSTTimestampSerializer;
 import org.nustaq.serialization.util.DefaultFSTInt2ObjectMapFactory;
-import org.nustaq.serialization.util.FSTInputStream;
 import org.nustaq.serialization.util.FSTInt2ObjectMapFactory;
 import org.nustaq.serialization.util.FSTUtil;
 
+import gama.core.util.ByteArrayZipper;
 import gama.gaml.compilation.kernel.GamaClassLoader;
 
 /**
@@ -70,9 +69,8 @@ import gama.gaml.compilation.kernel.GamaClassLoader;
  */
 public class FSTConfiguration {
 
-
 	/** The stream coder factory. */
-	private StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
+	private final StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
 
 	/** The name. */
 	private String name;
@@ -216,7 +214,7 @@ public class FSTConfiguration {
 	 *            the int to object map factory
 	 * @date 30 sept. 2023
 	 */
-	public void registerIntToObjectMapFactory(final FSTInt2ObjectMapFactory intToObjectMapFactory) {
+	void registerIntToObjectMapFactory(final FSTInt2ObjectMapFactory intToObjectMapFactory) {
 		if (intToObjectMapFactory != null) { this.intToObjectMapFactory = intToObjectMapFactory; }
 	}
 
@@ -242,19 +240,8 @@ public class FSTConfiguration {
 	 * @return the instantiator
 	 * @date 30 sept. 2023
 	 */
-	public FSTClassInstantiator getInstantiator(final Class<?> clazz) {
+	FSTClassInstantiator getInstantiator(final Class<?> clazz) {
 		return instantiator;
-	}
-
-	/**
-	 * special configuration used internally for struct emulation
-	 *
-	 * @return
-	 */
-	public static FSTConfiguration createStructConfiguration() {
-		FSTConfiguration conf = new FSTConfiguration();
-		conf.setStructMode(true);
-		return conf;
 	}
 
 	/**
@@ -265,37 +252,8 @@ public class FSTConfiguration {
 	 *            the shared field infos
 	 * @date 30 sept. 2023
 	 */
-	protected FSTConfiguration() {
+	FSTConfiguration() {
 		this.fieldInfoCache = new ConcurrentHashMap<>();
-	}
-
-	/**
-	 * Gets the stream coder factory.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the stream coder factory
-	 * @date 30 sept. 2023
-	 */
-	public StreamCoderFactory getStreamCoderFactory() { return streamCoderFactory; }
-
-	/**
-	 * allows to use subclassed stream codecs. Can also be used to change class loading behaviour, as clasForName is
-	 * part of a codec's interface.
-	 *
-	 * e.g. new StreamCoderFactory() {
-	 *
-	 * @Override public FSTEncoder createStreamEncoder() { return new FSTStreamEncoder(FSTConfiguration.this); }
-	 *
-	 * @Override public FSTDecoder createStreamDecoder() { return new FSTStreamDecoder(FSTConfiguration.this) { public
-	 *           Class classForName(String name) { ... } } ; } };
-	 *
-	 *           You need to work with thread locals most probably as the factory is ~global (assigned to
-	 *           fstconfiguration shared amongst streams)
-	 *
-	 * @param streamCoderFactory
-	 */
-	public void setStreamCoderFactory(final StreamCoderFactory streamCoderFactory) {
-		this.streamCoderFactory = streamCoderFactory;
 	}
 
 	/**
@@ -319,16 +277,6 @@ public class FSTConfiguration {
 		} finally {
 			cacheLock.set(false);
 		}
-	}
-
-	/**
-	 * patch default serializer lookup. set to null to delete. Should be set prior to any serialization going on
-	 * (serializer lookup is cached).
-	 *
-	 * @param del
-	 */
-	public void setSerializerRegistryDelegate(final FSTSerializerRegistryDelegate del) {
-		serializationInfoRegistry.setSerializerRegistryDelegate(del);
 	}
 
 	/** The cache lock. */
@@ -370,30 +318,6 @@ public class FSTConfiguration {
 	 * @date 30 sept. 2023
 	 */
 	public boolean isForceSerializable() { return true; }
-
-	/**
-	 * clear global deduplication caches. Useful for class reloading scenarios, else counter productive as
-	 * j.reflect.Fiwld + Construtors will be instantiated more than once per class.
-	 */
-	public static void clearGlobalCaches() {
-		FSTClazzInfo.sharedFieldSets.clear();
-		FSTDefaultClassInstantiator.constructorMap.clear();
-	}
-
-	/**
-	 * clear cached softref's and ThreadLocal.
-	 */
-	public void clearCaches() {
-		try {
-			FSTInputStream.cachedBuffer.set(null);
-			while (!cacheLock.compareAndSet(false, true)) {
-				// empty
-			}
-			cachedObjects.clear();
-		} finally {
-			cacheLock.set(false);
-		}
-	}
 
 	/**
 	 * Checks if is share references.
@@ -535,33 +459,6 @@ public class FSTConfiguration {
 	}
 
 	/**
-	 * utility for thread safety and reuse. Do not close the resulting stream. However you should close the given
-	 * InputStream 'in'
-	 *
-	 * @param in
-	 * @return
-	 */
-	public FSTObjectInput getObjectInput(final InputStream in) {
-		FSTObjectInput fstObjectInput = getIn();
-		try {
-			fstObjectInput.resetForReuse(in);
-			return fstObjectInput;
-		} catch (IOException e) {
-			FSTUtil.<RuntimeException> rethrow(e);
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the object input.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the object input
-	 * @date 30 sept. 2023
-	 */
-	public FSTObjectInput getObjectInput() { return getObjectInput((InputStream) null); }
-
-	/**
 	 * take the given array as input. the array is NOT copied.
 	 *
 	 * WARNING: the input streams takes over ownership and might overwrite content of this array in subsequent IO
@@ -571,6 +468,7 @@ public class FSTConfiguration {
 	 * @return
 	 */
 	public FSTObjectInput getObjectInput(final byte arr[]) {
+
 		return getObjectInput(arr, arr.length);
 	}
 
@@ -588,24 +486,6 @@ public class FSTConfiguration {
 		FSTObjectInput fstObjectInput = getIn();
 		try {
 			fstObjectInput.resetForReuseUseArray(arr, len);
-			return fstObjectInput;
-		} catch (IOException e) {
-			FSTUtil.<RuntimeException> rethrow(e);
-		}
-		return null;
-	}
-
-	/**
-	 * take the given array and copy it to input. the array IS copied
-	 *
-	 * @param arr
-	 * @param len
-	 * @return
-	 */
-	public FSTObjectInput getObjectInputCopyFrom(final byte arr[], final int off, final int len) {
-		FSTObjectInput fstObjectInput = getIn();
-		try {
-			fstObjectInput.resetForReuseCopyArray(arr, off, len);
 			return fstObjectInput;
 		} catch (IOException e) {
 			FSTUtil.<RuntimeException> rethrow(e);
@@ -670,21 +550,6 @@ public class FSTConfiguration {
 	 * @return a recycled outputstream reusing its last recently used byte[] buffer
 	 */
 	public FSTObjectOutput getObjectOutput() { return getObjectOutput((OutputStream) null); }
-
-	/**
-	 * Gets the object output.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param outByte
-	 *            the out byte
-	 * @return the object output
-	 * @date 30 sept. 2023
-	 */
-	public FSTObjectOutput getObjectOutput(final byte[] outByte) {
-		FSTObjectOutput fstObjectOutput = getOut();
-		fstObjectOutput.resetForReUse(outByte);
-		return fstObjectOutput;
-	}
 
 	/**
 	 * ignores all serialization related interfaces (Serializable, Externalizable) and serializes all classes using the
@@ -798,7 +663,8 @@ public class FSTConfiguration {
 	 */
 	public Object asObject(final byte b[]) {
 		try {
-			return getObjectInput(b).readObject();
+			final byte[] input = ByteArrayZipper.unzip(b);
+			return getObjectInput(input).readObject();
 		} catch (Exception e) {
 			System.out.println("unable to decode:" + new String(b, 0, 0, Math.min(b.length, 100)));
 			FSTUtil.<RuntimeException> rethrow(e);
@@ -813,27 +679,7 @@ public class FSTConfiguration {
 		FSTObjectOutput objectOutput = getObjectOutput();
 		try {
 			objectOutput.writeObject(object);
-			return objectOutput.getCopyOfWrittenBuffer();
-		} catch (IOException e) {
-			FSTUtil.<RuntimeException> rethrow(e);
-		}
-		return null;
-	}
-
-	/**
-	 * Warning: avoids allocation + copying. The returned byteArray is a direct pointer to underlying buffer. the int
-	 * length[] is expected to have at least on element. The buffer can be larger than written data, therefore length[0]
-	 * will contain written length.
-	 *
-	 * The buffer content must be used (e.g. sent to network, copied to offheap) before doing another asByteArray on the
-	 * current Thread.
-	 */
-	public byte[] asSharedByteArray(final Object object, final int length[]) {
-		FSTObjectOutput objectOutput = getObjectOutput();
-		try {
-			objectOutput.writeObject(object);
-			length[0] = objectOutput.getWritten();
-			return objectOutput.getBuffer();
+			return ByteArrayZipper.zip(objectOutput.getCopyOfWrittenBuffer());
 		} catch (IOException e) {
 			FSTUtil.<RuntimeException> rethrow(e);
 		}

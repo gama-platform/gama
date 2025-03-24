@@ -16,7 +16,6 @@ import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.kernel.experiment.ISimulationRecorder;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.SerialisedAgent;
-import gama.core.util.ByteArrayZipper;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
@@ -46,7 +45,7 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 	@Override
 	public void record(final SimulationAgent sim) {
 		try {
-			byte[] state = processor.saveAgentToBytes(sim.getScope(), sim);
+			byte[] state = processor.saveObjectToBytes(sim.getScope(), sim);
 			SimulationHistory history = getSimulationHistory(sim);
 			history.push(state, sim.getClock().getCycle());
 		} catch (Throwable e) {
@@ -89,7 +88,7 @@ public class SimulationSerialiser implements ISimulationRecorder, ISerialisation
 				if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
 				if (node != null) {
 					// long startTime = System.nanoTime();
-					processor.restoreAgentFromBytes(sim, ByteArrayZipper.unzip(node.bytes()));
+					processor.restoreAgentFromBytes(sim, node.bytes());
 					// DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) +
 					// "ms");
 				}

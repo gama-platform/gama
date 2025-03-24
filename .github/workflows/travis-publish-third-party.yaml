@@ -7,84 +7,71 @@ on:
         description: "The tag of the release to publish"
         type: string
         required: true
-        default: 2024.03.0
-      targets:
-        description: "The targets to publish to separated by spaces"
+        default: 2025.03.0
+      IS_STABLE_RELEASE:
+        required: true
         type: string
-        default: "windows linux mac docker"
     secrets:
       BOT_TOKEN:
         required: true
         description: "The token used to authenticate to the Github API"
 
-
 run-name: Auto publishing ${{ inputs.tag }} to external stores
 
 jobs:
-  get-tag-info: 
+  get-tag-info:
     runs-on: ubuntu-latest
     name: Get tag info 🏷️
 
     outputs:
-      tag: ${{ steps.release_data.outputs.tag_name }}
-      prerelease: ${{ steps.release_data.outputs.prerelease }}
       commit_hash: ${{ steps.tag_data.outputs.commit_hash }}
 
     steps:
       - uses: actions/checkout@v4
-        with: 
+        with:
           fetch-tags: true
           ref: ${{ inputs.tag }}
 
-      - name: Get tag data 
+      - name: Get tag data
         id: tag_data
         run: |
           echo "commit_hash=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Get release data
-        uses: cardinalby/git-get-release-action@1.2.4
-        id: release_data
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          tag: ${{ inputs.tag }}
-
   #
   # ██████╗ ███████╗██╗     ███████╗ █████╗ ███████╗███████╗
   # ██╔══██╗██╔════╝██║     ██╔════╝██╔══██╗██╔════╝██╔════╝
-  # ██████╔╝█████╗  ██║     █████╗  ███████║███████╗█████╗  
-  # ██╔══██╗██╔══╝  ██║     ██╔══╝  ██╔══██║╚════██║██╔══╝  
+  # ██████╔╝█████╗  ██║     █████╗  ███████║███████╗█████╗
+  # ██╔══██╗██╔══╝  ██║     ██╔══╝  ██╔══██║╚════██║██╔══╝
   # ██║  ██║███████╗███████╗███████╗██║  ██║███████║███████╗
   # ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
-  #                                                         
+  #
 
   windows:
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish to windows 🪟
-    if: contains(inputs.targets, 'windows')
 
     steps:
-      - name: Get Previous Release info 
+      - name: Get Previous Release info
         # This version incementation shall be removed when winget-releaser will be able to delete older releases again cf. https://github.com/gama-platform/gama/issues/3917
-        if: needs.get-tag-info.outputs.prerelease == 'true'
+        if: "${{ !inputs.IS_STABLE_RELEASE }}"
         id: get-prev-release
         run: |
           curl -L -G \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/g/GamaPlatform/GamaAlpha" > ${{ runner.temp }}/prev_release.json
-          
+
             new_version_counter="$(jq -r '.[] | select(.type == "dir") | select(.name | test("^${{ inputs.tag }}-[0-9]+$")) | .name' ${{ runner.temp }}/prev_release.json | cut -d '-' -f 2 | sort -nuz | head -n1)"
             if [ -n "$new_version_counter" ]; then
               new_version_counter=$(($new_version_counter + 1))
-            else 
+            else
               new_version_counter=1
             fi
             echo "new_version_counter=$new_version_counter" >> $GITHUB_OUTPUT
 
-      - name: Publish Gama to Winget 🚀
-        if: needs.get-tag-info.outputs.prerelease == 'false'
+      - name: Publish Stable release to Winget 🚀
+        if: "${{ inputs.IS_STABLE_RELEASE }}"
         uses: vedantmgoyal2009/winget-releaser@v2
         with:
           identifier: GamaPlatform.Gama
@@ -95,7 +82,7 @@ jobs:
           fork-user: gama-platform
 
       - name: Publish Pre release to Winget 👷
-        if: needs.get-tag-info.outputs.prerelease == 'true'
+        if: "${{ !inputs.IS_STABLE_RELEASE }}"
         uses: vedantmgoyal2009/winget-releaser@v2
         with:
           identifier: GamaPlatform.GamaAlpha
@@ -105,7 +92,7 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
           max-versions-to-keep: 1
           fork-user: gama-platform
-        
+
       - name: Get PR created for the release
         id: get-pr
         run: |
@@ -115,7 +102,7 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             --data-urlencode "q=is:pr author:gama-bot state:open repo:microsoft/winget-pkgs sort:created-desc" \
             "https://api.github.com/search/issues?sort=created&order=desc&per_page=1" > ${{ runner.temp }}/pr.json
-            
+
           echo "number=$(jq -r '.items[0].number' ${{ runner.temp }}/pr.json)" >> $GITHUB_OUTPUT
 
       - name: Mention developpers
@@ -123,7 +110,7 @@ jobs:
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
-            let is_pre_release = ${{ needs.get-tag-info.outputs.prerelease }} == 'true'
+            let is_pre_release = "${{ !inputs.IS_STABLE_RELEASE }}"
 
             github.issues.createComment({
               issue_number: ${{ steps.get-pr.outputs.number }},
@@ -139,12 +126,10 @@ jobs:
               .addLink("Link to the Winget PR", "https://github.com/microsoft/winget-pkgs/pull/${{ steps.get-pr.outputs.number }}")
               .write()
 
-
   docker:
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish pre-release as container 🐳
-    if: needs.get-tag-info.outputs.prerelease == 'true' && contains(inputs.targets, 'docker')
 
     steps:
       - name: Publish Gama to Github Packages 🚀
@@ -153,14 +138,12 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
             --data '{"event_type": "automated-generation"}' \
-            https://api.github.com/repos/gama-platform/gama.docker/dispatches 
-
+            https://api.github.com/repos/gama-platform/gama.docker/dispatches
 
   linux-debian:
     needs: get-tag-info
     runs-on: ubuntu-latest
-    name: Publish to PPA/Debian repo 🐧 🟠🔴 
-    if: contains(inputs.targets, 'linux')
+    name: Publish to PPA/Debian repo 🐧 🟠🔴
 
     steps:
       - name: Publish Gama to https://ppa.gama-platform.org 🚀
@@ -172,7 +155,6 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             --data '{"ref": "main", "inputs": {"tag": "${{ inputs.tag }}"}}' \
             https://api.github.com/repos/gama-platform/gama.ppa/actions/workflows/69865833/dispatches
-
 
   # linux-arch:
   #   needs: get-tag-info

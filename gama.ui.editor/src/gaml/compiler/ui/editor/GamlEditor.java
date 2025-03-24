@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlEditor.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,6 +28,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -34,6 +36,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.SurroundWithBracketsStrategy;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
@@ -210,9 +213,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 	/** The menu images. */
 	static Map<String, Image> menu_images = new HashMap();
 
-	/** The max image height. */
-	static int maxImageHeight = 0;
-
 	/** The button padding. How much space between each experiment button */
 	static int buttonPadding = 4;
 	static {
@@ -231,7 +231,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI).image());
 
 		images.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
-		for (Image im : images.values()) { maxImageHeight = Math.max(maxImageHeight, im.getBounds().height); }
+		// for (Image im : images.values()) { maxImageHeight = Math.max(maxImageHeight, im.getBounds().height); }
 	}
 
 	/**
@@ -593,7 +593,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, true);
-				toolbar.setDefaultHeight(maxImageHeight);
 
 				final var c = state.getColor();
 				var msg = state.getStatus();
@@ -784,6 +783,16 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 		@Override
 		public ITextHover getTextHover(final ISourceViewer sourceViewer, final String contentType) {
 			return super.getTextHover(sourceViewer, contentType);
+		}
+
+		// See issue #391 : automatically surrounds the selected words with a pair of "brackets"
+		@Override
+		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
+			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
+			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) return strategies;
+			for (IAutoEditStrategy strategy : strategies)
+				if (strategy instanceof SurroundWithBracketsStrategy) return strategies;
+			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
 		}
 
 	}

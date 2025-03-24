@@ -7,6 +7,9 @@
 model ants
 
 global {
+	
+	list<rgb> colors <- reverse(brewer_colors("Spectral", 11));	
+	
 	//Number of ants
 	int ants_number <- 100 min: 1 max: 2000 ;
 	//Evaporation value per cycle for the pheromons
@@ -41,7 +44,8 @@ grid ant_grid width: gridsize height: gridsize neighbors: 8 use_regular_agents: 
 	int type <- int(types at {grid_x,grid_y}) ;
 	bool isNestLocation <- (self distance_to center) < 4 ; 
 	bool isFoodLocation <- type = 2 ; 
-	rgb color <- isNestLocation ? #violet:((food > 0)? #blue : ((road < 0.001)? rgb ([100,100,100]) : ((road > 2)? #white : ((road > 0.5)? (#grey) : ((road > 0.2)? (#lightgrey) : (#darkgray)))))) update: isNestLocation ? #violet:((food > 0)? #blue : ((road < 0.001)? rgb ([100,100,100]) : ((road > 2)? #white : ((road > 0.5)? (#grey) : ((road > 0.2)? (#lightgray) : (#darkgray)))))) ;
+	rgb color <- isNestLocation ? colors[7]:((food > 0)? colors[1] : ((road < 0.001)? colors[2] : ((road > 2)? colors[3] : ((road > 0.5)? colors[4] : ((road > 0.2)? (colors[5]) : (colors[6])))))) 
+		  update:isNestLocation ? colors[7]:((food > 0)? colors[1] : ((road < 0.001)? colors[2] : ((road > 2)? colors[3] : ((road > 0.5)? colors[4] : ((road > 0.2)? (colors[5]) : (colors[6])))))) ;
 	int food <- isFoodLocation ? 5 : 0 ;
 	int nest const: true <- 300 - int(self distance_to center) ;
 	
@@ -105,10 +109,18 @@ species ant skills: [moving] control: fsm {
 	}
 
 	aspect default {
-		draw circle(1.0) wireframe: !hasFood color: #orange ; 
+		draw circle(1.0) wireframe: !hasFood color: colors[8] ; 
 	}
 }
 experiment "Experiment" type: gui {
+	
+	font title_font <- font("Helvetica", 11, #bold);
+	font chart_font <- font("Helvetica", 10);
+
+	
+	
+	
+	
 	//Parameters to play with  in the gui
 	parameter 'Number of ants:' var: ants_number category: 'Model' ;
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model' ;
@@ -146,99 +158,96 @@ experiment "Experiment" type: gui {
 	}
 	//The different displays
 	output {
-	    layout horizontal([vertical([0::6721,2::3279])::5000,vertical([1::5000,horizontal([3::5000,4::5000])::5000])::5000]) tabs:true toolbars:true;
+	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false tabs:false consoles: false parameters: false;
 		
-		display Ants type: 2d antialias:false{
+		display Ants type: 2d antialias:false toolbar: false{
 			grid ant_grid ;
 			species ant  ;
 		}
-		display ProportionCarryFood  type: 2d {
-			chart "Proportions carrying: Pie"  size: {0.5,0.5} position: {0, 0} type:pie
+		display ProportionCarryFood  type: 2d toolbar: false {
+			chart "Proportions carrying: Pie"  size: {0.5,0.5} position: {0, 0} type:pie  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			{
-				data "empty_ants" value:(ant count (!each.hasFood)) color:#red;
-				data "carry_food_ants" value:(ant count (each.hasFood)) color:#green;
+				data "empty_ants" value:(ant count (!each.hasFood)) color:colors[0];
+				data "carry_food_ants" value:(ant count (each.hasFood)) color:colors[1];
 				
 			}
 			
-			chart "Proportions carrying: Radar"  size: {0.5,0.5} position: {0.5, 0} type:radar
-			axes:#white
+			chart "Proportions carrying: Radar"  size: {0.5,0.5} position: {0.5, 0} type:radar  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
+			
 
 			{
-				data "empty" value:(ant count (!each.hasFood)) 
-				accumulate_values:true
-				color:#red;				
-				data "carry" value:(ant count (each.hasFood)) 
-				accumulate_values:true
-				color:#blue;				
+				data "empty" value:(ant count (!each.hasFood)) accumulate_values:true color:colors[0];				
+				data "carry" value:(ant count (each.hasFood)) accumulate_values:true color:colors[1];				
 			}
 			
-			chart "Proportion: serie"   size: {1.0,0.5} position: {0, 0.5} type:series 
-			series_label_position: legend
+			chart "Proportion: series"   size: {1.0,0.5} position: {0, 0.5} type:series  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
+			series_label_position: legend 
 			style:stack
 			{
 				datalist ["empty","carry"] accumulate_values:true 
-				value:[(ant count (!each.hasFood)),(ant count (each.hasFood))] 
-				color:[#red,#green];				
+				value:[(ant count (!each.hasFood)),(ant count (each.hasFood))]  thickness: 0.5 marker: false
+				color:colors;				
 			}
 		}
 
-		display CentroidPosition  type: 2d {
-			chart "Positions and History of Centroide and size by Carry state" type:scatter
+		display CentroidPosition  type: 2d toolbar: false {
+			chart "Positions and History of centroid and size by state" type:scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			{
-				datalist ["avg-carry","avg-empty"] value:[mean((ant where (each.hasFood)) collect each.location),
-					mean((ant where (!each.hasFood)) collect each.location)
-				]
-				marker_size: [(ant count (each.hasFood))/20,(ant count (!each.hasFood))/20]
-					 color:[#red,#green] 
+				datalist ["avg-carry","avg-empty"] 
+					value:[mean((ant where (each.hasFood)) collect each.location),
+								mean((ant where (!each.hasFood)) collect each.location)]
+					marker_size: [(ant count (each.hasFood))/20,(ant count (!each.hasFood))/20]
+					 color:colors
 					 fill:false
 					 line_visible:true;				
-				data "empty_ants" value:((ant where (!each.hasFood)) collect each.location) color:#red 
-				accumulate_values:false
-				line_visible:false;
+				data "empty_ants" value:((ant where (!each.hasFood)) collect each.location) color:colors[0] 
+					accumulate_values:false
+					line_visible:false;
 				data "carry_food_ants" value:((ant where (each.hasFood)) collect each.location) 
-				accumulate_values:false
-				color:#green line_visible:false;
+					accumulate_values:false
+					color:colors[3] line_visible:true;
 
 			}
 		}	
-		display Distribution2dPosition  type: 2d {
-			chart "Distribution of the X positions"   size: {0.65,0.3} position: {0.05, 0} type:histogram
-			
+		display Distribution2dPosition  type: 2d toolbar: false {
+			chart "Distribution of the X positions"   size: {0.65,0.3} position: {0.05, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			x_tick_line_visible: false y_tick_line_visible: false
 			{
 				datalist (distribution_of(ant collect each.location.x,10,0,100) at "legend") 
-					value:(distribution_of(ant collect each.location.x,10,0,100) at "values");
+					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: colors;
 			}
-			chart "Distribution of the Y positions"   size: {0.3,0.7} position: {0.7, 0.28} type:histogram
-			reverse_axes:true
+			chart "Distribution of the Y positions"   size: {0.3,0.7} position: {0.7, 0.28} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			reverse_axes:true x_tick_line_visible: false y_tick_line_visible: false
 			
 			{
 				datalist reverse(distribution_of(ant collect each.location.x,10,0,100) at "legend") 
-					value:reverse(distribution_of(ant collect each.location.x,10,0,100) at "values");
+					value:reverse(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
 
-			chart "Distribution2d of the XvsY positions- heatmap"   size: {0.7,0.7} position: {0, 0.3} type:heatmap
-			series_label_position:none
+			chart "Distribution2d of the XvsY positions- heatmap"   size: {0.7,0.7} position: {0, 0.3} type:heatmap  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			series_label_position:none x_tick_line_visible: false y_tick_line_visible: false axes: #white
 			{
 				data  "XYdistrib"
 					value:(distribution2d_of(ant collect each.location.x,ant collect each.location.y,10,0,100,10,0,100) at "values")
-					color:[#red]; 
+					line_visible: false
+					color:colors; 
 			}
 		}
 		
-		display DistributionPosition  type: 2d {
-			chart "Distribution of the X positions"   size: {0.92,0.3} position: {0, 0} type:histogram
+		display DistributionPosition  type: 2d toolbar: false{
+			chart "Distribution of the X positions"   size: {0.92,0.3} position: {0, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 			{
 				datalist (distribution_of(ant collect each.location.x,10,0,100) at "legend") 
-					value:(distribution_of(ant collect each.location.x,10,0,100) at "values");
+					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
-			chart "Distribution of the X positions- heatmap"   size: {1.0,0.7} position: {0, 0.3} type:heatmap
+			chart "Distribution of the X positions- heatmap"   size: {1.0,0.7} position: {0, 0.3} type:heatmap  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_serie_labels: (distribution_of(ant collect each.location.x,10,0,100) at "legend")
 			y_range:50
 			{
 				data  "Xdistrib"
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values")
-					color:[#red];
+					color:(colors);
 			}
 		}	
 		}

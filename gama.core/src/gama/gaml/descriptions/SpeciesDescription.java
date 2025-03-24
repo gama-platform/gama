@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SpeciesDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -223,18 +223,7 @@ public class SpeciesDescription extends TypeDescription {
 		 */
 		if (userDefinedSkills != null) {
 			final IExpression expr = userDefinedSkills.compile(this);
-			if (expr instanceof ListExpression list) {
-				for (final IExpression exp : list.getElements()) {
-					if (exp instanceof SkillConstantExpression) {
-						final SkillDescription sk = ((ISkill) exp.getConstValue()).getDescription();
-						final String dep = sk.getDeprecated();
-						if (dep != null) {
-							warning("Skill " + sk.getName() + " is deprecated: " + dep, IGamlIssue.DEPRECATED, SKILLS);
-						}
-						addSkill(sk);
-					}
-				}
-			}
+			if (expr instanceof ListExpression list) { addSkills(list); }
 		}
 		/*
 		 * We add the skills that are defined in Java, either using @species(value='a', skills= {s1,s2}),
@@ -242,6 +231,25 @@ public class SpeciesDescription extends TypeDescription {
 		 */
 		for (final String s : builtInSkills) { addSkill(GamaSkillRegistry.INSTANCE.get(s)); }
 
+	}
+
+	/**
+	 * Adds the skills.
+	 *
+	 * @param list
+	 *            the list
+	 */
+	private void addSkills(final ListExpression list) {
+		for (final IExpression exp : list.getElements()) {
+			if (exp instanceof SkillConstantExpression) {
+				final SkillDescription sk = ((ISkill) exp.getConstValue()).getDescription();
+				final String dep = sk.getDeprecated();
+				if (dep != null) {
+					warning("Skill " + sk.getName() + " is deprecated: " + dep, IGamlIssue.DEPRECATED, SKILLS);
+				}
+				addSkill(sk);
+			}
+		}
 	}
 
 	@Override
@@ -309,9 +317,9 @@ public class SpeciesDescription extends TypeDescription {
 			error("This species cannot be compiled as its Java base is unknown. ", IGamlIssue.UNKNOWN_SPECIES);
 			return;
 		}
-		Class<? extends IAgent> javaBase = getJavaBase();
+		Class<? extends IAgent> base = getJavaBase();
 		Iterable<Class<? extends ISkill>> skillClasses = transform(getSkills(), TO_CLASS);
-		Iterable<IDescription> javaChildren = GAML.getAllChildrenOf(javaBase, skillClasses);
+		Iterable<IDescription> javaChildren = GAML.getAllChildrenOf(base, skillClasses);
 		for (final IDescription v : javaChildren) { addJavaChild(v); }
 	}
 
@@ -597,47 +605,61 @@ public class SpeciesDescription extends TypeDescription {
 	@Override
 	public SpeciesDescription getParent() { return (SpeciesDescription) super.getParent(); }
 
+	/**
+	 * Verify java base.
+	 *
+	 * @param sd
+	 *            the sd
+	 * @return true, if successful
+	 */
+	private boolean verifyJavaBase(final SpeciesDescription sd) {
+		if (sd.getJavaBase() == null) {
+			error("Species " + sd.getName() + " Java base class can not be found. No validation is possible.",
+					IGamlIssue.GENERAL);
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void inheritFromParent() {
-		final SpeciesDescription parent = getParent();
+		final SpeciesDescription parentSpecies = getParent();
 		// Takes care of invalid species (see Issue 711)
 		// built-in parents are not considered as their actions/variables are
 		// normally already copied as java additions
-		if (parent != null && parent.getJavaBase() == null) {
-			error("Species " + parent.getName() + " Java base class can not be found. No validation is possible.",
-					IGamlIssue.GENERAL);
-			return;
-		}
-		if (getJavaBase() == null) {
-			error("Species " + getName() + " Java base class can not be found. No validation is possible.",
-					IGamlIssue.GENERAL);
-			return;
-		}
-		if (parent != null && parent != this && !parent.isBuiltIn() && parent.getJavaBase() != null) {
-			if (!parent.getJavaBase().isAssignableFrom(getJavaBase())) {
-				error("Species " + getName() + " Java base class (" + getJavaBase().getSimpleName()
-						+ ") is not a subclass of its parent species " + parent.getName() + " base class ("
-						+ parent.getJavaBase().getSimpleName() + ")", IGamlIssue.GENERAL);
-			}
-			if (!parent.isBuiltIn()) { inheritMicroSpecies(parent); }
-
-		}
+		if ((parentSpecies == null) || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
+		tryInheritMicroSpecies(parentSpecies);
 		super.inheritFromParent();
+	}
 
+	/**
+	 * Try inherit micro species.
+	 *
+	 * @param parentSpecies
+	 *            the parent species
+	 */
+	private void tryInheritMicroSpecies(final SpeciesDescription parentSpecies) {
+		// Takes care of invalid species (see Issue 711)
+		if (parentSpecies == null || parentSpecies == this) return;
+		if (!parentSpecies.isBuiltIn()) {
+			if (!parentSpecies.getJavaBase().isAssignableFrom(getJavaBase())) {
+				error("Species " + getName() + " Java base class (" + getJavaBase().getSimpleName()
+						+ ") is not a subclass of its parent species " + parentSpecies.getName() + " base class ("
+						+ parentSpecies.getJavaBase().getSimpleName() + ")", IGamlIssue.GENERAL);
+			}
+			inheritMicroSpecies(parentSpecies);
+		} else if (!isBuiltIn() && isModel()) { inheritMicroSpecies(parentSpecies); }
 	}
 
 	/**
 	 * Inherit micro species.
 	 *
-	 * @param parent
+	 * @param parentSpecies
 	 *            the parent
 	 */
-	// FIXME HACK !
-	private void inheritMicroSpecies(final SpeciesDescription parent) {
-		// Takes care of invalid species (see Issue 711)
-		if (parent == null || parent == this) return;
-		if (parent.hasMicroSpecies()) {
-			parent.getMicroSpecies().forEachPair((k, v) -> {
+	private void inheritMicroSpecies(final SpeciesDescription parentSpecies) {
+		if (parentSpecies.hasMicroSpecies()) {
+			parentSpecies.getMicroSpecies().forEachPair((k, v) -> {
 				getMicroSpecies().putIfAbsent(k, v);
 				return true;
 			});

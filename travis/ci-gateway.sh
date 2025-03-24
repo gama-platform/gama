@@ -43,7 +43,7 @@ function update_tag() {
 
 clean(){
 	echo "Clean p2 update site"		
-	sshpass -e ssh gamaws@51.255.46.42 /var/www/gama_updates/clean.sh
+	sshpass -e ssh gamaws@152.228.133.219 /var/www/gama_updates/clean.sh
 }
 
 deploy(){	

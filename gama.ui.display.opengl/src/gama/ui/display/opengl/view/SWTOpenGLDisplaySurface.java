@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuEvent;
@@ -47,6 +46,7 @@ import com.jogamp.opengl.GLContext;
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
@@ -120,7 +120,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	/** The scope. */
 	IGraphicsScope scope;
-
 
 	/** The parent. */
 	final Composite parent;
@@ -264,7 +263,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay(boolean)
 	 */
 	@Override
-	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
+	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
 		if (alreadyUpdating) return;
 		try {
 			alreadyUpdating = true;
@@ -321,7 +320,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public void toggleLock() {
-		renderer.getCameraHelper().toggleCamera();
+		renderer.getCameraHelper().toggleCameraLock();
 	}
 
 	/**
@@ -814,7 +813,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		// Nothing to do (taken in charge by the camera
 
 	}
-
 
 	@Override
 	public boolean isVisible() {

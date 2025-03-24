@@ -158,17 +158,17 @@ public class ExperimentationPlanFactory {
 	 * @param modelFileName
 	 *            the model file name
 	 * @param numberOfCores
-	 *            the number of cores passed throuhg the '-hpc' parameter. If null, means that '-hpc' is not set
+	 *            the number of cores passed through the '-hpc' parameter. If null, means that '-hpc' is not set
 	 * @return the list
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public static List<IExperimentJob> buildExperiment(final String modelFileName, final Integer numberOfCores)
+	public static List<IExperimentJob> buildExperiment(final String modelFileName, final Integer numberOfSteps, final Integer numberOfCores)
 			throws IOException, GamaCompilationFailedException {
 		final long[] seeds = { DEFAULT_SEED };
-		return JobListFactory.constructAllJobs(modelFileName, seeds, DEFAULT_FINAL_STEP, numberOfCores);
+		return JobListFactory.constructAllJobs(modelFileName, seeds, numberOfSteps == null ? DEFAULT_FINAL_STEP : numberOfSteps, numberOfCores);
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class ExperimentationPlanFactory {
 	 */
 	public static List<IExperimentJob> buildExperiment(final String modelFileName)
 			throws IOException, GamaCompilationFailedException {
-		return buildExperiment(modelFileName, null);
+		return buildExperiment(modelFileName,null,  null);
 	}
 
 	/**

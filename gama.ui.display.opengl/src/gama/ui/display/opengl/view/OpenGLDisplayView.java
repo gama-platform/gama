@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * OpenGLDisplayView.java, in gama.ui.display.opengl, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * OpenGLDisplayView.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2024-06).
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.display.opengl.view;
 
@@ -132,6 +132,8 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	}
 
 	@Override
-	public boolean isLocked() { return getCameraHelper().isCameraLocked(); }
+	public boolean isCameraLocked() { return getCameraHelper().isCameraLocked(); }
 
+	@Override
+	public boolean isCameraDynamic() { return getCameraHelper().isCameraDynamic(); }
 }

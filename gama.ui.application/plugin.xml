@@ -15,7 +15,7 @@
          </property> 
          <property
                name="aboutText"
-               value="GAMA Platform - 0.0.0-SNAPSHOT http://gama-platform.org&#x0A;&#x0A;(c) 2007-2008 IRD-UR GEODES (France) &amp; IFI-MSI (Vietnam)&#x0A;(c) 2009-2011 UMI 209 UMMISCO IRD/UPMC - MSI (Vietnam)&#x0A;(c) 2012-2017 UMI 209 UMMISCO IRD/UPMC &amp; Partners&#x0A;(c) 2018-2023 UMI 209 UMMISCO IRD/SU &amp; Partners">
+               value="GAMA Platform - 0.0.0-SNAPSHOT http://gama-platform.org&#x0A;&#x0A;(c) 2007-2008 IRD-UR GEODES (France) &amp; IFI-MSI (Vietnam)&#x0A;(c) 2009-2011 UMI 209 UMMISCO IRD/UPMC - MSI (Vietnam)&#x0A;(c) 2012-2017 UMI 209 UMMISCO IRD/UPMC &amp; Partners&#x0A;(c) 2018-2025 UMI 209 UMMISCO IRD/SU &amp; Partners">
          </property>
          <property
                name="aboutImage"
@@ -27,15 +27,15 @@
          </property>
          <property
                name="startupProgressRect"
-               value="12,466,80,12">
+               value="350,466,80,12">
          </property>
          <property
                name="startupForegroundColor"
-               value="B98080">
+               value="C56D45">
          </property>
          <property
                name="startupMessageRect"
-               value="12,450,445,16">
+               value="350,450,100,16">
          </property>
          <property
                name="preferenceCustomization"

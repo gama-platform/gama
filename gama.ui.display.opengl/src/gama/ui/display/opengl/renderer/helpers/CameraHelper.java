@@ -769,7 +769,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		return result.setLocation(result.x * distance + camLoc.x, result.y * distance + camLoc.y, 0);
 	}
 
-
 	/**
 	 * Gets the mouse position.
 	 *
@@ -1164,16 +1163,21 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public boolean isCameraLocked() { return data.isCameraLocked(); }
 
 	@Override
-	public void toggleCamera() {
+	public boolean isCameraDynamic() { return data.isCameraDynamic(); }
+
+	@Override
+	public void toggleCameraLock() {
 		data.setCameraLocked(!data.isCameraLocked());
 	}
 
 	@Override
 	public String getCameraDefinition() {
-		StringBuilder text = new StringBuilder(IKeyword.CAMERA).append(" 'default' ").append(IKeyword.LOCATION)
-				.append(": ").append(new GamaPoint(data.getCameraPos()).yNegated().withPrecision(4).serializeToGaml(false));
+		StringBuilder text =
+				new StringBuilder(IKeyword.CAMERA).append(" 'default' ").append(IKeyword.LOCATION).append(": ")
+						.append(new GamaPoint(data.getCameraPos()).yNegated().withPrecision(4).serializeToGaml(false));
 		text.append(" ").append(IKeyword.TARGET).append(": ")
-				.append(new GamaPoint(data.getCameraTarget()).yNegated().withPrecision(4).serializeToGaml(false)).append(";");
+				.append(new GamaPoint(data.getCameraTarget()).yNegated().withPrecision(4).serializeToGaml(false))
+				.append(";");
 		return text.toString();
 	}
 

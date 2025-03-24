@@ -102,7 +102,7 @@ experiment "Color sort" type: gui{
 	 
 	
 	output synchronized:true{
-		display view type: 2d antialias:false{
+		display view type: 3d antialias:false{
 			grid ant_grid border: #black;
 			species ant transparency: 0.05;
 		}

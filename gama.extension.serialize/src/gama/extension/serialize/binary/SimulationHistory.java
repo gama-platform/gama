@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import gama.core.util.ByteArrayZipper;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
@@ -36,7 +35,7 @@ public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 	final ExecutorService executor = Executors.newCachedThreadPool();
 
 	public void push(final byte[] state, final int cycle) {
-		executor.execute(() -> { push(new SimulationHistoryNode(ByteArrayZipper.zip(state), cycle)); });
+		executor.execute(() -> { push(new SimulationHistoryNode(state, cycle)); });
 	}
 
 }

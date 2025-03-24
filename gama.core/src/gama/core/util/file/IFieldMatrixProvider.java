@@ -1,17 +1,13 @@
 /*******************************************************************************************************
  *
- * IFieldMatrixProvider.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IFieldMatrixProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
-
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
 
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -36,7 +32,6 @@ public interface IFieldMatrixProvider {
 	 * @param scope
 	 * @return
 	 */
-	@Nonnull
 	default IField getField(final IScope scope) {
 		return new GamaField(scope, this);
 	}
@@ -58,7 +53,6 @@ public interface IFieldMatrixProvider {
 	 * @param scope
 	 * @return
 	 */
-	@Nonnegative
 	int getRows(IScope scope);
 
 	/**
@@ -67,7 +61,6 @@ public interface IFieldMatrixProvider {
 	 * @param scope
 	 * @return
 	 */
-	@Nonnegative
 	int getCols(IScope scope);
 
 	/**
@@ -77,7 +70,6 @@ public interface IFieldMatrixProvider {
 	 * @return the number of bands.
 	 */
 
-	@Nonnegative
 	default int getBandsNumber(final IScope scope) {
 		return 1;
 	}
@@ -89,7 +81,6 @@ public interface IFieldMatrixProvider {
 	 * @param scope
 	 * @return an array of double, possibly empty, never null
 	 */
-	@Nonnull
 	default double[] getFieldData(final IScope scope) {
 		return getBand(scope, 0);
 	}

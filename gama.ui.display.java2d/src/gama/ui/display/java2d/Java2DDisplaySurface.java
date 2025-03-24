@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
 import javax.swing.JPanel;
 
@@ -38,6 +37,7 @@ import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -367,7 +367,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	@Override
-	public void updateDisplay(final boolean force, final Semaphore synchronizer) {
+	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
 		if (disposed) return;
 		rendered = false;
 		Runnable toRun = () -> {
@@ -450,7 +450,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 *
 	 * @return true, if is locked
 	 */
-	public boolean isLocked() { return isLocked; }
+	public boolean isCameraLocked() { return isLocked; }
+
+	public boolean isCameraDynamic() { return false; }
 
 	/**
 	 * Checks if is image edge in panel.

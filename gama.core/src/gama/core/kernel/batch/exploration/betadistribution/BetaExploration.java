@@ -92,8 +92,7 @@ import gama.gaml.types.IType;
 						doc = @doc ("The number of sample required.")),
 				@facet (
 						name = BetaExploration.BOOTSTRAP,
-						type = IType.LIST,
-						of = IType.INT,
+						type = IType.INT,
 						optional = true,
 						doc = @doc ("The number of time each parameter value is boostraped (or resampled in another context)")),
 				@facet (
