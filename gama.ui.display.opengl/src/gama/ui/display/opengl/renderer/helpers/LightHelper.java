@@ -173,20 +173,18 @@ public class LightHelper extends AbstractRendererHelper {
 			openGL.popMatrix();
 		} else if (ILightDefinition.spot.equals(type)) {
 			openGL.pushMatrix();
-			openGL.translateBy(pos[0], pos[1], pos[2] - size);
-			GamaPoint up = UP_VECTOR_PLUS_Y;
-			if (Math.abs(dir.x) < 0.0000000001 && Math.abs(dir.z) < 0.00000000001) { // If x and z are really small
-				up = dir.y > 0 ? UP_VECTOR_MINUS_Z : UP_VECTOR_PLUS_Z;
+			// Desired direction. It seems that y and z need to be negated, but not x. Not completely sure why.
+			dir = new GamaPoint(dir.x, -dir.y, -dir.z);
+			double coneRadius = Math.sin(Math.toRadians(light.getAngle())) * size;
+			openGL.translateBy(pos[0], pos[1], pos[2]);
+			if (dir.norm() > 1e-6) {
+				GamaPoint rotationAxis = UP_VECTOR_PLUS_Z.crossProductWith(dir);
+				double rotationAngle = Math.acos(dir.dotProductWith(UP_VECTOR_PLUS_Z));
+				if (rotationAxis.x != 0 || rotationAxis.y != 0) {
+					openGL.rotateBy(-Math.toDegrees(rotationAngle), rotationAxis.x, rotationAxis.y, rotationAxis.z);
+				}
 			}
-			GamaPoint axis = up.crossProductWith(dir).normalized();
-			double angle = Math.acos(up.dotProductWith(dir));
-			openGL.rotateBy((dir.x < 0 ? 90 : 270) - Math.toDegrees(angle), axis.x, axis.y, axis.z);
-			openGL.rotateBy(90, up.x, up.y, up.z);
-
-			openGL.getGlut().glutSolidCone(size / 2, size, 16, 16);
-			// openGL.getGeometryDrawer().drawGeometry(SPOT.getInnerGeometry(), null, size, IShape.Type.CONE);
-			// openGL.beginRasterTextMode();
-			// openGL.rasterText("Dir " + dir + " Axis " + axis, GLUT.BITMAP_TIMES_ROMAN_24, 0, 0, 0);
+			glut.glutSolidCone(coneRadius, size, 16, 16);
 			openGL.popMatrix();
 		} else
 
