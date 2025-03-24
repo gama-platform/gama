@@ -93,8 +93,8 @@
 
    <splash
       location="gama.ui.application"
-      startupProgressRect="350,466,80,12"
-      startupMessageRect="350,450,100,16"
+      startupProgressRect="420,466,80,12"
+      startupMessageRect="420,450,100,16"
       startupForegroundColor="C56D45" />
    <launcher name="Gama">
       <linux icon="extraresources/launcher/icon.xpm"/>
