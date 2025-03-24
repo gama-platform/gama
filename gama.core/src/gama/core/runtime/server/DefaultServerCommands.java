@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -456,7 +457,7 @@ public class DefaultServerCommands {
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
 		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
-		try (FileWriter myWriter = new FileWriter(filepath)) {
+		try (FileWriter myWriter = new FileWriter(filepath, StandardCharsets.UTF_8)) {
 			myWriter.write(content);
 			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		} catch (Exception ex) {
