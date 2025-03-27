@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OpenGL.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,10 +34,10 @@ import com.jogamp.opengl.util.texture.Texture;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.ICoordinates.VertexVisitor;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.geometry.UnboundedCoordinateSequence;
-import gama.core.common.geometry.ICoordinates.VertexVisitor;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
@@ -49,9 +49,9 @@ import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.GeometryCache;
+import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
 import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl.renderer.caches.TextureCache2;
-import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper;
 import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -118,6 +118,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	/** The view height. */
 	private int viewWidth, viewHeight;
 
+	/** The current polygon mode. */
 	private int currentPolygonMode = GL2.GL_FILL;
 
 	/** The picking state. */
@@ -712,7 +713,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Rotate by.
 	 *
 	 * @param angle
-	 *            the angle
+	 *            the angle in degrees
 	 * @param x
 	 *            the x
 	 * @param y
@@ -946,8 +947,6 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		yNegatedVertices.visit(this::drawVertex, number, clockwise);
 		endDrawing();
 	}
-
-
 
 	/**
 	 * Replaces the current color by the parameter, sets the alpha of the parameter to be the one of the current color,
@@ -1466,7 +1465,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param object
 	 *            the object
 	 */
-	public void beginObject(final AbstractObject<?,?> object, final boolean isPicking) {
+	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
 		DrawingAttributes att = object.getAttributes();
 		if (isPicking) { registerForSelection(att.getIndex()); }
@@ -1489,7 +1488,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param object
 	 *            the object
 	 */
-	public void endObject(final AbstractObject<?,?> object, final boolean isPicking) {
+	public void endObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		disableTextures();
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		translateByZIncrement();

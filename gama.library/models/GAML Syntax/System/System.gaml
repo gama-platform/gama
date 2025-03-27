@@ -25,6 +25,8 @@ global
 		write sample(gama.max_memory) + " bytes";
 		// gama.info could be used to get a summary of the current computer configuration (hardware and software)
 		write gama.info;
+		// gama.platform could be used to get the platform on which GAMA is currently running
+		write gama.platform;
 	}
 
 }

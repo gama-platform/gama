@@ -11,7 +11,6 @@
 package gama.ui.display.opengl.renderer.helpers;
 
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-import static gama.gaml.types.GamaGeometryType.buildCone3D;
 
 import java.awt.Color;
 
@@ -21,11 +20,7 @@ import com.jogamp.opengl.GL2ES1;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.AxisAngle;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.layers.properties.ILightDefinition;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
@@ -134,14 +129,14 @@ public class LightHelper extends AbstractRendererHelper {
 	private final static GamaPoint UP_VECTOR_PLUS_Y = new GamaPoint.Immutable(0, 1, 0);
 
 	/** The Constant UP_VECTOR_MINUS_Z. */
-	private final static GamaPoint UP_VECTOR_MINUS_Y = new GamaPoint.Immutable(0, -1, 0);
+	private final static GamaPoint UP_VECTOR_MINUS_Z = new GamaPoint.Immutable(0, 0, -1);
 
 	/** The Constant UP_VECTOR_PLUS_Z. */
 	private final static GamaPoint UP_VECTOR_PLUS_Z = new GamaPoint.Immutable(0, 0, 1);
 
 	/** The Constant arrow. */
-	private final static GamaShape SPOT = ((GamaShape) buildCone3D(2, 1, GamaPoint.Immutable.NULL_POINT))
-			.withRotation(new AxisAngle(UP_VECTOR_PLUS_Y, 90));
+	// private final static GamaShape SPOT = ((GamaShape) buildCone3D(2, 1, GamaPoint.Immutable.NULL_POINT))
+	// .withRotation(new AxisAngle(UP_VECTOR_PLUS_Y, 90));
 
 	/**
 	 * Draw light.
@@ -173,21 +168,27 @@ public class LightHelper extends AbstractRendererHelper {
 		final String type = light.getType();
 		if (ILightDefinition.point.equals(type)) {
 			openGL.pushMatrix();
-
 			openGL.translateBy(pos[0], pos[1], pos[2]);
 			glut.glutSolidSphere(size, 16, 16);
 			openGL.popMatrix();
 		} else if (ILightDefinition.spot.equals(type)) {
 			openGL.pushMatrix();
-			openGL.translateBy(pos[0], pos[1], pos[2] - size);
-			double cos = GamaPoint.dotProduct(UP_VECTOR_PLUS_Y, dir);
-			double angle = dir.x < 0 ? Math.acos(cos) : -Math.acos(cos);
-			final GamaShape s = GamaShapeFactory.createFrom(SPOT)
-					.withRotation(new AxisAngle(UP_VECTOR_PLUS_Z, Math.toDegrees(angle - Math.PI / 2)));
-			openGL.scaleBy(size / 2, size / 2, size / 2);
-			openGL.getGeometryDrawer().drawGeometry(s.getInnerGeometry(), Color.black, size, IShape.Type.CONE);
+			// Desired direction. It seems that y and z need to be negated, but not x. Not completely sure why.
+			dir = new GamaPoint(dir.x, -dir.y, -dir.z);
+			double coneRadius = Math.sin(Math.toRadians(light.getAngle())) * size;
+			openGL.translateBy(pos[0], pos[1], pos[2]);
+			if (dir.norm() > 1e-6) {
+				GamaPoint rotationAxis = UP_VECTOR_PLUS_Z.crossProductWith(dir);
+				double rotationAngle = Math.acos(dir.dotProductWith(UP_VECTOR_PLUS_Z));
+				if (rotationAxis.x != 0 || rotationAxis.y != 0) {
+					openGL.rotateBy(-Math.toDegrees(rotationAngle), rotationAxis.x, rotationAxis.y, rotationAxis.z);
+				}
+			}
+			glut.glutSolidCone(coneRadius, size, 16, 16);
 			openGL.popMatrix();
-		} else {
+		} else
+
+		{
 			// draw direction light : a line and an sphere at the end of the line.
 			final int maxI = 3;
 			final int maxJ = 3;

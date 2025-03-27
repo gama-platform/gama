@@ -737,7 +737,17 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @return the double
 	 */
 	public final static double dotProduct(final GamaPoint v1, final GamaPoint v2) {
-		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+		return v1.dotProductWith(v2);
+	}
+
+	/**
+	 * Dot product with.
+	 *
+	 * @param v2
+	 *            the v 2
+	 */
+	public final double dotProductWith(final GamaPoint v2) {
+		return x * v2.x + y * v2.y + z * v2.z;
 	}
 
 	/**
@@ -749,8 +759,20 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the v 2
 	 * @return the gama point
 	 */
-	public final static GamaPoint cross(final GamaPoint v1, final GamaPoint v2) {
-		return new GamaPoint(v1.y * v2.z - v1.z * v2.y, v2.x * v1.z - v2.z * v1.x, v1.x * v2.y - v1.y * v2.x);
+	public final static GamaPoint crossProduct(final GamaPoint v1, final GamaPoint v2) {
+		return v1.crossProductWith(v2);
+	}
+
+	/**
+	 * Cross product with.
+	 *
+	 * @param v2
+	 *            the other
+	 * @return the gama point
+	 */
+	public final GamaPoint crossProductWith(final GamaPoint v2) {
+		return new GamaPoint(y * v2.z - z * v2.y, v2.x * z - v2.z * x, x * v2.y - y * v2.x);
+
 	}
 
 	/**
