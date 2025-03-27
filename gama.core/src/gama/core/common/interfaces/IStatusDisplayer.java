@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,7 +11,7 @@
 package gama.core.common.interfaces;
 
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 
 /**
@@ -34,20 +35,22 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	/**
 	 * Resume status.
 	 */
-	default void resetStatus(final IScope scope) {}
+	default void resetStatus() {}
 
 	/**
 	 * Wait status.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param string
 	 *            the string
+	 * @param run
+	 *            the run
 	 */
-	default void waitStatus(final IScope scope, final String string) {}
-
-	default void waitStatus(final IScope scope, final String string, final Runnable run) {
-		waitStatus(scope, string);
+	default void waitStatus(final String string, final String icon, final Runnable run) {
+		informStatus(string, icon);
 		run.run();
-		resetStatus(scope);
+		resetStatus();
 	}
 
 	/**
@@ -56,7 +59,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param string
 	 *            the string
 	 */
-	default void informStatus(final IScope scope, final String message) {}
+	default void informStatus(final String message, final String icon) {}
 
 	/**
 	 * Error status.
@@ -64,7 +67,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param message
 	 *            the message
 	 */
-	default void errorStatus(final IScope scope, final Exception error) {}
+	default void errorStatus(final GamaRuntimeException error) {}
 
 	/**
 	 * Sets the sub status completion.
@@ -72,7 +75,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param status
 	 *            the new sub status completion
 	 */
-	default void setTaskCompletion(final IScope scope, final double status) {}
+	default void setTaskCompletion(final String name, final double status) {}
 
 	/**
 	 * Inform status.
@@ -82,7 +85,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param icon
 	 *            the icon
 	 */
-	default void updateExperimentStatus(final IScope scope) {}
+	default void updateExperimentStatus() {}
 
 	/**
 	 * Sets the status.
@@ -92,7 +95,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param icon
 	 *            the icon
 	 */
-	default void setStatus(final IScope scope, final String message, final String icon, final GamaColor color) {}
+	default void setStatus(final String message, final String icon, final GamaColor color) {}
 
 	/**
 	 * Begin sub status.
@@ -100,7 +103,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param name
 	 *            the name
 	 */
-	default void beginTask(final IScope scope, final String name) {}
+	default void beginTask(final String name, final String icon) {}
 
 	/**
 	 * End sub status.
@@ -108,6 +111,6 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param name
 	 *            the name
 	 */
-	default void endTask(final IScope scope, final String name) {}
+	default void endTask(final String name, final String icon) {}
 
 }

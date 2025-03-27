@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SimulationPopupMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * HistoryPopUpMenu.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -41,7 +41,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 22 août 2023
  */
-public class ErrorPopUpMenu extends PopupDialog {
+public class HistoryPopUpMenu extends PopupDialog {
 
 	static {
 		DEBUG.ON();
@@ -50,8 +50,13 @@ public class ErrorPopUpMenu extends PopupDialog {
 	/** The contents. */
 	Composite parent, contents;
 
+	/** The label composite. */
 	Composite labelComposite;
+
+	/** The label button. */
 	Label labelButton;
+
+	/** The label text. */
 	Label labelText;
 
 	/** The hide. */
@@ -71,7 +76,7 @@ public class ErrorPopUpMenu extends PopupDialog {
 	/*
 	 *
 	 */
-	public ErrorPopUpMenu(final StatusControlContribution status) {
+	public HistoryPopUpMenu(final StatusControlContribution status) {
 		super(WorkbenchHelper.getShell(), PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
 		this.status = status;
 		final Shell shell = status.getControllingShell();

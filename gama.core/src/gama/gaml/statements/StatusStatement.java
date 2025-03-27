@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * StatusStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * StatusStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -91,7 +92,7 @@ public class StatusStatement extends AbstractStatement {
 		if (agent != null && !agent.dead()) {
 			final Object o = message.value(scope);
 			final String msg = o == null ? null : Cast.asString(scope, o);
-			scope.getGui().getStatus().setStatus(scope, msg, null,
+			scope.getGui().getStatus().setStatus(msg, null,
 					color == null ? null : Cast.asColor(scope, color.value(scope)));
 		}
 		return mes;

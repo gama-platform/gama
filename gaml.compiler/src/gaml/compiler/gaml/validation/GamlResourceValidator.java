@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceValidator.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceValidator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,6 +26,7 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.google.inject.Inject;
 
+import gama.core.common.StatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
@@ -77,7 +78,7 @@ public class GamlResourceValidator implements IResourceValidator {
 		// DEBUG.OUT("GamlResourceValidator beginning validation job of " + resource.getURI().lastSegment());
 		String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
 		ArrayList<Issue> result = new ArrayList<>();
-		GAMA.getGui().getStatus().setStatus(null, "Compilation of " + name, "navigator/files/file.text",
+		GAMA.getGui().getStatus().setStatus("Compilation of " + name, StatusMessage.COMPILE_ICON,
 				GamaColor.get(200, 200, 200));
 		DEBUG.TIMER("COMPIL", name, "in", () -> {
 			final IAcceptor<Issue> acceptor = issue -> {

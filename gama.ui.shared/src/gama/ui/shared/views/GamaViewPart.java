@@ -91,14 +91,14 @@ public abstract class GamaViewPart extends ViewPart
 	}
 
 	/**
-	 * The Class GamaUIJob.
+	 * The Class ViewUpdateUIJob.
 	 */
-	public abstract class GamaUIJob extends UIJob {
+	public abstract class ViewUpdateUIJob extends UIJob {
 
 		/**
 		 * Instantiates a new gama UI job.
 		 */
-		public GamaUIJob() {
+		public ViewUpdateUIJob() {
 			super("Updating " + getPartName());
 			setSystem(true);
 			final UpdatePriority p = jobPriority();

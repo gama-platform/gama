@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayeredDisplayView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
+import gama.core.common.StatusMessage;
 import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
@@ -88,7 +89,6 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	 * been rendered
 	 */
 	protected GeneralSynchronizer syncSemaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
-	// protected GeneralSynchronizer displaySemaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	@Override
 	public void setIndex(final int index) { realIndex = index; }
@@ -367,6 +367,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (getDisplaySurface() != null && !getDisplaySurface().isDisposed()) {
 			try {
 				getDisplaySurface().updateDisplay(false, syncSemaphore);
+				GAMA.getGui().getStatus().informStatus("Updating " + this.getTitle(), StatusMessage.VIEW_ICON);
 			} catch (Exception e) {
 				DEBUG.OUT("Error when updating " + getTitle() + ": " + e.getMessage());
 			}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ResourceManager.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ResourceManager.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -212,7 +212,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	void runPostEventActions() {
 
-		WorkbenchHelper.runInUI("Resource changes", 5, m -> {
+		WorkbenchHelper.runInUI("Check for workspace changes", 5, m -> {
 			if (viewer.getControl().isDisposed()) return;
 			viewer.getControl().setRedraw(false);
 			final List<Runnable> runnables;
@@ -314,7 +314,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			BLOCKED_EVENTS.add(event);
 			return;
 		}
-		if (DEBUG.IS_ON()) { DEBUG.OUT("========= New Event ========="); }
+		// if (DEBUG.IS_ON()) { DEBUG.OUT("========= New Event ========="); }
 		try {
 			if (event == null) return;
 			// begin();
@@ -322,7 +322,8 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			switch (type) {
 				case POST_CHANGE:
 					if (viewer.isBusy()) {
-						WorkbenchHelper.runInUI("Resource changes", 50, m -> delegate.resourceChanged(event));
+						WorkbenchHelper.runInUI("Check for workspace changes", 50,
+								m -> delegate.resourceChanged(event));
 					} else {
 						delegate.resourceChanged(event);
 					}
@@ -333,15 +334,15 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 					}
 					break;
 				case IResourceChangeEvent.PRE_REFRESH:
-					if (DEBUG.IS_ON()) {
-						DEBUG.OUT("Project " + event.getResource().getName() + " about to be refreshed");
-					}
+					// if (DEBUG.IS_ON()) {
+					// DEBUG.OUT("Project " + event.getResource().getName() + " about to be refreshed");
+					// }
 					break;
 				case PRE_CLOSE:
 				case PRE_DELETE:
-					if (DEBUG.IS_ON()) {
-						DEBUG.OUT("Project " + event.getResource().getName() + " about to be closed or deleted");
-					}
+					// if (DEBUG.IS_ON()) {
+					// DEBUG.OUT("Project " + event.getResource().getName() + " about to be closed or deleted");
+					// }
 					break;
 				default:
 

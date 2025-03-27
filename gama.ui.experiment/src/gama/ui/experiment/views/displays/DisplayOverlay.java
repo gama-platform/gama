@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * DisplayOverlay.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * DisplayOverlay.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,7 +21,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;
@@ -37,10 +35,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IOverlayProvider;
-import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.layers.OverlayStatement.OverlayInfo;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
@@ -55,7 +50,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * @since 19 august 2013
  *
  */
-public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
+public class DisplayOverlay {
 
 	/**
 	 * The Class Label.
@@ -164,7 +159,7 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 	}
 
 	/** The right. */
-	Label coord, zoom, left, middle, right;
+	Label coord, zoom;
 
 	// /** The text. */
 	// StringBuilder csb = new StringBuilder(), zsb = new StringBuilder(), lsb = new StringBuilder(),
@@ -172,9 +167,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 
 	/** The scalebar. */
 	Canvas scalebar;
-
-	/** The is busy. */
-	volatile boolean isBusy;
 
 	/** The popup. */
 	private final Shell popup;
@@ -187,10 +179,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 
 	/** The reference composite. */
 	protected final Composite referenceComposite;
-
-	/** The create extra info. */
-	// private final Shell parentShell;
-	final boolean createExtraInfo;
 
 	/** The timer. */
 	Timer timer = new Timer();
@@ -246,9 +234,7 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 	 * @param provider
 	 *            the provider
 	 */
-	public DisplayOverlay(final LayeredDisplayView view, final Composite c,
-			final IOverlayProvider<OverlayInfo> provider) {
-		this.createExtraInfo = provider != null;
+	public DisplayOverlay(final LayeredDisplayView view, final Composite c) {
 		this.view = view;
 		referenceComposite = c;
 		// parentShell = c.getShell();
@@ -266,7 +252,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		c.getShell().addShellListener(listener);
 		// parentShell.addControlListener(listener);
 		c.addControlListener(listener);
-		if (provider != null) { provider.setStatusTarget(new ThreadedOverlayUpdater(this), view.getDisplaySurface()); }
 		// if (GamaPreferences.Displays.CORE_SHOW_FPS.getValue()) {
 		timer.schedule(new FPSTask(), 0, 1000);
 		// }
@@ -300,14 +285,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		layout.marginHeight = 5;
 		top.setLayout(layout);
 		// top.setBackground(IGamaColors.BLACK.color());
-		if (createExtraInfo) {
-			// left overlay info
-			left = new Label(top, SWT.LEFT);
-			// center overlay info
-			middle = new Label(top, SWT.CENTER);
-			// right overlay info
-			right = new Label(top, SWT.RIGHT);
-		}
 		// coordinates overlay info
 		coord = new Label(top, SWT.LEFT);
 		// zoom overlay info
@@ -391,38 +368,29 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 
 	};
 
-	@Override
-	public boolean isBusy() { return isBusy; }
-
 	/**
 	 * Update.
 	 */
 	public void update() {
-		if (isBusy) return;
-		isBusy = true;
-		try {
-			if (getPopup().isDisposed()) return;
-			if (!coord.isDisposed()) {
-				try {
-					getOverlayCoordInfo(coord.text);
-					coord.redraw();
-				} catch (final Exception e) {
-					coord.setText("Not initialized yet");
-				}
+		if (getPopup().isDisposed()) return;
+		if (!coord.isDisposed()) {
+			try {
+				getOverlayCoordInfo(coord.text);
+				coord.redraw();
+			} catch (final Exception e) {
+				coord.setText("Not initialized yet");
 			}
-			if (!zoom.isDisposed()) {
-				try {
-					getOverlayZoomInfo(zoom.text);
-					zoom.redraw();
-				} catch (final Exception e) {
-					zoom.setText("Not initialized yet");
-				}
-			}
-			if (!scalebar.isDisposed()) { scalebar.redraw(); }
-			getPopup().layout(true);
-		} finally {
-			isBusy = false;
 		}
+		if (!zoom.isDisposed()) {
+			try {
+				getOverlayZoomInfo(zoom.text);
+				zoom.redraw();
+			} catch (final Exception e) {
+				zoom.setText("Not initialized yet");
+			}
+		}
+		if (!scalebar.isDisposed()) { scalebar.redraw(); }
+		getPopup().layout(true);
 	}
 
 	/**
@@ -434,7 +402,7 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		final Rectangle r = referenceComposite.getClientArea();
 		final Point p = referenceComposite.toDisplay(r.x, r.y);
 		final int x = p.x;
-		final int y = p.y + r.height - (createExtraInfo ? 56 : 32);
+		final int y = p.y + r.height - 32;
 		DEBUG.OUT("Location of overlay = " + x + " " + y + " <> client area dans Display : " + r);
 		return new Point(x, y);
 	}
@@ -470,59 +438,11 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 	}
 
 	/**
-	 * @param left2
-	 * @param createColor
-	 */
-	private void setForeground(final Label label, final Color color) {
-		if (label == null || label.isDisposed()) return;
-		final Color c = label.getForeground();
-		label.setForeground(color);
-		if (c != IGamaColors.WHITE.color() && c != color) { c.dispose(); }
-	}
-
-	/**
-	 * Method updateWith()
-	 *
-	 * @see gama.gui.swt.controls.IUpdaterTarget#updateWith(java.lang.Object)
-	 */
-	@Override
-	public void updateWith(final OverlayInfo m) {
-		final String[] infos = m.infos;
-		final List<int[]> colors = m.colors;
-		if (infos[0] != null) {
-			if (colors != null) { setForeground(left, GamaColors.get(colors.get(0)).color()); }
-			left.setText(infos[0]);
-		}
-		if (infos[1] != null) {
-			if (colors != null) { setForeground(middle, GamaColors.get(colors.get(1)).color()); }
-			middle.setText(infos[1]);
-		}
-		if (infos[2] != null) {
-			if (colors != null) { setForeground(right, GamaColors.get(colors.get(2)).color()); }
-			right.setText(infos[2]);
-		}
-
-		getPopup().layout(true);
-	}
-
-	/**
-	 * Method resume()
-	 *
-	 * @see gama.core.common.interfaces.IUpdaterTarget#reset()
-	 */
-	@Override
-	public void reset() {}
-
-	/**
 	 * Gets the popup.
 	 *
 	 * @return the popup
 	 */
 	public Shell getPopup() { return popup; }
-
-	// protected LayeredDisplayView getView() {
-	// return view;
-	// }
 
 	/**
 	 * Display.
@@ -567,9 +487,6 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		}
 	}
 
-	@Override
-	public boolean isDisposed() { return popup.isDisposed() || viewIsDetached(); }
-
 	/**
 	 * Close.
 	 */
@@ -588,11 +505,15 @@ public class DisplayOverlay implements IUpdaterTarget<OverlayInfo> {
 		}
 	}
 
-	@Override
+	/**
+	 * Checks if is visible.
+	 *
+	 * @return the visible
+	 */
 	public boolean isVisible() {
 		// AD: Temporary fix for Issue 548. When a view is detached, the
 		// overlays are not displayed
-		return visible && !isDisposed();
+		return visible;
 	}
 
 	/**

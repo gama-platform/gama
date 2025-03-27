@@ -195,7 +195,7 @@ public class PopulationInspectView extends GamaViewPart
 
 	@Override
 	protected Job createUpdateJob() {
-		return new GamaUIJob() {
+		return new ViewUpdateUIJob() {
 
 			@Override
 			protected UpdatePriority jobPriority() {

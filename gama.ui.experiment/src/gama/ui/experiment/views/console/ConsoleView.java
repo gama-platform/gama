@@ -247,7 +247,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	}
 
 	@Override
-	protected GamaUIJob createUpdateJob() {
+	protected ViewUpdateUIJob createUpdateJob() {
 		return null;
 	}
 

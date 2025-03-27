@@ -1,13 +1,16 @@
 /*******************************************************************************************************
  *
- * IUpdaterTarget.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation platform .
+ * IUpdaterTarget.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.common.interfaces;
+
+import gama.core.common.StatusMessage;
 
 /**
  * The Interface IUpdaterTarget.
@@ -15,7 +18,7 @@ package gama.core.common.interfaces;
  * @param <Message>
  *            the generic type
  */
-public interface IUpdaterTarget<Message extends IUpdaterMessage> {
+public interface IUpdaterTarget {
 
 	/**
 	 * Checks if is disposed.
@@ -44,7 +47,7 @@ public interface IUpdaterTarget<Message extends IUpdaterMessage> {
 	 * @param m
 	 *            the m
 	 */
-	default void updateWith(final Message m) {}
+	default void updateWith(final StatusMessage m) {}
 
 	/**
 	 * Resume.

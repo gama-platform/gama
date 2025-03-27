@@ -1,15 +1,18 @@
 /*******************************************************************************************************
  *
- * ExperimentControlContribution.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * StatusControlContribution.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.controls;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -22,9 +25,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import gama.core.common.StatusMessage;
+import gama.core.common.StatusMessage.StatusType;
 import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IUpdaterMessage;
-import gama.core.common.interfaces.IUpdaterMessage.StatusType;
 import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
@@ -33,19 +35,23 @@ import gama.ui.shared.factories.StatusDisplayer;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.utils.ThreadedUpdater;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.GamaViewPart.ViewUpdateUIJob;
 
 /**
  * The Class ExperimentControlContribution.
  */
-public class StatusControlContribution extends WorkbenchWindowControlContribution
-		implements IUpdaterTarget<StatusMessage> {
+public class StatusControlContribution extends WorkbenchWindowControlContribution implements IUpdaterTarget {
 
 	static {
 		DEBUG.ON();
 	}
+
+	/** The current status. */
 	StatusType currentStatus;
 
+	/** The current exception. */
 	GamaRuntimeException currentException;
 
 	/** The is updating. */
@@ -54,7 +60,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The label. */
 	private FlatButton label;
 
-	private ErrorPopUpMenu errorPopup;
+	/** The history popup. */
+	private StatusHistoryPopUpMenu historyPopup;
 
 	/** The sub task completion. */
 	private volatile Double taskCompletion;
@@ -65,9 +72,17 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The instance. */
 	static StatusControlContribution INSTANCE;
 
+	/** The inactive color. */
 	private GamaUIColor inactiveColor;
 
+	/** The progress. */
 	private double progress = 1d;
+
+	/** The show system events. */
+	boolean showSystemEvents = true;
+
+	/** The show view events. */
+	boolean showViewEvents = true;
 
 	/**
 	 * Gets the single instance of ExperimentControlContribution.
@@ -110,26 +125,94 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		inactiveColor = ThemeHelper.isDark() ? GamaColors.get(GamaColors.get(parent.getBackground()).lighter())
 				: GamaColors.get(GamaColors.get(parent.getBackground()).darker());
 		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
-		label = FlatButton.label(compo, inactiveColor, "", WIDTH).withMinimalHeight(24);
+		label = FlatButton.label(compo, inactiveColor, "", WIDTH).withMinimalHeight(24).addMenuSign();
 		label.setEnabled(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
-		errorPopup = new ErrorPopUpMenu(this);
+		historyPopup = new StatusHistoryPopUpMenu(this);
+
 		label.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseDown(final MouseEvent e) {
 
-				if (currentStatus == StatusType.ERROR) {
-					if (errorPopup.isVisible()) {
-						errorPopup.hide();
-					} else {
-						WorkbenchHelper.asyncRun(() -> errorPopup.display(currentException));
-					}
+				if (historyPopup.isVisible()) {
+					historyPopup.hide();
+				} else {
+					WorkbenchHelper.asyncRun(historyPopup::display);
 				}
-
 			}
 
 		});
+		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
+			@Override
+			public void aboutToRun(final IJobChangeEvent event) {
+				if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof ThreadedUpdater) return;
+				Job job = event.getJob();
+				String name = job.getName();
+				boolean isView = job instanceof ViewUpdateUIJob;
+				if (isView ? !showViewEvents : !showSystemEvents) return;
+				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.CREATE(name, StatusType.REGULAR,
+						isView ? StatusMessage.VIEW_ICON : StatusMessage.SYSTEM_ICON)));
+			}
+
+			private boolean intersect(final String s1, final String s2) {
+				if (s1 == null) return s2 == null;
+				if (s2 == null) return false;
+				return s1.contains(s2) || s2.contains(s1);
+			}
+
+			@Override
+			public void done(final IJobChangeEvent event) {
+				if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof ThreadedUpdater) return;
+				String message = event.getJob().getName();
+				if (intersect(label.getText(), message)) {
+					WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.IDLE()));
+				}
+				// else {
+				// WorkbenchHelper
+				// .asyncRun(() -> updateWith(StatusMessage.END(event.getJob().getName() + " (ended)")));
+				// }
+				// DEBUG.OUT("Job finished : " + event.getJob().toString() + " with priority "
+				// + jobPriority(event.getJob().getPriority()));
+			}
+
+			// private String jobPriority(final int p) {
+			// return switch (p) {
+			// case Job.INTERACTIVE -> "INTERACTIVE";
+			// case Job.BUILD -> "BUILD";
+			// case Job.DECORATE -> "DECORATE";
+			// case Job.LONG -> "LONG";
+			// case Job.SHORT -> "SHORT";
+			// default -> "NONE";
+			// };
+			// }
+
+			@Override
+			public void scheduled(final IJobChangeEvent event) {}
+
+			@Override
+			public void awake(final IJobChangeEvent event) {}
+
+			@Override
+			public void sleeping(final IJobChangeEvent event) {}
+		});
+
+		// label.addMouseListener(new MouseAdapter() {
+		//
+		// @Override
+		// public void mouseDown(final MouseEvent e) {
+		//
+		// if (currentStatus == StatusType.ERROR) {
+		// if (historyPopup.isVisible()) {
+		// historyPopup.hide();
+		// } else {
+		// WorkbenchHelper.asyncRun(() -> historyPopup.display(currentException));
+		// }
+		// }
+		//
+		// }
+		//
+		// });
 		return compo;
 	}
 
@@ -193,11 +276,14 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				taskCompletion = m.completion();
 				currentException = m.exception();
 				currentStatus = m.getType();
-				String icon = getIcon(m.icon());
-
+				String icon = getIcon();
 				label.setImageWithoutRecomputingSize(icon == null ? null : GamaIcon.named(icon).image());
 				// label.setColor(getLabelBackground(m));
 				label.setTextWithoutRecomputingSize(getLabelText(m));
+				if (currentStatus != StatusType.NONE) {
+					this.historyPopup.addEvent(m);
+					if (historyPopup.isVisible()) { historyPopup.display(); }
+				}
 			}
 		} finally {
 			isUpdating = false;
@@ -205,24 +291,39 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 	}
 
-	private String getIcon(final String icon) {
-		if (icon == null) return null;
-		if (IUpdaterMessage.PROGRESS_ICON.equals(icon)) {
-			if (progress > 6) { progress = 1; }
-			progress += 0.3;
-			return "status/progress" + Math.round(progress);
-
-		}
-		return icon;
+	/**
+	 * Gets the icon.
+	 *
+	 * @param icon
+	 *            the icon
+	 * @return the icon
+	 */
+	private String getIcon() {
+		if (progress > 6) { progress = 1; }
+		progress += 0.3;
+		return StatusMessage.PROGRESS_ICON + Math.round(progress);
 	}
 
+	/**
+	 * Gets the label text.
+	 *
+	 * @param m
+	 *            the m
+	 * @return the label text
+	 */
 	private String getLabelText(final StatusMessage m) {
 		String taskName = m.message();
 		if (taskName == null) { taskName = ""; }
-		return taskName + (currentStatus == StatusType.SUBTASK
-				? taskCompletion != null ? " [" + (int) (taskCompletion * 100) + "%]" : "" : "");
+		return taskName + (taskCompletion != null ? " [" + (int) (taskCompletion * 100) + "%]" : "");
 	}
 
+	/**
+	 * Gets the label background.
+	 *
+	 * @param m
+	 *            the m
+	 * @return the label background
+	 */
 	public GamaUIColor getLabelBackground(final StatusMessage m) {
 		return GamaColors.get(m.color());
 	}
@@ -235,6 +336,44 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	@Override
 	public void reset() {
 		WorkbenchHelper.run(() -> updateWith(null));
+	}
+
+	/**
+	 * Show system events.
+	 *
+	 * @param show
+	 *            the show
+	 */
+	public void showSystemEvents(final boolean show) {
+		this.showSystemEvents = show;
+	}
+
+	/**
+	 * Show view events.
+	 *
+	 * @param show
+	 *            the show
+	 */
+	public void showViewEvents(final boolean show) {
+		this.showViewEvents = show;
+	}
+
+	/**
+	 * Show system events.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean showSystemEvents() {
+		return showSystemEvents;
+	}
+
+	/**
+	 * Show view events.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean showViewEvents() {
+		return showSystemEvents;
 	}
 
 }

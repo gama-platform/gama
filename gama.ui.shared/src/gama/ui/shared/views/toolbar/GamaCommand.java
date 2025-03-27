@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaCommand.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaCommand.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -208,6 +208,26 @@ public class GamaCommand {
 	 */
 	public ToolItem toItem(final ToolBar t) {
 		return toItem(t, selector);
+	}
+
+	/**
+	 * To check item.
+	 *
+	 * @param t
+	 *            the t
+	 * @return the tool item
+	 */
+	public ToolItem toCheckItem(final ToolBar t) {
+		final var i = new ToolItem(t, SWT.FLAT | SWT.CHECK);
+		i.setToolTipText(tooltip);
+		if (image != null) {
+			GamaIcon icon = GamaIcon.named(image);
+			i.setImage(icon.image());
+			i.setDisabledImage(icon.disabled());
+		}
+		i.addSelectionListener(selector);
+		return i;
+
 	}
 
 	/**

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * OverlayStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * OverlayStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,21 +15,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IOverlayProvider;
-import gama.core.common.interfaces.IUpdaterMessage;
-import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.layers.OverlayStatement.OverlayInfo;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
@@ -76,25 +70,10 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("the transparency rate of the overlay (between 0 -- opaque and 1 -- fully transparent) when it is displayed inside the view. The bottom overlay will remain at 0.75")),
 				@facet (
-						name = IKeyword.LEFT,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc ("an expression that will be evaluated and displayed in the left section of the bottom overlay")),
-				@facet (
 						name = IKeyword.VISIBLE,
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Defines whether this layer is visible or not")),
-				@facet (
-						name = IKeyword.RIGHT,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc ("an expression that will be evaluated and displayed in the right section of the bottom overlay")),
-				@facet (
-						name = IKeyword.CENTER,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc ("an expression that will be evaluated and displayed in the center section of the bottom overlay")),
 				@facet (
 						name = IKeyword.BACKGROUND,
 						type = IType.COLOR,
@@ -106,59 +85,16 @@ import gama.gaml.types.IType;
 						of = IType.COLOR,
 						optional = true,
 						doc = @doc ("the color(s) used to display the expressions given in the 'left', 'center' and 'right' facets")) })
-// ,omissible = IKeyword.LEFT)
-@doc (
-		value = "`" + IKeyword.OVERLAY
-				+ "` allows the modeler to display a line to the already existing bottom overlay, where the results of 'left', 'center' and 'right' facets, when they are defined, are displayed with the corresponding color if defined.",
-		usages = { @usage (
-				value = "To display information in the bottom overlay, the syntax is:",
-				examples = { @example (
-						value = "overlay \"Cycle: \" + (cycle) center: \"Duration: \" + total_duration + \"ms\" right: \"Model time: \" + as_date(time,\"\") color: [#yellow, #orange, #yellow];",
-						isExecutable = false) }) },
-		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.CHART, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,
-				IKeyword.IMAGE, IKeyword.SPECIES_LAYER })
-public class OverlayStatement extends GraphicLayerStatement implements IOverlayProvider<OverlayInfo> {
+public class OverlayStatement extends GraphicLayerStatement {
 
 	/** The color. */
-	final IExpression left, right, center, color;
+	final IExpression color;
 
 	/** The center value. */
 	String leftValue, rightValue, centerValue;
 
 	/** The constant colors. */
 	List<int[]> constantColors;
-
-	/** The overlay. */
-	IUpdaterTarget<OverlayInfo> overlay;
-
-	/**
-	 * The Class OverlayInfo.
-	 */
-	public static class OverlayInfo implements IUpdaterMessage {
-
-		/** The infos. */
-		public String[] infos;
-
-		/** The colors. */
-		public java.util.List<int[]> colors;
-
-		/**
-		 * Instantiates a new overlay info.
-		 *
-		 * @param infos
-		 *            the infos
-		 * @param colors
-		 *            the colors
-		 */
-		OverlayInfo(final String[] infos, final java.util.List<int[]> colors) {
-			this.infos = infos;
-			this.colors = colors;
-		}
-
-		@Override
-		public StatusType getType() { return StatusType.USER; }
-
-	}
 
 	/**
 	 * Instantiates a new overlay statement.
@@ -170,9 +106,6 @@ public class OverlayStatement extends GraphicLayerStatement implements IOverlayP
 	 */
 	public OverlayStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
-		left = getFacet(IKeyword.LEFT);
-		right = getFacet(IKeyword.RIGHT);
-		center = getFacet(IKeyword.CENTER);
 		color = getFacet(IKeyword.COLOR);
 
 		if (color != null && color.isConst()) { constantColors = computeColors(null); }
@@ -223,36 +156,6 @@ public class OverlayStatement extends GraphicLayerStatement implements IOverlayP
 	}
 
 	@Override
-	protected boolean _step(final IScope scope) {
-		if (overlay == null) return true;
-		leftValue = left == null ? null : Cast.asString(scope, left.value(scope));
-		rightValue = right == null ? null : Cast.asString(scope, right.value(scope));
-		centerValue = center == null ? null : Cast.asString(scope, center.value(scope));
-		overlay.updateWith(new OverlayInfo(getValues(), computeColors(scope)));
-		return true;
-	}
-
-	/**
-	 * Gets the values.
-	 *
-	 * @return the values
-	 */
-	private String[] getValues() { return new String[] { leftValue, centerValue, rightValue }; }
-
-	@Override
-	public void setStatusTarget(final IUpdaterTarget<OverlayInfo> overlay, final IDisplaySurface surface) {
-		this.overlay = overlay;
-		_step(surface.getScope());
-	}
-
-	@Override
 	public boolean isToCreate() { return !aspect.isEmpty(); }
-
-	/**
-	 * @return
-	 */
-	public boolean hasInfo() {
-		return left != null || right != null || center != null;
-	}
 
 }

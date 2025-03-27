@@ -319,7 +319,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	}
 
 	@Override
-	protected GamaUIJob createUpdateJob() {
+	protected ViewUpdateUIJob createUpdateJob() {
 		return null;
 	}
 

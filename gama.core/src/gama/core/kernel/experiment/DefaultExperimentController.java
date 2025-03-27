@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DefaultExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,6 +12,7 @@ package gama.core.kernel.experiment;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
+import gama.core.common.StatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
@@ -112,9 +113,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
-					scope.getGui().getStatus().waitStatus(scope, "Reloading...", () -> experiment.reload());
+					scope.getGui().getStatus().waitStatus("Reloading...", StatusMessage.SIMULATION_ICON,
+							() -> experiment.reload());
 					if (wasRunning) return processUserCommand(ExperimentCommand._START);
-					scope.getGui().getStatus().informStatus(scope, "Experiment reloaded");
+					scope.getGui().getStatus().informStatus("Experiment reloaded", StatusMessage.SIMULATION_ICON);
 					return true;
 				} catch (final GamaRuntimeException e) {
 					closeExperiment(e);
@@ -166,7 +168,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	public void closeExperiment(final Exception e) {
 		disposing = true;
-		if (e != null) { getScope().getGui().getStatus().errorStatus(scope, e); }
+		if (e != null) { getScope().getGui().getStatus().errorStatus(GamaRuntimeException.create(e, scope)); }
 		experiment.dispose(); // will call own dispose() later
 	}
 

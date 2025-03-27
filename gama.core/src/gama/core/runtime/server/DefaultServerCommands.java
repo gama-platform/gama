@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DefaultServerCommands.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -104,11 +104,9 @@ public class DefaultServerCommands {
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
-		}
-		catch (GamaCompilationFailedException compError) {
+		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
@@ -116,7 +114,8 @@ public class DefaultServerCommands {
 				"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
 				false);
 		final IModel mm = model;
-		GAMA.getGui().run("openExp", () -> GAMA.runGuiExperiment(nameOfExperiment, mm), false);
+		GAMA.getGui().run("Opening experiment " + nameOfExperiment, () -> GAMA.runGuiExperiment(nameOfExperiment, mm),
+				false);
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
 	}
 
@@ -427,7 +426,7 @@ public class DefaultServerCommands {
 		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
 		if (filepath == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
 				"For 'download', mandatory parameter is: 'file'", map, false);
-		try (	InputStream is = Files.newInputStream(new File(filepath).toPath());
+		try (InputStream is = Files.newInputStream(new File(filepath).toPath());
 				InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 				BufferedReader br = new BufferedReader(isr)) {
 			StringBuilder sc = new StringBuilder();
@@ -482,8 +481,8 @@ public class DefaultServerCommands {
 			final IMap<String, Object> map) {
 		// Check the parameters
 		final Object modelPath = map.get("model");
-		if (modelPath == null) return new CommandResponse(MalformedRequest,
-				"For 'describe', mandatory parameter is: 'model'", map, false);
+		if (modelPath == null)
+			return new CommandResponse(MalformedRequest, "For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		File ff = new File(pathToModel);
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
@@ -495,11 +494,9 @@ public class DefaultServerCommands {
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
-		}
-		catch (GamaCompilationFailedException compError) {
+		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
@@ -508,89 +505,117 @@ public class DefaultServerCommands {
 		boolean readExperiments = (boolean) map.getOrDefault("experiments", true);
 		boolean readSpeciesNames = (boolean) map.getOrDefault("speciesNames", true);
 		boolean readspeciesVariables = (boolean) map.getOrDefault("speciesVariables", true);
-		boolean readSpeciesActions = (boolean) map.getOrDefault("speciesActions", true) ;
-		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the actions of a species were asked we have to include the name
-		
+		boolean readSpeciesActions = (boolean) map.getOrDefault("speciesActions", true);
+		readSpeciesNames = readSpeciesNames || readSpeciesActions || readspeciesVariables; // if the variables or the
+																							// actions of a species were
+																							// asked we have to include
+																							// the name
+
 		// Gathering information
-		Map<String, Object> res = new HashMap<String, Object>();
-		
-		if (readExperiments) {
-			res.put("experiments", getExperiments(model));			
-		}
-		
-		if (readSpeciesNames) {
-			res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables));
-		}
+		Map<String, Object> res = new HashMap<>();
+
+		if (readExperiments) { res.put("experiments", getExperiments(model)); }
+
+		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
 
 		res.put("name", model.getName());
 		res.put("path", pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
-	
-	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species){
-		List<Map<String, String>> allVariables = new ArrayList<Map<String, String>>();		
-		for (IVariable variable: species.getVars()) {
-			Map<String, String> resVariable = new HashMap<String, String>();
+
+	/**
+	 * Gets the species variables.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the species variables
+	 */
+	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species) {
+		List<Map<String, String>> allVariables = new ArrayList<>();
+		for (IVariable variable : species.getVars()) {
+			Map<String, String> resVariable = new HashMap<>();
 			resVariable.put("name", variable.getName());
 			resVariable.put("type", variable.getType().getName());
 			allVariables.add(resVariable);
-		}	
+		}
 		return allVariables;
 	}
-	
+
+	/**
+	 * Gets the species actions.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the species actions
+	 */
 	private static List<Map<String, Object>> getSpeciesActions(final ISpecies species) {
-		List<Map<String, Object>> allActions = new ArrayList<Map<String, Object>>();		
+		List<Map<String, Object>> allActions = new ArrayList<>();
 		for (ActionStatement action : species.getActions()) {
-			Map<String, Object> resAction = new HashMap<String, Object>();
+			Map<String, Object> resAction = new HashMap<>();
 			resAction.put("name", action.getName());
-			List<Map<String, String>> resAllCommands  = new ArrayList<Map<String, String>>();
+			List<Map<String, String>> resAllCommands = new ArrayList<>();
 			var actionDescription = action.getDescription();
 			for (var arg : actionDescription.getFormalArgs()) {
-				Map<String, String> command = new HashMap<String, String>();
+				Map<String, String> command = new HashMap<>();
 				command.put("name", arg.getName());
 				command.put("type", arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
-			
+
 			resAction.put("parameters", resAllCommands);
 			resAction.put("type", actionDescription.getGamlType().getName());
 			allActions.add(resAction);
 		}
 		return allActions;
 	}
-	
-	private static List<Map<String, Object>> readSpecies(IModel model, boolean readSpeciesActions, boolean readspeciesVariables) {
-		List<Map<String, Object>> resAllSpecies = new ArrayList<Map<String, Object>>();		
+
+	/**
+	 * Read species.
+	 *
+	 * @param model
+	 *            the model
+	 * @param readSpeciesActions
+	 *            the read species actions
+	 * @param readspeciesVariables
+	 *            the readspecies variables
+	 * @return the list
+	 */
+	private static List<Map<String, Object>> readSpecies(final IModel model, final boolean readSpeciesActions,
+			final boolean readspeciesVariables) {
+		List<Map<String, Object>> resAllSpecies = new ArrayList<>();
 		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
-			Map<String, Object> resSpecie = new HashMap<String, Object>();
+			Map<String, Object> resSpecie = new HashMap<>();
 			resSpecie.put("name", species.getName());
-			
+
 			// Variables
-			if (readspeciesVariables) {			
-				resSpecie.put("variables", getSpeciesVariables(species));
-			}
-			
+			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
+
 			// Actions
-			if (readSpeciesActions) {
-				resSpecie.put("actions", getSpeciesActions(species));				
-			}
-			
+			if (readSpeciesActions) { resSpecie.put("actions", getSpeciesActions(species)); }
+
 			resAllSpecies.add(resSpecie);
 		}
 		return resAllSpecies;
 	}
 
+	/**
+	 * Gets the experiments.
+	 *
+	 * @param model
+	 *            the model
+	 * @return the experiments
+	 */
 	private static List<Map<String, Object>> getExperiments(final IModel model) {
-		List<Map<String, Object>> resAllExperiments = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> resAllExperiments = new ArrayList<>();
 		// Get the experiments informations
 		for (IExperimentPlan ittExp : model.getExperiments()) {
 			// Get the parameters
-			Map<String, Object> resExp = new HashMap<String, Object>();
+			Map<String, Object> resExp = new HashMap<>();
 			resExp.put("name", ittExp.getName());
-			List<Map<String, String>> resAllParams = new ArrayList<Map<String,String>>();
-			for (Map.Entry<String,IParameter> paramEntry : ittExp.getParameters().entrySet()) {
-				Map<String, String> resParam = new HashMap<String, String>();
+			List<Map<String, String>> resAllParams = new ArrayList<>();
+			for (Map.Entry<String, IParameter> paramEntry : ittExp.getParameters().entrySet()) {
+				Map<String, String> resParam = new HashMap<>();
 				IParameter param = paramEntry.getValue();
 				resParam.put("name", param.getName());
 				resParam.put("description", param.getTitle());

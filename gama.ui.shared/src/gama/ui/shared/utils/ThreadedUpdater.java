@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ThreadedUpdater.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ThreadedUpdater.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,9 +15,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.interfaces.IUpdaterMessage;
-import gama.core.common.interfaces.IUpdaterMessage.StatusType;
+import com.google.common.base.Strings;
+
+import gama.core.common.StatusMessage;
+import gama.core.common.StatusMessage.StatusType;
 import gama.core.common.interfaces.IUpdaterTarget;
+import gama.dev.DEBUG;
 
 /**
  * Class ThreadedUpdater.
@@ -26,14 +29,16 @@ import gama.core.common.interfaces.IUpdaterTarget;
  * @since 10 mars 2014
  *
  */
-public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob implements IUpdaterTarget<Message> {
+public class ThreadedUpdater extends UIJob implements IUpdaterTarget {
 
 	/** The message. */
-	Message message = null;
+	StatusMessage message = null;
 
 	/** The experimentControl. */
-	private IUpdaterTarget<Message> experimentControl = new IUpdaterTarget<>() {};
-	private IUpdaterTarget<Message> statusControl = new IUpdaterTarget<>() {};
+	private IUpdaterTarget experimentControl = new IUpdaterTarget() {};
+
+	/** The status control. */
+	private IUpdaterTarget statusControl = new IUpdaterTarget() {};
 
 	/**
 	 * Instantiates a new threaded updater.
@@ -53,8 +58,15 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 	@Override
 	public boolean isVisible() { return experimentControl.isVisible() && statusControl.isVisible(); }
 
+	/**
+	 * Update with.
+	 *
+	 * @param m
+	 *            the m
+	 */
 	@Override
-	public void updateWith(final Message m) {
+	public void updateWith(final StatusMessage m) {
+
 		if (isDisposed() || !isVisible() || isBusy() || m == null) return;
 		message = m;
 		schedule();
@@ -68,9 +80,15 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 	 * @param s
 	 *            the s
 	 */
-	public void setExperimentTarget(final IUpdaterTarget<Message> l) { experimentControl = l; }
+	public void setExperimentTarget(final IUpdaterTarget l) { experimentControl = l; }
 
-	public void setStatusTarget(final IUpdaterTarget<Message> l) { statusControl = l; }
+	/**
+	 * Sets the status target.
+	 *
+	 * @param l
+	 *            the new status target
+	 */
+	public void setStatusTarget(final IUpdaterTarget l) { statusControl = l; }
 
 	@Override
 	public boolean isBusy() {
@@ -89,6 +107,11 @@ public class ThreadedUpdater<Message extends IUpdaterMessage> extends UIJob impl
 				experimentControl.updateWith(message);
 			} else {
 				if (statusControl.isBusy() || !statusControl.isVisible()) return Status.OK_STATUS;
+				if (message instanceof StatusMessage sm && Strings.isNullOrEmpty(sm.message())) {
+
+					DEBUG.OUT("");
+
+				}
 				statusControl.updateWith(message);
 			}
 		} finally {

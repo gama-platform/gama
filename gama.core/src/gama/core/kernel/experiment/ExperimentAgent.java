@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -329,7 +329,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (!getSpecies().isBatch()) {
 			ownScope.getGui().setSelectedAgent(null);
 			ownScope.getGui().setHighlightedAgent(null);
-			ownScope.getGui().getStatus().resetStatus(ownScope);
+			ownScope.getGui().getStatus().resetStatus();
 			// AD: Fix for issue #1342 -- verify that it does not break
 			// something else in the dynamics of closing/opening
 			ownScope.getGui().closeDialogs(ownScope);
@@ -975,7 +975,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		// Condition on the null simulation removed because of #273
 		if (isHeadless() /** || isBatch()|| getSimulation() == null **/
 		) return;
-		ownScope.getGui().getStatus().updateExperimentStatus(ownScope);
+		ownScope.getGui().getStatus().updateExperimentStatus();
 	}
 
 	/**

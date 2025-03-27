@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,7 @@ import java.net.URL;
 
 import org.eclipse.emf.common.util.URI;
 
+import gama.core.common.StatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.metamodel.shape.GamaPoint;
@@ -186,7 +187,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	protected void sendToURL(final IScope scope) throws GamaRuntimeException {
 		final String urlPath = url.toExternalForm();
 		final String status = "Uploading file to " + urlPath;
-		scope.getGui().getStatus().beginTask(scope, status);
+		scope.getGui().getStatus().beginTask(status, StatusMessage.DOWNLOAD_ICON);
 		final Webb web = Webb.create();
 		try {
 			web.post(urlPath).ensureSuccess().connectTimeout(20000).retry(1, false)
@@ -194,7 +195,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 		} catch (final WebbException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
-			scope.getGui().getStatus().endTask(scope, status);
+			scope.getGui().getStatus().endTask(status, StatusMessage.DOWNLOAD_ICON);
 		}
 	}
 

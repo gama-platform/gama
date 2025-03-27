@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ProgressCounter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,6 +17,7 @@ import org.geotools.util.SimpleInternationalString;
 import org.opengis.util.InternationalString;
 import org.opengis.util.ProgressListener;
 
+import gama.core.common.StatusMessage;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -58,12 +59,12 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void complete() {
-		getDisplayer().setTaskCompletion(scope, 1d);
+		getDisplayer().setTaskCompletion(name, 1d);
 	}
 
 	@Override
 	public void dispose() {
-		getDisplayer().endTask(scope, name);
+		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -83,12 +84,12 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 	@Override
 	public void progress(final float p) {
 		progress = p;
-		getDisplayer().setTaskCompletion(scope, progress);
+		getDisplayer().setTaskCompletion(name, progress);
 	}
 
 	@Override
 	public void setCanceled(final boolean cancel) {
-		getDisplayer().endTask(scope, name);
+		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -96,7 +97,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void started() {
-		getDisplayer().beginTask(scope, name);
+		getDisplayer().beginTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -112,7 +113,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void imageStarted(final ImageReader source, final int imageIndex) {
-		getDisplayer().beginTask(scope, name);
+		getDisplayer().beginTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -122,8 +123,8 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void imageComplete(final ImageReader source) {
-		getDisplayer().setTaskCompletion(scope, 1d);
-		getDisplayer().endTask(scope, name);
+		getDisplayer().setTaskCompletion(name, 1d);
+		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void readAborted(final ImageReader source) {
-		getDisplayer().endTask(scope, name);
+		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
 	}
 
 }
