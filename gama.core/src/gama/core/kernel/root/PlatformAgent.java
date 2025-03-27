@@ -14,6 +14,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -94,7 +95,14 @@ import one.util.streamex.StreamEx;
 				type = IType.STRING,
 				constant = true,
 				doc = @doc (
-						value = "Returns information about GAMA, in a format suitable to be pasted into issues")),
+						value = "Returns information about GAMA, in a format suitable to be pasted into GitHub issues")),
+		@variable (
+				name = "platform",
+				type = IType.STRING,
+				constant = true,
+				doc = @doc(
+						value = "Returns the platform on which GAMA is currently executing.")
+				),
 		@variable (
 				name = "version",
 				type = IType.STRING,
@@ -356,6 +364,11 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			value = "info",
 			initializer = true)
 	public String getInfo() { return SystemInfo.getSystemInfo(); }
+	
+	@getter (
+			value = "platform",
+			initializer = true)
+	public String getPlatform() { return Platform.getOS(); }
 
 	/**
 	 * Gets the version.
