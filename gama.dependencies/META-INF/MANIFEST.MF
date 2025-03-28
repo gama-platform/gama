@@ -691,7 +691,8 @@ Export-Package: com.conversantmedia.util.collection,
  tech.uom.lib.common.util
 Require-Bundle: org.eclipse.osgi,
  gama.annotations,
- com.google.guava;visibility:=reexport
+ com.google.guava;visibility:=reexport,
+ org.eclipse.xsd
 Bundle-ClassPath: .,
  compress 1.24/commons-compress-1.24.0.jar,
  protobuf-java-3.6.1.jar,
