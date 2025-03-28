@@ -626,10 +626,10 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		super.setBounds(x, y, width, height);
 	}
 
-	@Override
-	public void setBounds(final Rectangle rect) {
-		setBounds(rect.x, rect.y, rect.width, rect.height);
-	}
+//	@Override
+//	public void setBounds(final Rectangle rect) {
+//		setBounds(rect.x, rect.y, rect.width, rect.height);
+//	}
 
 	/**
 	 * Sets the right padding. The width of the container composite should already have been sufficiently enlarged to
