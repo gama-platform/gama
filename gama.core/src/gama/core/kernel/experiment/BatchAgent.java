@@ -546,9 +546,8 @@ public class BatchAgent extends ExperimentAgent {
 	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
 		getScope().getGui().getStatus().setStatus("Run " + runNumber + " | " + repeatIndex + "/" + seeds.length
 				+ " simulations (using " + pop.getNumberOfActiveThreads() + " threads)", IStatusMessage.SIMULATION_ICON,
-				null);// GamaColor.get("light_gray")
-
-		// informStatus();
+				null);
+		getScope().getGui().getStatus().updateExperimentStatus();
 	}
 
 	/**

@@ -33,11 +33,6 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void topLevelAgentChanged(final ITopLevelAgent agent) {}
 
 	/**
-	 * Resume status.
-	 */
-	default void resetExperimentStatus() {}
-
-	/**
 	 * Wait status.
 	 *
 	 * @param scope
@@ -119,7 +114,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param target
 	 *            the new status target
 	 */
-	default void setStatusTarget(final IUpdaterTarget target) {}
+	default void setStatusTarget(final IStatusControl target) {}
 
 	/**
 	 * Sets the experiment target.
@@ -127,6 +122,6 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param target
 	 *            the new experiment target
 	 */
-	default void setExperimentTarget(final IUpdaterTarget target) {}
+	default void setExperimentTarget(final IStatusControl target) {}
 
 }

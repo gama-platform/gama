@@ -24,8 +24,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import gama.core.common.StatusMessage;
+import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
@@ -44,11 +44,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 /**
  * The Class ExperimentControlContribution.
  */
-public class ExperimentControlContribution extends WorkbenchWindowControlContribution implements IUpdaterTarget {
-
-	static {
-		// DEBUG.ON();
-	}
+public class ExperimentControlContribution extends WorkbenchWindowControlContribution implements IStatusControl {
 
 	/** The is updating. */
 	private volatile boolean isUpdating;
@@ -65,21 +61,10 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	/** The text. */
 	private final StringBuilder text = new StringBuilder(2000);
 
-	/** The instance. */
-	static ExperimentControlContribution INSTANCE;
-
-	/**
-	 * Gets the single instance of ExperimentControlContribution.
-	 *
-	 * @return single instance of ExperimentControlContribution
-	 */
-	public static ExperimentControlContribution getInstance() { return INSTANCE; }
-
 	/**
 	 * Instantiates a new status control contribution.
 	 */
 	public ExperimentControlContribution() {
-		INSTANCE = this;
 		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
 
@@ -91,7 +76,6 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 */
 	public ExperimentControlContribution(final String id) { // NO_UCD (unused code)
 		super(id);
-		INSTANCE = this;
 		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
 
@@ -99,9 +83,6 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	protected int computeWidth(final Control control) {
 		return WIDTH;
 	}
-
-	@Override
-	public boolean isBusy() { return isUpdating; }
 
 	@Override
 	protected Control createControl(final Composite parent) {
@@ -208,7 +189,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.ui.shared.factories.StatusRefresher.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final StatusMessage m) {
@@ -224,7 +205,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 				label.addMenuSign();
 			}
 			ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
-			label.setImageWithoutRecomputingSize(m.icon() == null ? null : GamaIcon.named(m.icon()).image());
+			// label.setImageWithoutRecomputingSize(m.icon() == null ? null : GamaIcon.named(m.icon()).image());
 			label.setColor(get(agent.getColor()));
 			label.setTextWithoutRecomputingSize(getClockMessage(agent));
 			if (popup.isVisible()) { popup.display(); }
@@ -260,13 +241,5 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (plan.shouldBeBenchmarked()) { text.append(" [benchmarking]"); }
 		return text.toString();
 	}
-
-	/**
-	 * Method resume()
-	 *
-	 * @see gama.core.common.interfaces.IUpdaterTarget#reset()
-	 */
-	@Override
-	public void reset() {}
 
 }

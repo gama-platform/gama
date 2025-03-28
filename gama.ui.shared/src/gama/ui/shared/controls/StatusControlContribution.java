@@ -27,8 +27,8 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import gama.core.common.IStatusMessage;
 import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessage;
+import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
@@ -40,7 +40,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 /**
  * The Class ExperimentControlContribution.
  */
-public class StatusControlContribution extends WorkbenchWindowControlContribution implements IUpdaterTarget {
+public class StatusControlContribution extends WorkbenchWindowControlContribution implements IStatusControl {
 
 	static {
 		DEBUG.ON();
@@ -112,9 +112,6 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	protected int computeWidth(final Control control) {
 		return WIDTH;
 	}
-
-	@Override
-	public boolean isBusy() { return isUpdating; }
 
 	@Override
 	protected Control createControl(final Composite parent) {
@@ -257,7 +254,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.ui.shared.factories.StatusRefresher.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final StatusMessage m) {
@@ -325,16 +322,6 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 */
 	public GamaUIColor getLabelBackground(final StatusMessage m) {
 		return GamaColors.get(m.color());
-	}
-
-	/**
-	 * Method resume()
-	 *
-	 * @see gama.core.common.interfaces.IUpdaterTarget#reset()
-	 */
-	@Override
-	public void reset() {
-		WorkbenchHelper.run(() -> updateWith(null));
 	}
 
 	/**

@@ -18,10 +18,12 @@ import org.eclipse.ui.progress.UIJob;
 import gama.core.common.IStatusMessage;
 import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessage;
+import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IUpdaterTarget;
+import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
+import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -29,13 +31,13 @@ import gama.ui.shared.utils.WorkbenchHelper;
 /**
  * The Class StatusDisplayer.
  */
-public class StatusDisplayer implements IStatusDisplayer {
+public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListener {
 
 	/** The experimentControl. */
-	private IUpdaterTarget experimentControl = new IUpdaterTarget() {};
+	private IStatusControl experimentControl = new IStatusControl() {};
 
 	/** The statusRefresher control. */
-	private IUpdaterTarget statusControl = new IUpdaterTarget() {};
+	private IStatusControl statusControl = new IStatusControl() {};
 
 	/** The statusRefresher. */
 	private final StatusRefresher statusRefresher = new StatusRefresher("Status refresh");
@@ -48,11 +50,8 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	private class ExperimentRefresher extends UIJob {
 
-		/** The message. */
-		StatusMessage message = null;
-
 		/**
-		 * Instantiates a new threaded updater.
+		 * Instantiates a new experiment refresher.
 		 *
 		 * @param name
 		 *            the name
@@ -64,27 +63,10 @@ public class StatusDisplayer implements IStatusDisplayer {
 			setSystem(true);
 		}
 
-		/**
-		 * Update with.
-		 *
-		 * @param m
-		 *            the m
-		 */
-		public void updateWith(final StatusMessage m) {
-			message = m;
-			if (m != null) { schedule(); }
-		}
-
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
-			try {
-				if (message != null) {
-					if (experimentControl.isDisposed()) return Status.CANCEL_STATUS;
-					experimentControl.updateWith(message);
-				}
-			} finally {
-				message = null;
-			}
+			if (experimentControl.isDisposed()) return Status.CANCEL_STATUS;
+			experimentControl.updateWith(StatusMessage.EXPERIMENT());
 			return Status.OK_STATUS;
 		}
 
@@ -142,6 +124,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	StatusDisplayer() {
 		GAMA.registerTopLevelAgentChangeListener(this);
+		GAMA.addExperimentStateListener(this);
 	}
 
 	/**
@@ -154,6 +137,19 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
+		updateExperimentStatus();
+	}
+
+	/**
+	 * Update state to.
+	 *
+	 * @param experiment
+	 *            the experiment
+	 * @param state
+	 *            the state
+	 */
+	@Override
+	public void updateStateTo(final IExperimentPlan experiment, final State state) {
 		updateExperimentStatus();
 	}
 
@@ -198,17 +194,6 @@ public class StatusDisplayer implements IStatusDisplayer {
 	}
 
 	/**
-	 * Resume statusRefresher.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 14 août 2023
-	 */
-	@Override
-	public void resetExperimentStatus() {
-		experimentControl.reset();
-	}
-
-	/**
 	 * Sets the sub statusRefresher completion.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -233,7 +218,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	@Override
 	public void updateExperimentStatus() {
-		experimentRefresher.updateWith(StatusMessage.EXPERIMENT());
+		experimentRefresher.schedule();
 	}
 
 	/**
@@ -291,7 +276,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 *            the s
 	 */
 	@Override
-	public void setExperimentTarget(final IUpdaterTarget l) { experimentControl = l; }
+	public void setExperimentTarget(final IStatusControl l) { experimentControl = l; }
 
 	/**
 	 * Sets the statusRefresher target.
@@ -300,6 +285,6 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 *            the new statusRefresher target
 	 */
 	@Override
-	public void setStatusTarget(final IUpdaterTarget l) { statusControl = l; }
+	public void setStatusTarget(final IStatusControl l) { statusControl = l; }
 
 }

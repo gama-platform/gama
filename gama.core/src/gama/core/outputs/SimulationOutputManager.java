@@ -22,7 +22,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
@@ -149,10 +149,9 @@ public class SimulationOutputManager extends AbstractOutputManager {
 	@Override
 	public boolean init(final IScope scope) {
 		boolean[] result = { true };
-		scope.getGui().getStatus().waitStatus(" Building outputs ", StatusMessage.VIEW_ICON, () -> {
+		scope.getGui().getStatus().waitStatus(" Building outputs ", IStatusMessage.VIEW_ICON, () -> {
 			result[0] = super.init(scope);
 			updateDisplayOutputsName(scope.getSimulation());
-			scope.getGui().getStatus().updateExperimentStatus();
 		});
 		return result[0];
 	}

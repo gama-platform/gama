@@ -12,7 +12,7 @@ package gama.core.kernel.experiment;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
@@ -113,10 +113,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
-					scope.getGui().getStatus().waitStatus("Reloading...", StatusMessage.SIMULATION_ICON,
+					scope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
 							() -> experiment.reload());
 					if (wasRunning) return processUserCommand(ExperimentCommand._START);
-					scope.getGui().getStatus().informStatus("Experiment reloaded", StatusMessage.SIMULATION_ICON);
+					scope.getGui().getStatus().informStatus("Experiment reloaded", IStatusMessage.SIMULATION_ICON);
 					return true;
 				} catch (final GamaRuntimeException e) {
 					closeExperiment(e);
