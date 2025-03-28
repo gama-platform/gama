@@ -1,14 +1,16 @@
 /*******************************************************************************************************
  *
- * HeadlessApplication.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * HeadlessApplication.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.runtime;
+
+import static gama.headless.runtime.GamaHeadlessWebSocketServer.startForSecureHeadless;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,7 +46,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.NullGuiHandler;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
@@ -171,26 +173,26 @@ public class HeadlessApplication implements IApplication {
 	final public static String WRITE_XMI = "-write-xmi";
 
 	/** The socket. */
-	public int socket = -1;
+	private int socket = -1;
 
 	/** The ping interval. */
 	// the interval between each ping sent by the server, -1 to deactivate this behaviour
-	public int ping_interval = GamaWebSocketServer.DEFAULT_PING_INTERVAL;
+	private int ping = IGamaServer.DEFAULT_PING_INTERVAL;
 
 	/** The console mode. */
-	public boolean consoleMode = false;
+	private boolean consoleMode = false;
 
 	/** The tunneling mode. */
-	public boolean tunnelingMode = false;
+	private boolean tunnelingMode = false;
 
 	/** The verbose. */
-	public boolean verbose = false;
+	private boolean verbose = false;
 
 	/** The processor queue. */
-	public final SimulationRuntime processorQueue = new SimulationRuntime();
+	private final SimulationRuntime processorQueue = new SimulationRuntime();
 
 	/** The is server. */
-	static boolean isServer = false;
+	private static boolean isServer = false;
 
 	/**
 	 * Show version.
@@ -286,7 +288,7 @@ public class HeadlessApplication implements IApplication {
 		}
 		if (args.contains(PING_INTERVAL)) {
 			size = size - 2;
-			this.ping_interval = Integer.parseInt(after(args, PING_INTERVAL));
+			this.ping = Integer.parseInt(after(args, PING_INTERVAL));
 		}
 		if (args.contains(THREAD_PARAMETER)) {
 			size = size - 2;
@@ -308,10 +310,8 @@ public class HeadlessApplication implements IApplication {
 			size = size - 4;
 			mustContainInFile = mustContainOutFolder = false;
 		}
-		
-		if (args.contains(GAML_PARAMETER)) {
-			size = size - 2;
-		}
+
+		if (args.contains(GAML_PARAMETER)) { size = size - 2; }
 
 		// Runner verification
 		// ========================
@@ -326,15 +326,13 @@ public class HeadlessApplication implements IApplication {
 			// Check and create output folder
 			Globals.OUTPUT_PATH = args.get(args.size() - 1);
 			final File output = new File(Globals.OUTPUT_PATH);
-			if (!output.exists() && !output.mkdir()) {
-				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.OUTPUT_PATH);					
-			}
+			if (!output.exists() && !output.mkdir())
+				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.OUTPUT_PATH);
 			// Check and create output image folder
 			Globals.IMAGES_PATH = Globals.OUTPUT_PATH + "/snapshot";
 			final File images = new File(Globals.IMAGES_PATH);
-			if (!images.exists() && !images.mkdir()) {
-					return showError(HeadLessErrors.PERMISSION_ERROR, Globals.IMAGES_PATH);
-			}
+			if (!images.exists() && !images.mkdir())
+				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.IMAGES_PATH);
 		}
 		if (mustContainInFile) {
 			final int inIndex = args.size() - (mustContainOutFolder ? 2 : 1);
@@ -416,13 +414,13 @@ public class HeadlessApplication implements IApplication {
 		} else if (args.contains(BUILD_XML_PARAMETER)) {
 			buildXML(args);
 		} else if (args.contains(SOCKET_PARAMETER)) {
-			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping_interval);
+			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping);
 		} else if (args.contains(SSOCKET_PARAMETER)) {
 			final String jks = args.contains(SSOCKET_PARAMETER_JKSPATH) ? after(args, SSOCKET_PARAMETER_JKSPATH) : "";
 			final String spwd = args.contains(SSOCKET_PARAMETER_SPWD) ? after(args, SSOCKET_PARAMETER_SPWD) : "";
 			final String kpwd = args.contains(SSOCKET_PARAMETER_KPWD) ? after(args, SSOCKET_PARAMETER_KPWD) : "";
-			GamaHeadlessWebSocketServer.startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd,
-					ping_interval);
+			GAMA.getPlatformAgent()
+					.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping));
 		} else {
 			runSimulation(args);
 		}
@@ -484,8 +482,13 @@ public class HeadlessApplication implements IApplication {
 
 		if (selectedJob.size() == 0) {
 			DEBUG.ON();
-			DEBUG.ERR("\n=== ERROR ===" + "\n\tGAMA is about to generate an empty XML file."
-					+ "\n\tIf you want to run a Batch experiment, please check the \"-batch\" flag.");
+			DEBUG.ERR("""
+
+					=== ERROR ===\
+
+						GAMA is about to generate an empty XML file.\
+
+						If you want to run a Batch experiment, please check the "-batch" flag.""");
 			System.exit(-1);
 		} else {
 			final Document dd = ExperimentationPlanFactory.buildXmlDocument(selectedJob);
@@ -670,16 +673,18 @@ public class HeadlessApplication implements IApplication {
 	public void runGamlSimulation(final List<String> args)
 			throws IOException, GamaCompilationFailedException, InterruptedException {
 
-
 		final String argExperimentName = args.get(args.size() - 3);
 		final String argGamlFile = args.get(args.size() - 2);
 		final String argOutDir = args.get(args.size() - 1);
-		final Integer numberOfSteps = args.contains(STEPS_PARAMETER)	? Integer.parseInt(after(args, STEPS_PARAMETER)) : null;
-		final Integer numberOfCores = args.contains(THREAD_PARAMETER) 	? Integer.parseInt(after(args, THREAD_PARAMETER)) : null;
-		
+		final Integer numberOfSteps =
+				args.contains(STEPS_PARAMETER) ? Integer.parseInt(after(args, STEPS_PARAMETER)) : null;
+		final Integer numberOfCores =
+				args.contains(THREAD_PARAMETER) ? Integer.parseInt(after(args, THREAD_PARAMETER)) : null;
+
 		assertIsAModelFile(argGamlFile);
 
-		final List<IExperimentJob> jb = ExperimentationPlanFactory.buildExperiment(argGamlFile,numberOfSteps, numberOfCores);
+		final List<IExperimentJob> jb =
+				ExperimentationPlanFactory.buildExperiment(argGamlFile, numberOfSteps, numberOfCores);
 
 		ExperimentJob selectedJob = null;
 		for (final IExperimentJob j : jb) {

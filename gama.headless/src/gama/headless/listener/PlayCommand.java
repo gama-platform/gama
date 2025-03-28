@@ -14,9 +14,9 @@ import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaServerMessage;
-import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.IMap;
 
 /**
@@ -28,7 +28,7 @@ import gama.core.util.IMap;
 public class PlayCommand implements ISocketCommand {
 
 	@Override
-	public CommandResponse execute(final GamaWebSocketServer server, final WebSocket socket,
+	public CommandResponse execute(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -39,9 +39,9 @@ public class PlayCommand implements ISocketCommand {
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		plan.getAgent().setAttribute("%%playCommand%%", map);
 		if (!plan.getController().processStart(false))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, "Controller is full", map, false);
+			return new CommandResponse(MessageType.UnableToExecuteRequest, "Controller is full", map, false);
 		boolean hasEndCond = map.containsKey(UNTIL) && !map.get(UNTIL).toString().isBlank();
 		if (hasEndCond && sync) return null;
-		return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+		return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 	}
 }

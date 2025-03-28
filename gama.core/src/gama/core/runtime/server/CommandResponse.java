@@ -42,7 +42,7 @@ public class CommandResponse extends GamaServerMessage {
 	 *            the is JSON
 	 * @date 15 oct. 2023
 	 */
-	public CommandResponse(final GamaServerMessage.Type t, final Object content, final IMap<String, Object> parameters,
+	public CommandResponse(final MessageType t, final Object content, final IMap<String, Object> parameters,
 			final boolean isJSON) {
 		super(t, content);
 		this.commandParameters = parameters;

@@ -46,13 +46,13 @@ public final class GamaServerConsoleListener extends GamaServerMessager implemen
 		System.out.println(s);
 		if (!canSendMessage(root.getExperiment())) return;
 		sendMessage(root.getExperiment(), json.object("message", s, "color", color),
-				GamaServerMessage.Type.SimulationOutput);
+				MessageType.SimulationOutput);
 	}
 
 	@Override
 	public void debugConsole(final int cycle, final String s, final ITopLevelAgent root, final GamaColor color) {
 		if (!canSendMessage(root.getExperiment())) return;
 		sendMessage(root.getExperiment(), json.object("cycle", cycle, "message", s, "color", color),
-				GamaServerMessage.Type.SimulationDebug);
+				MessageType.SimulationDebug);
 	}
 }
