@@ -17,7 +17,7 @@ import org.geotools.util.SimpleInternationalString;
 import org.opengis.util.InternationalString;
 import org.opengis.util.ProgressListener;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -59,12 +59,12 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void complete() {
-		getDisplayer().setTaskCompletion(name, 1d);
+		getDisplayer().setTaskCompletion(name, 1d, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
 	public void dispose() {
-		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().endTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -84,12 +84,12 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 	@Override
 	public void progress(final float p) {
 		progress = p;
-		getDisplayer().setTaskCompletion(name, progress);
+		getDisplayer().setTaskCompletion(name, progress, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
 	public void setCanceled(final boolean cancel) {
-		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().endTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void started() {
-		getDisplayer().beginTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().beginTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void imageStarted(final ImageReader source, final int imageIndex) {
-		getDisplayer().beginTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().beginTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -123,8 +123,8 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void imageComplete(final ImageReader source) {
-		getDisplayer().setTaskCompletion(name, 1d);
-		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().setTaskCompletion(name, 1d, IStatusMessage.DOWNLOAD_ICON);
+		getDisplayer().endTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void readAborted(final ImageReader source) {
-		getDisplayer().endTask(name, StatusMessage.DOWNLOAD_ICON);
+		getDisplayer().endTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 
 }

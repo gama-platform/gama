@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaViewPart.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,6 +28,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IGamaView;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -100,6 +101,7 @@ public abstract class GamaViewPart extends ViewPart
 		 */
 		public ViewUpdateUIJob() {
 			super("Updating " + getPartName());
+			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.VIEW_JOB);
 			setSystem(true);
 			final UpdatePriority p = jobPriority();
 			switch (p) {

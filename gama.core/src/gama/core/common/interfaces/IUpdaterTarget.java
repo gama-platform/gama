@@ -28,13 +28,6 @@ public interface IUpdaterTarget {
 	default boolean isDisposed() { return false; }
 
 	/**
-	 * Checks if is visible.
-	 *
-	 * @return true, if is visible
-	 */
-	default boolean isVisible() { return true; }
-
-	/**
 	 * Checks if is busy.
 	 *
 	 * @return true, if is busy

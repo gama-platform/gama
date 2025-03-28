@@ -35,7 +35,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	/**
 	 * Resume status.
 	 */
-	default void resetStatus() {}
+	default void resetExperimentStatus() {}
 
 	/**
 	 * Wait status.
@@ -50,7 +50,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void waitStatus(final String string, final String icon, final Runnable run) {
 		informStatus(string, icon);
 		run.run();
-		resetStatus();
+		// resetStatus();
 	}
 
 	/**
@@ -75,7 +75,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param status
 	 *            the new sub status completion
 	 */
-	default void setTaskCompletion(final String name, final double status) {}
+	default void setTaskCompletion(final String name, final double status, final String icon) {}
 
 	/**
 	 * Inform status.
@@ -112,5 +112,21 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 *            the name
 	 */
 	default void endTask(final String name, final String icon) {}
+
+	/**
+	 * Sets the status target.
+	 *
+	 * @param target
+	 *            the new status target
+	 */
+	default void setStatusTarget(final IUpdaterTarget target) {}
+
+	/**
+	 * Sets the experiment target.
+	 *
+	 * @param target
+	 *            the new experiment target
+	 */
+	default void setExperimentTarget(final IUpdaterTarget target) {}
 
 }

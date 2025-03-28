@@ -22,7 +22,7 @@ import org.jfree.data.statistics.Statistics;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.experiment;
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
@@ -235,7 +235,7 @@ public class BatchAgent extends ExperimentAgent {
 		getSpecies().getExplorationAlgorithm().run(scope);
 		// Once the algorithm has finished exploring the solutions, the agent is
 		// killed.
-		scope.getGui().getStatus().informStatus(endStatus(), StatusMessage.SIMULATION_ICON);
+		scope.getGui().getStatus().informStatus(endStatus(), IStatusMessage.SIMULATION_ICON);
 		// Issue #2426: the agent is killed too soon
 		getScope().setDisposeStatus();
 		// dispose();
@@ -545,7 +545,7 @@ public class BatchAgent extends ExperimentAgent {
 	 */
 	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
 		getScope().getGui().getStatus().setStatus("Run " + runNumber + " | " + repeatIndex + "/" + seeds.length
-				+ " simulations (using " + pop.getNumberOfActiveThreads() + " threads)", StatusMessage.PROGRESS_ICON,
+				+ " simulations (using " + pop.getNumberOfActiveThreads() + " threads)", IStatusMessage.SIMULATION_ICON,
 				null);// GamaColor.get("light_gray")
 
 		// informStatus();

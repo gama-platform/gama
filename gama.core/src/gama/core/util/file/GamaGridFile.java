@@ -51,7 +51,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
@@ -508,7 +508,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			coverage = store.read(null);
 		} finally {
 			if (store != null) { store.dispose(); }
-			scope.getGui().getStatus().endTask("Opening file " + getName(scope), StatusMessage.DOWNLOAD_ICON);
+			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		}
 	}
 
@@ -551,7 +551,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 		try {
 			String task = "Reading file " + getName(scope);
-			scope.getGui().getStatus().beginTask(task, StatusMessage.DOWNLOAD_ICON);
+			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 
 			final Envelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
 			if (gis != null && !(gis.getInitialCRS(scope) instanceof ProjectedCRS)) {
@@ -601,7 +601,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				records.y = new double[numRows * numCols]; // y
 				records.bands.add(new double[numRows * numCols]); // data
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
-					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n);
+					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n, IStatusMessage.DOWNLOAD_ICON);
 
 					final int yy = i / numCols;
 					final int xx = i - yy * numCols;
@@ -642,7 +642,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			throw GamaRuntimeException
 					.error("The format of " + getName(scope) + " is not correct. Error: " + e.getMessage(), scope);
 		} finally {
-			scope.getGui().getStatus().endTask("Reading file " + getName(scope), StatusMessage.DOWNLOAD_ICON);
+			scope.getGui().getStatus().endTask("Reading file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		}
 
 	}

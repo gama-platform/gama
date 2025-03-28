@@ -17,58 +17,7 @@ import gama.core.util.GamaColor;
  * The Class StatusMessage.
  */
 public record StatusMessage(String message, StatusType type, String icon, GamaColor color, Boolean begin,
-		Double completion, GamaRuntimeException exception, long time) {
-
-	/** The wait and task color. */
-	public static GamaColor WAIT_AND_TASK_COLOR = GamaColor.get(207, 119, 56);
-
-	/** The inform color. */
-	public static GamaColor INFORM_COLOR = GamaColor.get(102, 114, 126);
-
-	/** The error color. */
-	public static GamaColor ERROR_COLOR = GamaColor.get(158, 77, 77);
-
-	/** The neutral color. */
-	public static GamaColor NEUTRAL_COLOR = GamaColor.get(102, 114, 126);
-
-	/** The progress icon. */
-	public static String PROGRESS_ICON = "status/status.progress";
-
-	/** The simulation icon. */
-	public static String SIMULATION_ICON = "status/status.simulation";
-
-	/** The system icon. */
-	public static String SYSTEM_ICON = "status/status.system";
-
-	/** The error icon. */
-	public static String ERROR_ICON = "status/status.error";
-
-	/** The compile icon. */
-	public static String COMPILE_ICON = "status/status.compile";
-
-	/** The compile icon. */
-	public static String VIEW_ICON = "status/status.view";
-
-	/** The compile icon. */
-	public static String MEMORY_ICON = "status/status.memory";
-
-	/** The download icon. */
-	public static String DOWNLOAD_ICON = "status/status.download";
-
-	/**
-	 * The Enum StatusType.
-	 */
-	public enum StatusType {
-
-		/** The error. */
-		ERROR,
-		/** The inform. */
-		REGULAR,
-		/** The experiment. */
-		EXPERIMENT,
-		/** The none. */
-		NONE;
-	}
+		Double completion, GamaRuntimeException exception, long time) implements IStatusMessage {
 
 	/**
 	 * @param msg
@@ -117,8 +66,8 @@ public record StatusMessage(String message, StatusType type, String icon, GamaCo
 	 *            the completion
 	 * @return the status message
 	 */
-	public static StatusMessage COMPLETION(final String msg, final Double completion) {
-		return new StatusMessage(msg, StatusType.REGULAR, PROGRESS_ICON, WAIT_AND_TASK_COLOR, false, completion, null);
+	public static StatusMessage COMPLETION(final String msg, final Double completion, final String icon) {
+		return new StatusMessage(msg, StatusType.REGULAR, icon, WAIT_AND_TASK_COLOR, false, completion, null);
 	}
 
 	/**

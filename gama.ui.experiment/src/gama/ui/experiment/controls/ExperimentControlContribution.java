@@ -36,7 +36,6 @@ import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
 import gama.gaml.operators.Strings;
 import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.factories.StatusDisplayer;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -81,8 +80,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 */
 	public ExperimentControlContribution() {
 		INSTANCE = this;
-		((StatusDisplayer) WorkbenchHelper.getService(IStatusDisplayer.class)).getThreadedUpdater()
-				.setExperimentTarget(this);
+		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
 
 	/**
@@ -94,8 +92,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	public ExperimentControlContribution(final String id) { // NO_UCD (unused code)
 		super(id);
 		INSTANCE = this;
-		((StatusDisplayer) WorkbenchHelper.getService(IStatusDisplayer.class)).getThreadedUpdater()
-				.setExperimentTarget(this);
+		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
 
 	@Override
@@ -211,7 +208,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.gui.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.ui.shared.factories.StatusRefresher.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final StatusMessage m) {

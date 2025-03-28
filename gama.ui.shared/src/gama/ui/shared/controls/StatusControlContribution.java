@@ -24,20 +24,18 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
+import gama.core.common.IStatusMessage;
+import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessage;
-import gama.core.common.StatusMessage.StatusType;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.factories.StatusDisplayer;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.utils.ThreadedUpdater;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.ui.shared.views.GamaViewPart.ViewUpdateUIJob;
 
 /**
  * The Class ExperimentControlContribution.
@@ -96,8 +94,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 */
 	public StatusControlContribution() {
 		INSTANCE = this;
-		((StatusDisplayer) WorkbenchHelper.getService(IStatusDisplayer.class)).getThreadedUpdater()
-				.setStatusTarget(this);
+		WorkbenchHelper.getService(IStatusDisplayer.class).setStatusTarget(this);
 	}
 
 	/**
@@ -146,28 +143,30 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
 			@Override
 			public void aboutToRun(final IJobChangeEvent event) {
-				if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof ThreadedUpdater) return;
 				Job job = event.getJob();
+				if (WorkbenchHelper.getWorkbench().isClosing()) return;
+				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
+				if (IStatusMessage.INTERNAL_JOB.equals(jobProperty)) return;
+				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
 				String name = job.getName();
-				boolean isView = job instanceof ViewUpdateUIJob;
 				if (isView ? !showViewEvents : !showSystemEvents) return;
 				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.CREATE(name, StatusType.REGULAR,
-						isView ? StatusMessage.VIEW_ICON : StatusMessage.SYSTEM_ICON)));
+						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON)));
 			}
 
-			private boolean intersect(final String s1, final String s2) {
-				if (s1 == null) return s2 == null;
-				if (s2 == null) return false;
-				return s1.contains(s2) || s2.contains(s1);
-			}
+			// private boolean intersect(final String s1, final String s2) {
+			// if (s1 == null) return s2 == null;
+			// if (s2 == null) return false;
+			// return s1.contains(s2) || s2.contains(s1);
+			// }
 
 			@Override
 			public void done(final IJobChangeEvent event) {
-				if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof ThreadedUpdater) return;
-				String message = event.getJob().getName();
-				if (intersect(label.getText(), message)) {
-					WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.IDLE()));
-				}
+				// if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof StatusRefresher) return;
+				// String message = event.getJob().getName();
+				// if (intersect(label.getText(), message)) {
+				// WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.IDLE()));
+				// }
 				// else {
 				// WorkbenchHelper
 				// .asyncRun(() -> updateWith(StatusMessage.END(event.getJob().getName() + " (ended)")));
@@ -258,7 +257,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.gui.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.ui.shared.factories.StatusRefresher.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final StatusMessage m) {
@@ -301,7 +300,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	private String getIcon() {
 		if (progress > 6) { progress = 1; }
 		progress += 0.3;
-		return StatusMessage.PROGRESS_ICON + Math.round(progress);
+		return IStatusMessage.PROGRESS_ICON + Math.round(progress);
 	}
 
 	/**

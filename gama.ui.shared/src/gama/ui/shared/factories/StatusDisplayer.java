@@ -10,25 +10,135 @@
  ********************************************************************************************************/
 package gama.ui.shared.factories;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.progress.UIJob;
+
+import gama.core.common.IStatusMessage;
+import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessage;
-import gama.core.common.StatusMessage.StatusType;
 import gama.core.common.interfaces.IStatusDisplayer;
+import gama.core.common.interfaces.IUpdaterTarget;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.ui.shared.utils.ThreadedUpdater;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class StatusDisplayer.
  */
 public class StatusDisplayer implements IStatusDisplayer {
 
-	/** The status. */
-	private final ThreadedUpdater status = new ThreadedUpdater("Status refresh");
+	/** The experimentControl. */
+	private IUpdaterTarget experimentControl = new IUpdaterTarget() {};
+
+	/** The statusRefresher control. */
+	private IUpdaterTarget statusControl = new IUpdaterTarget() {};
+
+	/** The statusRefresher. */
+	private final StatusRefresher statusRefresher = new StatusRefresher("Status refresh");
+
+	/** The statusRefresher. */
+	private final ExperimentRefresher experimentRefresher = new ExperimentRefresher("Experiment refresh");
 
 	/**
-	 * Instantiates a new status displayer.
+	 * The Class StatusRefresher.
+	 */
+	private class ExperimentRefresher extends UIJob {
+
+		/** The message. */
+		StatusMessage message = null;
+
+		/**
+		 * Instantiates a new threaded updater.
+		 *
+		 * @param name
+		 *            the name
+		 */
+		public ExperimentRefresher(final String name) {
+			super(WorkbenchHelper.getDisplay(), name);
+			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_JOB);
+			setPriority(INTERACTIVE);
+			setSystem(true);
+		}
+
+		/**
+		 * Update with.
+		 *
+		 * @param m
+		 *            the m
+		 */
+		public void updateWith(final StatusMessage m) {
+			message = m;
+			if (m != null) { schedule(); }
+		}
+
+		@Override
+		public IStatus runInUIThread(final IProgressMonitor monitor) {
+			try {
+				if (message != null) {
+					if (experimentControl.isDisposed()) return Status.CANCEL_STATUS;
+					experimentControl.updateWith(message);
+				}
+			} finally {
+				message = null;
+			}
+			return Status.OK_STATUS;
+		}
+
+	}
+
+	/**
+	 * The Class StatusRefresher.
+	 */
+	private class StatusRefresher extends UIJob {
+
+		/** The message. */
+		StatusMessage message = null;
+
+		/**
+		 * Instantiates a new threaded updater.
+		 *
+		 * @param name
+		 *            the name
+		 */
+		public StatusRefresher(final String name) {
+			super(WorkbenchHelper.getDisplay(), name);
+			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_JOB);
+			setPriority(DECORATE);
+			setSystem(true);
+		}
+
+		/**
+		 * Update with.
+		 *
+		 * @param m
+		 *            the m
+		 */
+		public void updateWith(final StatusMessage m) {
+			message = m;
+			if (m != null) { schedule(); }
+		}
+
+		@Override
+		public IStatus runInUIThread(final IProgressMonitor monitor) {
+			try {
+				if (message != null) {
+					if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
+					statusControl.updateWith(message);
+				}
+			} finally {
+				message = null;
+			}
+			return Status.OK_STATUS;
+		}
+
+	}
+
+	/**
+	 * Instantiates a new statusRefresher displayer.
 	 */
 	StatusDisplayer() {
 		GAMA.registerTopLevelAgentChangeListener(this);
@@ -48,7 +158,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	}
 
 	/**
-	 * Inform status.
+	 * Inform statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param string
@@ -61,7 +171,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	}
 
 	/**
-	 * Error status.
+	 * Error statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param error
@@ -70,11 +180,11 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	@Override
 	public void errorStatus(final GamaRuntimeException error) {
-		status.updateWith(StatusMessage.ERROR(error));
+		statusRefresher.updateWith(StatusMessage.ERROR(error));
 	}
 
 	/**
-	 * Sets the status.
+	 * Sets the statusRefresher.
 	 *
 	 * @param msg
 	 *            the msg
@@ -84,35 +194,35 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 *            the icon
 	 */
 	private void setStatus(final String msg, final StatusType code, final String icon) {
-		status.updateWith(StatusMessage.CREATE(msg, code, icon));
+		statusRefresher.updateWith(StatusMessage.CREATE(msg, code, icon));
 	}
 
 	/**
-	 * Resume status.
+	 * Resume statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void resetStatus() {
-		status.reset();
+	public void resetExperimentStatus() {
+		experimentControl.reset();
 	}
 
 	/**
-	 * Sets the sub status completion.
+	 * Sets the sub statusRefresher completion.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param s
-	 *            the new sub status completion
+	 *            the new sub statusRefresher completion
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void setTaskCompletion(final String name, final double s) {
-		status.updateWith(StatusMessage.COMPLETION(name, s));
+	public void setTaskCompletion(final String name, final double s, final String icon) {
+		statusRefresher.updateWith(StatusMessage.COMPLETION(name, s, icon));
 	}
 
 	/**
-	 * Inform status.
+	 * Inform statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param string
@@ -123,11 +233,11 @@ public class StatusDisplayer implements IStatusDisplayer {
 	 */
 	@Override
 	public void updateExperimentStatus() {
-		status.updateWith(StatusMessage.EXPERIMENT());
+		experimentRefresher.updateWith(StatusMessage.EXPERIMENT());
 	}
 
 	/**
-	 * Begin sub status.
+	 * Begin sub statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param name
@@ -140,7 +250,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	}
 
 	/**
-	 * End sub status.
+	 * End sub statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param name
@@ -153,7 +263,7 @@ public class StatusDisplayer implements IStatusDisplayer {
 	}
 
 	/**
-	 * Sets the status.
+	 * Sets the statusRefresher.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param message
@@ -165,18 +275,31 @@ public class StatusDisplayer implements IStatusDisplayer {
 	@Override
 	public void setStatus(final String message, final String icon, final GamaColor color) {
 		if (message == null) {
-			resetStatus();
+			// resetStatus();
 		} else {
-			status.updateWith(StatusMessage.CUSTOM(message, StatusType.REGULAR, icon, color));
+			statusRefresher.updateWith(StatusMessage.CUSTOM(message, StatusType.REGULAR, icon, color));
 		}
 
 	}
 
 	/**
-	 * Gets the threaded updater.
+	 * Sets the target.
 	 *
-	 * @return the threaded updater
+	 * @param l
+	 *            the l
+	 * @param s
+	 *            the s
 	 */
-	public ThreadedUpdater getThreadedUpdater() { return status; }
+	@Override
+	public void setExperimentTarget(final IUpdaterTarget l) { experimentControl = l; }
+
+	/**
+	 * Sets the statusRefresher target.
+	 *
+	 * @param l
+	 *            the new statusRefresher target
+	 */
+	@Override
+	public void setStatusTarget(final IUpdaterTarget l) { statusControl = l; }
 
 }
