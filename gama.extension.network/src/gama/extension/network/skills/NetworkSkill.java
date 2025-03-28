@@ -76,10 +76,10 @@ public class NetworkSkill extends MessagingSkill {
 	}
 
 	/** The Constant REGISTERED_AGENTS. */
-	final static String REGISTERED_AGENTS = "registred_agents";
+	final static String REGISTERED_AGENTS = "registered_agents";
 
 	/** The Constant REGISTRED_SERVER. */
-	final static String REGISTRED_SERVER = "registred_servers";
+	final static String REGISTERED_SERVER = "registered_servers";
 
 	/**
 	 * System exec.
@@ -190,7 +190,7 @@ public class NetworkSkill extends MessagingSkill {
 							@example (" do connect protocol: \"arduino\";"),
 							}))
 	public boolean connectToServer(final IScope scope) throws GamaRuntimeException {
-		if (!scope.getExperiment().hasAttribute(REGISTRED_SERVER)) { this.startSkill(scope); }
+		if (!scope.getExperiment().hasAttribute(REGISTERED_SERVER)) { this.startSkill(scope); }
 		final IAgent agt = scope.getAgent();
 		final String serverURL = (String) scope.getArg(INetworkSkill.SERVER_URL, IType.STRING);
 		final String login = (String) scope.getArg(INetworkSkill.LOGIN, IType.STRING);
@@ -538,7 +538,7 @@ public class NetworkSkill extends MessagingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	protected Map<String, IConnector> getRegisteredServers(final IScope scope) {
-		return (Map<String, IConnector>) scope.getExperiment().getAttribute(REGISTRED_SERVER);
+		return (Map<String, IConnector>) scope.getExperiment().getAttribute(REGISTERED_SERVER);
 	}
 
 	/**
@@ -550,7 +550,7 @@ public class NetworkSkill extends MessagingSkill {
 	private void initialize(final IScope scope) {
 
 		scope.getExperiment().setAttribute(REGISTERED_AGENTS, new ArrayList<IAgent>());
-		scope.getExperiment().setAttribute(REGISTRED_SERVER, new HashMap<String, IConnector>());
+		scope.getExperiment().setAttribute(REGISTERED_SERVER, new HashMap<String, IConnector>());
 	}
 
 	/**
