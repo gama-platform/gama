@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * FlatButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
+ * FlatButton.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,6 +46,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	/** The menu image. */
 
 	static final Image menuImage = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
+
+	/** The Constant menuImageBounds. */
 	static final Rectangle menuImageBounds = menuImage.getBounds();
 	/** The Constant innerMarginWidth. */
 	private static final int innerMarginWidth = 5;
@@ -66,6 +69,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	/** The preferred height. */
 	private int preferredHeight = SWT.DEFAULT; // DEFAULT_HEIGHT;
 
+	/** The minimal height. */
 	private int minimalHeight = SWT.DEFAULT;
 
 	/** The preferred width. */
@@ -85,6 +89,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	/** The right padding */
 	private int rightPadding = 0;
+
+	/** The border. */
 	private boolean border;
 
 	/**
@@ -417,6 +423,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	/**
+	 * Sets the image without recomputing size.
+	 *
+	 * @param image
+	 *            the image
+	 * @return the flat button
+	 */
 	public FlatButton setImageWithoutRecomputingSize(final Image image) {
 		if (this.image == image) return this;
 		this.image = image;
@@ -517,6 +530,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	/**
+	 * Sets the text without recomputing size.
+	 *
+	 * @param text
+	 *            the text
+	 * @return the flat button
+	 */
 	public FlatButton setTextWithoutRecomputingSize(final String text) {
 		if (text == null || text.equals(this.text)) return this;
 		this.text = text;
@@ -620,6 +640,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	/**
+	 * With minimal height.
+	 *
+	 * @param height
+	 *            the height
+	 * @return the flat button
+	 */
 	public FlatButton withMinimalHeight(final int height) {
 		minimalHeight = height;
 		preferredHeight = height;
@@ -663,6 +690,11 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public void setRightPadding(final int buttonPadding) { rightPadding = buttonPadding; }
 
+	/**
+	 * With border.
+	 *
+	 * @return the flat button
+	 */
 	public FlatButton withBorder() {
 		border = true;
 		return this;

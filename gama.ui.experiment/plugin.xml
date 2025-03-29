@@ -351,7 +351,7 @@
                <visibleWhen
                      checkEnabled="false">
                   <reference
-                        definitionId="isGamlEditorOpened">
+                        definitionId="org.eclipse.ant.ui.activeAntEditor">
                   </reference>
                </visibleWhen>
                <separator
@@ -419,7 +419,7 @@
             </menu>
             <menu
                   icon="platform:/plugin/gama.ui.shared/icons/views/layout.menu.png"
-                  label="Layout Displays... (Experimental)">
+                  label="Layout Displays... ">
                <command
                      commandId="gama.application.layoutDisplays"
                      icon="platform:/plugin/gama.ui.shared/icons/views/layout.stack.png"

@@ -21,8 +21,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.layout.RowDataFactory;
-import org.eclipse.jface.layout.RowLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -34,7 +32,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolBar;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
@@ -119,10 +116,13 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	}
 
 	/** The contents. */
-	Composite parent, contents, toolbarComposite;
+	Composite parent, contents;
+
+	/** The toolbar composite. */
+	// Composite toolbarComposite;
 
 	/** The toolbar. */
-	ToolBar toolbar;
+	// ToolBar toolbar;
 
 	/** The labels. */
 	List<Composite> labels = new CopyOnWriteArrayList<>();
@@ -297,27 +297,27 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	 */
 	@SuppressWarnings ("unused")
 	private void createToolbar() {
-		if (toolbarComposite == null || toolbarComposite.isDisposed()) {
-			try {
-				toolbarComposite = new Composite(parent, SWT.BORDER);
-				RowLayoutFactory.swtDefaults().center(true).fill(true).applyTo(toolbarComposite);
-				GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(toolbarComposite);
-				toolbar = new ToolBar(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL);
-				RowDataFactory.swtDefaults().exclude(false).applyTo(toolbar);
-				GamaCommand
-						.build(StatusMessage.SYSTEM_ICON, "", "Show system events",
-								e -> status.showSystemEvents(!status.showSystemEvents()))
-						.toCheckItem(toolbar).setSelection(status.showSystemEvents());
-				GamaCommand
-						.build(StatusMessage.VIEW_ICON, "", "Show view events",
-								e -> status.showViewEvents(!status.showViewEvents()))
-						.toCheckItem(toolbar).setSelection(status.showViewEvents());
-			} catch (Exception e) {
-				toolbarComposite = null;
-				toolbar = null;
-				return; // will be initialised next time
-			}
-		}
+		// if (toolbarComposite == null || toolbarComposite.isDisposed()) {
+		// try {
+		// toolbarComposite = new Composite(parent, SWT.BORDER);
+		// RowLayoutFactory.swtDefaults().center(true).fill(true).applyTo(toolbarComposite);
+		// GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(toolbarComposite);
+		// toolbar = new ToolBar(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL);
+		// RowDataFactory.swtDefaults().exclude(false).applyTo(toolbar);
+		// GamaCommand
+		// .build(StatusMessage.SYSTEM_ICON, "", "Show system events",
+		// e -> status.showSystemEvents(!status.showSystemEvents()))
+		// .toCheckItem(toolbar).setSelection(status.showSystemEvents());
+		// GamaCommand
+		// .build(StatusMessage.VIEW_ICON, "", "Show view events",
+		// e -> status.showViewEvents(!status.showViewEvents()))
+		// .toCheckItem(toolbar).setSelection(status.showViewEvents());
+		// } catch (Exception e) {
+		// toolbarComposite = null;
+		// toolbar = null;
+		// return; // will be initialised next time
+		// }
+		// }
 	}
 
 	@Override

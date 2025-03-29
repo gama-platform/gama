@@ -289,6 +289,17 @@ public class GamaCommand {
 	}
 
 	/**
+	 * To button.
+	 *
+	 * @param t
+	 *            the t
+	 * @return the button
+	 */
+	public Button toButton(final Composite t) {
+		return toButton(t, selector);
+	}
+
+	/**
 	 * To label.
 	 *
 	 * @param t

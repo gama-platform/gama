@@ -133,7 +133,6 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.ui.shared.views.IGamlEditor;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
@@ -167,8 +166,7 @@ import gaml.compiler.ui.templates.GamlTemplateStore;
  */
 
 @SuppressWarnings ("all")
-public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGamlEditor, IBoxEnabledEditor,
-		IToolbarDecoratedView /* IToolbarDecoratedView.Sizable, ITooltipDisplayer */ {
+public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBoxEnabledEditor, IToolbarDecoratedView {
 
 	static {
 		DEBUG.OFF();
@@ -496,7 +494,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 			}
 		});
 		toolbarParent.requestLayout();
-		installGestures();
 	}
 
 	@Override
@@ -1154,13 +1151,5 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IGa
 	 * @param generateDiagramHandler
 	 */
 	public static void setDiagramOpener(final IDiagramOpener opener) { diagramOpener = opener; }
-
-	/**
-	 * @see gama.ui.shared.views.IGamlEditor#search()
-	 */
-	@Override
-	public void searchReference() {
-		// TODO
-	}
 
 }

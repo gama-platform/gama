@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WorkbenchHelper.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WorkbenchHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,6 +22,8 @@ import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -42,6 +44,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.progress.UIJob;
 
@@ -52,7 +55,6 @@ import com.google.common.cache.LoadingCache;
 import gama.core.common.interfaces.IGui;
 import gama.dev.DEBUG;
 import gama.ui.application.workspace.WorkspaceModelsManager;
-import gama.ui.shared.views.IGamlEditor;
 
 /**
  * The Class WorkbenchHelper.
@@ -229,11 +231,11 @@ public class WorkbenchHelper {
 	 *
 	 * @return the active editor
 	 */
-	public static IGamlEditor getActiveEditor() {
+	public static IEditorPart getActiveEditor() {
 		final IWorkbenchPage page = getPage();
 		if (page != null) {
 			final IEditorPart editor = page.getActiveEditor();
-			if (editor instanceof IGamlEditor) return (IGamlEditor) editor;
+			if (editor.getTitle().endsWith(".gaml") || editor.getTitle().endsWith(".experiment")) return editor;
 		}
 		return null;
 	}
@@ -498,6 +500,38 @@ public class WorkbenchHelper {
 	public static Monitor[] getMonitors() {
 		Display d = getDisplay();
 		return d == null ? new Monitor[0] : d.getMonitors();
+	}
+
+	/**
+	 * Find menu manager.
+	 *
+	 * @param locationURI
+	 *            the location URI
+	 * @param menuId
+	 *            the menu id
+	 * @return the menu manager
+	 */
+	public static MenuManager findMenuManager(final String locationURI, final String menuId) {
+		IMenuService menuService = getService(IMenuService.class);
+		MenuManager rootMenuManager = new MenuManager();
+		menuService.populateContributionManager(rootMenuManager, locationURI);
+		return findMenuManager(rootMenuManager, menuId);
+	}
+
+	/**
+	 * @param menuManager
+	 * @param menuId
+	 * @return
+	 */
+	private static MenuManager findMenuManager(final MenuManager rootMenuManager, final String menuId) {
+		if (menuId.equals(rootMenuManager.getId())) return rootMenuManager;
+		for (IContributionItem item : rootMenuManager.getItems()) {
+			if (item instanceof MenuManager menuManager) {
+				MenuManager found = findMenuManager(menuManager, menuId);
+				if (found != null) return found;
+			}
+		}
+		return null;
 	}
 
 }

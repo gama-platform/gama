@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlEditorBindings.java, in gama.ui.shared.modeling, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamlEditorBindings.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
@@ -22,7 +22,6 @@ import gama.ui.navigator.view.GamaNavigatorNewMenu;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.ui.shared.views.IGamlEditor;
 
 /**
  * The class GamlEditorBindings.
@@ -45,9 +44,8 @@ public class GamlEditorBindings {
 
 			@Override
 			public void run() {
-				final IGamlEditor editor = WorkbenchHelper.getActiveEditor();
-				if (!(editor instanceof GamlEditor)) return;
-				((GamlEditor) editor).doSearch();
+				final GamlEditor editor = (GamlEditor) WorkbenchHelper.getActiveEditor();
+				editor.doSearch();
 			}
 		});
 

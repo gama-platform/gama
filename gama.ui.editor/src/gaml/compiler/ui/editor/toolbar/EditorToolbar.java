@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * EditorToolbar.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,14 +17,18 @@ import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
+import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
-import gama.ui.shared.access.GamlAccessContents2;
 import gama.ui.shared.bindings.GamaKeyBindings;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
@@ -38,6 +42,10 @@ import gaml.compiler.ui.editor.GamlEditor;
  *
  */
 public class EditorToolbar {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The previous. */
 	ToolItem next, previous, diagram;
@@ -86,7 +94,7 @@ public class EditorToolbar {
 
 		find = new EditorSearchControls(editor).fill(toolbar);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
-		toolbar.menu("editor/command.outline", null, "Show outline", e -> {
+		toolbar.button("editor/command.outline", null, "Show outline", e -> {
 			if (editor == null) return;
 			editor.openOutlinePopup();
 		});
@@ -98,6 +106,22 @@ public class EditorToolbar {
 			});
 		}
 
+		toolbar.button("editor/local.menu", "Presentation preferences", "Presentation preferences", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+
+					MenuManager menuManager =
+							WorkbenchHelper.findMenuManager("menu:org.eclipse.ui.main.menu", "editorsMenu");
+					for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
+					for (IContributionItem item : menuManager.getItems()) { item.fill(mainMenu, -1); }
+				}
+			};
+			menu.open(toolbar, e, toolbar.getSize().y, 200);
+		});
+
 		// Attaching listeners to the global commands in order to enable/disable the
 		// toolbar items
 		hookToCommands(previous, next);
@@ -108,10 +132,10 @@ public class EditorToolbar {
 		// ToolItem ref = toolbar.control(reference.createWidget(toolbar), 200);
 		// ref.getControl().setVisible(false);
 		// toolbar.update();
-		ToolItem button = toolbar.button("editor/command.find", null, "Search GAML reference", e -> {
-			final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
-			quickAccessDialog.open();
-		});
+		// ToolItem button = toolbar.button("editor/command.find", null, "Search GAML reference", e -> {
+		// final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
+		// quickAccessDialog.open();
+		// });
 		// button.getControl().addMouseTrackListener(new MouseTrackListener() {
 		//
 		// @Override

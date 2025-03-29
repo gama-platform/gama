@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorPresentationMenu.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * EditorPresentationMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,7 +32,7 @@ import gaml.compiler.ui.editor.GamlEditor;
 public class EditorPresentationMenu extends ContributionItem implements IWorkbenchContribution {
 
 	/** The mark pref. */
-	Pref<Boolean> markPref;
+	public Pref<Boolean> markPref;
 
 	@Override
 	public void initialize(final IServiceLocator serviceLocator) {}
@@ -64,7 +64,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	/**
 	 *
 	 */
-	private void createBoxToggle(final Menu menu) {
+	public void createBoxToggle(final Menu menu) {
 		final MenuItem box = new MenuItem(menu, SWT.PUSH);
 		box.setText(" Toggle code sections colorization");
 		box.setImage(GamaIcon.named("editor/toggle.box").image());
@@ -88,7 +88,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	 *            the menu
 	 * @date 26 juin 2023
 	 */
-	private void createMarkToggle(final Menu menu) {
+	public void createMarkToggle(final Menu menu) {
 		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
 		boolean selected = markPref.getValue();
 		mark.setText(selected ? " Do not mark symbols occurences" : " Mark occurences of symbols");
@@ -113,7 +113,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	 *            the menu
 	 * @date 26 juin 2023
 	 */
-	private void createWordWrapToggle(final Menu menu) {
+	public void createWordWrapToggle(final Menu menu) {
 		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
 		boolean selected = getEditor().isWordWrapEnabled();
 		mark.setText(selected ? " Turn Word Wrap off" : " Turn Word Wrap on");
@@ -135,7 +135,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	 * @param menu
 	 *            the menu
 	 */
-	private void createOverviewToggle(final Menu menu) {
+	public void createOverviewToggle(final Menu menu) {
 		final MenuItem overview = new MenuItem(menu, SWT.PUSH);
 		boolean selected = getEditor().isOverviewRulerVisible();
 		overview.setText(selected ? " Hide markers overview" : " Show markers overview");
@@ -159,7 +159,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	/**
 	 *
 	 */
-	private void createFoldingToggle(final Menu menu) {
+	public void createFoldingToggle(final Menu menu) {
 		final MenuItem folding = new MenuItem(menu, SWT.PUSH);
 		boolean selected = getEditor().isRangeIndicatorEnabled();
 		folding.setText(selected ? " Unfold code sections" : " Fold code sections");
@@ -179,7 +179,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	/**
 	 *
 	 */
-	private void createLineToggle(final Menu menu) {
+	public void createLineToggle(final Menu menu) {
 		final MenuItem line = new MenuItem(menu, SWT.PUSH);
 		boolean selected = getEditor().isLineNumberRulerVisible();
 		line.setText(selected ? " Hide line numbers" : " Display line numbers");
@@ -201,5 +201,5 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	 *
 	 * @return the editor
 	 */
-	GamlEditor getEditor() { return (GamlEditor) WorkbenchHelper.getActiveEditor(); }
+	protected GamlEditor getEditor() { return (GamlEditor) WorkbenchHelper.getActiveEditor(); }
 }

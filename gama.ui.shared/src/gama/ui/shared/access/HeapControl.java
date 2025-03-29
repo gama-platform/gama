@@ -15,6 +15,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolItem;
@@ -22,8 +24,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.runtime.GAMA;
+import gama.dev.DEBUG;
 import gama.ui.shared.controls.StatusControlContribution;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
@@ -32,6 +35,10 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
  * The Class HeapControl.
  */
 public class HeapControl {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The item. */
 	ToolItem item;
@@ -44,11 +51,32 @@ public class HeapControl {
 	 * @return the control
 	 */
 	Control displayOn(final Composite parent) {
+		// TrimBarLayout layout = (TrimBarLayout) parent.getLayout();
+		// // layout.marginTop = 10;
+		// // layout.marginBottom = 10;
+		// layout.marginLeft = 10;
+		// layout.marginRight = 10;
+		parent.addControlListener(new ControlListener() {
+
+			@Override
+			public void controlResized(final ControlEvent e) {
+				DEBUG.OUT("Size : " + parent.getSize());
+				parent.requestLayout();
+			}
+
+			@Override
+			public void controlMoved(final ControlEvent e) {}
+		});
+
 		Composite composite = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
 				.equalWidth(false).applyTo(composite);
 		GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
-		bar.button("spacer", "", "", null);
+		bar.space(20);
+		bar.button("editor/command.find", null, "Search GAML reference", e -> {
+			final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
+			quickAccessDialog.open();
+		});
 		item = bar.button("generic/garbage.collect", "", "", e -> {
 			Runtime runtime = Runtime.getRuntime();
 			long totalMem = convertToMeg(runtime.totalMemory());
@@ -56,12 +84,13 @@ public class HeapControl {
 			totalMem = convertToMeg(runtime.totalMemory());
 			GAMA.getGui().getStatus().informStatus(
 					"Compact memory (" + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M)",
-					StatusMessage.MEMORY_ICON);
+					IStatusMessage.MEMORY_ICON);
 		});
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(30, 0).applyTo(bar);
 		bar.addListener(SWT.MouseEnter, e -> updateToolTip());
 
 		new StatusControlContribution().fill(bar, 0);
+		parent.requestLayout();
 		return composite;
 	}
 
@@ -100,8 +129,7 @@ public class HeapControl {
 						final Control old = (Control) element.getWidget();
 						WorkbenchHelper.runInUI("Disposing old search control", 500, m2 -> old.dispose());
 						element.setWidget(new HeapControl().displayOn(parent));
-						parent.layout(true, true);
-						parent.update();
+						parent.requestLayout();
 						break;
 					}
 				}
