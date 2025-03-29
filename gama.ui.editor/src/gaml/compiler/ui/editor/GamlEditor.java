@@ -76,10 +76,6 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
@@ -140,10 +136,6 @@ import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.validation.IGamlBuilderListener;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
-import gaml.compiler.ui.editbox.BoxDecoratorPartListener;
-import gaml.compiler.ui.editbox.BoxProviderRegistry;
-import gaml.compiler.ui.editbox.IBoxDecorator;
-import gaml.compiler.ui.editbox.IBoxEnabledEditor;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
@@ -166,7 +158,7 @@ import gaml.compiler.ui.templates.GamlTemplateStore;
  */
 
 @SuppressWarnings ("all")
-public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBoxEnabledEditor, IToolbarDecoratedView {
+public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IToolbarDecoratedView {
 
 	static {
 		DEBUG.OFF();
@@ -239,9 +231,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 		dndHandler = new GamlEditorDragAndDropHandler(this);
 	}
 
-	/** The decorator. */
-	IBoxDecorator decorator;
-
 	/** The state. */
 	GamlEditorState state = new GamlEditorState(null, Collections.EMPTY_LIST);
 
@@ -255,7 +244,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 	private EditorSearchControls findControl;
 
 	/** The decoration enabled. */
-	boolean decorationEnabled = GamaPreferences.Modeling.EDITBOX_ENABLED.getValue();
+	// boolean decorationEnabled = GamaPreferences.Modeling.EDITBOX_ENABLED.getValue();
 	// boolean editToolbarEnabled = AutoStartup.EDITOR_SHOW_TOOLBAR.getValue();
 
 	/** The resource set provider. */
@@ -291,9 +280,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 	/** The dnd handler. */
 	private final GamlEditorDragAndDropHandler dndHandler;
 
-	/** The box listener. */
-	private final IPartListener2 boxListener = new BoxDecoratorPartListener();
-
 	/** The dnd changed listener. */
 	private final IPreferenceAfterChangeListener dndChangedListener = newValue -> {
 		uninstallTextDragAndDrop(getInternalSourceViewer());
@@ -305,13 +291,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 
 	/** The file URI. */
 	private URI fileURI;
-
-	@Override
-	public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
-		super.init(site, input);
-		gama.dev.DEBUG.OUT("init of Editor for " + input.getName());
-		assignBoxPartListener();
-	}
 
 	/** The image provider. */
 	static GamlAnnotationImageProvider imageProvider = new GamlAnnotationImageProvider();
@@ -367,10 +346,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 
 	@Override
 	public void dispose() {
-		decorator = null;
 		GamaPreferences.Modeling.EDITOR_DRAG_RESOURCES.removeChangeListener(dndChangedListener);
 		GamlResourceServices.removeResourceListener(this);
-		removeBoxPartListener();
 		super.dispose();
 	}
 
@@ -551,14 +528,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 
 	@Override
 	public GamaSourceViewer getInternalSourceViewer() { return (GamaSourceViewer) super.getInternalSourceViewer(); }
-
-	/**
-	 * Install gestures.
-	 */
-	private void installGestures() {
-		final var text = this.getInternalSourceViewer().getTextWidget();
-		if (text != null) { text.addGestureListener(ge -> { if (ge.detail == SWT.GESTURE_END) { updateBoxes(); } }); }
-	}
 
 	@Override
 	protected void installFoldingSupport(final ProjectionViewer projectionViewer) {
@@ -868,81 +837,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IBo
 	}
 
 	/**
-	 * @see gaml.compiler.gaml.ui.editbox.IBoxEnabledEditor#getDecorator()
-	 */
-	@Override
-	public IBoxDecorator getDecorator() {
-		if (decorator == null) { createDecorator(); }
-		return decorator;
-	}
-
-	/**
-	 * @see gaml.compiler.gaml.ui.editbox.IBoxEnabledEditor#createDecorator(gaml.compiler.gaml.ui.editbox.IBoxProvider)
-	 */
-	@Override
-	public void createDecorator() {
-		if (decorator != null) return;
-		final var provider = BoxProviderRegistry.getInstance().getGamlProvider();
-		decorator = provider.createDecorator();
-		decorator.setStyledText(getStyledText());
-		decorator.setSettings(provider.getEditorsBoxSettings());
-	}
-
-	/**
 	 * @return
 	 */
 	private StyledText getStyledText() { return (StyledText) super.getAdapter(Control.class); }
-
-	/**
-	 * @see gaml.compiler.gaml.ui.editbox.IBoxEnabledEditor#decorate()
-	 */
-	@Override
-	public void decorate(final boolean doIt) {
-		if (doIt) {
-			getDecorator().decorate(false);
-		} else {
-			getDecorator().undecorate();
-		}
-		enableUpdates(doIt);
-	}
-
-	@Override
-	public void enableUpdates(final boolean visible) {
-		getDecorator().enableUpdates(visible);
-	}
-
-	/**
-	 * Sets the decoration enabled.
-	 *
-	 * @param toggle
-	 *            the new decoration enabled
-	 */
-	public void setDecorationEnabled(final boolean toggle) { decorationEnabled = toggle; }
-
-	/**
-	 * Update boxes.
-	 */
-	public void updateBoxes() {
-		if (!decorationEnabled) return;
-		getDecorator().forceUpdate();
-	}
-
-	@Override
-	public boolean isDecorationEnabled() { return decorationEnabled; }
-
-	/**
-	 * Assign box part listener.
-	 */
-	private void assignBoxPartListener() {
-		WorkbenchHelper.getPage().addPartListener(boxListener);
-	}
-
-	/**
-	 * Removes the box part listener.
-	 */
-	private void removeBoxPartListener() {
-		WorkbenchHelper.getPage().removePartListener(boxListener);
-	}
 
 	/**
 	 * Insert text.

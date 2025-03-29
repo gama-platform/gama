@@ -52,29 +52,9 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 				createLineToggle(menu);
 				createFoldingToggle(menu);
 				createMarkToggle(menu);
-				createBoxToggle(menu);
 				createOverviewToggle(menu);
 				createWordWrapToggle(menu);
 				// createWhiteSpaceToggle(menu);
-			}
-		});
-
-	}
-
-	/**
-	 *
-	 */
-	public void createBoxToggle(final Menu menu) {
-		final MenuItem box = new MenuItem(menu, SWT.PUSH);
-		box.setText(" Toggle code sections colorization");
-		box.setImage(GamaIcon.named("editor/toggle.box").image());
-		box.addSelectionListener(new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				final boolean selection = !getEditor().isDecorationEnabled();
-				getEditor().setDecorationEnabled(selection);
-				getEditor().decorate(selection);
 			}
 		});
 
