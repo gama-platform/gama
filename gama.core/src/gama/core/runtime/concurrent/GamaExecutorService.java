@@ -177,7 +177,7 @@ public abstract class GamaExecutorService {
 		switch (GamaType.of(concurrency).id()) {
 			case IType.BOOL: {
 				Boolean c = (Boolean) concurrency.value(scope);
-				if (c == Boolean.FALSE) return 0;
+				if (Boolean.FALSE.equals(c)) return 0;
 				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
 				return CONCURRENCY_THRESHOLD.getValue();
 			}
