@@ -101,8 +101,8 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 		if (colors instanceof GamaGradient gg)
 			return new GradientBasedMeshColorProvider(gg);
 		else if (colors instanceof IList list) {
-			if (list.get(0) instanceof GamaField gf) // We have bands
-				return new BandsBasedMeshColorProvider((List<GamaField>) gf);
+			if (list.get(0) instanceof GamaField) // We have bands
+				return new BandsBasedMeshColorProvider((List<GamaField>) list);
 			else
 				return new ListBasedMeshColorProvider((IList<Color>) colors);
 		} else if (isGrayscale)
