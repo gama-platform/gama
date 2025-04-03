@@ -34,6 +34,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.SurroundWithBracketsStrategy;
@@ -46,6 +47,7 @@ import org.eclipse.jface.text.source.IAnnotationAccess;
 import org.eclipse.jface.text.source.IAnnotationAccessExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRulerColumn;
+import org.eclipse.jface.text.source.IVerticalRulerExtension;
 import org.eclipse.jface.text.source.ImageUtilities;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
@@ -54,6 +56,8 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -62,6 +66,8 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -114,6 +120,7 @@ import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.gaml.descriptions.IDescription;
@@ -1048,5 +1055,83 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * @param generateDiagramHandler
 	 */
 	public static void setDiagramOpener(final IDiagramOpener opener) { diagramOpener = opener; }
+
+	/**
+	 * Zoom.
+	 *
+	 * @param magnification
+	 *            the magnification
+	 */
+	public void zoom(final int magnification) {
+		Font font = getStyledText().getFont();
+		FontData fontData = font.getFontData()[0];
+		if (magnification != 0) {
+			int startHeight = fontData.getHeight();
+			int newHeight = Math.max(1, startHeight + magnification);
+			fontData.setHeight(newHeight);
+		} else {
+			GamaFont gf = GamaPreferences.Modeling.EDITOR_BASE_FONT.getValue();
+			fontData = new FontData(gf.getName(), gf.getSize(), gf.getStyle());
+		}
+
+		Font newFont = new Font(font.getDevice(), fontData);
+		setFont(getSourceViewer(), newFont);
+		font.dispose();
+	}
+
+	/**
+	 * Zoom out.
+	 */
+	public void zoomOut() {
+		zoom(-1);
+	}
+
+	/**
+	 * Zoom fit.
+	 */
+	public void zoomFit() {
+		zoom(0);
+	}
+
+	/**
+	 * Zoom in.
+	 */
+	public void zoomIn() {
+		zoom(1);
+	}
+
+	/**
+	 * Sets the font.
+	 *
+	 * @param sourceViewer
+	 *            the source viewer
+	 * @param font
+	 *            the font
+	 */
+	private void setFont(final ISourceViewer sourceViewer, final Font font) {
+		if (sourceViewer.getDocument() != null) {
+
+			ISelectionProvider provider = sourceViewer.getSelectionProvider();
+			ISelection selection = provider.getSelection();
+			int topIndex = sourceViewer.getTopIndex();
+			StyledText styledText = sourceViewer.getTextWidget();
+			Control parent = styledText;
+			if (sourceViewer instanceof ITextViewerExtension extension) { parent = extension.getControl(); }
+			parent.setRedraw(false);
+			styledText.setFont(font);
+			if (getVerticalRuler() instanceof IVerticalRulerExtension) {
+				IVerticalRulerExtension e = (IVerticalRulerExtension) getVerticalRuler();
+				e.setFont(font);
+			}
+			provider.setSelection(selection);
+			sourceViewer.setTopIndex(topIndex);
+			if (parent instanceof Composite composite) { composite.layout(true); }
+			parent.setRedraw(true);
+		} else {
+			StyledText styledText = sourceViewer.getTextWidget();
+			styledText.setFont(font);
+			if (getVerticalRuler() instanceof IVerticalRulerExtension e) { e.setFont(font); }
+		}
+	}
 
 }

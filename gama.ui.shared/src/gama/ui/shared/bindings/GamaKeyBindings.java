@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Listener;
 
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
+import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -146,7 +147,7 @@ public class GamaKeyBindings implements Listener {
 				}
 				break;
 			default:
-				// DEBUG.LOG(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
+				DEBUG.LOG(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
 				final PluggableBinding pb = bindings.get(KeyStroke.getInstance(event.stateMask, event.keyCode));
 				if (pb != null) {
 					consume(event);

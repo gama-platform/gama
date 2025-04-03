@@ -24,12 +24,16 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IEditorPart;
 
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
+import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
@@ -45,6 +49,48 @@ public class EditorToolbar {
 
 	static {
 		DEBUG.ON();
+		Command command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
+		if (command != null) { command.setHandler(null); }
+		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomIn");
+		if (command != null) { command.setHandler(null); }
+		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
+		if (command != null) { command.setHandler(null); }
+		if (PlatformHelper.isMac()) {
+			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1 | SWT.SHIFT, '=') {
+				// +
+				@Override
+				public void run() {
+					IEditorPart part = WorkbenchHelper.getActiveEditor();
+					if (part instanceof GamlEditor ge) { ge.zoomIn(); }
+				}
+			});
+		} else {
+			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '+') {
+
+				@Override
+				public void run() {
+					IEditorPart part = WorkbenchHelper.getActiveEditor();
+					if (part instanceof GamlEditor ge) { ge.zoomIn(); }
+				}
+			});
+		}
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '=') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.zoomFit(); }
+			}
+		});
+
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '-') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.zoomOut(); }
+			}
+		});
 	}
 
 	/** The previous. */
@@ -116,7 +162,23 @@ public class EditorToolbar {
 					MenuManager menuManager =
 							WorkbenchHelper.findMenuManager("menu:org.eclipse.ui.main.menu", "editorsMenu");
 					for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
-					for (IContributionItem item : menuManager.getItems()) { item.fill(mainMenu, -1); }
+					for (IContributionItem item : menuManager.getItems()) {
+						// We do not use the "regular" zoom controls as they dont seem to work correctly
+						if (!item.getId().contains("zoom")) { item.fill(mainMenu, -1); }
+					}
+					GamaCommand.build("display/zoom.in", "Zoom In ", "Increases the size of the font in this editor",
+							e -> {
+								editor.zoomIn();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '+');
+					GamaCommand.build("display/zoom.fit", "Zoom Reset ",
+							"Resets the size of the font to its default in the preferences", e -> {
+								editor.zoomFit();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '=');
+					GamaCommand.build("display/zoom.out", "Zoom Out ", "Decreases the size of the font in this editor",
+							e -> {
+								editor.zoomOut();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
+
 				}
 			};
 			menu.open(toolbar, e, toolbar.getSize().y, 200);

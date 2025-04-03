@@ -56,17 +56,6 @@ public class HeapControl {
 		// // layout.marginBottom = 10;
 		// layout.marginLeft = 10;
 		// layout.marginRight = 10;
-		parent.addControlListener(new ControlListener() {
-
-			@Override
-			public void controlResized(final ControlEvent e) {
-				DEBUG.OUT("Size : " + parent.getSize());
-				parent.requestLayout();
-			}
-
-			@Override
-			public void controlMoved(final ControlEvent e) {}
-		});
 
 		Composite composite = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
@@ -91,6 +80,19 @@ public class HeapControl {
 
 		new StatusControlContribution().fill(bar, 0);
 		parent.requestLayout();
+		parent.addControlListener(new ControlListener() {
+
+			@Override
+			public void controlResized(final ControlEvent e) {
+				DEBUG.OUT("Size of parent : " + parent.getSize());
+				DEBUG.OUT("Size of composite : " + composite.getSize());
+				DEBUG.OUT("Size of toolbar : " + bar.getSize());
+				parent.requestLayout();
+			}
+
+			@Override
+			public void controlMoved(final ControlEvent e) {}
+		});
 		return composite;
 	}
 
