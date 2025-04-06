@@ -23,6 +23,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.ui.editor.GamlEditor;
 
@@ -41,7 +42,7 @@ public class EditorPresentationMenu extends ContributionItem implements IWorkben
 	public void fill(final Menu m, final int index) {
 		final MenuItem menuItem = new MenuItem(m, SWT.CASCADE);
 		menuItem.setText("Presentation");
-		menuItem.setImage(GamaIcon.named("display/menu.presentation").image());
+		menuItem.setImage(GamaIcon.named(IGamaIcons.PRESENTATION_MENU).image());
 		final Menu menu = new Menu(menuItem);
 		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
 		menuItem.setMenu(menu);

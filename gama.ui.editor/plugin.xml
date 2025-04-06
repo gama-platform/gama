@@ -282,27 +282,6 @@
 		</command>
 		</menuContribution>
 		<!-- copy qualified name -->
-		<menuContribution locationURI="popup:#TextEditorContext?after=copy">
-			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
-				style="push" tooltip="Copy Qualified Name">
-				<visibleWhen checkEnabled="false">
-					<reference definitionId="gaml.compiler.Gaml.Editor.opened" />
-				</visibleWhen>
-			</command>
-		</menuContribution>
-		<menuContribution locationURI="popup:org.eclipse.xtext.ui.outline?after=additions">
-			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName"
-				style="push" tooltip="Copy Qualified Name">
-				<visibleWhen checkEnabled="false">
-					<and>
-						<reference definitionId="gaml.compiler.Gaml.XtextEditor.opened" />
-						<iterate>
-							<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
-						</iterate>
-					</and>
-				</visibleWhen>
-			</command>
-		</menuContribution>
   <menuContribution
         locationURI="popup:#TextEditorContext?endof=group.find">
      <command
@@ -340,28 +319,6 @@
            style="push">
         <visibleWhen
               checkEnabled="true">
-        </visibleWhen>
-     </command>
-  </menuContribution>
-  <menuContribution
-        allPopups="false"
-        locationURI="menu:editorsMenu?after=org.eclipse.ui.edit.text.zoomOut">
-     <dynamic
-           class="gama.ui.editor.EditorPresentationMenu"
-           id="gama.ui.modeling.dynamic2">
-     </dynamic>
-  </menuContribution>
-  <menuContribution
-        locationURI="popup:#TextEditorContext?after=group.open">
-     <command
-           commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline"
-           style="push"
-           tooltip="Open Quick Outline">
-        <visibleWhen
-              checkEnabled="false">
-           <reference
-                 definitionId="gaml.compiler.Gaml.Editor.opened">
-           </reference>
         </visibleWhen>
      </command>
   </menuContribution>

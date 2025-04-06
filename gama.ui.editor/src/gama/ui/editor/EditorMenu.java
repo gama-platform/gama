@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -291,11 +290,7 @@ public class EditorMenu extends ContributionItem implements IWorkbenchContributi
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				try {
-					WorkbenchHelper.runCommand("gaml.compiler.gaml.Gaml.validate");
-				} catch (final ExecutionException e1) {
-					e1.printStackTrace();
-				}
+				WorkbenchHelper.runCommand("gaml.compiler.gaml.Gaml.validate");
 			}
 		});
 

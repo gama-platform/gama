@@ -11,13 +11,11 @@ model ants
 global {
 //Utilities
 
-
-
 	bool use_icons <- true;
 	bool display_state <- false;
 	//Evaporation value per cycle
 	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0;
-	//Diffusion rate of the pheromon among the grid
+	//Diffusion rate of the pheromon among the grid 
 	float diffusion_rate <- 1.0 min: 0.0 max: 1.0;
 	//Size of the grid
 	int gridsize <- 100 min: 30;

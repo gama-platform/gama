@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaToolbarFactory.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaToolbarFactory.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -56,8 +56,10 @@ public class GamaToolbarFactory {
 		/**
 		 * Instantiates a new gama composite.
 		 *
-		 * @param parent    the parent
-		 * @param displayer the displayer
+		 * @param parent
+		 *            the parent
+		 * @param displayer
+		 *            the displayer
 		 */
 		public GamaComposite(final Composite parent, final ITooltipDisplayer displayer) {
 			super(parent, SWT.None);
@@ -69,7 +71,8 @@ public class GamaToolbarFactory {
 	/**
 	 * Find tooltip displayer.
 	 *
-	 * @param c the c
+	 * @param c
+	 *            the c
 	 * @return the i tooltip displayer
 	 */
 	public static ITooltipDisplayer findTooltipDisplayer(final Control c) {
@@ -80,14 +83,13 @@ public class GamaToolbarFactory {
 	/**
 	 * Find gama composite.
 	 *
-	 * @param c the c
+	 * @param c
+	 *            the c
 	 * @return the gama composite
 	 */
 	public static GamaComposite findGamaComposite(final Control c) {
-		if (c instanceof Shell)
-			return null;
-		if (c instanceof GamaComposite)
-			return (GamaComposite) c;
+		if (c instanceof Shell) return null;
+		if (c instanceof GamaComposite) return (GamaComposite) c;
 		return findGamaComposite(c.getParent());
 	}
 
@@ -108,7 +110,8 @@ public class GamaToolbarFactory {
 		/**
 		 * Sets the icon.
 		 *
-		 * @param show the new icon
+		 * @param show
+		 *            the new icon
 		 */
 		protected abstract void setIcon(boolean show);
 
@@ -174,7 +177,7 @@ public class GamaToolbarFactory {
 	}
 
 	/** The toolbar height. */
-	public static final int TOOLBAR_HEIGHT = 24; 
+	public static final int TOOLBAR_HEIGHT = 24;
 
 	/** The toolbar sep. */
 	public static final int TOOLBAR_SEP = 4;
@@ -182,8 +185,10 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param view      the view
-	 * @param composite the composite
+	 * @param view
+	 *            the view
+	 * @param composite
+	 *            the composite
 	 * @return the composite
 	 */
 	private static Composite createIntermediateCompositeFor(final IToolbarDecoratedView view,
@@ -235,7 +240,8 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param composite the composite
+	 * @param composite
+	 *            the composite
 	 * @return the composite
 	 */
 	public static Composite createToolbarComposite(final Composite composite) {
@@ -262,8 +268,10 @@ public class GamaToolbarFactory {
 	/**
 	 * Creates a new GamaToolbar object.
 	 *
-	 * @param view      the view
-	 * @param composite the composite
+	 * @param view
+	 *            the view
+	 * @param composite
+	 *            the composite
 	 * @return the composite
 	 */
 	public static Composite createToolbars(final IToolbarDecoratedView view, final Composite composite) {
@@ -353,49 +361,35 @@ public class GamaToolbarFactory {
 	/**
 	 * Dispose toolbar.
 	 *
-	 * @param view the view
-	 * @param tb   the tb
+	 * @param view
+	 *            the view
+	 * @param tb
+	 *            the tb
 	 */
 	public static void disposeToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
-		if (tb != null && !tb.isDisposed()) {
-			tb.dispose();
-		}
+		if (tb != null && !tb.isDisposed()) { tb.dispose(); }
 	}
 
 	/**
 	 * Builds the toolbar.
 	 *
-	 * @param view the view
-	 * @param tb   the tb
+	 * @param view
+	 *            the view
+	 * @param tb
+	 *            the tb
 	 */
 	public static void buildToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
-		if (view instanceof IToolbarDecoratedView.Sizable) {
-			final FontSizer fs = new FontSizer((IToolbarDecoratedView.Sizable) view);
-			fs.install(tb);
+		if (view instanceof IToolbarDecoratedView.Sizable sz) { FontSizer.install(sz, tb); }
+		if (view instanceof IToolbarDecoratedView.Pausable ps) { new FrequencyController(ps).install(tb); }
+		if (view instanceof IToolbarDecoratedView.Zoomable zm) { new ZoomController(zm).install(tb); }
+		if (view instanceof IToolbarDecoratedView.Colorizable cl) { BackgroundChooser.install(cl, tb); }
+		if (view instanceof IToolbarDecoratedView.CSVExportable ce) {
+			tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "CSV Export", "CSV Export", e -> ce.saveAsCSV(), SWT.RIGHT);
 		}
-		if (view instanceof IToolbarDecoratedView.Pausable) {
-			final FrequencyController fc = new FrequencyController((IToolbarDecoratedView.Pausable) view);
-			fc.install(tb);
+		if (view instanceof IToolbarDecoratedView.LogExportable le) {
+			tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
+					e -> le.saveAsLog(), SWT.RIGHT);
 		}
-		if (view instanceof IToolbarDecoratedView.Zoomable) {
-			final ZoomController zc = new ZoomController((IToolbarDecoratedView.Zoomable) view);
-			zc.install(tb);
-		}
-		if (view instanceof IToolbarDecoratedView.Colorizable) {
-			final BackgroundChooser b = new BackgroundChooser((IToolbarDecoratedView.Colorizable) view);
-			b.install(tb);
-		}
-		if (view instanceof IToolbarDecoratedView.CSVExportable) {
-			final CSVExportationController csv = new CSVExportationController(
-					(IToolbarDecoratedView.CSVExportable) view);
-			csv.install(tb);
-		}
-		if (view instanceof IToolbarDecoratedView.LogExportable) {
-			final LogExportationController log = new LogExportationController(
-					(IToolbarDecoratedView.LogExportable) view);
-			log.install(tb);
-		}
-
 		view.createToolItems(tb);
 		tb.requestLayout();
 	}
@@ -403,7 +397,8 @@ public class GamaToolbarFactory {
 	/**
 	 * Visually update.
 	 *
-	 * @param tb the tb
+	 * @param tb
+	 *            the tb
 	 */
 	// public static void visuallyUpdate(final ToolBar tb) {
 	// Not needed anymore in Eclipse 2021-09. See issue #3210

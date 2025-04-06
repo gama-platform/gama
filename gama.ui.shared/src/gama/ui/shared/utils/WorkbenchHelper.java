@@ -32,7 +32,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -311,50 +310,22 @@ public class WorkbenchHelper {
 	}
 
 	/**
-	 * Run command.
-	 *
-	 * @param string
-	 *            the string
-	 * @return true, if successful
-	 * @throws ExecutionException
-	 *             the execution exception
-	 */
-	public static boolean runCommand(final String string) throws ExecutionException {
-		return runCommand(string, null);
-	}
-
-	/**
 	 * Execute command.
 	 *
 	 * @param string
 	 *            the string
 	 * @return true, if successful
 	 */
-	public static boolean executeCommand(final String string) {
+	public static boolean runCommand(final String string) {
 		try {
-			return runCommand(string, null);
+			final Command c = getCommand(string);
+			final IHandlerService handlerService = getService(IHandlerService.class);
+			final ExecutionEvent e = handlerService.createExecutionEvent(c, null);
+			return runCommand(c, e);
 		} catch (final ExecutionException e) {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	/**
-	 * Run command.
-	 *
-	 * @param string
-	 *            the string
-	 * @param event
-	 *            the event
-	 * @return true, if successful
-	 * @throws ExecutionException
-	 *             the execution exception
-	 */
-	public static boolean runCommand(final String string, final Event event) throws ExecutionException {
-		final Command c = getCommand(string);
-		final IHandlerService handlerService = getService(IHandlerService.class);
-		final ExecutionEvent e = handlerService.createExecutionEvent(c, event);
-		return runCommand(c, e);
 	}
 
 	/**

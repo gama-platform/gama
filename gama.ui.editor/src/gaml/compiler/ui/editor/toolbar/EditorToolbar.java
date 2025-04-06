@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor.toolbar;
 
-import static gama.ui.shared.utils.WorkbenchHelper.executeCommand;
+import static gama.ui.shared.utils.WorkbenchHelper.runCommand;
 import static gama.ui.shared.utils.WorkbenchHelper.getCommand;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY;
@@ -74,6 +74,16 @@ public class EditorToolbar {
 				}
 			});
 		}
+
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, 'g') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.doSearch(); }
+			}
+		});
+
 		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '=') {
 
 			@Override
@@ -106,10 +116,10 @@ public class EditorToolbar {
 	volatile boolean searching;
 
 	/** The global previous. */
-	final Selector globalPrevious = e -> executeCommand(NAVIGATE_BACKWARD_HISTORY);
+	final Selector globalPrevious = e -> runCommand(NAVIGATE_BACKWARD_HISTORY);
 
 	/** The global next. */
-	final Selector globalNext = e -> executeCommand(NAVIGATE_FORWARD_HISTORY);
+	final Selector globalNext = e -> runCommand(NAVIGATE_FORWARD_HISTORY);
 
 	/** The search previous. */
 	final Selector searchPrevious = e -> find.findPrevious();
@@ -178,6 +188,11 @@ public class EditorToolbar {
 							e -> {
 								editor.zoomOut();
 							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build("editor/toggle.comment", "Toggle comments",
+							"Turns comments on and off depending on the state of the first line", e -> {
+								WorkbenchHelper.runCommand("org.eclipse.xtext.ui.ToggleCommentAction");
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '/');
 
 				}
 			};

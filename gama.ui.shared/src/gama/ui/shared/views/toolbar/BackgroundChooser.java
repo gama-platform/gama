@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * BackgroundChooser.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * BackgroundChooser.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,8 +20,8 @@ import org.eclipse.swt.widgets.ToolItem;
 import gama.core.util.GamaColor;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.GamaIcon;
 
 /**
  * Class FontSizer.
@@ -32,34 +32,13 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
  */
 public class BackgroundChooser {
 
-	/** The view. */
-	final IToolbarDecoratedView.Colorizable view;
-
-	/** The labels. */
-	final String[] labels;
-
-	/** The colors. */
-	final GamaUIColor[] colors;
-
-	/**
-	 * Instantiates a new background chooser.
-	 *
-	 * @param view
-	 *            the view
-	 */
-	public BackgroundChooser(final IToolbarDecoratedView.Colorizable view) {
-		// We add a control listener to the toolbar in order to install the
-		// gesture once the control to resize have been created.
-		this.view = view;
-		labels = view.getColorLabels();
-		colors = new GamaUIColor[labels.length];
-		for (int i = 0; i < labels.length; i++) { colors[i] = view.getColor(i); }
-	}
-
 	/**
 	 * @param tb
 	 */
-	public void install(final GamaToolbar2 tb) {
+	public static void install(final IToolbarDecoratedView.Colorizable view, final GamaToolbar2 tb) {
+		String[] labels = view.getColorLabels();
+		GamaUIColor[] colors = new GamaUIColor[labels.length];
+		for (int i = 0; i < labels.length; i++) { colors[i] = view.getColor(i); }
 		for (int i = 0; i < labels.length; i++) {
 			final int index = i;
 			final ToolItem item = tb.button(null, labels[index], labels[index], null, SWT.RIGHT);

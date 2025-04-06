@@ -67,7 +67,6 @@ import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -120,7 +119,6 @@ import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
-import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.gaml.descriptions.IDescription;
@@ -132,6 +130,7 @@ import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -1064,19 +1063,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	public void zoom(final int magnification) {
 		Font font = getStyledText().getFont();
-		FontData fontData = font.getFontData()[0];
+		Font newFont;
 		if (magnification != 0) {
-			int startHeight = fontData.getHeight();
-			int newHeight = Math.max(1, startHeight + magnification);
-			fontData.setHeight(newHeight);
+			newFont = GamaFonts.withMagnification(font, magnification);
 		} else {
-			GamaFont gf = GamaPreferences.Modeling.EDITOR_BASE_FONT.getValue();
-			fontData = new FontData(gf.getName(), gf.getSize(), gf.getStyle());
+			newFont = GamaFonts.getFont(GamaPreferences.Modeling.EDITOR_BASE_FONT.getValue());
 		}
-
-		Font newFont = new Font(font.getDevice(), fontData);
 		setFont(getSourceViewer(), newFont);
-		font.dispose();
 	}
 
 	/**
