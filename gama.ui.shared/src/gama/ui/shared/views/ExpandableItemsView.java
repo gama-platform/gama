@@ -61,8 +61,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	public void createViewer(final Composite parent) {
 		if (parent == null) return;
 		if (viewer == null) {
-			viewer = new ParameterExpandBar(parent, SWT.V_SCROLL, areItemsClosable(), areItemsPausable(), false, false,
-					this);
+			viewer = new ParameterExpandBar(parent, SWT.V_SCROLL, areItemsClosable(), areItemsPausable(), this);
 			final Object layout = parent.getLayout();
 			if (layout instanceof GridLayout) {
 				final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -262,12 +261,6 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 
 	@Override
 	public void focusItem(final T obj) {}
-
-	@Override
-	public void makeItemVisible(final T obj, final boolean b) {}
-
-	@Override
-	public void makeItemSelectable(final T obj, final boolean b) {}
 
 	@Override
 	public String getItemDisplayName(final T obj, final String previousName) {
