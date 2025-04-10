@@ -241,7 +241,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			toggleFullScreen.setText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
 			// Toolbar
 			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true);
+				toolbar.wipe(SWT.LEFT, true, false);
 				toolbar.setParent(normalParentOfToolbar);
 				normalParentOfToolbar.requestLayout();
 			}
@@ -266,14 +266,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			createOverlay();
 			// Toolbar
 			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true);
+				toolbar.wipe(SWT.LEFT, true, false);
 				addFullscreenToolbarCommands();
 				normalParentOfToolbar = toolbar.getParent();
 				toolbar.setParent(fullScreenShell);
 			}
 		}
 		if (!toolbar.isDisposed()) {
-			toolbar.wipe(SWT.RIGHT, true);
+			toolbar.wipe(SWT.RIGHT, true, false);
 			GamaToolbarFactory.buildToolbar(view, toolbar);
 			toolbar.requestLayout();
 		}

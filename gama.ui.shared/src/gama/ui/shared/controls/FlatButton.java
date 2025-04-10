@@ -700,4 +700,13 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		return this;
 	}
 
+	/**
+	 *
+	 */
+	public void disposeImage() {
+		if (image == null) return;
+		image.dispose();
+		image = null;
+	}
+
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaNavigator.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaNavigator.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.SameShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolItem;
@@ -37,6 +38,7 @@ import org.eclipse.ui.IDecoratorManager;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionGroup;
+import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.internal.navigator.CommonNavigatorActionGroup;
 import org.eclipse.ui.internal.navigator.actions.LinkEditorAction;
 import org.eclipse.ui.navigator.CommonNavigator;
@@ -52,12 +54,14 @@ import gama.ui.navigator.view.contents.WrappedContainer;
 import gama.ui.navigator.view.contents.WrappedFile;
 import gama.ui.navigator.view.contents.WrappedResource;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
+import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class GamaNavigator.
@@ -78,7 +82,7 @@ public class GamaNavigator extends CommonNavigator
 	protected GamaToolbar2 toolbar;
 
 	/** The properties. */
-	// private PropertyDialogAction properties;
+	private PropertyDialogAction properties;
 
 	/** The find control. */
 	private NavigatorSearchControl findControl;
@@ -111,7 +115,7 @@ public class GamaNavigator extends CommonNavigator
 		}
 		linkItem.setSelection(link.isChecked());
 		tb.update(true);
-		tb.insertBefore("toolbar.toggle", byDate.toCheckAction());
+		// tb.insertBefore("toolbar.toggle", byDate.toCheckAction());
 
 		try {
 			final IDecoratorManager mgr = PlatformUI.getWorkbench().getDecoratorManager();
@@ -119,8 +123,8 @@ public class GamaNavigator extends CommonNavigator
 		} catch (final CoreException e) {
 			e.printStackTrace();
 		}
-		// properties =
-		// new PropertyDialogAction(new SameShellProvider(getSite().getShell()), getSite().getSelectionProvider());
+		properties =
+				new PropertyDialogAction(new SameShellProvider(getSite().getShell()), getSite().getSelectionProvider());
 		findControl.initialize();
 
 	}
@@ -273,7 +277,7 @@ public class GamaNavigator extends CommonNavigator
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
-		tb.noLeftToolbar();
+		// tb.noLeftToolbar();
 		if (PlatformHelper.isWindows() || PlatformHelper.isLinux()) {
 			tb.sep(24, SWT.RIGHT);
 			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
@@ -300,24 +304,26 @@ public class GamaNavigator extends CommonNavigator
 			element = (VirtualContent<?>) currentSelection.getFirstElement();
 		}
 		element.handleSingleClick();
-		// showStatus(element);
+		showStatus(element);
 	}
-	//
-	// /**
-	// * Show status.
-	// *
-	// * @param element
-	// * the element
-	// */
-	// private void showStatus(final VirtualContent<?> element) {
-	// final String message = element.getStatusMessage();
-	// final String tooltip = element.getStatusTooltip();
-	// final Image image = element.getStatusImage();
-	// final GamaUIColor color = element.getStatusColor();
-	// final Selector l = e -> properties.run();
-	// final ToolItem t = toolbar.status(image, message, l, color, SWT.LEFT);
-	// t.getControl().setToolTipText(tooltip == null ? message : tooltip);
-	// }
+
+	/**
+	 * Show status.
+	 *
+	 * @param element
+	 *            the element
+	 */
+	private void showStatus(final VirtualContent<?> element) {
+		final String message = element.getStatusMessage();
+		final String tooltip = element.getStatusTooltip();
+		// final Image image = element.getStatusImage();
+		// final GamaUIColor color = element.getStatusColor();
+		final Selector l = e -> properties.run();
+		final ToolItem t =
+				toolbar.status(GamaIcon.named("navigator/status.info").image(), message, l, null, false, SWT.LEFT);
+		t.getControl().setToolTipText(tooltip == null ? message : tooltip);
+		toolbar.getToolbar(SWT.LEFT).update();
+	}
 
 	@Override
 	public void expandAll() {

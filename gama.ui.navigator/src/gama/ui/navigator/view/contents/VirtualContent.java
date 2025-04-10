@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * VirtualContent.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * VirtualContent.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,6 +20,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
+import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -55,7 +57,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	}
 
 	/** The default label provider. */
-	public static final ILabelProvider DEFAULT_LABEL_PROVIDER = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
+	public static final ILabelProvider DEFAULT_LABEL_PROVIDER =
+			WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
 
 	/** The Constant DESCRIPTORS. */
 	public static final Map<Integer, ImageDescriptor> DESCRIPTORS = new HashMap<>() {
@@ -197,7 +200,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 */
 	public abstract void getSuffix(StringBuilder sb);
 
-
 	/**
 	 * Find max problem severity.
 	 *
@@ -240,6 +242,30 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 * @return the status message
 	 */
 	public String getStatusMessage() { return getName(); }
+
+	/**
+	 * Gets the status tooltipe.
+	 *
+	 * @return the status tooltipe
+	 */
+	public String getStatusTooltip() { return getStatusMessage(); }
+
+	/**
+	 * Gets the status image.
+	 *
+	 * @return the status image
+	 */
+	public Image getStatusImage() {
+		ImageDescriptor id = getImageDescriptor();
+		return id == null ? null : id.createImage();
+	}
+
+	/**
+	 * Gets the status color.
+	 *
+	 * @return the status color
+	 */
+	public GamaUIColor getStatusColor() { return GamaColors.get(java.awt.Color.LIGHT_GRAY); }
 
 	/**
 	 * Checks if is contained in.

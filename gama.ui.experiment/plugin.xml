@@ -258,7 +258,7 @@
                id="viewMenu"
                label="Views">
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/prefs/prefs.ui2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/views/views.menu.png"
                   id="windowMenu"
                   label="Window">
                <command
@@ -573,7 +573,7 @@
             </command>
             <command
                   commandId="gama.ui.hideShowEditors"
-                  icon="platform:/plugin/gama.ui.shared/icons/views/perspective.save.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/views/show.editors.png"
                   label="Hide/Show Editor Area"
                   style="push"
                   tooltip="Hide or show the editors">

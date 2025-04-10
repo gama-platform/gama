@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchSite;
 
-import gama.core.common.interfaces.IGamaView;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.ITooltipDisplayer;
@@ -104,7 +103,7 @@ public class GamaToolbarFactory {
 		ToggleAction() {
 			super("Toggle toolbar", IAction.AS_PUSH_BUTTON);
 			setId("toolbar.toggle");
-			setIcon(true);
+			// setIcon(true);
 		}
 
 		/**
@@ -113,7 +112,7 @@ public class GamaToolbarFactory {
 		 * @param show
 		 *            the new icon
 		 */
-		protected abstract void setIcon(boolean show);
+		// protected abstract void setIcon(boolean show);
 
 	}
 
@@ -161,20 +160,20 @@ public class GamaToolbarFactory {
 
 	}
 
-	/**
-	 * The Class ToggleOverlay.
-	 */
-	public static class ToggleOverlay extends Action {
-
-		/**
-		 * Instantiates a new toggle overlay.
-		 */
-		ToggleOverlay() {
-			super("Toggle Overlay", IAction.AS_PUSH_BUTTON);
-			setImageDescriptor(GamaIcon.named(IGamaIcons.OVERLAY_TOGGLE).descriptor());
-		}
-
-	}
+	// /**
+	// * The Class ToggleOverlay.
+	// */
+	// public static class ToggleOverlay extends Action {
+	//
+	// /**
+	// * Instantiates a new toggle overlay.
+	// */
+	// ToggleOverlay() {
+	// super("Toggle Overlay", IAction.AS_PUSH_BUTTON);
+	// setImageDescriptor(GamaIcon.named(IGamaIcons.OVERLAY_TOGGLE).descriptor());
+	// }
+	//
+	// }
 
 	/** The toolbar height. */
 	public static final int TOOLBAR_HEIGHT = 24;
@@ -299,14 +298,14 @@ public class GamaToolbarFactory {
 				((GridData) tb.getLayoutData()).exclude = !show;
 				tb.getParent().setVisible(show);
 				tb.getParent().getParent().layout();
-				setIcon(show);
+				// setIcon(show);
 			}
 
-			@Override
-			protected void setIcon(final boolean show) {
-				setImageDescriptor(
-						GamaIcon.named(show ? IGamaIcons.TOOLBAR_SHOW : IGamaIcons.TOOLBAR_HIDE).descriptor());
-			}
+			// @Override
+			// protected void setIcon(final boolean show) {
+			// setImageDescriptor(
+			// GamaIcon.named(show ? IGamaIcons.TOOLBAR_SHOW : IGamaIcons.TOOLBAR_HIDE).descriptor());
+			// }
 		};
 
 		tb.setToogleAction(toggle);
@@ -315,7 +314,7 @@ public class GamaToolbarFactory {
 		final IWorkbenchSite site = view.getSite();
 		if (site instanceof IViewSite) {
 			final IToolBarManager tm = ((IViewSite) site).getActionBars().getToolBarManager();
-			tm.add(toggle);
+			// tm.add(toggle);
 			if (view instanceof IToolbarDecoratedView.Expandable) {
 				tm.add(new CollapseAll() {
 					@Override
@@ -331,15 +330,15 @@ public class GamaToolbarFactory {
 				});
 			}
 
-			if (view instanceof IGamaView.Display) {
-				final Action toggleOverlay = new ToggleOverlay() {
-					@Override
-					public void run() {
-						((IGamaView.Display) view).toggleOverlay();
-					}
-				};
-				tm.add(toggleOverlay);
-			}
+			// if (view instanceof IGamaView.Display) {
+			// final Action toggleOverlay = new ToggleOverlay() {
+			// @Override
+			// public void run() {
+			// ((IGamaView.Display) view).toggleOverlay();
+			// }
+			// };
+			// tm.add(toggleOverlay);
+			// }
 			tm.update(true);
 		}
 

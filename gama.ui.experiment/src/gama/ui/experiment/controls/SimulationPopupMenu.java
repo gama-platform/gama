@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SimulationPopupMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * SimulationPopupMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,10 +13,7 @@ package gama.ui.experiment.controls;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -150,14 +147,14 @@ public class SimulationPopupMenu extends PopupDialog {
 	 */
 	private void fillLabels(final List<ITopLevelAgent> agents) {
 		int size = agents.size();
-		//createLabels(size);
+		// createLabels(size);
 		for (int i = 0; i < size; i++) {
 			try {
 				ITopLevelAgent agent = agents.get(i);
 				Composite labelComposite = getOrCreateLabel(i);
 				final Label b = (Label) labelComposite.getChildren()[0];
 				final Label label = (Label) labelComposite.getChildren()[1];
-				b.setImage(GamaIcon.ofColor(GamaColors.get(agent.getColor()), false).image());
+				b.setImage(GamaIcon.ofColorWithAWT(GamaColors.get(agent.getColor()), false).image());
 				labelComposite.setData(agent);
 				label.setText(GamlIdiomsProvider.toText(status.popupTextFor(agent)));
 			} catch (Exception e) {
@@ -172,20 +169,24 @@ public class SimulationPopupMenu extends PopupDialog {
 		}
 
 	}
-	
-	Composite getOrCreateLabel(int i) {
-		if (i > labels.size() - 1) {
-			labels.add(createLabel());
-		}
+
+	/**
+	 * Gets the or create label.
+	 *
+	 * @param i
+	 *            the i
+	 * @return the or create label
+	 */
+	Composite getOrCreateLabel(final int i) {
+		if (i > labels.size() - 1) { labels.add(createLabel()); }
 		Composite c = labels.get(i);
 		if (c == null || c.isDisposed()) {
 			labels.remove(i);
 			c = createLabel();
-			labels.add(i,c);
+			labels.add(i, c);
 		}
 		return c;
 	}
-
 
 	/**
 	 * Creates the label.
@@ -363,7 +364,6 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @date 31 août 2023
 	 */
 	public void wipe() {
-		for (Control c : labels) {
-			if (!c.isDisposed()) c.setData(null); }
+		for (Control c : labels) { if (!c.isDisposed()) { c.setData(null); } }
 	}
 }

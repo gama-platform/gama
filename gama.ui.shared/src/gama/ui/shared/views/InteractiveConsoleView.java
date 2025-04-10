@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * InteractiveConsoleView.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * InteractiveConsoleView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -358,7 +358,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		if (agent == null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true);
+					toolbar.wipe(SWT.LEFT, true, false);
 					toolbar.setBackgroundColor(null);
 					toolbar.update();
 					toolbar.requestLayout();
@@ -372,7 +372,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
 					toolbar.status(null, "Interacting with " + agent.getFamilyName() + " " + agent.getName(),
-							GamaColors.get(agent.getColor()), SWT.LEFT);
+							GamaColors.get(agent.getColor()), false, SWT.LEFT);
 					toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
 					toolbar.update();
 					toolbar.requestLayout();
@@ -493,7 +493,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
-		
+
 		final var value = temps.get(name);
 		if (value != null) {
 			final IType<?> t = GamaType.of(value);

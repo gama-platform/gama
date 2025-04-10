@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TestView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -110,7 +110,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		WorkbenchHelper.run(() -> {
 			if (toolbar != null) {
 				toolbar.status(null, "Run experiment to see the tests results",
-						e -> { GAMA.startFrontmostExperiment(false); }, IGamaColors.BLUE, SWT.LEFT);
+						e -> { GAMA.startFrontmostExperiment(false); }, IGamaColors.BLUE, false, SWT.LEFT);
 			}
 		});
 		super.reset();
@@ -263,7 +263,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		final String path = dialog.open();
 		if (path == null) return;
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		String file = path + File.separator + "tests_" + new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(timestamp) + ".txt";
+		String file = path + File.separator + "tests_" + new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(timestamp)
+				+ ".txt";
 		file = FileUtils.constructAbsoluteFilePath(GAMA.getRuntimeScope(), file, false);
 		try (PrintWriter out = new PrintWriter(file)) {
 			for (AbstractSummary summary : experiments) {
@@ -324,7 +325,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				getParentComposite().layout(true, false);
 				if (toolbar != null) {
 					toolbar.status(null, new CompoundSummary<>(experiments).getStringSummary(), null, IGamaColors.BLUE,
-							SWT.LEFT);
+							false, SWT.LEFT);
 				}
 				ViewsHelper.bringToFront(this);
 			}
@@ -355,7 +356,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		WorkbenchHelper.asyncRun(() -> {
 			if (toolbar != null) {
 				toolbar.status(null, "Executing test models: " + number + " on " + total, null, IGamaColors.NEUTRAL,
-						SWT.LEFT);
+						false, SWT.LEFT);
 			}
 		});
 

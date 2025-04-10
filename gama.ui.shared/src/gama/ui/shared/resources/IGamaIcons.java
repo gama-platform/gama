@@ -329,7 +329,7 @@ public interface IGamaIcons {
 	String OVERLAY_OK = "navigator/overlays/overlay.ok";
 
 	/** The overlay toggle. */
-	String OVERLAY_TOGGLE = "mini/overlay.toggle";
+	// String OVERLAY_TOGGLE = "mini/overlay.toggle";
 
 	/** The overlay warning. */
 	String OVERLAY_WARNING = "navigator/overlays/overlay.warning";
@@ -353,13 +353,13 @@ public interface IGamaIcons {
 	String PREFS_LIBS = "prefs/prefs.libraries2";
 
 	/** The prefs runtime. */
-	String PREFS_RUNTIME = "prefs/prefs.simulations2";
+	String PREFS_EXPERIMENTAL = "prefs/prefs.experimental2";
 
 	/** The prefs simulation. */
-	String PREFS_SIMULATION = "prefs/prefs.runtime2";
+	String PREFS_SIMULATION = "prefs/prefs.simulations2";
 
 	/** The prefs ui. */
-	String PREFS_UI = "prefs/prefs.ui2";
+	String PREFS_UI = "prefs/prefs.display2";
 
 	/** The presentation menu. */
 	String PRESENTATION_MENU = "editor/menu.presentation";
@@ -469,11 +469,11 @@ public interface IGamaIcons {
 	/** The toggle warnings. */
 	String TOGGLE_WARNINGS = "build/toggle.warnings";
 
-	/** The toolbar hide. */
-	String TOOLBAR_HIDE = "mini/toolbar.hide";
-
-	/** The toolbar show. */
-	String TOOLBAR_SHOW = "mini/toolbar.show";
+	// /** The toolbar hide. */
+	// String TOOLBAR_HIDE = "mini/toolbar.hide";
+	//
+	// /** The toolbar show. */
+	// String TOOLBAR_SHOW = "mini/toolbar.show";
 
 	/** The tree collapse. */
 	String TREE_COLLAPSE = "mini/tree.collapse";

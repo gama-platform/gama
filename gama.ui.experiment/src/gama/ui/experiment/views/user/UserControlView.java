@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * UserControlView.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * UserControlView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,10 +39,10 @@ import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.parameters.EditorFactory;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.views.GamaViewPart;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -108,7 +108,7 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 		parent.setLayout(new FillLayout());
 		toolbar.status((Image) null,
 				"User control, agent " + scope.getAgent().getName() + ", cycle " + scope.getClock().getCycle(),
-				IGamaColors.NEUTRAL, SWT.LEFT);
+				IGamaColors.NEUTRAL, false, SWT.LEFT);
 		body = new Composite(parent, SWT.None);
 		GridLayout layout = new GridLayout(3, false);
 		body.setLayout(layout);
@@ -126,9 +126,9 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 				final int nbCol = inputs.size() > 0 ? 1 : 3;
 				GamaUIColor color = GamaColors.get(c.getColor(scope));
 				if (color == null) { color = IGamaColors.BLUE; }
-				final Image image = GamaIcon
-						.named(c.isContinue(scope) ? "overlays/small.continue" : "overlays/small.exp.run.white")
-						.image();
+				final Image image =
+						GamaIcon.named(c.isContinue(scope) ? "overlays/small.continue" : "overlays/small.exp.run.white")
+								.image();
 				final FlatButton b = FlatButton.button(commandComposite, color, c.getName(), image);
 				b.setEnabled(c.isEnabled(scope));
 				final GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, true, nbCol, nbLines);

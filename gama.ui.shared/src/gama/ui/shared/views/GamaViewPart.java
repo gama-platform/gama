@@ -342,8 +342,8 @@ public abstract class GamaViewPart extends ViewPart
 		if (!outputs.contains(out)) {
 			outputs.add(out);
 		} else if (toolbar != null) {
-			toolbar.wipe(SWT.LEFT, true);
-			toolbar.wipe(SWT.RIGHT, true);
+			toolbar.wipe(SWT.LEFT, true, false);
+			toolbar.wipe(SWT.RIGHT, true, false);
 			GamaToolbarFactory.buildToolbar(GamaViewPart.this, toolbar);
 		}
 
@@ -373,7 +373,7 @@ public abstract class GamaViewPart extends ViewPart
 	@Override
 	public void stopDisplayingTooltips() {
 		if (toolbar == null || toolbar.isDisposed()) return;
-		if (toolbar.hasTooltip()) { toolbar.wipe(SWT.LEFT, false); }
+		if (toolbar.hasTooltip()) { toolbar.wipe(SWT.LEFT, false, false); }
 	}
 
 	@Override

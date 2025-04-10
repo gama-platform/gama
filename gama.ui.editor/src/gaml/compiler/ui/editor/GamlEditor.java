@@ -385,7 +385,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Builds the right toolbar.
 	 */
 	private void buildRightToolbar() {
-		toolbar.wipe(SWT.LEFT, true);
+		toolbar.wipe(SWT.LEFT, true, false);
 		final var t = toolbar.button(IGamaColors.NEUTRAL, "Waiting...", GamaIcon.named(IGamaIcons.STATUS_CLOCK).image(),
 				null, SWT.LEFT);
 		toolbar.sep(4, SWT.LEFT);
@@ -564,7 +564,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
-				toolbar.wipe(SWT.LEFT, true);
+				toolbar.wipe(SWT.LEFT, true, false);
 
 				final var c = state.getColor();
 				var msg = state.getStatus();

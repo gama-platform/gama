@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ConsoleView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -184,7 +184,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 			if (!indicated) {
 				WorkbenchHelper.run(() -> {
 					if (toolbar != null) {
-						toolbar.status((Image) null, "New contents available", IGamaColors.BLUE, SWT.LEFT);
+						toolbar.status((Image) null, "New contents available", IGamaColors.BLUE, false, SWT.LEFT);
 					}
 					indicated = true;
 				});
@@ -223,7 +223,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 		if (paused) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
-					toolbar.wipe(SWT.LEFT, true);
+					toolbar.wipe(SWT.LEFT, true, false);
 					// setExecutorAgent(GAMA.getExperiment().getAgent());
 				}
 				indicated = false;

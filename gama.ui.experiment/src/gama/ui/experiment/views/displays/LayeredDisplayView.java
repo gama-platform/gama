@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
@@ -155,7 +155,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 			if (scope != null && scope.getSimulation() != null) {
 				final ITopLevelAgent root = scope.getRoot();
 				final Color color = root.getColor();
-				this.setTitleImage(GamaIcon.ofColor(GamaColors.get(color), true).image());
+				this.setTitleImage(GamaIcon.ofColorWithAWT(GamaColors.get(color), true).image());
 			}
 		}
 
@@ -367,7 +367,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (getDisplaySurface() != null && !getDisplaySurface().isDisposed()) {
 			try {
 				getDisplaySurface().updateDisplay(false, syncSemaphore);
-				GAMA.getGui().getStatus().informStatus("Updating " + this.getTitle(), StatusMessage.VIEW_ICON);
+				GAMA.getGui().getStatus().informStatus("Updating " + this.getTitle(), IStatusMessage.VIEW_ICON);
 			} catch (Exception e) {
 				DEBUG.OUT("Error when updating " + getTitle() + ": " + e.getMessage());
 			}

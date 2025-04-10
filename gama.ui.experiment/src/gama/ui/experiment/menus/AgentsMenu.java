@@ -71,7 +71,7 @@ public class AgentsMenu extends ContributionItem {
 		result.setText(title);
 		Image image;
 		if (agent instanceof SimulationAgent sim) {
-			image = GamaIcon.ofColor(GamaColors.get(sim.getColor()), false).image();
+			image = GamaIcon.ofColorWithAWT(GamaColors.get(sim.getColor()), false).image();
 		} else {
 			image = GamaIcon.named(IGamaIcons.MENU_AGENT).image();
 		}

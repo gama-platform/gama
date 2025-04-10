@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.views.inspectors;
 
@@ -140,14 +140,14 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
 					toolbar.status(null, "Parameters for " + a.getFamilyName() + " " + a.getName(),
-							GamaColors.get(a.getColor()), SWT.LEFT);
+							GamaColors.get(a.getColor()), false, SWT.LEFT);
 					toolbar.setBackgroundColor(GamaColors.toSwtColor(a.getColor()));
 				}
 			});
 		} else {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true);
+					toolbar.wipe(SWT.LEFT, true, false);
 					toolbar.setBackgroundColor(null);
 					FlatButton button = (FlatButton) status.getControl();
 					button.setColor(GamaColors.get(toolbar.getBackground()));
