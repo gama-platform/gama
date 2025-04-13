@@ -123,13 +123,13 @@ public class HeapControl {
 	public static void install() {
 		WorkbenchHelper.runInUI("Install GAMA Status and Heap Controls", 0, m -> {
 			final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-			if (window instanceof WorkbenchWindow) {
-				final MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
+			if (window instanceof WorkbenchWindow ww) {
+				final MTrimBar topTrim = ww.getTopTrim();
 				for (final MTrimElement element : topTrim.getChildren()) {
 					if ("SearchField".equals(element.getElementId())) {
 						final Composite parent = ((Control) element.getWidget()).getParent();
 						final Control old = (Control) element.getWidget();
-						WorkbenchHelper.runInUI("Disposing old search control", 500, m2 -> old.dispose());
+						WorkbenchHelper.asyncRun(() -> old.dispose(), 500, () -> true);
 						element.setWidget(new HeapControl().displayOn(parent));
 						parent.requestLayout();
 						break;

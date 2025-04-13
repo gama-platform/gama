@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.controls;
 
+import java.util.Set;
+
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -139,15 +141,24 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 		});
 		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
+
+			final Set<String> uselessJobs = Set.of("Animation start", "Decoration Calculation",
+					"Update Capability Enablement for Natures", "Status refresh", "Update for Decoration Completion",
+					"Change cursor", "Searching for local changes", "Hooking to commands", "Update Job",
+					"Check for workspace changes");
+
 			@Override
 			public void aboutToRun(final IJobChangeEvent event) {
 				Job job = event.getJob();
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
-				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
-				if (IStatusMessage.INTERNAL_JOB.equals(jobProperty)) return;
-				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
 				String name = job.getName();
-				if (isView ? !showViewEvents : !showSystemEvents) return;
+				if (uselessJobs.contains(name)) return;
+				// DEBUG.OUT("Name " + job.getName() + " - Group " + job.getJobGroup() + " - Rule " + job.getRule()
+				// + " - Priority " + jobPriority(job.getPriority()));
+				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
+				if (IStatusMessage.INTERNAL_STATUS_REFRESH_JOB.equals(jobProperty)) return;
+				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
+				// if (isView ? !showViewEvents : !showSystemEvents) {}
 				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessageFactory.CUSTOM(name, StatusType.REGULAR,
 						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null)));
 			}
@@ -173,16 +184,16 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				// + jobPriority(event.getJob().getPriority()));
 			}
 
-			// private String jobPriority(final int p) {
-			// return switch (p) {
-			// case Job.INTERACTIVE -> "INTERACTIVE";
-			// case Job.BUILD -> "BUILD";
-			// case Job.DECORATE -> "DECORATE";
-			// case Job.LONG -> "LONG";
-			// case Job.SHORT -> "SHORT";
-			// default -> "NONE";
-			// };
-			// }
+			private String jobPriority(final int p) {
+				return switch (p) {
+					case Job.INTERACTIVE -> "INTERACTIVE";
+					case Job.BUILD -> "BUILD";
+					case Job.DECORATE -> "DECORATE";
+					case Job.LONG -> "LONG";
+					case Job.SHORT -> "SHORT";
+					default -> "NONE";
+				};
+			}
 
 			@Override
 			public void scheduled(final IJobChangeEvent event) {}

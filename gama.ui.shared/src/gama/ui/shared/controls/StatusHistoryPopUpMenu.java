@@ -57,6 +57,9 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	/** The sdf. */
 	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
+	/** The limit. */
+	int limit = 30;
+
 	static {
 		DEBUG.ON();
 	}
@@ -72,22 +75,9 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 		/** The delegate. */
 		LinkedList<T> delegate = new LinkedList<>();
 
-		/** The limit. */
-		int limit = 10;
-
 		@Override
 		protected List<T> delegate() {
 			return delegate;
-		}
-
-		/**
-		 * Instantiates a new bounded list.
-		 *
-		 * @param limit
-		 *            the limit.
-		 */
-		BoundedList(final int limit) {
-			this.limit = limit;
 		}
 
 		@Override
@@ -124,7 +114,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	List<Composite> labels = new CopyOnWriteArrayList<>();
 
 	/** The labels. */
-	List<IStatusMessage> events = new BoundedList<>(10);
+	List<IStatusMessage> events = new BoundedList<>();
 
 	/** The hide. */
 	final Listener hide = event -> hide();
@@ -168,6 +158,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 			GridLayoutFactory.swtDefaults().numColumns(1).margins(5, 5).spacing(0, 5).applyTo(contents);
 		}
 		fillLabels();
+		contents.requestLayout();
 		return contents;
 	}
 
@@ -274,7 +265,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 				@Override
 				public void mouseDown(final MouseEvent e) {
 					hide();
-					StatusMessage message = (StatusMessage) labelText.getData();
+					StatusMessage message = (StatusMessage) labelText.getParent().getData();
 					if (message.isError()) {
 						GAMA.getGui().editModel(message.exception().getEditorContext());
 					} else {

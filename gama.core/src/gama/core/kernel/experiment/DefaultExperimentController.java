@@ -18,7 +18,6 @@ import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.dev.DEBUG;
 
 /**
  * The Class ExperimentController.
@@ -74,13 +73,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					// https://github.com/gama-platform/gama/commit/8068457d11d25289bf001bb6f29553e4037f1cda#r130876638,
 					// removes the thread
 					// new Thread(() -> experiment.open()).start();
-				} catch (final GamaRuntimeException e) {
-					DEBUG.ERR("Error in previous experiment: " + e.getMessage());
-					closeExperiment(e);
-					return false;
 				} catch (final Exception e) {
-					DEBUG.ERR("Error when opening the experiment: " + e.getMessage());
-					closeExperiment(e);
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				}
 			case _START:
@@ -89,7 +83,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					lock.release();
 					return true;
 				} catch (final GamaRuntimeException e) {
-					closeExperiment(e);
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment, IExperimentStateListener.State.RUNNING);
@@ -118,11 +112,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					if (wasRunning) return processUserCommand(ExperimentCommand._START);
 					scope.getGui().getStatus().informStatus("Experiment reloaded", IStatusMessage.SIMULATION_ICON);
 					return true;
-				} catch (final GamaRuntimeException e) {
-					closeExperiment(e);
-					return false;
 				} catch (final Throwable e) {
-					closeExperiment(GamaRuntimeException.create(e, scope));
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment);
@@ -157,19 +148,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	@Override
 	public void close() {
-		closeExperiment(null);
+		disposing = true;
+		experiment.dispose(); // will call own dispose() later
 	}
 
 	/**
-	 * Close experiment.
+	 * Notify exception.
 	 *
 	 * @param e
 	 *            the e
 	 */
-	public void closeExperiment(final Exception e) {
-		disposing = true;
+	public void notifyExceptionAndCloseExperiment(final Throwable e) {
 		if (e != null) { getScope().getGui().getStatus().errorStatus(GamaRuntimeException.create(e, scope)); }
-		experiment.dispose(); // will call own dispose() later
+		GAMA.closeExperiment(experiment);
+		GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 	}
 
 	/**

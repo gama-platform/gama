@@ -60,7 +60,7 @@ public interface IStatusMessage {
 	QualifiedName JOB_KEY = new QualifiedName("status", "property");
 
 	/** The internal job. */
-	String INTERNAL_JOB = "internal";
+	String INTERNAL_STATUS_REFRESH_JOB = "internal";
 
 	/** The view job. */
 	String VIEW_JOB = "view";

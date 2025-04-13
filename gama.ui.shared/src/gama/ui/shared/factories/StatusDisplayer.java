@@ -58,7 +58,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 */
 		public ExperimentRefresher(final String name) {
 			super(WorkbenchHelper.getDisplay(), name);
-			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_JOB);
+			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_STATUS_REFRESH_JOB);
 			setPriority(INTERACTIVE);
 			setSystem(true);
 		}
@@ -88,7 +88,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 */
 		public StatusRefresher(final String name) {
 			super(WorkbenchHelper.getDisplay(), name);
-			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_JOB);
+			setProperty(IStatusMessage.JOB_KEY, IStatusMessage.INTERNAL_STATUS_REFRESH_JOB);
 			setPriority(DECORATE);
 			setSystem(true);
 		}
