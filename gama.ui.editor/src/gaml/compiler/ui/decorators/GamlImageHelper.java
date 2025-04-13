@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlImageHelper.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlImageHelper.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,6 +37,9 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 	/** The Constant path. */
 	private static final String path = "gaml";
 
+	/** The Constant defaultIcon. */
+	private static final String defaultIcon = "/_unknown";
+
 	/** The registry. */
 	private final Map<ImageDescriptor, Image> registry = Maps.newHashMapWithExpectedSize(10);
 
@@ -60,7 +63,7 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 		String s = name;
 		if (s.endsWith(".png")) { s = s.replace(".png", ""); }
 		if (exist(path + "/" + s)) return GamaIcon.named(path + "/" + s).descriptor();
-		return GamaIcon.named(path + "/_agent").descriptor();
+		return GamaIcon.named(path + defaultIcon).descriptor();
 
 	}
 
@@ -86,7 +89,7 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 		String s = name;
 		if (s.endsWith(".png")) { s = s.replace(".png", ""); }
 		if (exist(path + "/" + s)) return GamaIcon.named(path + "/" + s).image();
-		return GamaIcon.named(path + "/_agent").image();
+		return GamaIcon.named(path + defaultIcon).image();
 	}
 
 	/**

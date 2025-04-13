@@ -106,9 +106,8 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 		setPartName(
 				"[" + scope.getAgent().getName() + " in " + scope.getSimulation().getName() + "] " + panel.getName());
 		parent.setLayout(new FillLayout());
-		toolbar.status((Image) null,
-				"User control, agent " + scope.getAgent().getName() + ", cycle " + scope.getClock().getCycle(),
-				IGamaColors.NEUTRAL, false, SWT.LEFT);
+		toolbar.status(null,
+				"User control, agent " + scope.getAgent().getName() + ", cycle " + scope.getClock().getCycle(), null);
 		body = new Composite(parent, SWT.None);
 		GridLayout layout = new GridLayout(3, false);
 		body.setLayout(layout);

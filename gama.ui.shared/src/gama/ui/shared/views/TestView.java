@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
@@ -36,6 +37,7 @@ import org.eclipse.ui.PartInitException;
 
 import com.google.common.primitives.Ints;
 
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.ItemList;
@@ -48,11 +50,11 @@ import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
 import gama.gaml.statements.test.TestState;
 import gama.ui.shared.controls.ParameterExpandItem;
+import gama.ui.shared.controls.StatusIconProvider;
 import gama.ui.shared.parameters.AssertEditor;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -79,6 +81,9 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 
 	/** The running all tests. */
 	private boolean runningAllTests;
+
+	/** The icon provider. */
+	private final StatusIconProvider iconProvider = new StatusIconProvider();
 
 	/** The id. */
 	public static String ID = IGui.TEST_VIEW_ID;
@@ -110,7 +115,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		WorkbenchHelper.run(() -> {
 			if (toolbar != null) {
 				toolbar.status(null, "Run experiment to see the tests results",
-						e -> { GAMA.startFrontmostExperiment(false); }, IGamaColors.BLUE, false, SWT.LEFT);
+						e -> { GAMA.startFrontmostExperiment(false); }, null);
 			}
 		});
 		super.reset();
@@ -119,6 +124,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	@Override
 	public void finishTestSequence() {
 		super.reset();
+		updateIcon = false;
 		reset();
 	}
 
@@ -246,10 +252,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				}, SWT.RIGHT);
 		t2.setSelection(FAILED_TESTS.getValue());
 		FAILED_TESTS.onChange(v -> t2.setSelection(v));
-		final ToolItem save =
-				tb.button(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> {
-					this.saveTests();
-				}, SWT.RIGHT);
+		tb.button(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> { this.saveTests(); },
+				SWT.RIGHT);
 	}
 
 	/**
@@ -324,8 +328,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				displayItems();
 				getParentComposite().layout(true, false);
 				if (toolbar != null) {
-					toolbar.status(null, new CompoundSummary<>(experiments).getStringSummary(), null, IGamaColors.BLUE,
-							false, SWT.LEFT);
+					toolbar.status("navigator/status.info", new CompoundSummary<>(experiments).getStringSummary(),
+							null);
 				}
 				ViewsHelper.bringToFront(this);
 			}
@@ -351,12 +355,25 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		return false;
 	}
 
+	/** The update icon. */
+	boolean updateIcon = false;
+
 	@Override
 	public void displayProgress(final int number, final int total) {
+		if (!updateIcon) {
+			updateIcon = true;
+			Callable<Boolean> stop = () -> !updateIcon;
+			WorkbenchHelper.asyncRun(() -> {
+				if (toolbar != null) {
+					toolbar.updateStatusImage(iconProvider.getIcon());
+					GAMA.getGui().getStatus().informStatus("Running tests", IStatusMessage.SIMULATION_ICON);
+				}
+			}, 100, stop);
+		}
+
 		WorkbenchHelper.asyncRun(() -> {
 			if (toolbar != null) {
-				toolbar.status(null, "Executing test models: " + number + " on " + total, null, IGamaColors.NEUTRAL,
-						false, SWT.LEFT);
+				toolbar.status(iconProvider.getIcon(), "Executing test models: " + number + " on " + total, null);
 			}
 		});
 

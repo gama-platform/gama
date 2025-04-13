@@ -12,6 +12,7 @@ package gama.core.common;
 
 import org.eclipse.core.runtime.QualifiedName;
 
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 
 /**
@@ -77,6 +78,64 @@ public interface IStatusMessage {
 		EXPERIMENT,
 		/** The none. */
 		NONE;
+	}
+
+	/**
+	 * @return
+	 */
+	default GamaRuntimeException exception() {
+		return null;
+	}
+
+	/**
+	 * @return
+	 */
+	default StatusType type() {
+		return StatusType.NONE;
+	}
+
+	/**
+	 * Checks if is error.
+	 *
+	 * @return true, if is error
+	 */
+	default boolean isError() { return false; }
+
+	/**
+	 * @return
+	 */
+	String message();
+
+	/**
+	 * @return
+	 */
+	default Double completion() {
+		return null;
+	}
+
+	/**
+	 * Color.
+	 *
+	 * @return the gama color
+	 */
+	default GamaColor color() {
+		return null;
+	}
+
+	/**
+	 * Icon.
+	 *
+	 * @return the string
+	 */
+	default String icon() {
+		return PROGRESS_ICON;
+	}
+
+	/**
+	 * @return
+	 */
+	default long timeStamp() {
+		return System.currentTimeMillis();
 	}
 
 }

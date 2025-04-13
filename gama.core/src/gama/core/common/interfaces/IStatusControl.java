@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 
 /**
  * The Interface IStatusControl.
@@ -33,6 +33,6 @@ public interface IStatusControl {
 	 * @param m
 	 *            the m
 	 */
-	default void updateWith(final StatusMessage m) {}
+	default void updateWith(final IStatusMessage m) {}
 
 }

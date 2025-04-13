@@ -59,7 +59,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void complete() {
-		getDisplayer().setTaskCompletion(name, 1d, IStatusMessage.DOWNLOAD_ICON);
+		getDisplayer().setTaskCompletion(name, 1d);
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 	@Override
 	public void progress(final float p) {
 		progress = p;
-		getDisplayer().setTaskCompletion(name, progress, IStatusMessage.DOWNLOAD_ICON);
+		getDisplayer().setTaskCompletion(name, (double) progress);
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class ProgressCounter implements ProgressListener, IIOReadProgressListene
 
 	@Override
 	public void imageComplete(final ImageReader source) {
-		getDisplayer().setTaskCompletion(name, 1d, IStatusMessage.DOWNLOAD_ICON);
+		getDisplayer().setTaskCompletion(name, 1d);
 		getDisplayer().endTask(name, IStatusMessage.DOWNLOAD_ICON);
 	}
 

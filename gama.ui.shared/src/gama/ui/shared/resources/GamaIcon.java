@@ -41,9 +41,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
@@ -51,11 +48,11 @@ import org.eclipse.swt.widgets.Display;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageOperators;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
-import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class GamaIcon.
@@ -181,6 +178,35 @@ public class GamaIcon {
 	}
 
 	/**
+	 * Key for color.
+	 *
+	 * @param color
+	 *            the color
+	 * @param square
+	 *            the square
+	 * @return the string
+	 */
+	public static String nameForColor(final GamaColor color, final boolean square) {
+		String shape = square ? "square" : "circle";
+		String key = COLORS + shape + ".color." + String.format("%X", color.getRGB());
+		ofColorWithAWT(key, GamaColors.get(color), square);
+		return key;
+	}
+
+	/**
+	 * Key for color.
+	 *
+	 * @param color
+	 *            the color
+	 * @param square
+	 *            the square
+	 * @return the string
+	 */
+	public static String nameForColor(final GamaUIColor color, final boolean square) {
+		return nameForColor(color.gamaColor(), square);
+	}
+
+	/**
 	 * Of color with AWT.
 	 *
 	 * @param gcolor
@@ -190,12 +216,23 @@ public class GamaIcon {
 	 * @return the gama icon
 	 */
 	public static GamaIcon ofColorWithAWT(final GamaUIColor gcolor, final boolean square) {
-		String shape = square ? "square" : "circle";
-		final String name = COLORS + shape + ".color." + String.format("%X", gcolor.gamaColor().getRGB());
-		// DEBUG.OUT("Looking for " + name + ".png");
+		return ofColorWithAWT(null, gcolor, square);
+	}
+
+	/**
+	 * Of color with AWT.
+	 *
+	 * @param gcolor
+	 *            the gcolor
+	 * @param square
+	 *            the square
+	 * @return the gama icon
+	 */
+	public static GamaIcon ofColorWithAWT(final String key, final GamaUIColor gcolor, final boolean square) {
+
+		final String name = key == null ? nameForColor(gcolor, square) : key;
 		try {
 			return ICON_CACHE.get(name, () -> {
-				// DEBUG.OUT(name + " not found. Building it");
 				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
 				Graphics2D gc = bi.createGraphics();
 				gc.setColor(gcolor.gamaColor());
@@ -215,131 +252,6 @@ public class GamaIcon {
 			return null;
 		}
 
-	}
-
-	/**
-	 * Of color with AWT.
-	 *
-	 * @param gcolor
-	 *            the gcolor
-	 * @param square
-	 *            the square
-	 * @return the gama icon
-	 */
-	public static GamaIcon Old2(final GamaUIColor gcolor, final boolean square) {
-		String shape = square ? "square" : "circle";
-		final String name = COLORS + shape + ".color." + String.format("%X", gcolor.gamaColor().getRGB());
-		// DEBUG.OUT("Looking for " + name + ".png");
-		try {
-			return ICON_CACHE.get(name, () -> {
-				// DEBUG.OUT(name + " not found. Building it");
-				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
-				Graphics2D gc = bi.createGraphics();
-				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				gc.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-						RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-				int size = bi.getWidth();
-				if (square) {
-					gc.setColor(java.awt.Color.white);
-					gc.fillRoundRect(0, 0, size, size, 4, 4);
-					gc.setColor(gcolor.gamaColor());
-					gc.fillRoundRect(4, 4, size - 8, size - 8, 4, 4);
-				} else {
-					gc.setColor(java.awt.Color.white);
-					gc.fillOval(0, 0, size, size);
-					gc.setColor(gcolor.gamaColor());
-					gc.fillOval(4, 4, size - 8, size - 8);
-				}
-				gc.dispose();
-				return new GamaIcon(name, bi);
-			});
-		} catch (Exception e) {
-			return null;
-		}
-
-	}
-
-	/**
-	 * Of color with SWT.
-	 *
-	 * @param gcolor
-	 *            the gcolor
-	 * @param square
-	 *            the square
-	 * @return the gama icon
-	 */
-	public static GamaIcon ofColorWithSWT(final GamaUIColor gcolor, final boolean square) {
-		Image im = square ? createSquare(16, 4, gcolor) : createCircle(16, gcolor);
-		String shape = square ? "square" : "circle";
-		final String name = COLORS + shape + ".color." + String.format("%X", gcolor.gamaColor().getRGB());
-		return new GamaIcon(name, im, new Image(WorkbenchHelper.getDisplay(), im, SWT.IMAGE_DISABLE));
-	}
-
-	/**
-	 * Creates the rounded rectangle image.
-	 *
-	 * @param display
-	 *            the display
-	 * @param width
-	 *            the width
-	 * @param height
-	 *            the height
-	 * @param cornerRadius
-	 *            the corner radius
-	 * @param red
-	 *            the red
-	 * @param green
-	 *            the green
-	 * @param blue
-	 *            the blue
-	 * @return the image
-	 */
-	private static Image createSquare(final int width, final int cornerRadius, final GamaUIColor gcolor) {
-		Image src = named("spacer16").image();
-		ImageData imageData = src.getImageData();
-		// imageData.transparentPixel = imageData.getPixel(0, 0);
-		// src.dispose();
-		Image image = new Image(null, imageData);
-		GC gc = new GC(image);
-		try {
-			Color fillColor = gcolor.active;
-			gc.setBackground(GamaColors.system(SWT.COLOR_WHITE));
-			gc.fillRoundRectangle(0, 0, width, width, cornerRadius, cornerRadius);
-			gc.setBackground(fillColor);
-			gc.fillRoundRectangle(4, 4, width - 8, width - 8, cornerRadius, cornerRadius);
-		} finally {
-			gc.dispose();
-		}
-		return image;
-	}
-
-	/**
-	 * Creates the circle.
-	 *
-	 * @param width
-	 *            the width
-	 * @param gcolor
-	 *            the gcolor
-	 * @return the image
-	 */
-	private static Image createCircle(final int width, final GamaUIColor gcolor) {
-		Image src = named("spacer16").image();
-		ImageData imageData = src.getImageData();
-		// imageData.transparentPixel = imageData.getPixel(0, 0);
-		// src.dispose();
-		Image image = new Image(null, imageData);
-		GC gc = new GC(image);
-		gc.setAdvanced(true);
-		try {
-			Color fillColor = gcolor.active;
-			gc.setBackground(GamaColors.system(SWT.COLOR_WHITE));
-			gc.fillOval(0, 0, width, width);
-			gc.setBackground(fillColor);
-			gc.fillOval(4, 4, width - 8, width - 8);
-		} finally {
-			gc.dispose();
-		}
-		return image;
 	}
 
 	/** The code. */

@@ -70,7 +70,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param status
 	 *            the new sub status completion
 	 */
-	default void setTaskCompletion(final String name, final double status, final String icon) {}
+	default void setTaskCompletion(final String name, final Double s) {}
 
 	/**
 	 * Inform status.

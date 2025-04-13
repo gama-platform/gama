@@ -31,7 +31,7 @@ import gama.ui.shared.resources.GamaIcon;
 /**
  * The Class GamaCommand.
  */
-public class GamaCommand {
+public record GamaCommand(String image, String text, String tooltip, Selector runner) {
 
 	/**
 	 * Builds the.
@@ -51,31 +51,6 @@ public class GamaCommand {
 		return new GamaCommand(image, text, tooltip, runner);
 	}
 
-	/** The image. */
-	String text, tooltip, image;
-
-	/** The selector. */
-	Selector selector;
-
-	/**
-	 * Instantiates a new gama command.
-	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tooltip
-	 *            the tooltip
-	 * @param runner
-	 *            the runner
-	 */
-	public GamaCommand(final String image, final String text, final String tooltip, final Selector runner) {
-		this.text = text;
-		this.tooltip = tooltip;
-		this.image = image;
-		this.selector = runner;
-	}
-
 	/**
 	 * Instantiates a new gama command.
 	 *
@@ -89,66 +64,6 @@ public class GamaCommand {
 	public GamaCommand(final String image, final String text, final Selector runner) {
 		this(image, text, text, runner);
 	}
-
-	/**
-	 * Gets the text.
-	 *
-	 * @return the text
-	 */
-	public String getText() { return text; }
-
-	/**
-	 * Sets the text.
-	 *
-	 * @param text
-	 *            the new text
-	 */
-	public void setText(final String text) { this.text = text; }
-
-	/**
-	 * Gets the tooltip.
-	 *
-	 * @return the tooltip
-	 */
-	public String getTooltip() { return tooltip; }
-
-	/**
-	 * Sets the tooltip.
-	 *
-	 * @param tooltip
-	 *            the new tooltip
-	 */
-	public void setTooltip(final String tooltip) { this.tooltip = tooltip; }
-
-	/**
-	 * Gets the image.
-	 *
-	 * @return the image
-	 */
-	public String getImage() { return image; }
-
-	/**
-	 * Sets the image.
-	 *
-	 * @param image
-	 *            the new image
-	 */
-	public void setImage(final String image) { this.image = image; }
-
-	/**
-	 * Gets the listener.
-	 *
-	 * @return the listener
-	 */
-	public Selector getListener() { return selector; }
-
-	/**
-	 * Sets the selector.
-	 *
-	 * @param event
-	 *            the new selector
-	 */
-	public void setSelector(final Selector event) { this.selector = event; }
 
 	/**
 	 * Gets the id.
@@ -167,7 +82,7 @@ public class GamaCommand {
 
 			@Override
 			public void runWithEvent(final Event e) {
-				selector.widgetSelected(new SelectionEvent(e));
+				runner.widgetSelected(new SelectionEvent(e));
 			}
 		};
 
@@ -188,7 +103,7 @@ public class GamaCommand {
 
 			@Override
 			public void runWithEvent(final Event e) {
-				selector.widgetSelected(new SelectionEvent(e));
+				runner.widgetSelected(new SelectionEvent(e));
 			}
 		};
 
@@ -207,7 +122,7 @@ public class GamaCommand {
 	 * @return the tool item
 	 */
 	public ToolItem toItem(final ToolBar t) {
-		return toItem(t, selector);
+		return toItem(t, runner);
 	}
 
 	/**
@@ -225,7 +140,7 @@ public class GamaCommand {
 			i.setImage(icon.image());
 			i.setDisabledImage(icon.disabled());
 		}
-		i.addSelectionListener(selector);
+		i.addSelectionListener(runner);
 		return i;
 
 	}
@@ -265,7 +180,7 @@ public class GamaCommand {
 		if (text != null) { i.setText(text); }
 		i.setToolTipText(tooltip);
 		if (image != null) { i.setImage(GamaIcon.named(image).image()); }
-		i.addSelectionListener(selector);
+		i.addSelectionListener(runner);
 		return i;
 	}
 
@@ -296,7 +211,7 @@ public class GamaCommand {
 	 * @return the button
 	 */
 	public Button toButton(final Composite t) {
-		return toButton(t, selector);
+		return toButton(t, runner);
 	}
 
 	/**

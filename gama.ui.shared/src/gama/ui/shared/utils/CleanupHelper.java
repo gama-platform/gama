@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CleanupHelper.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * CleanupHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -166,8 +166,8 @@ public class CleanupHelper {
 	static class RemoveUnwantedActionSets extends PerspectiveAdapter /* implements IStartup */ {
 
 		/** The toolbar action sets to remove. */
-		String[] TOOLBAR_ACTION_SETS_TO_REMOVE = { "org.eclipse", "gaml.compiler.Gaml",
-				"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo" };
+		String[] TOOLBAR_ACTION_SETS_TO_REMOVE =
+				{ "org.eclipse", "gaml.compiler.Gaml", "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo" };
 
 		/** The menus to remove. */
 		String[] MENUS_TO_REMOVE = { "org.eclipse.ui.run", "window", "navigate", "project" };
@@ -309,7 +309,7 @@ public class CleanupHelper {
 	/**
 	 * The Class RearrangeMenus.
 	 */
-	static class RearrangeMenus {
+	public static class RearrangeMenus {
 
 		/** The Constant MENU_ITEMS_TO_REMOVE. */
 		public final static Set<String> MENU_ITEMS_TO_REMOVE = new HashSet<>(Arrays.asList("openWorkspace",
@@ -382,12 +382,24 @@ public class CleanupHelper {
 					item.setVisible(false);
 					continue;
 				}
-				if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) { continue; }
-				String imageName = MENU_IMAGES.get(name);
-				if (imageName != null) {
-					changeIcon(menu, item, GamaIcon.named(imageName).descriptor());
-				}
+				changeIcon(menu, item, name);
 			}
+		}
+
+		/**
+		 * Change icon.
+		 *
+		 * @param menu
+		 *            the menu
+		 * @param item
+		 *            the item
+		 * @param id
+		 *            the id
+		 */
+		public static void changeIcon(final IMenuManager menu, final IContributionItem item, final String id) {
+			if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) return;
+			String imageName = MENU_IMAGES.get(id);
+			if (imageName != null) { changeIcon(menu, item, GamaIcon.named(imageName).descriptor()); }
 		}
 
 		/**

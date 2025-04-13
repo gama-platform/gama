@@ -13,6 +13,7 @@ package gama.ui.experiment.views.displays;
 import static gama.ui.shared.bindings.GamaKeyBindings.COMMAND;
 import static gama.ui.shared.bindings.GamaKeyBindings.format;
 import static gama.ui.shared.resources.IGamaIcons.DISPLAY_FULLSCREEN_ENTER;
+import static gama.ui.shared.resources.IGamaIcons.DISPLAY_FULLSCREEN_EXIT;
 import static gama.ui.shared.resources.IGamaIcons.DISPLAY_TOOLBAR_SNAPSHOT;
 import static gama.ui.shared.resources.IGamaIcons.EXPERIMENT_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_ANTIALIAS;
@@ -229,19 +230,30 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	};
 
+	/** The enter full screen. */
+	public final GamaCommand enterFullScreen =
+			new GamaCommand(DISPLAY_FULLSCREEN_ENTER, STRINGS.PAD("Enter fullscreen", 25) + "ESC", e -> {
+				toggleFullScreen();
+			});
+
+	/** The exit full screen. */
+	public final GamaCommand exitFullScreen =
+			new GamaCommand(DISPLAY_FULLSCREEN_EXIT, STRINGS.PAD("Exit fullscreen", 25) + "ESC", e -> {
+				toggleFullScreen();
+			});
+
 	/**
 	 * Toggle full screen.
 	 */
 	public void toggleFullScreen() {
 		if (isFullScreen()) {
 			DEBUG.OUT("Is already full screen: exiting");
-			fs.setImage(GamaIcon.named(IGamaIcons.DISPLAY_FULLSCREEN_ENTER).image());
+			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 			fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
-			toggleFullScreen.setImage(IGamaIcons.DISPLAY_FULLSCREEN_ENTER);
-			toggleFullScreen.setText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
+			toggleFullScreen = enterFullScreen;
 			// Toolbar
 			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true, false);
+				toolbar.wipe(SWT.LEFT, true);
 				toolbar.setParent(normalParentOfToolbar);
 				normalParentOfToolbar.requestLayout();
 			}
@@ -255,10 +267,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			ViewsHelper.activate(view);
 			fullScreenShell = createFullScreenShell();
 			if (fullScreenShell == null) return;
-			fs.setImage(GamaIcon.named(IGamaIcons.DISPLAY_FULLSCREEN_EXIT).image());
+			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
-			toggleFullScreen.setImage(IGamaIcons.DISPLAY_FULLSCREEN_EXIT);
-			toggleFullScreen.setText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
+			toggleFullScreen = exitFullScreen;
 			normalParentOfFullScreenControl = view.getCentralPanel().getParent();
 			view.getCentralPanel().setParent(fullScreenShell);
 			fullScreenShell.layout(true, true);
@@ -266,14 +277,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			createOverlay();
 			// Toolbar
 			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true, false);
+				toolbar.wipe(SWT.LEFT, true);
 				addFullscreenToolbarCommands();
 				normalParentOfToolbar = toolbar.getParent();
 				toolbar.setParent(fullScreenShell);
 			}
 		}
 		if (!toolbar.isDisposed()) {
-			toolbar.wipe(SWT.RIGHT, true, false);
+			toolbar.wipe(SWT.RIGHT, true);
 			GamaToolbarFactory.buildToolbar(view, toolbar);
 			toolbar.requestLayout();
 		}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlLabelProvider.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlLabelProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -161,7 +161,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		}
 		String name = EGaml.getInstance().getNameOf(ele);
 		if (name == null) {
-			final Expression expr = ((Statement) ele).getExpr();
+			final Expression expr = ele.getExpr();
 			if (expr != null) { name = EGaml.getInstance().getKeyOf(expr); }
 		}
 		if (name == null) {
@@ -175,6 +175,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 
 		}
 		String first = "Attribute ";
+		if (type.contains("file")) { type = "file"; }
 		if (Types.get(type) == Types.NO_TYPE) { first = Strings.capitalize(null, type) + " "; }
 
 		return first + (name == null ? "" : name)
@@ -329,7 +330,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 			}
 		}
 		if (var == null) return "_parameter.png";
-		return "_" + var + ".png";
+		return typeImage(var);
 	}
 
 	/**
@@ -339,7 +340,8 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the string
 	 * @return the string
 	 */
-	public String typeImage(final String string) {
+	public String typeImage(String string) {
+		if (string.contains("_file")) { string = "file"; }
 		return "_" + string + ".png";
 	}
 

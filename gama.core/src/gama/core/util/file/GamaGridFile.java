@@ -601,7 +601,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				records.y = new double[numRows * numCols]; // y
 				records.bands.add(new double[numRows * numCols]); // data
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
-					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n, IStatusMessage.DOWNLOAD_ICON);
+					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n);
 
 					final int yy = i / numCols;
 					final int xx = i - yy * numCols;

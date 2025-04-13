@@ -50,7 +50,7 @@ public interface IGamaIcons {
 	String BROWSER_HOME = "generic/menu.about";
 
 	/** The build all. */
-	String BUILD_ALL = "build/build.all";
+	String BUILD_ALL = "validation/compile.all";
 
 	/** The button back. */
 	String BUTTON_BACK = "overlays/small.exp.back.white";
@@ -449,25 +449,25 @@ public interface IGamaIcons {
 	String STATUS_CLOCK = "overlays/status.clock";
 
 	/** The test filter. */
-	String TEST_FILTER = "build/test.filter";
+	String TEST_FILTER = "validation/test.filter";
 
 	/** The test run. */
-	String TEST_RUN = "build/test.run";
+	String TEST_RUN = "validation/test.run";
 
 	/** The test sort. */
-	String TEST_SORT = "build/test.sort";
+	String TEST_SORT = "validation/test.sort";
 
 	/** The toggle antialias. */
 	String TOGGLE_ANTIALIAS = "display/toggle.antialias";
 
 	/** The toggle info. */
-	String TOGGLE_INFOS = "build/toggle.infos";
+	String TOGGLE_INFOS = "validation/toggle.infos";
 
 	/** The toggle overlay. */
 	String TOGGLE_OVERLAY = "display/toggle.overlay";
 
 	/** The toggle warnings. */
-	String TOGGLE_WARNINGS = "build/toggle.warnings";
+	String TOGGLE_WARNINGS = "validation/toggle.warnings";
 
 	// /** The toolbar hide. */
 	// String TOOLBAR_HIDE = "mini/toolbar.hide";
@@ -476,10 +476,10 @@ public interface IGamaIcons {
 	// String TOOLBAR_SHOW = "mini/toolbar.show";
 
 	/** The tree collapse. */
-	String TREE_COLLAPSE = "mini/tree.collapse";
+	String TREE_COLLAPSE = "toolbar/bar.collapse";
 
 	/** The tree expand. */
-	String TREE_EXPAND = "mini/tree.expand";
+	String TREE_EXPAND = "toolbar/bar.expand";
 
 	/** The tree sort. */
 	String TREE_SORT = "mini/tree.sort";

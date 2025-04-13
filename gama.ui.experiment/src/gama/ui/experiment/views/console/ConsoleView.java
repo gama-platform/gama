@@ -18,7 +18,6 @@ import java.util.HashMap;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.console.IOConsole;
@@ -183,9 +182,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 			} else if (maxMemorized == -1) { pauseBuffer.append(text); }
 			if (!indicated) {
 				WorkbenchHelper.run(() -> {
-					if (toolbar != null) {
-						toolbar.status((Image) null, "New contents available", IGamaColors.BLUE, false, SWT.LEFT);
-					}
+					if (toolbar != null) { toolbar.status(IGamaIcons.FILE_TEXT, "New contents available"); }
 					indicated = true;
 				});
 			}
@@ -222,10 +219,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	public void pauseChanged() {
 		if (paused) {
 			WorkbenchHelper.asyncRun(() -> {
-				if (toolbar != null) {
-					toolbar.wipe(SWT.LEFT, true, false);
-					// setExecutorAgent(GAMA.getExperiment().getAgent());
-				}
+				if (toolbar != null) { toolbar.wipe(SWT.LEFT, true); }
 				indicated = false;
 			});
 

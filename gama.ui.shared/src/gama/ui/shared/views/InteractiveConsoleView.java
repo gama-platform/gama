@@ -52,7 +52,6 @@ import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -358,8 +357,8 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		if (agent == null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true, false);
-					toolbar.setBackgroundColor(null);
+					toolbar.wipe(SWT.LEFT, true);
+					// toolbar.setBackgroundColor(null);
 					toolbar.update();
 					toolbar.requestLayout();
 				}
@@ -371,9 +370,9 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			}
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
-					toolbar.status(null, "Interacting with " + agent.getFamilyName() + " " + agent.getName(),
-							GamaColors.get(agent.getColor()), false, SWT.LEFT);
-					toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
+					toolbar.status(GamaIcon.nameForColor(agent.getColor(), false),
+							"Interacting with " + agent.getFamilyName() + " " + agent.getName());
+					// toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
 					toolbar.update();
 					toolbar.requestLayout();
 				}

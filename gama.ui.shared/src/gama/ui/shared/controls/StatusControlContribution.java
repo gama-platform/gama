@@ -27,6 +27,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import gama.core.common.IStatusMessage;
 import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessage;
+import gama.core.common.StatusMessageFactory;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -73,14 +74,14 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The inactive color. */
 	private GamaUIColor inactiveColor;
 
-	/** The progress. */
-	private double progress = 1d;
-
 	/** The show system events. */
 	boolean showSystemEvents = true;
 
 	/** The show view events. */
 	boolean showViewEvents = true;
+
+	/** The icon provider. */
+	StatusIconProvider iconProvider = new StatusIconProvider();
 
 	/**
 	 * Gets the single instance of ExperimentControlContribution.
@@ -147,8 +148,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
 				String name = job.getName();
 				if (isView ? !showViewEvents : !showSystemEvents) return;
-				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.CREATE(name, StatusType.REGULAR,
-						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON)));
+				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessageFactory.CUSTOM(name, StatusType.REGULAR,
+						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null)));
 			}
 
 			// private boolean intersect(final String s1, final String s2) {
@@ -257,7 +258,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
-	public void updateWith(final StatusMessage m) {
+	public void updateWith(final IStatusMessage m) {
 		if (isUpdating) return;
 		isUpdating = true;
 		try {
@@ -271,13 +272,13 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			} else {
 				taskCompletion = m.completion();
 				currentException = m.exception();
-				currentStatus = m.getType();
-				String icon = getIcon();
+				currentStatus = m.type();
+				String icon = iconProvider.getIcon();
 				label.setImageWithoutRecomputingSize(icon == null ? null : GamaIcon.named(icon).image());
 				// label.setColor(getLabelBackground(m));
 				label.setTextWithoutRecomputingSize(getLabelText(m));
 				if (currentStatus != StatusType.NONE) {
-					this.historyPopup.addEvent(m);
+					this.historyPopup.addStatus(m);
 					if (historyPopup.isVisible()) { historyPopup.display(); }
 				}
 			}
@@ -288,26 +289,13 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	}
 
 	/**
-	 * Gets the icon.
-	 *
-	 * @param icon
-	 *            the icon
-	 * @return the icon
-	 */
-	private String getIcon() {
-		if (progress > 6) { progress = 1; }
-		progress += 0.3;
-		return IStatusMessage.PROGRESS_ICON + Math.round(progress);
-	}
-
-	/**
 	 * Gets the label text.
 	 *
 	 * @param m
 	 *            the m
 	 * @return the label text
 	 */
-	private String getLabelText(final StatusMessage m) {
+	private String getLabelText(final IStatusMessage m) {
 		String taskName = m.message();
 		if (taskName == null) { taskName = ""; }
 		return taskName + (taskCompletion != null ? " [" + (int) (taskCompletion * 100) + "%]" : "");

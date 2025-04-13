@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -570,6 +570,11 @@ public interface IGui {
 	default IGamaView.Test openTestView(final IScope scope, final boolean remainOpen) {
 		return null;
 	}
+
+	/**
+	 * @param scope
+	 */
+	default void displayTestsProgress(final IScope scope, final int number, final int total) {}
 
 	/**
 	 * Display tests results.

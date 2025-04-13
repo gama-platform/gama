@@ -36,7 +36,6 @@ import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
-import gama.ui.shared.views.toolbar.GamaToolbarFactory.ToggleAction;
 
 /**
  * Class GamaToolbar. A declarative wrapper around 2 toolbars (left, right).
@@ -59,6 +58,9 @@ public class GamaToolbar2 extends Composite {
 
 	/** The is visible. */
 	boolean isVisible = true;
+
+	/** The status. */
+	ToolItem status;
 
 	/**
 	 * Instantiates a new gama toolbar 2.
@@ -185,12 +187,24 @@ public class GamaToolbar2 extends Composite {
 	 *            the side
 	 * @return the tool item
 	 */
-	public ToolItem status(final Image image, final String s, final GamaUIColor color,
-			final boolean disposePreviousImage, final int side /* SWT.LEFT or SWT.RIGHT */) {
-		wipe(side, true, disposePreviousImage);
-		final var item = button(color, s, image, side);
-		getToolbar(side).requestLayout();
-		return item;
+
+	public ToolItem status(final String image, final String s) {
+		return status(image, s, null);
+	}
+
+	/**
+	 * Status.
+	 *
+	 * @param image
+	 *            the image
+	 * @param s
+	 *            the s
+	 * @param color
+	 *            the color
+	 * @return the tool item
+	 */
+	public ToolItem status(final String image, final String s, final GamaUIColor color) {
+		return status(image, s, null, color);
 	}
 
 	/**
@@ -208,13 +222,25 @@ public class GamaToolbar2 extends Composite {
 	 *            the side
 	 * @return the tool item
 	 */
-	public ToolItem status(final Image image, final String s, final Selector l, final GamaUIColor color,
-			final boolean disposePreviousImage, final int side /* SWT.LEFT or SWT.RIGHT */) {
-		wipe(side, true, disposePreviousImage);
-		final var item = button(color, s, image, side);
-		((FlatButton) item.getControl()).addSelectionListener(l);
+	public ToolItem status(final String image, final String s, final Selector l, final GamaUIColor color) {
+		wipe(SWT.LEFT, true);
+		Image im = image == null ? null : GamaIcon.named(image).image();
+		status = button(color, s, im, SWT.LEFT);
+		if (l != null) { ((FlatButton) status.getControl()).addSelectionListener(l); }
 		requestLayout();
-		return item;
+		return status;
+	}
+
+	/**
+	 * Update image.
+	 *
+	 * @param image
+	 *            the image
+	 */
+	public void updateStatusImage(final String image) {
+		if (status == null) return;
+		FlatButton button = (FlatButton) status.getControl();
+		button.setImageWithoutRecomputingSize(GamaIcon.named(image).image());
 	}
 
 	/**
@@ -233,7 +259,7 @@ public class GamaToolbar2 extends Composite {
 		if (s == null) return null;
 		hasTooltip = true;
 		final var tb = getToolbar(side);
-		wipe(side, false, false);
+		wipe(side, false);
 		final var other = tb == right ? left : right;
 		final var mySize = getSize().x;
 		final var remainingLeftSize = tb.getSize().x;
@@ -295,7 +321,7 @@ public class GamaToolbar2 extends Composite {
 	 * @return the tool item
 	 */
 	public ToolItem check(final GamaCommand command, final int side) {
-		return check(command.getImage(), command.getText(), command.getTooltip(), command.getListener(), side);
+		return check(command.image(), command.text(), command.tooltip(), command.runner(), side);
 	}
 
 	/**
@@ -328,7 +354,7 @@ public class GamaToolbar2 extends Composite {
 	 * @return the tool item
 	 */
 	public ToolItem button(final GamaCommand command, final int side) {
-		return button(command.getImage(), command.getText(), command.getTooltip(), command.getListener(), side);
+		return button(command.image(), command.text(), command.tooltip(), command.runner(), side);
 	}
 
 	/**
@@ -476,16 +502,12 @@ public class GamaToolbar2 extends Composite {
 	 * @param includingToolItems
 	 * @return
 	 */
-	public void wipe(final int side /* SWT.LEFT or SWT.RIGHT */, final boolean includingToolItems,
-			final boolean disposePreviousImage) {
+	public void wipe(final int side /* SWT.LEFT or SWT.RIGHT */, final boolean includingToolItems) {
 		final var items = getToolbar(side).getItems();
 		for (final ToolItem t : items) {
 			final Control c = t.getControl();
 			if (c == null && includingToolItems || c != null) {
-				if (c != null) {
-					if (c instanceof FlatButton fb && disposePreviousImage) { fb.disposeImage(); }
-					c.dispose();
-				}
+				if (c != null && !c.isDisposed()) { c.dispose(); }
 				t.dispose();
 			}
 		}
@@ -592,23 +614,23 @@ public class GamaToolbar2 extends Composite {
 		return hasTooltip;
 	}
 
-	/** The toggle. */
-	private ToggleAction toggle;
-
 	/**
-	 * Sets the toogle action.
-	 *
-	 * @param toggle
-	 *            the new toogle action
+	 * Toggle.
 	 */
-	public void setToogleAction(final ToggleAction toggle) { this.toggle = toggle; }
+	private void toggle() {
+		final boolean show = !isVisible();
+		setVisible(show);
+		((GridData) getLayoutData()).exclude = !show;
+		getParent().setVisible(show);
+		getParent().getParent().layout();
+	}
 
 	/**
 	 * Hide.
 	 */
 	public void hide() {
 		isVisible = true; // force to true
-		toggle.run(); // will make it false
+		toggle(); // will make it false
 	}
 
 	/**
@@ -616,7 +638,7 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public void show() {
 		isVisible = false; // force to false
-		toggle.run(); // will make it true
+		toggle(); // will make it true
 	}
 
 	/**
@@ -651,5 +673,10 @@ public class GamaToolbar2 extends Composite {
 		item.setSelection(selected);
 		checkSelectionIcon(item);
 	}
+
+	/**
+	 * @return
+	 */
+	public ToolItem getStatus() { return null; }
 
 }

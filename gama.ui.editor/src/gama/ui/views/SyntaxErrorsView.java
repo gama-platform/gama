@@ -23,11 +23,11 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISources;
@@ -41,7 +41,6 @@ import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterCh
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.ValidationContext;
 import gama.ui.shared.commands.TestsRunner;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
@@ -53,7 +52,7 @@ import gaml.compiler.gaml.validation.GamlResourceValidator;
 /**
  * The Class SyntaxErrorsView.
  */
-public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecoratedView {
+public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecoratedView.Expandable {
 
 	static {
 		DEBUG.ON();
@@ -83,8 +82,13 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 
 	@Override
 	public void createPartControl(final Composite compo) {
+
 		this.parent = GamaToolbarFactory.createToolbars(this, compo);
 		super.createPartControl(parent);
+		final IToolBarManager tb = getViewSite().getActionBars().getToolBarManager();
+		tb.removeAll();
+		tb.update(true);
+
 		MarkersTreeViewer viewer = this.getAdapter(MarkersTreeViewer.class);
 		viewer.addFilter(new ViewerFilter() {
 
@@ -151,7 +155,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 
 	@Override
 	protected void setContentDescription(final String description) {
-		toolbar.status((Image) null, description, e -> openFilterDialog(), IGamaColors.BLUE, false, SWT.LEFT);
+		toolbar.status("navigator/status.info", description, e -> openFilterDialog(), null);
 	}
 
 	@Override
@@ -216,5 +220,21 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		} catch (InvocationTargetException | InterruptedException e1) {
 			e1.printStackTrace();
 		}
+	}
+
+	/**
+	 * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView.Expandable#expandAll()
+	 */
+	@Override
+	public void expandAll() {
+		getAdapter(MarkersTreeViewer.class).expandAll();
+	}
+
+	/**
+	 * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView.Expandable#collapseAll()
+	 */
+	@Override
+	public void collapseAll() {
+		getAdapter(MarkersTreeViewer.class).collapseAll();
 	}
 }

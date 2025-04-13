@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -18,6 +19,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -132,6 +134,32 @@ public class WorkbenchHelper {
 		final Display d = getDisplay();
 		if (d != null && !d.isDisposed()) {
 			d.asyncExec(r);
+		} else {
+			r.run();
+		}
+	}
+
+	/**
+	 * Async run forever every 'repeatEvery' milliseconds until 'stop' becomes false
+	 *
+	 * @param r
+	 *            the r
+	 * @param repeatEvery
+	 *            the repeat every
+	 */
+	public static void asyncRun(final Runnable r, final int repeatEvery, final Callable<Boolean> stop) {
+		final Display d = getDisplay();
+		if (d != null && !d.isDisposed()) {
+			d.asyncExec(() -> {
+				d.timerExec(repeatEvery, () -> {
+					r.run();
+					try {
+						if (!stop.call()) { asyncRun(r, repeatEvery, stop); }
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+			});
 		} else {
 			r.run();
 		}
@@ -307,6 +335,26 @@ public class WorkbenchHelper {
 	 */
 	public static Rectangle displaySizeOf(final Control composite) {
 		return run(() -> getDisplay().map(composite, null, composite.getBounds()));
+	}
+
+	/**
+	 * Run command.
+	 *
+	 * @param string
+	 *            the string
+	 * @param parameters
+	 *            the parameters
+	 * @return true, if successful
+	 */
+	public static Object runCommand(final String string, final Map parameters) {
+		try {
+			final Command c = getCommand(string);
+			final IHandlerService handlerService = getService(IHandlerService.class);
+			ParameterizedCommand pc = ParameterizedCommand.generateCommand(c, parameters);
+			return handlerService.executeCommand(pc, null);
+		} catch (final ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+			return null;
+		}
 	}
 
 	/**

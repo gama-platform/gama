@@ -54,7 +54,6 @@ import gama.ui.navigator.view.contents.WrappedContainer;
 import gama.ui.navigator.view.contents.WrappedFile;
 import gama.ui.navigator.view.contents.WrappedResource;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
-import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
@@ -73,7 +72,7 @@ public class GamaNavigator extends CommonNavigator
 	IAction link;
 
 	/** The link item. */
-	ToolItem linkItem;
+	ToolItem linkItem, sortItem;
 
 	/** The parent. */
 	protected Composite parent;
@@ -104,18 +103,12 @@ public class GamaNavigator extends CommonNavigator
 		for (final IContributionItem item : tb.getItems()) {
 			if (item instanceof ActionContributionItem aci) {
 				final IAction action = aci.getAction();
-				if (action instanceof LinkEditorAction) {
-					link = action;
-					tb.remove(aci);
-				} else if (action instanceof org.eclipse.ui.internal.navigator.actions.CollapseAllAction) {
-					tb.remove(aci);
-				}
-
+				if (action instanceof LinkEditorAction) { link = action; }
 			}
 		}
 		linkItem.setSelection(link.isChecked());
+		tb.removeAll();
 		tb.update(true);
-		// tb.insertBefore("toolbar.toggle", byDate.toCheckAction());
 
 		try {
 			final IDecoratorManager mgr = PlatformUI.getWorkbench().getDecoratorManager();
@@ -249,19 +242,17 @@ public class GamaNavigator extends CommonNavigator
 	}
 
 	/** The by date. */
-	final GamaCommand byDate = new GamaCommand(IGamaIcons.TREE_SORT, "", "Sort by modification date", trigger -> {
-		final boolean enabled = ((ToolItem) trigger.widget).getSelection();
+	final GamaCommand byDate = new GamaCommand(IGamaIcons.LEXICAL_SORT, "", "Sort by modification date", trigger -> {
+		final boolean lexicalEnabled = sortItem.getSelection();
 
 		try {
 			final IDecoratorManager mgr = PlatformUI.getWorkbench().getDecoratorManager();
-			mgr.setEnabled("gama.ui.application.date.decorator", enabled);
+			mgr.setEnabled("gama.ui.application.date.decorator", !lexicalEnabled);
 		} catch (final CoreException e) {
 			e.printStackTrace();
 		}
-
+		FileFolderSorter.BY_DATE = !lexicalEnabled;
 		getCommonViewer().refresh();
-		FileFolderSorter.BY_DATE = enabled;
-
 	});
 
 	/** The link command. */
@@ -286,7 +277,10 @@ public class GamaNavigator extends CommonNavigator
 			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
 			tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
 		}
+		sortItem = tb.check(byDate, SWT.RIGHT);
+		sortItem.setSelection(true);
 		linkItem = tb.check(linkCommand, SWT.RIGHT);
+
 	}
 
 	/**
@@ -319,8 +313,7 @@ public class GamaNavigator extends CommonNavigator
 		// final Image image = element.getStatusImage();
 		// final GamaUIColor color = element.getStatusColor();
 		final Selector l = e -> properties.run();
-		final ToolItem t =
-				toolbar.status(GamaIcon.named("navigator/status.info").image(), message, l, null, false, SWT.LEFT);
+		final ToolItem t = toolbar.status("navigator/status.info", message, l, null);
 		t.getControl().setToolTipText(tooltip == null ? message : tooltip);
 		toolbar.getToolbar(SWT.LEFT).update();
 	}

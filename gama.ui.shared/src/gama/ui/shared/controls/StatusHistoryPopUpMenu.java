@@ -32,17 +32,19 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
 
+import gama.core.common.IStatusMessage;
 import gama.core.common.StatusMessage;
+import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.ui.shared.views.toolbar.GamaCommand;
 
 /**
  * The Class CustomMenu. An alternative to Popup & Regular menus
@@ -118,17 +120,11 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	/** The contents. */
 	Composite parent, contents;
 
-	/** The toolbar composite. */
-	// Composite toolbarComposite;
-
-	/** The toolbar. */
-	// ToolBar toolbar;
-
 	/** The labels. */
 	List<Composite> labels = new CopyOnWriteArrayList<>();
 
 	/** The labels. */
-	List<StatusMessage> events = new BoundedList<>(10);
+	List<IStatusMessage> events = new BoundedList<>(10);
 
 	/** The hide. */
 	final Listener hide = event -> hide();
@@ -187,12 +183,12 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 		int size = events.size();
 		for (int i = 0; i < size; i++) {
 			try {
-				StatusMessage command = events.get(i);
+				IStatusMessage command = events.get(i);
 				Composite labelComposite = getOrCreateLabel(i);
 				final Label image = (Label) labelComposite.getChildren()[1];
 				final Label time = (Label) labelComposite.getChildren()[0];
 				final Label label = (Label) labelComposite.getChildren()[2];
-				time.setText(sdf.format(new Date(command.time())));
+				time.setText(sdf.format(new Date(command.timeStamp())));
 				image.setImage(GamaIcon.named(command.icon()).image());
 				labelComposite.setData(command);
 				label.setText(GamlIdiomsProvider.toText(command.message()));
@@ -278,7 +274,14 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 				@Override
 				public void mouseDown(final MouseEvent e) {
 					hide();
-					((GamaCommand) labelText.getData()).getListener().widgetSelected(null);
+					StatusMessage message = (StatusMessage) labelText.getData();
+					if (message.isError()) {
+						GAMA.getGui().editModel(message.exception().getEditorContext());
+					} else {
+						GAMA.getGui().showView(null, "org.eclipse.ui.views.ProgressView", null,
+								IWorkbenchPage.VIEW_ACTIVATE);
+					}
+
 				}
 
 			});
@@ -405,12 +408,12 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	/**
 	 * @param gamaCommand
 	 */
-	public void addEvent(final StatusMessage gc) {
+	public void addStatus(final IStatusMessage gc) {
 		String msg = gc.message();
 		if (Strings.isNullOrEmpty(msg)) return;
-		Iterator<StatusMessage> iterator = events.iterator();
+		Iterator<IStatusMessage> iterator = events.iterator();
 		while (iterator.hasNext()) {
-			StatusMessage event = iterator.next();
+			IStatusMessage event = iterator.next();
 			if (msg.equals(event.message())) {
 				iterator.remove();
 				break;

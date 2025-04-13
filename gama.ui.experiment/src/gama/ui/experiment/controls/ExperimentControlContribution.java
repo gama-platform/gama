@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.kernel.experiment.IExperimentAgent;
@@ -192,7 +192,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
-	public void updateWith(final StatusMessage m) {
+	public void updateWith(final IStatusMessage m) {
 		if (isUpdating) return;
 		try {
 			isUpdating = true;

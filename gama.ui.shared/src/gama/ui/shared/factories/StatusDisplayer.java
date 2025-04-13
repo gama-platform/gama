@@ -17,7 +17,7 @@ import org.eclipse.ui.progress.UIJob;
 
 import gama.core.common.IStatusMessage;
 import gama.core.common.IStatusMessage.StatusType;
-import gama.core.common.StatusMessage;
+import gama.core.common.StatusMessageFactory;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -66,7 +66,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
 			if (experimentControl.isDisposed()) return Status.CANCEL_STATUS;
-			experimentControl.updateWith(StatusMessage.EXPERIMENT());
+			experimentControl.updateWith(StatusMessageFactory.EXPERIMENT());
 			return Status.OK_STATUS;
 		}
 
@@ -78,7 +78,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	private class StatusRefresher extends UIJob {
 
 		/** The message. */
-		StatusMessage message = null;
+		IStatusMessage message = null;
 
 		/**
 		 * Instantiates a new threaded updater.
@@ -99,7 +99,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 * @param m
 		 *            the m
 		 */
-		public void updateWith(final StatusMessage m) {
+		public void updateWith(final IStatusMessage m) {
 			message = m;
 			if (m != null) { schedule(); }
 		}
@@ -176,7 +176,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void errorStatus(final GamaRuntimeException error) {
-		statusRefresher.updateWith(StatusMessage.ERROR(error));
+		statusRefresher.updateWith(StatusMessageFactory.ERROR(error));
 	}
 
 	/**
@@ -190,7 +190,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 *            the icon
 	 */
 	private void setStatus(final String msg, final StatusType code, final String icon) {
-		statusRefresher.updateWith(StatusMessage.CREATE(msg, code, icon));
+		statusRefresher.updateWith(StatusMessageFactory.CUSTOM(msg, code, icon, null));
 	}
 
 	/**
@@ -202,8 +202,8 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void setTaskCompletion(final String name, final double s, final String icon) {
-		statusRefresher.updateWith(StatusMessage.COMPLETION(name, s, icon));
+	public void setTaskCompletion(final String name, final Double s) {
+		statusRefresher.updateWith(StatusMessageFactory.COMPLETION(name, s));
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		if (message == null) {
 			// resetStatus();
 		} else {
-			statusRefresher.updateWith(StatusMessage.CUSTOM(message, StatusType.REGULAR, icon, color));
+			statusRefresher.updateWith(StatusMessageFactory.CUSTOM(message, StatusType.REGULAR, icon, color));
 		}
 
 	}

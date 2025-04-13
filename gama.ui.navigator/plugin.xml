@@ -81,7 +81,7 @@
       <decorator
             adaptable="true"
             class="gama.ui.navigator.view.NavigatorDateLighweightDecorator"
-            id="gama.application.date.decorator"
+            id="gama.ui.application.date.decorator"
             label="Date Decorator"
             lightweight="true"
             state="false">

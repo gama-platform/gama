@@ -687,7 +687,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				int i = 0;
 				while (reader.readRecord()) {
 					percentage = reader.getCurrentRecord() / userSize.y;
-					scope.getGui().getStatus().setTaskCompletion(task, percentage, IStatusMessage.DOWNLOAD_ICON);
+					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
 						m[i++] = Cast.asInt(scope, s);
@@ -704,7 +704,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				int i = 0;
 				while (reader.readRecord()) {
 					percentage = reader.getCurrentRecord() / userSize.y;
-					scope.getGui().getStatus().setTaskCompletion(task, percentage, IStatusMessage.DOWNLOAD_ICON);
+					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
 						m[i++] = Cast.asFloat(scope, s);
@@ -721,7 +721,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				int i = 0;
 				while (reader.readRecord()) {
 					percentage = reader.getCurrentRecord() / userSize.y;
-					scope.getGui().getStatus().setTaskCompletion(task, percentage, IStatusMessage.DOWNLOAD_ICON);
+					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 
 					for (final String s : reader.getValues()) {

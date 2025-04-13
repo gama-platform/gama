@@ -5,8 +5,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
-            contributorClass="gama.ui.editor.GamlEditorActionContributor"
-            default="true"
+	            default="true"
             extensions="gaml,experiment"
             icon="platform:/plugin/gama.ui.shared/icons/navigator/files/file.model.png"
             id="gaml.compiler.Gaml"
@@ -48,36 +47,11 @@
 		</page>
 		<page
 			category="gaml.compiler.Gaml"
-			class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
-			id="gaml.compiler.Gaml.coloring"
-			name="Syntax Coloring">
-			<keywordReference id="gaml.compiler.ui.keyword_Gaml"/>
-		</page>
-		<page
-			category="gaml.compiler.Gaml"
 			class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
 			id="gaml.compiler.Gaml.templates"
 			name="Templates">
 			<keywordReference id="gaml.compiler.ui.keyword_Gaml"/>
 		</page>
-  <page
-        category="gaml.compiler.Gaml"
-        class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-        id="gaml.compiler.Gaml.compiler.preferencePage"
-        name="Compiler">
-     <keywordReference
-           id="gaml.compiler.ui.keyword_Gaml">
-     </keywordReference>
-  </page>
-  <page
-        category="gaml.compiler.Gaml"
-        class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
-        id="gaml.compiler.Gaml.refactoring"
-        name="Refactoring">
-     <keywordReference
-           id="gaml.compiler.ui.keyword_Gaml">
-     </keywordReference>
-  </page>
 	</extension>
 	<extension
 			point="org.eclipse.ui.propertyPages">
@@ -131,31 +105,6 @@
        </activeWhen>
     </handler>
     <handler
-          class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
-          commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName">
-       <activeWhen>
-          <reference
-                definitionId="gaml.compiler.Gaml.Editor.opened">
-          </reference>
-       </activeWhen>
-    </handler>
-    <handler
-          class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
-          commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName">
-       <activeWhen>
-          <and>
-             <reference
-                   definitionId="gaml.compiler.Gaml.XtextEditor.opened">
-             </reference>
-             <iterate>
-                <adapt
-                      type="org.eclipse.xtext.ui.editor.outline.IOutlineNode">
-                </adapt>
-             </iterate>
-          </and>
-       </activeWhen>
-    </handler>
-    <handler
           class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
           commandId="org.eclipse.xtext.ui.editor.FindReferences">
        <activeWhen>
@@ -167,15 +116,6 @@
     <handler
           class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
           commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline">
-       <activeWhen>
-          <reference
-                definitionId="gaml.compiler.Gaml.Editor.opened">
-          </reference>
-       </activeWhen>
-    </handler>
-    <handler
-          class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
-          commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand">
        <activeWhen>
           <reference
                 definitionId="gaml.compiler.Gaml.Editor.opened">
@@ -243,18 +183,6 @@
 			name="Validate">
 		</command>
 		<!-- copy qualified name -->
-		<command
-			id="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
-			categoryId="org.eclipse.ui.category.edit"
-			description="Copy the qualified name for the selected element"
-			name="Copy Qualified Name">
-		</command>
-		<command
-			id="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName"
-			categoryId="org.eclipse.ui.category.edit"
-			description="Copy the qualified name for the selected element"
-			name="Copy Qualified Name">
-		</command>
   <command
         description="Open the quick outline."
         id="org.eclipse.xtext.ui.editor.outline.QuickOutline"
@@ -268,55 +196,16 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.menus">
-		<menuContribution
-			locationURI="popup:#TextEditorContext?after=group.edit">
-			 <command
-				 commandId="gaml.compiler.Gaml.validate"
-				 style="push"
-				 tooltip="Trigger expensive validation">
-			<visibleWhen checkEnabled="false">
-				<reference
-					definitionId="gaml.compiler.Gaml.Editor.opened">
-				</reference>
-			</visibleWhen>
-		</command>
-		</menuContribution>
 		<!-- copy qualified name -->
-  <menuContribution
-        locationURI="popup:#TextEditorContext?endof=group.find">
-     <command
-           commandId="org.eclipse.xtext.ui.editor.FindReferences">
-        <visibleWhen
-              checkEnabled="false">
-           <reference
-                 definitionId="gaml.compiler.Gaml.Editor.opened">
-           </reference>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-  <menuContribution
-        allPopups="false"
-        locationURI="menu:org.eclipse.ui.main.menu">
-     <dynamic
-           class="gama.ui.editor.EditorMenu"
-           id="gama.ui.modeling.dynamic5">
-        <visibleWhen
-              checkEnabled="false">
-           <reference
-                 definitionId="gaml.compiler.Gaml.Editor.opened">
-           </reference>
-        </visibleWhen>
-     </dynamic>
-  </menuContribution>
   <menuContribution
         allPopups="false"
         locationURI="menu:file?before=save.ext">
      <command
            commandId="ummisco.command.clean.build"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/build/build.all_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/build/build.all.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/validation/compile.all_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/validation/compile.all.png"
            label="Clean and Validate All"
-           style="push">
+           style="push"> 
         <visibleWhen
               checkEnabled="true">
         </visibleWhen>
@@ -325,7 +214,74 @@
   <menuContribution
         locationURI="popup:#TextEditorContext?after=group.edit">
      <command
+           commandId="org.eclipse.xtext.ui.editor.FindReferences"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/editor/find.references_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/editor/find.references.png">
+        <visibleWhen
+              checkEnabled="false">
+           <reference
+                 definitionId="gaml.compiler.Gaml.Editor.opened">
+           </reference>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/editor/open.declaration_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/editor/open.declaration.png"
+           id="xtext.ui.openDeclaration"
+           style="push">
+        <visibleWhen
+              checkEnabled="false">
+           <reference
+                 definitionId="isActiveEditorAnInstanceOfXtextEditor">
+           </reference>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/editor/content.assist_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/editor/content.assist.png"
+           style="push">
+        <visibleWhen
+              checkEnabled="false">
+           <reference
+                 definitionId="isActiveEditorAnInstanceOfXtextEditor">
+           </reference>
+        </visibleWhen>
+     </command>
+     <separator
+           name="gama.ui.editor.separator2"
+           visible="true">
+     </separator>
+     <command
+           commandId="org.eclipse.xtext.ui.ToggleCommentAction"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/editor/toggle.comment_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/editor/toggle.comment.png"
+           label="Toggle Comments"
+           style="push">
+        <visibleWhen
+              checkEnabled="false">
+           <reference
+                 definitionId="isActiveEditorAnInstanceOfXtextEditor">
+           </reference>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="org.eclipse.xtext.ui.FormatAction"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/editor/command.format_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/editor/command.format.png"
+           style="push">
+        <visibleWhen
+              checkEnabled="false">
+           <reference
+                 definitionId="isActiveEditorAnInstanceOfXtextEditor">
+           </reference>
+        </visibleWhen>
+     </command>
+     <command
            commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons/navigator/file.rename_disabled.png"
+           icon="platform:/plugin/gama.ui.shared/icons/navigator/file.rename.png"
            style="push">
         <visibleWhen
               checkEnabled="false">
@@ -334,6 +290,10 @@
            </reference>
         </visibleWhen>
      </command>
+     <separator
+           name="gama.ui.editor.separator1"
+           visible="true">
+     </separator>
   </menuContribution>
 	</extension>
 
@@ -861,6 +821,17 @@
            platform="cocoa"
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            sequence="M4+SHIFT+SPACE">
+     </key>
+     <key
+           commandId="org.eclipse.xtext.ui.ToggleCommentAction"
+           contextId="org.eclipse.xtext.ui.XtextEditorScope"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           sequence="M1+/">
+     </key>
+     <key
+           contextId="org.eclipse.xtext.ui.XtextEditorScope"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           sequence="M1+7">
      </key>
   </extension>
 </plugin>

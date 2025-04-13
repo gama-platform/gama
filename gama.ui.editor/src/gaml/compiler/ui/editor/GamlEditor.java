@@ -15,7 +15,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
@@ -23,8 +25,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -81,6 +85,8 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
@@ -88,13 +94,11 @@ import org.eclipse.ui.internal.texteditor.LineNumberColumn;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.XtextUIMessages;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.editor.XtextSourceViewerConfiguration;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
-import org.eclipse.xtext.ui.editor.outline.quickoutline.QuickOutlinePopup;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionProvider;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration;
 import org.eclipse.xtext.ui.editor.templates.XtextTemplateContextType;
@@ -104,13 +108,10 @@ import org.eclipse.xtext.ui.editor.validation.MarkerIssueProcessor;
 import org.eclipse.xtext.ui.editor.validation.ValidationJob;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.validation.MarkerTypeProvider;
-import org.eclipse.xtext.util.CancelIndicator;
-import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
-import com.google.common.collect.ObjectArrays;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -134,6 +135,7 @@ import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.utils.CleanupHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
@@ -145,10 +147,13 @@ import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
-import gaml.compiler.ui.editor.toolbar.GamlQuickOutlinePopup;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.OpenImportedErrorSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
+import gaml.compiler.ui.reference.BuiltinReferenceMenu;
+import gaml.compiler.ui.reference.ColorReferenceMenu;
+import gaml.compiler.ui.reference.OperatorsReferenceMenu;
+import gaml.compiler.ui.reference.TemplateReferenceMenu;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 
@@ -167,7 +172,7 @@ import gaml.compiler.ui.templates.GamlTemplateStore;
 public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IToolbarDecoratedView {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The preference store. */
@@ -372,28 +377,17 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public GamlEditTemplateDialogFactory getTemplateFactory() { return templateDialogFactory; }
 
 	/**
-	 * Sets the show other enabled.
-	 *
-	 * @param showOtherEnabled
-	 *            the new show other enabled
-	 */
-	public void setShowOtherEnabled(final boolean showOtherEnabled) {
-		buildRightToolbar();
-	}
-
-	/**
 	 * Builds the right toolbar.
 	 */
 	private void buildRightToolbar() {
-		toolbar.wipe(SWT.LEFT, true, false);
+		toolbar.wipe(SWT.LEFT, false);
+
 		final var t = toolbar.button(IGamaColors.NEUTRAL, "Waiting...", GamaIcon.named(IGamaIcons.STATUS_CLOCK).image(),
 				null, SWT.LEFT);
 		toolbar.sep(4, SWT.LEFT);
 		findControl = new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
 		fakeButton = FlatButton.button(toolbar.getToolbar(SWT.LEFT), IGamaColors.OK, "", images.get(IKeyword.BATCH));
 		fakeButton.setVisible(false);
-
-		// toolbar.sep(4, SWT.RIGHT);
 		toolbar.requestLayout();
 	}
 
@@ -564,7 +558,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
-				toolbar.wipe(SWT.LEFT, true, false);
+				toolbar.wipe(SWT.LEFT, true);
+				// toolbar.getToolbar(SWT.LEFT).button("editor/command.outline", null, "Show outline",
+				// e -> { openOutlinePopup(); });
 
 				final var c = state.getColor();
 				var msg = state.getStatus();
@@ -835,13 +831,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		sv.setSelectedRange(p.x, p.y);
 	}
 
-	@Override
-	protected String[] collectContextMenuPreferencePages() {
-		final var commonPages = super.collectContextMenuPreferencePages();
-		final String[] langSpecificPages = { "pm.eclipse.editbox.pref.default" };
-		return ObjectArrays.concat(langSpecificPages, commonPages, String.class);
-	}
-
 	/**
 	 * @return
 	 */
@@ -950,16 +939,27 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Open outline popup.
 	 */
 	public void openOutlinePopup() {
-
-		getDocument().readOnly(new CancelableUnitOfWork<Object, XtextResource>() {
-
-			@Override
-			public Object exec(final XtextResource state, final CancelIndicator c) throws Exception {
-				final QuickOutlinePopup popup = new GamlQuickOutlinePopup(GamlEditor.this, toolbar);
-				injector.injectMembers(popup);
-				return popup.open();
+		try {
+			IViewPart part = WorkbenchHelper.getPage().findView("gama.ui.application.view.outline");
+			if (part == null) {
+				WorkbenchHelper.getPage().showView("gama.ui.application.view.outline");
+			} else {
+				WorkbenchHelper.getPage().hideView(part);
 			}
-		});
+
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+
+		// getDocument().readOnly(new CancelableUnitOfWork<Object, XtextResource>() {
+		//
+		// @Override
+		// public Object exec(final XtextResource state, final CancelIndicator c) throws Exception {
+		// final QuickOutlinePopup popup = new GamlQuickOutlinePopup(GamlEditor.this, toolbar);
+		// injector.injectMembers(popup);
+		// return popup.open();
+		// }
+		// });
 
 	}
 
@@ -1125,6 +1125,56 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			styledText.setFont(font);
 			if (getVerticalRuler() instanceof IVerticalRulerExtension e) { e.setFont(font); }
 		}
+	}
+
+	/** The to remove. */
+	Set<String> toRemove = Set.of("revert", "save", "Preferences.ContextAction", "QuickAssist", "Open W&ith",
+			"Sho&w In	⌥⌘W", "group.open");
+
+	@Override
+	protected void editorContextMenuAboutToShow(final IMenuManager menu) {
+		super.editorContextMenuAboutToShow(menu);
+		for (IContributionItem item : menu.getItems()) {
+			if (item == null) { continue; }
+			if (item instanceof MenuManager mm) { DEBUG.OUT(" --> \"" + mm.getMenuText() + "\""); }
+			if (item instanceof MenuManager mmmm && toRemove.contains(mmmm.getMenuText())
+					|| item.getId() != null && toRemove.contains(item.getId())) {
+				menu.remove(item);
+				continue;
+			}
+			DEBUG.OUT("Item " + item);
+			CleanupHelper.RearrangeMenus.changeIcon(menu, item, item.getId());
+		}
+		menu.add(new Separator());
+		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
+		menu.add(new InternalMenuManager(parent -> new BuiltinReferenceMenu().installSubMenuIn(parent)));
+		menu.add(new InternalMenuManager(parent -> new OperatorsReferenceMenu().installSubMenuIn(parent)));
+		menu.add(new InternalMenuManager(parent -> new ColorReferenceMenu().installSubMenuIn(parent)));
+
+	}
+
+	/**
+	 * The Class InternalMenuManager.
+	 */
+	class InternalMenuManager extends MenuManager {
+
+		/** The fill. */
+		final Consumer<Menu> fill;
+
+		/**
+		 * Instantiates a new internal menu manager.
+		 */
+		InternalMenuManager(final Consumer<Menu> fill) {
+			this.fill = fill;
+			setRemoveAllWhenShown(true);
+			setVisible(true);
+		}
+
+		@Override
+		public void fill(final Menu parent, final int index) {
+			fill.accept(parent);
+		}
+
 	}
 
 }

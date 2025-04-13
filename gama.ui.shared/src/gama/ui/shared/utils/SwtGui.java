@@ -179,6 +179,18 @@ public class SwtGui implements IGui {
 		return v;
 	}
 
+	/**
+	 * Display tests progress.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	@Override
+	public void displayTestsProgress(final IScope scope, final int number, final int total) {
+		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		if (v != null) { v.displayProgress(number, total); }
+	}
+
 	@Override
 	public void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {
 		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
