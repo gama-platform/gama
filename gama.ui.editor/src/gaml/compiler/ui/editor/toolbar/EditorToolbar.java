@@ -252,15 +252,6 @@ public class EditorToolbar {
 		}
 	}
 
-	/**
-	 * Gets the importers.
-	 *
-	 * @param editor
-	 *            the editor
-	 * @return the importers
-	 */
-	private Set<URI> getImporters() { return new HashSet<>(); }
-
 	/** The Constant UsedInAdapter. */
 	private static final SelectionAdapter UsedInAdapter = new SelectionAdapter() {
 

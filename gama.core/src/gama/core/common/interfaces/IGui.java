@@ -151,6 +151,18 @@ public interface IGui {
 	/** The user control view id. */
 	String USER_CONTROL_VIEW_ID = "gama.ui.application.view.userControlView";
 
+	/** The outline view id. */
+	String OUTLINE_VIEW_ID = "gama.ui.application.view.outline";
+
+	/** The validation view id. */
+	String VALIDATION_VIEW_ID = "gama.ui.application.view.problems";
+
+	/** The template view id. */
+	String TEMPLATE_VIEW_ID = "gama.ui.application.view.templates";
+
+	/** The minimap view id. */
+	String MINIMAP_VIEW_ID = "gama.ui.application.view.minimap";
+
 	/** The perspective modeling id. */
 	String PERSPECTIVE_MODELING_ID = "gama.ui.application.perspectives.ModelingPerspective";
 

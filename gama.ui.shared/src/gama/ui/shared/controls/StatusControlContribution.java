@@ -145,7 +145,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			final Set<String> uselessJobs = Set.of("Animation start", "Decoration Calculation",
 					"Update Capability Enablement for Natures", "Status refresh", "Update for Decoration Completion",
 					"Change cursor", "Searching for local changes", "Hooking to commands", "Update Job",
-					"Check for workspace changes");
+					"Check for workspace changes", "Refreshing view", "Mark Occurrences", "XtextReconcilerJob",
+					"Xtext validation", "Searching for markers");
 
 			@Override
 			public void aboutToRun(final IJobChangeEvent event) {

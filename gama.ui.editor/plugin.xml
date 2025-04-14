@@ -418,9 +418,20 @@
           restorable="true">
     </view>
     <view
+          category="gama.ui.category.gama"
           class="gaml.compiler.ui.templates.TemplatesView"
+          icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.templates.png"
           id="gama.ui.application.view.templates"
           name="Templates"
+          restorable="true">
+    </view>
+    <view
+          allowMultiple="false"
+          category="gama.ui.category.gama"
+          class="gama.ui.views.GamaMinimapView"
+          icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.minimap.png"
+          id="gama.ui.application.view.minimap"
+          name="Minimap"
           restorable="true">
     </view>
  </extension>
@@ -724,6 +735,7 @@
                 ratio="0.25"
                 relationship="left"
                 relative="org.eclipse.ui.editorss"
+                standalone="true"
                 visible="true">
           </view>
           <view
@@ -731,43 +743,50 @@
                 id="gama.ui.application.view.outline"
                 minimized="false"
                 moveable="true"
-                ratio="0.70"
-                relationship="bottom"
-                relative="gama.ui.application.view.GamaNavigator"
-                visible="false">
+                ratio="0.8"
+                relationship="right"
+                relative="org.eclipse.ui.editorss"
+                visible="true">
           </view>
           <view
                 closeable="true"
                 id="gama.ui.application.view.problems"
                 minimized="false"
                 moveable="true"
-                relationship="stack"
-                relative="gama.ui.application.view.outline"
+                ratio="0.65"
+                relationship="bottom"
+                relative="gama.ui.application.view.GamaNavigator"
                 visible="true">
           </view>
-          <viewShortcut
-                id="gama.ui.application.view.outline">
-          </viewShortcut>
-          <viewShortcut
-                id="gama.ui.application.view.problems">
-          </viewShortcut>
           <perspectiveShortcut 
                 id="gama.ui.application.perspectives.SimulationPerspective">
           </perspectiveShortcut>
+          <viewShortcut
+                id="gama.ui.application.view.InteractiveConsoleView">
+          </viewShortcut>
+         <view
+               closeable="true"
+               id="gama.ui.application.view.minimap"
+               minimized="false"
+               moveable="true"
+               relationship="stack"
+               relative="gama.ui.application.view.outline"
+               showTitle="true"
+               visible="true">
+         </view>
           <view
                 closeable="true"
                 id="gama.ui.application.view.InteractiveConsoleView"
                 minimized="false"
                 moveable="true"
-                ratio="0.7"
-                relationship="bottom"
-                relative="org.eclipse.ui.editorss"
+                relationship="stack"
+                relative="gama.ui.application.view.problems"
                 showTitle="true"
                 standalone="false"
                 visible="true">
           </view>
           <viewShortcut
-                id="gama.ui.application.view.InteractiveConsoleView">
+                id="gama.ui.application.view.problems">
           </viewShortcut>
          <editorOnboardingCommand
                id="org.eclipse.ui.window.showKeyAssist">
@@ -776,8 +795,11 @@
                id="org.eclipse.ui.newWizard">
          </editorOnboardingCommand>
          <viewShortcut
-               id="org.eclipse.ui.views.minimap.MinimapView">
+               id="gama.ui.application.view.minimap">
          </viewShortcut>
+          <viewShortcut
+                id="gama.ui.application.view.outline">
+          </viewShortcut>
        </perspectiveExtension>
     </extension>
     <extension

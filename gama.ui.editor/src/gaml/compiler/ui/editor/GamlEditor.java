@@ -117,6 +117,7 @@ import com.google.inject.Injector;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.common.GamlFileExtension;
+import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
@@ -940,9 +941,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	public void openOutlinePopup() {
 		try {
-			IViewPart part = WorkbenchHelper.getPage().findView("gama.ui.application.view.outline");
+			IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
 			if (part == null) {
-				WorkbenchHelper.getPage().showView("gama.ui.application.view.outline");
+				WorkbenchHelper.getPage().showView(IGui.OUTLINE_VIEW_ID);
 			} else {
 				WorkbenchHelper.getPage().hideView(part);
 			}
