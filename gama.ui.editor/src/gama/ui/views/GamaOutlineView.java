@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaMinimapView.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * GamaOutlineView.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.views;
 
-import org.eclipse.ui.internal.views.minimap.MinimapView;
 import org.eclipse.ui.part.IPage;
 import org.eclipse.ui.part.MessagePage;
 import org.eclipse.ui.part.PageBook;
+import org.eclipse.ui.views.contentoutline.ContentOutline;
 
 import gama.core.common.interfaces.IGui;
 
@@ -24,11 +24,18 @@ import gama.core.common.interfaces.IGui;
  * @since 14 avr. 2025
  *
  */
-public class GamaMinimapView extends MinimapView {
+public class GamaOutlineView extends ContentOutline {
 
 	/** The id. */
-	public static String ID = IGui.MINIMAP_VIEW_ID;
+	public static String ID = IGui.OUTLINE_VIEW_ID;
 
+	/**
+	 * Creates the default page.
+	 *
+	 * @param book
+	 *            the book
+	 * @return the i page
+	 */
 	@Override
 	protected IPage createDefaultPage(final PageBook book) {
 		MessagePage page = (MessagePage) super.createDefaultPage(book);

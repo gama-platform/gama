@@ -402,10 +402,10 @@
     <view
           allowMultiple="false"
           category="gama.ui.category.gama"
-          class="org.eclipse.ui.views.contentoutline.ContentOutline"
+          class="gama.ui.views.GamaOutlineView"
           icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.outline.png"
           id="gama.ui.application.view.outline"
-          name="Outline"
+          name="Model Outline"
           restorable="true">
     </view>
     <view
@@ -431,7 +431,7 @@
           class="gama.ui.views.GamaMinimapView"
           icon="platform:/plugin/gama.ui.shared/icons/views/tabs/view.minimap.png"
           id="gama.ui.application.view.minimap"
-          name="Minimap"
+          name="Model Navigation"
           restorable="true">
     </view>
  </extension>
