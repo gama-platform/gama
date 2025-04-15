@@ -172,20 +172,6 @@ public class EditorToolbar {
 		if (GamaBundleLoader.isDiagramEditorLoaded()) {
 			toolbar.button("editor/command.graphical", null, "Switch to diagram", e -> { editor.switchToDiagram(); });
 		}
-		toolbar.button(IGamaIcons.IMPORTED_IN, "Imported in...", "List the files in which this model is imported",
-				e -> {
-					final GamaMenu menu = new GamaMenu() {
-
-						@Override
-						protected void fillMenu() {
-							for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
-							createImportedSubMenu(mainMenu);
-						}
-
-					};
-					menu.open(toolbar, e, toolbar.getSize().y, 200);
-				});
-
 		toolbar.button("editor/local.menu", "Presentation preferences", "Presentation preferences", e -> {
 
 			final GamaMenu menu = new GamaMenu() {
@@ -212,6 +198,20 @@ public class EditorToolbar {
 			};
 			menu.open(toolbar, e, toolbar.getSize().y, 200);
 		});
+
+		toolbar.button(IGamaIcons.IMPORTED_IN, "Imported in...", "List the files in which this model is imported",
+				e -> {
+					final GamaMenu menu = new GamaMenu() {
+
+						@Override
+						protected void fillMenu() {
+							for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
+							createImportedSubMenu(mainMenu);
+						}
+
+					};
+					menu.open(toolbar, e, toolbar.getSize().y, 200);
+				});
 
 		hookToCommands(previous, next);
 		hookToSearch(previous, next);

@@ -559,9 +559,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
+				boolean showExperiments =
+						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
+								&& newState.showExperiments;
 				toolbar.wipe(SWT.LEFT, true);
-				// toolbar.getToolbar(SWT.LEFT).button("editor/command.outline", null, "Show outline",
-				// e -> { openOutlinePopup(); });
+				if (showExperiments) {
+					toolbar.getToolbar(SWT.LEFT).button("editor/add.experiment", null, "Add an experiment to the model",
+							new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)));
+					toolbar.getToolbar(SWT.LEFT).space(8);
+				}
 
 				final var c = state.getColor();
 				var msg = state.getStatus();
@@ -599,11 +605,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							displayExperimentButtons(newState, listener);
 						}
 					}
-					if (!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())) {
-						toolbar.button(IGamaColors.NEUTRAL, "Add Experiment", images.get("new"),
-								new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)),
-								SWT.LEFT);
-					}
+					// if (!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())) {
+					// toolbar.button(IGamaColors.NEUTRAL, "Add Experiment", images.get("new"),
+					// new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)),
+					// SWT.LEFT);
+					// }
 				}
 				toolbar.requestLayout();
 
