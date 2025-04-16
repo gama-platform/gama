@@ -366,6 +366,22 @@
                </with>
             </visibleWhen>
          </command>
+         <dynamic
+               class="gama.ui.navigator.view.actions.ImportersContributionItem"
+               id="gama.ui.navigator.dynamic2">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="gama.ui.navigator.view.contents.WrappedGamaFile">
+                     </instanceof></iterate>
+               </with>
+            </visibleWhen>
+         </dynamic>
       </menuContribution>
       <menuContribution
             allPopups="false"

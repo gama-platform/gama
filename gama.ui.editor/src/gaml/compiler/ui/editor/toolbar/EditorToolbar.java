@@ -15,13 +15,10 @@ import static gama.ui.shared.utils.WorkbenchHelper.runCommand;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -32,12 +29,9 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
@@ -50,7 +44,6 @@ import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.ui.editor.GamlEditor;
 
 /**
@@ -199,69 +192,11 @@ public class EditorToolbar {
 			menu.open(toolbar, e, toolbar.getSize().y, 200);
 		});
 
-		toolbar.button(IGamaIcons.IMPORTED_IN, "Imported in...", "List the files in which this model is imported",
-				e -> {
-					final GamaMenu menu = new GamaMenu() {
-
-						@Override
-						protected void fillMenu() {
-							for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
-							createImportedSubMenu(mainMenu);
-						}
-
-					};
-					menu.open(toolbar, e, toolbar.getSize().y, 200);
-				});
-
 		hookToCommands(previous, next);
 		hookToSearch(previous, next);
 
 		return find;
 	}
-
-	/**
-	 * Creates the imported sub menu.
-	 *
-	 * @param parentMenu
-	 *            the parent menu
-	 * @param editor
-	 *            the editor
-	 * @return the menu
-	 */
-	public void createImportedSubMenu(final Menu parentMenu) {
-		final Set<URI> importers = new HashSet<>();
-		editor.getDocument().readOnly(new IUnitOfWork.Void<XtextResource>() {
-
-			@Override
-			public void process(final XtextResource resource) throws Exception {
-				importers.addAll(GamlResourceIndexer.directImportersOf(resource.getURI()));
-			}
-		});
-		if (importers.isEmpty()) {
-			final MenuItem nothing = new MenuItem(parentMenu, SWT.PUSH);
-			nothing.setText("No importers");
-			nothing.setEnabled(false);
-		} else {
-			for (final URI uri : importers) {
-				final MenuItem modelItem = new MenuItem(parentMenu, SWT.PUSH);
-				modelItem.setText(URI.decode(uri.lastSegment()));
-				modelItem.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
-				modelItem.setData("uri", uri);
-				modelItem.addSelectionListener(UsedInAdapter);
-			}
-		}
-	}
-
-	/** The Constant UsedInAdapter. */
-	private static final SelectionAdapter UsedInAdapter = new SelectionAdapter() {
-
-		@Override
-		public void widgetSelected(final SelectionEvent e) {
-			final MenuItem mi = (MenuItem) e.widget;
-			final URI uri = (URI) mi.getData("uri");
-			GAMA.getGui().editModel(uri);
-		}
-	};
 
 	/**
 	 * Fill.

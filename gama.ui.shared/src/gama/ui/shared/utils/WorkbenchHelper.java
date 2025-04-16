@@ -27,6 +27,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.Geometry;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -37,6 +39,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -550,6 +553,21 @@ public class WorkbenchHelper {
 				if (found != null) return found;
 			}
 		}
+		return null;
+	}
+
+	/**
+	 * Gets the selection.
+	 *
+	 * @return the selection
+	 */
+	public static IStructuredSelection getSelection() {
+		IWorkbenchWindow activeWorkbenchWindow = getWindow();
+		if (activeWorkbenchWindow == null) return null;
+		ISelectionService selectionService = activeWorkbenchWindow.getSelectionService();
+		if (selectionService == null) return null;
+		ISelection selection = selectionService.getSelection();
+		if (selection instanceof IStructuredSelection) return (IStructuredSelection) selection;
 		return null;
 	}
 
