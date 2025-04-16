@@ -659,6 +659,13 @@ public class GAMA {
 	}
 
 	/**
+	 * Gets the current websocket server
+	 *
+	 * @return the current top level agent
+	 */
+	public static IGamaServer getServer() { return getPlatformAgent().getServer(); }
+
+	/**
 	 * Gets the current top level agent.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
