@@ -38,6 +38,7 @@ import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.BufferingController;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
+import gama.core.runtime.server.IGamaServer;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;

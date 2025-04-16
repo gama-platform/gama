@@ -45,9 +45,9 @@ public class BandsBasedMeshColorProvider implements IMeshColorProvider {
 		IField primary = bands.get(0);
 		this.size = primary.getMatrix().length;
 		components = new double[size * 4];
-		double[] mR = bands.get(1).getMatrix();
-		double[] mG = bands.get(2).getMatrix();
-		double[] mB = bands.get(3).getMatrix();
+		double[] mR = bands.get(0).getMatrix();
+		double[] mG = bands.get(1).getMatrix();
+		double[] mB = bands.get(2).getMatrix();
 		for (int i = 0; i < size; ++i) {
 			components[i * 3] = mR[i] / 255d;
 			components[i * 3 + 1] = mG[i] / 255d;

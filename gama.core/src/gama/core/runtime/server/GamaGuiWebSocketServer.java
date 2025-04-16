@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaGuiWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -162,8 +162,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 			currentState = state;
 			WebSocket ws = currentServerConfig.socket();
 			if (ws == null || ws.isClosed()) return;
-			ws.send(Json.getNew()
-					.valueOf(new GamaServerMessage(GamaServerMessage.Type.SimulationStatus, state.name(), "0"))
+			ws.send(Json.getNew().valueOf(new GamaServerMessage(MessageType.SimulationStatus, state.name(), "0"))
 					.toString());
 		}
 	}
@@ -203,7 +202,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 			throws CommandException {
 		IExperimentPlan plan = GAMA.getExperiment();
 		if (plan == null || plan.getAgent() == null || plan.getAgent().dead() || plan.getCurrentSimulation() == null)
-			throw new CommandException(new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));
 		return plan;
 	}

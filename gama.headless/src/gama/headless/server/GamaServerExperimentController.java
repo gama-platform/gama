@@ -25,7 +25,7 @@ import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
-import gama.core.runtime.server.GamaServerMessage;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
@@ -83,7 +83,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
 						if (!"".equals(stopCondition)) {
 							mexp.socket.send(Json.getNew()
-									.valueOf(new CommandResponse(GamaServerMessage.Type.SimulationEnded, "",
+									.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
 											(IMap<String, Object>) exp.getAttribute("%%playCommand%%"), false))
 									.toString());
 

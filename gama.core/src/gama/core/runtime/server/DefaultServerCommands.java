@@ -10,10 +10,6 @@
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
-import static gama.core.runtime.server.GamaServerMessage.Type.CommandExecutedSuccessfully;
-import static gama.core.runtime.server.GamaServerMessage.Type.GamaServerError;
-import static gama.core.runtime.server.GamaServerMessage.Type.MalformedRequest;
-import static gama.core.runtime.server.GamaServerMessage.Type.UnableToExecuteRequest;
 import static gama.core.runtime.server.ISocketCommand.ARGS;
 import static gama.core.runtime.server.ISocketCommand.ESCAPED;
 import static gama.core.runtime.server.ISocketCommand.EVALUATE;
@@ -22,6 +18,10 @@ import static gama.core.runtime.server.ISocketCommand.NB_STEP;
 import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
 import static gama.core.runtime.server.ISocketCommand.SYNTAX;
+import static gama.core.runtime.server.MessageType.CommandExecutedSuccessfully;
+import static gama.core.runtime.server.MessageType.GamaServerError;
+import static gama.core.runtime.server.MessageType.MalformedRequest;
+import static gama.core.runtime.server.MessageType.UnableToExecuteRequest;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,7 +87,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage LOAD(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
@@ -98,7 +99,7 @@ public class DefaultServerCommands {
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
 				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
@@ -130,7 +131,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage PLAY(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage PLAY(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		if (!GAMA.startFrontmostExperiment(true))
 			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
@@ -148,7 +149,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage PAUSE(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage PAUSE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -172,7 +173,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage STEP(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage STEP(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -210,7 +211,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage BACK(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage BACK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -231,7 +232,7 @@ public class DefaultServerCommands {
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(GamaServerMessage.Type.GamaServerError, e, map, false);
+				return new CommandResponse(MessageType.GamaServerError, e, map, false);
 			}
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
@@ -248,7 +249,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage STOP(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage STOP(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		GAMA.closeAllExperiments(true, false);
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
@@ -265,7 +266,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage RELOAD(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage RELOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -296,7 +297,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage EVAL(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage EVAL(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -345,12 +346,12 @@ public class DefaultServerCommands {
 	 * @return the gama server message
 	 * @date 11 janv. 2024
 	 */
-	public static GamaServerMessage VALIDATE(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage VALIDATE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final Object expr = map.get(EXPR);
 		final Object syntax = map.get(SYNTAX);
 		boolean syntaxOnly = syntax instanceof Boolean b && b;
-		if (expr == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		List<String> errors = GAML.validate(entered, syntaxOnly);
@@ -370,7 +371,7 @@ public class DefaultServerCommands {
 	 * @return the gama server message
 	 * @date 26 nov. 2023
 	 */
-	public static GamaServerMessage ASK(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage ASK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		IExperimentPlan plan;
 		try {
@@ -379,7 +380,7 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final String action = map.get(IKeyword.ACTION) != null ? map.get(IKeyword.ACTION).toString().trim() : null;
-		if (action == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (action == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
 		final String ref = map.get(IKeyword.AGENT) != null ? map.get(IKeyword.AGENT).toString().trim() : null;
 		final ExperimentAgent exp = plan.getAgent();
@@ -421,10 +422,10 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static CommandResponse DOWNLOAD(final GamaWebSocketServer server, final WebSocket socket,
+	public static CommandResponse DOWNLOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
-		if (filepath == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (filepath == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'download', mandatory parameter is: 'file'", map, false);
 		try (InputStream is = Files.newInputStream(new File(filepath).toPath());
 				InputStreamReader isr = new InputStreamReader(is, "UTF-8");
@@ -451,18 +452,18 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage UPLOAD(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage UPLOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		final String filepath = map.containsKey("file") ? map.get("file").toString() : null;
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
-		if (filepath == null || content == null) return new CommandResponse(GamaServerMessage.Type.MalformedRequest,
+		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
-		try (FileWriter myWriter = new FileWriter(filepath)) {
+		try (FileWriter myWriter = new FileWriter(filepath, StandardCharsets.UTF_8)) {
 			myWriter.write(content);
-			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest, ex.getMessage(), map, false);
+			return new CommandResponse(MessageType.UnableToExecuteRequest, ex.getMessage(), map, false);
 		}
 	}
 
@@ -477,7 +478,7 @@ public class DefaultServerCommands {
 	 * @return the command response
 	 * @date 24 jan. 2025
 	 */
-	public static GamaServerMessage DESCRIBE(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage DESCRIBE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		// Check the parameters
 		final Object modelPath = map.get("model");
@@ -488,7 +489,7 @@ public class DefaultServerCommands {
 		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
 				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(GamaServerMessage.Type.UnableToExecuteRequest,
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
@@ -639,10 +640,10 @@ public class DefaultServerCommands {
 	 * @return the gama server message
 	 * @date 15 oct. 2023
 	 */
-	public static GamaServerMessage EXIT(final GamaWebSocketServer server, final WebSocket socket,
+	public static GamaServerMessage EXIT(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		try {
-			return new CommandResponse(GamaServerMessage.Type.CommandExecutedSuccessfully, "", map, false);
+			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		} finally {
 			System.exit(0);
 		}

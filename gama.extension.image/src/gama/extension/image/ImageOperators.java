@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ImageOperators.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Base64;
@@ -47,7 +46,7 @@ import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.server.GamaServerMessage;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IMatrix;
@@ -75,9 +74,10 @@ public class ImageOperators implements ImageConstants {
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
-	@doc ("Takes a snapshot of the display whose name is passed in parameter and returns the image. "
-			+ "The search for the display begins in the current agent's simulation and, if not found, its experiment. "
-			+ "Returns nil if no display can be found or the snapshot cannot be taken.")
+	@doc ("""
+			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
+			The search for the display begins in the current agent's simulation and, if not found, its experiment. \
+			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final String displayName) {
 		return snapshot(scope, scope.getAgent(), displayName);
@@ -109,9 +109,10 @@ public class ImageOperators implements ImageConstants {
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
-	@doc ("Takes a snapshot of the display whose name is passed in parameter and returns the image. "
-			+ "The search for the display begins in the agent passed in parameter and, if not found, its experiment. The size of the snapshot will be that of the view"
-			+ "Returns nil if no display can be found or the snapshot cannot be taken.")
+	@doc ("""
+			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
+			The search for the display begins in the agent passed in parameter and, if not found, its experiment. The size of the snapshot will be that of the view\
+			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final IAgent exp, final String displayName) {
 		if (exp == null) return null;
@@ -145,9 +146,10 @@ public class ImageOperators implements ImageConstants {
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
-	@doc ("Takes a snapshot of the display whose name is passed in parameter and returns the image. "
-			+ "The search for the display begins in the agent passed in parameter and, if not found, its experiment. A custom size (a point representing width x height) can be given "
-			+ "Returns nil if no display can be found or the snapshot cannot be taken.")
+	@doc ("""
+			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
+			The search for the display begins in the agent passed in parameter and, if not found, its experiment. A custom size (a point representing width x height) can be given \
+			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final IAgent exp, final String displayName,
 			final GamaPoint customDimensions) {
@@ -167,37 +169,60 @@ public class ImageOperators implements ImageConstants {
 		IDisplaySurface surface = ldo.getSurface();
 		return SnapshotMaker.getInstance().captureImage(surface, customDimensions);
 	}
-	
-	public static String imgToBase64String(final GamaImage img, final String formatName)
-	{
-	  final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-	  try
-	  {
-	    ImageIO.write(img, formatName, os);
-	    return Base64.getEncoder().encodeToString(os.toByteArray());
-	  }
-	  catch (final IOException ioe)
-	  {
-	    throw new UncheckedIOException(ioe);
-	  }
+	/**
+	 * Img to base 64 string.
+	 *
+	 * @param img
+	 *            the img
+	 * @param formatName
+	 *            the format name
+	 * @return the string
+	 */
+	public static String imgToBase64String(final GamaImage img, final String formatName) {
+		final ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+		try {
+			ImageIO.write(img, formatName, os);
+			return Base64.getEncoder().encodeToString(os.toByteArray());
+		} catch (final IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		}
 	}
-	
+
+	/**
+	 * Send image websocket.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param image
+	 *            the image
+	 * @param format
+	 *            the format
+	 * @return the gama image
+	 */
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
 	@doc ("Send the given image to the websocket in Base64 using the given format.")
 	@no_test
 	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image, final String format) {
-		
+
 		PlatformAgent pa = GAMA.getPlatformAgent();
-		
-		pa.sendMessage(scope, imgToBase64String(image, format), GamaServerMessage.Type.SimulationImage);
+
+		pa.sendMessage(scope, imgToBase64String(image, format), MessageType.SimulationImage);
 		return image;
 	}
 
-	
-
+	/**
+	 * Send image websocket.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param image
+	 *            the image
+	 * @return the gama image
+	 */
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
@@ -206,8 +231,7 @@ public class ImageOperators implements ImageConstants {
 	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image) {
 		return sendImageWebsocket(scope, image, "png");
 	}
-	
-	
+
 	/**
 	 * Grayscale.
 	 *
@@ -294,6 +318,17 @@ public class ImageOperators implements ImageConstants {
 		}
 	}
 
+	/**
+	 * Brigther.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param image
+	 *            the image
+	 * @param percentage
+	 *            the percentage
+	 * @return the gama image
+	 */
 	@operator (IKeyword.BRIGHTER)
 	@doc ("Used to return an image brighter by a percentage (between 0 - no change - and 1 - 100% brighter). If the percentage is below zero or above 1, returns the image untouched")
 	@no_test
@@ -725,9 +760,10 @@ public class ImageOperators implements ImageConstants {
 	 * @return the gama image
 	 */
 	@operator ({ "clipped_with", "cropped_to" })
-	@doc ("Used to crop the given image using a rectangle starting at the top-left x, y coordinates and expanding using the width and height. "
-			+ "If one of the dimensions of the resulting image is 0, of if they are equal to that of the given image, returns it. "
-			+ " The original image is left untouched")
+	@doc ("""
+			Used to crop the given image using a rectangle starting at the top-left x, y coordinates and expanding using the width and height. \
+			If one of the dimensions of the resulting image is 0, of if they are equal to that of the given image, returns it. \
+			 The original image is left untouched""")
 	@no_test
 
 	public static GamaImage cropped(final IScope scope, final GamaImage image, final int ox, final int oy, final int ow,

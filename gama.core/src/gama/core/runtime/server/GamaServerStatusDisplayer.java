@@ -13,8 +13,7 @@ package gama.core.runtime.server;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.runtime.IScope;
 
 /**
  * The Class GamaServerStatusDisplayer.
@@ -40,24 +39,32 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 		return scope != null && scope.getServerConfiguration().status();
 	}
 
-	@Override
-	public void informStatus(final String string, final String icon) {
-		if (!canSendMessage(GAMA.getExperimentAgent())) return;
-		sendMessage(GAMA.getExperimentAgent(), "{" + "\"message\": \"" + string + "\"" + "}",
-				GamaServerMessage.Type.SimulationStatusInform);
+	/**
+	 * Inform status.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param string
+	 *            the string
+	 */
+	public void informStatus(final IScope scope, final String string) {
+		if (!canSendMessage(scope.getExperiment())) {}
+		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + string + "\"" + "}",
+				MessageType.SimulationStatusInform);
 	}
 
 	/**
 	 * Error status.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param error
 	 *            the error
 	 */
-	@Override
-	public void errorStatus(final GamaRuntimeException error) {
-		if (!canSendMessage(GAMA.getExperimentAgent())) return;
-		sendMessage(GAMA.getExperimentAgent(), "{" + "\"message\": \"" + error.getMessage() + "\"" + "}",
-				GamaServerMessage.Type.SimulationStatusError);
+	public void errorStatus(final IScope scope, final Exception error) {
+		if (!canSendMessage(scope.getExperiment())) return;
+		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + error.getMessage() + "\"" + "}",
+				MessageType.SimulationStatusError);
 	}
 
 	/**
@@ -72,12 +79,12 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	 * @param color
 	 *            the color
 	 */
-	@Override
-	public void setStatus(final String msg, final String icon, final GamaColor color) {
-		if (!canSendMessage(GAMA.getExperimentAgent())) return;
-		sendMessage(GAMA.getExperimentAgent(), json.object("message", msg, "color", color, "icon", icon).toString(),
-				GamaServerMessage.Type.SimulationStatus);
-	}
+	// @Override
+	// public void setStatus(final IScope scope, final String msg, final GamaColor color) {
+	// if (!canSendMessage(scope.getExperiment())) return;
+	// sendMessage(scope.getExperiment(), json.object("message", msg, "color", color).toString(),
+	// MessageType.SimulationStatus);
+	// }
 
 	/**
 	 * Update experiment status.
@@ -86,7 +93,55 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	public void updateExperimentStatus() {
 		if (!canSendMessage(GAMA.getExperimentAgent())) return;
 		sendMessage(GAMA.getExperimentAgent(), json.object("message", null, "icon", "overlays/status.clock").toString(),
-				GamaServerMessage.Type.SimulationStatusInform);
+				MessageType.SimulationStatusInform);
 	}
 
+	/**
+	 * Inform status.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param message
+	 *            the message
+	 * @param icon
+	 *            the icon
+	 */
+	public void informStatus(final IScope scope, final String message, final String icon) {
+		if (!canSendMessage(scope.getExperiment())) return;
+		sendMessage(scope.getExperiment(), json.object("message", message, "icon", icon).toString(),
+				MessageType.SimulationStatusInform);
+	}
+
+	/**
+	 * Sets the status.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param msg
+	 *            the msg
+	 * @param icon
+	 *            the icon
+	 */
+	// @Override
+	// public void setStatus(final IScope scope, final String msg, final String icon) {
+	// if (!canSendMessage(scope.getExperiment())) return;
+	// sendMessage(scope.getExperiment(), json.object("message", msg, "icon", icon).toString(),
+	// MessageType.SimulationStatus);
+	//
+	// }
+
+	/**
+	 * Neutral status.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param string
+	 *            the string
+	 */
+	// @Override
+	// public void neutralStatus(final IScope scope, final String string) {
+	// if (!canSendMessage(scope.getExperiment())) return;
+	// sendMessage(scope.getExperiment(), json.object("message", string).toString(),
+	// MessageType.SimulationStatusNeutral);
+	// }
 }

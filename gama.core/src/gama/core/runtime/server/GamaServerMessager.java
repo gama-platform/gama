@@ -46,7 +46,7 @@ public abstract class GamaServerMessager {
 	 * @param type
 	 *            the type
 	 */
-	public void sendMessage(final IExperimentAgent exp, final Object m, final GamaServerMessage.Type type) {
+	public void sendMessage(final IExperimentAgent exp, final Object m, final MessageType type) {
 		try {
 			if (exp == null) {
 				DEBUG.OUT("No experiment, unable to send message: " + m);

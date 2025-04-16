@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SymbolDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,8 +27,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlDescription;
@@ -57,7 +57,6 @@ public abstract class SymbolDescription implements IDescription {
 
 	/** The state. */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
-
 
 	/** The facets. */
 	private Facets facets;
@@ -369,8 +368,7 @@ public abstract class SymbolDescription implements IDescription {
 	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
 
-		if (type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()) return;
-		if (type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue()) return;
+		if ((type == GamlCompilationErrorType.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()) || (type == GamlCompilationErrorType.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue())) return;
 
 		IDescription desc = this;
 		EObject e = source;
@@ -383,7 +381,8 @@ public abstract class SymbolDescription implements IDescription {
 		// the source
 		// (i.e. we are probably in a runtime scenario)
 		if (e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX)) {
-			if (type == GamlCompilationErrorType.Error) throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
+			if (type == GamlCompilationErrorType.Error)
+				throw GamaRuntimeException.error(s, gama.core.runtime.GAMA.getRuntimeScope());
 			return;
 
 		}
@@ -424,7 +423,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationErrorType.Error, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Error,
+				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
@@ -456,7 +456,8 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationErrorType.Warning, this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
+		flagError(s, code, GamlCompilationErrorType.Warning,
+				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
 				data == null || data.length == 0 ? new String[] { facet } : data);
 	}
 
@@ -1108,5 +1109,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	@Override
 	public boolean isInvocation() { return isSet(Flag.IsInvocation); }
+
+	/**
+	 * Checks if is creates the.
+	 *
+	 * @return true, if is creates the
+	 */
+	public boolean isCreate() { return isSet(Flag.IsCreate); }
 
 }

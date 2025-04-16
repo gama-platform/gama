@@ -147,6 +147,6 @@ public interface ISocketCommand {
 	 * @return the gama server message
 	 * @date 15 oct. 2023
 	 */
-	GamaServerMessage execute(final GamaWebSocketServer server, final WebSocket socket, final IMap<String, Object> map);
+	GamaServerMessage execute(final IGamaServer server, final WebSocket socket, final IMap<String, Object> map);
 
 }

@@ -1,13 +1,16 @@
 /*******************************************************************************************************
  *
  * GamaWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.server;
+
+import static gama.core.runtime.server.ISocketCommand.EXP_ID;
 
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
@@ -16,6 +19,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -26,7 +30,6 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.dev.DEBUG;
@@ -34,16 +37,13 @@ import gama.dev.DEBUG;
 /**
  * The Class GamaWebSocketServer.
  */
-public abstract class GamaWebSocketServer extends WebSocketServer {
+public abstract class GamaWebSocketServer extends WebSocketServer implements IGamaServer {
 
 	/** The Constant SOCKET_ID. */
 	static final String SOCKET_ID = "socket_id";
 
-	/** The Constant DEFAULT_PING_INTERVAL. */
-	public static final int DEFAULT_PING_INTERVAL = 10000;
-
 	/** The cmd helper. */
-	protected final CommandExecutor cmdHelper = new CommandExecutor(this);
+	protected final CommandExecutor cmdHelper = new CommandExecutor();
 
 	/** The can ping. false if pingInterval is negative */
 	public final boolean canPing;
@@ -59,6 +59,9 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 
 	/** The console. */
 	protected final IConsoleListener console = new GamaServerConsoleListener();
+
+	/** The listeners. */
+	protected final ListenerList<Listener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
 	/**
 	 * Instantiates a new gama web socket server.
@@ -90,6 +93,28 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	}
 
 	/**
+	 * Adds the listener.
+	 *
+	 * @param listener
+	 *            the listener
+	 */
+	@Override
+	public void addListener(final Listener listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Removes the listener.
+	 *
+	 * @param listener
+	 *            the listener
+	 */
+	@Override
+	public void removeListener(final Listener listener) {
+		listeners.remove(listener);
+	}
+
+	/**
 	 * Configure error stream so as to broadcast errors
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -101,7 +126,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 			@Override
 			public void println(final String x) {
 				super.println(x);
-				broadcast(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.GamaServerError, x)).toString());
+				broadcast(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, x)).toString());
 			}
 		};
 		System.setErr(errorStream);
@@ -127,8 +152,8 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
-		socket.send(Json.getNew().valueOf(
-				new GamaServerMessage(GamaServerMessage.Type.ConnectionSuccessful, String.valueOf(socket.hashCode())))
+		socket.send(Json.getNew()
+				.valueOf(new GamaServerMessage(MessageType.ConnectionSuccessful, String.valueOf(socket.hashCode())))
 				.toString());
 		if (canPing) {
 			var timer = new Timer();
@@ -146,7 +171,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	public void onClose(final WebSocket conn, final int code, final String reason, final boolean remote) {
 		var timer = pingTimers.remove(conn);
 		if (timer != null) { timer.cancel(); }
-		DEBUG.OUT(conn + " has left the room!");
+		listeners.clear();
 	}
 
 	/**
@@ -159,52 +184,62 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
-	public IMap<String, Object> extractParam(final WebSocket socket, final String message) {
-		IMap<String, Object> map = null;
+	public ReceivedMessage extractParam(final WebSocket socket, final String message) {
 		try {
 			final Object o = Json.getNew().parse(message).toGamlValue(GAMA.getRuntimeScope());
-			if (o instanceof IMap) {
-				map = (IMap<String, Object>) o;
-			} else {
-				map = GamaMapFactory.create();
-				map.put(IKeyword.CONTENTS, o);
-			}
+			ReceivedMessage m = o instanceof IMap map ? new ReceivedMessage(message, map)
+					: new ReceivedMessage(message, Map.of(IKeyword.CONTENTS, o));
+			m.put("server", this);
+			return m;
 		} catch (Exception e1) {
 			DEBUG.OUT(e1.toString());
-			socket.send(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.MalformedRequest, e1)).toString());
+			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.MalformedRequest, e1)).toString());
+			return null;
 		}
-		return map;
 	}
 
 	@Override
 	public void onMessage(final WebSocket socket, final String message) {
-		// DEBUG.OUT(socket + ": " + message);
 		try {
-			IMap<String, Object> map = extractParam(socket, message);
-			map.put("server", this);
-			DEBUG.OUT(map.get("type"));
-			DEBUG.OUT(map.get("expr"));
-			final String exp_id =
-					map.get(ISocketCommand.EXP_ID) != null ? map.get(ISocketCommand.EXP_ID).toString() : "";
-			final String socketId = map.get(SOCKET_ID) != null ? map.get(SOCKET_ID).toString() : getSocketId(socket);
-			IExperimentPlan exp = getExperiment(socketId, exp_id);
+			ReceivedMessage received = extractParam(socket, message);
+			// Gives listeners a chance to process the message. If one returns false, we abort the processing. See #438
+			for (Listener listener : listeners) { if (!listener.process(received)) return; }
+			final String expId = received.getOrDefault(EXP_ID, "").toString();
+			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
+			IExperimentPlan exp = getExperiment(socketId, expId);
 			if (exp != null) {
-				// In order to sync the command with the experiment cycles
-				ExperimentAgent agent = exp.getAgent();
-				if (agent != null && !exp.getController().isPaused()) {
-					agent.postOneShotAction(scope1 -> {
-						cmdHelper.process(socket, map);
-						return null;
-					});
-					return;
-				}
+				processInSyncWithExperiment(socket, received, exp);
+			} else {
+				cmdHelper.process(this, socket, received);
 			}
-			cmdHelper.process(socket, map);
-
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
-			socket.send(jsonErr.valueOf(new GamaServerMessage(GamaServerMessage.Type.GamaServerError, e1)).toString());
+			socket.send(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
 
+		}
+	}
+
+	/**
+	 * Process in sync with experiment.
+	 *
+	 * @param socket
+	 *            the socket
+	 * @param received
+	 *            the received
+	 * @param exp
+	 *            the exp
+	 */
+	private void processInSyncWithExperiment(final WebSocket socket, final ReceivedMessage received,
+			final IExperimentPlan exp) {
+		ExperimentAgent agent = exp.getAgent();
+		if (agent == null || exp.getController().isPaused()) {
+			cmdHelper.process(this, socket, received);
+		} else {
+			// In order to sync the command with the experiment cycles
+			agent.postOneShotAction(scope1 -> {
+				cmdHelper.process(this, socket, received);
+				return null;
+			});
 		}
 	}
 
@@ -227,6 +262,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the experiment
 	 * @date 15 oct. 2023
 	 */
+	@Override
 	public abstract IExperimentPlan getExperiment(final String socket, final String expid);
 
 	/**
@@ -237,6 +273,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *            the t
 	 * @date 15 oct. 2023
 	 */
+	@Override
 	public abstract void execute(final Runnable command);
 
 	/**
@@ -249,6 +286,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *            the experiment id
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public abstract void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan);
 
 	/**
@@ -258,6 +296,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 * @return the gama server experiment configuration
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public abstract GamaServerExperimentConfiguration obtainGuiServerConfiguration();
 
 	/**
@@ -275,6 +314,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer {
 	 *             the command exception
 	 * @date 5 déc. 2023
 	 */
+	@Override
 	public abstract IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
 			throws CommandException;
 

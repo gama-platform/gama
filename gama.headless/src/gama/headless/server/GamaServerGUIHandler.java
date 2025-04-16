@@ -25,10 +25,10 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.NullGuiHandler;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaServerConsoleListener;
-import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.GamaServerMessager;
 import gama.core.runtime.server.GamaServerStatusDisplayer;
 import gama.core.runtime.server.ISocketCommand;
+import gama.core.runtime.server.MessageType;
 import gama.dev.DEBUG;
 import gama.headless.listener.LoadCommand;
 import gama.headless.listener.PlayCommand;
@@ -74,14 +74,14 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 	public void openMessageDialog(final IScope scope, final String message) {
 		DEBUG.OUT(message);
 		if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
-		dialogMessager.sendMessage(scope.getExperiment(), message, GamaServerMessage.Type.SimulationDialog);
+		dialogMessager.sendMessage(scope.getExperiment(), message, MessageType.SimulationDialog);
 	}
 
 	@Override
 	public void openErrorDialog(final IScope scope, final String error) {
 		DEBUG.OUT(error);
 		if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
-		dialogMessager.sendMessage(scope.getExperiment(), error, GamaServerMessage.Type.SimulationErrorDialog);
+		dialogMessager.sendMessage(scope.getExperiment(), error, MessageType.SimulationErrorDialog);
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 		// removed to fix #3758
 		// if (!canSendDialogMessages(scope)) return;
 		if (!canSendRuntimeErrors(scope)) return;
-		dialogMessager.sendMessage(scope.getExperiment(), g, GamaServerMessage.Type.SimulationError);
+		dialogMessager.sendMessage(scope.getExperiment(), g, MessageType.SimulationError);
 	}
 
 	@Override
