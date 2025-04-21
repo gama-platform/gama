@@ -168,6 +168,9 @@ public interface IGamaIcons {
 	/** The folder project. */
 	String FOLDER_PROJECT = "navigator/files/folder.project";
 
+	/** The folder project. */
+	String CLOSED_PROJECT = "navigator/files/closed.project";
+
 	/** The folder resources. */
 	String FOLDER_RESOURCES = "navigator/files/folder.resources";
 
@@ -244,14 +247,8 @@ public interface IGamaIcons {
 	/** The marker error. */
 	String MARKER_ERROR = "markers/marker.error";
 
-	/** The marker error dark. */
-	String MARKER_ERROR_DARK = "markers/marker.error.dark";
-
 	/** The marker info. */
 	String MARKER_INFO = "markers/marker.info";
-
-	/** The marker info dark. */
-	String MARKER_INFO_DARK = "markers/marker.info.dark";
 
 	/** The marker task. */
 	String MARKER_TASK = "markers/marker.task";
@@ -280,6 +277,9 @@ public interface IGamaIcons {
 	/** The button gui. */
 	String MENU_GUI = "overlays/small.exp.run.green";
 
+	/** The menu help. */
+	String MENU_HELP = "generic/menu.help";
+
 	/** The menu highlight. */
 	String MENU_HIGHLIGHT = "agents/action.highlight";
 
@@ -297,6 +297,12 @@ public interface IGamaIcons {
 
 	/** The menu run action. */
 	String MENU_RUN_ACTION = "agents/agent.actions";
+
+	/** The menu undo. */
+	String MENU_UNDO = "generic/menu.undo";
+
+	/** The menu redo. */
+	String MENU_REDO = "generic/menu.redo";
 
 	/** The new folder. */
 	String NEW_FOLDER = "navigator/new.folder2";
@@ -492,14 +498,5 @@ public interface IGamaIcons {
 
 	/** The browse populations. */
 	String BROWSE_POPULATIONS = MENU_POPULATION;
-
-	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons/";
-
-	/** The Constant PLUGIN_ID. */
-	String PLUGIN_ID = "gama.ui.shared";
-
-	/** The Constant DVG_PATH. */
-	String SVG_PATH = "/svg/";
 
 }

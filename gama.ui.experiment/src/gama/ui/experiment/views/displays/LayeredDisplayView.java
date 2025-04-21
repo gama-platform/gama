@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
-import java.awt.Color;
-
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -42,7 +40,6 @@ import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.dev.DEBUG;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -154,8 +151,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 			final IScope scope = out.getScope();
 			if (scope != null && scope.getSimulation() != null) {
 				final ITopLevelAgent root = scope.getRoot();
-				final Color color = root.getColor();
-				this.setTitleImage(GamaIcon.ofColorWithAWT(GamaColors.get(color), true).image());
+				this.setTitleImage(GamaIcon.ofColor(root.getColor()).image());
 			}
 		}
 

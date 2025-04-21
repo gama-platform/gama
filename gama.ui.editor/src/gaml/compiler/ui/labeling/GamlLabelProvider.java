@@ -353,9 +353,6 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		return this.getText(element.getElement());
 	}
 
-	/**
-	 * @see gama.core.common.interfaces.IGamlLabelProvider#getImage(gama.gaml.compilation.ast.ISyntacticElement)
-	 */
 	@Override
 	public ImageDescriptor getImageDescriptor(final ISyntacticElement element) {
 		return this.getImageDescriptor(element.getElement());

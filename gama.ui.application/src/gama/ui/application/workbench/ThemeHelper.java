@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ThemeHelper.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -325,8 +325,7 @@ public class ThemeHelper {
 	}
 
 	/** The original background. */
-	static Color originalBackground = isDark() ? Display.getDefault().getSystemColor(SWT.COLOR_BLACK)
-			: Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+	static Color originalBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
 	/**
 	 * Change sash background.

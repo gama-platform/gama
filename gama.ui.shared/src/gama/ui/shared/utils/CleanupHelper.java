@@ -262,6 +262,10 @@ public class CleanupHelper {
 						"org.eclipse.team.ui.ProjectSetImportWizard", "org.eclipse.equinox.p2.replication.export",
 						"org.eclipse.team.ui.ProjectSetExportWizard"));
 
+		/** The wizards images to replace. */
+		// private static Map<String, String> WIZARDS_IMAGES_TO_REPLACE = Map.of("org.eclipse.ui.wizards.new.file",
+		// "navigator/files/wizard.file", "org.eclipse.ui.wizards.new.folder", "navigator/files/wizard.folder");
+
 		/**
 		 * Run.
 		 */
@@ -275,14 +279,19 @@ public class CleanupHelper {
 			r = (AbstractExtensionWizardRegistry) PlatformUI.getWorkbench().getExportWizardRegistry();
 			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
 			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
-				final String id = wizard.getCategory().getId();
-				if (CATEGORIES_TO_REMOVE.contains(id) || IDS_TO_REMOVE.contains(wizard.getId())) {
+				final String catId = wizard.getCategory().getId();
+				// final String wizId = wizard.getId();
+				if (CATEGORIES_TO_REMOVE.contains(catId) || IDS_TO_REMOVE.contains(wizard.getId())) {
 					// DEBUG.LOG("Removing wizard " + wizard.getId() +
 					// " in category " + id);
 					final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
 					r.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
 							new Object[] { element });
 				}
+				// else if(WIZARDS_IMAGES_TO_REPLACE.containsKey(wizId)) {
+				// final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
+				// element.
+				// }
 			}
 
 		}
@@ -331,12 +340,12 @@ public class CleanupHelper {
 				put("new", "navigator/navigator.new2");
 				put("import", "navigator/menu.import");
 				put("export", "navigator/menu.export");
-				put("undo", "generic/menu.undo");
-				put("redo", "generic/menu.redo");
-				put("cut", "generic/menu.cut");
-				put("copy", "generic/menu.copy");
-				put("paste", "generic/menu.paste");
-				put("delete", "generic/menu.delete");
+				// put("undo", "generic/menu.undo");
+				// put("redo", "generic/menu.redo");
+				// put("cut", "generic/menu.cut");
+				// put("copy", "generic/menu.copy");
+				// put("paste", "generic/menu.paste");
+				// put("delete", "generic/menu.delete");
 				put("helpContents", "generic/menu.help");
 				put("org.eclipse.search.OpenSearchDialog", "generic/menu.search");
 				put("org.eclipse.ui.openLocalFile", "navigator/navigator.open2");

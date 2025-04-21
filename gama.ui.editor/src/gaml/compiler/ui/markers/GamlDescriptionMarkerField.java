@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlDescriptionMarkerField.java, in gama.ui.shared.modeling, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamlDescriptionMarkerField.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui.markers;
 
@@ -25,15 +25,12 @@ public class GamlDescriptionMarkerField extends MarkerSeverityAndDescriptionFiel
 	/**
 	 * Instantiates a new gaml description marker field.
 	 */
-	public GamlDescriptionMarkerField() {
-	}
+	public GamlDescriptionMarkerField() {}
 
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * org.eclipse.ui.views.markers.MarkerField#update(org.eclipse.jface.viewers
-	 * .ViewerCell)
+	 * @see org.eclipse.ui.views.markers.MarkerField#update(org.eclipse.jface.viewers .ViewerCell)
 	 */
 	@Override
 	public void update(final ViewerCell cell) {

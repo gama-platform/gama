@@ -15,13 +15,13 @@ global {
 	 	do break_in_loop_demo();
 	 	do break_in_infinite_loop_demo();
 	 	do break_in_switch_demo();
-	 	do break_in_create_demo();
+	 	do break_in_create_demo(); 
 	 	do break_in_ask_demo();
-	}
+	} 
 	
 	
 	action continue_in_loop_demo {
-		write "Use continue to write every odd number from 1 to 100";
+		write "Use continue to write every odd number from 1 to 100"; 
 		loop i from: 1 to: 100 {
 			if (even(i)){ continue;}
 			write "This number " + i + " is odd";

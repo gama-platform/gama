@@ -154,7 +154,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				Composite labelComposite = getOrCreateLabel(i);
 				final Label b = (Label) labelComposite.getChildren()[0];
 				final Label label = (Label) labelComposite.getChildren()[1];
-				b.setImage(GamaIcon.ofColorWithAWT(GamaColors.get(agent.getColor()), false).image());
+				b.setImage(GamaIcon.ofColor(agent.getColor()).image());
 				labelComposite.setData(agent);
 				label.setText(GamlIdiomsProvider.toText(status.popupTextFor(agent)));
 			} catch (Exception e) {

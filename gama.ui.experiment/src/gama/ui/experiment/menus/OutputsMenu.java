@@ -25,7 +25,6 @@ import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.ui.shared.menus.GamaMenu;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.views.toolbar.Selector;
@@ -77,7 +76,7 @@ public class OutputsMenu extends ContributionItem {
 	public void managementSubMenu(final Menu main, final IScope scope, final IOutputManager manager) {
 		if (manager.isEmpty()) return;
 		final MenuItem item = new MenuItem(main, SWT.CASCADE);
-		item.setImage(GamaIcon.ofColorWithAWT(GamaColors.get(scope.getRoot().getColor()), true).image());
+		item.setImage(GamaIcon.ofColor(scope.getRoot().getColor()).image());
 		item.setText(manager.toString());
 		final Menu sub = new Menu(item);
 		item.setMenu(sub);

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlMarkerImageProvider.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamlMarkerImageProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gaml.compiler.ui.markers;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.internal.ide.IMarkerImageProvider;
 
-import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -21,11 +20,6 @@ import gama.ui.shared.resources.IGamaIcons;
  * The Class GamlMarkerImageProvider.
  */
 public class GamlMarkerImageProvider implements IMarkerImageProvider {
-
-	/**
-	 * Instantiates a new gaml marker image provider.
-	 */
-	public GamlMarkerImageProvider() {}
 
 	/**
 	 * Returns the relative path for the image to be used for displaying an marker in the workbench. This path is
@@ -41,8 +35,7 @@ public class GamlMarkerImageProvider implements IMarkerImageProvider {
 	public String getImagePath(final IMarker marker) {
 		GamaIcon icon = getImage(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING));
 		if (icon == null) return null;
-		String iconPath = "/icons/full/";
-		return iconPath + icon.getCode() + ".png";
+		return "/icons/" + icon.getCode() + ".png";
 	}
 
 	/**
@@ -69,11 +62,9 @@ public class GamlMarkerImageProvider implements IMarkerImageProvider {
 	 */
 	public static GamaIcon getImage(final int severity) {
 		return switch (severity) {
-			case IMarker.SEVERITY_ERROR -> GamaIcon
-					.named(ThemeHelper.isDark() ? IGamaIcons.MARKER_ERROR_DARK : IGamaIcons.MARKER_ERROR);
+			case IMarker.SEVERITY_ERROR -> GamaIcon.named(IGamaIcons.MARKER_ERROR);
 			case IMarker.SEVERITY_WARNING -> GamaIcon.named(IGamaIcons.MARKER_WARNING);
-			case IMarker.SEVERITY_INFO -> GamaIcon
-					.named(ThemeHelper.isDark() ? IGamaIcons.MARKER_INFO_DARK : IGamaIcons.MARKER_INFO);
+			case IMarker.SEVERITY_INFO -> GamaIcon.named(IGamaIcons.MARKER_INFO);
 			case -1 -> GamaIcon.named(IGamaIcons.MARKER_TASK);
 			default -> null;
 		};

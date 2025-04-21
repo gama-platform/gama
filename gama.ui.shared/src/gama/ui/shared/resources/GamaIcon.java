@@ -14,6 +14,7 @@ import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import static java.nio.file.Files.walk;
 import static org.eclipse.core.runtime.FileLocator.toFileURL;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -24,7 +25,6 @@ import java.awt.image.RGBImageFilter;
 import java.awt.image.RescaleOp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -52,40 +52,59 @@ import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageOperators;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 
 /**
  * The Class GamaIcon.
  */
-public class GamaIcon {
+public class GamaIcon implements IGamaIcons {
 
 	static {
 		DEBUG.OFF();
 	}
 
-	/** The icon cache. */
-	public static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
+	/** The light path. */
+	private static final String LIGHT_PATH = "light/";
 
-	/** The Constant MISSING. */
-	static final String MISSING = "gaml" + File.separator + "_unknown";
+	/** The dark path. */
+	private static final String DARK_PATH = "dark/";
+
+	/** The Constant TEMPLATES. */
+	private static final String TEMPLATE_PATH = "templates/";
+
+	/** The Constant COLORS. */
+	private static final String COLOR_PATH = "colors/";
+
+	/** The Constant THEME_PATH. */
+	private static final String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
+
+	/** The Constant DEFAULT_PATH. */
+	private static final String ICONS_PATH = "/icons/" + THEME_PATH;
+
+	/** The Constant GAML_PATH. */
+	public static final String GAML_PATH = "gaml/";
+
+	/** The Constant defaultIcon. */
+	public static final String MISSING = GAML_PATH + "_unknown";
+
+	/** The Constant PLUGIN_ID. */
+	private static final String PLUGIN_ID = "gama.ui.shared";
+
+	/** The icon cache. */
+	private static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
 
 	/** The Constant DISABLED_SUFFIX. */
 	public static final String DISABLED_SUFFIX = "_disabled";
 
-	/** The Constant TEMPLATES. */
-	public static final String TEMPLATES = "templates" + File.separator;
-
-	/** The Constant COLORS. */
-	public static final String COLORS = "colors" + File.separator;
-
 	/** The Constant PATH_TO_ICONS. */
-	public static final Path PATH_TO_ICONS;
+	private static final Path PATH_TO_ICONS;
 
 	static {
 		// we need to use a tmp variable because PATH_TO_ICONS is final
 		Path tmp = null;
 		try {
-			URL pngFolderURL = toFileURL(Platform.getBundle(IGamaIcons.PLUGIN_ID).getEntry(IGamaIcons.ICONS_PATH));
+			URL pngFolderURL = toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH));
 			tmp = Path.of(new URI(pngFolderURL.getProtocol(), pngFolderURL.getPath(), null).normalize());
 		} catch (Exception e) {}
 		PATH_TO_ICONS = tmp;
@@ -102,7 +121,7 @@ public class GamaIcon {
 		TIMER_WITH_EXCEPTIONS("GAMA", "Preloading icons", "done in",
 				() -> walk(PATH_TO_ICONS).map(f -> PATH_TO_ICONS.relativize(f).toString())
 						.filter(n -> n.endsWith(".png") && !n.contains("@") && !n.contains(DISABLED_SUFFIX))
-						.forEach(f -> GamaIcon.named(f.replace(".png", ""))));
+						.forEach(f -> named(f.replace(".png", ""))));
 	}
 
 	/**
@@ -130,7 +149,7 @@ public class GamaIcon {
 		final String name = "size" + width + "x" + height;
 		try {
 			return ICON_CACHE.get(name, () -> {
-				DEBUG.OUT(name + " not found. Building it");
+				// DEBUG.OUT(name + " not found. Building it");
 				GamaImage bi = GamaImage.ofDimensions(width, height, true);
 				return new GamaIcon(name, bi);
 			});
@@ -140,70 +159,17 @@ public class GamaIcon {
 	}
 
 	/**
-	 * Creates a color icon, either a round square or a circle
+	 * Of color with AWT.
 	 *
 	 * @param gcolor
 	 *            the gcolor
 	 * @param square
 	 *            the square
-	 * @return the image
+	 * @return the gama icon
 	 */
+	public static GamaIcon ofColor(final GamaUIColor gcolor) {
+		return ofColor(gcolor.gamaColor());
 
-	public static GamaIcon ofColorWithAWTOld(final GamaUIColor gcolor, final boolean square) {
-		String shape = square ? "square" : "circle";
-		final String name = COLORS + shape + ".color." + String.format("%X", gcolor.gamaColor().getRGB());
-		// DEBUG.OUT("Looking for " + name + ".png");
-		try {
-			return ICON_CACHE.get(name, () -> {
-				// DEBUG.OUT(name + " not found. Building it");
-				GamaImage bi = GamaImage.from(ImageIO.read(computeURL(TEMPLATES + shape + "_template")), true);
-				Graphics2D gc = bi.createGraphics();
-				gc.setColor(gcolor.gamaColor());
-				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				gc.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-						RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-				int size = bi.getWidth();
-				if (square) {
-					gc.fillRoundRect(size / 4, size / 4, size / 2 + 1, size / 2 + 1, 4, 4);
-				} else {
-					gc.fillOval(size / 4, size / 4, size / 2 + 1, size / 2 + 1);
-				}
-				gc.dispose();
-				return new GamaIcon(name, bi);
-			});
-		} catch (Exception e) {
-			return null;
-		}
-
-	}
-
-	/**
-	 * Key for color.
-	 *
-	 * @param color
-	 *            the color
-	 * @param square
-	 *            the square
-	 * @return the string
-	 */
-	public static String nameForColor(final GamaColor color, final boolean square) {
-		String shape = square ? "square" : "circle";
-		String key = COLORS + shape + ".color." + String.format("%X", color.getRGB());
-		ofColorWithAWT(key, GamaColors.get(color), square);
-		return key;
-	}
-
-	/**
-	 * Key for color.
-	 *
-	 * @param color
-	 *            the color
-	 * @param square
-	 *            the square
-	 * @return the string
-	 */
-	public static String nameForColor(final GamaUIColor color, final boolean square) {
-		return nameForColor(color.gamaColor(), square);
 	}
 
 	/**
@@ -215,36 +181,20 @@ public class GamaIcon {
 	 *            the square
 	 * @return the gama icon
 	 */
-	public static GamaIcon ofColorWithAWT(final GamaUIColor gcolor, final boolean square) {
-		return ofColorWithAWT(null, gcolor, square);
-	}
-
-	/**
-	 * Of color with AWT.
-	 *
-	 * @param gcolor
-	 *            the gcolor
-	 * @param square
-	 *            the square
-	 * @return the gama icon
-	 */
-	public static GamaIcon ofColorWithAWT(final String key, final GamaUIColor gcolor, final boolean square) {
-
-		final String name = key == null ? nameForColor(gcolor, square) : key;
+	public static GamaIcon ofColor(final GamaColor gcolor) {
+		String name = COLOR_PATH + "square.color." + String.format("%X", gcolor.getRGB());
 		try {
 			return ICON_CACHE.get(name, () -> {
 				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
 				Graphics2D gc = bi.createGraphics();
-				gc.setColor(gcolor.gamaColor());
-				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				gc.setColor(gcolor);
+				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 				gc.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-						RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+						RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
 				int size = bi.getWidth();
-				if (square) {
-					gc.fillRoundRect(4, 4, size - 8, size - 8, 4, 4);
-				} else {
-					gc.fillOval(4, 4, size - 8, size - 8);
-				}
+				gc.fillRect(1, 1, size - 2, size - 2);
+				gc.setColor(ThemeHelper.isDark() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
+				gc.drawRoundRect(0, 0, size - 1, size - 1, 4, 4);
 				gc.dispose();
 				return new GamaIcon(name, bi);
 			});
@@ -512,14 +462,22 @@ public class GamaIcon {
 	 * @return the url
 	 */
 	public static URL computeURL(final String code) {
-		IPath uriPath = new org.eclipse.core.runtime.Path("/plugin").append(IGamaIcons.PLUGIN_ID)
-				.append(IGamaIcons.ICONS_PATH + code + ".png");
+		IPath uriPath =
+				new org.eclipse.core.runtime.Path("/plugin").append(PLUGIN_ID).append(ICONS_PATH + code + ".png");
 		try {
 			URI uri = new URI("platform", null, uriPath.toString(), null);
 			return uri.toURL();
 		} catch (MalformedURLException | URISyntaxException e) {
-			return computeURL(GamaIcon.MISSING);
+			return computeURL(MISSING);
 		}
+	}
+
+	/**
+	 * @param string
+	 * @return
+	 */
+	public static boolean exist(final String code) {
+		return ICON_CACHE.getIfPresent(code) != null;
 	}
 
 }

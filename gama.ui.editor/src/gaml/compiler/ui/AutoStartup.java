@@ -62,6 +62,7 @@ public class AutoStartup implements IStartup {
 	@Override
 	public void earlyStartup() {
 		DEBUG.OUT("Startup of editor plugin begins");
+
 		GamaPreferences.Modeling.EDITOR_BASE_FONT.init(AutoStartup::getDefaultFontData).onChange(font -> {
 			try {
 				final FontData newValue = new FontData(font.getName(), font.getSize(), font.getStyle());

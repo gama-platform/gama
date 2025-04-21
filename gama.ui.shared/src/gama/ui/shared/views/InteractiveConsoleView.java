@@ -370,7 +370,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			}
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
-					toolbar.status(GamaIcon.nameForColor(agent.getColor(), false),
+					toolbar.status(GamaIcon.ofColor(agent.getColor()).getCode(),
 							"Interacting with " + agent.getFamilyName() + " " + agent.getName());
 					// toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
 					toolbar.update();

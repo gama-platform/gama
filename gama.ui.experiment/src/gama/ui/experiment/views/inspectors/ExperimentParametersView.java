@@ -139,7 +139,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		if (a != null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.status(GamaIcon.nameForColor(a.getColor(), false),
+					toolbar.status(GamaIcon.ofColor(a.getColor()).getCode(),
 							"Parameters for " + a.getFamilyName() + " " + a.getName());
 					// toolbar.setBackgroundColor(GamaColors.toSwtColor(a.getColor()));
 				}

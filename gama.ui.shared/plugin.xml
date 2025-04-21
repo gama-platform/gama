@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.ui.ide.projectNatureImages">
       <image
-            icon="platform:/plugin/gama.ui.shared/icons/navigator/files/folder.model.png"
+            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/folder.model.png"
             id="gama.application.nature.gamaNature.img"
             natureId="gama.ui.application.gamaNature">
       </image>
@@ -62,7 +62,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.shared.views.InteractiveConsoleView"
-            icon="/icons/views/tabs/view.interactive.png"
+            icon="/icons/light/views/tabs/view.interactive.png"
             id="gama.ui.application.view.InteractiveConsoleView"
             name="Interactive console"
             restorable="true">
@@ -71,7 +71,7 @@
                   allowMultiple="false"
                   category="gama.ui.category.gama"
                   class="gama.ui.shared.views.TestView"
-                  icon="/icons/views/tabs/view.test.png"
+                  icon="/icons/light/views/tabs/view.test.png"
                   id="gama.ui.application.view.TestView"
                   name="Tests"
                   restorable="false"> 
@@ -94,66 +94,66 @@
             type="java.lang.String">
       </commandParameterType>
    </extension>
-   <extension
+<!--   <extension
          point="org.eclipse.ui.commandImages">
       <image
             commandId="org.eclipse.ui.edit.copy"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.copy.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.copy.png">
       </image>
       <image
             commandId="org.eclipse.ui.edit.cut"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.cut.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.cut.png">
       </image>
       <image
             commandId="org.eclipse.ui.edit.delete"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.delete.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.delete.png">
       </image>
       <image
             commandId="org.eclipse.ui.edit.paste"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.paste.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.paste.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.print"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.print.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.print.png">
       </image>
       <image
             commandId="org.eclipse.ui.edit.undo"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.undo.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.undo.png">
       </image>
       <image
             commandId="org.eclipse.ui.edit.redo"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.redo.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.redo.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.save"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.save.png"> 
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.save.png"> 
       </image>
       <image
             commandId="org.eclipse.ui.file.saveAll"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.saveall.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.saveall.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.saveAs"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.saveas.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.saveas.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.refresh"
-            icon="platform:/plugin/gama.ui.shared/icons/navigator/file.refresh.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/file.refresh.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.export"
-            icon="platform:/plugin/gama.ui.shared/icons/navigator/menu.export.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/menu.export.png">
       </image>
       <image
             commandId="org.eclipse.ui.file.import"
-            icon="platform:/plugin/gama.ui.shared/icons/navigator/menu.import.png">
+            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/menu.import.png">
       </image>
       <image
             commandId="org.eclipse.ui.window.preferences"
-            disabledIcon="platform:/plugin/gama.ui.shared/icons/generic/menu.open.preferences_disabled.png"
-            icon="platform:/plugin/gama.ui.shared/icons/generic/menu.open.preferences.png">
+            disabledIcon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.open.preferences_disabled.png"
+            icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.open.preferences.png">
       </image>
-   </extension>
+   </extension>-->
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -214,8 +214,8 @@
                label="Common">
             <command
                   commandId="gama.application.goto.modeling"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/views/perspective.modeling_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/views/perspective.modeling.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling.png"
                   label="Modeling perspective"
                   style="push"
                   tooltip="Open modeling perspective">
@@ -239,13 +239,13 @@
             locationURI="menu:file?after=open.ext">
          <command
                commandId="gama.ui.switchWorkspace"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.switch.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.switch.png"
                label="Switch Workspace..."
                style="push">
          </command>
          <command
                commandId="gama.ui.restart"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.restart.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.restart.png"
                label="Restart GAMA"
                style="push">
          </command>
@@ -255,8 +255,8 @@
             locationURI="menu:support?after=group.about.ext">
          <command
                commandId="gama.application.command.web"
-               disabledIcon="icons/generic/menu.help_disabled.png"
-               icon="icons/generic/menu.help.png"
+               disabledIcon="icons/light/generic/menu.help_disabled.png"
+               icon="icons/light/generic/menu.help.png"
                label="Documentation..."
                style="push"
                tooltip="Open GAMA documentation in a browser">
@@ -267,19 +267,19 @@
          </separator>
          <command
                commandId="gama.ui.update"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.update.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.update.png"
                label="Check for Updates"
                style="push">
          </command>
          <command
                commandId="gama.ui.install"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.install.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.install.png"
                label="Install new Plugins..."
                style="push">
          </command>
          <command 
                commandId="gama.ui.details"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.details.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.details.png"
                label="Installation Details"
                style="push">
          </command>
@@ -303,8 +303,8 @@
          </separator>
          <command
                commandId="org.eclipse.ui.window.preferences"
-               disabledIcon="platform:/plugin/gama.ui.shared/icons/generic/menu.open.preferences_disabled.png"
-               icon="platform:/plugin/gama.ui.shared/icons/generic/menu.open.preferences.png"
+               disabledIcon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.open.preferences_disabled.png"
+               icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.open.preferences.png"
                label="Preferences"
                style="push">
             <visibleWhen
@@ -319,8 +319,8 @@
          </command>
          <command
                commandId="org.eclipse.ui.help.aboutAction"
-               disabledIcon="icons/generic/menu.about_disabled.png"
-               icon="icons/generic/menu.about.png"
+               disabledIcon="icons/light/generic/menu.about_disabled.png"
+               icon="icons/light/generic/menu.about.png"
                label="About GAMA..."
                style="push">
             <visibleWhen

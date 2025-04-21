@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * GamlAnnotationImageProvider.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamlAnnotationImageProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.ui.decorators;
 
-import static gama.ui.application.workbench.ThemeHelper.isDark;
 import static org.eclipse.xtext.ui.editor.XtextEditor.ERROR_ANNOTATION_TYPE;
 import static org.eclipse.xtext.ui.editor.XtextEditor.INFO_ANNOTATION_TYPE;
 import static org.eclipse.xtext.ui.editor.XtextEditor.WARNING_ANNOTATION_TYPE;
@@ -40,17 +39,16 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 	private static final GamaIcon DELETED = GamaIcon.named(IGamaIcons.MARKER_DELETED);
 
 	/** The Constant ERROR. */
-	private static final GamaIcon ERROR = GamaIcon.named(isDark() ? IGamaIcons.MARKER_ERROR_DARK : IGamaIcons.MARKER_ERROR);
+	private static final GamaIcon ERROR = GamaIcon.named(IGamaIcons.MARKER_ERROR);
 
 	/** The Constant WARNING. */
 	private static final GamaIcon WARNING = GamaIcon.named(IGamaIcons.MARKER_WARNING);
 
 	/** The Constant INFO. */
-	private static final GamaIcon INFO = GamaIcon.named(isDark() ? IGamaIcons.MARKER_INFO_DARK : IGamaIcons.MARKER_INFO);
+	private static final GamaIcon INFO = GamaIcon.named(IGamaIcons.MARKER_INFO);
 
 	/** The Constant TASK. */
 	private static final GamaIcon TASK = GamaIcon.named(IGamaIcons.MARKER_TASK);
-
 
 	/** The Constant deleted. */
 	private static final Map<String, GamaIcon> deleted = new HashMap() {
