@@ -90,6 +90,9 @@ public class ThemeHelper {
 	/** The bundle. */
 	private static Bundle bundle = Platform.getBundle("gama.ui.application");
 
+	/** The original background. */
+	private static Color originalBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+
 	static {
 		DEBUG.OFF();
 	}
@@ -323,9 +326,6 @@ public class ThemeHelper {
 			sb.append("\nError: ").append(e.getLocalizedMessage());
 		}
 	}
-
-	/** The original background. */
-	static Color originalBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
 	/**
 	 * Change sash background.
