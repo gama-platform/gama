@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IGamaIcons.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * IGamaIcons.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.resources;
 
+import gama.ui.application.workbench.ThemeHelper;
+
 /**
  * Class IStrings.
  *
@@ -18,6 +20,46 @@ package gama.ui.shared.resources;
  *
  */
 public interface IGamaIcons {
+
+	// Constants for producing icons
+
+	/** The light path. */
+	String LIGHT_PATH = "light/";
+
+	/** The dark path. */
+	String DARK_PATH = "dark/";
+
+	/** The Constant COLORS. */
+	String COLOR_PATH = "colors/";
+
+	/** The Constant THEME_PATH. */
+	String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
+
+	/** The icons segment. */
+	String ICONS_SEGMENT = "/icons/";
+
+	/** The Constant DEFAULT_PATH. */
+	String ICONS_PATH = "/icons/" + THEME_PATH;
+
+	/** The Constant GAML_PATH. */
+	String GAML_PATH = "gaml/";
+
+	/** The Constant defaultIcon. */
+	String MISSING = GAML_PATH + "_unknown";
+
+	/** The Constant PLUGIN_ID. */
+	String PLUGIN_ID = "gama.ui.shared";
+
+	/** The Constant DISABLED_SUFFIX. */
+	String DISABLED_SUFFIX = "_disabled";
+
+	/** The light prefix uri. */
+	String LIGHT_PREFIX = "platform:/plugin/" + IGamaIcons.PLUGIN_ID + ICONS_SEGMENT + IGamaIcons.LIGHT_PATH;
+
+	/** The dark prefix uri. */
+	String DARK_PREFIX = "platform:/plugin/" + IGamaIcons.PLUGIN_ID + ICONS_SEGMENT + IGamaIcons.DARK_PATH;
+
+	// Constants corresponding to common icons
 
 	/** The action clear. */
 	String ACTION_CLEAR = "viewers/erase.contents";

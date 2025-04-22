@@ -64,38 +64,8 @@ public class GamaIcon implements IGamaIcons {
 		DEBUG.OFF();
 	}
 
-	/** The light path. */
-	private static final String LIGHT_PATH = "light/";
-
-	/** The dark path. */
-	private static final String DARK_PATH = "dark/";
-
-	/** The Constant TEMPLATES. */
-	private static final String TEMPLATE_PATH = "templates/";
-
-	/** The Constant COLORS. */
-	private static final String COLOR_PATH = "colors/";
-
-	/** The Constant THEME_PATH. */
-	private static final String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
-
-	/** The Constant DEFAULT_PATH. */
-	private static final String ICONS_PATH = "/icons/" + THEME_PATH;
-
-	/** The Constant GAML_PATH. */
-	public static final String GAML_PATH = "gaml/";
-
-	/** The Constant defaultIcon. */
-	public static final String MISSING = GAML_PATH + "_unknown";
-
-	/** The Constant PLUGIN_ID. */
-	private static final String PLUGIN_ID = "gama.ui.shared";
-
 	/** The icon cache. */
 	private static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
-
-	/** The Constant DISABLED_SUFFIX. */
-	public static final String DISABLED_SUFFIX = "_disabled";
 
 	/** The Constant PATH_TO_ICONS. */
 	private static final Path PATH_TO_ICONS;
