@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IGamaIcons.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
+ * IGamaIcons.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -52,12 +52,6 @@ public interface IGamaIcons {
 
 	/** The Constant DISABLED_SUFFIX. */
 	String DISABLED_SUFFIX = "_disabled";
-
-	/** The light prefix uri. */
-	String LIGHT_PREFIX = "platform:/plugin/" + IGamaIcons.PLUGIN_ID + ICONS_SEGMENT + IGamaIcons.LIGHT_PATH;
-
-	/** The dark prefix uri. */
-	String DARK_PREFIX = "platform:/plugin/" + IGamaIcons.PLUGIN_ID + ICONS_SEGMENT + IGamaIcons.DARK_PATH;
 
 	// Constants corresponding to common icons
 
