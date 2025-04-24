@@ -292,11 +292,9 @@
          version="0.0.0"/>
 
    <plugin
-         id="org.eclipse.e4.ui.swt.win32"
-         version="0.0.0"/>
-
-   <plugin
          id="org.eclipse.swt.win32.win32.aarch64"
+         os="win32"
+         arch="aarch64"
          version="0.0.0"/>
 
 </feature>
