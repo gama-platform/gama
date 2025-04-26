@@ -203,7 +203,7 @@ public class GamaColorMenu extends GamaMenu {
 			}
 			final MenuItem item = action(subMenu, "#" + current, defaultListener);
 			final GamaColor color = GamaColor.colors.get(current);
-			item.setImage(GamaIcon.ofColor(color).image());
+			item.setImage(GamaIcon.ofSmallColor(color).image());
 		}
 
 	}
@@ -225,7 +225,7 @@ public class GamaColorMenu extends GamaMenu {
 		for (final String current : names) {
 			final GamaColor color = GamaColor.colors.get(current);
 			final MenuItem item = action(subMenu, "#" + current, t -> selector.accept(GamaColor.colors.get(current)));
-			item.setImage(GamaIcon.ofColor(color).image());
+			item.setImage(GamaIcon.ofSmallColor(color).image());
 		}
 	}
 

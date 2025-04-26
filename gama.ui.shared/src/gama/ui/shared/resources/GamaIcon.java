@@ -52,6 +52,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
+import org.geotools.coverage.grid.io.imageio.geotiff.codes.GeoTiffVCSCodes;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -176,26 +177,54 @@ public class GamaIcon implements IGamaIcons {
 	 * @return the gama icon
 	 */
 	public static GamaIcon ofColor(final GamaColor gcolor) {
-		String name = COLOR_PATH + "square.color." + String.format("%X", gcolor.getRGB());
+		String name = COLOR_PATH + "square.color." + String.format("%X", gcolor.getRGB()) + ".24";
 		try {
 			return ICON_CACHE.get(name, () -> {
-				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
+				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer")), true);
 				Graphics2D gc = bi.createGraphics();
-				gc.setColor(gcolor);
+
 				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 				gc.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
 						RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
 				int size = bi.getWidth();
-				gc.fillRect(1, 1, size - 2, size - 2);
 				gc.setColor(ThemeHelper.isDark() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
-				gc.drawRoundRect(0, 0, size - 1, size - 1, 4, 4);
+				gc.drawRoundRect(0, 0, size - 1, size - 1, 5, 5);
+				gc.setColor(Color.white);
+				gc.fillRect(1, 1, size - 2, size - 2);
+				gc.setColor(gcolor);
+				gc.fillRect(4, 4, size - 8, size - 8);
+
 				gc.dispose();
 				return new GamaIcon(name, bi);
 			});
 		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	public static GamaIcon ofSmallColor(final GamaColor gcolor) {
+		String name = COLOR_PATH + "square.color." + String.format("%X", gcolor.getRGB()) + ".16";
+		try {
+			return ICON_CACHE.get(name, () -> {
+				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
+				Graphics2D gc = bi.createGraphics();
 
+				gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+				gc.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+						RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+				int size = bi.getWidth();
+				gc.setColor(gcolor);
+				gc.fillRect(1, 1, size-2, size-2);
+				gc.setColor(ThemeHelper.isDark() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
+				gc.drawRoundRect(0, 0, size - 1, size - 1, 4, 4);
+
+
+				gc.dispose();
+				return new GamaIcon(name, bi);
+			});
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/** The code. */
