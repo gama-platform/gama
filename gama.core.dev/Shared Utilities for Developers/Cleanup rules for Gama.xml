@@ -53,7 +53,7 @@
         <setting id="jautodoc.cleanup.replace_header" value="false"/>
         <setting id="cleanup.valueof_rather_than_instantiation" value="true"/>
         <setting id="cleanup.comparing_on_criteria" value="true"/>
-        <setting id="jautodoc.cleanup.add_header" value="false"/>
+        <setting id="jautodoc.cleanup.add_header" value="true"/>
         <setting id="cleanup.substring" value="true"/>
         <setting id="cleanup.use_string_is_blank" value="true"/>
         <setting id="cleanup.redundant_comparator" value="true"/>
@@ -84,7 +84,7 @@
         <setting id="cleanup.add_default_serial_version_id" value="false"/>
         <setting id="cleanup.format_source_code" value="true"/>
         <setting id="cleanup.always_use_parentheses_in_expressions" value="false"/>
-        <setting id="jautodoc.cleanup.javadoc" value="false"/>
+        <setting id="jautodoc.cleanup.javadoc" value="true"/>
         <setting id="cleanup.single_used_field" value="true"/>
         <setting id="cleanup.system_property_boolean" value="true"/>
         <setting id="cleanup.simplify_boolean_if_else" value="true"/>
