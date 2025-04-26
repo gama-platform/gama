@@ -140,9 +140,6 @@ public class ThemeHelper {
 	/** The bundle. */
 	private static Bundle bundle = Platform.getBundle("gama.ui.application");
 
-	/** The original background. */
-	private static Color originalBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-
 	static {
 		DEBUG.ON();
 	}
@@ -364,8 +361,17 @@ public class ThemeHelper {
 		BundleContext context = bundle.getBundleContext();
 		ServiceReference<IThemeManager> ref = context.getServiceReference(IThemeManager.class);
 		IThemeManager manager = context.getService(ref);
-		return (ThemeEngine) manager.getEngineForDisplay(PlatformUI.getWorkbench().getActiveWorkbenchWindow() == null
-				? Display.getCurrent() : PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getDisplay());
+		return (ThemeEngine) manager.getEngineForDisplay(getDisplay());
+	}
+
+	/**
+	 * Gets the display.
+	 *
+	 * @return the display
+	 */
+	private static Display getDisplay() {
+		return PlatformUI.getWorkbench().getActiveWorkbenchWindow() == null ? Display.getCurrent()
+				: PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getDisplay();
 	}
 
 	/**
@@ -405,10 +411,19 @@ public class ThemeHelper {
 	}
 
 	/**
+	 * Gets the original backgound.
+	 *
+	 * @return the original backgound
+	 */
+	public static Color getOriginalBackgound() {
+		return getDisplay().getSystemColor(isDark() ? SWT.COLOR_BLACK : SWT.COLOR_WHITE);
+	}
+
+	/**
 	 * Restore sash background.
 	 */
 	public static void restoreSashBackground() {
-		changeSashBackground(originalBackground);
+		changeSashBackground(getOriginalBackgound());
 	}
 
 	/**

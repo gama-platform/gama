@@ -43,7 +43,7 @@ public class BackgroundChooser {
 			final int index = i;
 			final ToolItem item = tb.button(null, labels[index], labels[index], null, SWT.RIGHT);
 			GamaColor color = colors[index].gamaColor();
-			item.setImage(GamaIcon.ofSmallColor(color).image());
+			item.setImage(GamaIcon.ofColor(color).image());
 			item.addSelectionListener(new SelectionAdapter() {
 
 				SelectionListener listener = new SelectionAdapter() {
@@ -62,7 +62,7 @@ public class BackgroundChooser {
 				void changeColor(final int r, final int g, final int b) {
 					colors[index] = GamaColors.get(r, g, b);
 					// Image temp = item.getImage();
-					item.setImage(GamaIcon.ofSmallColor(color).image());
+					item.setImage(GamaIcon.ofColor(color).image());
 					// temp.dispose();
 					view.setColor(index, colors[index]);
 				}
