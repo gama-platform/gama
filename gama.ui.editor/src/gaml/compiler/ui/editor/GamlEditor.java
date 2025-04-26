@@ -588,9 +588,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, runner);
 				}
 				if (msg != null) {
-					final var t = toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, SWT.LEFT);
-					final FlatButton b = (FlatButton) t.getControl();
-					b.setRightPadding(buttonPadding);
+					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, SWT.LEFT);
 				} else if (newState.showExperiments) {
 					if (GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU.getValue()) {
 						displayExperimentMenu(newState, listener);
@@ -605,11 +603,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							displayExperimentButtons(newState, listener);
 						}
 					}
-					// if (!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())) {
-					// toolbar.button(IGamaColors.NEUTRAL, "Add Experiment", images.get("new"),
-					// new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)),
-					// SWT.LEFT);
-					// }
 				}
 				toolbar.requestLayout();
 

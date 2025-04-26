@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 
 /**
@@ -107,7 +108,9 @@ public class GamaToolbarSimple extends ToolBar {
 	 * @return the tool item
 	 */
 	public ToolItem space(final int width) {
-		return control(new Label(this, SWT.NONE), width);
+		Label label = new Label(this, SWT.NONE);
+		GamaColors.setBackground(this.getBackground(), label);
+		return control(label, width);
 	}
 
 	/**
