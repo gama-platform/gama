@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DefaultExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,12 +12,12 @@ package gama.core.kernel.experiment;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
+import gama.core.common.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.dev.DEBUG;
 
 /**
  * The Class ExperimentController.
@@ -73,13 +73,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					// https://github.com/gama-platform/gama/commit/8068457d11d25289bf001bb6f29553e4037f1cda#r130876638,
 					// removes the thread
 					// new Thread(() -> experiment.open()).start();
-				} catch (final GamaRuntimeException e) {
-					DEBUG.ERR("Error in previous experiment: " + e.getMessage());
-					closeExperiment(e);
-					return false;
 				} catch (final Exception e) {
-					DEBUG.ERR("Error when opening the experiment: " + e.getMessage());
-					closeExperiment(e);
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				}
 			case _START:
@@ -88,7 +83,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					lock.release();
 					return true;
 				} catch (final GamaRuntimeException e) {
-					closeExperiment(e);
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment, IExperimentStateListener.State.RUNNING);
@@ -112,16 +107,13 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
-					scope.getGui().getStatus().waitStatus(scope, "Reloading...");
-					experiment.reload();
+					scope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
+							() -> experiment.reload());
 					if (wasRunning) return processUserCommand(ExperimentCommand._START);
-					scope.getGui().getStatus().informStatus(scope, "Experiment reloaded");
+					scope.getGui().getStatus().informStatus("Experiment reloaded", IStatusMessage.SIMULATION_ICON);
 					return true;
-				} catch (final GamaRuntimeException e) {
-					closeExperiment(e);
-					return false;
 				} catch (final Throwable e) {
-					closeExperiment(GamaRuntimeException.create(e, scope));
+					notifyExceptionAndCloseExperiment(e);
 					return false;
 				} finally {
 					GAMA.updateExperimentState(experiment);
@@ -156,19 +148,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	@Override
 	public void close() {
-		closeExperiment(null);
+		disposing = true;
+		experiment.dispose(); // will call own dispose() later
 	}
 
 	/**
-	 * Close experiment.
+	 * Notify exception.
 	 *
 	 * @param e
 	 *            the e
 	 */
-	public void closeExperiment(final Exception e) {
-		disposing = true;
-		if (e != null) { getScope().getGui().getStatus().errorStatus(scope, e); }
-		experiment.dispose(); // will call own dispose() later
+	public void notifyExceptionAndCloseExperiment(final Throwable e) {
+		if (e != null) { getScope().getGui().getStatus().errorStatus(GamaRuntimeException.create(e, scope)); }
+		GAMA.closeExperiment(experiment);
+		GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 	}
 
 	/**
@@ -215,8 +208,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		}
 		try {
 			if (scope == null) return;
-			if (!scope.step(agent).passed()) {
-				scope.setDisposeStatus();
+			IScope savedScope = scope;
+			if (!savedScope.step(agent).passed()) {
+				savedScope.setDisposeStatus();
 				paused = true;
 			}
 		} catch (RuntimeException e) {

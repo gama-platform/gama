@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorToolbar.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorToolbar.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -81,8 +81,8 @@ public class EditorToolbar<T> {
 			command = c;
 			listener = l;
 			label = new Label(parent, SWT.NONE);
-			if (c.getText() != null) { label.setText(c.getText()); }
-			label.setToolTipText(c.getTooltip());
+			if (c.text() != null) { label.setText(c.text()); }
+			label.setToolTipText(c.tooltip());
 			enable(true);
 		}
 
@@ -94,9 +94,9 @@ public class EditorToolbar<T> {
 		 */
 		void enable(final boolean enable) {
 
-			if (command.getImage() != null) {
-				label.setImage(enable ? GamaIcon.named(command.getImage()).image() 
-						: GamaIcon.named(command.getImage()).disabled());
+			if (command.image() != null) {
+				label.setImage(
+						enable ? GamaIcon.named(command.image()).image() : GamaIcon.named(command.image()).disabled());
 			}
 			label.removeMouseListener(listener);
 			if (enable) { label.addMouseListener(listener); }
@@ -286,16 +286,16 @@ public class EditorToolbar<T> {
 		if (group.isDisposed()) return;
 		((GridData) group.getLayoutData()).horizontalAlignment = lead;
 	}
-	
+
 	/**
-	* Checks if is disposed.
-	*
-	* @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	* @return true, if is disposed
-	* @date 21 févr. 2024
-	*/
+	 * Checks if is disposed.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @return true, if is disposed
+	 * @date 21 févr. 2024
+	 */
 	public boolean isDisposed() {
-		for (Item i : items) { if ((i != null) && i.isDisposed()) return true; }
+		for (Item i : items) { if (i != null && i.isDisposed()) return true; }
 		return false;
 	}
 

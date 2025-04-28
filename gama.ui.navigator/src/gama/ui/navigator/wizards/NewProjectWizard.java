@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * NewProjectWizard.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -101,7 +101,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 		}
 		project = projectHandle;
 		if (createNewModel) {
-			WorkbenchHelper.runInUI("New Model File", 100, m -> {
+			WorkbenchHelper.runInUI("Opening model creation wizard", 100, m -> {
 				final IWorkbenchWizard w = isTest ? new NewTestExperimentWizard() : new NewFileWizard();
 				w.init(WorkbenchHelper.getWorkbench(), new StructuredSelection(project));
 				final WizardDialog wd = new WizardDialog(getShell(), w);

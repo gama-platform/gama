@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ItemList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ItemList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -97,26 +97,6 @@ public interface ItemList<T> {
 	 * Update item values.
 	 */
 	default void updateItemValues(final boolean synchronously) {}
-
-	/**
-	 * Make item selectable.
-	 *
-	 * @param data
-	 *            the data
-	 * @param b
-	 *            the b
-	 */
-	default void makeItemSelectable(final T data, final boolean b) {}
-
-	/**
-	 * Make item visible.
-	 *
-	 * @param obj
-	 *            the obj
-	 * @param b
-	 *            the b
-	 */
-	default void makeItemVisible(final T obj, final boolean b) {}
 
 	/**
 	 * Checks if is item visible.

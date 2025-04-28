@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GraphicsHelper.java, in gama.ui.shared.shared, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GraphicsHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
@@ -18,6 +18,8 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
+
+import gama.ui.shared.resources.GamaFonts;
 
 /**
  * Utility class gathering some useful and general method. Mainly convert forth and back graphical stuff between awt and
@@ -78,14 +80,14 @@ public class GraphicsHelper {
 		// same height as the awt one
 		if (ensureSameSize) {
 			final GC tmpGC = new GC(device);
-			Font tmpFont = new Font(device, fontData);
+			Font tmpFont = GamaFonts.getFont(fontData);
 			tmpGC.setFont(tmpFont);
 			if (tmpGC.textExtent(Az).x > DUMMY_PANEL.getFontMetrics(font).stringWidth(Az)) {
 				while (tmpGC.textExtent(Az).x > DUMMY_PANEL.getFontMetrics(font).stringWidth(Az)) {
 					tmpFont.dispose();
 					height--;
 					fontData.setHeight(height);
-					tmpFont = new Font(device, fontData);
+					tmpFont = GamaFonts.getFont(fontData);
 					tmpGC.setFont(tmpFont);
 				}
 			} else if (tmpGC.textExtent(Az).x < DUMMY_PANEL.getFontMetrics(font).stringWidth(Az)) {
@@ -93,7 +95,7 @@ public class GraphicsHelper {
 					tmpFont.dispose();
 					height++;
 					fontData.setHeight(height);
-					tmpFont = new Font(device, fontData);
+					tmpFont = GamaFonts.getFont(fontData);
 					tmpGC.setFont(tmpFont);
 				}
 			}
@@ -121,27 +123,18 @@ public class GraphicsHelper {
 	 * @return An awt font converted from the provided swt font.
 	 */
 	public static java.awt.Font toAwtFont(final Device device, final FontData fontData, final boolean ensureSameSize) {
-		int style;
-		switch (fontData.getStyle()) {
-			case SWT.NORMAL:
-				style = java.awt.Font.PLAIN;
-				break;
-			case SWT.ITALIC:
-				style = java.awt.Font.ITALIC;
-				break;
-			case SWT.BOLD:
-				style = java.awt.Font.BOLD;
-				break;
-			default:
-				style = java.awt.Font.PLAIN;
-				break;
-		}
+		int style = switch (fontData.getStyle()) {
+			case SWT.NORMAL -> java.awt.Font.PLAIN;
+			case SWT.ITALIC -> java.awt.Font.ITALIC;
+			case SWT.BOLD -> java.awt.Font.BOLD;
+			default -> java.awt.Font.PLAIN;
+		};
 		int height = (int) Math.round(fontData.getHeight() * device.getDPI().y / 72.0);
 		// hack to ensure the newly created awt fonts will be rendered with the
 		// same height as the swt one
 		if (ensureSameSize) {
 			final GC tmpGC = new GC(device);
-			final Font tmpFont = new Font(device, fontData);
+			final Font tmpFont = GamaFonts.getFont(fontData);
 			tmpGC.setFont(tmpFont);
 			final JPanel DUMMY_PANEL = new JPanel();
 			java.awt.Font tmpAwtFont = new java.awt.Font(fontData.getName(), style, height);

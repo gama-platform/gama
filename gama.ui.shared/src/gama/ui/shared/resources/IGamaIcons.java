@@ -1,14 +1,16 @@
 /*******************************************************************************************************
  *
  * IGamaIcons.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.resources;
+
+import gama.ui.application.workbench.ThemeHelper;
 
 /**
  * Class IStrings.
@@ -18,6 +20,40 @@ package gama.ui.shared.resources;
  *
  */
 public interface IGamaIcons {
+
+	// Constants for producing icons
+
+	/** The light path. */
+	String LIGHT_PATH = "light/";
+
+	/** The dark path. */
+	String DARK_PATH = "dark/";
+
+	/** The Constant COLORS. */
+	String COLOR_PATH = "colors/";
+
+	/** The Constant THEME_PATH. */
+	String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
+
+	/** The icons segment. */
+	String ICONS_SEGMENT = "/icons/";
+
+	/** The Constant DEFAULT_PATH. */
+	String ICONS_PATH = "/icons/" + THEME_PATH;
+
+	/** The Constant GAML_PATH. */
+	String GAML_PATH = "gaml/";
+
+	/** The Constant defaultIcon. */
+	String MISSING = GAML_PATH + "_unknown";
+
+	/** The Constant PLUGIN_ID. */
+	String PLUGIN_ID = "gama.ui.shared";
+
+	/** The Constant DISABLED_SUFFIX. */
+	String DISABLED_SUFFIX = "_disabled";
+
+	// Constants corresponding to common icons
 
 	/** The action clear. */
 	String ACTION_CLEAR = "viewers/erase.contents";
@@ -50,7 +86,7 @@ public interface IGamaIcons {
 	String BROWSER_HOME = "generic/menu.about";
 
 	/** The build all. */
-	String BUILD_ALL = "build/build.all";
+	String BUILD_ALL = "validation/compile.all";
 
 	/** The button back. */
 	String BUTTON_BACK = "overlays/small.exp.back.white";
@@ -168,6 +204,9 @@ public interface IGamaIcons {
 	/** The folder project. */
 	String FOLDER_PROJECT = "navigator/files/folder.project";
 
+	/** The folder project. */
+	String CLOSED_PROJECT = "navigator/files/closed.project";
+
 	/** The folder resources. */
 	String FOLDER_RESOURCES = "navigator/files/folder.resources";
 
@@ -180,10 +219,10 @@ public interface IGamaIcons {
 	String FOLDER_USER = "navigator/folder.user";
 
 	/** The font decrease. */
-	String FONT_DECREASE = "viewers/font.decrease";
+	String FONT_DECREASE = "display/zoom.out";
 
 	/** The font increase. */
-	String FONT_INCREASE = "viewers/font.increase";
+	String FONT_INCREASE = "display/zoom.in";
 
 	/** The import archive. */
 	String IMPORT_ARCHIVE = "navigator/import.archive";
@@ -244,14 +283,8 @@ public interface IGamaIcons {
 	/** The marker error. */
 	String MARKER_ERROR = "markers/marker.error";
 
-	/** The marker error dark. */
-	String MARKER_ERROR_DARK = "markers/marker.error.dark";
-
 	/** The marker info. */
 	String MARKER_INFO = "markers/marker.info";
-
-	/** The marker info dark. */
-	String MARKER_INFO_DARK = "markers/marker.info.dark";
 
 	/** The marker task. */
 	String MARKER_TASK = "markers/marker.task";
@@ -280,6 +313,9 @@ public interface IGamaIcons {
 	/** The button gui. */
 	String MENU_GUI = "overlays/small.exp.run.green";
 
+	/** The menu help. */
+	String MENU_HELP = "generic/menu.help";
+
 	/** The menu highlight. */
 	String MENU_HIGHLIGHT = "agents/action.highlight";
 
@@ -297,6 +333,12 @@ public interface IGamaIcons {
 
 	/** The menu run action. */
 	String MENU_RUN_ACTION = "agents/agent.actions";
+
+	/** The menu undo. */
+	String MENU_UNDO = "generic/menu.undo";
+
+	/** The menu redo. */
+	String MENU_REDO = "generic/menu.redo";
 
 	/** The new folder. */
 	String NEW_FOLDER = "navigator/new.folder2";
@@ -329,7 +371,7 @@ public interface IGamaIcons {
 	String OVERLAY_OK = "navigator/overlays/overlay.ok";
 
 	/** The overlay toggle. */
-	String OVERLAY_TOGGLE = "mini/overlay.toggle";
+	// String OVERLAY_TOGGLE = "mini/overlay.toggle";
 
 	/** The overlay warning. */
 	String OVERLAY_WARNING = "navigator/overlays/overlay.warning";
@@ -353,16 +395,16 @@ public interface IGamaIcons {
 	String PREFS_LIBS = "prefs/prefs.libraries2";
 
 	/** The prefs runtime. */
-	String PREFS_RUNTIME = "prefs/prefs.simulations2";
+	String PREFS_EXPERIMENTAL = "prefs/prefs.experimental2";
 
 	/** The prefs simulation. */
-	String PREFS_SIMULATION = "prefs/prefs.runtime2";
+	String PREFS_SIMULATION = "prefs/prefs.simulations2";
 
 	/** The prefs ui. */
-	String PREFS_UI = "prefs/prefs.ui2";
+	String PREFS_UI = "prefs/prefs.display2";
 
 	/** The presentation menu. */
-	String PRESENTATION_MENU = "display/menu.presentation";
+	String PRESENTATION_MENU = "editor/menu.presentation";
 
 	/** The project close. */
 	String PROJECT_CLOSE = "navigator/project.close2";
@@ -449,37 +491,37 @@ public interface IGamaIcons {
 	String STATUS_CLOCK = "overlays/status.clock";
 
 	/** The test filter. */
-	String TEST_FILTER = "build/test.filter";
+	String TEST_FILTER = "validation/test.filter";
 
 	/** The test run. */
-	String TEST_RUN = "build/test.run";
+	String TEST_RUN = "validation/test.run";
 
 	/** The test sort. */
-	String TEST_SORT = "build/test.sort";
+	String TEST_SORT = "validation/test.sort";
 
 	/** The toggle antialias. */
 	String TOGGLE_ANTIALIAS = "display/toggle.antialias";
 
 	/** The toggle info. */
-	String TOGGLE_INFOS = "build/toggle.infos";
+	String TOGGLE_INFOS = "validation/toggle.infos";
 
 	/** The toggle overlay. */
 	String TOGGLE_OVERLAY = "display/toggle.overlay";
 
 	/** The toggle warnings. */
-	String TOGGLE_WARNINGS = "build/toggle.warnings";
+	String TOGGLE_WARNINGS = "validation/toggle.warnings";
 
-	/** The toolbar hide. */
-	String TOOLBAR_HIDE = "mini/toolbar.hide";
-
-	/** The toolbar show. */
-	String TOOLBAR_SHOW = "mini/toolbar.show";
+	// /** The toolbar hide. */
+	// String TOOLBAR_HIDE = "mini/toolbar.hide";
+	//
+	// /** The toolbar show. */
+	// String TOOLBAR_SHOW = "mini/toolbar.show";
 
 	/** The tree collapse. */
-	String TREE_COLLAPSE = "mini/tree.collapse";
+	String TREE_COLLAPSE = "toolbar/bar.collapse";
 
 	/** The tree expand. */
-	String TREE_EXPAND = "mini/tree.expand";
+	String TREE_EXPAND = "toolbar/bar.expand";
 
 	/** The tree sort. */
 	String TREE_SORT = "mini/tree.sort";
@@ -492,14 +534,5 @@ public interface IGamaIcons {
 
 	/** The browse populations. */
 	String BROWSE_POPULATIONS = MENU_POPULATION;
-
-	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons/";
-
-	/** The Constant PLUGIN_ID. */
-	String PLUGIN_ID = "gama.ui.shared";
-
-	/** The Constant DVG_PATH. */
-	String SVG_PATH = "/svg/";
 
 }

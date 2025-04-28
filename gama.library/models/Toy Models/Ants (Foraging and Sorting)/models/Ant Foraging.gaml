@@ -11,13 +11,11 @@ model ants
 global {
 //Utilities
 
-
-
 	bool use_icons <- true;
 	bool display_state <- false;
 	//Evaporation value per cycle
 	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0;
-	//Diffusion rate of the pheromon among the grid
+	//Diffusion rate of the pheromon among the grid  
 	float diffusion_rate <- 1.0 min: 0.0 max: 1.0;
 	//Size of the grid
 	int gridsize <- 100 min: 30;
@@ -26,8 +24,8 @@ global {
 	//Frequency of update of the grid
 	int grid_frequency <- 1 min: 1 max: 100;
 	//Number of food places among the grid
-	int number_of_food_places <- 5 min: 1;
-	float grid_transparency <- 1.0;
+	int number_of_food_places <- 5 min: 1; 
+	float grid_transparency <- 1.0; 
 	image_file ant_shape const: true <- file('../images/ant.png');
 	geometry ant_shape_svg const: true <- geometry(svg_file("../images/ant.svg"));
 	obj_file ant3D_shape const: true <- obj_file('../images/fire-ant.obj', '../images/fire-ant.mtl', -90::{1, 0, 0});
@@ -290,7 +288,7 @@ experiment "3 Simulations" type: gui  parent:base{
 	}
 
 	output {
-		layout #split editors: false consoles: false toolbars: true tabs: false tray: false parameters: true;
+		layout #split editors: false consoles: false toolbars: true tabs: false tray: false parameters: true background: #red;
 		display Ants background: color type: 3d toolbar: color axes: false {
 			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));

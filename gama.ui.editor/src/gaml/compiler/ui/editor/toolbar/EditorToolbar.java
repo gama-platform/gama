@@ -1,30 +1,47 @@
 /*******************************************************************************************************
  *
  * EditorToolbar.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor.toolbar;
 
-import static gama.ui.shared.utils.WorkbenchHelper.executeCommand;
 import static gama.ui.shared.utils.WorkbenchHelper.getCommand;
+import static gama.ui.shared.utils.WorkbenchHelper.runCommand;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY;
 import static org.eclipse.ui.IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY;
+
+import java.util.Map;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
+import gama.core.common.preferences.GamaPreferences;
+import gama.core.common.preferences.Pref;
+import gama.core.runtime.PlatformHelper;
+import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
+import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
+import gama.ui.shared.menus.GamaMenu;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
@@ -38,8 +55,64 @@ import gaml.compiler.ui.editor.GamlEditor;
  */
 public class EditorToolbar {
 
+	static {
+		DEBUG.ON();
+		Command command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
+		if (command != null) { command.setHandler(null); }
+		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomIn");
+		if (command != null) { command.setHandler(null); }
+		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
+		if (command != null) { command.setHandler(null); }
+		if (PlatformHelper.isMac()) {
+			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1 | SWT.SHIFT, '=') {
+				// +
+				@Override
+				public void run() {
+					IEditorPart part = WorkbenchHelper.getActiveEditor();
+					if (part instanceof GamlEditor ge) { ge.zoomIn(); }
+				}
+			});
+		} else {
+			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '+') {
+
+				@Override
+				public void run() {
+					IEditorPart part = WorkbenchHelper.getActiveEditor();
+					if (part instanceof GamlEditor ge) { ge.zoomIn(); }
+				}
+			});
+		}
+
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, 'g') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.doSearch(); }
+			}
+		});
+
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '=') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.zoomFit(); }
+			}
+		});
+
+		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '-') {
+
+			@Override
+			public void run() {
+				IEditorPart part = WorkbenchHelper.getActiveEditor();
+				if (part instanceof GamlEditor ge) { ge.zoomOut(); }
+			}
+		});
+	}
+
 	/** The previous. */
-	ToolItem next, previous, diagram;
+	ToolItem next, previous; // diagram;
 
 	/** The find. */
 	EditorSearchControls find;
@@ -47,14 +120,17 @@ public class EditorToolbar {
 	/** The editor. */
 	final GamlEditor editor;
 
+	/** The mark pref. */
+	public Pref<Boolean> markPref;
+
 	/** The searching. */
 	volatile boolean searching;
 
 	/** The global previous. */
-	final Selector globalPrevious = e -> executeCommand(NAVIGATE_BACKWARD_HISTORY);
+	final Selector globalPrevious = e -> runCommand(NAVIGATE_BACKWARD_HISTORY);
 
 	/** The global next. */
-	final Selector globalNext = e -> executeCommand(NAVIGATE_FORWARD_HISTORY);
+	final Selector globalNext = e -> runCommand(NAVIGATE_FORWARD_HISTORY);
 
 	/** The search previous. */
 	final Selector searchPrevious = e -> find.findPrevious();
@@ -82,28 +158,103 @@ public class EditorToolbar {
 	public EditorSearchControls fill(final GamaToolbarSimple toolbar) {
 
 		previous = toolbar.button("editor/command.lastedit", null, "Previous edit location", globalPrevious);
-		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
+
 		find = new EditorSearchControls(editor).fill(toolbar);
-		toolbar.menu("editor/command.outline", null, "Show outline", e -> {
-			// final GamlEditor editor = getEditor();
-			if (editor == null) return;
-			editor.openOutlinePopup();
-		});
+		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
+		toolbar.button("editor/command.outline", null, "Show outline", e -> { editor.openOutlinePopup(); });
 		if (GamaBundleLoader.isDiagramEditorLoaded()) {
-			diagram = toolbar.button("editor/command.graphical", null, "Switch to diagram", e -> {
-				if (editor == null) return;
-				editor.switchToDiagram();
-			});
+			toolbar.button("editor/command.graphical", null, "Switch to diagram", e -> { editor.switchToDiagram(); });
 		}
+		toolbar.button("editor/local.menu", "Presentation preferences", "Presentation preferences", e -> {
 
-		// Attaching listeners to the global commands in order to enable/disable the
-		// toolbar items
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build("display/zoom.in", "Zoom In ", "Increases the size of the font in this editor",
+							event -> {
+								editor.zoomIn();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '+');
+					GamaCommand.build("display/zoom.fit", "Zoom Reset ",
+							"Resets the size of the font to its default in the preferences", e -> {
+								editor.zoomFit();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '=');
+					GamaCommand.build("display/zoom.out", "Zoom Out ", "Decreases the size of the font in this editor",
+							event -> {
+								editor.zoomOut();
+							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
+					GamaMenu.separate(mainMenu);
+					addPresentationItems(mainMenu, -1);
+					addManagementItems(mainMenu, -1);
+				}
+
+			};
+			menu.open(toolbar, e, toolbar.getSize().y, 200);
+		});
+
 		hookToCommands(previous, next);
-
-		// Attaching a focus listener to the search control to
 		hookToSearch(previous, next);
 
 		return find;
+	}
+
+	/**
+	 * Fill.
+	 *
+	 * @param m
+	 *            the m
+	 * @param index
+	 *            the index
+	 */
+	public void addPresentationItems(final Menu m, final int index) {
+
+		MenuItem menuItem = new MenuItem(m, SWT.CASCADE);
+		menuItem.setText("Presentation");
+		menuItem.setImage(GamaIcon.named(IGamaIcons.PRESENTATION_MENU).image());
+		final Menu menu = new Menu(menuItem);
+		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
+		menuItem.setMenu(menu);
+		menu.addListener(SWT.Show, e -> {
+			markPref = GamaPreferences.get("pref_editor_mark_occurrences", Boolean.class);
+			for (final MenuItem item : menu.getItems()) { item.dispose(); }
+			createLineToggle(menu);
+			createFoldingToggle(menu);
+			createMarkToggle(menu);
+			createOverviewToggle(menu);
+			createWordWrapToggle(menu);
+		});
+	}
+
+	/**
+	 * Adds the management items.
+	 *
+	 * @param m
+	 *            the m
+	 * @param index
+	 *            the index
+	 */
+	public void addManagementItems(final Menu m, final int index) {
+
+		MenuItem menuItem = new MenuItem(m, SWT.CASCADE);
+		menuItem.setText("Management");
+		menuItem.setImage(GamaIcon.named("views/layout.menu").image());
+		Menu menu2 = new Menu(menuItem);
+		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
+		menuItem.setMenu(menu2);
+		menu2.addListener(SWT.Show, e -> {
+			for (final MenuItem item : menu2.getItems()) { item.dispose(); }
+			GamaCommand.build("views/layout.vertical", "Split Vertically ", "", event -> {
+				WorkbenchHelper.runCommand("org.eclipse.ui.window.splitEditor",
+						Map.of("Splitter.isHorizontal", "true"));
+			}).toItem(menu2);
+			GamaCommand.build("views/layout.horizontal", "Split Horizontally ", "", event -> {
+				WorkbenchHelper.runCommand("org.eclipse.ui.window.splitEditor",
+						Map.of("Splitter.isHorizontal", "false"));
+			}).toItem(menu2);
+			GamaCommand.build("views/layout.stack", "Clone ", "", event -> {
+				WorkbenchHelper.runCommand("org.eclipse.ui.window.newEditor");
+			}).toItem(menu2);
+		});
 	}
 
 	/**
@@ -175,5 +326,126 @@ public class EditorToolbar {
 		});
 
 	}
+
+	/**
+	 * Creates the mark toggle.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param menu
+	 *            the menu
+	 * @date 26 juin 2023
+	 */
+	public void createMarkToggle(final Menu menu) {
+		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
+		boolean selected = markPref.getValue();
+		mark.setText(selected ? " Do not mark symbols occurences" : " Mark occurences of symbols");
+		// mark.setSelection(markPref.getValue());
+		mark.setImage(GamaIcon.named("editor/toggle.mark").image());
+
+		mark.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				markPref.set(mark.getSelection()).save();
+			}
+		});
+
+	}
+
+	/**
+	 * Creates the mark toggle.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param menu
+	 *            the menu
+	 * @date 26 juin 2023
+	 */
+	public void createWordWrapToggle(final Menu menu) {
+		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
+		boolean selected = getEditor().isWordWrapEnabled();
+		mark.setText(selected ? " Turn Word Wrap off" : " Turn Word Wrap on");
+		mark.setImage(GamaIcon.named("editor/word.wrap").image());
+
+		mark.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				getEditor().setWordWrap(mark.getSelection());
+			}
+		});
+
+	}
+
+	/**
+	 * Creates the overview toggle.
+	 *
+	 * @param menu
+	 *            the menu
+	 */
+	public void createOverviewToggle(final Menu menu) {
+		final MenuItem overview = new MenuItem(menu, SWT.PUSH);
+		boolean selected = getEditor().isOverviewRulerVisible();
+		overview.setText(selected ? " Hide markers overview" : " Show markers overview");
+		// overview.setSelection(selected);
+		overview.setImage(GamaIcon.named("editor/toggle.overview").image());
+		overview.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final boolean shown = getEditor().isOverviewRulerVisible();
+				if (shown) {
+					getEditor().hideOverviewRuler();
+				} else {
+					getEditor().showOverviewRuler();
+				}
+			}
+		});
+
+	}
+
+	/**
+	 *
+	 */
+	public void createFoldingToggle(final Menu menu) {
+		final MenuItem folding = new MenuItem(menu, SWT.PUSH);
+		boolean selected = getEditor().isRangeIndicatorEnabled();
+		folding.setText(selected ? " Unfold code sections" : " Fold code sections");
+
+		folding.setSelection(selected);
+		folding.setImage(GamaIcon.named("editor/toggle.folding").image());
+		folding.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				getEditor().getAction("FoldingToggle").run();
+			}
+		});
+
+	}
+
+	/**
+	 *
+	 */
+	public void createLineToggle(final Menu menu) {
+		final MenuItem line = new MenuItem(menu, SWT.PUSH);
+		boolean selected = getEditor().isLineNumberRulerVisible();
+		line.setText(selected ? " Hide line numbers" : " Display line numbers");
+
+		// line.setSelection(selected);
+		line.setImage(GamaIcon.named("editor/toggle.numbers").image());
+		line.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				getEditor().getAction(ITextEditorActionConstants.LINENUMBERS_TOGGLE).run();
+			}
+		});
+
+	}
+
+	/**
+	 * @return
+	 */
+	private GamlEditor getEditor() { return editor; }
 
 }

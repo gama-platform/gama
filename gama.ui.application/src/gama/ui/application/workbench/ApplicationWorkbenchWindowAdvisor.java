@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ApplicationWorkbenchWindowAdvisor.java, in gama.ui.application, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -108,9 +108,13 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		});
 		// See #3187 -
 		// if (FLAGS.USE_OLD_TABS) {
-		ThemeHelper.injectCSS(".MPartStack {\n" + " swt-tab-renderer: null;\n" + " swt-simple: true;\n" + "}");
+		ThemeHelper.injectCSS("""
+				.MPartStack {
+				 swt-tab-renderer: null;
+				 swt-simple: true;
+				}""");
 		// }
-		// ThemeHelper.injectCSS(".MPartSashContainer{ jsash-width: 0px; } ");
+		// ThemeHelper.injectCSS(".MPartSashContainer{ jsash-width: 1px; } ");
 		ThemeHelper.restoreSashBackground();
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);

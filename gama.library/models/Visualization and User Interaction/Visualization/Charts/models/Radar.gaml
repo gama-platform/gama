@@ -7,7 +7,7 @@
 model radars
 
 
-global
+global 
 {
 }
 

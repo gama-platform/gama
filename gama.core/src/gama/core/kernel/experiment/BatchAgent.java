@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * BatchAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * BatchAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,6 +22,7 @@ import org.jfree.data.statistics.Statistics;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.experiment;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
@@ -234,7 +235,7 @@ public class BatchAgent extends ExperimentAgent {
 		getSpecies().getExplorationAlgorithm().run(scope);
 		// Once the algorithm has finished exploring the solutions, the agent is
 		// killed.
-		scope.getGui().getStatus().informStatus(scope, endStatus());
+		scope.getGui().getStatus().informStatus(endStatus(), IStatusMessage.SIMULATION_ICON);
 		// Issue #2426: the agent is killed too soon
 		getScope().setDisposeStatus();
 		// dispose();
@@ -278,6 +279,13 @@ public class BatchAgent extends ExperimentAgent {
 		return s;
 	}
 
+	/**
+	 * Run simulations and return results.
+	 *
+	 * @param sets
+	 *            the sets
+	 * @return the i map
+	 */
 	public IMap<ParametersSet, Map<String, List<Object>>>
 			runSimulationsAndReturnResults(final List<ParametersSet> sets) {
 		IMap<ParametersSet, Map<String, List<Object>>> res;
@@ -527,14 +535,19 @@ public class BatchAgent extends ExperimentAgent {
 
 	}
 
-	boolean pairIcon;
-
+	/**
+	 * Inform status.
+	 *
+	 * @param pop
+	 *            the pop
+	 * @param repeatIndex
+	 *            the repeat index
+	 */
 	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
-		getScope().getGui().getStatus().setStatus(getScope(),
-				"Run " + runNumber + " | " + repeatIndex + "/" + seeds.length + " simulations (using "
-						+ pop.getNumberOfActiveThreads() + " threads)",
-				"overlays/small.exp.batch.white" + (pairIcon ? "2" : ""));
-		pairIcon = !pairIcon;
+		getScope().getGui().getStatus().setStatus("Run " + runNumber + " | " + repeatIndex + "/" + seeds.length
+				+ " simulations (using " + pop.getNumberOfActiveThreads() + " threads)", IStatusMessage.SIMULATION_ICON,
+				null);
+		getScope().getGui().getStatus().updateExperimentStatus();
 	}
 
 	/**

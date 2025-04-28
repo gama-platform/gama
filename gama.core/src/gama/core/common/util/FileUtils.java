@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * FileUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * FileUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,6 +38,7 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.collect.Iterables;
 
+import gama.core.common.StatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.IModel;
@@ -418,6 +419,13 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Escape file path.
+	 *
+	 * @param path
+	 *            the path
+	 * @return the string
+	 */
 	public static String escapeFilePath(final String path) {
 		return path.replace("\\", "\\\\").replace("\"", "\\\"");
 	}
@@ -805,7 +813,7 @@ public class FileUtils {
 		String pathName = constructRelativeTempFilePath(scope, url);
 		final String urlPath = url.toExternalForm();
 		final String status = "Downloading file " + urlPath.substring(urlPath.lastIndexOf(SEPARATOR));
-		scope.getGui().getStatus().beginSubStatus(scope, status);
+		scope.getGui().getStatus().beginTask(status, StatusMessage.DOWNLOAD_ICON);
 		final Webb web = WEB.get();
 		try {
 			try (InputStream in = web.get(urlPath).ensureSuccess()
@@ -822,7 +830,7 @@ public class FileUtils {
 		} catch (final IOException | WebbException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
-			scope.getGui().getStatus().endSubStatus(scope, status);
+			scope.getGui().getStatus().endTask(status, StatusMessage.DOWNLOAD_ICON);
 		}
 		return pathName;
 	}

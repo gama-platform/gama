@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SimpleSlider.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SimpleSlider.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -99,7 +99,7 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 		super(parent, SWT.DOUBLE_BUFFERED | SWT.INHERIT_DEFAULT);
 		this.parent = parent;
 		fillDefaults().numColumns(3).spacing(0, 0).applyTo(this);
-		leftRegion = new Panel(this, leftColor);
+		leftRegion = new Panel(this, leftColor, true);
 		leftRegion.addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -132,7 +132,7 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 			if (mouseDown) { moveThumbHorizontally(leftRegion.getBounds().width + e.x - THUMB_WIDTH / 2); }
 		});
 
-		rightRegion = new Panel(this, rightColor, true);
+		rightRegion = new Panel(this, rightColor, false);
 		rightRegion.addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -324,13 +324,11 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 		@Override
 		public void paintControl(final PaintEvent e) {
 			final GC gc = e.gc;
-			// DEBUG.OUT("Thumb bounds " + getBounds() + " client area: " + getClientArea() + " gc clipping: "
-			// + gc.getClipping());
 			final Rectangle r = gc.getClipping();
 			gc.setBackground(parent.getBackground());
 			gc.fillRectangle(r);
-			gc.setBackground(color);
-			gc.fillRoundRectangle(0, (r.height - THUMB_HEIGHT) / 2 + 1, THUMB_WIDTH, THUMB_HEIGHT, 3, 3);
+			gc.setForeground(color);
+			gc.drawRoundRectangle(0, (r.height - THUMB_HEIGHT) / 2 + 1, THUMB_WIDTH - 1, THUMB_HEIGHT, 3, 3);
 		}
 	}
 
@@ -345,17 +343,8 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 		/** The color. */
 		private final Color color;
 
-		/**
-		 * Instantiates a new panel.
-		 *
-		 * @param parent
-		 *            the parent
-		 * @param color
-		 *            the color
-		 */
-		public Panel(final Composite parent, final Color color) {
-			this(parent, color, false);
-		}
+		/** The left. */
+		private final boolean left;
 
 		/**
 		 * Instantiates a new panel.
@@ -367,10 +356,11 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 		 * @param last
 		 *            the last
 		 */
-		public Panel(final Composite parent, final Color color, final boolean last) {
+		public Panel(final Composite parent, final Color color, final boolean left) {
 			super(parent, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
+			this.left = left;
 			gd = GridDataFactory.swtDefaults().minSize(0, PANEL_HEIGHT)
-					.align(last ? SWT.FILL : SWT.BEGINNING, SWT.BEGINNING).grab(last, false).create();
+					.align(!left ? SWT.FILL : SWT.BEGINNING, SWT.BEGINNING).grab(!left, false).create();
 			this.color = color;
 			setLayoutData(gd);
 			addPaintListener(this);
@@ -400,8 +390,9 @@ public class SimpleSlider extends Composite /* implements IPopupProvider */ {
 			final Rectangle r = gc.getClipping();
 			gc.setBackground(parent.getBackground());
 			gc.fillRectangle(r);
-			gc.setBackground(color);
-			gc.fillRoundRectangle(r.x, (int) ((double) r.height / 2 - 1d), r.width, PANEL_HEIGHT, 3, 3);
+			gc.setForeground(color);
+			gc.drawRoundRectangle(left ? r.x : r.x - 1, (int) ((double) r.height / 2 - 1d),
+					left ? r.width : r.width - 1, PANEL_HEIGHT, 3, 3);
 		}
 
 	}

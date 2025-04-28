@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentPlan.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,6 +26,7 @@ import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
+import gama.core.common.StatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.BatchOutput;
@@ -86,9 +87,10 @@ import gama.gaml.variables.IVariable;
 		kind = ISymbolKind.EXPERIMENT,
 		with_sequence = true,
 		concept = { IConcept.EXPERIMENT })
-@doc ("Declaration of a particular type of agent that can manage simulations. If the experiment directly imports a model using the 'model:' facet, this facet *must* be the first one after the name of the experiment. "
-		+ "Any experiment attached to a model is a species (introduced by the keyword 'experiment' which directly or indirectly inherits from an abstract species called 'experiment' itself. This abstract species (sub-species of 'agent') defines several attributes and actions that can then be used in any experiment. "
-		+ "Experiments also define several attributes, which, in addition to the attributes inherited from agent, form the minimal set of knowledge any experiment will have access to.")
+@doc ("""
+		Declaration of a particular type of agent that can manage simulations. If the experiment directly imports a model using the 'model:' facet, this facet *must* be the first one after the name of the experiment. \
+		Any experiment attached to a model is a species (introduced by the keyword 'experiment' which directly or indirectly inherits from an abstract species called 'experiment' itself. This abstract species (sub-species of 'agent') defines several attributes and actions that can then be used in any experiment. \
+		Experiments also define several attributes, which, in addition to the attributes inherited from agent, form the minimal set of knowledge any experiment will have access to.""")
 
 @facets (
 		value = { @facet (
@@ -625,43 +627,58 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		BatchOutput fileOutputDescription = null;
 		LayoutStatement layout = null;
 		for (final ISymbol s : children) {
-			// Trial
-			if (s instanceof ICategory c) {
-				displayables.add(c);
-			} else if (s instanceof TextStatement t) {
-				displayables.add(t);
-			} else if (s instanceof LayoutStatement) {
-				layout = (LayoutStatement) s;
-			} else if (s instanceof IExploration) {
-				exploration = (IExploration) s;
-			} else if (s instanceof BatchOutput) {
-				fileOutputDescription = (BatchOutput) s;
-			} else if (s instanceof SimulationOutputManager som) {
-				if (originalSimulationOutputs != null) {
-					originalSimulationOutputs.setChildren(som);
-				} else {
-					originalSimulationOutputs = som;
-				}
-			} else if (s instanceof IParameter.Batch pb) {
-				if (isBatch() && pb.canBeExplored()) {
-					pb.setEditable(false);
-					addExplorableParameter(pb);
-					displayables.add(pb);
+			switch (s) {
+				case null:
 					continue;
+				case ICategory c:
+					displayables.add(c);
+					break;
+				case TextStatement t:
+					displayables.add(t);
+					break;
+				case LayoutStatement ls:
+					layout = ls;
+					break;
+				case IExploration ie:
+					exploration = ie;
+					break;
+				case BatchOutput bo:
+					fileOutputDescription = bo;
+					break;
+				case SimulationOutputManager som: {
+					if (originalSimulationOutputs != null) {
+						originalSimulationOutputs.setChildren(som);
+					} else {
+						originalSimulationOutputs = som;
+					}
 				}
-				final String parameterName = pb.getName();
-				final boolean already = parameters.containsKey(parameterName);
-				if (!already) {
-					displayables.add(pb);
-					parameters.put(parameterName, pb);
+					break;
+				case IParameter.Batch pb: {
+					if (isBatch() && pb.canBeExplored()) {
+						pb.setEditable(false);
+						addExplorableParameter(pb);
+						displayables.add(pb);
+						continue;
+					}
+					final String parameterName = pb.getName();
+					final boolean already = parameters.containsKey(parameterName);
+					if (!already) {
+						displayables.add(pb);
+						parameters.put(parameterName, pb);
+					}
 				}
-			} else if (s instanceof ExperimentOutputManager eom) {
-				if (experimentOutputs != null) {
-					experimentOutputs.setChildren(eom);
-				} else {
-					experimentOutputs = eom;
-				}
+					break;
+				case ExperimentOutputManager eom:
+					if (experimentOutputs != null) {
+						experimentOutputs.setChildren(eom);
+					} else {
+						experimentOutputs = eom;
+					}
+					break;
+				default:
+					continue;
 			}
+
 		}
 		if (originalSimulationOutputs == null) { originalSimulationOutputs = SimulationOutputManager.createEmpty(); }
 		if (experimentOutputs == null) { experimentOutputs = ExperimentOutputManager.createEmpty(); }
@@ -715,8 +732,9 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		// showParameters();
 
 		if (isBatch()) {
-			myScope.getGui().getStatus().informStatus(scope,
-					isTest() ? "Tests ready. Click run to begin." : " Batch ready. Click run to begin.");
+			myScope.getGui().getStatus().informStatus(
+					isTest() ? "Tests ready. Click run to begin." : " Batch ready. Click run to begin.",
+					StatusMessage.SIMULATION_ICON);
 			GAMA.updateExperimentState(this);
 
 		}
@@ -772,6 +790,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	}
 
 	// Horrible workaround for #334
+	/** The reloading. */
 	// ----------------------------------------------------------------------------------
 	private volatile boolean reloading;
 

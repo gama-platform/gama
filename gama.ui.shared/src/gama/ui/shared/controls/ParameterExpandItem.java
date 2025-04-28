@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ParameterExpandItem.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ParameterExpandItem.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,10 +23,10 @@ import org.eclipse.swt.widgets.Item;
 import gama.core.common.interfaces.ItemList;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 
 /**
  * Instances of this class represent a selectable user interface object that represents a expandable item in a expand
@@ -49,12 +49,6 @@ public class ParameterExpandItem extends Item {
 	/** The pause position. */
 	int pausePosition = -1;
 
-	/** The visible position. */
-	int visiblePosition = -1;
-
-	/** The selectable position. */
-	int selectablePosition = -1;
-
 	/** The close position. */
 	int closePosition = -1;
 
@@ -66,9 +60,6 @@ public class ParameterExpandItem extends Item {
 
 	/** The is paused. */
 	boolean isPaused = false;
-
-	/** The is selectable. */
-	boolean isSelectable = true;
 
 	/** The on expand block. */
 	private Runnable onExpandBlock;
@@ -178,20 +169,6 @@ public class ParameterExpandItem extends Item {
 			gc.drawImage(image, endX, imageY);
 		}
 
-		if (parent.hasVisibleToggle) {
-			final var image = parent.isVisible(this) ? GamaIcon.named(IGamaIcons.SMALL_INSPECT).image()
-					: GamaIcon.named(IGamaIcons.SMALL_HIDDEN).image();
-			endX -= 2 * TEXT_INSET + imageWidth;
-			visiblePosition = endX;
-			gc.drawImage(image, endX, imageY);
-		}
-		if (parent.hasSelectableToggle) {
-			final var image = isSelectable ? GamaIcon.named(IGamaIcons.SMALL_SELECTABLE).image()
-					: GamaIcon.named(IGamaIcons.SMALL_UNSELECTABLE).image();
-			endX -= 2 * TEXT_INSET + imageWidth;
-			selectablePosition = endX;
-			gc.drawImage(image, endX, imageY);
-		}
 		if (getText().length() > 0) {
 			String title, other = null;
 			final var i = getText().indexOf(ItemList.SEPARATION_CODE);
@@ -466,34 +443,6 @@ public class ParameterExpandItem extends Item {
 	public boolean pauseRequested(final int x2, final int y2) {
 		if (pausePosition == -1) return false;
 		return clickIn(x2, y2, x + pausePosition);
-	}
-
-	/**
-	 * Visible requested.
-	 *
-	 * @param x2
-	 *            the x 2
-	 * @param y2
-	 *            the y 2
-	 * @return true, if successful
-	 */
-	public boolean visibleRequested(final int x2, final int y2) {
-		if (visiblePosition == -1) return false;
-		return clickIn(x2, y2, x + visiblePosition);
-	}
-
-	/**
-	 * Selectable requested.
-	 *
-	 * @param x2
-	 *            the x 2
-	 * @param y2
-	 *            the y 2
-	 * @return true, if successful
-	 */
-	public boolean selectableRequested(final int x2, final int y2) {
-		if (selectablePosition == -1) return false;
-		return clickIn(x2, y2, x + selectablePosition);
 	}
 
 	/**

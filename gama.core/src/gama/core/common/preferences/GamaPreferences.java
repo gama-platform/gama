@@ -378,9 +378,9 @@ public class GamaPreferences {
 						OPTIONS);
 
 		/** The Constant EDITBOX_ENABLED. */
-		public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
-				.create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
-				.in(NAME, TEXT);
+		// public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
+		// .create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
+		// .in(NAME, TEXT);
 
 		/** The Constant EDITOR_BASE_FONT. */
 		public static final Pref<GamaFont> EDITOR_BASE_FONT = GamaPreferences

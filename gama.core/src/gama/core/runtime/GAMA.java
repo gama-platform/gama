@@ -839,6 +839,7 @@ public class GAMA {
 	 */
 	public static void updateExperimentState(final IExperimentPlan exp, final IExperimentStateListener.State state) {
 		for (IExperimentStateListener listener : experimentStateListeners) { listener.updateStateTo(exp, state); }
+		getGui().getStatus().updateExperimentStatus();
 	}
 
 	/**

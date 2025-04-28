@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
- * WorkbenchHelper.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WorkbenchHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -18,11 +19,16 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.Geometry;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -30,10 +36,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -42,6 +48,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.progress.UIJob;
 
@@ -52,7 +59,6 @@ import com.google.common.cache.LoadingCache;
 import gama.core.common.interfaces.IGui;
 import gama.dev.DEBUG;
 import gama.ui.application.workspace.WorkspaceModelsManager;
-import gama.ui.shared.views.IGamlEditor;
 
 /**
  * The Class WorkbenchHelper.
@@ -131,6 +137,32 @@ public class WorkbenchHelper {
 		final Display d = getDisplay();
 		if (d != null && !d.isDisposed()) {
 			d.asyncExec(r);
+		} else {
+			r.run();
+		}
+	}
+
+	/**
+	 * Async run forever every 'repeatEvery' milliseconds until 'stop' becomes false
+	 *
+	 * @param r
+	 *            the r
+	 * @param repeatEvery
+	 *            the repeat every
+	 */
+	public static void asyncRun(final Runnable r, final int repeatEvery, final Callable<Boolean> stop) {
+		final Display d = getDisplay();
+		if (d != null && !d.isDisposed()) {
+			d.asyncExec(() -> {
+				d.timerExec(repeatEvery, () -> {
+					r.run();
+					try {
+						if (!stop.call()) { asyncRun(r, repeatEvery, stop); }
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+			});
 		} else {
 			r.run();
 		}
@@ -229,11 +261,11 @@ public class WorkbenchHelper {
 	 *
 	 * @return the active editor
 	 */
-	public static IGamlEditor getActiveEditor() {
+	public static IEditorPart getActiveEditor() {
 		final IWorkbenchPage page = getPage();
 		if (page != null) {
 			final IEditorPart editor = page.getActiveEditor();
-			if (editor instanceof IGamlEditor) return (IGamlEditor) editor;
+			if (editor.getTitle().endsWith(".gaml") || editor.getTitle().endsWith(".experiment")) return editor;
 		}
 		return null;
 	}
@@ -313,12 +345,19 @@ public class WorkbenchHelper {
 	 *
 	 * @param string
 	 *            the string
+	 * @param parameters
+	 *            the parameters
 	 * @return true, if successful
-	 * @throws ExecutionException
-	 *             the execution exception
 	 */
-	public static boolean runCommand(final String string) throws ExecutionException {
-		return runCommand(string, null);
+	public static Object runCommand(final String string, final Map parameters) {
+		try {
+			final Command c = getCommand(string);
+			final IHandlerService handlerService = getService(IHandlerService.class);
+			ParameterizedCommand pc = ParameterizedCommand.generateCommand(c, parameters);
+			return handlerService.executeCommand(pc, null);
+		} catch (final ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -328,31 +367,16 @@ public class WorkbenchHelper {
 	 *            the string
 	 * @return true, if successful
 	 */
-	public static boolean executeCommand(final String string) {
+	public static boolean runCommand(final String string) {
 		try {
-			return runCommand(string, null);
+			final Command c = getCommand(string);
+			final IHandlerService handlerService = getService(IHandlerService.class);
+			final ExecutionEvent e = handlerService.createExecutionEvent(c, null);
+			return runCommand(c, e);
 		} catch (final ExecutionException e) {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	/**
-	 * Run command.
-	 *
-	 * @param string
-	 *            the string
-	 * @param event
-	 *            the event
-	 * @return true, if successful
-	 * @throws ExecutionException
-	 *             the execution exception
-	 */
-	public static boolean runCommand(final String string, final Event event) throws ExecutionException {
-		final Command c = getCommand(string);
-		final IHandlerService handlerService = getService(IHandlerService.class);
-		final ExecutionEvent e = handlerService.createExecutionEvent(c, event);
-		return runCommand(c, e);
 	}
 
 	/**
@@ -498,6 +522,53 @@ public class WorkbenchHelper {
 	public static Monitor[] getMonitors() {
 		Display d = getDisplay();
 		return d == null ? new Monitor[0] : d.getMonitors();
+	}
+
+	/**
+	 * Find menu manager.
+	 *
+	 * @param locationURI
+	 *            the location URI
+	 * @param menuId
+	 *            the menu id
+	 * @return the menu manager
+	 */
+	public static MenuManager findMenuManager(final String locationURI, final String menuId) {
+		IMenuService menuService = getService(IMenuService.class);
+		MenuManager rootMenuManager = new MenuManager();
+		menuService.populateContributionManager(rootMenuManager, locationURI);
+		return findMenuManager(rootMenuManager, menuId);
+	}
+
+	/**
+	 * @param menuManager
+	 * @param menuId
+	 * @return
+	 */
+	private static MenuManager findMenuManager(final MenuManager rootMenuManager, final String menuId) {
+		if (menuId.equals(rootMenuManager.getId())) return rootMenuManager;
+		for (IContributionItem item : rootMenuManager.getItems()) {
+			if (item instanceof MenuManager menuManager) {
+				MenuManager found = findMenuManager(menuManager, menuId);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the selection.
+	 *
+	 * @return the selection
+	 */
+	public static IStructuredSelection getSelection() {
+		IWorkbenchWindow activeWorkbenchWindow = getWindow();
+		if (activeWorkbenchWindow == null) return null;
+		ISelectionService selectionService = activeWorkbenchWindow.getSelectionService();
+		if (selectionService == null) return null;
+		ISelection selection = selectionService.getSelection();
+		if (selection instanceof IStructuredSelection) return (IStructuredSelection) selection;
+		return null;
 	}
 
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -209,7 +209,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	public void closeExperiment(final Exception e) {
 		disposing = true;
-		if (e != null) { getScope().getGui().getStatus().errorStatus(getScope(), e); }
+		if (e != null) { getScope().getGui().getStatus().errorStatus(GamaRuntimeException.create(e, getScope())); }
 		experiment.dispose(); // will call own dispose() later
 	}
 

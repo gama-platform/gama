@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FontEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FontEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,6 @@
 package gama.ui.shared.parameters;
 
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -22,6 +21,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaFont;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
+import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -64,7 +64,7 @@ public class FontEditor extends AbstractEditor<GamaFont> {
 		edit.setText(currentValue == null ? "Default" : data.toString());
 		// Font old = edit.getFont();
 		// if (old != null && old != WorkbenchHelper.getDisplay().getSystemFont()) { old.dispose(); }
-		edit.setFont(new Font(WorkbenchHelper.getDisplay(), toFontData(data)));
+		edit.setFont(GamaFonts.getFont(data));
 		internalModification = false;
 	}
 
@@ -79,17 +79,6 @@ public class FontEditor extends AbstractEditor<GamaFont> {
 		return new GamaFont(fd.getName(), fd.getStyle(), fd.getHeight());
 	}
 
-	/**
-	 * To font data.
-	 *
-	 * @param gf
-	 *            the gf
-	 * @return the font data
-	 */
-	private FontData toFontData(final GamaFont gf) {
-		return new FontData(gf.getName(), gf.getSize(), gf.getStyle());
-	}
-
 	@Override
 	protected int[] getToolItems() { return new int[] { EDIT, REVERT }; }
 
@@ -98,8 +87,8 @@ public class FontEditor extends AbstractEditor<GamaFont> {
 		final var dialog = new FontDialog(WorkbenchHelper.getShell());
 		dialog.setEffectsVisible(false);
 		if (currentValue != null) {
-			final var data = toFontData(currentValue);
-			dialog.setFontList(new FontData[] { data });
+			final var font = GamaFonts.getFont(currentValue);
+			dialog.setFontList(font.getFontData());
 		}
 		final var data = dialog.open();
 		if (data != null) { modifyAndDisplayValue(toGamaFont(data)); }

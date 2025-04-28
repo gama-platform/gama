@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorsList.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorsList.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -79,12 +79,6 @@ public abstract class EditorsList<T> implements ItemList<T> {
 
 	@Override
 	public void focusItem(final T obj) {}
-
-	@Override
-	public void makeItemVisible(final T obj, final boolean b) {}
-
-	@Override
-	public void makeItemSelectable(final T obj, final boolean b) {}
 
 	/**
 	 * Checks if is enabled.

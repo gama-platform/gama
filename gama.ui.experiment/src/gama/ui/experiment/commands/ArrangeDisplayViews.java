@@ -195,7 +195,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		displays.forEach(v -> {
 			LayeredDisplayOutput output = v.getOutput();
 			if (output != null && output.getData().fullScreen() > -1) {
-				WorkbenchHelper.runInUI("FS", 100, m -> {
+				WorkbenchHelper.runInUI("Expand " + output.getName(), 100, m -> {
 					WorkbenchHelper.getPage().bringToTop((IWorkbenchPart) v);
 					v.showCanvas();
 					v.focusCanvas();

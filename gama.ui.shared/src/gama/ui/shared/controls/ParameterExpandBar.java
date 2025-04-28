@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ParameterExpandBar.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ParameterExpandBar.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -78,12 +78,6 @@ public class ParameterExpandBar extends Composite {
 	/** The has pausable toggle. */
 	final boolean hasPausableToggle;
 
-	/** The has selectable toggle. */
-	final boolean hasSelectableToggle;
-
-	/** The has visible toggle. */
-	final boolean hasVisibleToggle;
-
 	/** The underlying objects. */
 	private final ItemList underlyingObjects;
 
@@ -111,7 +105,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 
 	public ParameterExpandBar(final Composite parent, final int style) {
-		this(parent, style, false, false, false, false, null);
+		this(parent, style, false, false, null);
 	}
 
 	/**
@@ -133,14 +127,11 @@ public class ParameterExpandBar extends Composite {
 	 *            the underlying objects
 	 */
 	public ParameterExpandBar(final Composite parent, final int style, final boolean isClosable,
-			final boolean isPausable, final boolean isSelectable, final boolean isVisible,
-			final ItemList underlyingObjects) {
+			final boolean isPausable, final ItemList underlyingObjects) {
 		super(parent, style | SWT.DOUBLE_BUFFERED);
 		items = new ParameterExpandItem[4];
 		this.hasClosableToggle = isClosable;
 		this.hasPausableToggle = isPausable;
-		this.hasSelectableToggle = isSelectable;
-		this.hasVisibleToggle = isVisible;
 		this.underlyingObjects = underlyingObjects;
 		listener = event -> {
 			switch (event.type) {
@@ -616,25 +607,7 @@ public class ParameterExpandBar extends Composite {
 				showItem(item);
 				return;
 			}
-			if (hasVisibleToggle && item.visibleRequested(x, y)) {
-				ignoreMouseUp = true;
-				if (underlyingObjects != null) { underlyingObjects.makeItemVisible(item.getData(), !isVisible(item)); }
-				showItem(item);
-				return;
-			}
-			if (hasSelectableToggle && item.selectableRequested(x, y)) {
-				ignoreMouseUp = true;
-				if (item.isSelectable) {
-					if (underlyingObjects != null) { underlyingObjects.makeItemSelectable(item.getData(), false); }
-					item.isSelectable = false;
-				} else {
-					if (underlyingObjects != null) { underlyingObjects.makeItemSelectable(item.getData(), true); }
-					item.isSelectable = true;
-				}
-				showItem(item);
-				return;
 
-			}
 			if (hasClosableToggle && item.closeRequested(x, y)) {
 				ignoreMouseUp = true;
 				item.dispose();

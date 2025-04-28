@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SimulationsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -44,7 +44,7 @@ public class SimulationsMenu extends ContributionItem {
 			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment", e -> {
 				final SimulationAgent sim = GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 				if (sim == null) return;
-				WorkbenchHelper.runInUI("", 0, m -> {
+				WorkbenchHelper.runInUI("Adding simulation", 0, m -> {
 					if ("None".equals(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue())) {
 						ArrangeDisplayViews.execute(GamlCoreConstants.split);
 					} else {

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlReferenceMenu.java, in gama.ui.shared.modeling, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamlReferenceMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui.reference;
 
@@ -53,7 +53,7 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	// }
 
 	/** The ignore case. */
-	protected static final Comparator<String> IGNORE_CASE = (o1, o2) -> o1.compareToIgnoreCase(o2);
+	protected static final Comparator<String> IGNORE_CASE = String::compareToIgnoreCase;
 
 	// private GamlEditor currentEditor;
 
@@ -77,8 +77,10 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	/**
 	 * Open.
 	 *
-	 * @param parent the parent
-	 * @param trigger the trigger
+	 * @param parent
+	 *            the parent
+	 * @param trigger
+	 *            the trigger
 	 */
 	protected void open(final Decorations parent, final SelectionEvent trigger) {
 		// final boolean asMenu = trigger.detail == SWT.ARROW;
@@ -118,9 +120,7 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	 *
 	 * @return the editor
 	 */
-	protected GamlEditor getEditor() {
-		return (GamlEditor) WorkbenchHelper.getActiveEditor();
-	}
+	protected GamlEditor getEditor() { return (GamlEditor) WorkbenchHelper.getActiveEditor(); }
 
 	@Override
 	public void reset() {
@@ -133,22 +133,24 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	/**
 	 * Apply text.
 	 *
-	 * @param t the t
+	 * @param t
+	 *            the t
 	 */
 	protected final void applyText(final String t) {
 		final GamlEditor editor = getEditor();
-		if (editor == null) { return; }
+		if (editor == null) return;
 		editor.insertText(t);
 	}
 
 	/**
 	 * Apply template.
 	 *
-	 * @param t the t
+	 * @param t
+	 *            the t
 	 */
 	public void applyTemplate(final Template t) {
 		final GamlEditor editor = getEditor();
-		if (editor == null) { return; }
+		if (editor == null) return;
 		editor.applyTemplate(t);
 
 	}
@@ -156,7 +158,8 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 	/**
 	 * Install sub menu in.
 	 *
-	 * @param menu the menu
+	 * @param menu
+	 *            the menu
 	 */
 	public void installSubMenuIn(final Menu menu) {
 		final MenuItem builtInItem = new MenuItem(menu, SWT.CASCADE);
@@ -166,14 +169,18 @@ public abstract class GamlReferenceMenu extends GamaMenu {
 		builtInItem.setMenu(mainMenu);
 		mainMenu.addListener(SWT.Show, e -> {
 			if (mainMenu.getItemCount() > 0) {
-				for (final MenuItem item : mainMenu.getItems()) {
-					item.dispose();
-				}
+				if (!isDynamic()) return;
+				for (final MenuItem item : mainMenu.getItems()) { item.dispose(); }
 			}
 			fillMenu();
 		});
 
 	}
+
+	/**
+	 * @return
+	 */
+	protected abstract boolean isDynamic();
 
 	/**
 	 * @return

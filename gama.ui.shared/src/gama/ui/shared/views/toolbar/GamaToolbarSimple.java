@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaToolbarSimple.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaToolbarSimple.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,9 +13,11 @@ package gama.ui.shared.views.toolbar;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 
 /**
@@ -96,6 +98,19 @@ public class GamaToolbarSimple extends ToolBar {
 			control.setWidth(width);
 		}
 		return control;
+	}
+
+	/**
+	 * Space.
+	 *
+	 * @param width
+	 *            the width
+	 * @return the tool item
+	 */
+	public ToolItem space(final int width) {
+		Label label = new Label(this, SWT.NONE);
+		GamaColors.setBackground(this.getBackground(), label);
+		return control(label, width);
 	}
 
 	/**

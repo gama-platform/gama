@@ -27,11 +27,11 @@ global {
 		create building from: building_shapefile;
 
 		//Initialization of the road using the shapefile of roads
-		create road from: road_shapefile;
+		create road from: road_shapefile; 
 
 		//Creation of the people agents
 		create people number: 1000 {
-		//People agents are located anywhere in one of the building
+		//People agents are located anywhere in one of the building 
 			location <- any_location_in(one_of(building));
 			state <- flip(0.75) ? "ok" : "notok";
 		}

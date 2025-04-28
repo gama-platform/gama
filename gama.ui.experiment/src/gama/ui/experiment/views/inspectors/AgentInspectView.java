@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentInspectView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -113,7 +113,7 @@ public class AgentInspectView extends AttributesEditorsView<IAgent>
 	public Label createLeftLabel(final Composite parent, final String title, final String tooltip,
 			final boolean isSubParameter) {
 		final Label label = new Label(parent, SWT.WRAP | SWT.RIGHT);
-		label.setBackground(parent.getBackground());
+		// label.setBackground(parent.getBackground());
 		label.setForeground(getTextColorForBackground(parent.getBackground()).color());
 		final GridData d = new GridData(SWT.END, SWT.CENTER, true, true);
 		d.minimumWidth = 70;
