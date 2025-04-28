@@ -132,6 +132,18 @@ public class Files {
 
 		return f.exists() && !f.isDirectory();
 	}
+	
+	@operator(
+				value = "to_absolute_path",
+				can_be_const = true,
+				category = IOperatorCategory.FILE,
+				concept = { IConcept.FILE })
+	@doc(
+			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.")
+	@no_test
+	public static String toAbsoluteFile(final IScope scope, final String relativePath) {
+		return FileUtils.constructAbsoluteFilePath(scope, relativePath, false);
+	}
 
 
 	/**

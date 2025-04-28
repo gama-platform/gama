@@ -27,8 +27,8 @@ import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
-// Si construit � partir d'une liste de points, cr�e la g�om�trie correspondante
-// Si construit � partir d'un graphe spatial, cr�e la g�om�trie � partir des edges pass�s.
+// If build from a list of points, creates the corresponding geometry
+// If build from a spatial graph, creates a geometry from the edges
 /**
  * The Class GamaPath.
  *
