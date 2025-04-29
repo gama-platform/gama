@@ -208,49 +208,64 @@ public class NetworkSkill extends MessagingSkill {
 		final Map<String, IConnector> myConnectors = this.getRegisteredServers(scope);
 		IConnector connector = myConnectors.get(serverKey);
 		if (connector == null) {
-
-			if (INetworkSkill.UDP_SERVER.equals(protocol)) {
+			switch (protocol) {
+			case INetworkSkill.UDP_SERVER: 
 				DEBUG.OUT("create UDP server");
 				connector = new UDPConnector(scope, true);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port);
 				connector.configure(IConnector.PACKET_SIZE, packet_size);
-			} else if (INetworkSkill.UDP_CLIENT.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.UDP_CLIENT:
 				DEBUG.OUT("create UDP client");
 				connector = new UDPConnector(scope, false);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port);
 				connector.configure(IConnector.PACKET_SIZE, "" + packet_size);
-			} else if (INetworkSkill.WEBSOCKET_SERVER.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.WEBSOCKET_SERVER:
 				DEBUG.OUT("create WebSocket server");
 				connector = new WebSocketConnector(scope, true, raw_package);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port); 
-			} else if (INetworkSkill.WEBSOCKET_CLIENT.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.WEBSOCKET_CLIENT:
 				DEBUG.OUT("create WebSocket client");
 				connector = new WebSocketConnector(scope, false, raw_package);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port); 
-			} else if (INetworkSkill.TCP_SERVER.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.TCP_SERVER:
 				DEBUG.OUT("create TCP serveur");
 				connector = new TCPConnector(scope, true, raw_package);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.TCP_CLIENT.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.TCP_CLIENT:
 				DEBUG.OUT("create TCP client");
 				connector = new TCPConnector(scope, false, raw_package);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.ARDUINO.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.ARDUINO:
 				connector = new ArduinoConnector(scope);
 				connector.configure(IConnector.SERVER_URL, serverURL);
 				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.HTTP_REQUEST.equals(protocol)) {
+				break;
+				
+			case INetworkSkill.HTTP_REQUEST:
 				connector = new HTTPRequestConnector(scope);
 				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);				
-			} else // if(protocol.equals( INetworkSkill.MQTT))
-			{
+				connector.configure(IConnector.SERVER_PORT, "" + port);		
+				break;
+				
+			case null, default:
 				DEBUG.OUT("create MQTT serveur " + login + " " + password);
 				connector = new MQTTConnector(scope, raw_package);
 				if (serverURL != null) {
@@ -264,7 +279,9 @@ public class NetworkSkill extends MessagingSkill {
 					if (login != null) { connector.configure(IConnector.LOGIN, login); }
 					if (password != null) { connector.configure(IConnector.PASSWORD, password); }
 				}
+				break;
 			}
+			
 			if (force_local != null) { connector.forceNetworkUse(force_local); }
 			// Fix to Issue #2618
 			myConnectors.put(serverKey, connector);
@@ -342,6 +359,7 @@ public class NetworkSkill extends MessagingSkill {
 	 *            the scope
 	 * @return the gama message
 	 */
+	@SuppressWarnings("unchecked")
 	@action (
 		name = INetworkSkill.FETCH_MESSAGE,
 		doc = @doc (
@@ -370,6 +388,7 @@ public class NetworkSkill extends MessagingSkill {
 	 *            the scope
 	 * @return true, if successful
 	 */
+	@SuppressWarnings("unchecked")
 	@action (
 		name = INetworkSkill.HAS_MORE_MESSAGE_IN_BOX,
 		doc = @doc (

@@ -81,9 +81,6 @@ public class TCPConnector extends Connector {
 
 	@Override
 	protected void connectToServer(final IAgent agent) throws GamaNetworkException {
-		if (isConnected) {
-			return;
-		}
 
 		final String server = this.getConfigurationParameter(SERVER_URL);
 		final int port = Integer.parseInt(this.getConfigurationParameter(SERVER_PORT));
