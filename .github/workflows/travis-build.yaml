@@ -3,19 +3,19 @@ name: "[./.github/workflows/travis-build.yaml]"
 on:
   workflow_call:
     inputs:
-      get_testing_compiled_archives: 
-        description: 'Is this built used for a release ?'
+      get_testing_compiled_archives:
+        description: "Is this built used for a release ?"
         required: true
-        default: false 
+        default: false
         type: boolean
-      get_all_archives_for_release: 
-        description: 'Needs a release to test in runner ?'
+      get_all_archives_for_release:
+        description: "Needs a release to test in runner ?"
         required: false
-        default: false 
+        default: false
         type: boolean
-      mvn_extra_arguments: 
+      mvn_extra_arguments:
         required: false
-        default: "" 
+        default: ""
         type: string
       new_release_tag:
         description: "The tag of the release to publish (YYYY.MM.0)"
@@ -25,11 +25,11 @@ on:
       jdk_embedded_version:
         type: string
         required: false
-      IS_STABLE_RELEASE: 
+      IS_STABLE_RELEASE:
         type: boolean
       RUN_SPOTBUGS:
-        required: false 
-        default: false 
+        required: false
+        default: false
         type: boolean
       SPOTBUGS_OUTPUT_ARTIFACT_NAME:
         type: string
@@ -38,7 +38,7 @@ on:
       CHECKOUT_BRANCH:
         type: string
         required: false
-        default: ''
+        default: ""
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
@@ -54,10 +54,9 @@ on:
         required: false
 
 jobs:
-  compilation: 
+  compilation:
     runs-on: ubuntu-latest
     steps:
-
       # Prep runner
       - uses: actions/checkout@v4
         if: "${{ inputs.CHECKOUT_BRANCH == '' }}"
@@ -66,17 +65,17 @@ jobs:
         if: "${{ inputs.CHECKOUT_BRANCH != '' }}"
         with:
           ref: ${{ inputs.CHECKOUT_BRANCH }}
-      
+
       - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '23'
+          distribution: "temurin"
+          java-version: "21"
           java-package: jdk
 
       - name: Update Maven to 3.9.X
         run: |
-          # Needed for Tycho 4.X.X and support for JDK 21
+          # Needed for Tycho 4.X.X and support for JDK 23
           wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
           tar -xvf apache-maven-3.9.9-bin.tar.gz
           mv apache-maven-3.9.9 /opt/
@@ -99,7 +98,7 @@ jobs:
 
       # Prep release
 
-      - name: Tag GAMA with new release 
+      - name: Tag GAMA with new release
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
           bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} ${{ inputs.IS_STABLE_RELEASE }}
@@ -120,19 +119,19 @@ jobs:
           GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
           GAMA_STORE: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
 
-      # 
-      # ██████╗ ██╗   ██╗██╗██╗     ██████╗ ██╗███╗   ██╗ ██████╗ 
-      # ██╔══██╗██║   ██║██║██║     ██╔══██╗██║████╗  ██║██╔════╝ 
+      #
+      # ██████╗ ██╗   ██╗██╗██╗     ██████╗ ██╗███╗   ██╗ ██████╗
+      # ██╔══██╗██║   ██║██║██║     ██╔══██╗██║████╗  ██║██╔════╝
       # ██████╔╝██║   ██║██║██║     ██║  ██║██║██╔██╗ ██║██║  ███╗
       # ██╔══██╗██║   ██║██║██║     ██║  ██║██║██║╚██╗██║██║   ██║
       # ██████╔╝╚██████╔╝██║███████╗██████╔╝██║██║ ╚████║╚██████╔╝
-      # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝                                                       
-      # 
+      # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝
+      #
 
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
 
-      # Spotbugs 
+      # Spotbugs
       - name: Running SpotBugs
         if: "${{ inputs.RUN_SPOTBUGS }}"
         run: |
@@ -143,7 +142,7 @@ jobs:
           cd ${{ github.workspace }}/gama.parent
           mvn verify spotbugs:spotbugs
           # Merge every spotbugs files in a single XML
-          python3 -m pip install lxml 
+          python3 -m pip install lxml
           python3 $GITHUB_WORKSPACE/travis/merge_xml_spotbugs.py -r $GITHUB_WORKSPACE -o $GITHUB_WORKSPACE/spotbugsXml.xml
 
       - uses: actions/upload-artifact@v4
