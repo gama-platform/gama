@@ -91,8 +91,9 @@ public class TCPConnector extends Connector {
 		}
 		try {
 			socket.startService();
-		} catch (final IOException e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
+			throw GamaNetworkException.cannotBeConnectedFailure(agent.getScope()); 
 		}
 		this.setConnected();
 	}

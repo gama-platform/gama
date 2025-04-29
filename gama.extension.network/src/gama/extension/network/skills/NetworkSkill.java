@@ -32,6 +32,7 @@ import gama.core.messaging.GamaMailbox;
 import gama.core.messaging.GamaMessage;
 import gama.core.messaging.MessagingSkill;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -266,19 +267,16 @@ public class NetworkSkill extends MessagingSkill {
 				break;
 				
 			case null, default:
-				DEBUG.OUT("create MQTT serveur " + login + " " + password);
 				connector = new MQTTConnector(scope, raw_package);
-				if (serverURL != null) {
-					connector.configure(IConnector.SERVER_URL, serverURL);
-					if (port == 0) {
-						connector.configure(IConnector.SERVER_PORT, "1883");
-					} else {
-						connector.configure(IConnector.SERVER_PORT, port.toString());
-
-					}
-					if (login != null) { connector.configure(IConnector.LOGIN, login); }
-					if (password != null) { connector.configure(IConnector.PASSWORD, password); }
+				DEBUG.OUT("create MQTT server " + login + " " + password);
+				if (serverURL == null) {
+					break; // If no server given we fallback on the default connection
 				}
+				connector.configure(IConnector.SERVER_URL, serverURL);
+				connector.configure(IConnector.SERVER_PORT, port == 0 ? "1883" : port.toString());
+
+				if (login != null) { connector.configure(IConnector.LOGIN, login); }
+				if (password != null) { connector.configure(IConnector.PASSWORD, password); }
 				break;
 			}
 			
@@ -298,7 +296,12 @@ public class NetworkSkill extends MessagingSkill {
 			agt.setAttribute(INetworkSkill.NET_AGENT_SERVER, serverList);
 		}
 		DEBUG.OUT("connector " + connector);
-		connector.connect(agt);
+		try {
+			connector.connect(agt);			
+		}catch (Exception e) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(e, scope), false);
+			return false;
+		}
 
 		serverList.add(serverKey);
 
