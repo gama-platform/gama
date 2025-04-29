@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -28,6 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.messaging.GamaMailbox;
 import gama.core.messaging.GamaMessage;
 import gama.core.messaging.MessagingSkill;
@@ -127,7 +127,7 @@ public class NetworkSkill extends MessagingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	@action (
-			name = INetworkSkill.CONNECT_TOPIC,
+			name = INetworkSkill.CONNECT,
 			args = { @arg (
 					name = INetworkSkill.PROTOCOL,
 					type = IType.STRING,
@@ -143,7 +143,7 @@ public class NetworkSkill extends MessagingSkill {
 							type = IType.INT,
 							doc = @doc ("Port number")),
 					@arg (
-							name = "raw",
+							name = INetworkSkill.RAW,
 							type = IType.BOOL,
 							doc = @doc ("message type raw or rich")),
 					@arg (
@@ -198,7 +198,7 @@ public class NetworkSkill extends MessagingSkill {
 		final String networkName = (String) scope.getArg(INetworkSkill.WITHNAME, IType.STRING);
 		final String protocol = (String) scope.getArg(INetworkSkill.PROTOCOL, IType.STRING);
 		final Boolean force_local = (Boolean) scope.getArg(INetworkSkill.FORCE_NETWORK_USE, IType.BOOL);
-		final Boolean raw_package = (Boolean) scope.getArg("raw", IType.BOOL);
+		final Boolean raw_package = (Boolean) scope.getArg(INetworkSkill.RAW, IType.BOOL);
 		final Integer port = (Integer) scope.getArg(INetworkSkill.PORT, IType.INT);
 		final String packet_size = (String) scope.getArg(INetworkSkill.MAX_DATA_PACKET_SIZE, IType.STRING);
 
@@ -293,6 +293,34 @@ public class NetworkSkill extends MessagingSkill {
 		}
 		return true;
 	}
+	
+	@action (
+			name = INetworkSkill.DISCONNECT,
+			doc = @doc(
+					value = "Disconnects from all the servers previously connected to. Will return true if everything went well, false in case of an error."))
+	public Boolean disconnect(final IScope scope) {
+		final Map<String, IConnector> connectors = this.getRegisteredServers(scope);	
+		boolean no_problem = true;
+		var to_remove = new ArrayList<String>();
+		for (var entry : connectors.entrySet()) {
+			try {
+				var connector = entry.getValue();
+				connector.close(scope);	
+				connector.leaveTheGroup(scope.getAgent(), REGISTERED_AGENTS);
+				to_remove.add(entry.getKey());
+			}
+			catch( Exception ex) {
+				no_problem = false;
+			}
+		}
+		
+		for(var connector : to_remove) {
+			connectors.remove(connector);
+		}
+		
+		return no_problem;
+		
+	}
 
 	/**
 	 * Creates the server key.
@@ -353,7 +381,7 @@ public class NetworkSkill extends MessagingSkill {
 								+ "}") }))
 	public boolean hasMoreMessage(final IScope scope) {
 		final IAgent agent = scope.getAgent();
-		final GamaMailbox box = getMailbox(scope, agent);
+		final GamaMailbox<GamaMessage> box = getMailbox(scope, agent);
 		return !box.isEmpty();
 	}
 
@@ -397,6 +425,7 @@ public class NetworkSkill extends MessagingSkill {
 	 *            the agent
 	 * @return the groups
 	 */
+	@SuppressWarnings("unchecked")
 	private IList<String> getGroups(final IScope scope, final IAgent agent) {
 		IList<String> groups = Cast.asList(scope, agent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 		if (groups == null) {
@@ -440,7 +469,7 @@ public class NetworkSkill extends MessagingSkill {
 					doc = @doc ("name of the group the agent wants to leave")) },
 			doc = @doc (
 					value = "leave a group of agents. The leaving agent will not receive any "
-							+ "message from the group. Overwhise, it can send messages to the left group",
+							+ "message from the group. Otherwise, it can send messages to the left group",
 					examples = { @example (" do leave_group with_name:\"my_group\";") }))
 	public boolean leaveTheGroup(final IScope scope) {
 		final IAgent agent = scope.getAgent();
@@ -525,9 +554,6 @@ public class NetworkSkill extends MessagingSkill {
 		return (List<IAgent>) scope.getExperiment().getAttribute(REGISTERED_AGENTS);
 	}
 
-	// private void registeredAgent(final IScope scope, final IAgent agt) {
-	// getRegisteredAgents(scope).add(agt);
-	// }
 
 	/**
 	 * Gets the registered servers.
@@ -548,7 +574,6 @@ public class NetworkSkill extends MessagingSkill {
 	 *            the scope
 	 */
 	private void initialize(final IScope scope) {
-
 		scope.getExperiment().setAttribute(REGISTERED_AGENTS, new ArrayList<IAgent>());
 		scope.getExperiment().setAttribute(REGISTERED_SERVER, new HashMap<String, IConnector>());
 	}

@@ -16,7 +16,10 @@ package gama.extension.network.skills;
 public interface INetworkSkill {
 	
 	/** The connect topic. */
-	String CONNECT_TOPIC = "connect";
+	String CONNECT = "connect";
+	
+	String DISCONNECT = "disconnect";
+	
 	
 	/** The server url. */
 	String SERVER_URL = "to";
@@ -81,6 +84,9 @@ public interface INetworkSkill {
 	
 	/** The force network use. */
 	String FORCE_NETWORK_USE = "force_network_use";
+
+	
+	String RAW = "raw";
 
 	/** The register to group. */
 	///// GROUP MANAGEMENT
