@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SwingControl.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,8 +17,12 @@ import java.awt.event.MouseMotionListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
@@ -66,7 +70,7 @@ public abstract class SwingControl extends Composite {
 	Frame frame;
 
 	/** The surface. */
-	final Java2DDisplaySurface surface;
+	Java2DDisplaySurface surface;
 
 	/** The populated. */
 	volatile boolean populated = false;
@@ -105,7 +109,11 @@ public abstract class SwingControl extends Composite {
 			}
 		};
 		WorkbenchHelper.getPage().addPartListener(listener);
-		addListener(SWT.Dispose, event -> { WorkbenchHelper.getPage().removePartListener(listener); });
+		addListener(SWT.Dispose, event -> {
+			WorkbenchHelper.getPage().removePartListener(listener);
+			// map.forEach((k, l) -> { removeListener(k, l); });
+			this.setData("org.eclipse.swt.awt.SWT_AWT.embeddedFrame", null);
+		});
 		setLayout(new FillLayout());
 	}
 
@@ -119,6 +127,14 @@ public abstract class SwingControl extends Composite {
 			result = super.isFocusControl();
 		} catch (final Exception e) {
 			// Nothing. Eliminates annoying exceptions when closing Java2D displays.
+			// However, it denotes that some listeners are still active while they should have been disposed a while
+			// ago. Therefore contributing to issue #489 (Memory leak in Java2D displays).
+			// While there is no easy way to remove the listener (maybe through reflection, knowing who called this
+			// method ?), removing the references should help in solving the issue.
+			surface = null;
+			frame = null;
+			swingMouseListener = null;
+			swingKeyListener = null;
 		}
 		return result;
 	}
@@ -138,6 +154,15 @@ public abstract class SwingControl extends Composite {
 		// See Issue #3426
 		super.setBounds(x, y, width, height);
 		this.privateSetDimensions(width, height);
+	}
+
+	/** The map. Keep the listeners to remove them after disposal */
+	SetMultimap<Integer, Listener> map = HashMultimap.create();
+
+	@Override
+	public void addListener(final int eventType, final Listener listener) {
+		map.put(eventType, listener);
+		super.addListener(eventType, listener);
 	}
 
 	/**

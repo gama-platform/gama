@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SwingControlWin.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SwingControlWin.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Listener;
 
 import gama.ui.display.java2d.AWTDisplayView;
 import gama.ui.display.java2d.Java2DDisplaySurface;
@@ -55,16 +56,23 @@ public class SwingControlWin extends SwingControl {
 				surface.setVisibility(() -> visible);
 				applet.getContentPane().add(surface);
 				frame.add(applet);
-				addListener(SWT.Resize, event -> { surface.setMonitor(this.getMonitor()); });
-				addListener(SWT.Dispose, event -> EventQueue.invokeLater(() -> {
-					try {
-						applet.getContentPane().remove(surface);
-						frame.remove(applet);
-						surface.dispose();
-						frame.dispose();
-					} catch (final Exception e) {}
+				Listener resizeListener = event -> { surface.setMonitor(this.getMonitor()); };
+				addListener(SWT.Resize, resizeListener);
+				addListener(SWT.Dispose, event -> {
+					removeListener(SWT.Resize, resizeListener);
+					EventQueue.invokeLater(() -> {
+						try {
+							applet.getContentPane().remove(surface);
+							frame.remove(applet);
+							surface.dispose();
+							frame.dispose();
+						} catch (final Exception e) {}
 
-				}));
+					});
+				}
+
+				);
+
 			});
 
 		}
