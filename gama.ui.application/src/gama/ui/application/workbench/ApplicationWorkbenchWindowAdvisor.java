@@ -108,14 +108,8 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		});
 		// See #3187 -
 		// if (FLAGS.USE_OLD_TABS) {
-		ThemeHelper.injectCSS("""
-				.MPartStack {
-				 swt-tab-renderer: null;
-				 swt-simple: true;
-				}""");
-		// }
-		// ThemeHelper.injectCSS(".MPartSashContainer{ jsash-width: 1px; } ");
-		ThemeHelper.restoreSashBackground();
+
+
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
@@ -123,6 +117,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		configurer.setShowPerspectiveBar(false);
 		configurer.setTitle(GAMA.VERSION);
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
+		ThemeHelper.applyCSSWhenWindowOpens();
 		Resource.setNonDisposeHandler(null);
 	}
 

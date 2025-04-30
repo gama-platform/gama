@@ -36,6 +36,7 @@
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
 -Dosgi.locking=none
+-Dswt.enable.themedScrollBar=true
 -Dosgi.checkConfiguration=false
 -Dosgi.requiredJavaVersion=21
 -Declipse.log.level=ERROR
@@ -104,6 +105,10 @@
          <bmp/>
       </win>
    </launcher>
+
+   <vm>
+   </vm>
+
    <license>
         <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
    </license>
