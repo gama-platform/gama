@@ -13,11 +13,14 @@ package gama.ui.display.java2d.swing;
 import java.awt.Frame;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseMotionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 
@@ -36,7 +39,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public abstract class SwingControl extends Composite {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -128,16 +131,48 @@ public abstract class SwingControl extends Composite {
 		} catch (final Exception e) {
 			// Nothing. Eliminates annoying exceptions when closing Java2D displays.
 			// However, it denotes that some listeners are still active while they should have been disposed a while
-			// ago. Therefore contributing to issue #489 (Memory leak in Java2D displays).
-			// While there is no easy way to remove the listener (maybe through reflection, knowing who called this
-			// method ?), removing the references should help in solving the issue.
-			surface = null;
-			frame = null;
-			swingMouseListener = null;
-			swingKeyListener = null;
+			// ago. Therefore contributing to issue #489 (Memory leak in Java2D displays). The only solution is to
+			// remove the listeners from Display (as SWT_AWT does not do it correctly)
+			try {
+				removeListenerFrom(WorkbenchHelper.getDisplay());
+				removeListenerFrom(WorkbenchHelper.getWindow().getShell());
+			} catch (Exception e1) {
+				// nothing
+			}
+
 		}
 		return result;
 	}
+
+	/**
+	 * A terrible hack to be able to dispose of the listeners installed by SWT_AWT and wrongly removed (the shell it
+	 * installs them on is not the shell it removes them from)
+	 */
+	private void removeListenerFrom(final Object object) throws Exception {
+		Field field;
+		if (object instanceof Widget) {
+			field = Widget.class.getDeclaredField("eventTable");
+		} else {
+			field = object.getClass().getDeclaredField("eventTable");
+		}
+		field.setAccessible(true);
+		Object table = field.get(object);
+		Class<?> eventTableClass = table.getClass();
+		field = eventTableClass.getDeclaredField("listeners");
+		field.setAccessible(true);
+		Method method = eventTableClass.getDeclaredMethod("remove", int.class);
+		method.setAccessible(true);
+		Listener[] listeners = (Listener[]) field.get(table);
+		listeners = listeners.clone();
+		for (int i = 0; i < listeners.length; i++) {
+			Listener listener = listeners[i];
+			if (listener != null && listener.getClass().getName().contains("SWT_AWT")) {
+				method.invoke(table, i);
+				DEBUG.OUT("Removed " + listener.getClass().getName());
+			}
+		}
+	}
+	// TODO Auto-generated method stub
 
 	/**
 	 * Populate.
@@ -190,5 +225,15 @@ public abstract class SwingControl extends Composite {
 	 *            the new mouse listener
 	 */
 	public void setMouseListener(final MouseMotionListener adapter) { swingMouseListener = adapter; }
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		// Removes the reference to the different objects (see #489)
+		surface = null;
+		frame = null;
+		swingMouseListener = null;
+		swingKeyListener = null;
+	}
 
 }
