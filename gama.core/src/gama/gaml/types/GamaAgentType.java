@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaAgentType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaAgentType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -75,8 +76,10 @@ public class GamaAgentType extends GamaType<IAgent> {
 		if (species == null) return (IAgent) Types.AGENT.cast(scope, obj, param, copy);
 		if (obj instanceof IAgent) return ((IAgent) obj).isInstanceOf(species, false) ? (IAgent) obj : null;
 		if (obj instanceof Integer) return scope.getAgent().getPopulationFor(species).getAgent((Integer) obj);
-		if (obj instanceof GamaPoint)
-			return scope.getAgent().getPopulationFor(species).getAgent(scope, (GamaPoint) obj);
+		if (obj instanceof GamaPoint) {
+			IAgent agent = scope.getAgent();
+			if (agent != null) return agent.getPopulationFor(species).getAgent(scope, (GamaPoint) obj);
+		}
 		return null;
 	}
 
