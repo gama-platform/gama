@@ -28,62 +28,76 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class SwingControlMac extends SwingControl {
 
-	/**
-	 * Instantiates a new swing control.
-	 *
-	 * @param parent
-	 *            the parent
-	 * @param awtDisplayView
-	 * @param style
-	 *            the style
-	 */
-	public SwingControlMac(final Composite parent, final AWTDisplayView view, final Java2DDisplaySurface component,
-			final int style) {
-		super(parent, view, component, style);
+    /**
+     * Instantiates a new swing control.
+     *
+     * @param parent
+     *            the parent
+     * @param awtDisplayView
+     * @param style
+     *            the style
+     */
+    public SwingControlMac(final Composite parent, final AWTDisplayView view, final Java2DDisplaySurface component,
+	    final int style) {
+	super(parent, view, component, style);
+    }
+
+    @Override
+    protected void populate() {
+	if (isDisposed()) {
+	    return;
 	}
+	if (!populated) {
+	    populated = true;
+	    MouseListener ml = new MouseAdapter() {
 
-	@Override
-	protected void populate() {
-		if (isDisposed()) return;
-		if (!populated) {
-			populated = true;
-			MouseListener ml = new MouseAdapter() {
+		@Override
+		public void mouseExited(final MouseEvent e) {
+		    if (surface.isFocusOwner() && !surface.contains(e.getPoint())) {
+			frame.setVisible(false);
+			frame.setVisible(true);
+			WorkbenchHelper.asyncRun(() -> getShell().forceActive());
+		    }
 
-				@Override
-				public void mouseExited(final MouseEvent e) {
-					if (surface.isFocusOwner() && !surface.contains(e.getPoint())) {
-						frame.setVisible(false);
-						frame.setVisible(true);
-						WorkbenchHelper.asyncRun(() -> getShell().forceActive());
-					}
-
-				}
-
-			};
-			WorkbenchHelper.asyncRun(() -> {
-				frame = SWT_AWT.new_Frame(SwingControlMac.this);
-				frame.setAlwaysOnTop(false);
-				if (swingKeyListener != null) { frame.addKeyListener(swingKeyListener); }
-				if (swingMouseListener != null) { frame.addMouseMotionListener(swingMouseListener); }
-				frame.add(surface);
-
-				frame.addMouseListener(ml);
-				surface.addMouseListener(ml);
-
-			});
-			addListener(SWT.Dispose, event -> EventQueue.invokeLater(() -> {
-				try {
-					frame.removeMouseListener(ml);
-					if (swingKeyListener != null) { frame.removeKeyListener(swingKeyListener); }
-					if (swingMouseListener != null) { frame.removeMouseMotionListener(swingMouseListener); }
-					surface.removeMouseListener(ml);
-					frame.remove(surface);
-					surface.dispose();
-					frame.dispose();
-				} catch (final Exception e) {}
-
-			}));
 		}
+
+	    };
+	    WorkbenchHelper.asyncRun(() -> {
+		frame = SWT_AWT.new_Frame(SwingControlMac.this);
+		frame.setAlwaysOnTop(false);
+		if (swingKeyListener != null) {
+		    frame.addKeyListener(swingKeyListener);
+		}
+		if (swingMouseListener != null) {
+		    frame.addMouseMotionListener(swingMouseListener);
+		}
+		frame.add(surface);
+
+		frame.addMouseListener(ml);
+		surface.addMouseListener(ml);
+
+	    });
+	    addListener(SWT.Dispose, _ -> EventQueue.invokeLater(() -> {
+		try {
+		    frame.removeMouseListener(ml);
+		    if (swingKeyListener != null) {
+			frame.removeKeyListener(swingKeyListener);
+		    }
+		    if (swingMouseListener != null) {
+			frame.removeMouseMotionListener(swingMouseListener);
+		    }
+		    surface.removeMouseListener(ml);
+		    frame.remove(surface);
+		    surface.dispose();
+		    frame.dispose();
+		    // Removes the reference to the different objects
+		    // (see #489)
+		    removeAllReferences();
+		} catch (final Exception e) {
+		}
+
+	    }));
 	}
+    }
 
 }
