@@ -59,11 +59,11 @@ public class SwingControlWin extends SwingControl {
 		surface.setVisibility(() -> visible);
 		applet.add(surface);
 		frame.add(applet);
-		Listener resizeListener = _ -> {
+		Listener resizeListener = e -> {
 		    surface.setMonitor(this.getMonitor());
 		};
 		addListener(SWT.Resize, resizeListener);
-		addListener(SWT.Dispose, _ -> {
+		addListener(SWT.Dispose, e -> {
 		    removeListener(SWT.Resize, resizeListener);
 		    EventQueue.invokeLater(() -> {
 			try {
@@ -74,8 +74,8 @@ public class SwingControlWin extends SwingControl {
 			    // Removes the reference to the different objects
 			    // (see #489)
 			    removeAllReferences();
-			} catch (final Exception e) {
-			    DEBUG.LOG(e.getMessage());
+			} catch (final Exception e1) {
+			    DEBUG.LOG(e1.getMessage());
 			}
 
 		    });

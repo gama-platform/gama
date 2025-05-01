@@ -134,7 +134,7 @@ public abstract class SwingControl extends Composite {
 	    }
 	};
 	WorkbenchHelper.getPage().addPartListener(listener);
-	addListener(SWT.Dispose, _ -> {
+	addListener(SWT.Dispose, yes -> {
 	    WorkbenchHelper.getPage().removePartListener(listener);
 	    // map.forEach((k, l) -> { removeListener(k, l); });
 	    this.setData("org.eclipse.swt.awt.SWT_AWT.embeddedFrame", null);

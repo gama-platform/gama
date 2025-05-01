@@ -77,7 +77,7 @@ public class SwingControlMac extends SwingControl {
 		surface.addMouseListener(ml);
 
 	    });
-	    addListener(SWT.Dispose, _ -> EventQueue.invokeLater(() -> {
+	    addListener(SWT.Dispose, e -> EventQueue.invokeLater(() -> {
 		try {
 		    frame.removeMouseListener(ml);
 		    if (swingKeyListener != null) {
@@ -93,7 +93,7 @@ public class SwingControlMac extends SwingControl {
 		    // Removes the reference to the different objects
 		    // (see #489)
 		    removeAllReferences();
-		} catch (final Exception e) {
+		} catch (final Exception e1) {
 		}
 
 	    }));

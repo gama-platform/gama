@@ -63,7 +63,7 @@ public class SwingControlLinux extends SwingControl {
 		applet.getContentPane().add(surface);
 		WorkaroundForIssue2476.installOn(applet, surface);
 		frame.add(applet);
-		addListener(SWT.Dispose, _ -> EventQueue.invokeLater(() -> {
+		addListener(SWT.Dispose, e -> EventQueue.invokeLater(() -> {
 		    try {
 			if (swingKeyListener != null) {
 			    frame.removeKeyListener(swingKeyListener);
@@ -78,7 +78,7 @@ public class SwingControlLinux extends SwingControl {
 			// Removes the reference to the different objects
 			// (see #489)
 			removeAllReferences();
-		    } catch (final Exception e) {
+		    } catch (final Exception e1) {
 		    }
 
 		}));

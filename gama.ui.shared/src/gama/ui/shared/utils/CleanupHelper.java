@@ -206,7 +206,7 @@ public class CleanupHelper {
 	    if (w.isClosing()) {
 		return;
 	    }
-	    WorkbenchHelper.runInUI("Cleaning menus", 0, _ -> {
+	    WorkbenchHelper.runInUI("Cleaning menus", 0, e -> {
 		try {
 		    if (w.isClosing()) {
 			return;
@@ -222,7 +222,7 @@ public class CleanupHelper {
 				    if (w.getCoolBarManager2().find(item.getId()) != null) {
 					w.getCoolBarManager2().remove(item);
 				    }
-				} catch (final Exception e) {
+				} catch (final Exception e1) {
 				}
 			    }
 			}
@@ -237,7 +237,7 @@ public class CleanupHelper {
 		    w.getMenuBarManager().update(true);
 		    cm.resetItemOrder();
 		    // WorkaroundForIssue3210.run(cm);
-		} catch (final Exception e) {
+		} catch (final Exception e1) {
 		}
 	    });
 
@@ -377,7 +377,7 @@ public class CleanupHelper {
 	 * Run.
 	 */
 	public static void run() {
-	    WorkbenchHelper.runInUI("Rearranging menus", 0, _ -> {
+	    WorkbenchHelper.runInUI("Rearranging menus", 0, e -> {
 		final IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
 		if (window instanceof WorkbenchWindow) {
 		    final IMenuManager menuManager = ((WorkbenchWindow) window).getMenuManager();
