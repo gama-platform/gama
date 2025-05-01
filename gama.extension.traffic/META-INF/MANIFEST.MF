@@ -9,5 +9,5 @@ Import-Package: org.locationtech.jts.geom
 Export-Package: gama.extension.traffic.driving
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.traffic

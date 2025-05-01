@@ -8,5 +8,5 @@ Require-Bundle: gama.core,
 Export-Package: gama.extension.bdi
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.bdi

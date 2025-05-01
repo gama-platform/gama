@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Navigator
 Bundle-SymbolicName: gama.ui.navigator;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: gama.ui.shared,
  org.eclipse.swt,
  org.eclipse.core.resources,

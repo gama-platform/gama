@@ -28,5 +28,5 @@ Bundle-ClassPath: .,
  libs/jdom-2.0.1.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.documentation.MainGenerateWiki
-Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: gama.annotations
