@@ -1,15 +1,14 @@
 /*******************************************************************************************************
  *
- * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,20 +32,17 @@ import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.BufferingController;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
-import gama.core.util.GamaColor;
+import gama.core.runtime.server.IGamaServer;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
-import gama.gaml.statements.save.SaveOptions;
 
 /**
  * Written by drogoul Modified on 23 nov. 2009
@@ -104,7 +100,6 @@ public class GAMA {
 	// hqnghi: add several controllers to have multi-thread experiments
 	private static final List<IExperimentController> controllers = new CopyOnWriteArrayList<>();
 
-
 	/**
 	 * Gets the controllers.
 	 *
@@ -120,12 +115,16 @@ public class GAMA {
 	public static IExperimentController getFrontmostController() {
 		return controllers.isEmpty() ? null : controllers.get(0);
 	}
-	
+
+	/** The Constant bufferingController. */
 	private static final BufferingController bufferingController = new BufferingController();
 
-	public static BufferingController getBufferingController() {return bufferingController;}
-	
-	
+	/**
+	 * Gets the buffering controller.
+	 *
+	 * @return the buffering controller
+	 */
+	public static BufferingController getBufferingController() { return bufferingController; }
 
 	/**
 	 * New control architecture
@@ -661,6 +660,13 @@ public class GAMA {
 	}
 
 	/**
+	 * Gets the current websocket server
+	 *
+	 * @return the current top level agent
+	 */
+	public static IGamaServer getServer() { return getPlatformAgent().getServer(); }
+
+	/**
 	 * Gets the current top level agent.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -833,6 +839,7 @@ public class GAMA {
 	 */
 	public static void updateExperimentState(final IExperimentPlan exp, final IExperimentStateListener.State state) {
 		for (IExperimentStateListener listener : experimentStateListeners) { listener.updateStateTo(exp, state); }
+		getGui().getStatus().updateExperimentStatus();
 	}
 
 	/**

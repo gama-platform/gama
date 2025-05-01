@@ -1,4 +1,4 @@
-# GAMA - official repository of GAMA
+# Official repository of the GAMA modeling platform
 [![Continuous project validation](https://github.com/gama-platform/new.gama/actions/workflows/trigger-compilation.yaml/badge.svg)](https://github.com/gama-platform/gama/actions/workflows/trigger-compilation.yaml)
 [![Language](https://img.shields.io/badge/language-java-brightgreen.svg)](https://www.java.com/)
 [![GitHub issues](https://img.shields.io/github/issues/gama-platform/gama.svg)](https://github.com/gama-platform/gama/issues)
@@ -7,29 +7,23 @@
 
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=gama-platform_new.gama&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=gama-platform_new.gama)
 [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/51964)
-[![CodeScene Code Health](https://codescene.io/projects/51964/status-badges/code-health)](https://codescene.io/projects/51964)
+[![CodeScene Average Code Health](https://codescene.io/projects/51964/status-badges/average-code-health)](https://codescene.io/projects/51964)
 
 
-This is the official repository of the GAMA platform, an open-source modeling and simulation environment for creating spatially explicit agent-based simulations. GAMA provides an IDE for its own language along with embedded powerful vizualisation capabilities. The goal is to provide an easy to learn but yet efficient environment covering the widest possible range of use cases for agent-based modelling.
-
-For more detailed information about it, visit our [website](https://gama-platform.org).
-
-
-https://github.com/user-attachments/assets/8cb6f189-3bfe-42c1-a162-3c8abd5dec8b
-
+This is the official repository of the GAMA platform, an open-source modeling and simulation environment for creating spatially explicit agent-based simulations. 
 
 **See the changelog on the [website](https://gama-platform.org/wiki/next/Changelog) for a detailed list of changes since version 1.9.0**  
 
 ## Installing GAMA
 
-### Instal a release
+### Install a release
 There's a detailed tutorial that covers all cases in the [documentation](https://gama-platform.org/wiki/Installation), but for most user you can just go straight to the [**releases**](https://github.com/gama-platform/gama/releases) section of this repository and download the version that corresponds to your needs, we recommend you take a version bundled with a JDK.
 
 ### Run it from the source code
 
 To run it from the source code you can either use `maven` to build the program yourself, or run it from `eclipse` in case you want to inspect the code and/or modify it. In both cases you will first need to **clone this repository** and to get the [Temurin distribution of JDK21](https://adoptium.net).
 
-#### using eclipse
+#### Using eclipse
 
 There is a more detailled explanation on the [website](https://gama-platform.org/wiki/InstallingGitVersion) about how to do so, here we will only give a fast and easy approach.
 
@@ -38,7 +32,7 @@ The _highly recommended configuration_ for working on this branch is [Eclipse fo
 Once you have imported the code base into your workspace, simply open the `gama.product` project and open either `gama.headless.product` or `gama.product` depending if you want to run gama with or without GUI.
 In the `Overview` pane of the file, click on `Synchronize` and then `Launch an Eclipse application` and GAMA should start.
 
-#### using maven
+#### Using maven
 
 First install [maven](https://maven.apache.org/) on your computer, then open a terminal at the root of project and follow those steps:
 1. go to the project `gama.annotations`
@@ -53,7 +47,7 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
-## Reporting problems
+## Reporting problems, bugs and issues
 
 If you spot a bug or want to suggest an improvement to GAMA, please do so by posting an issue here: [https://github.com/gama-platform/gama/issues](https://github.com/gama-platform/gama/issues). 
 

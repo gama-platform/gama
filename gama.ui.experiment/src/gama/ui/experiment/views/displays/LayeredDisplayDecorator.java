@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * LayeredDisplayDecorator.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * LayeredDisplayDecorator.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.ui.experiment.views.displays;
 import static gama.ui.shared.bindings.GamaKeyBindings.COMMAND;
 import static gama.ui.shared.bindings.GamaKeyBindings.format;
 import static gama.ui.shared.resources.IGamaIcons.DISPLAY_FULLSCREEN_ENTER;
+import static gama.ui.shared.resources.IGamaIcons.DISPLAY_FULLSCREEN_EXIT;
 import static gama.ui.shared.resources.IGamaIcons.DISPLAY_TOOLBAR_SNAPSHOT;
 import static gama.ui.shared.resources.IGamaIcons.EXPERIMENT_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_ANTIALIAS;
@@ -173,7 +174,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		public void partActivated(final IWorkbenchPartReference partRef) {
 			if (ok(partRef)) {
 				// DEBUG.STACK();
-				WorkbenchHelper.runInUI("", 0, m -> {
+				WorkbenchHelper.runInUI("Activating " + partRef.getTitle(), 0, m -> {
 					// DEBUG.OUT("Part Activated:" + partRef.getTitle());
 					view.showCanvas();
 					if (overlay != null) { overlay.display(); }
@@ -206,8 +207,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			// selected. After tests, the same happens on Linux and Windows -- so the test is generalized.
 			if (/* (PlatformHelper.isMac() || PlatformHelper.isLinux()) && */ !PerspectiveHelper.keepTabs()) return;
 			if (ok(partRef)) {
-				WorkbenchHelper.runInUI("", 0, m -> {
-					DEBUG.OUT("Part hidden:" + partRef.getTitle());
+				WorkbenchHelper.runInUI("Hide " + partRef.getTitle(), 0, m -> {
+					// DEBUG.OUT("Part hidden:" + partRef.getTitle());
 					view.hideCanvas();
 					if (overlay != null) { overlay.hide(); }
 				});
@@ -217,8 +218,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		@Override
 		public void partVisible(final IWorkbenchPartReference partRef) {
 			if (ok(partRef)) {
-				WorkbenchHelper.runInUI("", 0, m -> {
-					DEBUG.OUT("Part Visible:" + partRef.getTitle());
+				WorkbenchHelper.runInUI("Unhide " + partRef.getTitle(), 0, m -> {
+					// DEBUG.OUT("Part Visible:" + partRef.getTitle());
 					view.showCanvas();
 					IDisplaySurface s = view.getDisplaySurface();
 					if (s != null) { s.getOutput().update(); }
@@ -229,16 +230,27 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	};
 
+	/** The enter full screen. */
+	public final GamaCommand enterFullScreen =
+			new GamaCommand(DISPLAY_FULLSCREEN_ENTER, STRINGS.PAD("Enter fullscreen", 25) + "ESC", e -> {
+				toggleFullScreen();
+			});
+
+	/** The exit full screen. */
+	public final GamaCommand exitFullScreen =
+			new GamaCommand(DISPLAY_FULLSCREEN_EXIT, STRINGS.PAD("Exit fullscreen", 25) + "ESC", e -> {
+				toggleFullScreen();
+			});
+
 	/**
 	 * Toggle full screen.
 	 */
 	public void toggleFullScreen() {
 		if (isFullScreen()) {
 			DEBUG.OUT("Is already full screen: exiting");
-			fs.setImage(GamaIcon.named(IGamaIcons.DISPLAY_FULLSCREEN_ENTER).image());
+			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 			fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
-			toggleFullScreen.setImage(IGamaIcons.DISPLAY_FULLSCREEN_ENTER);
-			toggleFullScreen.setText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
+			toggleFullScreen = enterFullScreen;
 			// Toolbar
 			if (!toolbar.isDisposed()) {
 				toolbar.wipe(SWT.LEFT, true);
@@ -255,10 +267,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			ViewsHelper.activate(view);
 			fullScreenShell = createFullScreenShell();
 			if (fullScreenShell == null) return;
-			fs.setImage(GamaIcon.named(IGamaIcons.DISPLAY_FULLSCREEN_EXIT).image());
+			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
-			toggleFullScreen.setImage(IGamaIcons.DISPLAY_FULLSCREEN_EXIT);
-			toggleFullScreen.setText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
+			toggleFullScreen = exitFullScreen;
 			normalParentOfFullScreenControl = view.getCentralPanel().getParent();
 			view.getCentralPanel().setParent(fullScreenShell);
 			fullScreenShell.layout(true, true);
@@ -278,7 +289,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			toolbar.requestLayout();
 		}
 		if (overlay.isVisible()) {
-			WorkbenchHelper.runInUI("Overlay", 50, m -> {
+			WorkbenchHelper.runInUI("Display overlay", 50, m -> {
 				toggleOverlay();
 				toggleOverlay();
 			});
@@ -334,7 +345,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			wasVisible = overlay.isVisible();
 			overlay.dispose();
 		}
-		overlay = new DisplayOverlay(view, view.surfaceComposite, view.getOutput().getOverlayProvider());
+		overlay = new DisplayOverlay(view, view.surfaceComposite);
 		if (wasVisible) { overlay.setVisible(true); }
 
 		if (overlay.isVisible()) {
@@ -355,7 +366,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		keyAndMouseListener = view.getMultiListener();
 		menuManager = new DisplaySurfaceMenu(view.getDisplaySurface(), view.getParentComposite(), presentationMenu());
 		final boolean tbVisible = view.getOutput().getData().isToolbarVisible();
-		WorkbenchHelper.runInUI("Toolbar", 0, m -> {
+		WorkbenchHelper.runInUI("Show/hide toolbar of " + view.getPartName(), 0, m -> {
 			if (tbVisible) {
 				toolbar.show();
 			} else {

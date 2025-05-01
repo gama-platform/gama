@@ -8,7 +8,7 @@ model simpleGMLfileLoading
 
 
 
-global {
+global { 
 	file gml_file_roads <- gml_file("../includes/road.gml", "EPSG:2154" );
 	
 	//definition of the geometry of the world agent (environment) as the envelope of the gml file

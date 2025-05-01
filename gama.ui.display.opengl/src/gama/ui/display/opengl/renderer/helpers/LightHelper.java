@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LightHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -89,10 +89,10 @@ public class LightHelper extends AbstractRendererHelper {
 				float[] lightPosition;
 				if (ILightDefinition.direction.equals(type)) {
 					GamaPoint p = light.getDirection();
-					lightPosition = new float[] { -(float) p.x, (float) p.y, -(float) p.z, 0 };
+					lightPosition = new float[] { -(float) p.getX(), (float) p.getY(), -(float) p.getZ(), 0 };
 				} else {
 					GamaPoint p = light.getLocation();
-					lightPosition = new float[] { (float) p.x, -(float) p.y, (float) p.z, 1 };
+					lightPosition = new float[] { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 1 };
 				}
 				gl.glLightfv(id, GLLightingFunc.GL_POSITION, lightPosition, 0);
 				// Get and set the attenuation (if it is not a direction light)
@@ -125,6 +125,19 @@ public class LightHelper extends AbstractRendererHelper {
 
 	}
 
+	/** The Constant UP_VECTOR. */
+	private final static GamaPoint UP_VECTOR_PLUS_Y = new GamaPoint.Immutable(0, 1, 0);
+
+	/** The Constant UP_VECTOR_MINUS_Z. */
+	private final static GamaPoint UP_VECTOR_MINUS_Z = new GamaPoint.Immutable(0, 0, -1);
+
+	/** The Constant UP_VECTOR_PLUS_Z. */
+	private final static GamaPoint UP_VECTOR_PLUS_Z = new GamaPoint.Immutable(0, 0, 1);
+
+	/** The Constant arrow. */
+	// private final static GamaShape SPOT = ((GamaShape) buildCone3D(2, 1, GamaPoint.Immutable.NULL_POINT))
+	// .withRotation(new AxisAngle(UP_VECTOR_PLUS_Y, 90));
+
 	/**
 	 * Draw light.
 	 *
@@ -151,8 +164,7 @@ public class LightHelper extends AbstractRendererHelper {
 		// representation of the color will have the same color as
 		// the light in itself)
 		final GLUT glut = new GLUT();
-		GamaPoint dir = light.getDirection();
-		GamaPoint dirNorm = dir.normalized();
+		GamaPoint dir = light.getDirection().normalized();
 		final String type = light.getType();
 		if (ILightDefinition.point.equals(type)) {
 			openGL.pushMatrix();
@@ -161,29 +173,30 @@ public class LightHelper extends AbstractRendererHelper {
 			openGL.popMatrix();
 		} else if (ILightDefinition.spot.equals(type)) {
 			openGL.pushMatrix();
+			// Desired direction. It seems that y and z need to be negated, but not x. Not completely sure why.
+			dir = new GamaPoint(dir.x, -dir.y, -dir.z);
+			double coneRadius = Math.sin(Math.toRadians(light.getAngle())) * size;
 			openGL.translateBy(pos[0], pos[1], pos[2]);
-			final double baseSize = Math.sin(Math.toRadians(light.getAngle())) * size;
-			// compute angle
-			int flag = 1;
-			if (dirNorm.z < 0) { flag = -1; }
-			final double cosAngle = flag * dirNorm.z;
-			// compute axis : dest vect init
-			GamaPoint axis = new GamaPoint(0, 0, -1);
-			final double angle = Math.acos(flag * cosAngle);
-			axis = GamaPoint.cross(axis, dir);
-			openGL.rotateBy(Math.toDegrees(-angle) + 180, axis.x, axis.y, axis.z);
-			openGL.translateBy(0, 0, -size);
-			glut.glutSolidCone(baseSize, size, 16, 16);
+			if (dir.norm() > 1e-6) {
+				GamaPoint rotationAxis = UP_VECTOR_PLUS_Z.crossProductWith(dir);
+				double rotationAngle = Math.acos(dir.dotProductWith(UP_VECTOR_PLUS_Z));
+				if (rotationAxis.x != 0 || rotationAxis.y != 0) {
+					openGL.rotateBy(-Math.toDegrees(rotationAngle), rotationAxis.x, rotationAxis.y, rotationAxis.z);
+				}
+			}
+			glut.glutSolidCone(coneRadius, size, 16, 16);
 			openGL.popMatrix();
-		} else {
+		} else
+
+		{
 			// draw direction light : a line and an sphere at the end of the line.
 			final int maxI = 3;
 			final int maxJ = 3;
 			for (int i = 0; i < maxI; i++) {
 				for (int j = 0; j < maxJ; j++) {
 					final double[] beginPoint = { i * worldWidth / maxI, -j * worldHeight / maxJ, size * 10 };
-					final double[] endPoint = { i * worldWidth / maxI + dirNorm.x * size * 3,
-							-(j * worldHeight / maxJ) - dirNorm.y * size * 3, size * 10 + dirNorm.z * size * 3 };
+					final double[] endPoint = { i * worldWidth / maxI + dir.x * size * 3,
+							-(j * worldHeight / maxJ) - dir.y * size * 3, size * 10 + dir.z * size * 3 };
 					// draw the lines
 					openGL.beginDrawing(GL.GL_LINES);
 					openGL.drawVertex(0, beginPoint[0], beginPoint[1], beginPoint[2]);

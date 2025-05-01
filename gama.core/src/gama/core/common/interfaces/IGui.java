@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * IGui.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -103,21 +103,6 @@ public interface IGui {
 	/** The null snapshot maker. */
 	ISnapshotMaker NULL_SNAPSHOT_MAKER = new ISnapshotMaker() {};
 
-	/** The error. */
-	int ERROR = 0;
-
-	/** The wait. */
-	int WAIT = 1;
-
-	/** The inform. */
-	int INFORM = 2;
-
-	/** The neutral. */
-	int NEUTRAL = 3;
-
-	/** The user. */
-	int USER = 4;
-
 	/** The displays. */
 	Map<String, DisplayDescription> DISPLAYS = GamaMapFactory.createOrdered();
 
@@ -165,6 +150,18 @@ public interface IGui {
 
 	/** The user control view id. */
 	String USER_CONTROL_VIEW_ID = "gama.ui.application.view.userControlView";
+
+	/** The outline view id. */
+	String OUTLINE_VIEW_ID = "gama.ui.application.view.outline";
+
+	/** The validation view id. */
+	String VALIDATION_VIEW_ID = "gama.ui.application.view.problems";
+
+	/** The template view id. */
+	String TEMPLATE_VIEW_ID = "gama.ui.application.view.templates";
+
+	/** The minimap view id. */
+	String MINIMAP_VIEW_ID = "gama.ui.application.view.minimap";
 
 	/** The perspective modeling id. */
 	String PERSPECTIVE_MODELING_ID = "gama.ui.application.perspectives.ModelingPerspective";
@@ -585,6 +582,11 @@ public interface IGui {
 	default IGamaView.Test openTestView(final IScope scope, final boolean remainOpen) {
 		return null;
 	}
+
+	/**
+	 * @param scope
+	 */
+	default void displayTestsProgress(final IScope scope, final int number, final int total) {}
 
 	/**
 	 * Display tests results.

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaKeyBindings.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaKeyBindings.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Listener;
 
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
+import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
-import gama.ui.shared.access.GamlSearchField;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -102,12 +102,16 @@ public class GamaKeyBindings implements Listener {
 
 		switch (event.keyCode) {
 
-			case 'h':
-				if (ctrl(event) && shift(event)) {
-					consume(event);
-					GamlSearchField.INSTANCE.search();
-				}
-				break;
+			// case 'h':
+			// if (ctrl(event) && shift(event)) {
+			// consume(event);
+			// IGamlEditor ed = WorkbenchHelper.getActiveEditor();
+			// if (ed != null) {
+			// ed.searchReference();
+			// // GamlSearchField.INSTANCE.search();
+			// }
+			// }
+			// break;
 			// Handles START, PAUSE & STEP
 			case 'p':
 				if (ctrl(event) && shift(event)) {
@@ -143,7 +147,7 @@ public class GamaKeyBindings implements Listener {
 				}
 				break;
 			default:
-				// DEBUG.LOG(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
+				DEBUG.LOG(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
 				final PluggableBinding pb = bindings.get(KeyStroke.getInstance(event.stateMask, event.keyCode));
 				if (pb != null) {
 					consume(event);

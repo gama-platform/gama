@@ -69,8 +69,10 @@ public class StatementDescription extends SymbolDescription {
 	public StatementDescription(final String keyword, final IDescription superDesc, final boolean hasArgs,
 			final EObject source, final Facets facets, final Arguments alreadyComputedArgs) {
 		super(keyword, superDesc, source, /* children, */ facets);
-		setIf(Flag.IsInvocation, DO.equals(keyword) || INVOKE.equals(keyword));
-		setIf(Flag.IsSuperInvocation, INVOKE.equals(keyword));
+		boolean isInvoke = INVOKE.equals(keyword);
+		setIf(Flag.IsInvocation, DO.equals(keyword) || isInvoke);
+		setIf(Flag.IsCreate, CREATE.equals(keyword) || RESTORE.equals(keyword));
+		setIf(Flag.IsSuperInvocation, isInvoke);
 		passedArgs = alreadyComputedArgs != null ? alreadyComputedArgs : hasArgs ? createArgs() : null;
 	}
 
@@ -235,7 +237,7 @@ public class StatementDescription extends SymbolDescription {
 	public IDescription validate() {
 		if (isSet(Flag.Validated)) return this;
 		final IDescription result = super.validate();
-		if (passedArgs != null) { validatePassedArgs(); }
+		validatePassedArgs();
 		return result;
 	}
 
@@ -244,15 +246,17 @@ public class StatementDescription extends SymbolDescription {
 	 *
 	 * @return the arguments
 	 */
-	public Arguments validatePassedArgs() {
+	private Arguments validatePassedArgs() {
 		final IDescription superDesc = getEnclosingDescription();
-		passedArgs.forEachFacet((nm, exp) -> {
-			if (exp != null) { exp.compile(superDesc); }
-			return true;
-		});
+		if (passedArgs != null) {
+			passedArgs.forEachFacet((nm, exp) -> {
+				if (exp != null) { exp.compile(superDesc); }
+				return true;
+			});
+		}
 		if (isInvocation()) {
 			verifyArgs(passedArgs);
-		} else if (CREATE.equals(keyword) || RESTORE.equals(keyword)) { verifyInits(passedArgs); }
+		} else if (isCreate()) { verifyInits(passedArgs); }
 		return passedArgs;
 	}
 
@@ -263,6 +267,7 @@ public class StatementDescription extends SymbolDescription {
 	 *            the ca
 	 */
 	private void verifyInits(final Arguments ca) {
+		if (ca == null) return;
 		final SpeciesDescription denotedSpecies = getGamlType().getDenotedSpecies();
 		if (denotedSpecies == null) {
 			if (!ca.isEmpty()) {
@@ -289,11 +294,9 @@ public class StatementDescription extends SymbolDescription {
 				final IExpression expr = exp.getExpression();
 				if (expr != null) { initType = expr.getGamlType(); }
 				if (varType != NO_TYPE && !initType.isTranslatableInto(varType)) {
-					if (CREATE.equals(getKeyword()) || RESTORE.equals(getKeyword())) {
-						final boolean isDB = getFacet(FROM) != null
-								&& getFacet(FROM).getExpression().getGamlType().isAssignableFrom(Types.LIST);
-						if (isDB && initType.equals(Types.STRING)) return true;
-					}
+					final boolean isDB = getFacet(FROM) != null
+							&& getFacet(FROM).getExpression().getGamlType().isAssignableFrom(Types.LIST);
+					if (isDB && initType.equals(Types.STRING)) return true;
 					warning("The type of attribute " + nm + " should be " + varType, SHOULD_CAST, exp.getTarget(),
 							varType.toString());
 				}
@@ -310,7 +313,7 @@ public class StatementDescription extends SymbolDescription {
 		IType t = super.getGamlType();
 		final String kw = getKeyword();
 		IType ct = t.getContentType();
-		if (RESTORE.equals(kw) || CREATE.equals(kw) || CAPTURE.equals(kw) || RELEASE.equals(kw)) {
+		if (isCreate() || CAPTURE.equals(kw) || RELEASE.equals(kw)) {
 			ct = t;
 			t = Types.LIST;
 		} else if (t == NO_TYPE && !isSet(Flag.NoTypeInference)) { t = inferType(); }

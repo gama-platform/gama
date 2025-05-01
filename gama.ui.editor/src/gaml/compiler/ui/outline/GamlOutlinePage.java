@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlOutlinePage.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlOutlinePage.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,7 @@ import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
  * @since 24 nov. 2014
  *
  */
-public class GamlOutlinePage extends OutlinePage implements IToolbarDecoratedView {
+public class GamlOutlinePage extends OutlinePage implements IToolbarDecoratedView.Expandable {
 
 	/** The toolbar. */
 	GamaToolbar2 toolbar;
@@ -44,9 +44,8 @@ public class GamlOutlinePage extends OutlinePage implements IToolbarDecoratedVie
 	@Override
 	protected void configureActions() {
 		super.configureActions();
-
 		IToolBarManager tbm = getSite().getActionBars().getToolBarManager();
-		toolbar.wipe(SWT.RIGHT, true);
+		// toolbar.wipe(SWT.RIGHT, true, false);
 		for (IContributionItem item : tbm.getItems()) { toolbar.item(item, SWT.RIGHT); }
 		toolbar.requestLayout();
 		tbm.removeAll();
@@ -74,8 +73,21 @@ public class GamlOutlinePage extends OutlinePage implements IToolbarDecoratedVie
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
 	}
-	//
-	// @Override
-	// public void setToogle(final Action toggle) {}
+
+	/**
+	 * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView.Expandable#expandAll()
+	 */
+	@Override
+	public void expandAll() {
+		getTreeViewer().expandAll();
+	}
+
+	/**
+	 * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView.Expandable#collapseAll()
+	 */
+	@Override
+	public void collapseAll() {
+		getTreeViewer().collapseAll();
+	}
 
 }

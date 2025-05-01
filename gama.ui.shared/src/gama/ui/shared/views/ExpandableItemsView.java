@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ExpandableItemsView.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ExpandableItemsView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -61,8 +61,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	public void createViewer(final Composite parent) {
 		if (parent == null) return;
 		if (viewer == null) {
-			viewer = new ParameterExpandBar(parent, SWT.V_SCROLL, areItemsClosable(), areItemsPausable(), false, false,
-					this);
+			viewer = new ParameterExpandBar(parent, SWT.V_SCROLL, areItemsClosable(), areItemsPausable(), this);
 			final Object layout = parent.getLayout();
 			if (layout instanceof GridLayout) {
 				final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -264,12 +263,6 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	public void focusItem(final T obj) {}
 
 	@Override
-	public void makeItemVisible(final T obj, final boolean b) {}
-
-	@Override
-	public void makeItemSelectable(final T obj, final boolean b) {}
-
-	@Override
 	public String getItemDisplayName(final T obj, final String previousName) {
 		return null;
 	}
@@ -288,8 +281,8 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	}
 
 	@Override
-	protected GamaUIJob createUpdateJob() {
-		return new GamaUIJob() {
+	protected ViewUpdateUIJob createUpdateJob() {
+		return new ViewUpdateUIJob() {
 
 			@Override
 			protected UpdatePriority jobPriority() {

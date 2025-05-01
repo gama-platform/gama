@@ -23,37 +23,37 @@ import gama.core.common.interfaces.IGui;
 public class SimulationPerspective implements IPerspectiveFactory {
 
 	@Override
-	public void createInitialLayout(final IPageLayout lay) {
+	public void createInitialLayout(final IPageLayout layout) {
 
-		lay.setFixed(false);
-		lay.setEditorAreaVisible(false);
-		final String editor = lay.getEditorArea();
+		layout.setFixed(false);
+		layout.setEditorAreaVisible(false);
+		final String editor = layout.getEditorArea();
 
-		final IFolderLayout navigAndParam = lay.createFolder("navigAndParam", IPageLayout.LEFT, 0.3f, editor);
+		final IFolderLayout navigAndParam = layout.createFolder("navigAndParam", IPageLayout.LEFT, 0.3f, editor);
 		navigAndParam.addView(IGui.PARAMETER_VIEW_ID);
 		navigAndParam.addView(IGui.NAVIGATOR_VIEW_ID);
 		navigAndParam.addPlaceholder(IGui.ERROR_VIEW_ID);
 		navigAndParam.addPlaceholder(IGui.TEST_VIEW_ID);
 
-		final IFolderLayout consoleFolder = lay.createFolder("consoles", IPageLayout.BOTTOM, 0.70f, "navigAndParam");
+		final IFolderLayout consoleFolder = layout.createFolder("consoles", IPageLayout.BOTTOM, 0.70f, "navigAndParam");
 
 		consoleFolder.addView(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
 		consoleFolder.addView(IGui.CONSOLE_VIEW_ID);
 
 		final IPlaceholderFolderLayout displays =
-				lay.createPlaceholderFolder("displays", IPageLayout.TOP, 0.7f, editor);
+				layout.createPlaceholderFolder("displays", IPageLayout.TOP, 0.7f, editor);
 		displays.addPlaceholder(IGui.LAYER_VIEW_ID + ":*");
 		displays.addPlaceholder(IGui.GL_LAYER_VIEW_ID + ":*");
 		displays.addPlaceholder(IGui.GL_LAYER_VIEW_ID2 + ":*");
 		displays.addPlaceholder(IGui.GL_LAYER_VIEW_ID3 + ":*");
 
 		final IPlaceholderFolderLayout inspect =
-				lay.createPlaceholderFolder("inspect", IPageLayout.RIGHT, 0.6f, "displays");
+				layout.createPlaceholderFolder("inspect", IPageLayout.RIGHT, 0.6f, "displays");
 		inspect.addPlaceholder(IGui.AGENT_VIEW_ID);
 		inspect.addPlaceholder(IGui.TABLE_VIEW_ID + ":*");
 
 		final IPlaceholderFolderLayout monitor =
-				lay.createPlaceholderFolder("monitor", IPageLayout.BOTTOM, 0.50f, "inspect");
+				layout.createPlaceholderFolder("monitor", IPageLayout.BOTTOM, 0.50f, "inspect");
 		monitor.addPlaceholder(IGui.MONITOR_VIEW_ID);
 
 	}

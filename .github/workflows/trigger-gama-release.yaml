@@ -1,23 +1,23 @@
 name: "Create & Publish new GAMA release"
 
-on:  
+on:
   workflow_dispatch:
     inputs:
-      IS_STABLE_RELEASE: 
-        description: 'Is this a stable release ?'
+      IS_STABLE_RELEASE:
+        description: "Is this a stable release ?"
         required: true
-        default: false 
+        default: false
         type: boolean
       tag:
         description: "The tag of the release to publish (YYYY.MM.0)"
         type: string
         required: true
-        default: 2024.06.0
+        default: 2025.05.0
       jdk:
         description: "Choose a JDK version to embed inside GAMA release"
         type: string
         required: true
-        default: 23.0.2+7
+        default: 21.0.7+6
       releaseGithubOnly:
         description: "Release only on Github (not on Microsoft Stores, else) ?"
         type: boolean
@@ -44,13 +44,13 @@ jobs:
       GAMA_SERVER_SSH_PRIVATE_KEY: ${{ secrets.GAMA_SERVER_SSH_PRIVATE_KEY }}
       GAMA_SERVER_SSH_KNOWN_HOSTS: ${{ secrets.GAMA_SERVER_SSH_KNOWN_HOSTS }}
 
-  travis-scripts: 
+  travis-scripts:
     runs-on: ubuntu-latest
     outputs:
       commit: ${{ steps.commit.outputs.commit }}
     steps:
       - uses: actions/checkout@v4
-          
+
       - name: Prepare travis-script
         id: commit
         run: |
@@ -71,13 +71,13 @@ jobs:
             ${{ github.workspace }}/travis
 
   #
-  # ██████╗  █████╗  ██████╗██╗  ██╗ █████╗  ██████╗ ██╗███╗   ██╗ ██████╗ 
-  # ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔════╝ ██║████╗  ██║██╔════╝ 
+  # ██████╗  █████╗  ██████╗██╗  ██╗ █████╗  ██████╗ ██╗███╗   ██╗ ██████╗
+  # ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔════╝ ██║████╗  ██║██╔════╝
   # ██████╔╝███████║██║     █████╔╝ ███████║██║  ███╗██║██╔██╗ ██║██║  ███╗
   # ██╔═══╝ ██╔══██║██║     ██╔═██╗ ██╔══██║██║   ██║██║██║╚██╗██║██║   ██║
   # ██║     ██║  ██║╚██████╗██║  ██╗██║  ██║╚██████╔╝██║██║ ╚████║╚██████╔╝
-  # ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝ 
-  #    
+  # ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝
+  #
 
   packaging-gama:
     needs: [compiling-gama, travis-scripts]
@@ -99,14 +99,14 @@ jobs:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
 
-  # 
-  # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗███████╗██╗  ██╗██╗███╗   ██╗ ██████╗ 
-  # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝██║  ██║██║████╗  ██║██╔════╝ 
+  #
+  # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗███████╗██╗  ██╗██╗███╗   ██╗ ██████╗
+  # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝██║  ██║██║████╗  ██║██╔════╝
   # ██████╔╝██║   ██║██████╔╝██║     ██║███████╗███████║██║██╔██╗ ██║██║  ███╗
   # ██╔═══╝ ██║   ██║██╔══██╗██║     ██║╚════██║██╔══██║██║██║╚██╗██║██║   ██║
   # ██║     ╚██████╔╝██████╔╝███████╗██║███████║██║  ██║██║██║ ╚████║╚██████╔╝
-  # ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
-  #                                                                           
+  # ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝
+  #
 
   publish-gama:
     needs: [packaging-gama, travis-scripts]
@@ -117,6 +117,5 @@ jobs:
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       COMMIT_SHA: ${{needs.travis-scripts.outputs.commit}}
       RELEASE_GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
-    secrets: 
+    secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-

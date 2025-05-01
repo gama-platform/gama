@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -179,6 +179,18 @@ public class SwtGui implements IGui {
 		return v;
 	}
 
+	/**
+	 * Display tests progress.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	@Override
+	public void displayTestsProgress(final IScope scope, final int number, final int total) {
+		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		if (v != null) { v.displayProgress(number, total); }
+	}
+
 	@Override
 	public void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {
 		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
@@ -277,12 +289,11 @@ public class SwtGui implements IGui {
 
 	@Override
 	public IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... args) {
-		IDisplaySurface surface = null;
 		final String keyword = output.getData().getDisplayType();
 		final DisplayDescription creator = DISPLAYS.get(keyword);
 		if (creator == null)
 			throw GamaRuntimeException.error("Display " + keyword + " is not defined anywhere.", output.getScope());
-		surface = creator.create(output, args);
+		IDisplaySurface surface = creator.create(output, args);
 		surface.outputReloaded();
 		return surface;
 	}
@@ -339,8 +350,7 @@ public class SwtGui implements IGui {
 	@Override
 	public void openUserControlPanel(final IScope scope, final UserPanelStatement panel) {
 		WorkbenchHelper.run(() -> {
-			IGamaView.User part = null;
-			part = (User) showView(scope, USER_CONTROL_VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
+			IGamaView.User part = (User) showView(scope, USER_CONTROL_VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
 			if (part != null) { part.initFor(scope, panel); }
 			scope.setOnUserHold(true);
 			try {
@@ -482,7 +492,7 @@ public class SwtGui implements IGui {
 			final Supplier<GamaColor> color, final boolean showEditors) {
 
 		WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
-		WorkbenchHelper.runInUI("Arranging views", 0, m -> {
+		WorkbenchHelper.runInUI("Laying out experiment views", 0, m -> {
 			WorkbenchHelper.getWindow().updateActionBars();
 
 			// To solve issue #3697

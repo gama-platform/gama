@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OutputsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,8 +12,6 @@ package gama.ui.experiment.menus;
 
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -29,30 +27,12 @@ import gama.core.runtime.IScope;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class OutputsMenu.
  */
 public class OutputsMenu extends ContributionItem {
-
-	/**
-	 * The Interface ISelecter.
-	 */
-	@FunctionalInterface
-	private interface ISelecter extends SelectionListener {
-
-		/**
-		 * Widget default selected.
-		 *
-		 * @param e
-		 *            the e
-		 */
-		@Override
-		default void widgetDefaultSelected(final SelectionEvent e) {
-			widgetSelected(e);
-		}
-
-	}
 
 	/**
 	 * Instantiates a new outputs menu.
@@ -96,6 +76,7 @@ public class OutputsMenu extends ContributionItem {
 	public void managementSubMenu(final Menu main, final IScope scope, final IOutputManager manager) {
 		if (manager.isEmpty()) return;
 		final MenuItem item = new MenuItem(main, SWT.CASCADE);
+		item.setImage(GamaIcon.ofColor(scope.getRoot().getColor()).image());
 		item.setText(manager.toString());
 		final Menu sub = new Menu(item);
 		item.setMenu(sub);
@@ -163,7 +144,7 @@ public class OutputsMenu extends ContributionItem {
 	 *            the prefix
 	 * @return the menu item
 	 */
-	private static MenuItem menuItem(final Menu parent, final ISelecter listener, final Image image,
+	private static MenuItem menuItem(final Menu parent, final Selector listener, final Image image,
 			final String prefix) {
 		final MenuItem result = new MenuItem(parent, SWT.PUSH);
 		result.setText(prefix);

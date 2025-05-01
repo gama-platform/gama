@@ -112,6 +112,8 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 
 		/** The is batch. */
 		isBatch,
+		/** The Is create. */
+		IsCreate,
 
 		/**
 		 * The No type inference. A flag that signifies that type inference should not be used when computing the type

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaPreferencesView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -126,8 +127,8 @@ public class GamaPreferencesView {
 	static {
 		prefs_images.put(GamaPreferences.Interface.NAME, GamaIcon.named(IGamaIcons.PREFS_GENERAL).image());
 		prefs_images.put(GamaPreferences.Modeling.NAME, GamaIcon.named(IGamaIcons.PREFS_EDITOR).image());
-		prefs_images.put(GamaPreferences.Runtime.NAME, GamaIcon.named(IGamaIcons.PREFS_RUNTIME).image());
-		prefs_images.put(GamaPreferences.Simulations.NAME, GamaIcon.named(IGamaIcons.PREFS_SIMULATION).image());
+		prefs_images.put(GamaPreferences.Experimental.NAME, GamaIcon.named(IGamaIcons.PREFS_EXPERIMENTAL).image());
+		prefs_images.put(GamaPreferences.Runtime.NAME, GamaIcon.named(IGamaIcons.PREFS_SIMULATION).image());
 		prefs_images.put(GamaPreferences.Displays.NAME, GamaIcon.named(IGamaIcons.PREFS_UI).image());
 		prefs_images.put(GamaPreferences.External.NAME, GamaIcon.named(IGamaIcons.PREFS_LIBS).image());
 

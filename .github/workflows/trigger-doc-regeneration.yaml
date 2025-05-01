@@ -1,30 +1,28 @@
-# 
+#
 # This workflow compile and send analysis to sonarcloud
 # + generate documentation and commit it to the wiki repository
 # + trigger GHA on website's repository
-# 
+#
 
 name: "Documentation Auto Refresh"
 
 on:
-  workflow_dispatch:  # For manual trigger
+  workflow_dispatch: # For manual trigger
   schedule:
     - cron: "0 0 * * 6"
 
 jobs:
-
   generating-documentation:
     runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@v4
-      
+
       - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
           java-package: jdk
 
       - name: Set custom runner parameters
@@ -34,10 +32,10 @@ jobs:
       - name: Update Maven to 3.9.X
         run: |
           # Needed for Tycho 4.X.X and support for JDK 21
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz
-          tar -xvf apache-maven-3.9.7-bin.tar.gz
-          mv apache-maven-3.9.7 /opt/
-          M2_HOME='/opt/apache-maven-3.9.7'
+          wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+          tar -xvf apache-maven-3.9.9-bin.tar.gz
+          mv apache-maven-3.9.9 /opt/
+          M2_HOME='/opt/apache-maven-3.9.9'
           PATH="$M2_HOME/bin:$PATH"
           export PATH
           # Overwrite PATH with updated maven install
@@ -48,15 +46,15 @@ jobs:
 
       - name: Compiling GAMA
         run: bash travis/build.sh -B -T 4
-      
+
       - name: Generate documentation
-        run:  |
-          git clone --depth 1 https://github.com/gama-platform/gama.wiki.git  $GITHUB_WORKSPACE/../gama.wiki  
+        run: |
+          git clone --depth 1 https://github.com/gama-platform/gama.wiki.git  $GITHUB_WORKSPACE/../gama.wiki
           cd $GITHUB_WORKSPACE/gama.documentation/
           java -cp ".:libs/jdom-2.0.1.jar:target/classes:../gama.annotations/target/classes" gama.documentation.MainGenerateWiki -online
-      
+
       - name: Commit updated documentation files
-        run:  |
+        run: |
           git config --global user.email "my.gama.bot@gmail.com"
           git config --global user.name "GAMA Bot"
           cd $GITHUB_WORKSPACE/../gama.wiki

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -51,6 +51,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
+import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
@@ -445,9 +446,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
 
-		Envelope2D refEnvelope;
-
-		refEnvelope = new Envelope2D(getTargetCRSOrDefault(scope), x, y, width, height);
+		Envelope2D refEnvelope = new Envelope2D(getTargetCRSOrDefault(scope), x, y, width, height);
 
 		coverage = new GridCoverageFactory().create("data", imagePixelData, refEnvelope);
 
@@ -509,7 +508,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			coverage = store.read(null);
 		} finally {
 			if (store != null) { store.dispose(); }
-			scope.getGui().getStatus().endSubStatus(scope, "Opening file " + getName(scope));
+			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		}
 	}
 
@@ -551,7 +550,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	void read(final IScope scope, final boolean readAll, final boolean createGeometries) {
 
 		try {
-			scope.getGui().getStatus().beginSubStatus(scope, "Reading file " + getName(scope));
+			String task = "Reading file " + getName(scope);
+			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 
 			final Envelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
 			if (gis != null && !(gis.getInitialCRS(scope) instanceof ProjectedCRS)) {
@@ -601,7 +601,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				records.y = new double[numRows * numCols]; // y
 				records.bands.add(new double[numRows * numCols]); // data
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
-					scope.getGui().getStatus().setSubStatusCompletion(scope, i / (double) n);
+					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n);
 
 					final int yy = i / numCols;
 					final int xx = i - yy * numCols;
@@ -642,7 +642,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			throw GamaRuntimeException
 					.error("The format of " + getName(scope) + " is not correct. Error: " + e.getMessage(), scope);
 		} finally {
-			scope.getGui().getStatus().endSubStatus(scope, "Reading file " + getName(scope));
+			scope.getGui().getStatus().endTask("Reading file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		}
 
 	}
@@ -696,10 +696,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	@Override
 	protected CoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		final File source = getFile(scope);
-		// check to see if there is a projection file
-		// getting name for the prj file
-		final String sourceAsString;
-		sourceAsString = source.getAbsolutePath();
+		final String sourceAsString = source.getAbsolutePath();
 		final int index = sourceAsString.lastIndexOf('.');
 		final StringBuilder prjFileName;
 		if (index == -1) {

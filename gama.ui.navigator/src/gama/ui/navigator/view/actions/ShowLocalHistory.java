@@ -1,18 +1,17 @@
 /*******************************************************************************************************
  *
- * ShowLocalHistory.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ShowLocalHistory.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.eclipse.compare.internal.AddFromHistoryAction;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IResource;
@@ -42,7 +41,7 @@ public class ShowLocalHistory extends WorkspaceAction {
 	boolean isFile;
 
 	/** The project action. */
-	AddFromHistoryAction projectAction = new AddFromHistoryAction();
+	// AddFromHistoryAction projectAction = new AddFromHistoryAction();
 
 	/**
 	 * Instantiates a new show local history.
@@ -59,10 +58,8 @@ public class ShowLocalHistory extends WorkspaceAction {
 
 	@Override
 	public void run() {
-		if (!isFile) {
-			projectAction.run(null);
+		if (!isFile) // projectAction.run(null);
 			return;
-		}
 		final IFileState states[] = getLocalHistory();
 		if (states == null || states.length == 0) return;
 		try {
@@ -73,10 +70,7 @@ public class ShowLocalHistory extends WorkspaceAction {
 					final IHistoryView view = TeamUI.showHistoryFor(TeamUIPlugin.getActivePage(), resource,
 							LocalHistoryPageSource.getInstance());
 					final IHistoryPage page = view.getHistoryPage();
-					if (page instanceof LocalHistoryPage) {
-						final LocalHistoryPage historyPage = (LocalHistoryPage) page;
-						historyPage.setClickAction(isCompare());
-					}
+					if (page instanceof final LocalHistoryPage historyPage) { historyPage.setClickAction(isCompare()); }
 				};
 				WorkbenchHelper.asyncRun(r);
 			});
@@ -88,9 +82,9 @@ public class ShowLocalHistory extends WorkspaceAction {
 	@Override
 	protected boolean updateSelection(final IStructuredSelection sel) {
 		fSelection = sel;
-		projectAction.selectionChanged(null, sel);
+		// projectAction.selectionChanged(null, sel);
 		isFile = selectionIsOfType(IResource.FILE);
-		if (!isFile) return sel.size() == 1 && selectionIsOfType(IResource.FOLDER | IResource.PROJECT);
+		if (!isFile) return false; // sel.size() == 1 && selectionIsOfType(IResource.FOLDER | IResource.PROJECT);
 		return true;
 	}
 

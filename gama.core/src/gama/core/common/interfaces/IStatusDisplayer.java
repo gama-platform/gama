@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IStatusDisplayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,7 +11,7 @@
 package gama.core.common.interfaces;
 
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 
 /**
@@ -32,17 +33,20 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void topLevelAgentChanged(final ITopLevelAgent agent) {}
 
 	/**
-	 * Resume status.
-	 */
-	default void resumeStatus(final IScope scope) {}
-
-	/**
 	 * Wait status.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param string
 	 *            the string
+	 * @param run
+	 *            the run
 	 */
-	default void waitStatus(final IScope scope, final String string) {}
+	default void waitStatus(final String string, final String icon, final Runnable run) {
+		informStatus(string, icon);
+		run.run();
+		// resetStatus();
+	}
 
 	/**
 	 * Inform status.
@@ -50,7 +54,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param string
 	 *            the string
 	 */
-	default void informStatus(final IScope scope, final String message) {}
+	default void informStatus(final String message, final String icon) {}
 
 	/**
 	 * Error status.
@@ -58,7 +62,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param message
 	 *            the message
 	 */
-	default void errorStatus(final IScope scope, final Exception error) {}
+	default void errorStatus(final GamaRuntimeException error) {}
 
 	/**
 	 * Sets the sub status completion.
@@ -66,17 +70,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param status
 	 *            the new sub status completion
 	 */
-	default void setSubStatusCompletion(final IScope scope, final double status) {}
-
-	/**
-	 * Sets the status.
-	 *
-	 * @param msg
-	 *            the msg
-	 * @param color
-	 *            the color
-	 */
-	default void setStatus(final IScope scope, final String msg, final GamaColor color) {}
+	default void setTaskCompletion(final String name, final Double s) {}
 
 	/**
 	 * Inform status.
@@ -86,7 +80,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param icon
 	 *            the icon
 	 */
-	default void informStatus(final IScope scope, final String message, final String icon) {}
+	default void updateExperimentStatus() {}
 
 	/**
 	 * Sets the status.
@@ -96,7 +90,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param icon
 	 *            the icon
 	 */
-	default void setStatus(final IScope scope, final String msg, final String icon) {}
+	default void setStatus(final String message, final String icon, final GamaColor color) {}
 
 	/**
 	 * Begin sub status.
@@ -104,7 +98,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param name
 	 *            the name
 	 */
-	default void beginSubStatus(final IScope scope, final String name) {}
+	default void beginTask(final String name, final String icon) {}
 
 	/**
 	 * End sub status.
@@ -112,14 +106,22 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param name
 	 *            the name
 	 */
-	default void endSubStatus(final IScope scope, final String name) {}
+	default void endTask(final String name, final String icon) {}
 
 	/**
-	 * Neutral status.
+	 * Sets the status target.
 	 *
-	 * @param string
-	 *            the string
+	 * @param target
+	 *            the new status target
 	 */
-	default void neutralStatus(final IScope scope, final String string) {}
+	default void setStatusTarget(final IStatusControl target) {}
+
+	/**
+	 * Sets the experiment target.
+	 *
+	 * @param target
+	 *            the new experiment target
+	 */
+	default void setExperimentTarget(final IStatusControl target) {}
 
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PopulationInspectView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,6 +38,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -195,7 +196,7 @@ public class PopulationInspectView extends GamaViewPart
 
 	@Override
 	protected Job createUpdateJob() {
-		return new GamaUIJob() {
+		return new ViewUpdateUIJob() {
 
 			@Override
 			protected UpdatePriority jobPriority() {
@@ -546,8 +547,10 @@ public class PopulationInspectView extends GamaViewPart
 		if (viewer == null) return;
 		final Table table = viewer.getTable();
 		if (table.isDisposed()) return;
+		Font oldFont = viewer.getControl().getFont();
 		table.dispose();
 		createViewer(getParentComposite());
+		viewer.getControl().setFont(oldFont);
 		getParentComposite().layout(true);
 	}
 

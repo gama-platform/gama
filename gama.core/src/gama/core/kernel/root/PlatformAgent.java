@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * PlatformAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -46,7 +48,8 @@ import gama.core.runtime.MemoryUtils;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaGuiWebSocketServer;
 import gama.core.runtime.server.GamaServerMessage;
-import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IGamaServer;
+import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
@@ -94,7 +97,14 @@ import one.util.streamex.StreamEx;
 				type = IType.STRING,
 				constant = true,
 				doc = @doc (
-						value = "Returns information about GAMA, in a format suitable to be pasted into issues")),
+						value = "Returns information about GAMA, in a format suitable to be pasted into GitHub issues")),
+		@variable (
+				name = "platform",
+				type = IType.STRING,
+				constant = true,
+				doc = @doc(
+						value = "Returns the platform on which GAMA is currently executing.")
+				),
 		@variable (
 				name = "version",
 				type = IType.STRING,
@@ -152,7 +162,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	private TimerTask currentTask;
 
 	/** The my server. */
-	private GamaWebSocketServer myServer;
+	private IGamaServer myServer;
 
 	/** The json encoder. */
 	private final Json jsonEncoder = Json.getNew();
@@ -189,27 +199,17 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			startPollingMemory();
 		});
 
-		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) {
-			final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-			final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-			myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
-		}
-		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> {
-			if (myServer != null) {
-				try {
-					myServer.stop();
-					myServer = null;
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if (newValue) {
-				final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-				final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-				myServer = GamaGuiWebSocketServer.startForGUI(port, ping);
-			}
-		});
+		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { createGuiServer(); }
+		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> { if (newValue) { createGuiServer(); } });
+	}
+
+	/**
+	 * Creates the gui server.
+	 */
+	private void createGuiServer() {
+		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
+		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
+		setServer(GamaGuiWebSocketServer.startForGUI(port, ping));
 	}
 
 	/**
@@ -356,6 +356,11 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			value = "info",
 			initializer = true)
 	public String getInfo() { return SystemInfo.getSystemInfo(); }
+	
+	@getter (
+			value = "platform",
+			initializer = true)
+	public String getPlatform() { return Platform.getOS(); }
 
 	/**
 	 * Gets the version.
@@ -498,7 +503,26 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @return the server
 	 * @date 3 nov. 2023
 	 */
-	public GamaWebSocketServer getServer() { return myServer; }
+	public IGamaServer getServer() { return myServer; }
+
+	/**
+	 * Sets the server.
+	 *
+	 * @param server
+	 *            the new server
+	 */
+	public void setServer(final IGamaServer server) {
+		if (myServer != null) {
+			try {
+				myServer.stop();
+				myServer = null;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		myServer = server;
+	}
 
 	/**
 	 * Send message through server.
@@ -514,9 +538,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			args = @arg (
 					name = IKeyword.MESSAGE,
 					optional = false,
-					doc = @doc ( value = "The message to send")
-					)
-			)
+					doc = @doc (
+							value = "The message to send")))
 	public Object sendMessageThroughServer(final IScope scope) {
 		Object message = scope.getArg(IKeyword.MESSAGE, IType.NONE);
 		sendMessage(scope, message);
@@ -534,10 +557,20 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @date 3 nov. 2023
 	 */
 	public void sendMessage(final IScope scope, final Object message) {
-		sendMessage(scope, message,GamaServerMessage.Type.SimulationOutput);
+		sendMessage(scope, message, MessageType.SimulationOutput);
 	}
-	
-	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.GamaServerMessage.Type type) {
+
+	/**
+	 * Send message.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param message
+	 *            the message
+	 * @param type
+	 *            the type
+	 */
+	public void sendMessage(final IScope scope, final Object message, final gama.core.runtime.server.MessageType type) {
 		try {
 			var socket = scope.getServerConfiguration().socket();
 			// try to get the socket in platformAgent if the request is too soon before agent.schedule()
@@ -547,8 +580,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 						+ message);
 				return;
 			}
-			socket.send(jsonEncoder.valueOf(new GamaServerMessage(type, message,
-					scope.getServerConfiguration().expId())).toString());
+			socket.send(jsonEncoder
+					.valueOf(new GamaServerMessage(type, message, scope.getServerConfiguration().expId())).toString());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			DEBUG.OUT("Unable to send message:" + message);

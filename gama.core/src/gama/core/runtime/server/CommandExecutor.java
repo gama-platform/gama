@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
  * CommandExecutor.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,6 +12,7 @@ package gama.core.runtime.server;
 
 import static gama.core.runtime.server.ISocketCommand.ASK;
 import static gama.core.runtime.server.ISocketCommand.BACK;
+import static gama.core.runtime.server.ISocketCommand.DESCRIBE;
 import static gama.core.runtime.server.ISocketCommand.DOWNLOAD;
 import static gama.core.runtime.server.ISocketCommand.EVALUATE;
 import static gama.core.runtime.server.ISocketCommand.EXIT;
@@ -24,7 +26,6 @@ import static gama.core.runtime.server.ISocketCommand.STEPBACK;
 import static gama.core.runtime.server.ISocketCommand.STOP;
 import static gama.core.runtime.server.ISocketCommand.UPLOAD;
 import static gama.core.runtime.server.ISocketCommand.VALIDATE;
-import static gama.core.runtime.server.ISocketCommand.DESCRIBE;
 import static java.util.Map.entry;
 
 import java.util.AbstractMap;
@@ -49,9 +50,6 @@ import gama.gaml.types.Types;
  */
 public class CommandExecutor {
 
-	/** The server. */
-	private final GamaWebSocketServer server;
-
 	/** The Constant DEFAULT_COMMANDS. */
 	private static Map<String, ISocketCommand> DEFAULT_COMMANDS = null;
 
@@ -64,7 +62,6 @@ public class CommandExecutor {
 	/** The json encoder. */
 	protected static final Json jsonEncoder = Json.getNew();
 
-
 	/**
 	 * Instantiates a new command executor.
 	 *
@@ -72,8 +69,7 @@ public class CommandExecutor {
 	 * @date 15 oct. 2023
 	 */
 
-	public CommandExecutor(final GamaWebSocketServer server) {
-		this.server = server;
+	public CommandExecutor() {
 		commands = GAMA.getGui().getServerCommands();
 		commandQueue = new LinkedBlockingQueue<>();
 	}
@@ -102,7 +98,7 @@ public class CommandExecutor {
 	 *            the map
 	 * @date 15 oct. 2023
 	 */
-	protected void process(final WebSocket socket, final IMap<String, Object> map) {
+	protected void process(final IGamaServer server, final WebSocket socket, final IMap<String, Object> map) {
 		final String cmd_type = map.get("type").toString();
 		ISocketCommand command = commands.get(cmd_type);
 		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
@@ -134,11 +130,11 @@ public class CommandExecutor {
 				var name = m.get("name");
 				var value = m.get("value");
 				if (name == null) return new CommandResponse(
-						GamaServerMessage.Type.MalformedRequest, "Parameter number " + i
+						MessageType.MalformedRequest, "Parameter number " + i
 								+ " is missing its `name` field. Parameter received: " + jsonEncoder.valueOf(m),
 						commandMap, false);
 				if (value == null) return new CommandResponse(
-						GamaServerMessage.Type.MalformedRequest, "Parameter number " + i
+						MessageType.MalformedRequest, "Parameter number " + i
 								+ " is missing its `value` field. Parameter received: " + jsonEncoder.valueOf(m),
 						commandMap, false);
 				i++;

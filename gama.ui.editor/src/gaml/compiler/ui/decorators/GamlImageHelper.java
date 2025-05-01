@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlImageHelper.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlImageHelper.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.xtext.ui.IImageHelper;
 import org.eclipse.xtext.ui.IImageHelper.IImageDescriptorHelper;
 
@@ -22,7 +21,6 @@ import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
 import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.resources.IGamaIcons;
 
 /**
  * The class GamlImageHelper.
@@ -34,33 +32,22 @@ import gama.ui.shared.resources.IGamaIcons;
 @Singleton
 public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 
-	/** The Constant path. */
-	private static final String path = "gaml";
+	/** The Constant UNKNOWN_DESC. */
+	private static final ImageDescriptor UNKNOWN_DESC = GamaIcon.named(GamaIcon.MISSING).descriptor();
+
+	/** The Constant UNKNOWN_DESC. */
+	private static final Image UNKNOWN_IMG = GamaIcon.named(GamaIcon.MISSING).image();
 
 	/** The registry. */
 	private final Map<ImageDescriptor, Image> registry = Maps.newHashMapWithExpectedSize(10);
-
-	/**
-	 * Exist.
-	 *
-	 * @param name
-	 *            the name
-	 * @return true, if successful
-	 */
-	public boolean exist(final String name) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(IGamaIcons.PLUGIN_ID,
-				IGamaIcons.ICONS_PATH + name + ".png") != null;
-	}
 
 	/**
 	 * @see org.eclipse.xtext.ui.IImageHelper.IImageDescriptorHelper#getImageDescriptor(java.lang.String)
 	 */
 	@Override
 	public ImageDescriptor getImageDescriptor(final String name) {
-		String s = name;
-		if (s.endsWith(".png")) { s = s.replace(".png", ""); }
-		if (exist(path + "/" + s)) return GamaIcon.named(path + "/" + s).descriptor();
-		return GamaIcon.named(path + "/_agent").descriptor();
+		String code = GamaIcon.GAML_PATH + name.replace(".png", "");
+		return GamaIcon.exist(code) ? GamaIcon.named(code).descriptor() : UNKNOWN_DESC;
 
 	}
 
@@ -83,10 +70,8 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 	 */
 	@Override
 	public Image getImage(final String name) {
-		String s = name;
-		if (s.endsWith(".png")) { s = s.replace(".png", ""); }
-		if (exist(path + "/" + s)) return GamaIcon.named(path + "/" + s).image();
-		return GamaIcon.named(path + "/_agent").image();
+		String code = GamaIcon.GAML_PATH + name.replace(".png", "");
+		return GamaIcon.exist(code) ? GamaIcon.named(code).image() : UNKNOWN_IMG;
 	}
 
 	/**

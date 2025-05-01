@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayeredDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,6 @@ package gama.core.outputs;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
@@ -33,14 +32,11 @@ import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IGamaView.Display;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IOverlayProvider;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput.DisplaySerializer;
 import gama.core.outputs.LayeredDisplayOutput.DisplayValidator;
 import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.outputs.layers.ILayerStatement;
-import gama.core.outputs.layers.OverlayStatement;
-import gama.core.outputs.layers.OverlayStatement.OverlayInfo;
 import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
@@ -59,7 +55,6 @@ import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -164,10 +159,11 @@ import gama.gaml.types.IType;
 						name = IKeyword.CAMERA,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("Allows to define the name of the camera to use. Default value is 'default'. "
-								+ "Accepted values are (1) the name of one of the cameras defined using the 'camera' statement or "
-								+ "(2) one of the preset cameras, accessible using constants: #from_above, #from_left, #from_right, "
-								+ "#from_up_left, #from_up_right, #from_front, #from_up_front, #isometric")),
+						doc = @doc ("""
+								Allows to define the name of the camera to use. Default value is 'default'. \
+								Accepted values are (1) the name of one of the cameras defined using the 'camera' statement or \
+								(2) one of the preset cameras, accessible using constants: #from_above, #from_left, #from_right, \
+								#from_up_left, #from_up_right, #from_front, #from_up_front, #isometric""")),
 				/// END CAMERA FACETS
 
 				@facet (
@@ -189,10 +185,11 @@ import gama.gaml.types.IType;
 						name = IKeyword.AUTOSAVE,
 						type = { IType.BOOL, IType.POINT, IType.STRING },
 						optional = true,
-						doc = @doc ("Allows to save this display on disk. This facet accepts bool, point or string values. "
-								+ "If it is false or nil, nothing happens. 'true' will save it at a resolution of 500x500 with a standard name "
-								+ "(containing the name of the model, display, resolution, cycle and time). A non-nil point will change that resolution. A non-nil string will keep 500x500 and change the filename "
-								+ "(if it is not dynamically built, the previous file will be erased). Note that setting autosave to true in a display will synchronize all the displays defined in the experiment")), },
+						doc = @doc ("""
+								Allows to save this display on disk. This facet accepts bool, point or string values. \
+								If it is false or nil, nothing happens. 'true' will save it at a resolution of 500x500 with a standard name \
+								(containing the name of the model, display, resolution, cycle and time). A non-nil point will change that resolution. A non-nil string will keep 500x500 and change the filename \
+								(if it is not dynamically built, the previous file will be erased). Note that setting autosave to true in a display will synchronize all the displays defined in the experiment""")), },
 		omissible = IKeyword.NAME)
 @inside (
 		symbols = { IKeyword.OUTPUT, IKeyword.PERMANENT })
@@ -245,9 +242,6 @@ public class LayeredDisplayOutput extends AbstractOutput {
 
 	/** The data. */
 	private final LayeredDisplayData data = new LayeredDisplayData();
-	/** The overlay info. */
-	// Specific to overlays
-	OverlayStatement overlayInfo;
 
 	/**
 	 * The Class DisplaySerializer.
@@ -379,13 +373,6 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		lights = new ArrayList<>();
 	}
 
-	/**
-	 * Gets the overlay provider.
-	 *
-	 * @return the overlay provider
-	 */
-	public IOverlayProvider<OverlayInfo> getOverlayProvider() { return overlayInfo; }
-
 	@Override
 	public boolean init(final IScope scope) throws GamaRuntimeException {
 		final boolean result = super.init(scope);
@@ -435,7 +422,6 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		if (surface == null) return;
 		// DEBUG.OUT("Entering update of the output");
 		getData().update(getScope(), description.getFacets());
-		if (overlayInfo != null) { getScope().step(overlayInfo); }
 
 		super.update();
 		// See #3696
@@ -494,15 +480,13 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		final List<AbstractLayerStatement> list = new ArrayList<>();
 		for (final ISymbol s : commands) {
-			if (s instanceof CameraStatement cs) {
-				cameras.add(cs);
-			} else if (s instanceof RotationStatement rs) {
-				rotation = rs;
-			} else if (s instanceof LightStatement ls) {
-				lights.add(ls);
-			} else {
-				if (s instanceof OverlayStatement os && os.hasInfo()) { overlayInfo = os; }
-				list.add((AbstractLayerStatement) s);
+			switch (s) {
+				case CameraStatement cs -> cameras.add(cs);
+				case RotationStatement rs -> rotation = rs;
+				case LightStatement ls -> lights.add(ls);
+				case null, default -> {
+					list.add((AbstractLayerStatement) s);
+				}
 			}
 
 		}

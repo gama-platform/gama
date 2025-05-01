@@ -19,13 +19,13 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-data @noDefault 
+      <programArgs>-data @noDefault
          --launcher.defaultAction
          openFile
       </programArgs>
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
-      <vmArgs>-server 
+      <vmArgs>-server
 -XX:+UseG1GC
 -XX:+UseStringDeduplication
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
@@ -36,20 +36,21 @@
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
 -Dosgi.locking=none
+-Dswt.enable.themedScrollBar=true
 -Dosgi.checkConfiguration=false
--Dosgi.requiredJavaVersion=23
+-Dosgi.requiredJavaVersion=21
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
--Denable_logging=true 
+-Denable_logging=true
 -Denable_debug=true
--Duse_global_preference_store=true 
+-Duse_global_preference_store=true
 -Dswt.autoScale=exact
--Dread_only=false 
--Duse_old_tabs=true 
--Duse_legacy_drawers=false 
--Duse_delayed_resize=false 
+-Dread_only=false
+-Duse_old_tabs=true
+-Duse_legacy_drawers=false
+-Duse_delayed_resize=false
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
 --add-exports=java.base/java.lang=ALL-UNNAMED
@@ -58,30 +59,30 @@
 --add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED
 --add-exports=java.base/java.math=ALL-UNNAMED
---add-exports=java.base/java.lang=ALL-UNNAMED 
---add-exports=java.base/sun.nio.ch=ALL-UNNAMED 
---add-opens=java.base/java.lang=ALL-UNNAMED 
---add-opens=java.base/jdk.internal.loader=ALL-UNNAMED 
---add-opens=java.base/java.math=ALL-UNNAMED  
---add-opens=java.base/java.util=ALL-UNNAMED 
---add-opens=java.base/java.util.concurrent=ALL-UNNAMED 
---add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED 
---add-opens=java.base/java.net=ALL-UNNAMED 
---add-opens=java.base/java.security=ALL-UNNAMED 
---add-opens=java.desktop/java.awt=ALL-UNNAMED 
---add-opens=java.desktop/java.awt.image=ALL-UNNAMED 
---add-opens=java.desktop/java.awt.color=ALL-UNNAMED 
---add-opens=java.desktop/sun.awt.image=ALL-UNNAMED 
---add-opens=java.desktop/sun.java2d=ALL-UNNAMED 
---add-opens=java.desktop/sun.java2d.loops=ALL-UNNAMED 
---add-opens=java.base/java.io=ALL-UNNAMED 
---add-opens=java.base/java.time=ALL-UNNAMED 
+--add-exports=java.base/java.lang=ALL-UNNAMED
+--add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
+--add-opens=java.base/java.math=ALL-UNNAMED
+--add-opens=java.base/java.util=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+--add-opens=java.base/java.net=ALL-UNNAMED
+--add-opens=java.base/java.security=ALL-UNNAMED
+--add-opens=java.desktop/java.awt=ALL-UNNAMED
+--add-opens=java.desktop/java.awt.image=ALL-UNNAMED
+--add-opens=java.desktop/java.awt.color=ALL-UNNAMED
+--add-opens=java.desktop/sun.awt.image=ALL-UNNAMED
+--add-opens=java.desktop/sun.java2d=ALL-UNNAMED
+--add-opens=java.desktop/sun.java2d.loops=ALL-UNNAMED
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.time=ALL-UNNAMED
 --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
---add-opens=java.base/java.text=ALL-UNNAMED 
---add-opens=java.base/java.lang.ref=ALL-UNNAMED 
+--add-opens=java.base/java.text=ALL-UNNAMED
+--add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
       </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread 
+      <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
       <vmArgsWin>-Dfile.encoding=UTF-8
@@ -93,9 +94,9 @@
 
    <splash
       location="gama.ui.application"
-      startupProgressRect="12,466,80,12"
-      startupMessageRect="12,450,445,16"
-      startupForegroundColor="B98080" />
+      startupProgressRect="420,466,80,12"
+      startupMessageRect="420,450,100,16"
+      startupForegroundColor="C56D45" />
    <launcher name="Gama">
       <linux icon="extraresources/launcher/icon.xpm"/>
       <macosx icon="extraresources/launcher/icon.icns"/>
@@ -105,9 +106,7 @@
       </win>
    </launcher>
 
-
    <vm>
-      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-23</windows>
    </vm>
 
    <license>

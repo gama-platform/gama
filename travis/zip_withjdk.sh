@@ -11,10 +11,10 @@ archivePath="$GITHUB_WORKSPACE/gama.application"
 #	Download latest JDK
 #
 echo "=== Download latest JDK"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin23-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK23U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-23.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin23-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK23U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-23.zip"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin23-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK23U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-23.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin23-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK23U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-23.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
 
 #
 #	Prepare downloaded JDK
@@ -24,13 +24,13 @@ for os in "linux" "macosx" "macosx_aarch" "win32"; do
 	mkdir jdk_$os
 
 	echo "unzip jdk $os"
-    if [[ -f "jdk_$os-23.tar.gz" ]]; then
-    tar -zxf jdk_$os-23.tar.gz -C jdk_$os/
+    if [[ -f "jdk_$os-21.tar.gz" ]]; then
+    tar -zxf jdk_$os-21.tar.gz -C jdk_$os/
 	else
-		unzip -q jdk_$os-23.zip -d jdk_$os
+		unzip -q jdk_$os-21.zip -d jdk_$os
 	fi
 
-	mv jdk_$os/jdk-23* jdk_$os/jdk
+	mv jdk_$os/jdk-21* jdk_$os/jdk
 done
 
 

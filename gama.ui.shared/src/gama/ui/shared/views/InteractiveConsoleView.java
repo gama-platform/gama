@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * InteractiveConsoleView.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * InteractiveConsoleView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -52,7 +52,6 @@ import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -319,7 +318,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	}
 
 	@Override
-	protected GamaUIJob createUpdateJob() {
+	protected ViewUpdateUIJob createUpdateJob() {
 		return null;
 	}
 
@@ -359,7 +358,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
 					toolbar.wipe(SWT.LEFT, true);
-					toolbar.setBackgroundColor(null);
+					// toolbar.setBackgroundColor(null);
 					toolbar.update();
 					toolbar.requestLayout();
 				}
@@ -371,9 +370,9 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			}
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
-					toolbar.status(null, "Interacting with " + agent.getFamilyName() + " " + agent.getName(),
-							GamaColors.get(agent.getColor()), SWT.LEFT);
-					toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
+					toolbar.status(GamaIcon.ofColor(agent.getColor()).getCode(),
+							"Interacting with " + agent.getFamilyName() + " " + agent.getName());
+					// toolbar.setBackgroundColor(GamaColors.toSwtColor(agent.getColor()));
 					toolbar.update();
 					toolbar.requestLayout();
 				}
@@ -493,7 +492,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
-		
+
 		final var value = temps.get(name);
 		if (value != null) {
 			final IType<?> t = GamaType.of(value);

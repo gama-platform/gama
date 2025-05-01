@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.views.inspectors;
 
@@ -38,13 +38,13 @@ import gama.dev.COUNTER;
 import gama.dev.DEBUG;
 import gama.ui.experiment.parameters.EditorsList;
 import gama.ui.experiment.parameters.ExperimentsParametersList;
-import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.parameters.MonitorDisplayer;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -139,18 +139,18 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		if (a != null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.status(null, "Parameters for " + a.getFamilyName() + " " + a.getName(),
-							GamaColors.get(a.getColor()), SWT.LEFT);
-					toolbar.setBackgroundColor(GamaColors.toSwtColor(a.getColor()));
+					toolbar.status(GamaIcon.ofColor(a.getColor()).getCode(),
+							"Parameters for " + a.getFamilyName() + " " + a.getName());
+					// toolbar.setBackgroundColor(GamaColors.toSwtColor(a.getColor()));
 				}
 			});
 		} else {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
 					toolbar.wipe(SWT.LEFT, true);
-					toolbar.setBackgroundColor(null);
-					FlatButton button = (FlatButton) status.getControl();
-					button.setColor(GamaColors.get(toolbar.getBackground()));
+					// toolbar.setBackgroundColor(null);
+					// FlatButton button = (FlatButton) status.getControl();
+					// button.setColor(GamaColors.get(toolbar.getBackground()));
 				}
 			});
 		}
@@ -343,7 +343,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
 			tb.button(IGamaIcons.MENU_ADD_MONITOR, "Add new monitor", "Add new monitor", e -> createNewMonitor(),
 					SWT.RIGHT);
-			tb.sep(SWT.RIGHT);
+			// tb.sep(SWT.RIGHT);
 		}
 
 	}
@@ -361,11 +361,11 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	}
 
 	@Override
-	protected GamaUIJob createUpdateJob() {
+	protected ViewUpdateUIJob createUpdateJob() {
 		ExperimentsParametersList editorsList = getEditorsList();
 		if (editorsList != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
 				&& editorsList.hasMonitors())
-			return new GamaUIJob() {
+			return new ViewUpdateUIJob() {
 
 				@Override
 				protected UpdatePriority jobPriority() {

@@ -3,13 +3,13 @@ name: "[./.github/workflows/travis-build-test.yaml]"
 on:
   workflow_call:
     inputs:
-      artifact_download_id: 
+      artifact_download_id:
         required: false
-        default: "gama-compiled-archive" 
+        default: "gama-compiled-archive"
         type: string
 
 jobs:
-  compilation: 
+  compilation:
     runs-on: ubuntu-latest
     steps:
       - name: Get linux testing releases
@@ -23,8 +23,8 @@ jobs:
       - name: Set up Adopt OpenJDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '23'
+          distribution: "temurin"
+          java-version: "21"
           java-package: jdk
 
       - name: Test release

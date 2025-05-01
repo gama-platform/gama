@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -77,9 +77,12 @@ public class GamaPreferences {
 			() -> GamaColor.get(199, 234, 229), () -> GamaColor.get(128, 205, 193), () -> GamaColor.get(53, 151, 143),
 			() -> GamaColor.get(1, 102, 94), () -> GamaColor.get(0, 60, 48) };
 
+	/** The Constant PREF_SAVE_BUFFERING_STRATEGY. */
 	public static final String PREF_SAVE_BUFFERING_STRATEGY = "pref_save_buffering_strategy";
+
+	/** The Constant PREF_WRITE_BUFFERING_STRATEGY. */
 	public static final String PREF_WRITE_BUFFERING_STRATEGY = "pref_write_buffering_strategy";
-	
+
 	/**
 	 *
 	 * Interface tab
@@ -234,19 +237,27 @@ public class GamaPreferences {
 		 * @date 19 août 2023
 		 */
 		public static void setColorScheme(final String scheme) {
-			if (DIVERGING.equals(scheme)) {
-				SIMULATION_COLORS = new GamaColor[DIVERGING_COLORS.length];
-				for (int i = 0; i < DIVERGING_COLORS.length; i++) { SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get(); }
-			} else if (BASIC.equals(scheme)) {
-				SIMULATION_COLORS = new GamaColor[BASIC_COLORS.length];
-				for (int i = 0; i < BASIC_COLORS.length; i++) { SIMULATION_COLORS[i] = BASIC_COLORS[i].get(); }
-			} else if (QUALITATIVE.equals(scheme)) {
-				SIMULATION_COLORS = new GamaColor[QUALITATIVE_COLORS.length];
-				for (int i = 0; i < QUALITATIVE_COLORS.length; i++) {
-					SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get();
-				}
-			} else {
-				setPivot(CORE_PIVOT_COLOR.getValue());
+			switch (scheme) {
+				case DIVERGING:
+					SIMULATION_COLORS = new GamaColor[DIVERGING_COLORS.length];
+					for (int i = 0; i < DIVERGING_COLORS.length; i++) {
+						SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get();
+					}
+					break;
+				case BASIC:
+					SIMULATION_COLORS = new GamaColor[BASIC_COLORS.length];
+					for (int i = 0; i < BASIC_COLORS.length; i++) { SIMULATION_COLORS[i] = BASIC_COLORS[i].get(); }
+					break;
+				case QUALITATIVE:
+					SIMULATION_COLORS = new GamaColor[QUALITATIVE_COLORS.length];
+					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) {
+						SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get();
+					}
+					break;
+				case null:
+				default:
+					setPivot(CORE_PIVOT_COLOR.getValue());
+					break;
 			}
 		}
 
@@ -318,6 +329,11 @@ public class GamaPreferences {
 				create("pref_menu_operators_sort", "Sort operators menu by", "Category", IType.STRING, false)
 						.among("Name", "Category").in(Interface.NAME, Interface.MENUS);
 
+		/** The Constant CORE_CLOSE_QUOTE. See Issue #391 */
+		public static final Pref<Boolean> CORE_SURROUND_SELECTED = create("pref_editor_surround_selected",
+				"Surround selected text with the matching character when { [ ( \" ' < is pressed", true, IType.BOOL,
+				false).in(NAME, TEXT);
+
 		/** The Constant CORE_CLOSE_QUOTE. */
 		public static final Pref<Boolean> CORE_CLOSE_QUOTE =
 				create("pref_editor_close_quote", "Automatically close single quotes — '..'", true, IType.BOOL, false)
@@ -362,9 +378,9 @@ public class GamaPreferences {
 						OPTIONS);
 
 		/** The Constant EDITBOX_ENABLED. */
-		public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
-				.create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
-				.in(NAME, TEXT);
+		// public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
+		// .create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
+		// .in(NAME, TEXT);
 
 		/** The Constant EDITOR_BASE_FONT. */
 		public static final Pref<GamaFont> EDITOR_BASE_FONT = GamaPreferences
@@ -870,15 +886,18 @@ public class GamaPreferences {
 
 		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
 		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY =
-				create(PREF_SAVE_BUFFERING_STRATEGY, "Default buffering strategy for the save statement", BufferingController.NO_BUFFERING, IType.STRING, true)
-				.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
-				.in(NAME, OPTIMIZATIONS);
-		
+				create(PREF_SAVE_BUFFERING_STRATEGY, "Default buffering strategy for the save statement",
+						BufferingController.NO_BUFFERING, IType.STRING, true)
+								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+								.in(NAME, OPTIMIZATIONS);
+
+		/** The Constant DEFAULT_WRITE_BUFFERING_STRATEGY. */
 		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY =
-				create(PREF_WRITE_BUFFERING_STRATEGY, "Default buffering strategy for the write statement", BufferingController.NO_BUFFERING, IType.STRING, true)
-				.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
-				.in(NAME, OPTIMIZATIONS);
-		
+				create(PREF_WRITE_BUFFERING_STRATEGY, "Default buffering strategy for the write statement",
+						BufferingController.NO_BUFFERING, IType.STRING, true)
+								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+								.in(NAME, OPTIMIZATIONS);
+
 		/**
 		 * Paths to libraries
 		 */

@@ -42,7 +42,6 @@ import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.menus.MenuAction;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -71,7 +70,7 @@ public class AgentsMenu extends ContributionItem {
 		result.setText(title);
 		Image image;
 		if (agent instanceof SimulationAgent sim) {
-			image = GamaIcon.ofColor(GamaColors.get(sim.getColor()), false).image();
+			image = GamaIcon.ofColor(sim.getColor()).image();
 		} else {
 			image = GamaIcon.named(IGamaIcons.MENU_AGENT).image();
 		}
