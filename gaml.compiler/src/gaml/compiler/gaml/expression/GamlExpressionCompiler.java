@@ -1179,7 +1179,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 	@Override
 	public IExpression caseStringLiteral(final StringLiteral object) {
-		return getFactory().createConst(StringUtils.unescapeJava(EGaml.getInstance().getKeyOf(object)), Types.STRING);
+		return getFactory().createConst(EGaml.getInstance().getKeyOf(object), Types.STRING);
 	}
 
 	@Override
