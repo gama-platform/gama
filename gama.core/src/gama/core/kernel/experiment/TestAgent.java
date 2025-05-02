@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * TestAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * TestAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -170,7 +170,7 @@ public class TestAgent extends BatchAgent implements WithTestSummary<TestExperim
 	@Override
 	public Collection<? extends WithTestSummary<?>> getSubElements() {
 		final List<TestStatement> tests = getModel().getAllTests();
-		final Consumer<IStatement> filter = t -> { if (t instanceof TestStatement) { tests.add((TestStatement) t); } };
+		final Consumer<IStatement> filter = t -> { if (t instanceof TestStatement ts) { tests.add(ts); } };
 		getSpecies().getBehaviors().forEach(filter);
 		return tests;
 	}

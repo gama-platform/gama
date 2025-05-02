@@ -76,7 +76,7 @@ global {
 				
 				write "--------";
 				rgb best_match;
-				list bm <- [255,255,255];
+				list<int> bm <- [255,255,255];
 				loop cl over:color_to_species.keys {
 					int r <- abs(cl.red-col.red);
 					int g <- abs(cl.green-col.green);

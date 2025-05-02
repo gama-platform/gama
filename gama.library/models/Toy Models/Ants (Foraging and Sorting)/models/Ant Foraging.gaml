@@ -109,7 +109,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//Action to find the best place in the neighborhood cells
 	point choose_best_place {
-		container list_places <- ant_grid(location).neighbors;
+		list<ant_grid> list_places <- ant_grid(location).neighbors;
 		if (list_places count (each.food > 0)) > 0 {
 			return point(list_places first_with (each.food > 0));
 		} else {

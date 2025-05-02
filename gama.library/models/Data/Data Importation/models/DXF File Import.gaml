@@ -9,7 +9,7 @@ model DXFAgents
 
 global
 {
-	file house_file <- dxf_file("../includes/house.dxf",#m);
+	dxf_file house_file <- dxf_file("../includes/house.dxf",#m);
 
 	//compute the environment size from the dxf file envelope
 	geometry shape <- envelope(house_file);
@@ -19,7 +19,7 @@ global
 		create house_element from: house_file with: [layer::string(get("layer"))];
 		
 		//define a random color for each layer
-		map layers <- list(house_element) group_by each.layer;
+		let layers <- list(house_element) group_by each.layer;
 		loop la over: layers.keys
 		{
 			rgb col <- rnd_color(255);

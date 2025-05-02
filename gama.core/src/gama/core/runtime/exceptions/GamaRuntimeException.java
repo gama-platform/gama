@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
  * GamaRuntimeException.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.exceptions;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +65,11 @@ public class GamaRuntimeException extends RuntimeException {
 	 */
 
 	public static GamaRuntimeException create(final Throwable ex, final IScope scope) {
-		if (ex instanceof GamaRuntimeException) return (GamaRuntimeException) ex;
-		if (ex instanceof IOException || ex instanceof FileNotFoundException)
-			return new GamaRuntimeFileException(scope, ex);
-		return new GamaRuntimeException(scope, ex);
+		return switch (ex) {
+			case GamaRuntimeException gre -> gre;
+			case IOException io -> new GamaRuntimeFileException(scope, io);
+			default -> new GamaRuntimeException(scope, ex);
+		};
 	}
 
 	/**
@@ -134,6 +134,7 @@ public class GamaRuntimeException extends RuntimeException {
 	 *            the ex
 	 * @return the exception name
 	 */
+	@SuppressWarnings ("unused")
 	protected static String getExceptionName(final Throwable ex) {
 		final String s = ex.getClass().getName();
 		if (s.contains("geotools") || s.contains("opengis")) return "exception in GeoTools library";
@@ -142,14 +143,16 @@ public class GamaRuntimeException extends RuntimeException {
 		if (s.contains("jogamp")) return "exception in JOGL library";
 		if (s.contains("weka")) return "exception in Weka library";
 		if (s.contains("math3")) return "exception in Math library";
-		if (ex instanceof NullPointerException) return "nil value detected";
-		if (ex instanceof IndexOutOfBoundsException) return "index out of bounds";
-		if (ex instanceof IOException) return "I/O error";
-		if (ex instanceof CoreException) return "exception in Eclipse";
-		if (ex instanceof ClassCastException) return "wrong casting";
-		if (ex instanceof IllegalArgumentException) return "illegal argument";
+		return switch (ex) {
+			case NullPointerException npe -> "nil value detected";
+			case IndexOutOfBoundsException ioobe -> "index out of bounds";
+			case IOException ioe -> "I/O error";
+			case CoreException ce -> "exception in Eclipse";
+			case ClassCastException cce -> "wrong casting";
+			case IllegalArgumentException iae -> "illegal argument";
+			default -> ex.getClass().getSimpleName();
+		};
 
-		return ex.getClass().getSimpleName();
 	}
 
 	/**

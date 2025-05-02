@@ -10,7 +10,7 @@ model PNGIcons
 global
 {
 // We fist load the folder of icons
-	file icons <- folder("../includes/icons/");
+	directory icons <- directory("../includes/icons/");
 	// And filter the file names that contain "png"
 	list<image_file> file_list <- icons select (each contains ("png")) collect (png_file: image_file(icons.path + "/" + png_file));
 	// We give an arbitrary size to the world 

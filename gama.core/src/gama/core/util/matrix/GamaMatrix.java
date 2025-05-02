@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,6 +24,7 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
+import gama.dev.FLAGS;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
@@ -66,20 +67,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @return the t
 	 */
 	protected T buildValue(final IScope scope, final Object object) {
-		return (T) type.getContentType().cast(scope, object, null, false);
-	}
-
-	/**
-	 * Builds the values.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param objects
-	 *            the objects
-	 * @return the i container
-	 */
-	protected IContainer<?, T> buildValues(final IScope scope, final IContainer objects) {
-		return type.cast(scope, objects, null, false);
+		return FLAGS.CAST_CONTAINER_CONTENTS ? (T) type.getContentType().cast(scope, object, null, false) : (T) object;
 	}
 
 	/**

@@ -13,8 +13,8 @@ global {
 	float step <- 65#ms;
 	float g <- 9.81 #m/(#s^2);
 	float tuyau_speed <- 0.5 #m/#s;
-	file pipe <- image_file("../includes/pipe9.png");
-	file bird_image <- image_file("../includes/birdd.png");
+	image_file pipe <- image_file("../includes/pipe9.png");
+	image_file bird_image <- image_file("../includes/birdd.png");
 	
 	
 	point param_size <- {3.0, 4.65};

@@ -80,7 +80,7 @@ global
 		geometry newroad <- line([p1, p2]);
 		list<geometry> nr <- [];
 		list<point> i1 <- [p1, p2];
-		list rrr <- (Traffic."Adapter of Traffice"[0].simulation.road) sort_by (each distance_to p1);
+		list<road> rrr <- (Traffic."Adapter of Traffice"[0].simulation.road) sort_by (each distance_to p1);
 		loop i from: 0 to: length(rrr) - 1
 		{
 			if (newroad intersects rrr[i])

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlSyntacticConverter.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,6 @@ import static gama.core.common.interfaces.IKeyword.ADD;
 import static gama.core.common.interfaces.IKeyword.ALL;
 import static gama.core.common.interfaces.IKeyword.ARG;
 import static gama.core.common.interfaces.IKeyword.AT;
-import static gama.core.common.interfaces.IKeyword.BATCH;
 import static gama.core.common.interfaces.IKeyword.DEFAULT;
 import static gama.core.common.interfaces.IKeyword.DISPLAY;
 import static gama.core.common.interfaces.IKeyword.ELSE;
@@ -27,7 +26,10 @@ import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
 import static gama.core.common.interfaces.IKeyword.FROM;
 import static gama.core.common.interfaces.IKeyword.FUNCTION;
 import static gama.core.common.interfaces.IKeyword.GRID;
+import static gama.core.common.interfaces.IKeyword.GRID_LAYER;
 import static gama.core.common.interfaces.IKeyword.GUI_;
+import static gama.core.common.interfaces.IKeyword.IMAGE;
+import static gama.core.common.interfaces.IKeyword.IMAGE_LAYER;
 import static gama.core.common.interfaces.IKeyword.IN;
 import static gama.core.common.interfaces.IKeyword.INDEX;
 import static gama.core.common.interfaces.IKeyword.INIT;
@@ -39,8 +41,6 @@ import static gama.core.common.interfaces.IKeyword.MODEL;
 import static gama.core.common.interfaces.IKeyword.NAME;
 import static gama.core.common.interfaces.IKeyword.PUT;
 import static gama.core.common.interfaces.IKeyword.REMOVE;
-import static gama.core.common.interfaces.IKeyword.SAVE;
-import static gama.core.common.interfaces.IKeyword.SAVE_BATCH;
 import static gama.core.common.interfaces.IKeyword.SET;
 import static gama.core.common.interfaces.IKeyword.SPECIES;
 import static gama.core.common.interfaces.IKeyword.SPECIES_LAYER;
@@ -268,7 +268,11 @@ public class GamlSyntacticConverter {
 		} else if (stm instanceof S_Definition def && !DescriptionFactory.isStatementProto(keyword)) {
 			// If we define a variable with this statement
 			final TypeRef t = (TypeRef) def.getTkey();
-			if (t != null) { addFacet(elt, TYPE, convExpr(t, errors), errors); }
+			if (t != null) {
+				addFacet(elt, TYPE, convExpr(t, errors), errors);
+				// If the type should not be inferred, we add a facet to specify it (see #385)
+				elt.setFacet(IKeyword.NO_TYPE_INFERENCE, ConstantExpressionDescription.TRUE_EXPR_DESCRIPTION);
+			}
 			if (t != null && !upperContainsAttributes) {
 				// Translation of "type var ..." to "let var type: type ..." if
 				// we are not in a
@@ -629,8 +633,9 @@ public class GamlSyntacticConverter {
 		// 20/1/14: Translation of container[index] +<- value" to
 		// "add item: value in: container at: index"
 		if (expr instanceof Access && "[".equals(((Access) expr).getOp())) {
-			final String kw = "+<-".equals(keyword) ? ADD : PUT;
-			final String to = "+<-".equals(keyword) ? TO : IN;
+			boolean isAdd = "+<-".equals(keyword);
+			final String kw = isAdd ? ADD : PUT;
+			final String to = isAdd ? TO : IN;
 			elt.setKeyword(kw);
 			addFacet(elt, ITEM, value, errors);
 			addFacet(elt, to, convExpr(((Access) expr).getLeft(), errors), errors);
@@ -671,13 +676,7 @@ public class GamlSyntacticConverter {
 			final Set<Diagnostic> errors) {
 		final SymbolProto p = DescriptionFactory.getProto(keyword, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
-			String fname = EGaml.getInstance().getKeyOf(f);
-
-			// We change the "<-" and "->" symbols into full names
-			if ("<-".equals(fname)) {
-				fname = LET.equals(keyword) || SET.equals(keyword) ? VALUE : INIT;
-			} else if ("->".equals(fname)) { fname = FUNCTION; }
-
+			String fname = replaceAssignments(keyword, EGaml.getInstance().getKeyOf(f));
 			// We compute (and convert) the expression attached to the facet
 			final boolean label = p == null ? false : p.isLabel(fname);
 			final IExpressionDescription fexpr = convExpr(f, label, errors);
@@ -685,16 +684,50 @@ public class GamlSyntacticConverter {
 		}
 
 		// We add the "default" (or omissible) facet to the syntactic element
+		String def = getDefaultFacet(stm, keyword);
+		if (def != null && !def.isEmpty() && !elt.hasFacet(def)) {
+			final IExpressionDescription ed = findExpr(stm, errors);
+			if (ed != null) { elt.setFacet(def, ed); }
+		}
+		if (LET.equals(keyword) && elt.hasFacet(TYPE)) {
+			elt.setFacet(IKeyword.NO_TYPE_INFERENCE, ConstantExpressionDescription.TRUE_EXPR_DESCRIPTION);
+		}
+	}
+
+	/**
+	 * Gets the default facet.
+	 *
+	 * @param stm
+	 *            the stm
+	 * @param keyword
+	 *            the keyword
+	 * @return the default facet
+	 */
+	private String getDefaultFacet(final Statement stm, final String keyword) {
 		String def = stm.getFirstFacet();
 		if (def != null) {
 			if (def.endsWith(":")) { def = def.substring(0, def.length() - 1); }
 		} else {
 			def = DescriptionFactory.getOmissibleFacetForSymbol(keyword);
 		}
-		if (def != null && !def.isEmpty() && !elt.hasFacet(def)) {
-			final IExpressionDescription ed = findExpr(stm, errors);
-			if (ed != null) { elt.setFacet(def, ed); }
-		}
+		return def;
+	}
+
+	/**
+	 * Replace assignments.
+	 *
+	 * @param keyword
+	 *            the keyword
+	 * @param fname
+	 *            the fname
+	 * @return the string
+	 */
+	private String replaceAssignments(final String keyword, String fname) {
+		// We change the "<-" and "->" symbols into full names
+		if ("<-".equals(fname)) {
+			fname = LET.equals(keyword) || SET.equals(keyword) ? VALUE : INIT;
+		} else if ("->".equals(fname)) { fname = FUNCTION; }
+		return fname;
 	}
 
 	/**
@@ -733,18 +766,18 @@ public class GamlSyntacticConverter {
 	 *            the upper
 	 * @return the string
 	 */
-	private String convertKeyword(final String k, final String upper) {
-		String keyword = k;
-		if ((BATCH.equals(upper) || EXPERIMENT.equals(upper)) && SAVE.equals(keyword)) {
-			keyword = SAVE_BATCH;
-		} else if (DISPLAY.equals(upper) || SPECIES_LAYER.equals(upper)) {
-			if (SPECIES.equals(keyword)) {
-				keyword = SPECIES_LAYER;
-			} else if (GRID.equals(keyword)) {
-				keyword = IKeyword.GRID_LAYER;
-			} else if (IKeyword.IMAGE.equals(keyword)) { keyword = IKeyword.IMAGE_LAYER; }
-		}
-		return keyword;
+	private String convertKeyword(final String keyword, final String upper) {
+		// if ((BATCH.equals(upper) || EXPERIMENT.equals(upper)) && SAVE.equals(keyword)) {
+		// keyword = SAVE_BATCH;
+		// } else
+		if (!DISPLAY.equals(upper) && !SPECIES_LAYER.equals(upper)) return keyword;
+		return switch (keyword) {
+			case SPECIES -> SPECIES_LAYER;
+			case GRID -> GRID_LAYER;
+			case IMAGE -> IMAGE_LAYER;
+			default -> keyword;
+		};
+
 	}
 
 	/**
