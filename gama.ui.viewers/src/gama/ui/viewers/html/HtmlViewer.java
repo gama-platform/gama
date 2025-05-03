@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * HtmlViewer.java, in gama.ui.shared.viewers, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * HtmlViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -154,7 +154,7 @@ public class HtmlViewer extends EditorPart implements IToolbarDecoratedView, IGa
 			browser.back();
 			checkButtons();
 		}, SWT.RIGHT);
-		home = tb.button(IGamaIcons.BROWSER_HOME, "Home", "Go back to the welcome page", e -> {
+		home = tb.button("toolbar/view.home", "Home", "Go back to the welcome page", e -> {
 			browser.setUrl(WebHelper.getWelcomePageURL().toString());
 			checkButtons();
 		}, SWT.RIGHT);
@@ -162,9 +162,8 @@ public class HtmlViewer extends EditorPart implements IToolbarDecoratedView, IGa
 			browser.forward();
 			checkButtons();
 		}, SWT.RIGHT);
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button(IGamaIcons.EXPERIMENT_RELOAD, "Refresh", "Refresh current page", e -> browser.refresh(), SWT.RIGHT);
-		tb.button(IGamaIcons.EXPERIMENT_STOP, "Stop", "Stop loading page", e -> browser.stop(), SWT.RIGHT);
+		tb.button("toolbar/view.reload", "Refresh", "Refresh current page", e -> browser.refresh(), SWT.RIGHT);
+		tb.button("toolbar/view.stop", "Stop", "Stop loading page", e -> browser.stop(), SWT.RIGHT);
 
 	}
 

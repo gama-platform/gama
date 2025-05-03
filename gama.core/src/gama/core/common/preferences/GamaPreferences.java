@@ -104,25 +104,28 @@ public class GamaPreferences {
 		/** The Constant CORE_REMEMBER_WINDOW. */
 		public static final Pref<Boolean> CORE_REMEMBER_WINDOW =
 				create("pref_remember_window", "Remember GAMA window size and position", true, IType.BOOL, false)
-						.in(NAME, STARTUP).deactivates("pref_show_maximized");
+						.in(NAME, STARTUP).deactivates("pref_show_maximized").withLabels("Yes", "No");
 
 		/** The Constant CORE_SHOW_MAXIMIZED. */
 		public static final Pref<Boolean> CORE_SHOW_MAXIMIZED =
-				create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP);
+				create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP)
+						.withLabels("Yes", "No");
 
 		/** The Constant CORE_ASK_REBUILD. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =
 				create("pref_ask_rebuild", "Ask before rebuilding a corrupted workspace", true, IType.BOOL, false)
-						.in(NAME, STARTUP);
+						.in(NAME, STARTUP).withLabels("Yes", "No");
 
 		/** The Constant CORE_ASK_OUTDATED. */
-		public static final Pref<Boolean> CORE_ASK_OUTDATED = create("pref_ask_outdated",
-				"Ask before using a workspace created by another version", true, IType.BOOL, false).in(NAME, STARTUP);
+		public static final Pref<Boolean> CORE_ASK_OUTDATED =
+				create("pref_ask_outdated", "Ask before using a workspace created by another version", true, IType.BOOL,
+						false).in(NAME, STARTUP).withLabels("Yes", "No");
 
 		/** The Constant CORE_ASK_REBUILD. */
 		public static final Pref<Boolean> CORE_STARTUP_MODEL =
 				create("pref_startup_model", "Open a model or an experiment at startup", false, IType.BOOL, false)
-						.in(NAME, STARTUP).activates("pref_default_model", "pref_default_experiment");
+						.in(NAME, STARTUP).activates("pref_default_model", "pref_default_experiment")
+						.withLabels("Yes", "No");
 
 		/** The Constant CORE_DEFAULT_MODEL. */
 		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL = create("pref_default_model",
@@ -168,8 +171,8 @@ public class GamaPreferences {
 
 		/** The Constant CORE_CONSOLE_WRAP. */
 		public static final Pref<Boolean> CORE_CONSOLE_WRAP =
-				create("pref_console_wrap", "Wrap long lines (can slow down output)", false, IType.BOOL, true).in(NAME,
-						CONSOLE);
+				create("pref_console_wrap", "Wrap long lines (can slow down output)", false, IType.BOOL, true)
+						.in(NAME, CONSOLE).withLabels("Yes", "No");
 		/**
 		 * Appearance
 		 */
@@ -307,22 +310,27 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> WARNINGS_ENABLED =
 				create("pref_editor_enable_warnings", "Show warning markers in the editor", true, IType.BOOL, false)
-						.in(NAME, OPTIONS);
+						.in(NAME, OPTIONS).hidden();
 
 		/** The Constant INFO_ENABLED. */
 		public static final Pref<Boolean> INFO_ENABLED =
 				create("pref_editor_enable_infos", "Show information markers in the editor", true, IType.BOOL, false)
-						.in(NAME, OPTIONS);
+						.in(NAME, OPTIONS).hidden();
 
 		/** The Constant EDITOR_PERSPECTIVE_SAVE. */
-		public static final Pref<Boolean> EDITOR_PERSPECTIVE_SAVE =
-				create("pref_editor_perspective_save", "Save all editors when switching perspectives", true, IType.BOOL,
-						false).in(Modeling.NAME, Modeling.OPTIONS).activates("pref_editor_ask_save");
+		public static final Pref<Boolean> EDITOR_PERSPECTIVE_SAVE = create("pref_editor_perspective_save",
+				"Save editors when switching perspectives", true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS)
+						.activates("pref_editor_ask_save").withLabels("Yes", "No");
+
+		/** The Constant EDITOR_SAVE. */
+		public static final Pref<Boolean> EDITOR_SAVE = GamaPreferences
+				.create("pref_editor_save_all", "Save editors before lauching an experiment", true, IType.BOOL, false)
+				.in(NAME, GamaPreferences.Modeling.OPTIONS).activates("pref_editor_ask_save").withLabels("Yes", "No");
 
 		/** The Constant EDITOR_PERSPECTIVE_HIDE. */
-		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE = create("pref_editor_perspective_hide",
-				"Hide editors when switching to simulation perspectives (can be overriden in the 'layout' statement)",
-				true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS);
+		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE =
+				create("pref_editor_perspective_hide", "Hide editors when switching to simulation perspective", true,
+						IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS).withLabels("Yes", "No");
 
 		/** The operators menu sort. */
 		public static final Pref<String> OPERATORS_MENU_SORT =
@@ -332,7 +340,7 @@ public class GamaPreferences {
 		/** The Constant CORE_CLOSE_QUOTE. See Issue #391 */
 		public static final Pref<Boolean> CORE_SURROUND_SELECTED = create("pref_editor_surround_selected",
 				"Surround selected text with the matching character when { [ ( \" ' < is pressed", true, IType.BOOL,
-				false).in(NAME, TEXT);
+				false).in(NAME, TEXT).withLabels("Yes", "No");
 
 		/** The Constant CORE_CLOSE_QUOTE. */
 		public static final Pref<Boolean> CORE_CLOSE_QUOTE =
@@ -360,13 +368,6 @@ public class GamaPreferences {
 		public static final Pref<Boolean> EDITOR_CLEAN_UP =
 				create("pref_editor_save_format", "Apply formatting on save", false, IType.BOOL, false).in(NAME,
 						GamaPreferences.Modeling.OPTIONS);
-
-		/** The Constant EDITOR_SAVE. */
-		public static final Pref<Boolean> EDITOR_SAVE =
-				GamaPreferences
-						.create("pref_editor_save_all", "Save all editors before lauching an experiment", true,
-								IType.BOOL, false)
-						.in(NAME, GamaPreferences.Modeling.OPTIONS).activates("pref_editor_ask_save");
 
 		/** The Constant EDITOR_DRAG_RESOURCES. */
 		public static final Pref<Boolean> EDITOR_DRAG_RESOURCES = create("pref_editor_drag_resources",
@@ -396,16 +397,14 @@ public class GamaPreferences {
 				.in(NAME, TEXT);
 
 		/** The Constant EDITOR_EXPERIMENT_MENU. */
-		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU =
-				GamaPreferences
-						.create("pref_editor_experiment_menu",
-								"Always display experiments as a menu rather than buttons", false, IType.BOOL, false)
-						.deactivates("pref_editor_collapse_buttons").in(NAME, TEXT);
+		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
+				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
+				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT);
 
 		/** The Constant EDITOR_COLLAPSE_BUTTONS. */
-		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS = create("pref_editor_collapse_buttons",
-				"Display experiments as a menu when the combined width of the buttons exceed the width of the toolbar",
-				PlatformHelper.isLinux(), IType.BOOL, false).in(NAME, TEXT);
+		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS =
+				create("pref_editor_collapse_buttons", "Use a menu when the buttons exceed the width of the editor",
+						PlatformHelper.isLinux(), IType.BOOL, false).in(NAME, TEXT);
 
 		/** The Constant EDITOR_MINING. */
 		public static final Pref<Boolean> EDITOR_MINING = create("pref_editor_mining",
@@ -453,9 +452,10 @@ public class GamaPreferences {
 						true, IType.BOOL, true).in(NAME, EXECUTION);
 
 		/** The Constant CORE_SLIDER_TYPE. */
-		public static final Pref<Boolean> CORE_SLIDER_TYPE = create("pref_experiment_type_slider",
-				"Set the step duration slider incrementation to linear. If false set to logarithmic", true, IType.BOOL,
-				true).in(NAME, EXECUTION);
+		public static final Pref<Boolean> CORE_SLIDER_TYPE =
+				create("pref_experiment_type_slider", "Incrementation of the step duration slider", true, IType.BOOL,
+						true).in(NAME, EXECUTION).withLabels("Linear", "Logarithmic")
+								.withColors(GamaColor.get("lightgray"), GamaColor.get("lightgray"));
 
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =
@@ -528,9 +528,9 @@ public class GamaPreferences {
 				"Interval (in seconds) at which memory should be monitored", 2, IType.INT, true).in(NAME, MEMORY);
 
 		/** The Constant CORE_MEMORY_ACTION. */
-		public static final Pref<Boolean> CORE_MEMORY_ACTION = create("pref_memory_action",
-				"If true, when running out of memory, GAMA will try to close the experiment, otherwise it exits", true,
-				IType.BOOL, true).in(NAME, MEMORY);
+		public static final Pref<Boolean> CORE_MEMORY_ACTION =
+				create("pref_memory_action", "When running out of memory in an experiment, GAMA should", true,
+						IType.BOOL, true).in(NAME, MEMORY).withLabels("Close", "Exit");
 		/**
 		 * Errors & warnings
 		 */
@@ -565,16 +565,15 @@ public class GamaPreferences {
 						ERRORS);
 
 		/** The Constant CORE_ERRORS_EDITOR_LINK. */
-		public static final Pref<Boolean> CORE_ERRORS_EDITOR_LINK = create("pref_errors_in_editor",
-				"Automatically open an editor and point at the faulty part of the model if an error or a warning is thrown",
-				true, IType.BOOL, true).in(NAME, ERRORS);
+		public static final Pref<Boolean> CORE_ERRORS_EDITOR_LINK =
+				create("pref_errors_in_editor", "Show errors in editors", true, IType.BOOL, true).in(NAME, ERRORS);
 
 		/** The Constant SERVER. */
 		public final static String SERVER = "Server mode";
 
 		/** The Constant CORE_SERVER_MODE. */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
-				create("pref_enable_server", "Enables GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
+				create("pref_enable_server", "Enable GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
 						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The Constant CORE_SERVER_PORT. */
@@ -976,7 +975,7 @@ public class GamaPreferences {
 		/** The Constant REQUIRED_PLUGINS. */
 		public static final Pref<Boolean> REQUIRED_PLUGINS = create("pref_required_plugins",
 				"Automatically add the plugins required to compile and run a model when editing it", false, IType.BOOL,
-				false).in(NAME, CATEGORY);
+				false).in(NAME, CATEGORY).hidden();
 
 		/** The Constant QUADTREE_OPTIMIZATION. */
 		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",
@@ -994,9 +993,7 @@ public class GamaPreferences {
 						.in(NAME, CATEGORY).onChange(v -> {
 							try {
 								ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-							} catch (
-										/** The e. */
-							CoreException e) {}
+							} catch (CoreException e) {}
 						});
 
 		/** The Constant USE_POOLING. */

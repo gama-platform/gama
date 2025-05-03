@@ -59,6 +59,7 @@ import org.w3c.css.sac.CSSParseException;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.preferences.Pref;
+import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.gaml.types.IType;
 
@@ -160,10 +161,10 @@ public class ThemeHelper {
 
 	/** The Constant CORE_THEME_LIGHT. */
 	public static final Pref<Boolean> CORE_THEME_LIGHT =
-			create("pref_theme_light", "Light theme", true, IType.BOOL, false).in(NAME, APPEARANCE).restartRequired()
+			create("pref_theme_light", "Theme to apply", true, IType.BOOL, false).in(NAME, APPEARANCE).restartRequired()
 					.onChange(yes -> {
 						chooseThemeBasedOnPreferences();
-					});
+					}).withLabels("Light", "Dark").withColors(GamaColor.get("white"), GamaColor.get("black"));
 
 	/**
 	 * Chooses a light/dark theme based on the GAMA preferences and the actual theme

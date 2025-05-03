@@ -58,6 +58,7 @@ import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class GamaNavigator.

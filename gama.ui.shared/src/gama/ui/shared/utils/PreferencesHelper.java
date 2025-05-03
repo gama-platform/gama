@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PreferencesHelper.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * PreferencesHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -105,8 +105,9 @@ public class PreferencesHelper {
 
 					});
 	/** The keep navigator state. */
-	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE = create("pref_keep_navigator_state",
-			"Maintain the state of the navigator across sessions", true, IType.BOOL, false).in(NAME, NAVIGATOR);
+	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE =
+			create("pref_keep_navigator_state", "Maintain the state of the navigator across sessions", true, IType.BOOL,
+					false).in(NAME, NAVIGATOR).hidden();
 	/** The Constant NAVIGATOR_HIDDEN. */
 	public static final Pref<Boolean> NAVIGATOR_HIDDEN =
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)

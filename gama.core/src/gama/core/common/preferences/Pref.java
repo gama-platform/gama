@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Pref.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Pref.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -96,6 +96,14 @@ public class Pref<T> implements IParameter {
 	/** The refreshes. */
 	String[] enables = EMPTY_STRINGS, disables = EMPTY_STRINGS, refreshes = EMPTY_STRINGS,
 			fileExtensions = EMPTY_STRINGS;
+
+	/** The pref switch strings. */
+	static String[] PREF_SWITCH_STRINGS = { "Yes", "No" };
+	/** The labels. */
+	String[] labels = PREF_SWITCH_STRINGS;
+
+	/** The colors. */
+	List<GamaColor> colors = null;
 
 	/** The listeners. */
 	Set<IPreferenceChangeListener<T>> listeners = new HashSet<>();
@@ -562,12 +570,12 @@ public class Pref<T> implements IParameter {
 
 	@Override
 	public List<GamaColor> getColors(final IScope scope) {
-		return null;
+		return colors;
 	}
 
 	@Override
 	public GamaColor getColor(final IScope scope) {
-		return null;
+		return colors == null || colors.isEmpty() ? null : colors.get(0);
 	}
 
 	@Override
@@ -614,5 +622,37 @@ public class Pref<T> implements IParameter {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void setValueNoCheckNoNotification(final Object value) { this.value = (T) value; }
+
+	/**
+	 * @param string
+	 * @param string2
+	 * @return
+	 */
+	public Pref<T> withLabels(final String... strings) {
+		labels = strings;
+		return this;
+	}
+
+	/**
+	 * With colors.
+	 *
+	 * @param gcs
+	 *            the gcs
+	 * @return the pref
+	 */
+	public Pref<T> withColors(final GamaColor... gcs) {
+		colors = Arrays.asList(gcs);
+		return this;
+	}
+
+	/**
+	 * Gets the labels.
+	 *
+	 * @return the labels
+	 */
+	@Override
+	public String[] getLabels(final IScope scope) {
+		return labels;
+	}
 
 }
