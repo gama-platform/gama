@@ -24,14 +24,22 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.swt.IFocusService;
 
+import gama.core.runtime.PlatformHelper;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
+import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import one.util.streamex.StreamEx;
 
@@ -52,8 +60,8 @@ public class NavigatorSearchControl {
 	 * @return true, if successful
 	 */
 	boolean shouldSelect(final Object o) {
-		if (!(o instanceof WrappedGamaFile file)) return false;
-		if (file.getName().toLowerCase().contains(pattern) || file.hasTag(pattern)) return true;
+		if (!(o instanceof WrappedGamaFile file)) { return false; }
+		if (file.getName().toLowerCase().contains(pattern) || file.hasTag(pattern)) { return true; }
 		return false;
 	}
 
@@ -93,7 +101,7 @@ public class NavigatorSearchControl {
 		 */
 		@SuppressWarnings ("unchecked")
 		private boolean select(final VirtualContent<?> element, final boolean b) {
-			if (alreadySelected.contains(element)) return true;
+			if (alreadySelected.contains(element)) { return true; }
 			if (internalSelect(element, b)) {
 				alreadySelected.add(element);
 				return true;
@@ -111,7 +119,7 @@ public class NavigatorSearchControl {
 		 * @return true, if successful
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
-			if (pattern.isEmpty()) return true;
+			if (pattern.isEmpty()) { return true; }
 			switch (element.getType()) {
 				case FILE:
 					return shouldSelect(element);
@@ -126,7 +134,7 @@ public class NavigatorSearchControl {
 				default:
 					final Object[] children = element.getNavigatorChildren();
 					for (final Object element2 : children) {
-						if (select((VirtualContent<?>) element2, false)) return true;
+						if (select((VirtualContent<?>) element2, false)) { return true; }
 					}
 					return false;
 			}
@@ -182,33 +190,32 @@ public class NavigatorSearchControl {
 	 */
 	public NavigatorSearchControl fill(final GamaToolbarSimple toolbar) {
 
-		find = new Text(toolbar, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
-		toolbar.control(find, 200);
+		Composite parent = toolbar;
+		Color c = parent.getBackground();
+		if (PlatformHelper.isWindows()) {
+			parent = new Composite(toolbar, SWT.NONE);
+			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+			data.heightHint = 24;
+			data.widthHint = 200;
+			parent.setLayoutData(data);
+			final GridLayout layout = new GridLayout();
+			parent.setLayout(layout);
+			GamaColors.setBackground(c, parent);
+		}
+		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH);
+		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		data.heightHint = 16;
+		data.widthHint = 100;
+		find.setLayoutData(data);
+		toolbar.control(parent == toolbar ? find : parent, 200);
 
-		// Composite parent = toolbar;
-		// Color c = parent.getBackground();
-		// if (PlatformHelper.isWindows()) {
-		// parent = new Composite(toolbar, SWT.NONE);
-		// final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		// data.heightHint = 24;
-		// data.widthHint = 100;
-		// parent.setLayoutData(data);
-		// final GridLayout layout = new GridLayout();
-		// parent.setLayout(layout);
-		// GamaColors.setBackground(c, parent);
-		// }
-
-		// find = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
-		// final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		// data.heightHint = 16;
-		// data.widthHint = 100;
-		// find.setLayoutData(data);
+
 		find.setMessage(EMPTY);
 
-		// toolbar.control(parent == toolbar ? find : parent, 100);
-		// GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
+		GamaColors.setBackAndForeground(c,
+				ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.VERY_DARK_GRAY.color(), find);
 		find.addModifyListener(modifyListener);
 		find.addKeyListener(new KeyListener() {
 
