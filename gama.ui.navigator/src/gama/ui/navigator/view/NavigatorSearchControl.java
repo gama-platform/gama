@@ -10,10 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
-import static gama.ui.application.workbench.ThemeHelper.isDark;
-import static gama.ui.shared.resources.IGamaColors.VERY_DARK_GRAY;
-import static gama.ui.shared.resources.IGamaColors.VERY_LIGHT_GRAY;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,20 +24,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.swt.IFocusService;
 
-import gama.core.runtime.PlatformHelper;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import one.util.streamex.StreamEx;
 
@@ -191,30 +181,34 @@ public class NavigatorSearchControl {
 	 * @return the navigator search control
 	 */
 	public NavigatorSearchControl fill(final GamaToolbarSimple toolbar) {
-		Composite parent = toolbar;
-		Color c = parent.getBackground();
-		if (PlatformHelper.isWindows()) {
-			parent = new Composite(toolbar, SWT.NONE);
-			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-			data.heightHint = 24;
-			data.widthHint = 100;
-			parent.setLayoutData(data);
-			final GridLayout layout = new GridLayout();
-			parent.setLayout(layout);
-			GamaColors.setBackground(c, parent);
-		}
 
-		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH);
+		find = new Text(toolbar, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
+		toolbar.control(find, 200);
+
+		// Composite parent = toolbar;
+		// Color c = parent.getBackground();
+		// if (PlatformHelper.isWindows()) {
+		// parent = new Composite(toolbar, SWT.NONE);
+		// final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		// data.heightHint = 24;
+		// data.widthHint = 100;
+		// parent.setLayoutData(data);
+		// final GridLayout layout = new GridLayout();
+		// parent.setLayout(layout);
+		// GamaColors.setBackground(c, parent);
+		// }
+
+		// find = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
-		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.heightHint = 16;
-		data.widthHint = 100;
-		find.setLayoutData(data);
+		// final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		// data.heightHint = 16;
+		// data.widthHint = 100;
+		// find.setLayoutData(data);
 		find.setMessage(EMPTY);
 
-		toolbar.control(parent == toolbar ? find : parent, 100);
-		GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
+		// toolbar.control(parent == toolbar ? find : parent, 100);
+		// GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
 		find.addModifyListener(modifyListener);
 		find.addKeyListener(new KeyListener() {
 

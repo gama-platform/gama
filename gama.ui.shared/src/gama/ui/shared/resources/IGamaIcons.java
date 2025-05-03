@@ -219,10 +219,13 @@ public interface IGamaIcons {
 	String FOLDER_USER = "navigator/folder.user";
 
 	/** The font decrease. */
-	String FONT_DECREASE = "display/zoom.out";
+	String FONT_DECREASE = "toolbar/font.decrease";
 
 	/** The font increase. */
-	String FONT_INCREASE = "display/zoom.in";
+	String FONT_INCREASE = "toolbar/font.increase";
+
+	/** The font reset. */
+	String FONT_RESET = "toolbar/font.reset";
 
 	/** The import archive. */
 	String IMPORT_ARCHIVE = "navigator/import.archive";

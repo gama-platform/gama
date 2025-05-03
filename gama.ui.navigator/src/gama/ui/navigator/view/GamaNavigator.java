@@ -44,7 +44,6 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonNavigatorManager;
 import org.eclipse.ui.navigator.CommonViewer;
 
-import gama.core.runtime.PlatformHelper;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.Tag;
 import gama.ui.navigator.view.contents.TopLevelFolder;
@@ -59,7 +58,6 @@ import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
-import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class GamaNavigator.
@@ -275,17 +273,9 @@ public class GamaNavigator extends CommonNavigator
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
-		if (PlatformHelper.isWindows() || PlatformHelper.isLinux()) {
-			tb.sep(24, SWT.RIGHT);
-			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
-
-		} else {
-			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
-			tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		}
+		findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.LEFT));
 		sortItem = tb.check(byDate, SWT.RIGHT);
 		sortItem.setSelection(true);
-
 	}
 
 	/**
@@ -303,22 +293,6 @@ public class GamaNavigator extends CommonNavigator
 			element = (VirtualContent<?>) currentSelection.getFirstElement();
 		}
 		element.handleSingleClick();
-		showStatus(element);
-	}
-
-	/**
-	 * Show status.
-	 *
-	 * @param element
-	 *            the element
-	 */
-	private void showStatus(final VirtualContent<?> element) {
-		final String message = element.getStatusMessage();
-		final String tooltip = element.getStatusTooltip();
-		final Selector l = e -> properties.run();
-		final ToolItem t = toolbar.status("navigator/status.info", message, l, null);
-		t.getControl().setToolTipText(tooltip == null ? message : tooltip);
-		toolbar.getToolbar(SWT.LEFT).update();
 	}
 
 	@Override

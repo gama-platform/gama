@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -76,6 +77,27 @@ public class BackgroundChooser {
 			});
 
 		}
+	}
+
+	/**
+	 * Install.
+	 *
+	 * @param view
+	 *            the view
+	 * @param mainMenu
+	 *            the main menu
+	 */
+	public static void install(final IToolbarDecoratedView.Colorizable view, final Menu mainMenu) {
+		String[] labels = view.getColorLabels();
+		GamaUIColor[] colors = new GamaUIColor[labels.length];
+		for (int i = 0; i < labels.length; i++) { colors[i] = view.getColor(i); }
+		for (int i = 0; i < labels.length; i++) {
+			final int index = i;
+			GamaColorMenu.addColorSubmenuTo(mainMenu, labels[i], c -> {
+				view.setColor(index, GamaColors.get(c.red(), c.green(), c.blue()));
+			});
+		}
+
 	}
 
 }

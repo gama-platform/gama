@@ -924,6 +924,7 @@ public class PopulationInspectView extends GamaViewPart
 						}, GamaIcon.named(IGamaIcons.MENU_POPULATION).image());
 					}
 				}
+
 			};
 			menu.open(toolbar.getToolbar(SWT.RIGHT), trigger);
 		}, SWT.RIGHT);

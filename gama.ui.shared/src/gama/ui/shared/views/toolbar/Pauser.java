@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * FrequencyController.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * Pauser.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,13 +18,13 @@ import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView.StateListener;
 
 /**
- * The class FrequencyController.
+ * The class Pauser.
  *
  * @author drogoul
  * @since 19 janv. 2012
  *
  */
-public class FrequencyController implements StateListener {
+public class Pauser implements StateListener {
 
 	/** The view. */
 	final IToolbarDecoratedView.Pausable view;
@@ -42,7 +41,7 @@ public class FrequencyController implements StateListener {
 	 * @param view
 	 *            the view
 	 */
-	public FrequencyController(final IToolbarDecoratedView.Pausable view) {
+	public Pauser(final IToolbarDecoratedView.Pausable view) {
 		this.view = view;
 		view.addStateListener(this);
 	}
@@ -64,27 +63,18 @@ public class FrequencyController implements StateListener {
 	 * @param tb
 	 */
 	public void install(final GamaToolbar2 tb) {
-
-		createPauseItem(tb);
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-	}
-
-	/**
-	 * @param tb
-	 */
-	private void createPauseItem(final GamaToolbar2 tb) {
-
-		pauseItem = tb.check(IGamaIcons.DISPLAY_TOOLBAR_PAUSE, "Pause", "Pause or resume the current view", e -> {
-			final IOutput output = view.getOutput();
-			if (!internalChange && output != null) {
-				if (output.isPaused()) {
-					output.setPaused(false);
-				} else {
-					output.setPaused(true);
-				}
-			}
-			togglePause((ToolItem) e.widget, output);
-		}, SWT.RIGHT);
+		pauseItem = tb.check(view.largePauseIcon() ? IGamaIcons.DISPLAY_TOOLBAR_PAUSE : "toolbar/view.pause", "Pause",
+				"Pause or resume the current view", e -> {
+					final IOutput output = view.getOutput();
+					if (!internalChange && output != null) {
+						if (output.isPaused()) {
+							output.setPaused(false);
+						} else {
+							output.setPaused(true);
+						}
+					}
+					togglePause((ToolItem) e.widget, output);
+				}, SWT.RIGHT);
 
 	}
 

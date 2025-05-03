@@ -185,6 +185,22 @@ public record GamaCommand(String image, String text, String tooltip, Selector ru
 	}
 
 	/**
+	 * To check item.
+	 *
+	 * @param m
+	 *            the m
+	 * @return the menu item
+	 */
+	public MenuItem toCheckItem(final Menu m) {
+		final var i = new MenuItem(m, SWT.CHECK);
+		if (text != null) { i.setText(text); }
+		i.setToolTipText(tooltip);
+		if (image != null) { i.setImage(GamaIcon.named(image).image()); }
+		i.addSelectionListener(runner);
+		return i;
+	}
+
+	/**
 	 * To button.
 	 *
 	 * @param t

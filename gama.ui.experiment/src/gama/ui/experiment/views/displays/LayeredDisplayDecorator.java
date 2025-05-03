@@ -585,6 +585,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 							});
 						}
 					}
+
 				};
 				menu.open(toolbar.getToolbar(SWT.RIGHT), e);
 			}, SWT.RIGHT);

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * OSMFileViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * OSMFileViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis;
 
@@ -54,7 +54,6 @@ import gama.core.util.file.GamaOsmFile;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.viewers.gis.geotools.styling.Utils;
@@ -66,10 +65,10 @@ public class OSMFileViewer extends GISFileViewer {
 
 	/** The attributes. */
 	Map<String, String> attributes;
-	
+
 	/** The osmfile. */
 	GamaOsmFile osmfile;
-	
+
 	/** The map layer table. */
 	MapLayerComposite mapLayerTable;
 
@@ -82,7 +81,7 @@ public class OSMFileViewer extends GISFileViewer {
 		pane = new SwtMapPane(sashForm, SWT.BORDER | SWT.NO_BACKGROUND, new StreamingRenderer(), content);
 		pane.setBackground(GamaColors.system(SWT.COLOR_WHITE));
 		mapLayerTable.setMapPane(pane);
-		sashForm.setWeights(new int[] { 1, 4 });
+		sashForm.setWeights(1, 4);
 		pane.redraw();
 
 	}
@@ -120,7 +119,7 @@ public class OSMFileViewer extends GISFileViewer {
 				final boolean isLine = val.endsWith("(line)");
 				final SimpleFeatureType TYPET = isPoint ? DataUtilities.createType(val, "geom:Point")
 						: isLine ? DataUtilities.createType(val, "geom:LineString")
-								: DataUtilities.createType(val, "geom:Polygon");
+						: DataUtilities.createType(val, "geom:Polygon");
 
 				final ArrayList<SimpleFeature> listT = new ArrayList<>();
 
@@ -135,9 +134,7 @@ public class OSMFileViewer extends GISFileViewer {
 				content.addLayer(layerT);
 
 			}
-		} catch (final SchemaException e) {
-			e.printStackTrace();
-		} catch (final GamaRuntimeException e) {
+		} catch (final SchemaException | GamaRuntimeException e) {
 			e.printStackTrace();
 		}
 		this.setPartName(path.lastSegment());
@@ -154,9 +151,7 @@ public class OSMFileViewer extends GISFileViewer {
 		} catch (final IOException e1) {
 			e1.printStackTrace();
 		}
-		final GamaUIColor color = IGamaColors.OK;
-
-		final ToolItem item = toolbar.menu(color, s, SWT.LEFT);
+		final ToolItem item = toolbar.status(s);
 
 		((FlatButton) item.getControl()).addSelectionListener(new SelectionAdapter() {
 
@@ -227,7 +222,7 @@ public class OSMFileViewer extends GISFileViewer {
 	public void saveAsCSV() {
 
 		final Layer layer = mapLayerTable.getMapLayerTableViewer().getSelectedMapLayer();
-		if (layer == null) { return; }
+		if (layer == null) return;
 		final HashSet<String> atts = new HashSet<>();
 
 		final String layerName = layer.getFeatureSource().getName().toString();
@@ -244,5 +239,16 @@ public class OSMFileViewer extends GISFileViewer {
 		Collections.sort(attsOrd);
 		saveAsCSV(attsOrd, geoms, layerName);
 	}
+
+	@Override
+	public String[] getColorLabels() { return new String[] {}; }
+
+	@Override
+	public GamaUIColor getColor(final int index) {
+		return null;
+	}
+
+	@Override
+	public void setColor(final int index, final GamaUIColor c) {}
 
 }

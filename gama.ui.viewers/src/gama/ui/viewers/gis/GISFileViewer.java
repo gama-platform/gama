@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GISFileViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,16 +31,21 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import gama.core.metamodel.shape.IShape;
 import gama.gaml.operators.Strings;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.views.toolbar.BackgroundChooser;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 
 /**
  * The Class GISFileViewer.
  */
-public abstract class GISFileViewer extends EditorPart
-		implements IToolbarDecoratedView.Zoomable, IToolbarDecoratedView.CSVExportable {
+public abstract class GISFileViewer extends EditorPart implements IToolbarDecoratedView.Zoomable,
+		IToolbarDecoratedView.CSVExportable, IToolbarDecoratedView.Colorizable {
 
 	/** The pane. */
 	SwtMapPane pane;
@@ -166,6 +171,23 @@ public abstract class GISFileViewer extends EditorPart
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "Export as CSV...", "CSV Export",
+							e -> saveAsCSV()).toItem(mainMenu);
+					GamaMenu.separate(mainMenu);
+					BackgroundChooser.install(GISFileViewer.this, mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
+
 	}
 
 	/**

@@ -13,6 +13,7 @@ package gama.ui.shared.resources;
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import static org.eclipse.core.runtime.FileLocator.toFileURL;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -157,16 +158,18 @@ public class GamaIcon implements IGamaIcons {
 	 * @return the gama icon
 	 */
 	public static GamaIcon ofColor(final GamaColor gcolor) {
-		String name = COLOR_PATH + "square.color." + String.format("%X", gcolor.getRGB()) + ".16";
+		String name = COLOR_PATH + "circle.color." + String.format("%X", gcolor.getRGB()) + ".16";
 		try {
 			return ICON_CACHE.get(name, () -> {
 				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
 				Graphics2D gc = bi.createGraphics();
-				int size = bi.getWidth();
+				gc.setRenderingHints(HINTS);
+				int size = 16; // bi.getWidth();
 				gc.setColor(gcolor);
-				gc.fillRect(1, 1, size - 2, size - 2);
-				gc.setColor(ThemeHelper.isDark() ? GamaColor.get(227, 230, 225) : Color.DARK_GRAY);
-				gc.drawRoundRect(0, 0, size - 1, size - 1, 4, 4);
+				gc.fillOval(1, 1, size - 1, size - 1);
+				gc.setColor(ThemeHelper.isDark() ? GamaColor.get(227, 230, 225) : Color.gray);
+				gc.setStroke(new BasicStroke((float) 0.3));
+				gc.drawOval(1, 1, size - 2, size - 2);
 				gc.dispose();
 				return new GamaIcon(name, bi);
 			});
@@ -325,9 +328,10 @@ public class GamaIcon implements IGamaIcons {
 	}
 
 	/** The hints. */
-	RenderingHints HINTS = new RenderingHints(Map.of(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON,
-			RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC, RenderingHints.KEY_RENDERING,
-			RenderingHints.VALUE_RENDER_QUALITY));
+	static RenderingHints HINTS =
+			new RenderingHints(Map.of(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON,
+					RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC,
+					RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
 
 	/**
 	 * A {@link RescaleOp} used to make any input image 10% darker.
