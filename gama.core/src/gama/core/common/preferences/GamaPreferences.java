@@ -590,7 +590,6 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true).in(NAME,
 						SERVER);
-
 	}
 
 	/**
