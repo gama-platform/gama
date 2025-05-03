@@ -273,6 +273,7 @@ public class GamaNavigator extends CommonNavigator
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
+		toolbar.button("navigator/status.info", "", "", e -> properties.run(), SWT.LEFT);
 		findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.LEFT));
 		sortItem = tb.check(byDate, SWT.RIGHT);
 		sortItem.setSelection(true);
