@@ -495,8 +495,8 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	@getter (OBSTACLE_SPECIES)
-	public GamaList<ISpecies> getObstacleSpecies(final IAgent agent) {
-		return (GamaList<ISpecies>) agent.getAttribute(OBSTACLE_SPECIES);
+	public IList<ISpecies> getObstacleSpecies(final IAgent agent) {
+		return (IList<ISpecies>) agent.getAttribute(OBSTACLE_SPECIES);
 	}
 
 	/**
@@ -508,7 +508,7 @@ public class PedestrianSkill extends MovingSkill {
 	 *            the os
 	 */
 	@setter (OBSTACLE_SPECIES)
-	public void setObstacleSpecies(final IAgent agent, final GamaList<ISpecies> os) {
+	public void setObstacleSpecies(final IAgent agent, final IList<ISpecies> os) {
 		agent.setAttribute(OBSTACLE_SPECIES, os);
 	}
 
@@ -521,8 +521,8 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	@getter (PEDESTRIAN_SPECIES)
-	public GamaList<ISpecies> getPedestrianSpecies(final IAgent agent) {
-		return (GamaList<ISpecies>) agent.getAttribute(PEDESTRIAN_SPECIES);
+	public IList<ISpecies> getPedestrianSpecies(final IAgent agent) {
+		return (IList<ISpecies>) agent.getAttribute(PEDESTRIAN_SPECIES);
 	}
 
 	/**
@@ -534,7 +534,7 @@ public class PedestrianSkill extends MovingSkill {
 	 *            the os
 	 */
 	@setter (PEDESTRIAN_SPECIES)
-	public void setPedestrianSpecies(final IAgent agent, final GamaList<ISpecies> os) {
+	public void setPedestrianSpecies(final IAgent agent, final IList<ISpecies> os) {
 		agent.setAttribute(PEDESTRIAN_SPECIES, os);
 	}
 
