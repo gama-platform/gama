@@ -34,7 +34,7 @@ for os in "linux" "macosx" "macosx_aarch" "win32"; do
 		unzip -q jdk_$os-21.zip -d jdk_$os
 	fi
 
-	mv jdk_$os/jdk-21* jdk_$os/jdk
+	mv jdk_$os/jdk-2* jdk_$os/jdk
 done
 
 
