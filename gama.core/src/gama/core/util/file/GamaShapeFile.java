@@ -435,8 +435,8 @@ public class GamaShapeFile extends GamaGisFile {
 		}
 		if (fds instanceof ShapefileDataStore store) {
 			store.setGeometryFactory(GeometryUtils.GEOMETRY_FACTORY);
-			store.setMemoryMapped(GamaPreferences.External.SHAPEFILES_IN_MEMORY.getValue());
-			store.setBufferCachingEnabled(GamaPreferences.External.SHAPEFILES_IN_MEMORY.getValue());
+			store.setMemoryMapped(GamaPreferences.Experimental.SHAPEFILES_IN_MEMORY.getValue());
+			store.setBufferCachingEnabled(GamaPreferences.Experimental.SHAPEFILES_IN_MEMORY.getValue());
 			store.setCharset(Charset.forName("UTF8"));
 		}
 		return fds;

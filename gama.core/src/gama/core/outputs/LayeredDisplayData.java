@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayeredDisplayData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -160,8 +160,7 @@ public class LayeredDisplayData {
 	// private boolean isSynchronized = GamaPreferences.Runtime.CORE_SYNC.getValue();
 
 	/** The display type. */
-	private String displayType = IKeyword._2D.equalsIgnoreCase(GamaPreferences.Displays.CORE_DISPLAY.getValue())
-			? IKeyword._2D : IKeyword._3D;
+	private String displayType = GamaPreferences.Displays.CORE_DISPLAY.getValue() ? IKeyword._2D : IKeyword._3D;
 
 	/** The env width. */
 	private double envWidth = 0d;
@@ -900,6 +899,11 @@ public class LayeredDisplayData {
 	 */
 	public boolean isCameraLocked() { return camera.isLocked(); }
 
+	/**
+	 * Checks if is camera dynamic.
+	 *
+	 * @return true, if is camera dynamic
+	 */
 	public boolean isCameraDynamic() { return camera.isDynamic(); }
 
 	// ************************************************************************************************

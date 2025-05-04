@@ -397,6 +397,9 @@ public interface IGamaIcons {
 	/** The prefs libs. */
 	String PREFS_LIBS = "prefs/prefs.libraries2";
 
+	/** The prefs theme. */
+	String PREFS_THEME = "prefs/prefs.theme2";
+
 	/** The prefs runtime. */
 	String PREFS_EXPERIMENTAL = "prefs/prefs.experimental2";
 

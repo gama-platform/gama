@@ -58,6 +58,12 @@ import gama.gaml.types.Types;
 				doc = { @doc ("Returns the z ordinate of this point") }) })
 public class GamaPoint extends Coordinate implements IShape, IIntersectable, Cloneable {
 
+	/** The tolerance. */
+	public static double TOLERANCE = GamaPreferences.Experimental.TOLERANCE_POINTS.getValue();
+	static {
+		GamaPreferences.Experimental.TOLERANCE_POINTS.onChange(v -> TOLERANCE = v);
+	}
+
 	/**
 	 * The Class Immutable.
 	 */
@@ -480,8 +486,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	@Override
 	public boolean equals(final Object o) {
 		if (o instanceof GamaPoint) {
-			final double tolerance = GamaPreferences.External.TOLERANCE_POINTS.getValue();
-			if (tolerance > 0.0) return equalsWithTolerance((GamaPoint) o, tolerance);
+			if (TOLERANCE > 0.0) return equalsWithTolerance((GamaPoint) o, TOLERANCE);
 			return equals3D((GamaPoint) o);
 		}
 		return super.equals(o);

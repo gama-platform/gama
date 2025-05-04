@@ -40,26 +40,29 @@ public class PreferencesHelper {
 					IType.BOOL, false).in(NAME, APPEARANCE);
 
 	/** The Constant SHAPEFILE_VIEWER_FILL. */
-	public static final Pref<GamaColor> SHAPEFILE_VIEWER_FILL = create("pref_shapefile_background_color",
-			"Shapefile viewer fill color", () -> GamaColor.get("lightgray"), IType.COLOR, false).in(NAME, APPEARANCE);
+	public static final Pref<GamaColor> SHAPEFILE_VIEWER_FILL =
+			create("pref_shapefile_background_color", "Shapefile viewer fill color", () -> GamaColor.get("lightgray"),
+					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant SHAPEFILE_VIEWER_LINE_COLOR. */
-	public static final Pref<GamaColor> SHAPEFILE_VIEWER_LINE_COLOR = create("pref_shapefile_line_color",
-			"Shapefile viewer line color", () -> GamaColor.get("black"), IType.COLOR, false).in(NAME, APPEARANCE);
+	public static final Pref<GamaColor> SHAPEFILE_VIEWER_LINE_COLOR =
+			create("pref_shapefile_line_color", "Shapefile viewer line color", () -> GamaColor.get("black"),
+					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant ERROR_TEXT_COLOR. */
 	public static final Pref<GamaColor> ERROR_TEXT_COLOR = create("pref_error_text_color", "Text color of errors",
 			() -> GamaColors.toGamaColor(IGamaColors.ERROR.inactive()), IType.COLOR, false)
-					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS);
+					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS).hidden();
 
 	/** The Constant WARNING_TEXT_COLOR. */
 	public static final Pref<GamaColor> WARNING_TEXT_COLOR = create("pref_warning_text_color", "Text color of warnings",
 			() -> GamaColors.toGamaColor(IGamaColors.WARNING.inactive()), IType.COLOR, false)
-					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS);
+					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS).hidden();
 
 	/** The Constant IMAGE_VIEWER_BACKGROUND. */
-	public static final Pref<GamaColor> IMAGE_VIEWER_BACKGROUND = create("pref_image_background_color",
-			"Image viewer background color", () -> GamaColor.get("white"), IType.COLOR, false).in(NAME, APPEARANCE);
+	public static final Pref<GamaColor> IMAGE_VIEWER_BACKGROUND =
+			create("pref_image_background_color", "Image viewer background color", () -> GamaColor.get("white"),
+					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	// public static final Pref<GamaFont> BASE_BUTTON_FONT = create("pref_button_font", "Font of buttons and dialogs",
 	// () -> new GamaFont(getBaseFont(), SWT.BOLD, baseSize), IType.FONT, false).in(NAME, APPEARANCE)
@@ -84,13 +87,14 @@ public class PreferencesHelper {
 	/** The color menu reverse. */
 	public static final Pref<Boolean> COLOR_MENU_REVERSE =
 			create("pref_menu_colors_reverse", "Reverse order", false, IType.BOOL, false)
-					.in(NAME, GamaPreferences.Interface.MENUS)
-					.onChange(pref -> GamaColorMenu.setReverse(pref ? -1 : 1));
+					.in(NAME, GamaPreferences.Interface.MENUS).onChange(pref -> GamaColorMenu.setReverse(pref ? -1 : 1))
+					.hidden();
 
 	/** The color menu group. */
 	public static final Pref<Boolean> COLOR_MENU_GROUP =
 			create("pref_menu_colors_group", "Group colors", false, IType.BOOL, false)
-					.in(NAME, GamaPreferences.Interface.MENUS).onChange(pref -> GamaColorMenu.breakdown = pref);
+					.in(NAME, GamaPreferences.Interface.MENUS).onChange(pref -> GamaColorMenu.breakdown = pref)
+					.hidden();
 
 	/** The Constant NAVIGATOR_METADATA. */
 	public static final Pref<Boolean> NAVIGATOR_METADATA =

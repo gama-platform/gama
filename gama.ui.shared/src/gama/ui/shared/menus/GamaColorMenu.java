@@ -185,7 +185,7 @@ public class GamaColorMenu extends GamaMenu {
 		action("Custom...", e -> openView(currentRunnable, null));
 		final Menu optionMenu = sub("Options");
 		final Menu sortMenu = sub(optionMenu, "Sort by...");
-		check(optionMenu, "Breakdown", breakdown, chooseBreak);
+		check(optionMenu, "Group colors", breakdown, chooseBreak);
 		check(optionMenu, "Reverse order", getReverse() == -1, chooseReverse);
 		check(sortMenu, SORT_NAMES[0], colorComp == byRGB, chooseSort).setData(byRGB);
 		check(sortMenu, SORT_NAMES[1], colorComp == byName, chooseSort).setData(byName);

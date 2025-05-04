@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutputScatter.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -55,7 +55,6 @@ import org.jfree.data.xy.XYIntervalSeriesCollection;
 
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.IScope;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -548,8 +547,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				domainAxis.setTickUnit(new NumberTickUnit(getXTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(true);
 			} else {
-				((XYPlot) this.chart.getPlot())
-						.setDomainGridlinesVisible(GamaPreferences.Displays.CHART_GRIDLINES.getValue());
+				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(getGridLinesVisible());
 			}
 
 		} else {
@@ -574,8 +572,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				rangeAxis.setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
 			} else {
-				((XYPlot) this.chart.getPlot())
-						.setRangeGridlinesVisible(GamaPreferences.Displays.CHART_GRIDLINES.getValue());
+				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
 			}
 
 		} else {
@@ -601,8 +598,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 					range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
 					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
 				} else {
-					((XYPlot) this.chart.getPlot())
-							.setRangeGridlinesVisible(GamaPreferences.Displays.CHART_GRIDLINES.getValue());
+					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
 				}
 
 			} else {
@@ -636,24 +632,37 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 					serierenderer.setSeriesShapesVisible(0, false);
 				} else {
 					Shape myshape = defaultmarkers[0];
-					if (ChartDataStatement.MARKER_CIRCLE.equals(markershape)) {
-						myshape = defaultmarkers[1];
-					} else if (ChartDataStatement.MARKER_UP_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[2];
-					} else if (ChartDataStatement.MARKER_DIAMOND.equals(markershape)) {
-						myshape = defaultmarkers[3];
-					} else if (ChartDataStatement.MARKER_HOR_RECTANGLE.equals(markershape)) {
-						myshape = defaultmarkers[4];
-					} else if (ChartDataStatement.MARKER_DOWN_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[5];
-					} else if (ChartDataStatement.MARKER_HOR_ELLIPSE.equals(markershape)) {
-						myshape = defaultmarkers[6];
-					} else if (ChartDataStatement.MARKER_RIGHT_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[7];
-					} else if (ChartDataStatement.MARKER_VERT_RECTANGLE.equals(markershape)) {
-						myshape = defaultmarkers[8];
-					} else if (ChartDataStatement.MARKER_LEFT_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[9];
+					switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE:
+							myshape = defaultmarkers[1];
+							break;
+						case ChartDataStatement.MARKER_UP_TRIANGLE:
+							myshape = defaultmarkers[2];
+							break;
+						case ChartDataStatement.MARKER_DIAMOND:
+							myshape = defaultmarkers[3];
+							break;
+						case ChartDataStatement.MARKER_HOR_RECTANGLE:
+							myshape = defaultmarkers[4];
+							break;
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
+							myshape = defaultmarkers[5];
+							break;
+						case ChartDataStatement.MARKER_HOR_ELLIPSE:
+							myshape = defaultmarkers[6];
+							break;
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
+							myshape = defaultmarkers[7];
+							break;
+						case ChartDataStatement.MARKER_VERT_RECTANGLE:
+							myshape = defaultmarkers[8];
+							break;
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
+							myshape = defaultmarkers[9];
+							break;
+						case null:
+						default:
+							break;
 					}
 					serierenderer.setSeriesShape(0, myshape);
 
@@ -667,24 +676,37 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 					serierenderer.setSeriesShape(0, null);
 				} else {
 					Shape myshape = defaultmarkers[0];
-					if (ChartDataStatement.MARKER_CIRCLE.equals(markershape)) {
-						myshape = defaultmarkers[1];
-					} else if (ChartDataStatement.MARKER_UP_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[2];
-					} else if (ChartDataStatement.MARKER_DIAMOND.equals(markershape)) {
-						myshape = defaultmarkers[3];
-					} else if (ChartDataStatement.MARKER_HOR_RECTANGLE.equals(markershape)) {
-						myshape = defaultmarkers[4];
-					} else if (ChartDataStatement.MARKER_DOWN_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[5];
-					} else if (ChartDataStatement.MARKER_HOR_ELLIPSE.equals(markershape)) {
-						myshape = defaultmarkers[6];
-					} else if (ChartDataStatement.MARKER_RIGHT_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[7];
-					} else if (ChartDataStatement.MARKER_VERT_RECTANGLE.equals(markershape)) {
-						myshape = defaultmarkers[8];
-					} else if (ChartDataStatement.MARKER_LEFT_TRIANGLE.equals(markershape)) {
-						myshape = defaultmarkers[9];
+					switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE:
+							myshape = defaultmarkers[1];
+							break;
+						case ChartDataStatement.MARKER_UP_TRIANGLE:
+							myshape = defaultmarkers[2];
+							break;
+						case ChartDataStatement.MARKER_DIAMOND:
+							myshape = defaultmarkers[3];
+							break;
+						case ChartDataStatement.MARKER_HOR_RECTANGLE:
+							myshape = defaultmarkers[4];
+							break;
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
+							myshape = defaultmarkers[5];
+							break;
+						case ChartDataStatement.MARKER_HOR_ELLIPSE:
+							myshape = defaultmarkers[6];
+							break;
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
+							myshape = defaultmarkers[7];
+							break;
+						case ChartDataStatement.MARKER_VERT_RECTANGLE:
+							myshape = defaultmarkers[8];
+							break;
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
+							myshape = defaultmarkers[9];
+							break;
+						case null:
+						default:
+							break;
 					}
 					serierenderer.setSeriesShape(0, myshape);
 
@@ -773,7 +795,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit));
 			pp.setRangeGridlinesVisible(true);
 		} else {
-			pp.setRangeGridlinesVisible(GamaPreferences.Displays.CHART_GRIDLINES.getValue());
+			pp.setRangeGridlinesVisible(getGridLinesVisible());
 		}
 
 		// resetAutorange(scope);
@@ -793,41 +815,45 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		final int x = xOnScreen - positionInPixels.x;
 		final int y = yOnScreen - positionInPixels.y;
 		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
-		// getChart().handleClick(x, y, info);
-		if (entity instanceof XYItemEntity xy) {
-			final XYDataset data = xy.getDataset();
-			final int index = xy.getItem();
-			final int series = xy.getSeriesIndex();
-			final double xx = data.getXValue(series, index);
-			final double yy = data.getYValue(series, index);
-			final XYPlot plot = (XYPlot) getJFChart().getPlot();
-			final ValueAxis xAxis = plot.getDomainAxis(series);
-			final ValueAxis yAxis = plot.getRangeAxis(series);
-			final boolean xInt = xx % 1 == 0;
-			final boolean yInt = yy % 1 == 0;
-			String xTitle = xAxis.getLabel();
-			if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-			String yTitle = yAxis.getLabel();
-			if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-			sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-			return;
-		}
-		if (entity instanceof PieSectionEntity ps) {
-			final String title = ps.getSectionKey().toString();
-			final PieDataset<?> data = ps.getDataset();
-			final int index = ps.getSectionIndex();
-			final double xx = data.getValue(index).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-		} else if (entity instanceof CategoryItemEntity ci) {
-			final Comparable<?> columnKey = ci.getColumnKey();
-			final String title = columnKey.toString();
-			final CategoryDataset data = ci.getDataset();
-			final Comparable<?> rowKey = ci.getRowKey();
-			final double xx = data.getValue(rowKey, columnKey).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+		switch (entity) {
+			case XYItemEntity xy -> {
+				final XYDataset data = xy.getDataset();
+				final int index = xy.getItem();
+				final int series = xy.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis.getLabel();
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis.getLabel();
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+				return;
+			}
+			case PieSectionEntity ps -> {
+				final String title = ps.getSectionKey().toString();
+				final PieDataset<?> data = ps.getDataset();
+				final int index = ps.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity ci -> {
+				final Comparable<?> columnKey = ci.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = ci.getDataset();
+				final Comparable<?> rowKey = ci.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {
+			}
 		}
 	}
 
