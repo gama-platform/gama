@@ -56,7 +56,6 @@ import one.util.streamex.StreamEx;
  * @date 19 août 2023
  */
 
-@SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaPreferences {
 
 	/** The Constant BASIC_COLORS. */
