@@ -6,15 +6,19 @@
 
 set -e
 archivePath="$GITHUB_WORKSPACE/gama.application"
+JDK_MAJOR=$(echo $JDK_EMBEDDED_VERSION | cut -d '.' -f 1)
 
 #
 #	Download latest JDK
 #
+
 echo "=== Download latest JDK"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin21-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK21U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
+echo "Downloading from https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION"
+
+wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
+wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
 
 #
 #	Prepare downloaded JDK
