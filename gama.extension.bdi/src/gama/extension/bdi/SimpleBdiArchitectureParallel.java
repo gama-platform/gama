@@ -1,20 +1,20 @@
 /*******************************************************************************************************
  *
- * SimpleBdiArchitectureParallel.java, in gama.extension.bdi, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SimpleBdiArchitectureParallel.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.bdi;
 
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
+import gama.annotations.precompiler.IConcept;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
@@ -38,9 +38,16 @@ import gama.gaml.statements.IStatement;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 
+	/**
+	 * @param desc
+	 */
+	public SimpleBdiArchitectureParallel(final IDescription desc) {
+		super(desc);
+	}
+
 	/** The Constant PARALLEL_BDI. */
 	public static final String PARALLEL_BDI = "parallel_bdi";
-	
+
 	/** The parallel. */
 	IExpression parallel = ConstantExpressionDescription.TRUE_EXPR_DESCRIPTION;
 
@@ -52,14 +59,15 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 		/**
 		 * Instantiates a new update emotions.
 		 *
-		 * @param desc the desc
+		 * @param desc
+		 *            the desc
 		 */
-		public UpdateEmotions(IDescription desc) {
+		public UpdateEmotions(final IDescription desc) {
 			super(desc);
 		}
 
 		@Override
-		protected Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
+		protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 			// computeEmotions(scope);
 			return null;
 		}
@@ -74,14 +82,15 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 		/**
 		 * Instantiates a new update social links.
 		 *
-		 * @param desc the desc
+		 * @param desc
+		 *            the desc
 		 */
-		public UpdateSocialLinks(IDescription desc) {
+		public UpdateSocialLinks(final IDescription desc) {
 			super(desc);
 		}
 
 		@Override
-		protected Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
+		protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 			updateSocialLinks(scope);
 			return null;
 		}
@@ -96,14 +105,15 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 		/**
 		 * Instantiates a new update emotions intensity.
 		 *
-		 * @param desc the desc
+		 * @param desc
+		 *            the desc
 		 */
-		public UpdateEmotionsIntensity(IDescription desc) {
+		public UpdateEmotionsIntensity(final IDescription desc) {
 			super(desc);
 		}
 
 		@Override
-		protected Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
+		protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 			updateEmotionsIntensity(scope);
 			return null;
 		}
@@ -118,14 +128,15 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 		/**
 		 * Instantiates a new update life time predicates.
 		 *
-		 * @param desc the desc
+		 * @param desc
+		 *            the desc
 		 */
-		public UpdateLifeTimePredicates(IDescription desc) {
+		public UpdateLifeTimePredicates(final IDescription desc) {
 			super(desc);
 		}
 
 		@Override
-		protected Object privateExecuteIn(IScope scope) throws GamaRuntimeException {
+		protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 			updateLifeTimePredicates(scope);
 			return null;
 		}
@@ -133,9 +144,10 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 	}
 
 	@Override
-	public void preStep(final IScope scope, IPopulation<? extends IAgent> gamaPopulation) {
+	public void preStep(final IScope scope, final IPopulation<? extends IAgent> gamaPopulation) {
 		final IExpression schedule = gamaPopulation.getSpecies().getSchedule();
-		final List<? extends IAgent> agents = schedule == null ? gamaPopulation : Cast.asList(scope, schedule.value(scope));
+		final List<? extends IAgent> agents =
+				schedule == null ? gamaPopulation : Cast.asList(scope, schedule.value(scope));
 
 		GamaExecutorService.execute(scope, new UpdateLifeTimePredicates(null), agents, parallel);
 		GamaExecutorService.execute(scope, new UpdateEmotionsIntensity(null), agents, parallel);
@@ -147,7 +159,7 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 				}
 			}
 		}
-		
+
 		if (_perceptionNumber > 0) {
 			for (int i = 0; i < _perceptionNumber; i++) {
 				if (!scope.interrupted()) {
@@ -186,7 +198,8 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 
 	@Override
 	public Object executeOn(final IScope scope) throws GamaRuntimeException {
-		final Boolean use_personality = scope.getBoolArgIfExists(USE_PERSONALITY, (Boolean) scope.getAgent().getAttribute(USE_PERSONALITY));
+		final Boolean use_personality =
+				scope.getBoolArgIfExists(USE_PERSONALITY, (Boolean) scope.getAgent().getAttribute(USE_PERSONALITY));
 		if (use_personality) {
 			Double expressivity = (Double) scope.getAgent().getAttribute(EXTRAVERSION);
 			Double neurotisme = (Double) scope.getAgent().getAttribute(NEUROTISM);

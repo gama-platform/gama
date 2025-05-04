@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,6 +30,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 import gama.core.util.path.IPath;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Maths;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
@@ -72,6 +74,13 @@ import gama.gaml.types.IType;
 		concept = { IConcept.THREED, IConcept.SKILL })
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class MovingSkill3D extends MovingSkill {
+
+	/**
+	 * @param desc
+	 */
+	public MovingSkill3D(final IDescription desc) {
+		super(desc);
+	}
 
 	@Override
 	@getter (IKeyword.DESTINATION)

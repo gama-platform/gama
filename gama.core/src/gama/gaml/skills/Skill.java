@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Skill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Skill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,37 +13,27 @@ import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
-import gama.gaml.descriptions.SkillDescription;
+import gama.gaml.compilation.ISymbol;
+import gama.gaml.compilation.Symbol;
+import gama.gaml.descriptions.IDescription;
 
 /**
  * The Class Skill.
  */
-public class Skill implements ISkill {
-
-	/** The description. */
-	protected SkillDescription description;
+public class Skill extends Symbol implements ISkill {
 
 	/**
-	 * Instantiates a new skill.
+	 * @param desc
 	 */
-	protected Skill() {}
+	public Skill(final IDescription desc) {
+		super(desc);
+	}
 
 	@Override
 	public void setName(final String newName) {}
 
-	/**
-	 * Sets the description.
-	 *
-	 * @param desc
-	 *            the new description
-	 */
-	public void setDescription(final SkillDescription desc) { description = desc; }
-
 	@Override
 	public Doc getDocumentation() { return description.getDocumentation(); }
-
-	@Override
-	public SkillDescription getDescription() { return description; }
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
@@ -80,5 +70,11 @@ public class Skill implements ISkill {
 
 	@Override
 	public String getName() { return description.getName(); }
+
+	@Override
+	public void setChildren(final Iterable<? extends ISymbol> children) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

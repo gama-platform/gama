@@ -1,32 +1,33 @@
 /*******************************************************************************************************
  *
- * ProbabilisticTasksArchitecture.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ProbabilisticTasksArchitecture.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.architecture.weighted_tasks;
 
 import java.util.Arrays;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
+import gama.annotations.precompiler.IConcept;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.descriptions.IDescription;
 
 /**
  * The class ProbabilisticTasksArchitecture. Contrary to its parent, this class uses the weights as a support for making
  * a weighted probabilistic choice among the different tasks. If all tasks have the same weight, one is randomly chosen
  * each step.
- * 
+ *
  * @author drogoul
  * @since 22 dec. 2011
- * 
+ *
  */
 @skill (
 		name = ProbabilisticTasksArchitecture.PT,
@@ -34,9 +35,16 @@ import gama.gaml.compilation.ISymbol;
 @doc ("A control architecture, based on the concept of tasks, which are executed with a probability depending on their weight. This skill extends WeightedTasksArchitecture skills and have all his actions and variables")
 public class ProbabilisticTasksArchitecture extends WeightedTasksArchitecture {
 
+	/**
+	 * @param desc
+	 */
+	public ProbabilisticTasksArchitecture(final IDescription desc) {
+		super(desc);
+	}
+
 	/** The Constant PT. */
 	public final static String PT = "probabilistic_tasks";
-	
+
 	/** The weights. */
 	double[] weights;
 
@@ -52,7 +60,7 @@ public class ProbabilisticTasksArchitecture extends WeightedTasksArchitecture {
 		sum = 0d;
 		for (int i = 0; i < weights.length; i++) {
 			final double weight = weights[i];
-			if (choice > sum && choice <= sum + weight) { return tasks.get(i); }
+			if (choice > sum && choice <= sum + weight) return tasks.get(i);
 			sum += weight;
 		}
 		return null;

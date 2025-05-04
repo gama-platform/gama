@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FIPASkill.java, in gama.extension.fipa, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,7 +27,6 @@ import static gama.extension.fipa.Performative.subscribe;
 import java.util.Iterator;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -35,6 +34,7 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.messaging.GamaMailbox;
 import gama.core.messaging.GamaMessage;
@@ -44,6 +44,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaMessageType;
 import gama.gaml.types.IType;
@@ -132,6 +133,12 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class FIPASkill extends MessagingSkill {
 
+	/**
+	 * @param desc
+	 */
+	public FIPASkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/**
 	 * @throws GamaRuntimeException
@@ -282,9 +289,7 @@ public class FIPASkill extends MessagingSkill {
 			final IList<IAgent> receivers = GamaListFactory.create(Types.AGENT);
 			receivers.add(receiver);
 			final Conversation conv = original.getConversation();
-			FIPAMessage message;
-
-			message = new FIPAMessage(getCurrentAgent(scope), receivers, content, performative, conv);
+			FIPAMessage message = new FIPAMessage(getCurrentAgent(scope), receivers, content, performative, conv);
 			MessageBroker.getInstance(scope).scheduleForDelivery(scope, message);
 
 		}
@@ -460,9 +465,10 @@ public class FIPASkill extends MessagingSkill {
 							type = IType.LIST,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
-			doc = @doc ("Reply a message with an 'end_conversation' peprformative message. This message marks the end of a conversation. "
-					+ "In a 'no-protocol' conversation, it is the responsible of the modeler to explicitly send this message to mark the end of a conversation/interaction protocol. "
-					+ "Please note that if the contents of the messages of the conversation are not read, then this command has no effect (i.e. it  must be read by at least one of the agents in the conversation)"))
+			doc = @doc ("""
+					Reply a message with an 'end_conversation' peprformative message. This message marks the end of a conversation. \
+					In a 'no-protocol' conversation, it is the responsible of the modeler to explicitly send this message to mark the end of a conversation/interaction protocol. \
+					Please note that if the contents of the messages of the conversation are not read, then this command has no effect (i.e. it  must be read by at least one of the agents in the conversation)"""))
 	public Object primEndConversation(final IScope scope) throws GamaRuntimeException {
 		final IList originals = getMessageArg(scope);
 		if (originals == null || originals.size() == 0) throw GamaRuntimeException.error("No message to reply", scope);

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FsmArchitecture.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +12,13 @@ package gama.gaml.architecture.finite_state_machine;
 
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -27,6 +27,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IStatement;
 import gama.gaml.types.IType;
@@ -52,6 +53,13 @@ import gama.gaml.types.Types;
 		concept = { IConcept.BEHAVIOR, IConcept.ARCHITECTURE },
 		doc = @doc ("The Finite State Machine architecture allows to program agents using a finite set of states and conditional transitions between them"))
 public class FsmArchitecture extends ReflexArchitecture {
+
+	/**
+	 * @param desc
+	 */
+	public FsmArchitecture(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The states. */
 	protected final Map<String, FsmStateStatement> states = GamaMapFactory.createUnordered();

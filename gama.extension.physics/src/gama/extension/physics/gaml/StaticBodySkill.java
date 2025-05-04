@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * StaticBodySkill.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * StaticBodySkill.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gama.extension.physics.gaml;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -23,6 +22,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -31,6 +31,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.skills.Skill;
 import gama.gaml.types.IType;
 
@@ -90,6 +91,13 @@ import gama.gaml.types.IType;
  *
  */
 public class StaticBodySkill extends Skill implements IPhysicalConstants {
+
+	/**
+	 * @param desc
+	 */
+	public StaticBodySkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/**
 	 * Gets the body.
@@ -271,10 +279,11 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 * @return the object
 	 */
 	@action (
-			doc = @doc ("This action must be called when the geometry of the agent changes in the simulation world and this change must be propagated to the physical world. "
-					+ "The change of location (in either worlds) or the rotation due to physical forces do not count as changes, as they are already taken into account. "
-					+ "However, a rotation in the simulation world need to be handled by calling this action. As it involves long operations (removing the agent from the physical world, "
-					+ "then reinserting it with its new shape), this action should not be called too often."),
+			doc = @doc ("""
+					This action must be called when the geometry of the agent changes in the simulation world and this change must be propagated to the physical world. \
+					The change of location (in either worlds) or the rotation due to physical forces do not count as changes, as they are already taken into account. \
+					However, a rotation in the simulation world need to be handled by calling this action. As it involves long operations (removing the agent from the physical world, \
+					then reinserting it with its new shape), this action should not be called too often."""),
 			name = UPDATE_BODY,
 			args = {})
 	public Object primUpdateGeometry(final IScope scope) {

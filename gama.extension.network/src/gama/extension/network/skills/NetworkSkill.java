@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * NetworkSkill.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * NetworkSkill.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -28,6 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.messaging.GamaMailbox;
 import gama.core.messaging.GamaMessage;
 import gama.core.messaging.MessagingSkill;
@@ -45,6 +45,7 @@ import gama.extension.network.serial.ArduinoConnector;
 import gama.extension.network.tcp.TCPConnector;
 import gama.extension.network.udp.UDPConnector;
 import gama.extension.network.websocket.WebSocketConnector;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
 
@@ -70,6 +71,13 @@ import gama.gaml.types.IType;
 		+ " skill provides new features to let agents exchange message through network. "
 		+ "Sending and receiving data is done with the " + MessagingSkill.SKILL_NAME + " skill's actions.")
 public class NetworkSkill extends MessagingSkill {
+
+	/**
+	 * @param desc
+	 */
+	public NetworkSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	static {
 		DEBUG.OFF();
@@ -110,7 +118,7 @@ public class NetworkSkill extends MessagingSkill {
 			final BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			return stdError.readLine();
 		} catch (final IOException e) {
-			
+
 			e.printStackTrace();
 		}
 		return "";
@@ -135,8 +143,7 @@ public class NetworkSkill extends MessagingSkill {
 							+ INetworkSkill.UDP_SERVER + "', '" + INetworkSkill.UDP_CLIENT + "', '"
 							+ INetworkSkill.TCP_SERVER + "', '" + INetworkSkill.TCP_CLIENT + "', '"
 							+ INetworkSkill.WEBSOCKET_SERVER + "', '" + INetworkSkill.WEBSOCKET_CLIENT + "', '"
-							+ INetworkSkill.HTTP_REQUEST  + "', '"
-							+ INetworkSkill.ARDUINO
+							+ INetworkSkill.HTTP_REQUEST + "', '" + INetworkSkill.ARDUINO
 							+ "', otherwise the MQTT protocol is used.")),
 					@arg (
 							name = INetworkSkill.PORT,
@@ -187,8 +194,7 @@ public class NetworkSkill extends MessagingSkill {
 							@example (" do connect to:\"localhost\" protocol:\"tcp_client\" port:9876;"),
 							@example (" do connect to:\"localhost\" protocol:\"tcp_server\" port:9876 raw:true;"),
 							@example (" do connect to: \"https://openlibrary.org\" protocol: \"http\" port: 443 raw: true;"),
-							@example (" do connect protocol: \"arduino\";"),
-							}))
+							@example (" do connect protocol: \"arduino\";"), }))
 	public boolean connectToServer(final IScope scope) throws GamaRuntimeException {
 		if (!scope.getExperiment().hasAttribute(REGISTERED_SERVER)) { this.startSkill(scope); }
 		final IAgent agt = scope.getAgent();
@@ -209,61 +215,71 @@ public class NetworkSkill extends MessagingSkill {
 		IConnector connector = myConnectors.get(serverKey);
 		if (connector == null) {
 
-			if (INetworkSkill.UDP_SERVER.equals(protocol)) {
-				DEBUG.OUT("create UDP server");
-				connector = new UDPConnector(scope, true);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);
-				connector.configure(IConnector.PACKET_SIZE, packet_size);
-			} else if (INetworkSkill.UDP_CLIENT.equals(protocol)) {
-				DEBUG.OUT("create UDP client");
-				connector = new UDPConnector(scope, false);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);
-				connector.configure(IConnector.PACKET_SIZE, "" + packet_size);
-			} else if (INetworkSkill.WEBSOCKET_SERVER.equals(protocol)) {
-				DEBUG.OUT("create WebSocket server");
-				connector = new WebSocketConnector(scope, true, raw_package);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port); 
-			} else if (INetworkSkill.WEBSOCKET_CLIENT.equals(protocol)) {
-				DEBUG.OUT("create WebSocket client");
-				connector = new WebSocketConnector(scope, false, raw_package);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port); 
-			} else if (INetworkSkill.TCP_SERVER.equals(protocol)) {
-				DEBUG.OUT("create TCP serveur");
-				connector = new TCPConnector(scope, true, raw_package);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.TCP_CLIENT.equals(protocol)) {
-				DEBUG.OUT("create TCP client");
-				connector = new TCPConnector(scope, false, raw_package);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.ARDUINO.equals(protocol)) {
-				connector = new ArduinoConnector(scope);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);
-			} else if (INetworkSkill.HTTP_REQUEST.equals(protocol)) {
-				connector = new HTTPRequestConnector(scope);
-				connector.configure(IConnector.SERVER_URL, serverURL);
-				connector.configure(IConnector.SERVER_PORT, "" + port);				
-			} else // if(protocol.equals( INetworkSkill.MQTT))
-			{
-				DEBUG.OUT("create MQTT serveur " + login + " " + password);
-				connector = new MQTTConnector(scope, raw_package);
-				if (serverURL != null) {
+			switch (protocol) {
+				case INetworkSkill.UDP_SERVER:
+					DEBUG.OUT("create UDP server");
+					connector = new UDPConnector(scope, true);
 					connector.configure(IConnector.SERVER_URL, serverURL);
-					if (port == 0) {
-						connector.configure(IConnector.SERVER_PORT, "1883");
-					} else {
-						connector.configure(IConnector.SERVER_PORT, port.toString());
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					connector.configure(IConnector.PACKET_SIZE, packet_size);
+					break;
+				case INetworkSkill.UDP_CLIENT:
+					DEBUG.OUT("create UDP client");
+					connector = new UDPConnector(scope, false);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					connector.configure(IConnector.PACKET_SIZE, "" + packet_size);
+					break;
+				case INetworkSkill.WEBSOCKET_SERVER:
+					DEBUG.OUT("create WebSocket server");
+					connector = new WebSocketConnector(scope, true, raw_package);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case INetworkSkill.WEBSOCKET_CLIENT:
+					DEBUG.OUT("create WebSocket client");
+					connector = new WebSocketConnector(scope, false, raw_package);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case INetworkSkill.TCP_SERVER:
+					DEBUG.OUT("create TCP serveur");
+					connector = new TCPConnector(scope, true, raw_package);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case INetworkSkill.TCP_CLIENT:
+					DEBUG.OUT("create TCP client");
+					connector = new TCPConnector(scope, false, raw_package);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case INetworkSkill.ARDUINO:
+					connector = new ArduinoConnector(scope);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case INetworkSkill.HTTP_REQUEST:
+					connector = new HTTPRequestConnector(scope);
+					connector.configure(IConnector.SERVER_URL, serverURL);
+					connector.configure(IConnector.SERVER_PORT, "" + port);
+					break;
+				case null:
+				default:
+					DEBUG.OUT("create MQTT serveur " + login + " " + password);
+					connector = new MQTTConnector(scope, raw_package);
+					if (serverURL != null) {
+						connector.configure(IConnector.SERVER_URL, serverURL);
+						if (port == 0) {
+							connector.configure(IConnector.SERVER_PORT, "1883");
+						} else {
+							connector.configure(IConnector.SERVER_PORT, port.toString());
 
+						}
+						if (login != null) { connector.configure(IConnector.LOGIN, login); }
+						if (password != null) { connector.configure(IConnector.PASSWORD, password); }
 					}
-					if (login != null) { connector.configure(IConnector.LOGIN, login); }
-					if (password != null) { connector.configure(IConnector.PASSWORD, password); }
-				}
+					break;
 			}
 			if (force_local != null) { connector.forceNetworkUse(force_local); }
 			// Fix to Issue #2618
@@ -315,15 +331,14 @@ public class NetworkSkill extends MessagingSkill {
 	 * @return the gama message
 	 */
 	@action (
-		name = INetworkSkill.FETCH_MESSAGE,
-		doc = @doc (
-			value = "Fetch the first message from the mailbox (and remove it from the mailing box). If the mailbox is empty, it returns a nil message.",
-			examples = { 
-					@example ("message mess <- fetch_message();"), 
-					@example ("loop while:has_more_message(){ \n"
-								+ "	message mess <- fetch_message();\n" 
-								+ "	write message.contents;\n" 
-								+ "}") }))
+			name = INetworkSkill.FETCH_MESSAGE,
+			doc = @doc (
+					value = "Fetch the first message from the mailbox (and remove it from the mailing box). If the mailbox is empty, it returns a nil message.",
+					examples = { @example ("message mess <- fetch_message();"), @example ("""
+							loop while:has_more_message(){\s
+								message mess <- fetch_message();
+								write message.contents;
+							}""") }))
 	public GamaMessage fetchMessage(final IScope scope) {
 		final IAgent agent = scope.getAgent();
 		final GamaMailbox<GamaMessage> box = getMailbox(scope, agent);
@@ -343,14 +358,14 @@ public class NetworkSkill extends MessagingSkill {
 	 * @return true, if successful
 	 */
 	@action (
-		name = INetworkSkill.HAS_MORE_MESSAGE_IN_BOX,
-		doc = @doc (
-			value = "Check whether the mailbox contains any message.",
-			examples = { @example ("bool mailbox_contain_messages <- has_more_message();"),
-					@example ("loop while:has_more_message(){ \n" 
-								+ "	message mess <- fetch_message();\n"
-								+ "	write message.contents;\n" 
-								+ "}") }))
+			name = INetworkSkill.HAS_MORE_MESSAGE_IN_BOX,
+			doc = @doc (
+					value = "Check whether the mailbox contains any message.",
+					examples = { @example ("bool mailbox_contain_messages <- has_more_message();"), @example ("""
+							loop while:has_more_message(){\s
+								message mess <- fetch_message();
+								write message.contents;
+							}""") }))
 	public boolean hasMoreMessage(final IScope scope) {
 		final IAgent agent = scope.getAgent();
 		final GamaMailbox box = getMailbox(scope, agent);
@@ -461,8 +476,7 @@ public class NetworkSkill extends MessagingSkill {
 			for (final Object o : ((IList) receiver).iterable(scope)) { effectiveSend(scope, message.copy(scope), o); }
 		}
 		String destName = receiver.toString();
-		if (receiver instanceof IAgent && getRegisteredAgents(scope).contains(receiver)) {
-			final IAgent mReceiver = (IAgent) receiver;
+		if (receiver instanceof final IAgent mReceiver && getRegisteredAgents(scope).contains(receiver)) {
 			destName = (String) mReceiver.getAttribute(INetworkSkill.NET_AGENT_SERVER);
 		}
 
@@ -482,13 +496,13 @@ public class NetworkSkill extends MessagingSkill {
 			name = INetworkSkill.FETCH_MESSAGE_FROM_NETWORK,
 			doc = @doc (
 					value = "Fetch all messages from network to mailbox. Use this in specific case only, this action is done at the end of each step. ",
-					examples = { @example ("do fetch_message_from_network;//forces gama to get all the new messages since the begining of the cycle\n"
-						+ "loop while: has_more_message(){ \n" 
-						+ "	message mess <- fetch_message();\n"
-						+ "	write message.contents;\n"
-						+ "}"
-						) 
-					}))
+					examples = {
+							@example ("""
+									do fetch_message_from_network;//forces gama to get all the new messages since the begining of the cycle
+									loop while: has_more_message(){\s
+										message mess <- fetch_message();
+										write message.contents;
+									}""") }))
 	public boolean fetchMessagesOfAgents(final IScope scope) {
 
 		for (final IConnector connection : getRegisteredServers(scope).values()) {
@@ -502,12 +516,10 @@ public class NetworkSkill extends MessagingSkill {
 				 * if (!(connection instanceof MQTTConnector)) { mailbox.clear(); }
 				 */
 				var list = messages.containsKey(agt) ? messages.get(agt) : null;
-				if (list == null) {
-					return true;
-				}
+				if (list == null) return true;
 				for (final ConnectorMessage msg : messages.get(agt)) {
 					mailbox.addMessage(scope, msg.getContents(scope));
-				}	
+				}
 			}
 		}
 		return true;
@@ -549,8 +561,8 @@ public class NetworkSkill extends MessagingSkill {
 	 */
 	private void initialize(final IScope scope) {
 
-		scope.getExperiment().setAttribute(REGISTERED_AGENTS, new ArrayList<IAgent>());
-		scope.getExperiment().setAttribute(REGISTERED_SERVER, new HashMap<String, IConnector>());
+		scope.getExperiment().setAttribute(REGISTERED_AGENTS, new ArrayList<>());
+		scope.getExperiment().setAttribute(REGISTERED_SERVER, new HashMap<>());
 	}
 
 	/**

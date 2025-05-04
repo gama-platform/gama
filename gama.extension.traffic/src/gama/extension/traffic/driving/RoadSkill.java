@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * RoadSkill.java, in gaml.extensions.traffic, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * RoadSkill.java, in gama.extension.traffic, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,8 +17,6 @@ import org.apache.commons.collections4.OrderedBidiMap;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -28,6 +26,8 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
@@ -38,6 +38,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.extension.traffic.driving.carfollowing.CustomDualTreeBidiMap;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Containers;
 import gama.gaml.skills.Skill;
 import gama.gaml.types.IType;
@@ -47,10 +48,10 @@ import gama.gaml.types.Types;
  * The Class RoadSkill.
  */
 @vars ({ @variable (
-				name = RoadSkill.ALL_AGENTS,
-				type = IType.LIST,
-				of = IType.AGENT,
-				doc = @doc ("the list of agents on the road")),
+		name = RoadSkill.ALL_AGENTS,
+		type = IType.LIST,
+		of = IType.AGENT,
+		doc = @doc ("the list of agents on the road")),
 		@variable (
 				name = RoadSkill.SOURCE_NODE,
 				type = IType.AGENT,
@@ -95,6 +96,12 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class RoadSkill extends Skill {
 
+	/**
+	 * @param desc
+	 */
+	public RoadSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The Constant SKILL_ROAD. */
 	public static final String SKILL_ROAD = "skill_road";
@@ -128,7 +135,6 @@ public class RoadSkill extends Skill {
 	/** The Constant VEHICLE_ORDERING. */
 	public static final String VEHICLE_ORDERING = "vehicle_ordering";
 
-	
 	/**
 	 * Gets the agents.
 	 *
@@ -370,7 +376,7 @@ public class RoadSkill extends Skill {
 				(List<OrderedBidiMap<IAgent, Double>>) road.getAttribute(VEHICLE_ORDERING);
 		if (res.isEmpty()) {
 			for (int i = 0; i < getNumLanes(road); i += 1) {
-				res.add(new CustomDualTreeBidiMap<IAgent, Double>((a, b) -> {
+				res.add(new CustomDualTreeBidiMap<>((a, b) -> {
 					int r = a.getSpeciesName().compareTo(b.getSpeciesName());
 					if (r != 0) return r;
 					return Integer.compare(a.getIndex(), b.getIndex());

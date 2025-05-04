@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * MovingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MovingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -58,6 +58,7 @@ import gama.core.util.path.GamaPath;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.IPath;
 import gama.core.util.path.PathFactory;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -107,13 +108,19 @@ import gama.gaml.types.Types;
 				name = IKeyword.REAL_SPEED,
 				type = IType.FLOAT,
 				init = "0.0",
-				doc = @doc ("Represents the actual speed of the agent (in meter/second)")),
-		})
+				doc = @doc ("Represents the actual speed of the agent (in meter/second)")), })
 @skill (
 		name = IKeyword.MOVING_SKILL,
 		concept = { IConcept.SKILL, IConcept.AGENT_MOVEMENT })
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class MovingSkill extends Skill {
+
+	/**
+	 * @param desc
+	 */
+	public MovingSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/**
 	 * Gets the heading.

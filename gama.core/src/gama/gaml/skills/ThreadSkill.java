@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,17 +14,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.skill;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IStatement;
 import gama.gaml.types.IType;
@@ -44,6 +44,13 @@ import gama.gaml.types.IType;
 		name = IKeyword.THREAD_SKILL,
 		concept = { IConcept.SKILL, IConcept.SYSTEM })
 public class ThreadSkill extends Skill {
+
+	/**
+	 * @param desc
+	 */
+	public ThreadSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The executor. */
 	ScheduledExecutorService executor = Executors.newScheduledThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());

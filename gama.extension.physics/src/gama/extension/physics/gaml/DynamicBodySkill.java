@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * DynamicBodySkill.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DynamicBodySkill.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.physics.gaml;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -19,11 +18,13 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
 
@@ -67,6 +68,13 @@ import gama.gaml.types.IType;
  *
  */
 public class DynamicBodySkill extends StaticBodySkill {
+
+	/**
+	 * @param desc
+	 */
+	public DynamicBodySkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/**
 	 * Gets the velocity.

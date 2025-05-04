@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * UserControlArchitecture.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * UserControlArchitecture.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.architecture.user;
 
@@ -23,6 +23,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.architecture.finite_state_machine.FsmArchitecture;
 import gama.gaml.architecture.finite_state_machine.FsmStateStatement;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.IType;
 
@@ -36,6 +37,13 @@ import gama.gaml.types.IType;
 		doc = @doc ("Setting this attribute to false allows to deactivate the user control temporarily")))
 public abstract class UserControlArchitecture extends FsmArchitecture {
 
+	/**
+	 * @param desc
+	 */
+	public UserControlArchitecture(final IDescription desc) {
+		super(desc);
+	}
+
 	/** The init panel. */
 	UserInitPanelStatement initPanel;
 
@@ -43,20 +51,19 @@ public abstract class UserControlArchitecture extends FsmArchitecture {
 	public void verifyBehaviors(final ISpecies context) {
 		super.verifyBehaviors(context);
 		if (initialState == null && states.size() == 1) {
-			initialState = new ArrayList<FsmStateStatement>(states.values()).get(0);
+			initialState = new ArrayList<>(states.values()).get(0);
 			context.getVar(IKeyword.STATE).setValue(null, initialState.getName());
 		}
 		for (final FsmStateStatement s : states.values()) {
-			if (s instanceof UserInitPanelStatement) {
-				initPanel = (UserInitPanelStatement) s;
-			}
+			if (s instanceof UserInitPanelStatement) { initPanel = (UserInitPanelStatement) s; }
 		}
 	}
 
 	/**
 	 * Checks if is user controlled.
 	 *
-	 * @param agent the agent
+	 * @param agent
+	 *            the agent
 	 * @return the boolean
 	 */
 	@getter (IKeyword.USER_CONTROLLED)
@@ -67,8 +74,10 @@ public abstract class UserControlArchitecture extends FsmArchitecture {
 	/**
 	 * Sets the user controlled.
 	 *
-	 * @param agent the agent
-	 * @param b the b
+	 * @param agent
+	 *            the agent
+	 * @param b
+	 *            the b
 	 */
 	@setter (IKeyword.USER_CONTROLLED)
 	public void setUserControlled(final IAgent agent, final Boolean b) {
@@ -78,7 +87,7 @@ public abstract class UserControlArchitecture extends FsmArchitecture {
 	@Override
 	protected Object executeCurrentState(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = getCurrentAgent(scope);
-		if (agent.dead() || !isUserControlled(agent)) { return null; }
+		if (agent.dead() || !isUserControlled(agent)) return null;
 		return super.executeCurrentState(scope);
 	}
 

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DrivingSkill.java, in gaml.extensions.traffic, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DrivingSkill.java, in gama.extension.traffic, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -49,6 +49,7 @@ import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
 import gama.extension.traffic.driving.carfollowing.Utils;
 import gama.gaml.descriptions.ConstantExpressionDescription;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.skills.MovingSkill;
@@ -169,9 +170,10 @@ import gama.gaml.types.Types;
 				name = DrivingSkill.ACC_GAIN_THRESHOLD,
 				type = IType.FLOAT,
 				init = "0.2",
-				doc = @doc ("the minimum acceleration gain for the vehicle to switch to another lane, "
-						+ "introduced to prevent frantic lane changing. "
-						+ "Known as the parameter 'a_th' in the MOBIL lane changing model")),
+				doc = @doc ("""
+						the minimum acceleration gain for the vehicle to switch to another lane, \
+						introduced to prevent frantic lane changing. \
+						Known as the parameter 'a_th' in the MOBIL lane changing model""")),
 		@variable (
 				name = DrivingSkill.ACC_BIAS,
 				type = IType.FLOAT,
@@ -293,13 +295,28 @@ import gama.gaml.types.Types;
 public class DrivingSkill extends MovingSkill {
 
 	/**
+	 * @param desc
+	 */
+	public DrivingSkill(final IDescription desc) {
+		super(desc);
+	}
+
+	/**
 	 * The Class NewDrivingSkill.
 	 */
 	@skill (
 			name = "driving",
 			concept = { IConcept.TRANSPORT, IConcept.SKILL },
 			doc = @doc ("A skill that provides driving primitives and operators"))
-	public static class NewDrivingSkill extends DrivingSkill {}
+	public static class NewDrivingSkill extends DrivingSkill {
+
+		/**
+		 * @param desc
+		 */
+		public NewDrivingSkill(final IDescription desc) {
+			super(desc);
+		}
+	}
 
 	static {
 		DEBUG.OFF();
@@ -473,7 +490,6 @@ public class DrivingSkill extends MovingSkill {
 		if (vehicle == null) return;
 		vehicle.setAttribute(IKeyword.SPEED, speed);
 	}
-
 
 	/**
 	 * Sets the acceleration read only.
@@ -881,7 +897,6 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(PROBA_USE_LINKED_ROAD, proba);
 	}
 
-
 	/**
 	 * Gets the proba respect priorities.
 	 *
@@ -956,7 +971,6 @@ public class DrivingSkill extends MovingSkill {
 	public static void setProbasRespectStops(final IAgent vehicle, final List<Boolean> probas) {
 		vehicle.setAttribute(PROBA_RESPECT_STOPS, probas);
 	}
-
 
 	/**
 	 * Checks if is using linked road.
@@ -1187,7 +1201,6 @@ public class DrivingSkill extends MovingSkill {
 		return (Double) vehicle.getAttribute(VEHICLE_LENGTH);
 	}
 
-
 	/**
 	 * Gets the lowest lane.
 	 *
@@ -1249,7 +1262,6 @@ public class DrivingSkill extends MovingSkill {
 	public static void setDistanceToCurrentTarget(final IAgent vehicle, final double dist) {
 		vehicle.setAttribute(DISTANCE_TO_CURRENT_TARGET, dist);
 	}
-
 
 	/**
 	 * Gets the min safety distance.
@@ -1826,10 +1838,11 @@ public class DrivingSkill extends MovingSkill {
 					optional = false,
 					doc = @doc ("the new road that's the vehicle is going to enter")) },
 			doc = @doc (
-					value = "Override this if you want to manually choose a lane when entering new road. "
-							+ "By default, the vehicle tries to stay in the current lane. "
-							+ "If the new road has fewer lanes than the current one and the current lane index is too big, "
-							+ "it tries to enter the most uppermost lane.",
+					value = """
+							Override this if you want to manually choose a lane when entering new road. \
+							By default, the vehicle tries to stay in the current lane. \
+							If the new road has fewer lanes than the current one and the current lane index is too big, \
+							it tries to enter the most uppermost lane.""",
 					returns = "an integer representing the lane index"))
 	public Integer primChooseLane(final IScope scope) throws GamaRuntimeException {
 		IAgent newRoad = (IAgent) scope.getArg("new_road", IType.AGENT);
@@ -1957,10 +1970,10 @@ public class DrivingSkill extends MovingSkill {
 	 */
 	private boolean moveAcrossRoads(final IScope scope, final boolean isDrivingRandomly, final GamaSpatialGraph graph,
 			final Map<IAgent, Double> roadProba) {
-		if (GamaExecutorService.CONCURRENCY_SPECIES.getValue())
-			throw GamaRuntimeException.error("Driving agents cannot be scheduled in parallel. "
-					+ "Please disable \"Make species schedule theirs agents in parallel\" "
-					+ "in Preferences > Execution > Parallelism.", scope);
+		if (GamaExecutorService.CONCURRENCY_SPECIES.getValue()) throw GamaRuntimeException.error("""
+				Driving agents cannot be scheduled in parallel. \
+				Please disable "Make species schedule theirs agents in parallel" \
+				in Preferences > Execution > Parallelism.""", scope);
 
 		IAgent vehicle = getCurrentAgent(scope);
 		ISpecies context = vehicle.getSpecies();

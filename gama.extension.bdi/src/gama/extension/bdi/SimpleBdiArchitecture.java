@@ -30,6 +30,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -207,6 +208,15 @@ import gama.gaml.types.Types;
 @doc ("this architecture enables to define a behaviour using BDI. It is an implementation of the BEN architecture (Behaviour with Emotions and Norms)")
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class SimpleBdiArchitecture extends ReflexArchitecture {
+	
+	
+
+	/**
+	 * @param desc
+	 */
+	public SimpleBdiArchitecture(IDescription desc) {
+		super(desc);
+	}
 
 	/** The Constant SIMPLE_BDI. */
 	public static final String SIMPLE_BDI = "simple_bdi";

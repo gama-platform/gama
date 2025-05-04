@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PedestrianSkill.java, in gama.extension.pedestrian, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,6 +36,7 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.path.IPath;
 import gama.gaml.descriptions.ConstantExpressionDescription;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Points;
@@ -214,6 +215,13 @@ import gama.gaml.types.Types;
 public class PedestrianSkill extends MovingSkill {
 
 	// ---------- CONSTANTS -------------- //
+
+	/**
+	 * @param desc
+	 */
+	public PedestrianSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The Constant PEDESTRIAN_MODEL. */
 	// General mode of walking
@@ -1135,7 +1143,9 @@ public class PedestrianSkill extends MovingSkill {
 				pts.add(agent.getLocation());
 				pts.add(target);
 				line = SpatialCreation.line(scope, pts);
-				if (!bounds.covers(line)) { target = SpatialPunctal._closest_point_to(location, getCurrentEdge(agent)); }
+				if (!bounds.covers(line)) {
+					target = SpatialPunctal._closest_point_to(location, getCurrentEdge(agent));
+				}
 
 			}
 		}
@@ -1327,7 +1337,8 @@ public class PedestrianSkill extends MovingSkill {
 
 				GamaPoint nij = Points.subtract(agent.getLocation(), ag.getLocation());
 				nij = nij.dividedBy(distance);
-				double phi = SpatialPunctal.angleInDegreesBetween(scope, new GamaPoint(), ei, nij.copy(scope).multiplyBy(-1));
+				double phi = SpatialPunctal.angleInDegreesBetween(scope, new GamaPoint(), ei,
+						nij.copy(scope).multiplyBy(-1));
 				GamaPoint fnorm = nij.multiplyBy(fact * (lambda + (1 - lambda) * (1 + Math.cos(phi)) / 2.0));
 
 				GamaPoint tij = new GamaPoint(-1 * nij.y, nij.x);
@@ -1359,7 +1370,8 @@ public class PedestrianSkill extends MovingSkill {
 			GamaPoint fwall = new GamaPoint();
 
 			if (distance == 0) {
-				closest_point = SpatialPunctal._closest_point_to(agent.getLocation(), ag.getGeometry().getExteriorRing(scope));
+				closest_point =
+						SpatialPunctal._closest_point_to(agent.getLocation(), ag.getGeometry().getExteriorRing(scope));
 			} else {
 				closest_point = SpatialPunctal._closest_point_to(agent.getLocation(), ag);
 			}
@@ -1418,15 +1430,13 @@ public class PedestrianSkill extends MovingSkill {
 					returns = "the computed path, return nil if no path can be taken",
 					examples = { @example ("do compute_virtual_path graph: pedestrian_network target: any_point;") }))
 	public IPath primComputeVirtualPath(final IScope scope) throws GamaRuntimeException {
-		IPath thePath = null;
-
 		final ISpatialGraph graph = (ISpatialGraph) scope.getArg(PEDESTRIAN_GRAPH, IType.GRAPH);
 		final IAgent agent = getCurrentAgent(scope);
 		final boolean useGeometryTarget = getUseGeometryTarget(agent);
 		IShape target = (IShape) scope.getArg("target", IType.GEOMETRY);
 		IShape source = agent.getLocation();
 
-		thePath = ((GraphTopology) graph.getTopology(scope)).pathBetween(scope, source, target);
+		IPath thePath = ((GraphTopology) graph.getTopology(scope)).pathBetween(scope, source, target);
 		// If there is no path between source and target ...
 		if (thePath == null) return thePath;
 		IMap<IShape, IShape> roadTarget = GamaMapFactory.create();
@@ -1450,13 +1460,13 @@ public class PedestrianSkill extends MovingSkill {
 			IList<GamaPoint> points = cSeg.getPoints();
 			for (int j = 1; j < points.size(); j++) {
 				GamaPoint pt = points.get(j);
-				IShape cTarget = null;
-//				if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
-//					cTarget = pt;
-//				} else {
-					cTarget = pt;
-					//if (cTarget == null) { cTarget = pt; } //TODO:why ?
-//				}
+				
+				// if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
+				// cTarget = pt;
+				// } else {
+				IShape cTarget = pt;
+				// if (cTarget == null) { cTarget = pt; } //TODO:why ?
+				// }
 				if (useGeometryTarget) {
 					cTarget = null;
 					if (geomNext != null) {

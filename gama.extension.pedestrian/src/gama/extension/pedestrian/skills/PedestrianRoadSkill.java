@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PedestrianRoadSkill.java, in gaml.extensions.pedestrian, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PedestrianRoadSkill.java, in gama.extension.pedestrian, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,7 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
-import gama.extension.pedestrian.operator.Operators;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
@@ -88,6 +88,13 @@ import gama.gaml.types.Types;
 				init = "[]",
 				doc = @doc ("The exit hub (several exit connected to each road extremities) that makes it possible to reduce angular distance when travelling to connected pedestrian roads")) })
 public class PedestrianRoadSkill extends Skill {
+
+	/**
+	 * @param desc
+	 */
+	public PedestrianRoadSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The Constant PEDESTRIAN_ROAD_SKILL. */
 	public final static String PEDESTRIAN_ROAD_SKILL = "pedestrian_road";

@@ -1,22 +1,22 @@
 /*******************************************************************************************************
  *
- * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.grid.IGrid;
@@ -24,6 +24,7 @@ import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.core.util.IList;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.types.IType;
 
 /**
@@ -73,6 +74,13 @@ import gama.gaml.types.IType;
 		concept = { IConcept.GRID, IConcept.SKILL },
 		internal = true)
 public class GridSkill extends Skill {
+
+	/**
+	 * @param desc
+	 */
+	public GridSkill(final IDescription desc) {
+		super(desc);
+	}
 
 	/** The Constant SKILL_NAME. */
 	public static final String SKILL_NAME = "grid";

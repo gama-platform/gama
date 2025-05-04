@@ -1,18 +1,18 @@
 /*******************************************************************************************************
  *
- * AbstractArchitecture.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * AbstractArchitecture.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.architecture.reflex;
 
 import gama.core.runtime.IScope;
 import gama.gaml.architecture.IArchitecture;
-import gama.gaml.expressions.IExpression;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.skills.Skill;
 import gama.gaml.species.ISpecies;
 
@@ -24,8 +24,8 @@ public abstract class AbstractArchitecture extends Skill implements IArchitectur
 	/**
 	 * Instantiates a new abstract architecture.
 	 */
-	public AbstractArchitecture() {
-		super();
+	public AbstractArchitecture(final IDescription desc) {
+		super(desc);
 	}
 
 	@Override
@@ -34,18 +34,11 @@ public abstract class AbstractArchitecture extends Skill implements IArchitectur
 	}
 
 	@Override
-	public String getKeyword() {
-		return getName();
-	}
+	public String getKeyword() { return getName(); }
 
 	@Override
 	public String getTrace(final IScope scope) {
 		return "";
-	}
-
-	@Override
-	public IExpression getFacet(final String... key) {
-		return null;
 	}
 
 	@Override
@@ -54,11 +47,9 @@ public abstract class AbstractArchitecture extends Skill implements IArchitectur
 	}
 
 	@Override
-	public void verifyBehaviors(final ISpecies context) {
-	}
+	public void verifyBehaviors(final ISpecies context) {}
 
 	@Override
-	public void dispose() {
-	}
+	public void dispose() {}
 
 }
