@@ -107,7 +107,7 @@ public class PreferencesHelper {
 							e.printStackTrace();
 						}
 
-					});
+					}).hidden();
 	/** The keep navigator state. */
 	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE =
 			create("pref_keep_navigator_state", "Maintain the state of the navigator across sessions", true, IType.BOOL,
@@ -117,14 +117,14 @@ public class PreferencesHelper {
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)
 					.in(NAME, NAVIGATOR).onChange(newValue -> {
 						GAMA.getGui().refreshNavigator();
-					});
+					}).hidden();
 
 	/** The Constant NAVIGATOR_OUTLINE. */
 	public static final Pref<Boolean> NAVIGATOR_OUTLINE =
 			create("pref_navigator_display_outline", "Display the outline of GAML files in navigator", false,
 					IType.BOOL, false).in(NAME, NAVIGATOR).onChange(newValue -> {
 						GAMA.getGui().refreshNavigator();
-					});
+					}).hidden();
 
 	/**
 	 * Initialize.

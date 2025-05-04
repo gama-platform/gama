@@ -194,7 +194,6 @@ public class SwitchButton extends Canvas {
 		var offsetX = (buttonSize.x / 2 - textSize.x) / 2 + 2;
 		var offsetY = (buttonSize.y - textSize.y) / 2 + 2;
 		var offsetB = !selection ? 2 : buttonSize.x / 2 + 1;
-		this.gc.setBackground(isDark() ? get(backgroundColor).lighter() : get(backgroundColor).darker());
 		gc.setForeground(get(gc.getBackground()).darker());
 		gc.drawString(textToDraw, offsetB + offsetX, offsetY);
 		gc.setBackground(selection ? trueBackgroundColor : falseBackgroundColor);

@@ -60,8 +60,8 @@ public class NavigatorSearchControl {
 	 * @return true, if successful
 	 */
 	boolean shouldSelect(final Object o) {
-		if (!(o instanceof WrappedGamaFile file)) { return false; }
-		if (file.getName().toLowerCase().contains(pattern) || file.hasTag(pattern)) { return true; }
+		if (!(o instanceof WrappedGamaFile file)) return false;
+		if (file.getName().toLowerCase().contains(pattern) || file.hasTag(pattern)) return true;
 		return false;
 	}
 
@@ -101,7 +101,7 @@ public class NavigatorSearchControl {
 		 */
 		@SuppressWarnings ("unchecked")
 		private boolean select(final VirtualContent<?> element, final boolean b) {
-			if (alreadySelected.contains(element)) { return true; }
+			if (alreadySelected.contains(element)) return true;
 			if (internalSelect(element, b)) {
 				alreadySelected.add(element);
 				return true;
@@ -119,7 +119,7 @@ public class NavigatorSearchControl {
 		 * @return true, if successful
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
-			if (pattern.isEmpty()) { return true; }
+			if (pattern.isEmpty()) return true;
 			switch (element.getType()) {
 				case FILE:
 					return shouldSelect(element);
@@ -134,7 +134,7 @@ public class NavigatorSearchControl {
 				default:
 					final Object[] children = element.getNavigatorChildren();
 					for (final Object element2 : children) {
-						if (select((VirtualContent<?>) element2, false)) { return true; }
+						if (select((VirtualContent<?>) element2, false)) return true;
 					}
 					return false;
 			}
@@ -196,7 +196,7 @@ public class NavigatorSearchControl {
 			parent = new Composite(toolbar, SWT.NONE);
 			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 			data.heightHint = 24;
-			data.widthHint = 200;
+			data.widthHint = 150;
 			parent.setLayoutData(data);
 			final GridLayout layout = new GridLayout();
 			parent.setLayout(layout);
@@ -207,7 +207,7 @@ public class NavigatorSearchControl {
 		data.heightHint = 16;
 		data.widthHint = 100;
 		find.setLayoutData(data);
-		toolbar.control(parent == toolbar ? find : parent, 200);
+		toolbar.control(parent == toolbar ? find : parent, 150);
 
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
