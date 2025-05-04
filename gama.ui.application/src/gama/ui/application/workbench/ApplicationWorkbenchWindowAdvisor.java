@@ -27,7 +27,6 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
-import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 
@@ -109,7 +108,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		// See #3187 -
 		// if (FLAGS.USE_OLD_TABS) {
 
-
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
@@ -127,20 +125,20 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 	@Override
 	public void postWindowCreate() {
 		final IWorkbenchWindow window = getWindowConfigurer().getWindow();
-		if (!GamaPreferences.Interface.CORE_REMEMBER_WINDOW.getValue()) {
-			window.getShell().setMaximized(GamaPreferences.Interface.CORE_SHOW_MAXIMIZED.getValue());
-			// if (FLAGS.USE_DELAYED_RESIZE) {
-			// window.getShell().addControlListener(new ControlAdapter() {
-			//
-			// @Override
-			// public void controlResized(final ControlEvent e) {
-			// // window.getShell().layout(true, true);
-			// window.getShell().requestLayout();
-			// }
-			//
-			// });
-			// }
-		}
+		// if (!GamaPreferences.Interface.CORE_REMEMBER_WINDOW.getValue()) {
+		// window.getShell().setMaximized(GamaPreferences.Interface.CORE_SHOW_MAXIMIZED.getValue());
+		// if (FLAGS.USE_DELAYED_RESIZE) {
+		// window.getShell().addControlListener(new ControlAdapter() {
+		//
+		// @Override
+		// public void controlResized(final ControlEvent e) {
+		// // window.getShell().layout(true, true);
+		// window.getShell().requestLayout();
+		// }
+		//
+		// });
+		// }
+		// }
 		PerspectiveHelper.showBottomTray((WorkbenchWindow) window, false);
 	}
 

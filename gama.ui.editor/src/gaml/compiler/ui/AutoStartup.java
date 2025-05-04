@@ -25,7 +25,6 @@ import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.HeapControl;
-import gaml.compiler.ui.reference.OperatorsReferenceMenu;
 
 /**
  * The Class AutoStartup.
@@ -73,8 +72,8 @@ public class AutoStartup implements IStartup {
 			final RGB rgb = new RGB(c.getRed(), c.getGreen(), c.getBlue());
 			PreferenceConverter.setValue(EditorsPlugin.getDefault().getPreferenceStore(),
 					AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, rgb);
-			GamaPreferences.Modeling.OPERATORS_MENU_SORT
-					.onChange(newValue -> OperatorsReferenceMenu.byName = "Name".equals(newValue));
+			// GamaPreferences.Modeling.OPERATORS_MENU_SORT
+			// .onChange(newValue -> OperatorsReferenceMenu.byName = "Name".equals(newValue));
 		});
 		// GamlRuntimeModule.staticInitialize();
 		// GamlEditorBindings.install();

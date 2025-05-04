@@ -43,33 +43,17 @@ import gaml.compiler.ui.templates.GamlTemplateFactory;
 public class OperatorsReferenceMenu extends GamlReferenceMenu {
 
 	/** The by name. */
-	public static Boolean byName = null;
 
 	@Override
 	protected void fillMenu() {
-		if (byName == null) { byName = "Name".equals(GamaPreferences.Modeling.OPERATORS_MENU_SORT.getValue()); }
-		// final Menu sub = sub("Sort by...");
-		// sep();
-		// check(sub, "Name", byName, new SelectionAdapter() {
-		//
-		// @Override
-		// public void widgetSelected(final SelectionEvent event) {
-		// byName = true;
-		// reset();
-		// }
-		// });
-		// check(sub, "Category", !byName, new SelectionAdapter() {
-		//
-		// @Override
-		// public void widgetSelected(final SelectionEvent event) {
-		// byName = false;
-		// reset();
-		// }
-		// });
-		if (byName) {
-			fillMenuByName();
-		} else {
+		final boolean byCategory = GamaPreferences.Modeling.OPERATORS_MENU_SORT.getValue();
+		action(mainMenu, byCategory ? "Sort by name" : "Sort by category",
+				e -> GamaPreferences.Modeling.OPERATORS_MENU_SORT.setValue(null, !byCategory));
+		sep();
+		if (byCategory) {
 			fillMenuByCategory();
+		} else {
+			fillMenuByName();
 		}
 	}
 

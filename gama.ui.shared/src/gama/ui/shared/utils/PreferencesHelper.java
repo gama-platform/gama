@@ -37,7 +37,7 @@ public class PreferencesHelper {
 	/** The Constant CORE_EDITORS_HIGHLIGHT. */
 	public static final Pref<Boolean> CORE_EDITORS_HIGHLIGHT =
 			create("pref_editors_highlight", "Highlight in yellow the title of value editors when they change", true,
-					IType.BOOL, false).in(NAME, APPEARANCE);
+					IType.BOOL, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant SHAPEFILE_VIEWER_FILL. */
 	public static final Pref<GamaColor> SHAPEFILE_VIEWER_FILL =

@@ -100,6 +100,21 @@ public class GamaPreferences {
 	}
 
 	/**
+	 * The Class Network.
+	 */
+	public static class Network {
+		/** The Constant NAME. */
+		public static final String NAME = "Network";
+
+		/** The Constant UI. */
+		public static final String SERVER = "Server mode";
+
+		/** The Constant EDITOR. */
+		public static final String HTTP = "Http connections";
+
+	}
+
+	/**
 	 *
 	 * Interface tab
 	 *
@@ -125,9 +140,9 @@ public class GamaPreferences {
 						.in(NAME, STARTUP).deactivates("pref_show_maximized").withLabels("Yes", "No");
 
 		/** The Constant CORE_SHOW_MAXIMIZED. */
-		public static final Pref<Boolean> CORE_SHOW_MAXIMIZED =
-				create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP)
-						.hidden();
+		// public static final Pref<Boolean> CORE_SHOW_MAXIMIZED =
+		// create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP)
+		// .hidden();
 
 		/** The Constant CORE_ASK_REBUILD. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =
@@ -344,15 +359,20 @@ public class GamaPreferences {
 				.create("pref_editor_save_all", "Save editors before lauching an experiment", true, IType.BOOL, false)
 				.in(NAME, GamaPreferences.Modeling.OPTIONS).activates("pref_editor_ask_save").withLabels("Yes", "No");
 
+		/** The Constant EDITOR_SAVE_ASK. */
+		public static final Pref<Boolean> EDITOR_SAVE_ASK =
+				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false).in(NAME,
+						OPTIONS);
+
 		/** The Constant EDITOR_PERSPECTIVE_HIDE. */
 		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE =
 				create("pref_editor_perspective_hide", "Hide editors when switching to simulation perspective", true,
 						IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS).withLabels("Yes", "No");
 
 		/** The operators menu sort. */
-		public static final Pref<String> OPERATORS_MENU_SORT =
-				create("pref_menu_operators_sort", "Sort operators menu by", "Category", IType.STRING, false)
-						.among("Name", "Category").in(Interface.NAME, Interface.MENUS).hidden();
+		public static final Pref<Boolean> OPERATORS_MENU_SORT =
+				create("pref_menu_operators_sort2", "Sort operators menu by", true, IType.STRING, false)
+						.withLabels("Category", "Name").in(Interface.NAME, Interface.MENUS).hidden();
 
 		/** The Constant CORE_CLOSE_QUOTE. See Issue #391 */
 		public static final Pref<Boolean> CORE_SURROUND_SELECTED = create("pref_editor_surround_selected",
@@ -389,16 +409,6 @@ public class GamaPreferences {
 		/** The Constant EDITOR_DRAG_RESOURCES. */
 		public static final Pref<Boolean> EDITOR_DRAG_RESOURCES = create("pref_editor_drag_resources",
 				"Drag files and resources as references in GAML files", true, IType.BOOL, false).in(NAME, OPTIONS);
-
-		/** The Constant EDITOR_SAVE_ASK. */
-		public static final Pref<Boolean> EDITOR_SAVE_ASK =
-				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false).in(NAME,
-						OPTIONS);
-
-		/** The Constant EDITBOX_ENABLED. */
-		// public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
-		// .create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
-		// .in(NAME, TEXT);
 
 		/** The Constant EDITOR_BASE_FONT. */
 		public static final Pref<GamaFont> EDITOR_BASE_FONT = GamaPreferences
@@ -575,27 +585,27 @@ public class GamaPreferences {
 				create("pref_errors_in_editor", "Show errors in editors", true, IType.BOOL, true).in(NAME, ERRORS);
 
 		/** The Constant SERVER. */
-		public final static String SERVER = "Server mode";
 
 		/** The Constant CORE_SERVER_MODE. */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
-				create("pref_enable_server", "Enable GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
+				create("pref_enable_server", "Enable GAMA Server mode", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER)
 						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
-				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true).in(NAME,
-						SERVER);
+				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true)
+						.in(Network.NAME, Network.SERVER);
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
-						.in(NAME, SERVER);
+						.in(Network.NAME, Network.SERVER);
 
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
-				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true).in(NAME,
-						SERVER);
+				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER);
 	}
 
 	/**
@@ -643,16 +653,6 @@ public class GamaPreferences {
 				create("pref_display_show_overlay", "Show the display bottom overlay", false, IType.BOOL, true)
 						.in(NAME, PRESENTATION).hidden();
 
-		/**
-		 * Charts
-		 */
-		// public static final String CHARTS = "Charts Preferences";
-
-		// /** The Constant CHART_FLAT. */
-		// public static final Pref<Boolean> CHART_FLAT =
-		// create("pref_display_flat_charts", "Display 'flat' histograms", true, IType.BOOL, true).in(NAME,
-		// CHARTS);
-
 		/** The Constant CHART_MEMORIZE. */
 		public static final Pref<Boolean> CHART_MEMORIZE = create("pref_display_memorize_charts",
 				"Keep chart values in memory (to save them as CSV) or not (to lower memory usage)", true, IType.BOOL,
@@ -662,10 +662,6 @@ public class GamaPreferences {
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
 				"Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)",
 				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
-
-		/** The Constant CHART_GRIDLINES. */
-		// public static final Pref<Boolean> CHART_GRIDLINES =
-		// create("pref_chart_display_gridlines", "Display grid lines", true, IType.BOOL, true).in(NAME, CHARTS);
 
 		/**
 		 * Drawing methods and defaults
@@ -736,7 +732,7 @@ public class GamaPreferences {
 		/** The Constant ONLY_VISIBLE_FACES. */
 		public static final Pref<Boolean> ONLY_VISIBLE_FACES =
 				create("pref_display_visible_faces", "Draw only the 'external' faces of objects in OpenGL", false,
-						IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).hidden();
+						IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant DISPLAY_SLICE_NUMBER. */
 		public static final Pref<Integer> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
@@ -817,27 +813,26 @@ public class GamaPreferences {
 
 		/** The Constant NAME. */
 		public static final String NAME = "Data and Operators";
-		/**
-		 * Http connections
-		 */
-		public static final String HTTP = "Http connections";
 
 		/** The Constant CORE_HTTP_CONNECT_TIMEOUT. */
 		public static final Pref<Integer> CORE_HTTP_CONNECT_TIMEOUT =
-				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000, IType.INT, true).in(NAME,
-						HTTP);
+				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000, IType.INT, true)
+						.in(Network.NAME, Network.HTTP);
 
 		/** The Constant CORE_HTTP_READ_TIMEOUT. */
 		public static final Pref<Integer> CORE_HTTP_READ_TIMEOUT =
-				create("pref_http_read_timeout", "Read timeout (in ms)", 20000, IType.INT, true).in(NAME, HTTP);
+				create("pref_http_read_timeout", "Read timeout (in ms)", 20000, IType.INT, true).in(Network.NAME,
+						Network.HTTP);
 
 		/** The Constant CORE_HTTP_RETRY_NUMBER. */
-		public static final Pref<Integer> CORE_HTTP_RETRY_NUMBER = create("pref_http_retry_number",
-				"Number of times to retry if connection cannot be established", 3, IType.INT, true).in(NAME, HTTP);
+		public static final Pref<Integer> CORE_HTTP_RETRY_NUMBER =
+				create("pref_http_retry_number", "Number of times to retry if connection cannot be established", 3,
+						IType.INT, true).in(Network.NAME, Network.HTTP);
 
 		/** The Constant CORE_HTTP_EMPTY_CACHE. */
-		public static final Pref<Boolean> CORE_HTTP_EMPTY_CACHE = create("pref_http_empty_cache",
-				"Empty the local cache of files downloaded from the web", true, IType.BOOL, true).in(NAME, HTTP);
+		public static final Pref<Boolean> CORE_HTTP_EMPTY_CACHE =
+				create("pref_http_empty_cache", "Empty the local cache of files downloaded from the web", true,
+						IType.BOOL, true).in(Network.NAME, Network.HTTP);
 
 		/**
 		 * Random numbers
@@ -1226,7 +1221,7 @@ public class GamaPreferences {
 
 	/** The order of preferences. */
 	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
-			Runtime.NAME, Displays.NAME, External.NAME, Experimental.NAME);
+			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);
 	//
 	// /** The i. */
 	// static Interface i_ = new Interface();

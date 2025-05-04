@@ -400,6 +400,9 @@ public interface IGamaIcons {
 	/** The prefs theme. */
 	String PREFS_THEME = "prefs/prefs.theme2";
 
+	/** The prefs theme. */
+	String PREFS_NETWORK = "prefs/prefs.network2";
+
 	/** The prefs runtime. */
 	String PREFS_EXPERIMENTAL = "prefs/prefs.experimental2";
 
