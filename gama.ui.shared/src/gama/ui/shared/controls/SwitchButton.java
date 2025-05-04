@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SwitchButton.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SwitchButton.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -189,13 +189,21 @@ public class SwitchButton extends Canvas {
 		Color backgroundColor = getParent().getBackground();
 		this.gc.setBackground(isDark() ? get(backgroundColor).lighter() : get(backgroundColor).darker());
 		this.gc.fillRoundRectangle(2, 2, buttonSize.x - 1, buttonSize.y + 1, 5, 5);
+		var textToDraw = !selection ? trueText : falseText;
+		var textSize = this.gc.textExtent(textToDraw);
+		var offsetX = (buttonSize.x / 2 - textSize.x) / 2 + 2;
+		var offsetY = (buttonSize.y - textSize.y) / 2 + 2;
+		var offsetB = !selection ? 2 : buttonSize.x / 2 + 1;
+		this.gc.setBackground(isDark() ? get(backgroundColor).lighter() : get(backgroundColor).darker());
+		gc.setForeground(get(gc.getBackground()).darker());
+		gc.drawString(textToDraw, offsetB + offsetX, offsetY);
 		gc.setBackground(selection ? trueBackgroundColor : falseBackgroundColor);
 		gc.setForeground(getTextColorForBackground(gc.getBackground()).color());
-		String textToDraw = selection ? trueText : falseText;
-		final var textSize = this.gc.textExtent(textToDraw);
-		int offsetX = (buttonSize.x / 2 - textSize.x) / 2 + 2;
-		int offsetY = (buttonSize.y - textSize.y) / 2 + 2;
-		int offsetB = selection ? 2 : buttonSize.x / 2 + 1;
+		textToDraw = selection ? trueText : falseText;
+		textSize = this.gc.textExtent(textToDraw);
+		offsetX = (buttonSize.x / 2 - textSize.x) / 2 + 2;
+		offsetY = (buttonSize.y - textSize.y) / 2 + 2;
+		offsetB = selection ? 2 : buttonSize.x / 2 + 1;
 		gc.fillRoundRectangle(offsetB, 2, buttonSize.x / 2 + 1, buttonSize.y + 1, 5, 5);
 		gc.drawString(textToDraw, offsetB + offsetX, offsetY);
 	}
