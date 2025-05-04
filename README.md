@@ -27,7 +27,7 @@ To run it from the source code you can either use `maven` to build the program y
 
 There is a more detailled explanation on the [website](https://gama-platform.org/wiki/InstallingGitVersion) about how to do so, here we will only give a fast and easy approach.
 
-The _highly recommended configuration_ for working on this branch is [Eclipse for Java and DSL 2024-06](https://www.eclipse.org/downloads/packages/release/2024-06/r/eclipse-ide-java-and-dsl-developers), using a different version may expose you to some bugs.
+The _highly recommended configuration_ for working on this branch is [Eclipse for Java and DSL 2025-03](https://www.eclipse.org/downloads/packages/release/2025-03/r/eclipse-ide-java-and-dsl-developers), using a different version may expose you to some bugs.
 
 Once you have imported the code base into your workspace, simply open the `gama.product` project and open either `gama.headless.product` or `gama.product` depending if you want to run gama with or without GUI.
 In the `Overview` pane of the file, click on `Synchronize` and then `Launch an Eclipse application` and GAMA should start.
