@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GraphTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GraphTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -121,9 +122,9 @@ public class GraphTopology extends AbstractTopology {
 		final boolean targetNSame = isAgentVertex == target instanceof IAgent;
 		final boolean sourceNSame = isAgentVertex == source instanceof IAgent;
 		boolean sourceNode = graph.getVertexMap().containsKey(source);
-		final boolean optimizedClosestTo = GamaPreferences.External.PATH_COMPUTATION_OPTIMIZATION.getValue();
+		final boolean optimizedClosestTo = GamaPreferences.Experimental.PATH_COMPUTATION_OPTIMIZATION.getValue();
 
-		if (sourceNode && GamaPreferences.External.TOLERANCE_POINTS.getValue() > 0.0) {
+		if (sourceNode && GamaPoint.TOLERANCE > 0.0) {
 			for (final IShape v : graph.getVertexMap().keySet()) {
 				if (v.equals(source)) {
 					sourceN = v;
@@ -131,7 +132,7 @@ public class GraphTopology extends AbstractTopology {
 				}
 			}
 		}
-		if (targetNode && GamaPreferences.External.TOLERANCE_POINTS.getValue() > 0.0) {
+		if (targetNode && GamaPoint.TOLERANCE > 0.0) {
 			for (final IShape v : graph.getVertexMap().keySet()) {
 				if (v.equals(target)) {
 					targetN = v;
@@ -986,9 +987,8 @@ public class GraphTopology extends AbstractTopology {
 
 		if (!targetNode) {
 			IShape t1 = null;
-			IShape t2 = null;
 			t1 = getPlaces().getEdgeSource(edgeT);
-			t2 = getPlaces().getEdgeTarget(edgeT);
+			IShape t2 = getPlaces().getEdgeTarget(edgeT);
 			if (t1 == null || t2 == null) return null;
 			nodeT = t1;
 			if (t1.getLocation().euclidianDistanceTo(target.getLocation()) > t2.getLocation()
@@ -998,9 +998,8 @@ public class GraphTopology extends AbstractTopology {
 		}
 		if (!sourceNode) {
 			IShape s1 = null;
-			IShape s2 = null;
 			s1 = getPlaces().getEdgeSource(edgeS);
-			s2 = getPlaces().getEdgeTarget(edgeS);
+			IShape s2 = getPlaces().getEdgeTarget(edgeS);
 			if (s1 == null || s2 == null) return null;
 			nodeS = s1;
 			nodeSbis = s2;

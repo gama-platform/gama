@@ -85,8 +85,6 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
@@ -117,7 +115,6 @@ import com.google.inject.Injector;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
@@ -933,34 +930,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		final IRegion r = new Region(offset, length);
 		final var tp = new TemplateProposal(t, dtc, r, null);
 		tp.apply(getInternalSourceViewer(), (char) 0, 0, offset);
-	}
-
-	/**
-	 * Open outline popup.
-	 */
-	public void openOutlinePopup() {
-		try {
-			IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
-			if (part == null) {
-				WorkbenchHelper.getPage().showView(IGui.OUTLINE_VIEW_ID);
-			} else {
-				WorkbenchHelper.getPage().hideView(part);
-			}
-
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		}
-
-		// getDocument().readOnly(new CancelableUnitOfWork<Object, XtextResource>() {
-		//
-		// @Override
-		// public Object exec(final XtextResource state, final CancelIndicator c) throws Exception {
-		// final QuickOutlinePopup popup = new GamlQuickOutlinePopup(GamlEditor.this, toolbar);
-		// injector.injectMembers(popup);
-		// return popup.open();
-		// }
-		// });
-
 	}
 
 	/**

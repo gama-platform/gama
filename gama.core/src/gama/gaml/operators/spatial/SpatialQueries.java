@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialQueries.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -96,11 +106,10 @@ public class SpatialQueries {
 							equals = "all the agents located at a distance lower or equal to 10 to the agent applying the operator considering its topology.",
 							test = false) }))
 	@no_test // already done in Spatial tests Models
-	public static IList neighbors_of(final IScope scope, final ITopology t, final IShape agent,
-			final Double distance) {
+	public static IList neighbors_of(final IScope scope, final ITopology t, final IShape agent, final Double distance) {
 		return _neighbors(scope,
-				agent instanceof IAgent ? In.list(scope, ((IAgent) agent).getPopulation()) : Different.with(),
-				agent, distance, t);
+				agent instanceof IAgent ? In.list(scope, ((IAgent) agent).getPopulation()) : Different.with(), agent,
+				distance, t);
 		// TODO We could compute a filter based on the population if it is
 		// an agent
 	}
@@ -172,9 +181,9 @@ public class SpatialQueries {
 			see = { "neighbors_at", "neighbors_of", "agent_closest_to", "agents_inside", "closest_to", "inside",
 					"overlapping" })
 	@no_test // already done in Spatial tests Models
-	public static IList<? extends IShape> at_distance(final IScope scope,
-			final IContainer<?, ? extends IShape> list, final Double distance) {
-		if (GamaPreferences.External.AT_DISTANCE_OPTIMIZATION.getValue() && scope.getAgent().isPoint()) {
+	public static IList<? extends IShape> at_distance(final IScope scope, final IContainer<?, ? extends IShape> list,
+			final Double distance) {
+		if (GamaPreferences.Experimental.AT_DISTANCE_OPTIMIZATION.getValue() && scope.getAgent().isPoint()) {
 			final ITopology topo = scope.getTopology();
 			if (topo.isContinuous() && !topo.isTorus()
 					&& (double) list.length(scope) / (double) scope.getSimulation().getMembersSize(scope) < 0.1) {
@@ -207,8 +216,8 @@ public class SpatialQueries {
 	 *            the distance
 	 * @return the i list<? extends I shape>
 	 */
-	public static IList<? extends IShape> geomAtDistance(final IScope scope,
-			final IContainer<?, ? extends IShape> list, final Double distance) {
+	public static IList<? extends IShape> geomAtDistance(final IScope scope, final IContainer<?, ? extends IShape> list,
+			final Double distance) {
 		final IShape ag = scope.getAgent();
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
@@ -268,8 +277,8 @@ public class SpatialQueries {
 							value = "(species1 + species2) inside (self)",
 							equals = "the agents among species species1 and species2 that are covered by the shape of the right-hand argument.",
 							isExecutable = false) },
-			see = { "neighbors_at", "neighbors_of", "closest_to", "overlapping", "agents_overlapping",
-					"agents_inside", "agent_closest_to" })
+			see = { "neighbors_at", "neighbors_of", "closest_to", "overlapping", "agents_overlapping", "agents_inside",
+					"agent_closest_to" })
 	@no_test // already done in Spatial tests Models
 	public static IList<? extends IShape> inside(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source) {
@@ -445,8 +454,8 @@ public class SpatialQueries {
 			see = { "neighbors_at", "neighbors_of", "agent_closest_to", "agents_inside", "closest_to", "inside",
 					"agents_overlapping" })
 	@no_test // test already done in Spatial tests models
-	public static IList<? extends IShape> overlapping(final IScope scope,
-			final IContainer<?, ? extends IShape> list, final IShape source) {
+	public static IList<? extends IShape> overlapping(final IScope scope, final IContainer<?, ? extends IShape> list,
+			final IShape source) {
 		return relatedEntities(scope, list, source, ITopology.SpatialRelation.OVERLAP);
 	}
 
@@ -463,9 +472,8 @@ public class SpatialQueries {
 	 *            the relation
 	 * @return the i list<? extends I shape>
 	 */
-	public static IList<? extends IShape> geomsRelated(final IScope scope,
-			final IContainer<?, ? extends IShape> list, final IShape source,
-			final ITopology.SpatialRelation relation) {
+	public static IList<? extends IShape> geomsRelated(final IScope scope, final IContainer<?, ? extends IShape> list,
+			final IShape source, final ITopology.SpatialRelation relation) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		PreparedGeometryFactory pgFact = new PreparedGeometryFactory();
 		PreparedGeometry pg = pgFact.create(source.getInnerGeometry());
@@ -982,8 +990,8 @@ public class SpatialQueries {
 			final int number) {
 		if (filter == null || source == null) return null;
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type, scope.getTopology().getAgentClosestTo(scope,
-				Cast.asGeometry(scope, source, false), filter, number));
+		return GamaListFactory.wrap(type,
+				scope.getTopology().getAgentClosestTo(scope, Cast.asGeometry(scope, source, false), filter, number));
 	}
 
 	/**
@@ -1039,8 +1047,8 @@ public class SpatialQueries {
 			final Object distance, final ITopology t) {
 		if (filter == null || source == null) return GamaListFactory.EMPTY_LIST;
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type, t.getNeighborsOf(scope, Cast.asGeometry(scope, source, false),
-				Cast.asFloat(scope, distance), filter));
+		return GamaListFactory.wrap(type,
+				t.getNeighborsOf(scope, Cast.asGeometry(scope, source, false), Cast.asFloat(scope, distance), filter));
 	}
 
 }

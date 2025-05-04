@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialProperties.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -171,45 +181,8 @@ public class SpatialProperties {
 			value = "A boolean, equal to true if the left-geometry (or agent/point) touches the right-geometry (or agent/point), i.e. if they have at least one point in common, but their interiors do not intersect.",
 			usages = { @usage ("if one of the operand is null, returns false.") },
 			comment = "returns true when the left-operand only touches the right-operand. When one geometry covers partially (or fully) the other one, it returns false.",
-			examples = {
-					// @example (
-					// value = "polyline([{10,10},{20,20}]) touches {15,15}",
-					// equals = "false"),
-					@example (
-							value = "{15,15} touches {15,15}",
-							equals = "false"),
-					@example (
-							value = "polyline([{10,10},{20,20}]) touches {10,10}",
-							equals = "true"),
-					@example (
-							value = "polyline([{10,10},{20,20}]) touches polyline([{10,10},{5,5}])",
-							equals = "true"),
-					// @example (
-					// value = "polyline([{10,10},{20,20}]) touches polyline([{5,5},{15,15}])",
-					// equals = "false"),
-					// @example (
-					// value = "polyline([{10,10},{20,20}]) touches polyline([{15,15},{25,25}])",
-					// equals = "false"),
-					@example (
-							value = "polygon([{10,10},{10,20},{20,20},{20,10}]) touches polygon([{15,15},{15,25},{25,25},{25,15}])",
-							equals = "false"),
-					// @example (
-					// value = "polygon([{10,10},{10,20},{20,20},{20,10}]) touches
-					// polygon([{10,20},{20,20},{20,30},{10,30}])",
-					// equals = "true"),
-					// @example (
-					// value = "polygon([{10,10},{10,20},{20,20},{20,10}]) touches {15,15}",
-					// equals = "false"),
-					@example (
-							value = "polygon([{10,10},{10,20},{20,20},{20,10}]) touches {10,15}",
-							equals = "true") },
 			see = { "disjoint_from", "crosses", "overlaps", "partially_overlaps", "intersects" })
-	@test ("polygon([{10,10},{10,20},{20,20},{20,10}]) touches polygon([{10,20},{20,20},{20,30},{10,30}])")
-	@test ("polyline([{10,10},{20,20}]) touches polyline([{15,15},{25,25}]) = false")
-	@test ("polygon([{10,10},{10,20},{20,20},{20,10}]) touches polygon([{10,10},{0,10},{0,0},{10,0}])")
-	@test ("polyline([{10,10},{20,20}]) touches polyline([{5,5},{15,15}]) = false")
-	@test ("polyline([{10,10},{20,20}]) touches {15,15} = false")
-	@test ("polygon([{10,10},{10,20},{20,20},{20,10}]) touches {15,15} = false")
+	@Deprecated
 	public static Boolean touches(final IShape g1, final IShape g2) {
 		if (g1 == null || g2 == null) return false;
 		return g1.touches(g2);

@@ -23,7 +23,6 @@ import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.ITooltipDisplayer;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
-import gama.ui.shared.resources.IGamaIcons;
 
 /**
  * The class GamaToolbarFactory.
@@ -234,16 +233,12 @@ public class GamaToolbarFactory {
 	public static void buildToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
 		if (view instanceof IToolbarDecoratedView.Expandable ex) { Expander.install(ex, tb); }
 		if (view instanceof IToolbarDecoratedView.Sizable sz) { FontSizer.install(sz, tb); }
-		if (view instanceof IToolbarDecoratedView.Pausable ps) { new FrequencyController(ps).install(tb); }
+		if (view instanceof IToolbarDecoratedView.Pausable ps) { new Pauser(ps).install(tb); }
 		if (view instanceof IToolbarDecoratedView.Zoomable zm) { new ZoomController(zm).install(tb); }
-		if (view instanceof IToolbarDecoratedView.Colorizable cl) { BackgroundChooser.install(cl, tb); }
-		if (view instanceof IToolbarDecoratedView.CSVExportable ce) {
-			tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "CSV Export", "CSV Export", e -> ce.saveAsCSV(), SWT.RIGHT);
-		}
-		if (view instanceof IToolbarDecoratedView.LogExportable le) {
-			tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
-					e -> le.saveAsLog(), SWT.RIGHT);
-		}
+		// if (view instanceof IToolbarDecoratedView.Colorizable cl) { BackgroundChooser.install(cl, tb); }
+		// if (view instanceof IToolbarDecoratedView.CSVExportable ce) {
+		// tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "CSV Export", "CSV Export", e -> ce.saveAsCSV(), SWT.RIGHT);
+		// }
 		view.createToolItems(tb);
 		tb.requestLayout();
 	}

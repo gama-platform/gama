@@ -56,7 +56,6 @@ import one.util.streamex.StreamEx;
  * @date 19 août 2023
  */
 
-@SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaPreferences {
 
 	/** The Constant BASIC_COLORS. */
@@ -84,11 +83,44 @@ public class GamaPreferences {
 	public static final String PREF_WRITE_BUFFERING_STRATEGY = "pref_write_buffering_strategy";
 
 	/**
+	 * The Class Theme.
+	 */
+	public static class Theme {
+
+		/** The Constant NAME. */
+		public static final String NAME = "Theme";
+
+		/** The Constant UI. */
+		public static final String UI = "UI";
+
+		/** The Constant EDITOR. */
+		public static final String EDITOR = "Editor";
+
+	}
+
+	/**
+	 * The Class Network.
+	 */
+	public static class Network {
+		/** The Constant NAME. */
+		public static final String NAME = "Network";
+
+		/** The Constant UI. */
+		public static final String SERVER = "Server mode";
+
+		/** The Constant EDITOR. */
+		public static final String HTTP = "Http connections";
+
+	}
+
+	/**
 	 *
 	 * Interface tab
 	 *
 	 */
 	public static class Interface {
+
+		/** The Constant THEME. */
 
 		/** The Constant NAME. */
 		public static final String NAME = "Interface";
@@ -104,36 +136,38 @@ public class GamaPreferences {
 		/** The Constant CORE_REMEMBER_WINDOW. */
 		public static final Pref<Boolean> CORE_REMEMBER_WINDOW =
 				create("pref_remember_window", "Remember GAMA window size and position", true, IType.BOOL, false)
-						.in(NAME, STARTUP).deactivates("pref_show_maximized");
+						.in(NAME, STARTUP).deactivates("pref_show_maximized").withLabels("Yes", "No");
 
 		/** The Constant CORE_SHOW_MAXIMIZED. */
-		public static final Pref<Boolean> CORE_SHOW_MAXIMIZED =
-				create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP);
+		// public static final Pref<Boolean> CORE_SHOW_MAXIMIZED =
+		// create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP)
+		// .hidden();
 
 		/** The Constant CORE_ASK_REBUILD. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =
 				create("pref_ask_rebuild", "Ask before rebuilding a corrupted workspace", true, IType.BOOL, false)
-						.in(NAME, STARTUP);
+						.in(NAME, STARTUP).withLabels("Yes", "No");
 
 		/** The Constant CORE_ASK_OUTDATED. */
-		public static final Pref<Boolean> CORE_ASK_OUTDATED = create("pref_ask_outdated",
-				"Ask before using a workspace created by another version", true, IType.BOOL, false).in(NAME, STARTUP);
+		public static final Pref<Boolean> CORE_ASK_OUTDATED =
+				create("pref_ask_outdated", "Ask before using a workspace created by another version", true, IType.BOOL,
+						false).in(NAME, STARTUP).withLabels("Yes", "No");
 
 		/** The Constant CORE_ASK_REBUILD. */
 		public static final Pref<Boolean> CORE_STARTUP_MODEL =
-				create("pref_startup_model", "Open a model or an experiment at startup", false, IType.BOOL, false)
-						.in(NAME, STARTUP).activates("pref_default_model", "pref_default_experiment");
+				create("pref_startup_model", "Open a model", false, IType.BOOL, false).in(NAME, STARTUP)
+						.activates("pref_default_model", "pref_default_experiment").withLabels("Yes", "No");
 
 		/** The Constant CORE_DEFAULT_MODEL. */
-		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL = create("pref_default_model",
-				"Choose the model to open at startup", () -> new GenericFile("Enter path", false), IType.FILE, false)
-						.in(NAME, STARTUP).restrictToWorkspace().withExtensions("gaml", "experiment")
-						.refreshes("pref_default_experiment").activates("pref_default_experiment");
+		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL =
+				create("pref_default_model", "Model to open", () -> new GenericFile("Enter path", false), IType.FILE,
+						false).in(NAME, STARTUP).restrictToWorkspace().withExtensions("gaml", "experiment")
+								.refreshes("pref_default_experiment").activates("pref_default_experiment");
 
 		/** The Constant CORE_DEFAULT_MODEL. */
 		public static final Pref<String> CORE_DEFAULT_EXPERIMENT =
-				create("pref_default_experiment", "Choose the experiment to run at startup", "", IType.STRING, false)
-						.in(NAME, STARTUP).among(() -> {
+				create("pref_default_experiment", "Experiment to run", "", IType.STRING, false).in(NAME, STARTUP)
+						.among(() -> {
 							List result = new ArrayList();
 							if (CORE_STARTUP_MODEL.getValue()) {
 								IGamaFile file = CORE_DEFAULT_MODEL.getValue();
@@ -168,8 +202,8 @@ public class GamaPreferences {
 
 		/** The Constant CORE_CONSOLE_WRAP. */
 		public static final Pref<Boolean> CORE_CONSOLE_WRAP =
-				create("pref_console_wrap", "Wrap long lines (can slow down output)", false, IType.BOOL, true).in(NAME,
-						CONSOLE);
+				create("pref_console_wrap", "Wrap long lines (can slow down output)", false, IType.BOOL, true)
+						.in(NAME, CONSOLE).withLabels("Yes", "No");
 		/**
 		 * Appearance
 		 */
@@ -307,32 +341,42 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> WARNINGS_ENABLED =
 				create("pref_editor_enable_warnings", "Show warning markers in the editor", true, IType.BOOL, false)
-						.in(NAME, OPTIONS);
+						.in(NAME, OPTIONS).hidden();
 
 		/** The Constant INFO_ENABLED. */
 		public static final Pref<Boolean> INFO_ENABLED =
 				create("pref_editor_enable_infos", "Show information markers in the editor", true, IType.BOOL, false)
-						.in(NAME, OPTIONS);
+						.in(NAME, OPTIONS).hidden();
 
 		/** The Constant EDITOR_PERSPECTIVE_SAVE. */
-		public static final Pref<Boolean> EDITOR_PERSPECTIVE_SAVE =
-				create("pref_editor_perspective_save", "Save all editors when switching perspectives", true, IType.BOOL,
-						false).in(Modeling.NAME, Modeling.OPTIONS).activates("pref_editor_ask_save");
+		public static final Pref<Boolean> EDITOR_PERSPECTIVE_SAVE = create("pref_editor_perspective_save",
+				"Save editors when switching perspectives", true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS)
+						.activates("pref_editor_ask_save").withLabels("Yes", "No");
+
+		/** The Constant EDITOR_SAVE. */
+		public static final Pref<Boolean> EDITOR_SAVE = GamaPreferences
+				.create("pref_editor_save_all", "Save editors before lauching an experiment", true, IType.BOOL, false)
+				.in(NAME, GamaPreferences.Modeling.OPTIONS).activates("pref_editor_ask_save").withLabels("Yes", "No");
+
+		/** The Constant EDITOR_SAVE_ASK. */
+		public static final Pref<Boolean> EDITOR_SAVE_ASK =
+				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false).in(NAME,
+						OPTIONS);
 
 		/** The Constant EDITOR_PERSPECTIVE_HIDE. */
-		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE = create("pref_editor_perspective_hide",
-				"Hide editors when switching to simulation perspectives (can be overriden in the 'layout' statement)",
-				true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS);
+		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE =
+				create("pref_editor_perspective_hide", "Hide editors when switching to simulation perspective", true,
+						IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS).withLabels("Yes", "No");
 
 		/** The operators menu sort. */
-		public static final Pref<String> OPERATORS_MENU_SORT =
-				create("pref_menu_operators_sort", "Sort operators menu by", "Category", IType.STRING, false)
-						.among("Name", "Category").in(Interface.NAME, Interface.MENUS);
+		public static final Pref<Boolean> OPERATORS_MENU_SORT =
+				create("pref_menu_operators_sort2", "Sort operators menu by", true, IType.STRING, false)
+						.withLabels("Category", "Name").in(Interface.NAME, Interface.MENUS).hidden();
 
 		/** The Constant CORE_CLOSE_QUOTE. See Issue #391 */
 		public static final Pref<Boolean> CORE_SURROUND_SELECTED = create("pref_editor_surround_selected",
 				"Surround selected text with the matching character when { [ ( \" ' < is pressed", true, IType.BOOL,
-				false).in(NAME, TEXT);
+				false).in(NAME, TEXT).withLabels("Yes", "No");
 
 		/** The Constant CORE_CLOSE_QUOTE. */
 		public static final Pref<Boolean> CORE_CLOSE_QUOTE =
@@ -361,26 +405,9 @@ public class GamaPreferences {
 				create("pref_editor_save_format", "Apply formatting on save", false, IType.BOOL, false).in(NAME,
 						GamaPreferences.Modeling.OPTIONS);
 
-		/** The Constant EDITOR_SAVE. */
-		public static final Pref<Boolean> EDITOR_SAVE =
-				GamaPreferences
-						.create("pref_editor_save_all", "Save all editors before lauching an experiment", true,
-								IType.BOOL, false)
-						.in(NAME, GamaPreferences.Modeling.OPTIONS).activates("pref_editor_ask_save");
-
 		/** The Constant EDITOR_DRAG_RESOURCES. */
 		public static final Pref<Boolean> EDITOR_DRAG_RESOURCES = create("pref_editor_drag_resources",
 				"Drag files and resources as references in GAML files", true, IType.BOOL, false).in(NAME, OPTIONS);
-
-		/** The Constant EDITOR_SAVE_ASK. */
-		public static final Pref<Boolean> EDITOR_SAVE_ASK =
-				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false).in(NAME,
-						OPTIONS);
-
-		/** The Constant EDITBOX_ENABLED. */
-		// public static final Pref<Boolean> EDITBOX_ENABLED = GamaPreferences
-		// .create("pref_editor_editbox_on", "Turn on colorization of code sections", false, IType.BOOL, false)
-		// .in(NAME, TEXT);
 
 		/** The Constant EDITOR_BASE_FONT. */
 		public static final Pref<GamaFont> EDITOR_BASE_FONT = GamaPreferences
@@ -396,32 +423,19 @@ public class GamaPreferences {
 				.in(NAME, TEXT);
 
 		/** The Constant EDITOR_EXPERIMENT_MENU. */
-		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU =
-				GamaPreferences
-						.create("pref_editor_experiment_menu",
-								"Always display experiments as a menu rather than buttons", false, IType.BOOL, false)
-						.deactivates("pref_editor_collapse_buttons").in(NAME, TEXT);
+		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
+				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
+				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT)
+				.withColors(GamaColor.get("white"), GamaColor.get("darkgray"));
 
 		/** The Constant EDITOR_COLLAPSE_BUTTONS. */
-		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS = create("pref_editor_collapse_buttons",
-				"Display experiments as a menu when the combined width of the buttons exceed the width of the toolbar",
-				PlatformHelper.isLinux(), IType.BOOL, false).in(NAME, TEXT);
+		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS =
+				create("pref_editor_collapse_buttons", "Use a menu when the buttons exceed the width of the editor",
+						PlatformHelper.isLinux(), IType.BOOL, false).in(NAME, TEXT);
 
 		/** The Constant EDITOR_MINING. */
 		public static final Pref<Boolean> EDITOR_MINING = create("pref_editor_mining",
 				"Inline errors, warnings and information messages", true, IType.BOOL, false).in(NAME, TEXT);
-
-	}
-
-	/**
-	 *
-	 * Simulations tab
-	 *
-	 */
-	public static class Simulations {
-
-		/** The Constant NAME. */
-		public static final String NAME = "Simulations";
 
 	}
 
@@ -453,9 +467,10 @@ public class GamaPreferences {
 						true, IType.BOOL, true).in(NAME, EXECUTION);
 
 		/** The Constant CORE_SLIDER_TYPE. */
-		public static final Pref<Boolean> CORE_SLIDER_TYPE = create("pref_experiment_type_slider",
-				"Set the step duration slider incrementation to linear. If false set to logarithmic", true, IType.BOOL,
-				true).in(NAME, EXECUTION);
+		public static final Pref<Boolean> CORE_SLIDER_TYPE =
+				create("pref_experiment_type_slider", "Incrementation of the step duration slider", true, IType.BOOL,
+						true).in(NAME, EXECUTION).withLabels("Linear", "Logarithmic").withColors(GamaColor.get("white"),
+								GamaColor.get("darkgray"));
 
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =
@@ -506,8 +521,8 @@ public class GamaPreferences {
 						.in(NAME, TESTS).withComment(", if true, will run user models with 'test' experiments");
 
 		/** The Constant FAILED_TESTS. */
-		public static final Pref<Boolean> FAILED_TESTS = create("pref_failed_tests",
-				"Only display (in the UI and in headless runs) failed and aborted tests", false, IType.BOOL, true)
+		public static final Pref<Boolean> FAILED_TESTS =
+				create("pref_failed_tests", "Only display failed and aborted tests", false, IType.BOOL, true)
 						.in(NAME, TESTS).withComment(", if true, only aborted and failed tests are displayed");
 
 		/** The Constant MEMORY. */
@@ -515,22 +530,22 @@ public class GamaPreferences {
 
 		/** The Constant CORE_MEMORY_POLLING. */
 		public static final Pref<Boolean> CORE_MEMORY_POLLING =
-				create("pref_check_memory", "Monitor memory and emit a warning if it is low", true, IType.BOOL, true)
-						.in(NAME, MEMORY).activates("pref_memory_threshold", "pref_memory_frequency");
+				create("pref_check_memory", "Emit a warning when memory is low", true, IType.BOOL, true)
+						.in(NAME, MEMORY).activates("pref_memory_threshold", "pref_memory_frequency").hidden();
 
 		/** The Constant CORE_MEMORY_PERCENTAGE. */
 		public static final Pref<Integer> CORE_MEMORY_PERCENTAGE =
-				create("pref_memory_threshold", "Trigger warnings when the percentage of available memory is below", 20,
-						IType.INT, true).in(NAME, MEMORY);
+				create("pref_memory_threshold", "Emit a warning when the percentage of available memory is under", 20,
+						IType.INT, true).in(NAME, MEMORY).between(0, 100);
 
 		/** The Constant CORE_MEMORY_FREQUENCY. */
 		public static final Pref<Integer> CORE_MEMORY_FREQUENCY = create("pref_memory_frequency",
 				"Interval (in seconds) at which memory should be monitored", 2, IType.INT, true).in(NAME, MEMORY);
 
 		/** The Constant CORE_MEMORY_ACTION. */
-		public static final Pref<Boolean> CORE_MEMORY_ACTION = create("pref_memory_action",
-				"If true, when running out of memory, GAMA will try to close the experiment, otherwise it exits", true,
-				IType.BOOL, true).in(NAME, MEMORY);
+		public static final Pref<Boolean> CORE_MEMORY_ACTION =
+				create("pref_memory_action", "When running out of memory in an experiment, GAMA should", true,
+						IType.BOOL, true).in(NAME, MEMORY).withLabels("Close", "Exit");
 		/**
 		 * Errors & warnings
 		 */
@@ -552,8 +567,8 @@ public class GamaPreferences {
 
 		/** The Constant CORE_RECENT. */
 		public static final Pref<Boolean> CORE_RECENT =
-				create("pref_errors_recent_first", "Display most recent first", true, IType.BOOL, true).in(NAME,
-						ERRORS);
+				create("pref_errors_recent_first", "Display most recent first", true, IType.BOOL, true).in(NAME, ERRORS)
+						.hidden();
 
 		/** The Constant CORE_REVEAL_AND_STOP. */
 		public static final Pref<Boolean> CORE_REVEAL_AND_STOP =
@@ -565,33 +580,31 @@ public class GamaPreferences {
 						ERRORS);
 
 		/** The Constant CORE_ERRORS_EDITOR_LINK. */
-		public static final Pref<Boolean> CORE_ERRORS_EDITOR_LINK = create("pref_errors_in_editor",
-				"Automatically open an editor and point at the faulty part of the model if an error or a warning is thrown",
-				true, IType.BOOL, true).in(NAME, ERRORS);
+		public static final Pref<Boolean> CORE_ERRORS_EDITOR_LINK =
+				create("pref_errors_in_editor", "Show errors in editors", true, IType.BOOL, true).in(NAME, ERRORS);
 
 		/** The Constant SERVER. */
-		public final static String SERVER = "Server mode";
 
 		/** The Constant CORE_SERVER_MODE. */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
-				create("pref_enable_server", "Enables GAMA Server mode", true, IType.BOOL, true).in(NAME, SERVER)
+				create("pref_enable_server", "Enable GAMA Server mode", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER)
 						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
-				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true).in(NAME,
-						SERVER);
+				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true)
+						.in(Network.NAME, Network.SERVER);
 
 		/** The Constant CORE_SERVER_PORT. */
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
-						.in(NAME, SERVER);
+						.in(Network.NAME, Network.SERVER);
 
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
-				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true).in(NAME,
-						SERVER);
-
+				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER);
 	}
 
 	/**
@@ -617,7 +630,7 @@ public class GamaPreferences {
 		/** The Constant CORE_DISPLAY_BORDER. */
 		public static final Pref<Boolean> CORE_DISPLAY_BORDER =
 				create("pref_display_show_border", "Display a border around display views", false, IType.BOOL, true)
-						.in(NAME, PRESENTATION);
+						.in(NAME, PRESENTATION).hidden();
 
 		/** The Constant CORE_DISPLAY_PERSPECTIVE. */
 		public static final Pref<Boolean> CORE_DISPLAY_PERSPECTIVE =
@@ -631,36 +644,23 @@ public class GamaPreferences {
 
 		/** The Constant CORE_DISPLAY_TOOLBAR. */
 		public static final Pref<Boolean> CORE_DISPLAY_TOOLBAR =
-				create("pref_display_show_toolbar", "Show the display top toolbar", true, IType.BOOL, true).in(NAME,
-						PRESENTATION);
+				create("pref_display_show_toolbar", "Show the display top toolbar", true, IType.BOOL, true)
+						.in(NAME, PRESENTATION).hidden();
 
 		/** The Constant CORE_OVERLAY. */
 		public static final Pref<Boolean> CORE_OVERLAY =
-				create("pref_display_show_overlay", "Show the display bottom overlay", false, IType.BOOL, true).in(NAME,
-						PRESENTATION);
-
-		/**
-		 * Charts
-		 */
-		public static final String CHARTS = "Charts Preferences";
-
-		/** The Constant CHART_FLAT. */
-		public static final Pref<Boolean> CHART_FLAT =
-				create("pref_display_flat_charts", "Display 'flat' histograms", true, IType.BOOL, true).in(NAME,
-						CHARTS);
+				create("pref_display_show_overlay", "Show the display bottom overlay", false, IType.BOOL, true)
+						.in(NAME, PRESENTATION).hidden();
 
 		/** The Constant CHART_MEMORIZE. */
 		public static final Pref<Boolean> CHART_MEMORIZE = create("pref_display_memorize_charts",
-				"Keep values in memory (to save them as CSV)", true, IType.BOOL, true).in(NAME, CHARTS);
-
-		/** The Constant CHART_GRIDLINES. */
-		public static final Pref<Boolean> CHART_GRIDLINES =
-				create("pref_chart_display_gridlines", "Display grid lines", true, IType.BOOL, true).in(NAME, CHARTS);
+				"Keep chart values in memory (to save them as CSV) or not (to lower memory usage)", true, IType.BOOL,
+				true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant CHART_QUALITY. */
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Resolution of the charts (from 0, small but fast, to 1, best but resource consuming)", 0.8,
-				IType.FLOAT, true).in(NAME, CHARTS).between(0.1, 1.0);
+				"Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)",
+				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
 
 		/**
 		 * Drawing methods and defaults
@@ -668,9 +668,9 @@ public class GamaPreferences {
 		public static final String DRAWING = "Default Rendering Properties";
 
 		/** The Constant CORE_DISPLAY. */
-		public static final Pref<String> CORE_DISPLAY =
-				create("pref_display_default", "Default rendering method", IKeyword._2D, IType.STRING, true)
-						.among(IKeyword._2D, IKeyword._3D).in(NAME, DRAWING);
+		public static final Pref<Boolean> CORE_DISPLAY =
+				create("pref_display_default2", "Default rendering method", true, IType.BOOL, true)
+						.withLabels("2D using Java", "3D using OpenGL").in(NAME, DRAWING);
 
 		/** The Constant CORE_ANTIALIAS. */
 		public static final Pref<Boolean> CORE_ANTIALIAS =
@@ -698,15 +698,11 @@ public class GamaPreferences {
 		/** The Constant CORE_COLOR. */
 		public static final Pref<GamaColor> CORE_COLOR = create("pref_display_default_color", "Default color of agents",
 				() -> GamaColor.get("yellow"), IType.COLOR, true).in(NAME, DRAWING);
-		/**
-		 * Options
-		 */
-		public static final String OPTIONS = "Advanced ";
 
 		/** The Constant DISPLAY_NO_ACCELERATION. */
 		public static final Pref<Boolean> DISPLAY_NO_ACCELERATION = create("pref_display_no_java2d_acceleration",
 				"Disable acceleration for Java2D (necessary on some configurations)", false, IType.BOOL, true)
-						.in(NAME, OPTIONS).hidden();
+						.in(Experimental.NAME, Experimental.GRAPHICAL);
 		/**
 		 * OPENGL
 		 */
@@ -714,16 +710,18 @@ public class GamaPreferences {
 
 		/** The Constant DISPLAY_ONLY_VISIBLE. */
 		public static final Pref<Boolean> DISPLAY_ONLY_VISIBLE = create("pref_display_visible_agents",
-				"Only display visible agents (faster, may create visual oddities)", false, IType.BOOL, true).in(NAME,
-						RENDERING);
+				"Only display visible agents in OpenGL (faster, may create visual oddities)", false, IType.BOOL, true)
+						.in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant CORE_DRAW_ENV. */
 		public static final Pref<Boolean> CORE_DRAW_ENV =
-				create("pref_display_show_referential", "Draw 3D axes", true, IType.BOOL, true).in(NAME, RENDERING);
+				create("pref_display_show_referential", "Draw 3D axes", true, IType.BOOL, true).in(NAME, RENDERING)
+						.hidden();
 
 		/** The Constant DRAW_ROTATE_HELPER. */
 		public static final Pref<Boolean> DRAW_ROTATE_HELPER =
-				create("pref_display_show_rotation", "Draw rotation axes", true, IType.BOOL, true).in(NAME, RENDERING);
+				create("pref_display_show_rotation", "Draw rotation axes", true, IType.BOOL, true).in(NAME, RENDERING)
+						.hidden();
 
 		/** The Constant CORE_LINE_WIDTH. */
 		public static final Pref<Double> CORE_LINE_WIDTH = create("pref_display_line_width",
@@ -731,28 +729,29 @@ public class GamaPreferences {
 				1d, IType.FLOAT, true).in(NAME, RENDERING);
 
 		/** The Constant ONLY_VISIBLE_FACES. */
-		public static final Pref<Boolean> ONLY_VISIBLE_FACES = create("pref_display_visible_faces",
-				"Draw only the 'external' faces of objects", false, IType.BOOL, true).in(NAME, RENDERING).hidden();
+		public static final Pref<Boolean> ONLY_VISIBLE_FACES =
+				create("pref_display_visible_faces", "Draw only the 'external' faces of objects in OpenGL", false,
+						IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant DISPLAY_SLICE_NUMBER. */
-		public static final Pref<Integer> DISPLAY_SLICE_NUMBER =
-				create("pref_display_slice_number", "Number of slices of circular geometries", 16, IType.INT, true)
-						.in(NAME, RENDERING);
+		public static final Pref<Integer> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
+				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16,
+				IType.INT, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
-		/** The Constant DISPLAY_SLICE_NUMBER. */
+		/** The Constant OPENGL_Z_FIGHTING. */
 		public static final Pref<Boolean> OPENGL_Z_FIGHTING = create("pref_opengl_z_fighting",
-				"Add a small increment to the z ordinate of objects and layers to fight visual artefacts", true,
-				IType.BOOL, true).in(NAME, RENDERING).activates("pref_opengl_z_factor");
+				"In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts",
+				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).activates("pref_opengl_z_factor");
 
 		/** The Constant OPENGL_Z_FACTOR. */
 		public static final Pref<Double> OPENGL_Z_FACTOR =
 				create("pref_opengl_z_factor", "Increment factor (from 0, none, to 1, max)", 0.05, IType.FLOAT, true)
-						.in(NAME, RENDERING).between(0d, 1d).step(0.001);
+						.in(Experimental.NAME, Experimental.GRAPHICAL).between(0d, 1d).step(0.001);
 
 		/** The Constant OPENGL_TEXTURE_ORIENTATION. */
 		public static final Pref<Boolean> OPENGL_TEXTURE_ORIENTATION = create("pref_texture_orientation",
-				"Orient the textures according to the geometry on which they are displayed (may create visual oddities)",
-				true, IType.BOOL, true).in(NAME, RENDERING);
+				"In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)",
+				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 		/**
 		 * Options
 		 */
@@ -771,14 +770,14 @@ public class GamaPreferences {
 						.in(NAME, RENDERING).between(0.01, 1.0).step(0.01);
 
 		/** The Constant OPENGL_CAP_FPS. */
-		public static final Pref<Boolean> OPENGL_CAP_FPS =
-				create("pref_display_cap_fps", "Limit the number of frames per second", false, IType.BOOL, true)
-						.in(NAME, RENDERING).activates("pref_display_max_fps");
+		public static final Pref<Boolean> OPENGL_CAP_FPS = create("pref_display_cap_fps",
+				"Limit the number of frames per second if you experience stuttering in the rendering", false,
+				IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).activates("pref_display_max_fps");
 
 		/** The Constant OPENGL_FPS. */
 		public static final Pref<Integer> OPENGL_FPS =
-				create("pref_display_max_fps", "Max. number of frames per second", 60, IType.INT, true).in(NAME,
-						RENDERING);
+				create("pref_display_max_fps", "Max. number of frames per second", 60, IType.INT, true)
+						.in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant DISPLAY_POWER_OF_TWO. */
 		// public static final Pref<Boolean> DISPLAY_POWER_OF_TWO = create("pref_display_power_of_2",
@@ -797,12 +796,12 @@ public class GamaPreferences {
 		/** The Constant OPENGL_USE_IMAGE_CACHE. */
 		public static final Pref<Boolean> OPENGL_USE_IMAGE_CACHE = create("pref_display_use_cache",
 				"Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)",
-				true, IType.BOOL, true).in(NAME, RENDERING);
+				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/** The Constant OPENGL_DEFAULT_LIGHT_INTENSITY. */
 		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
-				"Set the default intensity of the ambient and default lights (from 0, completely dark, to 255, completely light)",
-				160, IType.INT, true).in(NAME, RENDERING).between(0, 255);
+				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
+						.in(NAME, RENDERING).between(0, 255);
 
 	}
 
@@ -813,27 +812,26 @@ public class GamaPreferences {
 
 		/** The Constant NAME. */
 		public static final String NAME = "Data and Operators";
-		/**
-		 * Http connections
-		 */
-		public static final String HTTP = "Http connections";
 
 		/** The Constant CORE_HTTP_CONNECT_TIMEOUT. */
 		public static final Pref<Integer> CORE_HTTP_CONNECT_TIMEOUT =
-				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000, IType.INT, true).in(NAME,
-						HTTP);
+				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000, IType.INT, true)
+						.in(Network.NAME, Network.HTTP);
 
 		/** The Constant CORE_HTTP_READ_TIMEOUT. */
 		public static final Pref<Integer> CORE_HTTP_READ_TIMEOUT =
-				create("pref_http_read_timeout", "Read timeout (in ms)", 20000, IType.INT, true).in(NAME, HTTP);
+				create("pref_http_read_timeout", "Read timeout (in ms)", 20000, IType.INT, true).in(Network.NAME,
+						Network.HTTP);
 
 		/** The Constant CORE_HTTP_RETRY_NUMBER. */
-		public static final Pref<Integer> CORE_HTTP_RETRY_NUMBER = create("pref_http_retry_number",
-				"Number of times to retry if connection cannot be established", 3, IType.INT, true).in(NAME, HTTP);
+		public static final Pref<Integer> CORE_HTTP_RETRY_NUMBER =
+				create("pref_http_retry_number", "Number of times to retry if connection cannot be established", 3,
+						IType.INT, true).in(Network.NAME, Network.HTTP);
 
 		/** The Constant CORE_HTTP_EMPTY_CACHE. */
-		public static final Pref<Boolean> CORE_HTTP_EMPTY_CACHE = create("pref_http_empty_cache",
-				"Empty the local cache of files downloaded from the web", true, IType.BOOL, true).in(NAME, HTTP);
+		public static final Pref<Boolean> CORE_HTTP_EMPTY_CACHE =
+				create("pref_http_empty_cache", "Empty the local cache of files downloaded from the web", true,
+						IType.BOOL, true).in(Network.NAME, Network.HTTP);
 
 		/**
 		 * Random numbers
@@ -859,44 +857,6 @@ public class GamaPreferences {
 		 * Dates
 		 */
 		public static final String DATES = "Management of dates";
-		/**
-		 * Optimizations
-		 */
-		public static final String OPTIMIZATIONS = "Optimizations";
-
-		/** The Constant AT_DISTANCE_OPTIMIZATION. */
-		public static final Pref<Boolean> AT_DISTANCE_OPTIMIZATION =
-				create("pref_optimize_at_distance", "Optimize the 'at_distance' operator", true, IType.BOOL, true)
-						.in(NAME, OPTIMIZATIONS);
-
-		/** The Constant PATH_COMPUTATION_OPTIMIZATION. */
-		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
-				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
-				IType.BOOL, true).in(NAME, OPTIMIZATIONS);
-
-		/** The Constant TOLERANCE_POINTS. */
-		public static final Pref<Double> TOLERANCE_POINTS =
-				create("pref_point_tolerance", "Tolerance for the comparison of points", 0.0, IType.FLOAT, true)
-						.in(NAME, OPTIMIZATIONS);
-
-		/** The Constant SHAPEFILE_IN_MEMORY. */
-		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
-				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
-				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
-
-		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
-		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY =
-				create(PREF_SAVE_BUFFERING_STRATEGY, "Default buffering strategy for the save statement",
-						BufferingController.NO_BUFFERING, IType.STRING, true)
-								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
-								.in(NAME, OPTIMIZATIONS);
-
-		/** The Constant DEFAULT_WRITE_BUFFERING_STRATEGY. */
-		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY =
-				create(PREF_WRITE_BUFFERING_STRATEGY, "Default buffering strategy for the write statement",
-						BufferingController.NO_BUFFERING, IType.STRING, true)
-								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
-								.in(NAME, OPTIMIZATIONS);
 
 		/**
 		 * Paths to libraries
@@ -966,17 +926,24 @@ public class GamaPreferences {
 	public static class Experimental {
 
 		/** The Constant NAME. */
-		public static final String NAME = "Experimental";
+		public static final String NAME = "Advanced";
 		/**
 		 * Http connections
 		 */
 		public static final String CATEGORY =
 				" These features have not been fully tested. Enable them at your own risks.";
 
+		/** The Constant OPTIMIZATIONS. */
+		public static final String OPTIMIZATIONS = "These optimizations are considered safe";
+
+		/** The Constant GRAPHICAL. */
+		public static final String GRAPHICAL =
+				"Various graphics optimizations to speed up displays and/or reduce memory usage. Some can produce visual oddities";
+
 		/** The Constant REQUIRED_PLUGINS. */
 		public static final Pref<Boolean> REQUIRED_PLUGINS = create("pref_required_plugins",
 				"Automatically add the plugins required to compile and run a model when editing it", false, IType.BOOL,
-				false).in(NAME, CATEGORY);
+				false).in(NAME, CATEGORY).hidden();
 
 		/** The Constant QUADTREE_OPTIMIZATION. */
 		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",
@@ -994,10 +961,42 @@ public class GamaPreferences {
 						.in(NAME, CATEGORY).onChange(v -> {
 							try {
 								ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-							} catch (
-										/** The e. */
-							CoreException e) {}
-						});
+							} catch (CoreException e) {}
+						}).hidden();
+
+		/** The Constant AT_DISTANCE_OPTIMIZATION. */
+		public static final Pref<Boolean> AT_DISTANCE_OPTIMIZATION =
+				create("pref_optimize_at_distance", "Optimize the 'at_distance' operator", true, IType.BOOL, true)
+						.in(NAME, OPTIMIZATIONS);
+
+		/** The Constant PATH_COMPUTATION_OPTIMIZATION. */
+		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
+				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
+				IType.BOOL, true).in(NAME, OPTIMIZATIONS);
+
+		/** The Constant TOLERANCE_POINTS. */
+		public static final Pref<Double> TOLERANCE_POINTS =
+				create("pref_point_tolerance", "Tolerance for the comparison of points", 0.0, IType.FLOAT, true)
+						.in(NAME, OPTIMIZATIONS);
+
+		/** The Constant SHAPEFILE_IN_MEMORY. */
+		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
+				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
+				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
+
+		/** The Constant DEFAULT_BUFFERING_STRATEGY. */
+		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY =
+				create(PREF_SAVE_BUFFERING_STRATEGY, "Default buffering strategy for the save statement",
+						BufferingController.NO_BUFFERING, IType.STRING, true)
+								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+								.in(NAME, OPTIMIZATIONS);
+
+		/** The Constant DEFAULT_WRITE_BUFFERING_STRATEGY. */
+		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY =
+				create(PREF_WRITE_BUFFERING_STRATEGY, "Default buffering strategy for the write statement",
+						BufferingController.NO_BUFFERING, IType.STRING, true)
+								.among(BufferingController.BUFFERING_STRATEGIES.stream().toList())
+								.in(NAME, OPTIMIZATIONS);
 
 		/** The Constant USE_POOLING. */
 		public static final Pref<Boolean> USE_POOLING =
@@ -1103,6 +1102,7 @@ public class GamaPreferences {
 	 */
 	public static Map<String, Map<String, List<Pref<?>>>> organizePrefs() {
 		final Map<String, Map<String, List<Pref<?>>>> result = GamaMapFactory.create();
+		for (String tab : ORDER_OF_PREFERENCES) { result.put(tab, GamaMapFactory.create()); }
 		for (final Pref<?> e : prefs.values()) {
 			if (e.isHidden()) { continue; }
 			final var tab = e.tab;
@@ -1218,25 +1218,29 @@ public class GamaPreferences {
 
 	// To force preferences to load
 
-	/** The i. */
-	static Interface i_ = new Interface();
-
-	/** The m. */
-	static Modeling m_ = new Modeling();
-
-	/** The r. */
-	static Runtime r_ = new Runtime();
-
-	/** The s. */
-	static Simulations s_ = new Simulations();
-
-	/** The d. */
-	static Displays d_ = new Displays();
-
-	/** The ext. */
-	static External ext_ = new External();
-
-	/** The exp. */
-	static Experimental exp_ = new Experimental();
+	/** The order of preferences. */
+	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
+			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);
+	//
+	// /** The i. */
+	// static Interface i_ = new Interface();
+	//
+	// /** The m. */
+	// static Modeling m_ = new Modeling();
+	//
+	// /** The r. */
+	// static Runtime r_ = new Runtime();
+	//
+	// /** The s. */
+	// static Simulations s_ = new Simulations();
+	//
+	// /** The d. */
+	// static Displays d_ = new Displays();
+	//
+	// /** The ext. */
+	// static External ext_ = new External();
+	//
+	// /** The exp. */
+	// static Experimental exp_ = new Experimental();
 
 }

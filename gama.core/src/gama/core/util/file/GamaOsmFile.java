@@ -13,7 +13,6 @@ package gama.core.util.file;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -78,6 +77,8 @@ import gama.dependencies.osmosis.Way;
 import gama.dependencies.osmosis.WayNode;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Strings;
+import gama.gaml.operators.spatial.SpatialOperators;
+import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -283,7 +284,7 @@ public class GamaOsmFile extends GamaGisFile {
 	final static List<String> featureTypes = Arrays.asList("aerialway", "aeroway", "amenity", "barrier", "boundary",
 			"building", "craft", "emergency", "geological", "highway", "historic", "landuse", "leisure", "man_made",
 			"military", "natural", "office", "place", "power", "public_transport", "railway", "route", "shop", "sport",
-			"tourism", "waterway");
+			"tourism", "waterway", "water");
 
 	/** The nb objects. */
 	int nbObjects;
@@ -380,15 +381,15 @@ public class GamaOsmFile extends GamaGisFile {
 						nodes.add(node);
 
 					} else if (entity instanceof Way) {
-						boolean keepObject = keepEntity(toFilter, entity);
-						if (!keepObject) return;
+						/*boolean keepObject = keepEntity(toFilter, entity);
+						if (!keepObject) return;*/
 						registerHighway((Way) entity, usedNodes, intersectionNodes);
 						ways.add((Way) entity);
 
 					} else if (entity instanceof Relation) {
 						boolean keepObject = keepEntity(toFilter, entity);
 						if (!keepObject) return;
-						relations.add((Relation) entity);
+						relations.add((Relation) entity); 
 					}
 				}
 
@@ -495,6 +496,8 @@ public class GamaOsmFile extends GamaGisFile {
 	public IList<IShape> buildGeometries(final IScope scope, final Set<Node> nodes, final List<Way> ways,
 			final List<Relation> relations, final Set<Long> intersectionNodes, final Map<Long, GamaShape> nodesPt,
 			final Map<Long, Node> nodesFromId) {
+		
+		boolean toFilter = filteringOptions != null && !filteringOptions.isEmpty();
 		for (final Way way : ways) {
 			for (WayNode wn : way.getWayNodes()) { nodes.add(nodesFromId.get(wn.getNodeId())); }
 		}
@@ -512,7 +515,7 @@ public class GamaOsmFile extends GamaGisFile {
 		final Map<Long, Entity> geomMap = new HashMap<>();
 
 		for (final Node node : nodes) {
-			geomMap.put(node.getId(), node);
+			//geomMap.put(node.getId(), node);
 			final GamaShape pt = nodesPt.get(node.getId());
 			final boolean hasAttributes = !node.getTags().isEmpty();
 			final Map<String, String> atts = new HashMap<>();
@@ -553,6 +556,8 @@ public class GamaOsmFile extends GamaGisFile {
 		}
 		for (final Way way : ways) {
 			geomMap.put(way.getId(), way);
+			boolean keepObject = keepEntity(toFilter, way);
+			if (!keepObject) continue;
 			final IMap<String, Object> values = GamaMapFactory.create();
 			final Map<String, String> atts = GamaMapFactory.createUnordered();
 
@@ -626,43 +631,142 @@ public class GamaOsmFile extends GamaGisFile {
 
 		}
 		for (final Relation relation : relations) {
+			final Map<String, String> atts = GamaMapFactory.createUnordered();
 			final Map<String, Object> values = GamaMapFactory.create();
 
 			for (final Tag tg : relation.getTags()) {
 				final String key = tg.getKey();
 				values.put(key, tg.getValue());
 			}
-
-			int order = 0;
-			for (final RelationMember member : relation.getMembers()) {
-				final Entity entity = geomMap.get(member.getMemberId());
-				if (entity instanceof Way) {
-					final List<WayNode> relationWays = ((Way) entity).getWayNodes();
-					final Map<String, Object> wayValues = GamaMapFactory.create();
-					wayValues.put("entity_order", order++);
-					// TODO FIXME AD: What's that ??
-					wayValues.put("gama_bus_line", values.get("name"));
-					wayValues.put("osm_way_id", ((Way) entity).getId());
-					if (relationWays.size() > 0) {
-						final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
-						geometries.addAll(geoms);
-					}
-				} else if (entity instanceof Node) {
-					final GamaShape pt = nodesPt.get(((Node) entity).getId());
-					final GamaShape pt2 = pt.copy(scope);
-
-					final List objs = GamaListFactory.create(Types.GEOMETRY);
-					objs.add(pt2);
-
-					pt2.setAttribute("gama_bus_line", values.get("name"));
-
-					geometries.add(pt2);
-
-				}
+			String type = (String) values.get("type");
+			if ("polygon".equals(type) || "multipolygon".equals(type)) {
+				
+				managePolygonRelation(scope, relation, geometries, geomMap, values,  nodesPt,intersectionNodes , atts) ;
+						
+			} else {
+				 manageNormalRelation(scope, relation, geometries, geomMap, values,  nodesPt,intersectionNodes ) ;
+					
 			}
+
+			
 		}
 		nbObjects = geometries == null ? 0 : geometries.size();
 		return geometries;
+	}
+	
+	
+	private void managePolygonRelation(IScope scope, Relation relation, final IList<IShape> geometries, final Map<Long, Entity> geomMap, final Map<String, Object> values,  final Map<Long, GamaShape> nodesPt, final Set<Long> intersectionNodes, Map<String, String> atts ) {
+		final List<IShape> points = GamaListFactory.create(Types.GEOMETRY);
+		
+		IList<IList<IShape>> ptsList = GamaListFactory.create() ;
+		IList<IShape> inner = GamaListFactory.create() ;
+		for (final RelationMember member : relation.getMembers()) {
+			final Entity entity = geomMap.get(member.getMemberId());
+			if (entity instanceof Way) {
+				IList<IShape> pts = GamaListFactory.create() ;
+				final Way way = ((Way) entity);
+				for (final WayNode node : way.getWayNodes()) {
+					final GamaShape pp = nodesPt.get(node.getNodeId());
+					if (pp == null) { continue; }
+					pts.add(pp);
+					
+					
+				}
+				if (member.getMemberRole().equals("outer"))
+					ptsList.add(pts);
+				else {
+					inner.add(GamaGeometryType.buildPolygon(pts));
+				}
+				
+			}
+		}
+		if (ptsList.size() > 1) {
+			IList<IShape> ptsCurrent = ptsList.get(0);
+			ptsList.remove(ptsCurrent);
+			for(IList<IShape>  pts : ptsList) {
+				int id = ptsCurrent.indexOf(pts.get(0));
+				if (id >= 0) {
+					if (id == 0) {
+						ptsCurrent.addAll(id, pts.reversed());
+					} else {
+						ptsCurrent.addAll(id, pts);
+					}
+					
+				}
+					
+			}
+			points.addAll(ptsCurrent);
+			
+		} else if (!ptsList.isEmpty()){
+			points.addAll(ptsList.get(0));
+		}
+		
+		if (points.size() < 3) { return; }
+
+		IShape geomTmp = GamaGeometryType.buildPolygon(points);
+		
+		
+		if (geomTmp != null && geomTmp.getInnerGeometry() != null && !geomTmp.getInnerGeometry().isEmpty()
+				&& geomTmp.getInnerGeometry().getArea() > 0) {
+			
+			if (inner != null &&!inner.isEmpty())
+				geomTmp = SpatialOperators.minus(scope, geomTmp, inner);
+			
+			
+			final IShape geom = SpatialTransformations.clean(scope, geomTmp);
+			values.forEach((k, v) -> geom.setAttribute(k, v));
+			
+			geometries.add(geom);
+			geom.forEachAttribute((att, val) -> {
+				final String idType = att + " (polygon)";
+				if (featureTypes.contains(att)) {
+					List objs = layers.get(idType);
+					if (objs == null) {
+						objs = GamaListFactory.create(Types.GEOMETRY);
+						layers.put(idType, objs);
+					}
+					objs.add(geom);
+					for (final String v : atts.keySet()) {
+						final String id = idType + ";" + v;
+						attributes.put(id, atts.get(v));
+					}
+					return false;
+				}
+				return true;
+			});
+		}
+
+		
+	}
+	
+	private void manageNormalRelation(IScope scope, Relation relation, final IList<IShape> geometries, final Map<Long, Entity> geomMap, final Map<String, Object> values,  final Map<Long, GamaShape> nodesPt, final Set<Long> intersectionNodes ) {
+		int order = 0;
+		for (final RelationMember member : relation.getMembers()) {
+			final Entity entity = geomMap.get(member.getMemberId());
+			if (entity instanceof Way) {
+				final List<WayNode> relationWays = ((Way) entity).getWayNodes();
+				final Map<String, Object> wayValues = GamaMapFactory.create();
+				wayValues.put("entity_order", order++);
+				// TODO FIXME AD: What's that ??
+				wayValues.put("gama_bus_line", values.get("name"));
+				wayValues.put("osm_way_id", ((Way) entity).getId());
+				if (relationWays.size() > 0) {
+					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
+					geometries.addAll(geoms);
+				}
+			} else if (entity instanceof Node) {
+				final GamaShape pt = nodesPt.get(((Node) entity).getId());
+				final GamaShape pt2 = pt.copy(scope);
+
+				final List objs = GamaListFactory.create(Types.GEOMETRY);
+				objs.add(pt2);
+
+				pt2.setAttribute("gama_bus_line", values.get("name"));
+
+				geometries.add(pt2);
+
+			}
+		}
 	}
 
 	/**

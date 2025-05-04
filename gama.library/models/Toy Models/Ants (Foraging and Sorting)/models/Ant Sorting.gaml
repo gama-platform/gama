@@ -46,7 +46,7 @@ global {
 species ant skills: [moving] control: fsm {
 	rgb color <- #white;
 	ant_grid place -> ant_grid(location);
-	file img <- image_file("../images/ant.png");
+	image_file img <- image_file("../images/ant.png");
 
 	//Reflex to make the ant wander
 	reflex wandering {

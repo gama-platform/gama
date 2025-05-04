@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * VariableDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,9 +24,9 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
@@ -34,8 +34,8 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.ICollector;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaHelper;
-import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -545,6 +545,16 @@ public class VariableDescription extends SymbolDescription {
 		} else {
 			super.flagError(s, code, type, source, data);
 		}
+	}
+
+	/**
+	 * Compute type. By default, variable declarations do not try to infer their type from the value facets. See #385
+	 *
+	 * @return the i type
+	 */
+	@Override
+	protected IType<?> computeType() {
+		return computeType(false);
 	}
 
 }

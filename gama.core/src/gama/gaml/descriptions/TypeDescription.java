@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TypeDescription.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
@@ -311,7 +311,7 @@ public abstract class TypeDescription extends SymbolDescription {
 			/// temporay fix for co-model, variable in micro-model can be
 			// defined multi time
 			if (!"".equals(newVar.getModelDescription().getAlias())) return;
-			///
+
 			existingVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION,
 					NAME);
 			newVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION, NAME);
@@ -601,7 +601,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	public final boolean isAbstract() { return isSet(Flag.Abstract); }
 
 	@Override
-	protected IType computeType() {
+	protected IType computeType(final boolean doTypeInference) {
 		return getTypeNamed(getName());
 	}
 

@@ -446,6 +446,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton addMenuSign() {
 		addMenuSign = true;
+		computePreferredSize();
 		return this;
 	}
 
@@ -458,7 +459,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton removeMenuSign() {
 		addMenuSign = false;
-		// imageStyle = IMAGE_LEFT;
+		computePreferredSize();
 		return this;
 	}
 
@@ -467,7 +468,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *
 	 * @return the int
 	 */
-	private int computeWidthOfText() {
+	public int computeWidthOfText() {
 		if (text != null) {
 			final GC gc = new GC(this);
 			gc.setFont(getFont());
@@ -481,19 +482,19 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	/**
 	 * Compute preferred size.
 	 */
-	private void computePreferredSize() {
+	public void computePreferredSize() {
 		final Image im = getImage();
 		if (im != null || addMenuSign) {
-			Rectangle bounds = new Rectangle(0, 0, 0, 0);
+			Rectangle imageBounds = new Rectangle(0, 0, 0, 0);
 			if (im != null) {
-				bounds = im.getBounds();
-				preferredWidth = bounds.width + imagePadding;
+				imageBounds = im.getBounds();
+				preferredWidth = imageBounds.width + imagePadding;
 			}
 			if (addMenuSign) {
-				bounds.height = Math.max(bounds.height, menuImageBounds.height);
+				imageBounds.height = Math.max(imageBounds.height, menuImageBounds.height);
 				preferredWidth += (menuImageBounds.width + imagePadding) * 2;
 			}
-			preferredHeight = bounds.height + imagePadding;
+			preferredHeight = imageBounds.height + imagePadding;
 		}
 		if (text != null) {
 			final GC gc = new GC(this);
@@ -676,10 +677,10 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		super.setBounds(x, y, width, height);
 	}
 
-//	@Override
-//	public void setBounds(final Rectangle rect) {
-//		setBounds(rect.x, rect.y, rect.width, rect.height);
-//	}
+	// @Override
+	// public void setBounds(final Rectangle rect) {
+	// setBounds(rect.x, rect.y, rect.width, rect.height);
+	// }
 
 	/**
 	 * Sets the right padding. The width of the container composite should already have been sufficiently enlarged to

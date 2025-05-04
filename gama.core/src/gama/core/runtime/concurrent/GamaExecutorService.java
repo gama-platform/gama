@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaExecutorService.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,6 +32,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
+import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;;
 
 /**
@@ -87,28 +88,28 @@ public abstract class GamaExecutorService {
 
 	/** The Constant CONCURRENCY_SIMULATIONS. */
 	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS =
-			create("pref_parallel_simulations", "Make experiments run simulations in parallel", true, IType.BOOL, true)
-					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+			create("pref_parallel_simulations", "Allow experiments to run simulations in parallel", true, IType.BOOL,
+					true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant CONCURRENCY_SIMULATIONS_ALL. */
 	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS_ALL = create("pref_parallel_simulations_all",
-			"In batch, allows to run simulations with all available processors"
+			"In batch, allow to run simulations with all available processors"
 					+ "[WARNING: disables reflexes and permanent displays of batch experiments]",
 			false, IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant CONCURRENCY_GRID. */
 	public static final Pref<Boolean> CONCURRENCY_GRID = create("pref_parallel_grids",
-			"Make grids schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)",
-			false, IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+			"Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)", false,
+			IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant CONCURRENCY_SPECIES. */
 	public static final Pref<Boolean> CONCURRENCY_SPECIES = create("pref_parallel_species",
-			"Make species schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)",
-			false, IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+			"Make species schedule their agents in parallel (prevents the reproducibility of simulations)", false,
+			IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant CONCURRENCY_THRESHOLD. */
 	public static final Pref<Integer> CONCURRENCY_THRESHOLD =
-			create("pref_parallel_threshold", "Number under which agents are executed sequentially", 20, IType.INT,
+			create("pref_parallel_threshold", "Size under which populations are executed sequentially", 20, IType.INT,
 					true).between(1, null).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant THREADS_NUMBER. */
@@ -173,35 +174,24 @@ public abstract class GamaExecutorService {
 	 *         threshold of n
 	 */
 	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
-		if (concurrency != null) {
-			final Object o = concurrency.value(scope);
-			if (o instanceof Boolean) {
-				if (o.equals(Boolean.FALSE)) return 0;
+		switch (GamaType.of(concurrency).id()) {
+			case IType.BOOL: {
+				Boolean c = (Boolean) concurrency.value(scope);
+				if (Boolean.FALSE.equals(c)) return 0;
 				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
 				return CONCURRENCY_THRESHOLD.getValue();
 			}
-			if (o instanceof Integer) return Math.abs((Integer) o);
-			return getParallelism(scope, null, caller);
-		}
-		switch (caller) {
-			case SIMULATION:
-				if (CONCURRENCY_SIMULATIONS.getValue())
-					return THREADS_NUMBER.getValue();
-				else
-					return 0;
-			case SPECIES:
-				if (CONCURRENCY_SPECIES.getValue())
-					return CONCURRENCY_THRESHOLD.getValue();
-				else
-					return 0;
-			case GRID:
-				if (CONCURRENCY_GRID.getValue())
-					return CONCURRENCY_THRESHOLD.getValue();
-				else
-					return 0;
+			case IType.INT:
+				return Math.abs((Integer) concurrency.value(scope));
 			default:
-				return 0;
+				break;
 		}
+		return switch (caller) {
+			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue() : 0;
+			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			case GRID -> CONCURRENCY_GRID.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			default -> 0;
+		};
 	}
 
 	/**

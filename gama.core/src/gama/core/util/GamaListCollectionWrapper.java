@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaListCollectionWrapper.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaListCollectionWrapper.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -25,8 +25,8 @@ import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
 /**
- * A wrapper that tries to wrap a Set into an IList. Not all operations are meaningful (those with indices in
- * particular) and some are really costly (listIterators).
+ * A wrapper that tries to wrap a Collection into an IList. Not all operations are meaningful (those with indices in
+ * particular) and some are really costly (listIterators). Wrapped can not be a List.
  *
  * @author drogoul
  *
@@ -36,15 +36,17 @@ public class GamaListCollectionWrapper<E> extends ForwardingCollection<E> implem
 
 	/** The wrapped. */
 	final Collection<E> wrapped;
-	
+
 	/** The type. */
 	final IContainerType type;
 
 	/**
 	 * Instantiates a new gama list collection wrapper.
 	 *
-	 * @param wrapped the wrapped
-	 * @param contents the contents
+	 * @param wrapped
+	 *            the wrapped
+	 * @param contents
+	 *            the contents
 	 */
 	GamaListCollectionWrapper(final Collection<E> wrapped, final IType contents) {
 		this.type = Types.LIST.of(contents);
@@ -53,15 +55,13 @@ public class GamaListCollectionWrapper<E> extends ForwardingCollection<E> implem
 
 	@Override
 	public boolean equals(final Object other) {
-		if (other == this) { return true; }
-		if (!(other instanceof IList)) { return false; }
+		if (other == this) return true;
+		if (!(other instanceof IList)) return false;
 		return GamaListFactory.equals(this, (IList) other);
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() {
-		return type;
-	}
+	public IContainerType<?> getGamlType() { return type; }
 
 	@Override
 	protected Collection<E> delegate() {
@@ -70,78 +70,58 @@ public class GamaListCollectionWrapper<E> extends ForwardingCollection<E> implem
 
 	@Override
 	public boolean addAll(final int index, final Collection<? extends E> c) {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).addAll(index, c); }
 		return addAll(c);
 	}
 
 	@Override
 	public E get(final int index) {
-		if (index > size() - 1) { return null; }
-		if (wrapped instanceof List) { return ((List<E>) wrapped).get(index); }
+		if (index > size() - 1) return null;
 		return Iterables.get(wrapped, index);
 	}
 
 	@Override
 	public E set(final int index, final E element) {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).set(index, element); }
 		final E old = get(index);
-		// No real meaning for collections
-		if (add(element)) {
-			return old;
-		} else {
-			return null;
-		}
+		add(element);
+		return old;
 	}
 
 	@Override
 	public void add(final int index, final E element) {
-		if (wrapped instanceof List) {
-			((List<E>) wrapped).add(index, element);
-		} else {
-			// No real meaning for collections
-			add(element);
-		}
+		add(element);
 	}
 
 	@Override
 	public E remove(final int index) {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).remove(index); }
 		final E element = get(index);
-		if (remove(element)) {
-			return element;
-		} else {
-			return null;
-		}
+		remove(element);
+		return element;
 	}
 
 	@Override
 	public int indexOf(final Object o) {
-		return Iterables.indexOf(wrapped, (o1) -> Objects.equal(o, o1));
+		return Iterables.indexOf(wrapped, o1 -> Objects.equal(o, o1));
 	}
 
 	@Override
 	public int lastIndexOf(final Object o) {
 		// Same as indexOf for collections
-		if (wrapped instanceof List) { return ((List) wrapped).lastIndexOf(o); }
 		return new ArrayList<>(wrapped).lastIndexOf(o);
 	}
 
 	@Override
 	public ListIterator<E> listIterator() {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).listIterator(); }
 		return new ArrayList<>(wrapped).listIterator();
 	}
 
 	@Override
 	public ListIterator<E> listIterator(final int index) {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).listIterator(index); }
 		return new ArrayList<>(wrapped).listIterator(index);
 	}
 
 	@Override
 	public List<E> subList(final int fromIndex, final int toIndex) {
-		if (wrapped instanceof List) { return ((List<E>) wrapped).subList(fromIndex, toIndex); }
-		return this;
+		return new ArrayList<>(wrapped).subList(fromIndex, toIndex);
 	}
 
 	@Override

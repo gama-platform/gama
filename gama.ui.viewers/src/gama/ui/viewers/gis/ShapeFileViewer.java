@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ShapeFileViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ShapeFileViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis;
 
@@ -55,10 +55,9 @@ import gama.dev.DEBUG;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.PreferencesHelper;
-import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gama.ui.viewers.gis.geotools.styling.Mode;
 import gama.ui.viewers.gis.geotools.styling.SLDs;
 import gama.ui.viewers.gis.geotools.styling.Utils;
@@ -66,11 +65,11 @@ import gama.ui.viewers.gis.geotools.styling.Utils;
 /**
  * The Class ShapeFileViewer.
  */
-public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedView.Colorizable {
+public class ShapeFileViewer extends GISFileViewer {
 
 	/** The mode. */
 	Mode mode;
-	
+
 	/** The fts. */
 	FeatureTypeStyle fts;
 
@@ -129,7 +128,7 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 			}
 		}
 
-		final ToolItem item = toolbar.menu(color, s, SWT.LEFT);
+		final ToolItem item = toolbar.status( s);
 		if (info != null) {
 			((FlatButton) item.getControl()).addSelectionListener(new SelectionAdapter() {
 
@@ -193,46 +192,70 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 	/**
 	 * Sets the stroke color.
 	 *
-	 * @param color the color
-	 * @param mode the mode
-	 * @param fts the fts
+	 * @param color
+	 *            the color
+	 * @param mode
+	 *            the mode
+	 * @param fts
+	 *            the fts
 	 */
 	public void setStrokeColor(final Color color, final Mode mode, final FeatureTypeStyle fts) {
-		if (mode == Mode.LINE) {
-			final LineSymbolizer sym = SLD.lineSymbolizer(fts);
-			SLD.setLineColour(sym, color);
-		} else if (mode == Mode.POLYGON) {
-			final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
-			final Stroke s = new StyleBuilder().createStroke(color);
-			sym.setStroke(s);
-		} else if (mode == Mode.POINT || mode == Mode.ALL) { // default to
-																// handling as
-																// Point
-			final PointSymbolizer sym = SLD.pointSymbolizer(fts);
-			SLD.setPointColour(sym, color);
+		switch (mode) {
+			case LINE: {
+				final LineSymbolizer sym = SLD.lineSymbolizer(fts);
+				SLD.setLineColour(sym, color);
+				break;
+			}
+			case POLYGON: {
+				final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
+				final Stroke s = new StyleBuilder().createStroke(color);
+				sym.setStroke(s);
+				break;
+			}
+			case POINT:
+			case ALL: {
+				// handling as
+				// Point
+				final PointSymbolizer sym = SLD.pointSymbolizer(fts);
+				SLD.setPointColour(sym, color);
+				break;
+			}
+			case null:
+			default:
+				break;
 		}
 	}
 
 	/**
 	 * Gets the stroke.
 	 *
-	 * @param mode the mode
-	 * @param fts the fts
+	 * @param mode
+	 *            the mode
+	 * @param fts
+	 *            the fts
 	 * @return the stroke
 	 */
 	public Stroke getStroke(final Mode mode, final FeatureTypeStyle fts) {
 		// Stroke stroke = null;
-		if (mode == Mode.LINE) {
-			final LineSymbolizer sym = SLD.lineSymbolizer(fts);
-			return SLD.stroke(sym);
-		} else if (mode == Mode.POLYGON) {
-			final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
-			return SLD.stroke(sym);
-		} else if (mode == Mode.POINT || mode == Mode.ALL) { // default to
-																// handling as
-																// Point
-			final PointSymbolizer sym = SLD.pointSymbolizer(fts);
-			return SLD.stroke(sym);
+		switch (mode) {
+			case LINE: {
+				final LineSymbolizer sym = SLD.lineSymbolizer(fts);
+				return SLD.stroke(sym);
+			}
+			case POLYGON: {
+				final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
+				return SLD.stroke(sym);
+			}
+			case POINT:
+			case ALL: {
+				// handling as
+				// Point
+				final PointSymbolizer sym = SLD.pointSymbolizer(fts);
+				return SLD.stroke(sym);
+			}
+			case null:
+			default:
+				break;
 		}
 		return new StyleBuilder().createStroke();
 	}
@@ -240,17 +263,20 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 	/**
 	 * Gets the fill.
 	 *
-	 * @param mode the mode
-	 * @param fts the fts
+	 * @param mode
+	 *            the mode
+	 * @param fts
+	 *            the fts
 	 * @return the fill
 	 */
 	public Fill getFill(final Mode mode, final FeatureTypeStyle fts) {
 		if (mode == Mode.POLYGON) {
 			final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
 			return SLD.fill(sym);
-		} else if (mode == Mode.POINT || mode == Mode.ALL) { // default to
-																// handling as
-																// Point
+		}
+		if (mode == Mode.POINT || mode == Mode.ALL) { // default to
+														// handling as
+														// Point
 			final PointSymbolizer sym = SLD.pointSymbolizer(fts);
 			return SLD.fill(sym);
 		}
@@ -260,9 +286,12 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 	/**
 	 * Sets the fill color.
 	 *
-	 * @param color the color
-	 * @param mode the mode
-	 * @param fts the fts
+	 * @param color
+	 *            the color
+	 * @param mode
+	 *            the mode
+	 * @param fts
+	 *            the fts
 	 */
 	public void setFillColor(final Color color, final Mode mode, final FeatureTypeStyle fts) {
 		if (mode == Mode.POLYGON) {
@@ -280,25 +309,32 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 	/**
 	 * Determine mode.
 	 *
-	 * @param schema the schema
-	 * @param def the def
+	 * @param schema
+	 *            the schema
+	 * @param def
+	 *            the def
 	 * @return the mode
 	 */
 	public Mode determineMode(final SimpleFeatureType schema, final String def) {
-		if (schema == null) {
-			return Mode.NONE;
-		} else if (SLDs.isLine(schema)) {
+		if (schema == null) return Mode.NONE;
+		if (SLDs.isLine(schema))
 			return Mode.LINE;
-		} else if (SLDs.isPolygon(schema)) {
+		else if (SLDs.isPolygon(schema))
 			return Mode.POLYGON;
-		} else if (SLDs.isPoint(schema)) {
+		else if (SLDs.isPoint(schema))
 			return Mode.POINT;
-		} else { // default
-			if ("Polygon".equals(def)) {
-				return Mode.POLYGON;
-			} else if ("Line".equals(def)) {
-				return Mode.LINE;
-			} else if ("Point".equals(def)) { return Mode.POINT; }
+		else { // default
+			switch (def) {
+				case "Polygon":
+					return Mode.POLYGON;
+				case "Line":
+					return Mode.LINE;
+				case "Point":
+					return Mode.POINT;
+				case null:
+				default:
+					break;
+			}
 		}
 		return Mode.ALL; // we are a generic geometry
 	}
@@ -310,11 +346,10 @@ public class ShapeFileViewer extends GISFileViewer implements IToolbarDecoratedV
 	 */
 	@Override
 	public String[] getColorLabels() {
-		if (mode == Mode.POLYGON || mode == Mode.ALL) {
+		if (mode == Mode.POLYGON || mode == Mode.ALL)
 			return new String[] { "Set line color...", "Set fill color..." };
-		} else {
+		else
 			return new String[] { "Set line color..." };
-		}
 	}
 
 	/**

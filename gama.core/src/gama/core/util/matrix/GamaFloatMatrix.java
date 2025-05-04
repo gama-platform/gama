@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaFloatMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaFloatMatrix.java, in gama.core, is part of the source code of the
+ * GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- *
+ * 
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
@@ -323,10 +323,11 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		return Arrays.equals(this.getMatrix(), mat.getMatrix());
 	}
 
-	@Override
-	public int hashCode() {
-		return Arrays.hashCode(getMatrix());
-	}
+	// Removed to improve performances
+	// @Override
+	// public int hashCode() {
+	// return Arrays.hashCode(getMatrix());
+	// }
 
 	@Override
 	public void _putAll(final IScope scope, final Object o) throws GamaRuntimeException {

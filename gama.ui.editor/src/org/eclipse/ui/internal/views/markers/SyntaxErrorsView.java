@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package org.eclipse.ui.internal.views.markers;
 
+import static gama.ui.shared.resources.IGamaIcons.BUILD_ALL;
+import static gama.ui.shared.resources.IGamaIcons.TEST_RUN;
+import static gama.ui.shared.resources.IGamaIcons.TOGGLE_INFOS;
+import static gama.ui.shared.resources.IGamaIcons.TOGGLE_WARNINGS;
 import static gaml.compiler.gaml.validation.GamlResourceValidator.DURATION;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +34,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.eclipse.ui.views.markers.MarkerSupportView;
@@ -40,10 +44,13 @@ import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterCh
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.ValidationContext;
 import gama.ui.shared.commands.TestsRunner;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.gaml.resource.GamlResourceServices;
@@ -63,9 +70,6 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 
 	/** The toolbar. */
 	protected GamaToolbar2 toolbar;
-
-	/** The info action. */
-	ToolItem warningAction, infoAction;
 
 	/** The listener. */
 	final BuildPreferenceChangeListener listener;
@@ -141,16 +145,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		@Override
 		public void afterValueChange(final Boolean newValue) {
 			build();
-			view.checkActions();
 		}
-	}
-
-	/**
-	 * Check actions.
-	 */
-	void checkActions() {
-		if (warningAction != null) { warningAction.setSelection(GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()); }
-		if (infoAction != null) { infoAction.setSelection(GamaPreferences.Modeling.INFO_ENABLED.getValue()); }
 	}
 
 	@Override
@@ -161,20 +156,30 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
-		warningAction = tb.check(IGamaIcons.TOGGLE_WARNINGS, "", "Toggle display of warning markers", e -> {
-			final boolean b = ((ToolItem) e.widget).getSelection();
-			GamaPreferences.Modeling.WARNINGS_ENABLED.set(b).save();
-		}, SWT.RIGHT);
+			final GamaMenu menu = new GamaMenu() {
 
-		infoAction = tb.check(IGamaIcons.TOGGLE_INFOS, "", "Toggle display of information markers", e -> {
-			final boolean b = ((ToolItem) e.widget).getSelection();
-			GamaPreferences.Modeling.INFO_ENABLED.set(b).save();
-		}, SWT.RIGHT);
-		checkActions();
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button(IGamaIcons.BUILD_ALL, "", "Clean and validate all projects", e -> { build(); }, SWT.RIGHT);
-		tb.button(IGamaIcons.TEST_RUN, "", "Run all tests", e -> TestsRunner.start(), SWT.RIGHT);
+				@Override
+				protected void fillMenu() {
+					boolean show = GamaPreferences.Modeling.WARNINGS_ENABLED.getValue();
+					GamaCommand.build(TOGGLE_WARNINGS, show ? "Hide warnings" : "Show warnings", null, e -> {
+						GamaPreferences.Modeling.WARNINGS_ENABLED.set(((MenuItem) e.widget).getSelection()).save();
+					}).toCheckItem(mainMenu).setSelection(show);
+					show = GamaPreferences.Modeling.INFO_ENABLED.getValue();
+					GamaCommand.build(TOGGLE_INFOS, show ? "Hide info markers" : "Show info markers", null, e -> {
+						GamaPreferences.Modeling.INFO_ENABLED.set(((MenuItem) e.widget).getSelection()).save();
+					}).toCheckItem(mainMenu).setSelection(show);
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build(BUILD_ALL, "Validate all projects", null, e -> { build(); }).toItem(mainMenu);
+					GamaCommand.build(TEST_RUN, "Run all tests", null, e -> TestsRunner.start()).toItem(mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
+
 	}
 
 	/**

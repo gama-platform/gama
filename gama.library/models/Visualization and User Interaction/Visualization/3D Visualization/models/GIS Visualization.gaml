@@ -8,7 +8,7 @@
 model GIS_visualization
 
 global {
-	file shape_file_buildings <- shape_file("../includes/building.shp");
+	shape_file shape_file_buildings <- shape_file("../includes/building.shp");
 	geometry shape <- envelope(shape_file_buildings);
 	string texture <- "../images/building_texture/texture1.jpg";
 	string roof_texture <- "../images/building_texture/roof_top.jpg";	

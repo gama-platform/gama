@@ -211,13 +211,13 @@ experiment "Experiment" type: gui {
 		}	
 		display Distribution2dPosition  type: 2d toolbar: false {
 			chart "Distribution of the X positions"   size: {0.65,0.3} position: {0.05, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
-			x_tick_line_visible: false y_tick_line_visible: false
+			x_tick_line_visible: false y_tick_line_visible: false flat: false
 			{
 				datalist (distribution_of(ant collect each.location.x,10,0,100) at "legend") 
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: colors;
 			}
 			chart "Distribution of the Y positions"   size: {0.3,0.7} position: {0.7, 0.28} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
-			reverse_axes:true x_tick_line_visible: false y_tick_line_visible: false
+			reverse_axes:true x_tick_line_visible: false y_tick_line_visible: false flat: false
 			
 			{
 				datalist reverse(distribution_of(ant collect each.location.x,10,0,100) at "legend") 

@@ -68,8 +68,6 @@ public class FontSizer {
 		tb.button(IGamaIcons.FONT_DECREASE, "Decrease font size", "Decrease font size",
 				e -> changeFontSize(-2, view.getSizableFontControl()), SWT.RIGHT);
 
-		tb.sep(16, SWT.RIGHT);
-
 	}
 
 }

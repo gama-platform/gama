@@ -131,7 +131,8 @@ public class GamaPreferencesView {
 		prefs_images.put(GamaPreferences.Runtime.NAME, GamaIcon.named(IGamaIcons.PREFS_SIMULATION).image());
 		prefs_images.put(GamaPreferences.Displays.NAME, GamaIcon.named(IGamaIcons.PREFS_UI).image());
 		prefs_images.put(GamaPreferences.External.NAME, GamaIcon.named(IGamaIcons.PREFS_LIBS).image());
-
+		prefs_images.put(GamaPreferences.Theme.NAME, GamaIcon.named(IGamaIcons.PREFS_THEME).image());
+		prefs_images.put(GamaPreferences.Network.NAME, GamaIcon.named(IGamaIcons.PREFS_NETWORK).image());
 	}
 
 	/** The shell. */

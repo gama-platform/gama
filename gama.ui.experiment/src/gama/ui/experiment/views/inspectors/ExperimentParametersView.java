@@ -40,6 +40,7 @@ import gama.ui.experiment.parameters.EditorsList;
 import gama.ui.experiment.parameters.ExperimentsParametersList;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.interfaces.IParameterEditor;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.parameters.MonitorDisplayer;
 import gama.ui.shared.resources.GamaColors;
@@ -47,7 +48,9 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
 
 /**
@@ -141,18 +144,11 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				if (toolbar != null && !toolbar.isDisposed()) {
 					toolbar.status(GamaIcon.ofColor(a.getColor()).getCode(),
 							"Parameters for " + a.getFamilyName() + " " + a.getName());
-					// toolbar.setBackgroundColor(GamaColors.toSwtColor(a.getColor()));
 				}
 			});
 		} else {
-			WorkbenchHelper.asyncRun(() -> {
-				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true);
-					// toolbar.setBackgroundColor(null);
-					// FlatButton button = (FlatButton) status.getControl();
-					// button.setColor(GamaColors.get(toolbar.getBackground()));
-				}
-			});
+			WorkbenchHelper.asyncRun(
+					() -> { if (toolbar != null && !toolbar.isDisposed()) { toolbar.wipe(SWT.LEFT, true); } });
 		}
 	}
 
@@ -246,10 +242,6 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent newTopLevelAgent) {
-
-		// DEBUG.OUT("Settin' topLevelAgent to : " + (newTopLevelAgent == null ? "null"
-		// : newTopLevelAgent.getFamilyName() + " " + newTopLevelAgent.getName()));
-
 		if (newTopLevelAgent == null || newTopLevelAgent.isPlatform()) {
 			agent = null;
 			reset();
@@ -335,16 +327,29 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		status = toolbar.button(GamaColors.get(toolbar.getBackground()), "", (Selector) null, SWT.LEFT);
 
 		if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) return;
-		tb.button(IGamaIcons.ACTION_REVERT, "Revert parameter values", "Revert parameters to their initial values",
-				e -> {
-					final EditorsList<?> eds = editors;
-					if (eds != null) { eds.revertToDefaultValue(); }
-				}, SWT.RIGHT);
-		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
-			tb.button(IGamaIcons.MENU_ADD_MONITOR, "Add new monitor", "Add new monitor", e -> createNewMonitor(),
-					SWT.RIGHT);
-			// tb.sep(SWT.RIGHT);
-		}
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build(IGamaIcons.ACTION_REVERT, "Revert parameter values",
+							"Revert parameters to their initial values", e -> {
+								final EditorsList<?> eds = editors;
+								if (eds != null) { eds.revertToDefaultValue(); }
+							}).toItem(mainMenu);
+
+					if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
+						GamaMenu.separate(mainMenu);
+						GamaCommand.build(IGamaIcons.MENU_ADD_MONITOR, "Add new monitor", "Add new monitor",
+								e -> createNewMonitor()).toItem(mainMenu);
+					}
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
 
 	}
 

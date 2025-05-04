@@ -9,7 +9,7 @@ model clean_road_network
 
 global {
 	//Shapefile of the roads
-	file road_shapefile <- file("../includes/roads.shp");
+	shape_file road_shapefile <- shape_file("../includes/roads.shp");
 	
 	//Shape of the environment
 	geometry shape <- envelope(road_shapefile);

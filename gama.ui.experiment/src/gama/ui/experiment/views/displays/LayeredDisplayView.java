@@ -509,4 +509,9 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	@Override
 	public boolean isHiDPI() { return isHiDPI; }
 
+	@Override
+	public boolean largeZoomIcons() {
+		return true;
+	}
+
 }

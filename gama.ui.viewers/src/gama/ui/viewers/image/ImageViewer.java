@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ImageViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -59,6 +59,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
@@ -76,15 +77,19 @@ import gama.core.runtime.GAMA;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.ui.navigator.metadata.ImageDataLoader;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.BackgroundChooser;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * A simple image viewer editor.
@@ -200,19 +205,17 @@ public class ImageViewer extends EditorPart
 	 * Display info string.
 	 */
 	void displayInfoString() {
-		final GamaUIColor color = IGamaColors.OK;
 		final IGamaFileMetaData md =
 				GAMA.getGui().getMetaDataProvider().getMetaData(getFileFor(getEditorInput()), false, true);
 		final String result = md == null ? "" : md.getSuffix();
 		IEditorSite site = getEditorSite();
 		IHandlerService service = site.getService(IHandlerService.class);
-		toolbar.button(color, result, e -> {
+		final ToolItem item = toolbar.status(result);
+		item.addSelectionListener((Selector) e -> {
 			try {
 				service.executeCommand(IWorkbenchCommandConstants.FILE_PROPERTIES, null);
-			} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e1) {
-				e1.printStackTrace();
-			}
-		}, SWT.LEFT);
+			} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e1) {}
+		});
 		toolbar.requestLayout();
 	}
 
@@ -766,8 +769,20 @@ public class ImageViewer extends EditorPart
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button(IGamaIcons.SAVE_AS, "Save as...", "Save as...", e -> doSaveAs(), SWT.RIGHT);
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build(IGamaIcons.SAVE_AS, "Save as...", "Save as...", e -> doSaveAs()).toItem(mainMenu);
+					BackgroundChooser.install(ImageViewer.this, mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
 
 	}
 

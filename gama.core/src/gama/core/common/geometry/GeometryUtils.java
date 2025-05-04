@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GeometryUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -94,6 +94,22 @@ import gama.gaml.types.Types;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 30 oct. 2023
  */
+
+/**
+ * The Class GeometryUtils.
+ */
+
+/**
+ * The Class GeometryUtils.
+ */
+
+/**
+ * The Class GeometryUtils.
+ */
+
+/**
+ * The Class GeometryUtils.
+ */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GeometryUtils {
 
@@ -162,7 +178,6 @@ public class GeometryUtils {
 			}
 		}
 		if (indexS == indexT) return pt1.euclidianDistanceTo(pt2);
-		double distance = 0;
 		int minI, maxI;
 		GamaPoint source, target;
 
@@ -177,7 +192,7 @@ public class GeometryUtils {
 			source = pt2;
 			target = pt1;
 		}
-		distance = source.euclidianDistanceTo(points.get(minI));
+		double distance = source.euclidianDistanceTo(points.get(minI));
 		for (int i = minI; i < maxI - 1; i++) {
 			GamaPoint pt = points.get(i);
 			distance += source.euclidianDistanceTo(pt);
@@ -704,7 +719,7 @@ public class GeometryUtils {
 	 *            the lines
 	 * @return the i list
 	 */
-	public static IList<IShape> triangulation(final IScope scope, final IList<IShape> lines, double tol) {
+	public static IList<IShape> triangulation(final IScope scope, final IList<IShape> lines, final double tol) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final ConformingDelaunayTriangulationBuilder dtb = new ConformingDelaunayTriangulationBuilder();
 		dtb.setTolerance(tol);
@@ -720,7 +735,6 @@ public class GeometryUtils {
 		return geoms;
 	}
 
-	
 	/**
 	 * Triangulation.
 	 *
@@ -745,14 +759,15 @@ public class GeometryUtils {
 						approxClipping));
 			}
 		} else {
-			boolean toClip = !(geom instanceof LineString) && !(geom instanceof MultiLineString) && !(geom instanceof MultiPoint)  && !(geom instanceof Point);
+			boolean toClip = !(geom instanceof LineString) && !(geom instanceof MultiLineString)
+					&& !(geom instanceof MultiPoint) && !(geom instanceof Point);
 			final ConformingDelaunayTriangulationBuilder dtb = new ConformingDelaunayTriangulationBuilder();
 			dtb.setTolerance(toleranceTriangulation);
 			GeometryCollection tri = null;
 			try {
 				dtb.setSites(geom);
 				dtb.setConstraints(geom);
-				
+
 				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
 			} catch (final LocateFailureException | ConstraintEnforcementException e) {
 				dtb.setTolerance(toleranceTriangulation + 0.1);
@@ -760,8 +775,7 @@ public class GeometryUtils {
 				dtb.setConstraints(geom);
 				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
 			}
-			if (tri != null) {
-				geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
+			if (tri != null) { geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
 
 		}
 		return geoms;
@@ -777,11 +791,11 @@ public class GeometryUtils {
 	 * @param sizeTol
 	 *            the size tol
 	 * @param approxClipping
-	 *            the approx clipping 
+	 *            the approx clipping
 	 * @return the i list
 	 */
-	private static IList<IShape> filterGeoms(final GeometryCollection geom, final Geometry clip, boolean toCLip, final double sizeTol,
-			final boolean approxClipping) {
+	private static IList<IShape> filterGeoms(final GeometryCollection geom, final Geometry clip, final boolean toCLip,
+			final double sizeTol, final boolean approxClipping) {
 		if (geom == null) return null;
 		final double elevation = getContourCoordinates(clip).averageZ();
 		final boolean setZ = elevation != 0.0;
@@ -848,7 +862,9 @@ public class GeometryUtils {
 			});
 		} catch (final LocateFailureException | ConstraintEnforcementException e) {
 			final IScope scope = GAMA.getRuntimeScope();
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Impossible to triangulate: " + new WKTWriter().write(polygon), scope), false);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("Impossible to triangulate: " + new WKTWriter().write(polygon), scope),
+					false);
 			iterateOverTriangles((Polygon) DouglasPeuckerSimplifier.simplify(polygon, 0.1), action);
 			return;
 		} finally {
@@ -1166,34 +1182,38 @@ public class GeometryUtils {
 	 * @return the envelope 3 D
 	 */
 	public static Envelope3D computeEnvelopeFrom(final IScope scope, final Object obj) {
-		Envelope3D result = null;
-		if (obj instanceof IEnvelopeProvider ep) return ep.computeEnvelope(scope);
-		if (obj instanceof ISpecies) return computeEnvelopeFrom(scope, ((ISpecies) obj).getPopulation(scope));
-		if (obj instanceof Number) {
-			final double size = ((Number) obj).doubleValue();
-			result = Envelope3D.of(0, size, 0, size, 0, size);
-		} else if (obj instanceof GamaPoint size) {
-			result = Envelope3D.of(0, size.getX(), 0, size.getY(), 0, size.getZ());
-		} else if (obj instanceof Envelope) {
-			result = Envelope3D.of((Envelope) obj);
-		} else if (obj instanceof String) {
-			result = computeEnvelopeFrom(scope, Files.from(scope, (String) obj));
-		} else if (obj instanceof IList) {
-			for (final Object bounds : (IList) obj) {
-				final Envelope3D env = computeEnvelopeFrom(scope, bounds);
-				if (result == null) {
-					result = Envelope3D.of(env);
-				} else {
-					result.expandToInclude(env);
+
+		switch (obj) {
+			case IEnvelopeProvider ep:
+				return ep.computeEnvelope(scope);
+			case ISpecies s:
+				return computeEnvelopeFrom(scope, s.getPopulation(scope));
+			case Number n:
+				double size = n.doubleValue();
+				return Envelope3D.of(0, size, 0, size, 0, size);
+			case Envelope e:
+				return Envelope3D.of(e);
+			case String s:
+				return computeEnvelopeFrom(scope, Files.from(scope, s));
+			case IList l: {
+				Envelope3D result = null;
+				for (final Object bounds : l) {
+					final Envelope3D env = computeEnvelopeFrom(scope, bounds);
+					if (result == null) {
+						result = Envelope3D.of(env);
+					} else {
+						result.expandToInclude(env);
+					}
 				}
+				return result;
 			}
-		} else {
-			for (final IEnvelopeComputer ec : envelopeComputers) {
-				result = ec.computeEnvelopeFrom(scope, obj);
-				if (result != null) return result;
-			}
+			default:
+				for (final IEnvelopeComputer ec : envelopeComputers) {
+					Envelope3D result = ec.computeEnvelopeFrom(scope, obj);
+					if (result != null) return result;
+				}
+				return null;
 		}
-		return result;
 	}
 
 	/**
@@ -1596,9 +1616,7 @@ public class GeometryUtils {
 			dimMax = Math.max(dimMax, dim);
 
 		}
-		if (!toManage) {
-			return gc;
-		}
+		if (!toManage) return gc;
 		List<Geometry> list = new ArrayList<>();
 		for (int i = 0; i < gc.getNumGeometries(); i++) {
 			Geometry g = gc.getGeometryN(i);
@@ -1628,10 +1646,8 @@ public class GeometryUtils {
 	 * @return the geometry
 	 */
 	public static Geometry cleanGeometryCollection(final Geometry gg) {
-		GeometryCollection gc = gg instanceof GeometryCollection ? (GeometryCollection)gg : null;
-		if (gc == null) {
-			return gg;
-		}
+		GeometryCollection gc = gg instanceof GeometryCollection ? (GeometryCollection) gg : null;
+		if (gc == null) return gg;
 		boolean isMultiPolygon = true;
 		boolean isMultiPoint = true;
 		boolean isMultiLine = true;
@@ -1659,7 +1675,7 @@ public class GeometryUtils {
 			for (int i = 0; i < nb; i++) { points[i] = (Point) gc.getGeometryN(i); }
 			return GEOMETRY_FACTORY.createMultiPoint(points);
 		}
-		
+
 		return gg;
 	}
 
@@ -1679,11 +1695,19 @@ public class GeometryUtils {
 
 			for (int i = 0; i < nb; i++) {
 				final Geometry g = gc.getGeometryN(i);
-				if (g instanceof Polygon p) {
-					polys.add(p);
-				} else if (g instanceof LineString ls) {
-					lines.add(ls);
-				} else if (g instanceof Point p) { points.add(p); }
+				switch (g) {
+					case Polygon p:
+						polys.add(p);
+						break;
+					case LineString ls:
+						lines.add(ls);
+						break;
+					case Point p:
+						points.add(p);
+						break;
+					case null, default:
+						break;
+				}
 			}
 			int size = polys.size();
 			if (size > 0) {

@@ -115,6 +115,13 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 		/** The Is create. */
 		IsCreate,
 
+		/**
+		 * The No type inference. A flag that signifies that type inference should not be used when computing the type
+		 * of the description. Type inference is useful when the type of the description is not known at the time of
+		 * parsing, but it should not be used when the type is known. See #385
+		 */
+		NoTypeInference
+
 	}
 
 	/**

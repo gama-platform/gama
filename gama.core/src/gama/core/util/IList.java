@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,6 +21,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.core.util.matrix.IMatrix;
+import gama.dev.FLAGS;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaIntegerType;
 import gama.gaml.types.GamaMatrixType;
@@ -232,7 +233,8 @@ public interface IList<E>
 	 */
 	// See Issue #3099
 	default void replaceRange(final IScope scope, final GamaPair range, final E value) {
-		this.subList(Cast.asInt(scope, range.key), Cast.asInt(scope, range.value)).replaceAll(v -> value);
+		this.subList(Cast.asInt(scope, range.key), Cast.asInt(scope, range.value))
+				.replaceAll(v -> buildValue(scope, value));
 	}
 
 	/**
@@ -296,7 +298,6 @@ public interface IList<E>
 		// Fixes issue #3294 -- additionnaly make sure that "use unboxing" is unchecked in Save Actions
 		int intIndex = Cast.asInt(scope, index).intValue();
 		remove(intIndex);
-		// if (index instanceof Integer) { remove(((Integer) index)); }
 	}
 
 	/**
@@ -407,27 +408,6 @@ public interface IList<E>
 		return GamaListFactory.createWithoutCasting(getGamlType().getContentType(), this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.interfaces.IGamaContainer#checkBounds(java.lang.Object)
-	 */
-	// @Override
-	// default boolean checkBounds(final IScope scope, final Object object, final boolean forAdding) {
-	// if (object instanceof Integer) {
-	// final Integer index = (Integer) object;
-	// final int size = size();
-	// final boolean upper = forAdding ? index <= size : index < size;
-	// return index >= 0 && upper;
-	// } else if (object instanceof IContainer) {
-	// for (final Object o : ((IContainer) object).iterable(scope)) {
-	// if (!checkBounds(scope, o, forAdding)) return false;
-	// }
-	// return true;
-	// }
-	// return false;
-	// }
-
 	/**
 	 * Any value.
 	 *
@@ -521,8 +501,8 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default E buildValue(final IScope scope, final Object object) {
-		final IType ct = getGamlType().getContentType();
-		return (E) ct.cast(scope, object, null, false);
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) return (E) object;
+		return (E) getGamlType().getContentType().cast(scope, object, null, false);
 	}
 
 	/**
@@ -532,6 +512,7 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default IList<E> buildValues(final IScope scope, final IContainer objects) {
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) return (IList<E>) objects;
 		return (IList<E>) getGamlType().cast(scope, objects, null, false);
 	}
 
@@ -542,6 +523,7 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default Integer buildIndex(final IScope scope, final Object object) {
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) return (Integer) object;
 		return GamaIntegerType.staticCast(scope, object, null, false);
 	}
 

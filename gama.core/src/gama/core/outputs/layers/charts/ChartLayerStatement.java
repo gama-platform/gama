@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,14 +11,11 @@
 package gama.core.outputs.layers.charts;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jfree.chart.JFreeChart;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -26,6 +23,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
@@ -240,7 +239,7 @@ import gama.gaml.types.Types;
 						name = ChartLayerStatement.MEMORIZE,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("Whether or not to keep the values in memory (in order to produce a csv file, for instance). The default value, true, can also be changed in the preferences")),
+						doc = @doc ("Whether or not to keep the values in memory (in order to produce a csv file, for instance). The default value is true")),
 				@facet (
 						name = ChartLayerStatement.TICKFONTFACE,
 						type = { IType.STRING, IType.FONT },
@@ -271,7 +270,16 @@ import gama.gaml.types.Types;
 						type = { IType.STRING, IType.FONT },
 						optional = true,
 						doc = @doc ("Title font face. Either the name of a font face or a font")),
-				},
+				@facet (
+						name = "flat",
+						type = { IType.BOOL },
+						optional = true,
+						doc = @doc ("Whether or not to draw 'flat' histograms. Defaut value is true")),
+				@facet (
+						name = "lines",
+						type = { IType.BOOL },
+						optional = true,
+						doc = @doc ("Whether or not to draw the XY grid lines in the background (even when no tick unit/lines have been defined). Default is true")), },
 
 		omissible = IKeyword.NAME)
 @doc (
@@ -451,22 +459,27 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		setName(getChartName(scope));
 		lastValues.clear();
 
-		IExpression string1 = getFacet(IKeyword.TYPE);
+		IExpression expression = getFacet(IKeyword.TYPE);
 
-		chartOutput = ChartJFreeChartOutput.createChartOutput(scope, getName(), string1);
+		chartOutput = ChartJFreeChartOutput.createChartOutput(scope, getName(), expression);
 
-		string1 = getFacet(IKeyword.STYLE);
-		if (string1 != null) { chartOutput.setStyle(scope, Cast.asString(scope, string1.value(scope))); }
+		expression = getFacet(IKeyword.STYLE);
+		if (expression != null) { chartOutput.setStyle(scope, Cast.asString(scope, expression.value(scope))); }
 
-		string1 = getFacet(IKeyword.REVERSE_AXIS);
-		if (string1 != null) { chartOutput.setReverseAxis(scope, Cast.asBool(scope, string1.value(scope))); }
-		string1 = getFacet(ChartLayerStatement.X_LOGSCALE);
-		if (string1 != null) { chartOutput.setX_LogScale(scope, Cast.asBool(scope, string1.value(scope))); }
-		string1 = getFacet(ChartLayerStatement.Y_LOGSCALE);
-		if (string1 != null) { chartOutput.setY_LogScale(scope, Cast.asBool(scope, string1.value(scope))); }
+		expression = getFacet(IKeyword.REVERSE_AXIS);
+		if (expression != null) { chartOutput.setReverseAxis(scope, Cast.asBool(scope, expression.value(scope))); }
+		expression = getFacet(ChartLayerStatement.X_LOGSCALE);
+		if (expression != null) { chartOutput.setX_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
+		expression = getFacet(ChartLayerStatement.Y_LOGSCALE);
+		if (expression != null) { chartOutput.setY_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
 
-		string1 = getFacet(ChartLayerStatement.Y2_LOGSCALE);
-		if (string1 != null) { chartOutput.setY2_LogScale(scope, Cast.asBool(scope, string1.value(scope))); }
+		expression = getFacet(ChartLayerStatement.Y2_LOGSCALE);
+		if (expression != null) { chartOutput.setY2_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
+
+		expression = getFacet("flat");
+		if (expression != null) {
+			ChartJFreeChartOutputHistogram.enableFlatLook(Cast.asBool(scope, expression.value(scope)));
+		}
 
 		chartOutput.createChart(scope);
 		updateValues(scope);
@@ -498,7 +511,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartdataset.setXLabels(scope, expval);
 			chartOutput.setUseXLabels(scope, expval);
 		}
-
 
 		expr = getFacet(IKeyword.Y_LABELS);
 		if (expr != null) {
@@ -644,6 +656,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (string1 != null) { chartOutput.setXTickLineVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.YTICKLINEVISIBLE);
 		if (string1 != null) { chartOutput.setYTickLineVisible(scope, Cast.asBool(scope, string1.value(scope))); }
+		string1 = getFacet("lines");
+		if (string1 != null) { chartOutput.setGridLinesVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);

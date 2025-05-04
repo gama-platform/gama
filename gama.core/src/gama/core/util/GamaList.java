@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -75,8 +75,12 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 
 	@Override
 	public IList<E> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (!GamaType.requiresCasting(contentsType, getGamlType().getContentType())) {
+		IType myContentsType = getGamlType().getContentType();
+		if (!GamaType.requiresCasting(contentsType, myContentsType)) {
 			if (copy) return this.cloneWithContentType(contentsType);
+			// See #385 : if we do not copy, but the contents types are different, we create a wrapper in order to not
+			// duplicate the collection
+			if (!contentsType.equals(myContentsType)) return GamaListFactory.wrap(contentsType, this);
 			return this;
 		}
 		final GamaList clone = this.cloneWithContentType(contentsType);

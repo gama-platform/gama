@@ -28,8 +28,11 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
+import gama.core.common.interfaces.IGui;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.core.runtime.PlatformHelper;
@@ -161,10 +164,7 @@ public class EditorToolbar {
 
 		find = new EditorSearchControls(editor).fill(toolbar);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
-		toolbar.button("editor/command.outline", null, "Show outline", e -> { editor.openOutlinePopup(); });
-		if (GamaBundleLoader.isDiagramEditorLoaded()) {
-			toolbar.button("editor/command.graphical", null, "Switch to diagram", e -> { editor.switchToDiagram(); });
-		}
+
 		toolbar.button("editor/local.menu", "Presentation preferences", "Presentation preferences", e -> {
 
 			final GamaMenu menu = new GamaMenu() {
@@ -186,16 +186,44 @@ public class EditorToolbar {
 					GamaMenu.separate(mainMenu);
 					addPresentationItems(mainMenu, -1);
 					addManagementItems(mainMenu, -1);
+					GamaMenu.separate(mainMenu);
+					final IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
+					String title = part == null ? "Show outline" : "Hide outline";
+					Selector command = part == null ? e -> showView(IGui.OUTLINE_VIEW_ID)
+							: e -> WorkbenchHelper.getPage().hideView(part);
+					GamaCommand.build("editor/command.outline", title, null, command).toItem(mainMenu);
+					if (GamaBundleLoader.isDiagramEditorLoaded()) {
+						GamaCommand.build("editor/command.graphical", "Toggle diagram view", "Switch to diagram", e -> {
+							editor.switchToDiagram();
+						}).toItem(mainMenu);
+					}
+					final IViewPart map = WorkbenchHelper.getPage().findView(IGui.MINIMAP_VIEW_ID);
+					title = map == null ? "Show minimap" : "Hide minimap";
+					command = map == null ? e -> showView(IGui.MINIMAP_VIEW_ID)
+							: e -> WorkbenchHelper.getPage().hideView(map);
+					GamaCommand.build("editor/command.navigation", title, null, command).toItem(mainMenu);
 				}
 
 			};
-			menu.open(toolbar, e, toolbar.getSize().y, 200);
+			menu.open(toolbar, e, toolbar.getSize().y, 100);
 		});
 
 		hookToCommands(previous, next);
 		hookToSearch(previous, next);
 
 		return find;
+	}
+
+	/**
+	 * Show view.
+	 *
+	 * @param id
+	 *            the id
+	 */
+	private void showView(final String id) {
+		try {
+			WorkbenchHelper.getPage().showView(id);
+		} catch (PartInitException e) {}
 	}
 
 	/**

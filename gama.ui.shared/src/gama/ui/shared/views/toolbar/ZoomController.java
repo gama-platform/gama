@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ZoomController.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -113,9 +113,12 @@ public class ZoomController {
 			}
 
 		});
-		tb.button(IGamaIcons.DISPLAY_TOOLBAR_ZOOMIN, "Zoom in", "Zoom in", e -> view.zoomIn(), SWT.RIGHT);
-		tb.button(IGamaIcons.DISPLAY_TOOLBAR_ZOOMFIT, "Zoom fit", "Zoom to fit view", e -> view.zoomFit(), SWT.RIGHT);
-		tb.button(IGamaIcons.DISPLAY_TOOLBAR_ZOOMOUT, "Zoom out", "Zoom out", e -> view.zoomOut(), SWT.RIGHT);
+		tb.button(view.largeZoomIcons() ? IGamaIcons.DISPLAY_TOOLBAR_ZOOMIN : "toolbar/font.increase", "Zoom in",
+				"Zoom in", e -> view.zoomIn(), SWT.RIGHT);
+		tb.button(view.largeZoomIcons() ? IGamaIcons.DISPLAY_TOOLBAR_ZOOMFIT : "toolbar/font.reset", "Zoom fit",
+				"Zoom to fit view", e -> view.zoomFit(), SWT.RIGHT);
+		tb.button(view.largeZoomIcons() ? IGamaIcons.DISPLAY_TOOLBAR_ZOOMOUT : "toolbar/font.decrease", "Zoom out",
+				"Zoom out", e -> view.zoomOut(), SWT.RIGHT);
 		tb.sep(SWT.RIGHT);
 		if (view.hasCameras()) {
 			tb.menu(DISPLAY_TOOLBAR_CAMERA, "", "Choose a camera...", trigger -> {
@@ -149,12 +152,13 @@ public class ZoomController {
 
 						}, GamaIcon.named(IGamaIcons.PASTE).image());
 					}
+
 				};
 				menu.open(tb.getToolbar(SWT.RIGHT), trigger, tb.getToolbar(SWT.RIGHT).getSize().y, 96);
 			}, SWT.RIGHT);
+			cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view",
+					e -> { view.toggleLock(); }, SWT.RIGHT);
 		}
-		cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view", e -> { view.toggleLock(); },
-				SWT.RIGHT);
 
 	}
 

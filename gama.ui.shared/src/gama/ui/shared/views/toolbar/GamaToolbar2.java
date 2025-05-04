@@ -188,6 +188,19 @@ public class GamaToolbar2 extends Composite {
 	 * @return the tool item
 	 */
 
+	public ToolItem status(final String s) {
+		return status("navigator/status.info", s);
+	}
+
+	/**
+	 * Status.
+	 *
+	 * @param image
+	 *            the image
+	 * @param s
+	 *            the s
+	 * @return the tool item
+	 */
 	public ToolItem status(final String image, final String s) {
 		return status(image, s, null);
 	}
@@ -241,6 +254,18 @@ public class GamaToolbar2 extends Composite {
 		if (status == null) return;
 		FlatButton button = (FlatButton) status.getControl();
 		button.setImageWithoutRecomputingSize(GamaIcon.named(image).image());
+	}
+
+	/**
+	 * Update status text.
+	 *
+	 * @param text
+	 *            the text
+	 */
+	public void updateStatusText(final String text) {
+		if (status == null) return;
+		FlatButton button = (FlatButton) status.getControl();
+		button.setTextWithoutRecomputingSize(text);
 	}
 
 	/**
@@ -429,7 +454,7 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public ToolItem menu(final GamaUIColor color, final String text, final int side) {
 		final var button = FlatButton.menu(side == SWT.LEFT ? left : right, color, text);
-		return control(button, button.computeSize(SWT.DEFAULT, button.getHeight(), false).x + 4, side);
+		return control(button, button.computeWidthOfText() + 30, side);
 	}
 
 	/**
@@ -512,6 +537,7 @@ public class GamaToolbar2 extends Composite {
 			}
 		}
 		normalizeToolbars();
+		status = null;
 		requestLayout();
 	}
 

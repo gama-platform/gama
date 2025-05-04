@@ -10,9 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.shared.views.toolbar;
 
-import org.eclipse.swt.SWT;
+import static gama.ui.shared.resources.IGamaIcons.TREE_COLLAPSE;
+import static gama.ui.shared.resources.IGamaIcons.TREE_EXPAND;
 
-import gama.ui.shared.resources.IGamaIcons;
+import org.eclipse.swt.SWT;
 
 /**
  * Class FontSizer.
@@ -27,13 +28,8 @@ public class Expander {
 	 * @param tb
 	 */
 	public static void install(final IToolbarDecoratedView.Expandable view, final GamaToolbar2 tb) {
-
-		tb.button(IGamaIcons.TREE_EXPAND, "Expand all items", "Expand all items", e -> view.expandAll(), SWT.RIGHT);
-		tb.button(IGamaIcons.TREE_COLLAPSE, "Collapse all items", "Collapse all items", e -> view.collapseAll(),
-				SWT.RIGHT);
-
-		tb.sep(16, SWT.RIGHT);
-
+		tb.button(TREE_EXPAND, "Expand all items", "Expand all items", e -> view.expandAll(), SWT.RIGHT);
+		tb.button(TREE_COLLAPSE, "Collapse all items", "Collapse all items", e -> view.collapseAll(), SWT.RIGHT);
 	}
 
 }

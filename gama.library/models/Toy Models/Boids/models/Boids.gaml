@@ -92,14 +92,14 @@ species boids skills: [moving] {
 	
 	//Reflex to align the boid with the other boids in the range
 	reflex alignment when: apply_alignment {
-		list others  <- ((boids overlapping (circle (range)))  - self);
+		list<boids> others  <- ((boids overlapping (circle (range)))  - self);
 		point acc <- mean (others collect (each.velocity)) - velocity;
 		velocity <- velocity + (acc / alignment_factor);
 	}
 	 
 	//Reflex to apply the cohesion of the boids group in the range of the agent
 	reflex cohesion when: apply_cohesion {
-		list others <- ((boids overlapping (circle (range)))  - self);
+		list<boids> others <- ((boids overlapping (circle (range)))  - self);
 		point mass_center <- (length(others) > 0) ? mean (others collect (each.location)) : location;
 
 		point acc <- mass_center - location;

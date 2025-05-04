@@ -64,19 +64,19 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 	 * @param flat
 	 *            the flat
 	 */
-	public static void enableFlatLook(final boolean flat) {
-		/*
-		 * if (flat) { BoxAndWhiskerRenderer.setDefaultBarPainter(new StandardBarPainter());
-		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(false); } else {
-		 * BoxAndWhiskerRenderer.setDefaultBarPainter(new GradientBarPainter());
-		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(true); }
-		 */
-	}
-
-	static {
-		enableFlatLook(GamaPreferences.Displays.CHART_FLAT.getValue());
-		GamaPreferences.Displays.CHART_FLAT.onChange(ChartJFreeChartOutputBoxAndWhiskerCategory::enableFlatLook);
-	}
+//	public static void enableFlatLook(final boolean flat) {
+//		/*
+//		 * if (flat) { BoxAndWhiskerRenderer.setDefaultBarPainter(new StandardBarPainter());
+//		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(false); } else {
+//		 * BoxAndWhiskerRenderer.setDefaultBarPainter(new GradientBarPainter());
+//		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(true); }
+//		 */
+//	}
+//
+//	static {
+//		enableFlatLook(GamaPreferences.Displays.CHART_FLAT.getValue());
+//		GamaPreferences.Displays.CHART_FLAT.onChange(ChartJFreeChartOutputBoxAndWhiskerCategory::enableFlatLook);
+//	}
 
 	/**
 	 * Instantiates a new chart J free chart output box and whisker category.

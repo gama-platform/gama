@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaListType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaListType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,10 +12,10 @@ package gama.gaml.types;
 import java.awt.Color;
 import java.util.Collection;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -65,25 +64,21 @@ public class GamaListType extends GamaContainerType<IList> {
 	public static IList staticCast(final IScope scope, final Object obj, final IType ct, final boolean copy)
 			throws GamaRuntimeException {
 		final IType contentsType = ct == null ? Types.NO_TYPE : ct;
-		// BG fix issue ##2338
-		// if (obj == null) { return GamaListFactory.create(Types.NO_TYPE, 0); }
-		if (obj == null) return GamaListFactory.create(contentsType, 0);
+		return switch (obj) {
+			case null -> GamaListFactory.create(contentsType, 0);
+			case GamaDate gd -> gd.listValue(scope, contentsType);
+			// Explicitly set copy to true if we deal with a population
+			case IPopulation ip -> ip.listValue(scope, contentsType, true);
+			case IContainer ic -> ic.listValue(scope, contentsType, copy);
+			case Collection coll -> GamaListFactory.create(scope, contentsType, coll);
+			case Color c -> GamaListFactory.create(scope, contentsType,
+					new int[] { c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() });
+			case GamaPoint point -> GamaListFactory.create(scope, contentsType,
+					new double[] { point.x, point.y, point.z });
+			case String s -> GamaListFactory.create(scope, contentsType, s.toCharArray());
+			default -> GamaListFactory.create(scope, contentsType, obj);
+		};
 
-		if (obj instanceof GamaDate) return ((GamaDate) obj).listValue(scope, contentsType);
-		if (obj instanceof IContainer) {
-			if (obj instanceof IPopulation) // Explicitly set copy to true if we deal with a population
-				return ((IPopulation) obj).listValue(scope, contentsType, true);
-			return ((IContainer) obj).listValue(scope, contentsType, copy);
-		}
-		// Dont copy twice the collection
-		if (obj instanceof Collection) return GamaListFactory.create(scope, contentsType, (Collection) obj);
-		if (obj instanceof Color c) return GamaListFactory.create(scope, contentsType,
-				new int[] { c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() });
-		if (obj instanceof GamaPoint point)
-			return GamaListFactory.create(scope, contentsType, new double[] { point.x, point.y, point.z });
-		if (obj instanceof String s) // ss
-			return GamaListFactory.create(scope, contentsType, s.toCharArray());
-		return GamaListFactory.create(scope, contentsType, obj);
 	}
 
 	@Override

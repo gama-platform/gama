@@ -1,572 +1,554 @@
-// GAMA 1.9.3 Preferences saved on 2023-10-17T22:21:26.704717
-
+// GAMA 0.0.0-SNAPSHOT Preferences saved on 2025-05-04T22:52:53.671264
 model preferences
 
 experiment 'Display Preferences' type: gui {
-init {
+
+	init {
 	//Append the name of simulations to their outputs
-	write sample(gama.pref_append_simulation_name);
+		write sample(gama.pref_append_simulation_name);
 
-	//Display grid lines
-	write sample(gama.pref_chart_display_gridlines);
+		//Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)
+		write sample(gama.pref_chart_quality);
 
-	//Resolution of the charts (from 0, small but fast, to 1, best but resource consuming)
-	write sample(gama.pref_chart_quality);
+		//Max. number of characters to keep when paused (-1 = unlimited)
+		write sample(gama.pref_console_buffer);
 
-	//Monitor memory and emit a warning if it is low
-	write sample(gama.pref_check_memory);
+		//Max. number of characters to display (-1 = unlimited)
+		write sample(gama.pref_console_size);
 
-	//Max. number of characters to keep when paused (-1 = unlimited)
-	write sample(gama.pref_console_buffer);
+		//Wrap long lines (can slow down output)
+		write sample(gama.pref_console_wrap);
 
-	//Max. number of characters to display (-1 = unlimited)
-	write sample(gama.pref_console_size);
+		//Default separator for fields
+		write sample(gama.pref_csv_separator);
 
-	//Wrap long lines (can slow down output)
-	write sample(gama.pref_console_wrap);
+		//Default separator for strings
+		write sample(gama.pref_csv_string_qualifier);
 
-	//Default separator for fields
-	write sample(gama.pref_csv_separator);
+		//Custom date pattern (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns)
+		write sample(gama.pref_date_custom_formatter);
 
-	//Default separator for strings
-	write sample(gama.pref_csv_string_qualifier);
+		//Default date pattern for writing dates (i.e. string(date1))
+		write sample(gama.pref_date_default_formatter);
 
-	//Custom date pattern (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns)
-	write sample(gama.pref_date_custom_formatter);
+		//Default starting date of models
+		write sample(gama.pref_date_starting_date);
 
-	//Default date pattern for writing dates (i.e. string(date1))
-	write sample(gama.pref_date_default_formatter);
+		//Default time step of models
+		write sample(gama.pref_date_time_step);
 
-	//Default starting date of models
-	write sample(gama.pref_date_starting_date);
+		//Apply antialiasing
+		write sample(gama.pref_display_antialias);
 
-	//Default time step of models
-	write sample(gama.pref_date_time_step);
+		//Default background color ('background' facet of 'display')
+		write sample(gama.pref_display_background_color);
 
-	//Apply antialiasing
-	write sample(gama.pref_display_antialias);
+		//Default camera to use when none is specified
+		write sample(gama.pref_display_camera);
 
-	//Default background color ('background' facet of 'display')
-	write sample(gama.pref_display_background_color);
+		//Limit the number of frames per second if you experience stuttering in the rendering
+		write sample(gama.pref_display_cap_fps);
 
-	//Default camera to use when none is specified
-	write sample(gama.pref_display_camera);
+		//Continue to draw displays when in Modeling perspective
+		write sample(gama.pref_display_continue_drawing);
 
-	//Limit the number of frames per second
-	write sample(gama.pref_display_cap_fps);
+		//Default rendering method
+		write sample(gama.pref_display_default2);
 
-	//Continue to draw displays when in Modeling perspective
-	write sample(gama.pref_display_continue_drawing);
+		//Default color of agents
+		write sample(gama.pref_display_default_color);
 
-	//Default rendering method
-	write sample(gama.pref_display_default);
+		//Default font to use in 'draw'
+		write sample(gama.pref_display_default_font);
 
-	//Default color of agents
-	write sample(gama.pref_display_default_color);
+		//Defaut shape of agents
+		write sample(gama.pref_display_default_shape);
 
-	//Default font to use in 'draw'
-	write sample(gama.pref_display_default_font);
+		//Default size of agents
+		write sample(gama.pref_display_default_size);
 
-	//Defaut shape of agents
-	write sample(gama.pref_display_default_shape);
+		//Enable fast snapshots (uncomplete when the display is obscured by others but much faster)
+		write sample(gama.pref_display_fast_snapshot);
 
-	//Default size of agents
-	write sample(gama.pref_display_default_size);
+		//Default highlight color
+		write sample(gama.pref_display_highlight_color);
 
-	//Enable fast snapshots (uncomplete when the display is obscured by others but much faster)
-	write sample(gama.pref_display_fast_snapshot);
+		//Set the sensitivity of the keyboard movements  (0 for slow, 1 for fast)
+		write sample(gama.pref_display_keyboard_factor);
 
-	//Display 'flat' histograms
-	write sample(gama.pref_display_flat_charts);
+		//Set the default intensity of the lights (from 0, dark, to 255, light)
+		write sample(gama.pref_display_light_intensity);
 
-	//Default highlight color
-	write sample(gama.pref_display_highlight_color);
+		//Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations
+		write sample(gama.pref_display_line_width);
 
-	//Set the sensitivity of the keyboard movements  (0 for slow, 1 for fast)
-	write sample(gama.pref_display_keyboard_factor);
+		//Max. number of frames per second
+		write sample(gama.pref_display_max_fps);
 
-	//Set the default intensity of the ambient and default lights (from 0, completely dark, to 255, completely light)
-	write sample(gama.pref_display_light_intensity);
+		//Keep chart values in memory (to save them as CSV) or not (to lower memory usage)
+		write sample(gama.pref_display_memorize_charts);
 
-	//Default line width (facet 'width' of 'draw')
-	write sample(gama.pref_display_line_width);
+		//Set the sensitivity of the mouse/trackpad movements  (0 for slow, 1 fast)
+		write sample(gama.pref_display_mouse_factor);
 
-	//Max. number of frames per second
-	write sample(gama.pref_display_max_fps);
+		//Disable acceleration for Java2D (necessary on some configurations)
+		write sample(gama.pref_display_no_java2d_acceleration);
 
-	//Keep values in memory (to save them as CSV)
-	write sample(gama.pref_display_memorize_charts);
+		//Use Numeric Keypad (2,4,6,8) for camera interaction
+		write sample(gama.pref_display_numkeyscam);
 
-	//Set the sensitivity of the mouse/trackpad movements  (0 for slow, 1 fast)
-	write sample(gama.pref_display_mouse_factor);
+		//Show errors thrown in displays and outputs
+		write sample(gama.pref_display_show_errors);
 
-	//Use Numeric Keypad (2,4,6,8) for camera interaction
-	write sample(gama.pref_display_numkeyscam);
+		//Number of slices of circular geometries in OpenGL (the higher the more resources consuming)
+		write sample(gama.pref_display_slice_number);
 
-	//Display a border around display views
-	write sample(gama.pref_display_show_border);
+		//Synchronize outputs with the simulation
+		write sample(gama.pref_display_synchronized);
 
-	//Show errors thrown in displays and outputs
-	write sample(gama.pref_display_show_errors);
+		//Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)
+		write sample(gama.pref_display_use_cache);
 
-	//Show the display bottom overlay
-	write sample(gama.pref_display_show_overlay);
+		//Default layout of display views
+		write sample(gama.pref_display_view_layout);
 
-	//Draw 3D axes
-	write sample(gama.pref_display_show_referential);
+		//Only display visible agents in OpenGL (faster, may create visual oddities)
+		write sample(gama.pref_display_visible_agents);
 
-	//Draw rotation axes
-	write sample(gama.pref_display_show_rotation);
+		//Draw only the 'external' faces of objects in OpenGL
+		write sample(gama.pref_display_visible_faces);
 
-	//Show the display top toolbar
-	write sample(gama.pref_display_show_toolbar);
+		//Set the zoom factor (0 for slow, 1 fast)
+		write sample(gama.pref_display_zoom_factor);
 
-	//Number of slices of circular geometries
-	write sample(gama.pref_display_slice_number);
+		//Enable GAMA Server mode
+		write sample(gama.pref_enable_server);
 
-	//Synchronize outputs with the simulation
-	write sample(gama.pref_display_synchronized);
+		//Show execution errors
+		write sample(gama.pref_errors_display);
 
-	//Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)
-	write sample(gama.pref_display_use_cache);
+		//Show errors in editors
+		write sample(gama.pref_errors_in_editor);
 
-	//Default layout of display views
-	write sample(gama.pref_display_view_layout);
+		//Number of errors to display
+		write sample(gama.pref_errors_number);
 
-	//Only display visible agents (faster, may create visual oddities)
-	write sample(gama.pref_display_visible_agents);
+		//Stop simulation at first error
+		write sample(gama.pref_errors_stop);
 
-	//Set the zoom factor (0 for slow, 1 fast)
-	write sample(gama.pref_display_zoom_factor);
+		//Treat warnings as errors
+		write sample(gama.pref_errors_warnings_errors);
 
-	//Enables GAMA Server mode
-	write sample(gama.pref_enable_server);
+		//Ask to close the previous experiment when launching a new one
+		write sample(gama.pref_experiment_ask_closing);
 
-	//Show execution errors
-	write sample(gama.pref_errors_display);
+		//Auto-run experiments when they are launched
+		write sample(gama.pref_experiment_auto_run);
 
-	//Automatically open an editor and point at the faulty part of the model if an error or a warning is thrown
-	write sample(gama.pref_errors_in_editor);
+		//Automatically expand the parameters categories
+		write sample(gama.pref_experiment_expand_params);
 
-	//Number of errors to display
-	write sample(gama.pref_errors_number);
+		//Incrementation of the step duration slider
+		write sample(gama.pref_experiment_type_slider);
 
-	//Display most recent first
-	write sample(gama.pref_errors_recent_first);
+		//Only display failed and aborted tests
+		write sample(gama.pref_failed_tests);
 
-	//Stop simulation at first error
-	write sample(gama.pref_errors_stop);
+		//Let GAMA find which CRS to use to project GIS data
+		write sample(gama.pref_gis_auto_crs);
 
-	//Treat warnings as errors
-	write sample(gama.pref_errors_warnings_errors);
+		//...or use the following EPSG code (the one that will also be used if no projection information is found)
+		write sample(gama.pref_gis_default_crs);
 
-	//Ask to close the previous experiment when launching a new one
-	write sample(gama.pref_experiment_ask_closing);
+		//...or use the following CRS (EPSG code)
+		write sample(gama.pref_gis_initial_crs);
 
-	//Auto-run experiments when they are launched
-	write sample(gama.pref_experiment_auto_run);
+		//... or use this following CRS (EPSG code)
+		write sample(gama.pref_gis_output_crs);
 
-	//Automatically expand the parameters categories
-	write sample(gama.pref_experiment_expand_params);
+		//When no .prj file or CRS is supplied, consider GIS data to be already projected in this CRS
+		write sample(gama.pref_gis_same_crs);
 
-	//Set the step duration slider incrementation to linear. If false set to logarithmic
-	write sample(gama.pref_experiment_type_slider);
+		//When no CRS is provided, save the GIS data with the current CRS
+		write sample(gama.pref_gis_save_crs);
 
-	//Only display (in the UI and in headless runs) failed and aborted tests
-	write sample(gama.pref_failed_tests);
+		//Connection timeout (in ms)
+		write sample(gama.pref_http_connect_timeout);
 
-	//Let GAMA find which CRS to use to project GIS data
-	write sample(gama.pref_gis_auto_crs);
+		//Empty the local cache of files downloaded from the web
+		write sample(gama.pref_http_empty_cache);
 
-	//...or use the following EPSG code (the one that will also be used if no projection information is found)
-	write sample(gama.pref_gis_default_crs);
+		//Read timeout (in ms)
+		write sample(gama.pref_http_read_timeout);
 
-	//...or use the following CRS (EPSG code)
-	write sample(gama.pref_gis_initial_crs);
+		//Number of times to retry if connection cannot be established
+		write sample(gama.pref_http_retry_number);
 
-	//... or use this following CRS (EPSG code)
-	write sample(gama.pref_gis_output_crs);
+		//When running out of memory in an experiment, GAMA should
+		write sample(gama.pref_memory_action);
 
-	//When no .prj file or CRS is supplied, consider GIS data to be already projected in this CRS
-	write sample(gama.pref_gis_same_crs);
+		//Interval (in seconds) at which memory should be monitored
+		write sample(gama.pref_memory_frequency);
 
-	//When no CRS is provided, save the GIS data with the current CRS
-	write sample(gama.pref_gis_save_crs);
+		//Emit a warning when the percentage of available memory is under
+		write sample(gama.pref_memory_threshold);
 
-	//Connection timeout (in ms)
-	write sample(gama.pref_http_connect_timeout);
+		//Display monitors in the parameters view
+		write sample(gama.pref_monitors_in_parameters);
 
-	//Empty the local cache of files downloaded from the web
-	write sample(gama.pref_http_empty_cache);
+		//Increment factor (from 0, none, to 1, max)
+		write sample(gama.pref_opengl_z_factor);
 
-	//Read timeout (in ms)
-	write sample(gama.pref_http_read_timeout);
+		//In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts
+		write sample(gama.pref_opengl_z_fighting);
 
-	//Number of times to retry if connection cannot be established
-	write sample(gama.pref_http_retry_number);
+		//Optimize the 'at_distance' operator
+		write sample(gama.pref_optimize_at_distance);
 
-	//If true, when running out of memory, GAMA will try to close the experiment, otherwise it exits
-	write sample(gama.pref_memory_action);
+		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
+		write sample(gama.pref_optimize_path_computation);
 
-	//Interval (in seconds) at which memory should be monitored
-	write sample(gama.pref_memory_frequency);
+		//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
+		write sample(gama.pref_optimize_quadtree);
 
-	//Trigger warnings when the percentage of available memory is below
-	write sample(gama.pref_memory_threshold);
+		//Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)
+		write sample(gama.pref_parallel_grids);
 
-	//Display monitors in the parameters view
-	write sample(gama.pref_monitors_in_parameters);
+		//Allow experiments to run simulations in parallel
+		write sample(gama.pref_parallel_simulations);
 
-	//Add a small increment to the z ordinate of objects and layers to fight visual artefacts
-	write sample(gama.pref_opengl_z_fighting);
+		//In batch, allow to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
+		write sample(gama.pref_parallel_simulations_all);
 
-	//Optimize the 'at_distance' operator
-	write sample(gama.pref_optimize_at_distance);
+		//Make species schedule their agents in parallel (prevents the reproducibility of simulations)
+		write sample(gama.pref_parallel_species);
 
-	//Optimize the path computation operators and goto action (but with possible 'jump' issues)
-	write sample(gama.pref_optimize_path_computation);
+		//Max. number of threads to use (available processors: 16)
+		write sample(gama.pref_parallel_threads);
 
-	//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
-	write sample(gama.pref_optimize_quadtree);
+		//Size under which populations are executed sequentially
+		write sample(gama.pref_parallel_threshold);
 
-	//Make grids schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)
-	write sample(gama.pref_parallel_grids);
+		//Tolerance for the comparison of points
+		write sample(gama.pref_point_tolerance);
 
-	//Make experiments run simulations in parallel
-	write sample(gama.pref_parallel_simulations);
+		//Default seed value (0 is undefined)
+		write sample(gama.pref_rng_default_seed);
 
-	//In batch, allows to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
-	write sample(gama.pref_parallel_simulations_all);
+		//Define a default seed
+		write sample(gama.pref_rng_define_seed);
 
-	//Make species schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)
-	write sample(gama.pref_parallel_species);
+		//Include random number generation parameters in the parameters view
+		write sample(gama.pref_rng_in_parameters);
 
-	//Max. number of threads to use (available processors: 10)
-	write sample(gama.pref_parallel_threads);
+		//Default random number generator
+		write sample(gama.pref_rng_name);
 
-	//Number under which agents are executed sequentially
-	write sample(gama.pref_parallel_threshold);
+		//Default buffering strategy for the save statement
+		write sample(gama.pref_save_buffering_strategy);
 
-	//Tolerance for the comparison of points
-	write sample(gama.pref_point_tolerance);
+		//Send console outputs to clients
+		write sample(gama.pref_server_console);
 
-	//Default seed value (0 is undefined)
-	write sample(gama.pref_rng_default_seed);
+		//Interval between two pings (-1 to disable)
+		write sample(gama.pref_server_ping);
 
-	//Define a default seed
-	write sample(gama.pref_rng_define_seed);
+		//Port to which GAMA Server is listening
+		write sample(gama.pref_server_port);
 
-	//Include random number generation parameters in the parameters view
-	write sample(gama.pref_rng_in_parameters);
+		//Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently
+		write sample(gama.pref_shapefiles_in_memory);
 
-	//Default random number generator
-	write sample(gama.pref_rng_name);
+		//Pivot color of simulations
+		write sample(gama.pref_simulation_color);
 
-	//Interval between two pings (-1 to disable)
-	write sample(gama.pref_server_ping);
+		//Default color scheme for simulations in UI
+		write sample(gama.pref_simulation_colors);
 
-	//Port to which GAMA Server is listening
-	write sample(gama.pref_server_port);
+		//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
+		write sample(gama.pref_synchronize_quadtree);
 
-	//In-memory shapefile mapping (optimizes access to shapefile data in exchange for increased memory usage)
-	write sample(gama.pref_shapefiles_in_memory);
+		//In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)
+		write sample(gama.pref_texture_orientation);
 
-	//Pivot color of simulations
-	write sample(gama.pref_simulation_color);
-
-	//Default color scheme for simulations in UI
-	write sample(gama.pref_simulation_colors);
-
-	//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
-	write sample(gama.pref_synchronize_quadtree);
-
-	//Orient the textures according to the geometry on which they are displayed (may create visual oddities)
-	write sample(gama.pref_texture_orientation);
+		//Default buffering strategy for the write statement
+		write sample(gama.pref_write_buffering_strategy);
+	}
 
 }
-}
-
 
 experiment 'Set Preferences' type: gui {
-init {
+
+	init {
 	//Append the name of simulations to their outputs
-	gama.pref_append_simulation_name <- false;
+		gama.pref_append_simulation_name <- false;
 
-	//Display grid lines
-	gama.pref_chart_display_gridlines <- false;
+		//Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)
+		gama.pref_chart_quality <- 0.8;
 
-	//Resolution of the charts (from 0, small but fast, to 1, best but resource consuming)
-	gama.pref_chart_quality <- 0.865;
+		//Max. number of characters to keep when paused (-1 = unlimited)
+		gama.pref_console_buffer <- 20000;
 
-	//Monitor memory and emit a warning if it is low
-	gama.pref_check_memory <- false;
+		//Max. number of characters to display (-1 = unlimited)
+		gama.pref_console_size <- 20000;
 
-	//Max. number of characters to keep when paused (-1 = unlimited)
-	gama.pref_console_buffer <- 20000;
+		//Wrap long lines (can slow down output)
+		gama.pref_console_wrap <- false;
 
-	//Max. number of characters to display (-1 = unlimited)
-	gama.pref_console_size <- 5000;
+		//Default separator for fields
+		gama.pref_csv_separator <- ';';
 
-	//Wrap long lines (can slow down output)
-	gama.pref_console_wrap <- false;
+		//Default separator for strings
+		gama.pref_csv_string_qualifier <- '"';
 
-	//Default separator for fields
-	gama.pref_csv_separator <- ';';
+		//Custom date pattern (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns)
+		gama.pref_date_custom_formatter <- 'yyyy-MM-dd HH:mm:ss';
 
-	//Default separator for strings
-	gama.pref_csv_string_qualifier <- '"';
+		//Default date pattern for writing dates (i.e. string(date1))
+		gama.pref_date_default_formatter <- 'CUSTOM';
 
-	//Custom date pattern (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns)
-	gama.pref_date_custom_formatter <- 'yyyy-MM-dd HH:mm:ss';
+		//Default starting date of models
+		gama.pref_date_starting_date <- date('1970-01-01 07:00:00');
 
-	//Default date pattern for writing dates (i.e. string(date1))
-	gama.pref_date_default_formatter <- 'CUSTOM';
+		//Default time step of models
+		gama.pref_date_time_step <- 1.0;
 
-	//Default starting date of models
-	gama.pref_date_starting_date <- date ('1970-01-01 07:00:00');
+		//Apply antialiasing
+		gama.pref_display_antialias <- false;
 
-	//Default time step of models
-	gama.pref_date_time_step <- 1.0;
+		//Default background color ('background' facet of 'display')
+		gama.pref_display_background_color <- #white;
 
-	//Apply antialiasing
-	gama.pref_display_antialias <- true;
+		//Default camera to use when none is specified
+		gama.pref_display_camera <- 'From above';
 
-	//Default background color ('background' facet of 'display')
-	gama.pref_display_background_color <- #white;
+		//Limit the number of frames per second if you experience stuttering in the rendering
+		gama.pref_display_cap_fps <- false;
 
-	//Default camera to use when none is specified
-	gama.pref_display_camera <- 'From above';
+		//Continue to draw displays when in Modeling perspective
+		gama.pref_display_continue_drawing <- false;
 
-	//Limit the number of frames per second
-	gama.pref_display_cap_fps <- true;
+		//Default rendering method
+		gama.pref_display_default2 <- true;
 
-	//Continue to draw displays when in Modeling perspective
-	gama.pref_display_continue_drawing <- false;
+		//Default color of agents
+		gama.pref_display_default_color <- #yellow;
 
-	//Default rendering method
-	gama.pref_display_default <- '2d';
+		//Default font to use in 'draw'
+		gama.pref_display_default_font <- font('Helvetica', 12, #plain);
 
-	//Default color of agents
-	gama.pref_display_default_color <- #gold;
+		//Defaut shape of agents
+		gama.pref_display_default_shape <- 'shape';
 
-	//Default font to use in 'draw'
-	gama.pref_display_default_font <- font('Andale Mono',12.0,#plain);
+		//Default size of agents
+		gama.pref_display_default_size <- 1.0;
 
-	//Defaut shape of agents
-	gama.pref_display_default_shape <- 'shape';
+		//Enable fast snapshots (uncomplete when the display is obscured by others but much faster)
+		gama.pref_display_fast_snapshot <- false;
 
-	//Default size of agents
-	gama.pref_display_default_size <- 1.0;
+		//Default highlight color
+		gama.pref_display_highlight_color <- rgb(0, 200, 200, 255);
 
-	//Enable fast snapshots (uncomplete when the display is obscured by others but much faster)
-	gama.pref_display_fast_snapshot <- false;
+		//Set the sensitivity of the keyboard movements  (0 for slow, 1 for fast)
+		gama.pref_display_keyboard_factor <- 0.5;
 
-	//Display 'flat' histograms
-	gama.pref_display_flat_charts <- true;
+		//Set the default intensity of the lights (from 0, dark, to 255, light)
+		gama.pref_display_light_intensity <- 160;
 
-	//Default highlight color
-	gama.pref_display_highlight_color <- rgb (0, 200, 200, 255);
+		//Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations
+		gama.pref_display_line_width <- 1.0;
 
-	//Set the sensitivity of the keyboard movements  (0 for slow, 1 for fast)
-	gama.pref_display_keyboard_factor <- 0.6900000000000001;
+		//Max. number of frames per second
+		gama.pref_display_max_fps <- 60;
 
-	//Set the default intensity of the ambient and default lights (from 0, completely dark, to 255, completely light)
-	gama.pref_display_light_intensity <- 160;
+		//Keep chart values in memory (to save them as CSV) or not (to lower memory usage)
+		gama.pref_display_memorize_charts <- true;
 
-	//Default line width (facet 'width' of 'draw')
-	gama.pref_display_line_width <- 0.7999999999999999;
+		//Set the sensitivity of the mouse/trackpad movements  (0 for slow, 1 fast)
+		gama.pref_display_mouse_factor <- 0.5;
 
-	//Max. number of frames per second
-	gama.pref_display_max_fps <- 50;
+		//Disable acceleration for Java2D (necessary on some configurations)
+		gama.pref_display_no_java2d_acceleration <- false;
 
-	//Keep values in memory (to save them as CSV)
-	gama.pref_display_memorize_charts <- false;
+		//Use Numeric Keypad (2,4,6,8) for camera interaction
+		gama.pref_display_numkeyscam <- true;
 
-	//Set the sensitivity of the mouse/trackpad movements  (0 for slow, 1 fast)
-	gama.pref_display_mouse_factor <- 0.2;
+		//Show errors thrown in displays and outputs
+		gama.pref_display_show_errors <- false;
 
-	//Use Numeric Keypad (2,4,6,8) for camera interaction
-	gama.pref_display_numkeyscam <- false;
+		//Number of slices of circular geometries in OpenGL (the higher the more resources consuming)
+		gama.pref_display_slice_number <- 16;
 
-	//Display a border around display views
-	gama.pref_display_show_border <- false;
+		//Synchronize outputs with the simulation
+		gama.pref_display_synchronized <- false;
 
-	//Show errors thrown in displays and outputs
-	gama.pref_display_show_errors <- true;
+		//Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)
+		gama.pref_display_use_cache <- true;
 
-	//Show the display bottom overlay
-	gama.pref_display_show_overlay <- false;
+		//Default layout of display views
+		gama.pref_display_view_layout <- 'Split';
 
-	//Draw 3D axes
-	gama.pref_display_show_referential <- true;
+		//Only display visible agents in OpenGL (faster, may create visual oddities)
+		gama.pref_display_visible_agents <- false;
 
-	//Draw rotation axes
-	gama.pref_display_show_rotation <- true;
+		//Draw only the 'external' faces of objects in OpenGL
+		gama.pref_display_visible_faces <- false;
 
-	//Show the display top toolbar
-	gama.pref_display_show_toolbar <- true;
+		//Set the zoom factor (0 for slow, 1 fast)
+		gama.pref_display_zoom_factor <- 0.5;
 
-	//Number of slices of circular geometries
-	gama.pref_display_slice_number <- 12;
+		//Enable GAMA Server mode
+		gama.pref_enable_server <- true;
 
-	//Synchronize outputs with the simulation
-	gama.pref_display_synchronized <- false;
+		//Show execution errors
+		gama.pref_errors_display <- true;
 
-	//Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)
-	gama.pref_display_use_cache <- true;
+		//Show errors in editors
+		gama.pref_errors_in_editor <- true;
 
-	//Default layout of display views
-	gama.pref_display_view_layout <- 'Split';
+		//Number of errors to display
+		gama.pref_errors_number <- 10;
 
-	//Only display visible agents (faster, may create visual oddities)
-	gama.pref_display_visible_agents <- false;
+		//Stop simulation at first error
+		gama.pref_errors_stop <- true;
 
-	//Set the zoom factor (0 for slow, 1 fast)
-	gama.pref_display_zoom_factor <- 0.68;
+		//Treat warnings as errors
+		gama.pref_errors_warnings_errors <- false;
 
-	//Enables GAMA Server mode
-	gama.pref_enable_server <- true;
+		//Ask to close the previous experiment when launching a new one
+		gama.pref_experiment_ask_closing <- true;
 
-	//Show execution errors
-	gama.pref_errors_display <- true;
+		//Auto-run experiments when they are launched
+		gama.pref_experiment_auto_run <- false;
 
-	//Automatically open an editor and point at the faulty part of the model if an error or a warning is thrown
-	gama.pref_errors_in_editor <- true;
+		//Automatically expand the parameters categories
+		gama.pref_experiment_expand_params <- true;
 
-	//Number of errors to display
-	gama.pref_errors_number <- 2;
+		//Incrementation of the step duration slider
+		gama.pref_experiment_type_slider <- true;
 
-	//Display most recent first
-	gama.pref_errors_recent_first <- true;
+		//Only display failed and aborted tests
+		gama.pref_failed_tests <- false;
 
-	//Stop simulation at first error
-	gama.pref_errors_stop <- true;
+		//Let GAMA find which CRS to use to project GIS data
+		gama.pref_gis_auto_crs <- true;
 
-	//Treat warnings as errors
-	gama.pref_errors_warnings_errors <- false;
+		//...or use the following EPSG code (the one that will also be used if no projection information is found)
+		gama.pref_gis_default_crs <- 32648;
 
-	//Ask to close the previous experiment when launching a new one
-	gama.pref_experiment_ask_closing <- true;
+		//...or use the following CRS (EPSG code)
+		gama.pref_gis_initial_crs <- 4326;
 
-	//Auto-run experiments when they are launched
-	gama.pref_experiment_auto_run <- false;
+		//... or use this following CRS (EPSG code)
+		gama.pref_gis_output_crs <- 4326;
 
-	//Automatically expand the parameters categories
-	gama.pref_experiment_expand_params <- true;
+		//When no .prj file or CRS is supplied, consider GIS data to be already projected in this CRS
+		gama.pref_gis_same_crs <- true;
 
-	//Set the step duration slider incrementation to linear. If false set to logarithmic
-	gama.pref_experiment_type_slider <- true;
+		//When no CRS is provided, save the GIS data with the current CRS
+		gama.pref_gis_save_crs <- true;
 
-	//Only display (in the UI and in headless runs) failed and aborted tests
-	gama.pref_failed_tests <- false;
+		//Connection timeout (in ms)
+		gama.pref_http_connect_timeout <- 20000;
 
-	//Let GAMA find which CRS to use to project GIS data
-	gama.pref_gis_auto_crs <- true;
+		//Empty the local cache of files downloaded from the web
+		gama.pref_http_empty_cache <- true;
 
-	//...or use the following EPSG code (the one that will also be used if no projection information is found)
-	gama.pref_gis_default_crs <- 32648;
+		//Read timeout (in ms)
+		gama.pref_http_read_timeout <- 20000;
 
-	//...or use the following CRS (EPSG code)
-	gama.pref_gis_initial_crs <- 4326;
+		//Number of times to retry if connection cannot be established
+		gama.pref_http_retry_number <- 3;
 
-	//... or use this following CRS (EPSG code)
-	gama.pref_gis_output_crs <- 4326;
+		//When running out of memory in an experiment, GAMA should
+		gama.pref_memory_action <- true;
 
-	//When no .prj file or CRS is supplied, consider GIS data to be already projected in this CRS
-	gama.pref_gis_same_crs <- true;
+		//Interval (in seconds) at which memory should be monitored
+		gama.pref_memory_frequency <- 2;
 
-	//When no CRS is provided, save the GIS data with the current CRS
-	gama.pref_gis_save_crs <- true;
+		//Emit a warning when the percentage of available memory is under
+		gama.pref_memory_threshold <- 20;
 
-	//Connection timeout (in ms)
-	gama.pref_http_connect_timeout <- 20000;
+		//Display monitors in the parameters view
+		gama.pref_monitors_in_parameters <- true;
 
-	//Empty the local cache of files downloaded from the web
-	gama.pref_http_empty_cache <- true;
+		//Increment factor (from 0, none, to 1, max)
+		gama.pref_opengl_z_factor <- 0.05;
 
-	//Read timeout (in ms)
-	gama.pref_http_read_timeout <- 20000;
+		//In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts
+		gama.pref_opengl_z_fighting <- true;
 
-	//Number of times to retry if connection cannot be established
-	gama.pref_http_retry_number <- 3;
+		//Optimize the 'at_distance' operator
+		gama.pref_optimize_at_distance <- true;
 
-	//If true, when running out of memory, GAMA will try to close the experiment, otherwise it exits
-	gama.pref_memory_action <- true;
+		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
+		gama.pref_optimize_path_computation <- false;
 
-	//Interval (in seconds) at which memory should be monitored
-	gama.pref_memory_frequency <- 2;
+		//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
+		gama.pref_optimize_quadtree <- false;
 
-	//Trigger warnings when the percentage of available memory is below
-	gama.pref_memory_threshold <- 20;
+		//Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)
+		gama.pref_parallel_grids <- false;
 
-	//Display monitors in the parameters view
-	gama.pref_monitors_in_parameters <- true;
+		//Allow experiments to run simulations in parallel
+		gama.pref_parallel_simulations <- true;
 
-	//Add a small increment to the z ordinate of objects and layers to fight visual artefacts
-	gama.pref_opengl_z_fighting <- true;
+		//In batch, allow to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
+		gama.pref_parallel_simulations_all <- true;
 
-	//Optimize the 'at_distance' operator
-	gama.pref_optimize_at_distance <- true;
+		//Make species schedule their agents in parallel (prevents the reproducibility of simulations)
+		gama.pref_parallel_species <- false;
 
-	//Optimize the path computation operators and goto action (but with possible 'jump' issues)
-	gama.pref_optimize_path_computation <- false;
+		//Max. number of threads to use (available processors: 16)
+		gama.pref_parallel_threads <- 4;
 
-	//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
-	gama.pref_optimize_quadtree <- false;
+		//Size under which populations are executed sequentially
+		gama.pref_parallel_threshold <- 20;
 
-	//Make grids schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)
-	gama.pref_parallel_grids <- false;
+		//Tolerance for the comparison of points
+		gama.pref_point_tolerance <- 0.0;
 
-	//Make experiments run simulations in parallel
-	gama.pref_parallel_simulations <- true;
+		//Default seed value (0 is undefined)
+		gama.pref_rng_default_seed <- 1.0;
 
-	//In batch, allows to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
-	gama.pref_parallel_simulations_all <- false;
+		//Define a default seed
+		gama.pref_rng_define_seed <- false;
 
-	//Make species schedule their agents in parallel (beware that setting this to true no longer allows GAMA to ensure the reproducibility of simulations)
-	gama.pref_parallel_species <- false;
+		//Include random number generation parameters in the parameters view
+		gama.pref_rng_in_parameters <- false;
 
-	//Max. number of threads to use (available processors: 10)
-	gama.pref_parallel_threads <- 16;
+		//Default random number generator
+		gama.pref_rng_name <- 'mersenne';
 
-	//Number under which agents are executed sequentially
-	gama.pref_parallel_threshold <- 4;
+		//Default buffering strategy for the save statement
+		gama.pref_save_buffering_strategy <- 'no_buffering';
 
-	//Tolerance for the comparison of points
-	gama.pref_point_tolerance <- 0.0;
+		//Send console outputs to clients
+		gama.pref_server_console <- true;
 
-	//Default seed value (0 is undefined)
-	gama.pref_rng_default_seed <- 1.0;
+		//Interval between two pings (-1 to disable)
+		gama.pref_server_ping <- 10000;
 
-	//Define a default seed
-	gama.pref_rng_define_seed <- false;
+		//Port to which GAMA Server is listening
+		gama.pref_server_port <- 1000;
 
-	//Include random number generation parameters in the parameters view
-	gama.pref_rng_in_parameters <- false;
+		//Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently
+		gama.pref_shapefiles_in_memory <- true;
 
-	//Default random number generator
-	gama.pref_rng_name <- 'parallel';
+		//Pivot color of simulations
+		gama.pref_simulation_color <- #darkturquoise;
 
-	//Interval between two pings (-1 to disable)
-	gama.pref_server_ping <- 10000;
+		//Default color scheme for simulations in UI
+		gama.pref_simulation_colors <- 'Qualitative (9 colors)';
 
-	//Port to which GAMA Server is listening
-	gama.pref_server_port <- 1000;
+		//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
+		gama.pref_synchronize_quadtree <- true;
 
-	//In-memory shapefile mapping (optimizes access to shapefile data in exchange for increased memory usage)
-	gama.pref_shapefiles_in_memory <- true;
+		//In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)
+		gama.pref_texture_orientation <- true;
 
-	//Pivot color of simulations
-	gama.pref_simulation_color <- #mediumblue;
+		//Default buffering strategy for the write statement
+		gama.pref_write_buffering_strategy <- 'no_buffering';
+	}
 
-	//Default color scheme for simulations in UI
-	gama.pref_simulation_colors <- 'Qualitative (9 colors)';
-
-	//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
-	gama.pref_synchronize_quadtree <- true;
-
-	//Orient the textures according to the geometry on which they are displayed (may create visual oddities)
-	gama.pref_texture_orientation <- true;
-
-}
 }

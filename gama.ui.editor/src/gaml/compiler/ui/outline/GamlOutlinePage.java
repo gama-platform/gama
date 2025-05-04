@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.outline;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -45,8 +48,9 @@ public class GamlOutlinePage extends OutlinePage implements IToolbarDecoratedVie
 	protected void configureActions() {
 		super.configureActions();
 		IToolBarManager tbm = getSite().getActionBars().getToolBarManager();
-		// toolbar.wipe(SWT.RIGHT, true, false);
-		for (IContributionItem item : tbm.getItems()) { toolbar.item(item, SWT.RIGHT); }
+		// to have the link to the right
+		List<IContributionItem> items = Arrays.asList(tbm.getItems()).reversed();
+		for (IContributionItem item : items) { toolbar.item(item, SWT.RIGHT); }
 		toolbar.requestLayout();
 		tbm.removeAll();
 		tbm.update(true);

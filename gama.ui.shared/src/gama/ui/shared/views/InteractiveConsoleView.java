@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.views;
 
+import static gama.ui.shared.resources.IGamaIcons.ACTION_CLEAR;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,13 +54,15 @@ import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
-import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 
 /**
@@ -309,11 +313,26 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		super.createToolItems(tb);
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button(IGamaIcons.ACTION_CLEAR, "Clear", "Clear the console", e -> {
-			msgConsole.clearConsole();
-			showPrompt();
-		}, SWT.RIGHT);
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build(ACTION_CLEAR, "Clear", "Clear the console", e -> {
+						msgConsole.clearConsole();
+						showPrompt();
+					}).toItem(mainMenu);
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
+							e -> saveAsLog()).toItem(mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
+
 		this.topLevelAgentChanged(GAMA.getCurrentTopLevelAgent());
 	}
 

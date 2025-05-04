@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaProcessor.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -67,6 +67,8 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment env) {
 		if (complete == 0) { complete = System.currentTimeMillis(); }
 		context.setRoundEnvironment(env);
+		// context.emit(Kind.NOTE, "GAML Processor: Entering the production of sources for " + context.currentPlugin,
+		// (Element) null);
 
 		if (context.getRoots().size() > 0) {
 			try {

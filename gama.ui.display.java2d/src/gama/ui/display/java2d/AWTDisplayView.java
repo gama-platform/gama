@@ -82,4 +82,9 @@ public class AWTDisplayView extends LayeredDisplayView {
 	@Override
 	public boolean isCameraDynamic() { return getDisplaySurface().isCameraDynamic(); }
 
+	@Override
+	public boolean largePauseIcon() {
+		return true;
+	}
+
 }

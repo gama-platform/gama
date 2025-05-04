@@ -2,9 +2,9 @@
 /*******************************************************************************************************
  *
  * GamlExpressionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -120,7 +120,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	/**
 	 * Method createUnit()
 	 *
-	 * @see gama.gaml.expressions.IExpressionFactory#createUnit(java.lang.Object, gama.gaml.types.IType, java.lang.String)
+	 * @see gama.gaml.expressions.IExpressionFactory#createUnit(java.lang.Object, gama.gaml.types.IType,
+	 *      java.lang.String)
 	 */
 	@Override
 	public UnitConstantExpression createUnit(final Object value, final IType t, final String name, final String doc,
@@ -275,6 +276,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			// We browse all the entries of the operators with this name
 			for (Map.Entry<Signature, OperatorProto> entry : ops.entrySet()) {
 				Signature s = entry.getKey();
+
 				if (originalUserSignature.matchesDesiredSignature(s)) {
 					final int dist = s.distanceTo(originalUserSignature);
 					if (dist == 0) {

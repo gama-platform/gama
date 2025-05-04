@@ -9,7 +9,7 @@ model statistic_operators
 
 global {
 	init tet {
-		list data <- [1,2,3,4,5,6,7,10,20,100];
+		list<int> data <- [1,2,3,4,5,6,7,10,20,100];
 		write "data: " + data;
 		write "min: " + min(data);
 		write "max: " + max(data);

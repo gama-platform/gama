@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MultiPageCSVEditor.java, in gama.ui.shared.viewers, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MultiPageCSVEditor.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,6 +32,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
@@ -47,10 +48,13 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 
 import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
 import gama.ui.shared.menus.GamaMenu;
+import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gama.ui.viewers.csv.model.CSVModel;
 import gama.ui.viewers.csv.model.CSVRow;
@@ -515,138 +519,102 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 			}
 		});
 
-		tb.menu(IGamaIcons.SET_DELIMITER, "Determine which character should be used as delimiter of fields",
-				"Determine which character should be used as delimiter of fields", e -> {
-					final GamaMenu menu = new GamaMenu() {
+		GamaToolbarSimple tbs = tb.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
-						@Override
-						protected void fillMenu() {
-							action(", (comma)", new SelectionAdapter() {
+			final GamaMenu menu = new GamaMenu() {
 
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.COMMA);
+				@Override
+				protected void fillMenu() {
+					Menu sub = GamaMenu.sub(mainMenu, "Choose separator",
+							"Determine which character should be used as delimiter of fields",
+							GamaIcon.named(IGamaIcons.SET_DELIMITER).image());
+					GamaMenu.action(sub, ", (comma)", e1 -> refreshWithDelimiter(Letters.COMMA));
+					GamaMenu.action(sub, "; (semicolon)", e1 -> refreshWithDelimiter(Letters.SEMICOLUMN));
+					GamaMenu.action(sub, "  (space)", e1 -> refreshWithDelimiter(Letters.SPACE));
+					GamaMenu.action(sub, "  (tab)", e1 -> refreshWithDelimiter(Letters.TAB));
+					GamaMenu.action(sub, ": (colon)", e1 -> refreshWithDelimiter(Letters.COLUMN));
+					GamaMenu.action(sub, "| (pipe)", e1 -> refreshWithDelimiter(Letters.PIPE));
+
+					GamaCommand.build(IGamaIcons.SET_HEADER, "First line is header", "First line is header", e -> {
+						final ToolItem t1 = (ToolItem) e.widget;
+						model.setFirstLineHeader(t1.getSelection());
+						refreshWithDelimiter(null);
+					}).toCheckItem(mainMenu).setSelection(model.isFirstLineHeader());
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build(IGamaIcons.ADD_ROW, "Add row",
+							"Insert a new row before the currently selected one or at the end of the file if none is selected",
+							e -> {
+								final CSVRow row =
+										(CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
+								if (row != null) {
+									model.addRowAfterElement(row);
+								} else {
+									model.addRow();
 								}
+								tableModified();
+							}).toItem(mainMenu);
+					GamaCommand.build(IGamaIcons.DELETE_ROW, "Delete row", "Delete currently selected rows", e -> {
 
-							}, null);
-							action("; (semicolon)", new SelectionAdapter() {
+						CSVRow row = (CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
 
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.SEMICOLUMN);
-								}
-
-							}, null);
-							action("  (space)", new SelectionAdapter() {
-
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.SPACE);
-								}
-
-							}, null);
-							action("  (tabulation)", new SelectionAdapter() {
-
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.TAB);
-								}
-
-							}, null);
-							action(": (colon)", new SelectionAdapter() {
-
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.COLUMN);
-								}
-
-							}, null);
-							action("| (pipe)", new SelectionAdapter() {
-
-								@Override
-								public void widgetSelected(final SelectionEvent e1) {
-									refreshWithDelimiter(Letters.PIPE);
-
-								}
-
-							}, null);
-
+						while (row != null) {
+							row = (CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
+							if (row != null) {
+								model.removeRow(row);
+								tableModified();
+							}
 						}
-					};
-					menu.open(tb.getToolbar(SWT.RIGHT), e);
-				}, SWT.RIGHT);
-		final ToolItem t = tb.check(IGamaIcons.SET_HEADER, "First line is header", "First line is header", e -> {
-			final ToolItem t1 = (ToolItem) e.widget;
-			model.setFirstLineHeader(t1.getSelection());
-			refreshWithDelimiter(null);
-		}, SWT.RIGHT);
-		t.setSelection(model.isFirstLineHeader());
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button(IGamaIcons.ADD_ROW, "Add row",
-				"Insert a new row before the currently selected one or at the end of the file if none is selected",
-				e -> {
-					final CSVRow row = (CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
-					if (row != null) {
-						model.addRowAfterElement(row);
-					} else {
-						model.addRow();
+					}).toItem(mainMenu);
+					if (model.isFirstLineHeader()) {
+						GamaCommand.build(IGamaIcons.ADD_COLUMN, "Add column", "Add new column", arg0 -> {
+							// call insert/add column page
+							final InsertColumnPage acPage =
+									new InsertColumnPage(getSite().getShell(), model.getArrayHeader());
+							if (acPage.open() == Window.OK) {
+								final String colToInsert = acPage.getColumnNewName();
+								model.addColumn(colToInsert);
+								tableViewer.setInput(model);
+								final TableColumn column = new TableColumn(tableViewer.getTable(), SWT.LEFT);
+								column.setText(colToInsert);
+								column.setWidth(100);
+								column.setResizable(true);
+								column.setMoveable(true);
+								addMenuItemToColumn(column, model.getColumnCount() - 1);
+								defineCellEditing();
+								tableModified();
+
+							}
+						}).toItem(mainMenu);
+
 					}
-					tableModified();
-				}, SWT.RIGHT);
-		tb.button(IGamaIcons.DELETE_ROW, "Delete row", "Delete currently selected rows", e -> {
+					if (model.isFirstLineHeader()) {
+						GamaCommand.build(IGamaIcons.DELETE_COLUMN, "Delete column", "Delete one or several column(s)",
+								e -> {
 
-			CSVRow row = (CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
+									// call delete column page
+									final DeleteColumnPage dcPage =
+											new DeleteColumnPage(getSite().getShell(), model.getArrayHeader());
+									if (dcPage.open() == Window.OK) {
+										final String[] colToDelete = dcPage.getColumnSelected();
+										for (final String column : colToDelete) {
+											final int colIndex = findColumnForName(column);
+											tableViewer.getTable().getColumn(colIndex).dispose();
+											// tableHeaderMenu.getItem(colIndex).dispose();
+											model.removeColumn(column);
+										}
+										tableModified();
+									}
 
-			while (row != null) {
-				row = (CSVRow) ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
-				if (row != null) {
-					model.removeRow(row);
-					tableModified();
-				}
-			}
-		}, SWT.RIGHT);
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		if (model.isFirstLineHeader()) {
-			tb.button(IGamaIcons.ADD_COLUMN, "Add column", "Add new column", arg0 -> {
-				// call insert/add column page
-				final InsertColumnPage acPage = new InsertColumnPage(getSite().getShell(), model.getArrayHeader());
-				if (acPage.open() == Window.OK) {
-					final String colToInsert = acPage.getColumnNewName();
-					model.addColumn(colToInsert);
-					tableViewer.setInput(model);
-					final TableColumn column = new TableColumn(tableViewer.getTable(), SWT.LEFT);
-					column.setText(colToInsert);
-					column.setWidth(100);
-					column.setResizable(true);
-					column.setMoveable(true);
-					addMenuItemToColumn(column, model.getColumnCount() - 1);
-					defineCellEditing();
-					tableModified();
-
-				}
-			}, SWT.RIGHT);
-
-		}
-		if (model.isFirstLineHeader()) {
-			tb.button(IGamaIcons.DELETE_COLUMN, "Delete column", "Delete one or several column(s)", e -> {
-
-				// call delete column page
-				final DeleteColumnPage dcPage = new DeleteColumnPage(getSite().getShell(), model.getArrayHeader());
-				if (dcPage.open() == Window.OK) {
-					final String[] colToDelete = dcPage.getColumnSelected();
-					for (final String column : colToDelete) {
-						final int colIndex = findColumnForName(column);
-						tableViewer.getTable().getColumn(colIndex).dispose();
-						// tableHeaderMenu.getItem(colIndex).dispose();
-						model.removeColumn(column);
+								}).toItem(mainMenu);
 					}
-					tableModified();
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build(IGamaIcons.SAVE_AS, "Save as...", "Save as...", e -> doSaveAs()).toItem(mainMenu);
 				}
 
-			}, SWT.RIGHT);
-		}
-		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.button("generic/menu.saveas", "Save as...", "Save as...", e -> doSaveAs(), SWT.RIGHT);
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
 
 	}
 

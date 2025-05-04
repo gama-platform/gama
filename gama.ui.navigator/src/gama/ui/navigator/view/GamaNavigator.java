@@ -44,7 +44,6 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonNavigatorManager;
 import org.eclipse.ui.navigator.CommonViewer;
 
-import gama.core.runtime.PlatformHelper;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.Tag;
 import gama.ui.navigator.view.contents.TopLevelFolder;
@@ -53,13 +52,14 @@ import gama.ui.navigator.view.contents.WrappedContainer;
 import gama.ui.navigator.view.contents.WrappedFile;
 import gama.ui.navigator.view.contents.WrappedResource;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
-import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class GamaNavigator.
@@ -125,6 +125,8 @@ public class GamaNavigator extends CommonNavigator
 
 		super.createPartControl(parent);
 		restoreState();
+		sortItem = toolbar.check(byDate, SWT.RIGHT);
+		sortItem.setSelection(true);
 		toggleLinkingAction = new LinkEditorAction(this, getCommonViewer(), getLinkHelperService());
 		IHandlerService service = getSite().getService(IHandlerService.class);
 		service.activateHandler(toggleLinkingAction.getActionDefinitionId(), new ActionHandler(toggleLinkingAction));
@@ -132,6 +134,34 @@ public class GamaNavigator extends CommonNavigator
 				e -> toggleLinkingAction.run());
 		linkItem = toolbar.check(linkCommand, SWT.RIGHT);
 		linkItem.setSelection(toggleLinkingAction.isChecked());
+
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					boolean metadata = PreferencesHelper.NAVIGATOR_METADATA.getValue();
+					GamaCommand
+							.build(null, metadata ? "Hide metadata" : "Display metadata",
+									"Hide or display the metadata attached to the different categories of file",
+									e -> PreferencesHelper.NAVIGATOR_METADATA.setValue(null, !metadata))
+							.toItem(mainMenu);
+					boolean hidden = PreferencesHelper.NAVIGATOR_HIDDEN.getValue();
+					GamaCommand.build(null, hidden ? "Hide hidden files" : "Show hidden files",
+							"Hide or display the files considered as 'hidden' by the OS",
+							e -> PreferencesHelper.NAVIGATOR_HIDDEN.setValue(null, !hidden)).toItem(mainMenu);
+					boolean outline = PreferencesHelper.NAVIGATOR_OUTLINE.getValue();
+					GamaCommand.build(null, outline ? "Hide GAML outlines" : "Show GAML outlines",
+							"Hide or display the outline of GAML files",
+							e -> PreferencesHelper.NAVIGATOR_OUTLINE.setValue(null, !outline)).toItem(mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 100);
+		});
 
 		try {
 			final IDecoratorManager mgr = PlatformUI.getWorkbench().getDecoratorManager();
@@ -171,26 +201,24 @@ public class GamaNavigator extends CommonNavigator
 		if (memento == null) return;
 		final String saved = memento.getString("EXPANDED_STATE");
 		if (saved == null) return;
-		if (PreferencesHelper.KEEP_NAVIGATOR_STATE.getValue()) {
-			final List<VirtualContent<?>> contents = new ArrayList<>();
-			final String[] names = saved.split("@@");
-			for (final String s : names) {
-				if (s.startsWith("/")) {
-					final WrappedResource<?, ?> resource = getInstance().getManager()
-							.findWrappedInstanceOf(getWorkspace().getRoot().findMember(new Path(s)));
-					if (resource != null) { contents.add(resource); }
-				} else {
-					final TopLevelFolder folder = getInstance().getFolder(s);
-					if (folder != null) { contents.add(folder); }
-				}
+		final List<VirtualContent<?>> contents = new ArrayList<>();
+		final String[] names = saved.split("@@");
+		for (final String s : names) {
+			if (s.startsWith("/")) {
+				final WrappedResource<?, ?> resource = getInstance().getManager()
+						.findWrappedInstanceOf(getWorkspace().getRoot().findMember(new Path(s)));
+				if (resource != null) { contents.add(resource); }
+			} else {
+				final TopLevelFolder folder = getInstance().getFolder(s);
+				if (folder != null) { contents.add(folder); }
 			}
-			final VirtualContent<?>[] sel = contents.toArray(new VirtualContent[0]);
-			if (sel.length > 0) {
-				getCommonViewer().setExpandedElements((Object) sel);
-				getCommonViewer().setSelection(new StructuredSelection(sel[sel.length - 1]));
-			}
-
 		}
+		final VirtualContent<?>[] sel = contents.toArray(new VirtualContent[0]);
+		if (sel.length > 0) {
+			getCommonViewer().setExpandedElements((Object) sel);
+			getCommonViewer().setSelection(new StructuredSelection(sel[sel.length - 1]));
+		}
+
 	}
 
 	@Override
@@ -275,17 +303,8 @@ public class GamaNavigator extends CommonNavigator
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
-		if (PlatformHelper.isWindows() || PlatformHelper.isLinux()) {
-			tb.sep(24, SWT.RIGHT);
-			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
-
-		} else {
-			findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.RIGHT));
-			tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		}
-		sortItem = tb.check(byDate, SWT.RIGHT);
-		sortItem.setSelection(true);
-
+		toolbar.button("navigator/status.info", "", "", e -> properties.run(), SWT.LEFT);
+		findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.LEFT));
 	}
 
 	/**
@@ -303,22 +322,6 @@ public class GamaNavigator extends CommonNavigator
 			element = (VirtualContent<?>) currentSelection.getFirstElement();
 		}
 		element.handleSingleClick();
-		showStatus(element);
-	}
-
-	/**
-	 * Show status.
-	 *
-	 * @param element
-	 *            the element
-	 */
-	private void showStatus(final VirtualContent<?> element) {
-		final String message = element.getStatusMessage();
-		final String tooltip = element.getStatusTooltip();
-		final Selector l = e -> properties.run();
-		final ToolItem t = toolbar.status("navigator/status.info", message, l, null);
-		t.getControl().setToolTipText(tooltip == null ? message : tooltip);
-		toolbar.getToolbar(SWT.LEFT).update();
 	}
 
 	@Override

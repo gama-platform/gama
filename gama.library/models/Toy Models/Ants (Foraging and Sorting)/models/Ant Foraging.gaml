@@ -109,7 +109,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//Action to find the best place in the neighborhood cells
 	point choose_best_place {
-		container list_places <- ant_grid(location).neighbors;
+		list<ant_grid> list_places <- ant_grid(location).neighbors;
 		if (list_places count (each.food > 0)) > 0 {
 			return point(list_places first_with (each.food > 0));
 		} else {
@@ -288,7 +288,7 @@ experiment "3 Simulations" type: gui  parent:base{
 	}
 
 	output {
-		layout #split editors: false consoles: false toolbars: true tabs: false tray: false parameters: true background: #red;
+		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true background: #red;
 		display Ants background: color type: 3d toolbar: color axes: false {
 			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Envelope3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Envelope3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -62,7 +62,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @return the envelope 3 D
 	 */
 	public static Envelope3D of(final Geometry g) {
-		if (g instanceof GeometryCollection) return of((GeometryCollection) g);
+		if (g instanceof GeometryCollection gc) return of(gc);
 		final ICoordinates sq = GeometryUtils.getContourCoordinates(g);
 		return sq.getEnvelope();
 	}
@@ -261,9 +261,9 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	@Override
 	public void init(final Envelope env) {
 		super.init(env);
-		if (env instanceof Envelope3D) {
-			this.minz = ((Envelope3D) env).getMinZ();
-			this.maxz = ((Envelope3D) env).getMaxZ();
+		if (env instanceof Envelope3D e) {
+			this.minz = e.getMinZ();
+			this.maxz = e.getMaxZ();
 		}
 	}
 
@@ -631,7 +631,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @return
 	 */
 	private double getMaxZOf(final Envelope other) {
-		if (other instanceof Envelope3D) return ((Envelope3D) other).maxz;
+		if (other instanceof Envelope3D e) return e.maxz;
 		return 0d;
 	}
 
@@ -640,7 +640,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @return
 	 */
 	private double getMinZOf(final Envelope other) {
-		if (other instanceof Envelope3D) return ((Envelope3D) other).minz;
+		if (other instanceof Envelope3D e) return e.minz;
 		return 0d;
 	}
 

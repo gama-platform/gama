@@ -18,6 +18,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import gama.ui.shared.resources.GamaColors;
@@ -31,7 +32,7 @@ import gama.ui.shared.resources.IGamaIcons;
  * @param <P>
  *            the generic type
  */
-public abstract class VirtualContent<P extends VirtualContent<?>> {
+public abstract class VirtualContent<P extends VirtualContent<?>> implements IWorkbenchAdapter {
 
 	/**
 	 * The Enum VirtualContentType.
@@ -124,13 +125,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	public ResourceManager getManager() { return NavigatorRoot.getInstance().getManager(); }
 
 	/**
-	 * Gets the type.
-	 *
-	 * @return the type
-	 */
-	public abstract VirtualContentType getType();
-
-	/**
 	 * Should both perform something and answer whether or not it has performed it, so that the navigator knows whether
 	 * it should handle double-clicks itself
 	 *
@@ -164,27 +158,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	public P getParent() { return root; }
 
 	/**
-	 * Checks for children.
-	 *
-	 * @return true, if successful
-	 */
-	public abstract boolean hasChildren();
-
-	/**
-	 * Gets the navigator children.
-	 *
-	 * @return the navigator children
-	 */
-	public abstract Object[] getNavigatorChildren();
-
-	/**
-	 * Gets the image.
-	 *
-	 * @return the image
-	 */
-	public abstract ImageDescriptor getImageDescriptor();
-
-	/**
 	 * Gets the color.
 	 *
 	 * @return the color
@@ -198,22 +171,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 	 *            the sb
 	 * @return the suffix
 	 */
-	public abstract void getSuffix(StringBuilder sb);
-
-	/**
-	 * Find max problem severity.
-	 *
-	 * @return the int
-	 */
-	public abstract int findMaxProblemSeverity();
-
-	/**
-	 * Gets the overlay.
-	 *
-	 * @return the overlay
-	 */
-	public abstract ImageDescriptor getOverlay();
-
 	/**
 	 * Gets the top level folder.
 	 *
@@ -278,5 +235,76 @@ public abstract class VirtualContent<P extends VirtualContent<?>> {
 		if (root == null) return false;
 		return root == current || root.isContainedIn(current);
 	}
+
+	@Override
+	public Object[] getChildren(final Object o) {
+		return getNavigatorChildren();
+	}
+
+	@Override
+	public ImageDescriptor getImageDescriptor(final Object object) {
+		return getImageDescriptor();
+	}
+
+	@Override
+	public String getLabel(final Object o) {
+		return getName();
+	}
+
+	@Override
+	public Object getParent(final Object o) {
+		return this.getParent();
+	}
+
+	/**
+	 * Gets the type.
+	 *
+	 * @return the type
+	 */
+	public abstract VirtualContentType getType();
+
+	/**
+	 * Checks for children.
+	 *
+	 * @return true, if successful
+	 */
+	public abstract boolean hasChildren();
+
+	/**
+	 * Gets the navigator children.
+	 *
+	 * @return the navigator children
+	 */
+	public abstract Object[] getNavigatorChildren();
+
+	/**
+	 * Gets the image descriptor.
+	 *
+	 * @return the image descriptor
+	 */
+	public abstract ImageDescriptor getImageDescriptor();
+
+	/**
+	 * Gets the suffix.
+	 *
+	 * @param sb
+	 *            the sb
+	 * @return the suffix
+	 */
+	public abstract void getSuffix(final StringBuilder sb);
+
+	/**
+	 * Find max problem severity.
+	 *
+	 * @return the int
+	 */
+	public abstract int findMaxProblemSeverity();
+
+	/**
+	 * Gets the overlay.
+	 *
+	 * @return the overlay
+	 */
+	public abstract ImageDescriptor getOverlay();
 
 }

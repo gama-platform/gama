@@ -31,7 +31,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
@@ -51,6 +50,7 @@ import gama.gaml.statements.test.TestExperimentSummary;
 import gama.gaml.statements.test.TestState;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.controls.StatusIconProvider;
+import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.parameters.AssertEditor;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaColors;
@@ -58,7 +58,9 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 
 /**
  * The Class TestView.
@@ -234,26 +236,36 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		super.createToolItems(tb);
 		TESTS_SORTED.removeChangeListeners();
 		FAILED_TESTS.removeChangeListeners();
-		final ToolItem t = tb.check(TEST_SORT, "Sort by severity",
-				"When checked, sort the tests by their decreasing state severity (i.e. errored > failed > warning > passed > not run). Otherwise they are sorted by their order of execution.",
-				e -> {
-					TESTS_SORTED.set(!TESTS_SORTED.getValue());
-					TestView.super.reset();
-					reset();
-				}, SWT.RIGHT);
-		t.setSelection(TESTS_SORTED.getValue());
-		TESTS_SORTED.onChange(v -> t.setSelection(v));
+		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
-		final ToolItem t2 = tb.check(TEST_FILTER, "Filter tests",
-				"When checked, show only errored and failed tests and assertions", e -> {
-					FAILED_TESTS.set(!FAILED_TESTS.getValue());
-					TestView.super.reset();
-					reset();
-				}, SWT.RIGHT);
-		t2.setSelection(FAILED_TESTS.getValue());
-		FAILED_TESTS.onChange(v -> t2.setSelection(v));
-		tb.button(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> { this.saveTests(); },
-				SWT.RIGHT);
+			final GamaMenu menu = new GamaMenu() {
+
+				@Override
+				protected void fillMenu() {
+					GamaCommand.build(TEST_SORT, "Sort by severity",
+							"When checked, sort the tests by their decreasing state severity (i.e. errored > failed > warning > passed > not run). Otherwise they are sorted by their order of execution.",
+							e -> {
+								TESTS_SORTED.set(!TESTS_SORTED.getValue());
+								TestView.this.reset();
+								reset();
+							}).toCheckItem(mainMenu).setSelection(TESTS_SORTED.getValue());
+					GamaCommand.build(TEST_FILTER, "Filter tests",
+							"When checked, show only errored and failed tests and assertions", e -> {
+								FAILED_TESTS.set(!FAILED_TESTS.getValue());
+								TestView.this.reset();
+								reset();
+							}).toCheckItem(mainMenu).setSelection(FAILED_TESTS.getValue());
+					GamaMenu.separate(mainMenu);
+					GamaCommand.build(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> {
+						TestView.this.saveTests();
+					}).toItem(mainMenu);
+				}
+
+			};
+			menu.open(tbs, e, tbs.getSize().y, 0);
+		});
+
 	}
 
 	/**
@@ -327,10 +339,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				resortTests();
 				displayItems();
 				getParentComposite().layout(true, false);
-				if (toolbar != null) {
-					toolbar.status("navigator/status.info", new CompoundSummary<>(experiments).getStringSummary(),
-							null);
-				}
+				if (toolbar != null) { toolbar.status(new CompoundSummary<>(experiments).getStringSummary()); }
 				ViewsHelper.bringToFront(this);
 			}
 		});

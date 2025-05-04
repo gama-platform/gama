@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlModelSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,12 +22,12 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.outputs.AbstractOutputManager;
@@ -212,8 +212,8 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 			if (sp == null) {
 				for (final Map.Entry<String, ISpecies> entry : getAllSpecies().entrySet()) {
 					final ISpecies mm = entry.getValue();
-					if (mm instanceof GamlModelSpecies) {
-						sp = ((GamlModelSpecies) mm).getExperiment(speciesName);
+					if (mm instanceof GamlModelSpecies gms) {
+						sp = gms.getExperiment(speciesName);
 						if (sp != null) return sp;
 					}
 				}
