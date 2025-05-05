@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorSearchControls.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorSearchControls.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -97,7 +97,7 @@ public class EditorSearchControls {
 			parent.setLayout(layout);
 			GamaColors.setBackground(c, parent);
 		}
-		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH);
+		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		final IFocusService focusService = editor.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
 

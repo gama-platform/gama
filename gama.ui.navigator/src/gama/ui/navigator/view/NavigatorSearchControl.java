@@ -202,7 +202,7 @@ public class NavigatorSearchControl {
 			parent.setLayout(layout);
 			GamaColors.setBackground(c, parent);
 		}
-		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH);
+		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		data.heightHint = 16;
 		data.widthHint = 100;

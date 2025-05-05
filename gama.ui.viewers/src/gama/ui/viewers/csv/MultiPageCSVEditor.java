@@ -502,8 +502,8 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	public void createToolItems(final GamaToolbar2 tb) {
 
 		// add the filtering and coloring when searching specific elements.
-		final Text searchText = new Text(tb.getToolbar(SWT.LEFT), SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
-
+		final Text searchText =
+				new Text(tb.getToolbar(SWT.LEFT), SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		tb.control(searchText, 150, SWT.LEFT);
 		searchText.addKeyListener(new KeyAdapter() {
 
