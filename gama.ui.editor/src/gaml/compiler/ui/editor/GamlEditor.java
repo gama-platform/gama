@@ -10,6 +10,15 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.COPY;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.CUT;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.DELETE;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.FIND;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.PASTE;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.REDO;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.SELECT_ALL;
+import static org.eclipse.ui.texteditor.ITextEditorActionConstants.UNDO;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,6 +77,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -85,6 +96,8 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
@@ -469,6 +482,28 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			}
 		});
 		toolbarParent.requestLayout();
+		// See issue #502 https://github.com/gama-platform/gama/issues/502
+		this.getStyledText().addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusLost(final FocusEvent e) {}
+
+			@Override
+			public void focusGained(final FocusEvent e) {
+				IActionBars actionBars = GamlEditor.this.getEditorSite().getActionBars();
+				if (actionBars != null) {
+					actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), getAction(DELETE));
+					actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(), getAction(UNDO));
+					actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(), getAction(REDO));
+					actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(), getAction(CUT));
+					actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), getAction(COPY));
+					actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), getAction(PASTE));
+					actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), getAction(SELECT_ALL));
+					actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), getAction(FIND));
+					actionBars.updateActionBars();
+				}
+			}
+		});
 	}
 
 	@Override
