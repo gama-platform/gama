@@ -356,7 +356,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color>/* impl
 	 *            the awt RGB
 	 */
 	protected GamaColor(final int awtRGB) {
-		super(awtRGB, false);
+		super(awtRGB, true);
 	}
 
 	/**
