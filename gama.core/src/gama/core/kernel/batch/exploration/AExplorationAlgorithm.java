@@ -298,8 +298,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	@SuppressWarnings ("unchecked")
 	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getDenotedType() != Types.LIST) throw GamaRuntimeException.error(
-				"You cannot use " + IKeyword.WITH + " facet without input a list of maps as parameters inputs", scope);
+		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) throw GamaRuntimeException.error(
+				"You cannot use " + IKeyword.WITH + " facet without input a list of maps: got "+psexp.getDenotedType(), scope);
 		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
 
 		return buildParametersSetList(scope, parameterSets);
