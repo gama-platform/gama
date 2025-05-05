@@ -8,6 +8,15 @@
 
 model Skills
 
+
 skill trial {
+	
+	action toto;
+	
+	int i;
+	
+}
+
+species aa skills: [trial] {
 	
 }

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,8 +38,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
@@ -312,9 +312,7 @@ public class ModelFactory extends SymbolFactory {
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
 			ModelDescription parentBuiltInModels = BUILT_IN_MODELS.get(parentModel);
-			if (parentBuiltInModels != null){ 
-				parent = parentBuiltInModels;
-			}
+			if (parentBuiltInModels != null) { parent = parentBuiltInModels; }
 		}
 		final ModelDescription model =
 				new ModelDescription(modelName, null, projectPath, modelPath, source.getElement(), null, parent, null,
@@ -411,18 +409,14 @@ public class ModelFactory extends SymbolFactory {
 	private boolean applyPragmas(final ValidationContext collector, final ISyntacticElement source) {
 		final Map<String, List<String>> pragmas = source.getPragmas();
 		collector.resetInfoAndWarning();
-		if (pragmas == null) {
-			return true;
-		}
+		if (pragmas == null) return true;
 		List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
-		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
-				&& requiresList != null
-				&& !collector.verifyPlugins(requiresList)) {
-			return false;			
-		}
+		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue() && requiresList != null
+				&& !collector.verifyPlugins(requiresList))
+			return false;
 		return true;
 	}
 
@@ -528,7 +522,7 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> experimentNodes) {
 		// First we verify that this experiment has not been declared previously
 		final String experimentName = element.getName();
-		ISyntacticElement elm = experimentNodes.get(experimentName); 
+		ISyntacticElement elm = experimentNodes.get(experimentName);
 		if (elm != null) {
 			EObject object = elm.getElement();
 			if (object != null && object.eResource() != null) {
