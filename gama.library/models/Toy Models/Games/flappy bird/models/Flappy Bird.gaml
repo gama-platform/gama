@@ -27,7 +27,7 @@ global {
 	
 	geometry shape <- square(2#m);
 	
-	float speed_init <- -1.7#m/#s;
+	float speed_init <- -1.5#m/#s;
 	int count<-0;
 	bool game_over <- false;
 	
@@ -75,7 +75,7 @@ global {
 species bird frequency: game_over ? 0 : 1{
 	float speed;
 	bool impulsion <- false;
-	float size <- 7.5#cm;
+	float size <- 1.5#cm;
 	rgb color <- #blue;	
 	
 	reflex move {
@@ -95,12 +95,12 @@ species bird frequency: game_over ? 0 : 1{
 	} 
 	
 	aspect default {
-		draw circle(size) color:color;
+		draw circle(size * 5) color:color;
 	}
 	aspect png {
-		draw bird_image size:bird_to_size*size at: location+bird_offset rotate:atan(speed/(4*tuyau_speed));
+		draw bird_image size:bird_to_size*size*5 at: location+bird_offset rotate:atan(speed/(4*tuyau_speed));
 	}
-}
+} 
 
 species tuyau {
 	float speed <- tuyau_speed;
@@ -176,7 +176,7 @@ species texts {
 
 experiment main {
 	
-	float minimum_cycle_time <- step;
+	float minimum_cycle_duration <- step;
 	
 	bool has_started <- false;
 	
@@ -192,7 +192,7 @@ experiment main {
 	output synchronized:true{
 		
 		layout consoles:false editors:false navigator:false parameters:false toolbars:false tray:false;
-		
+	
 		
 		display main fullscreen:true type:2d {
 			
@@ -202,9 +202,12 @@ experiment main {
 			species tuyau aspect:png;
 			species texts;
 			event "r" {
-				ask world {
-					do reinit_model;
+				if (game_over) {
+					ask world {
+						do reinit_model;
+					}
 				}
+				
 			}
 			
 			event " " {
