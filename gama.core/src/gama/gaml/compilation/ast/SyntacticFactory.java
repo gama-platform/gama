@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SyntacticFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.gaml.compilation.ast;
 import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
 import static gama.core.common.interfaces.IKeyword.GRID;
 import static gama.core.common.interfaces.IKeyword.MODEL;
+import static gama.core.common.interfaces.IKeyword.SKILL;
 import static gama.core.common.interfaces.IKeyword.SPECIES;
 
 import org.eclipse.emf.ecore.EObject;
@@ -88,7 +89,7 @@ public class SyntacticFactory {
 	 * @return the i syntactic element
 	 */
 	public static ISyntacticElement create(final String keyword, final EObject statement, final boolean withChildren,
-			final Object... data) {
+			final String... data) {
 		return create(keyword, null, statement, withChildren, data);
 	}
 
@@ -106,14 +107,14 @@ public class SyntacticFactory {
 	 * @return the i syntactic element
 	 */
 	public static ISyntacticElement create(final String keyword, final Facets facets, final boolean withChildren,
-			final Object... data) {
+			final String... data) {
 		return create(keyword, facets, null, withChildren, data);
 	}
 
 	/**
 	 * Creates the.
 	 *
-	 * @param keyword
+	 * @param kw
 	 *            the keyword
 	 * @param facets
 	 *            the facets
@@ -125,19 +126,17 @@ public class SyntacticFactory {
 	 *            the data
 	 * @return the i syntactic element
 	 */
-	public static ISyntacticElement create(final String keyword, final Facets facets, final EObject statement,
-			final boolean withChildren, final Object... data) {
-		if (MODEL.equals(keyword)) {
-			if (data.length > 0)
-				return new SyntacticModelElement(keyword, facets, statement, (String) data[0]);
-			else
-				return new SyntacticModelElement(keyword, facets, statement, null);
-		}
-		if (SPECIES.equals(keyword) || GRID.equals(keyword))
-			return new SyntacticSpeciesElement(keyword, facets, statement);
-		else if (EXPERIMENT.equals(keyword)) return new SyntacticExperimentElement(keyword, facets, statement);
-		if (!withChildren) return new SyntacticSingleElement(keyword, facets, statement);
-		return new SyntacticComposedElement(keyword, facets, statement);
+	public static ISyntacticElement create(final String kw, final Facets facets, final EObject statement,
+			final boolean withChildren, final String... data) {
+		return switch (kw) {
+			case MODEL -> new SyntacticModelElement(kw, facets, statement, data.length > 0 ? (String) data[0] : null);
+			case SPECIES, GRID -> new SyntacticSpeciesElement(kw, facets, statement);
+			case SKILL -> new SyntacticSkillElement(kw, facets, statement);
+			case EXPERIMENT -> new SyntacticExperimentElement(kw, facets, statement);
+			default -> !withChildren ? new SyntacticSingleElement(kw, facets, statement)
+					: new SyntacticComposedElement(kw, facets, statement);
+		};
+
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * SyntacticSpeciesElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * SyntacticSkillElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -21,7 +21,7 @@ import gama.gaml.statements.Facets;
  * @since 9 sept. 2013
  *
  */
-public class SyntacticSpeciesElement extends SyntacticStructuralElement {
+public class SyntacticSkillElement extends SyntacticStructuralElement {
 
 	/**
 	 * Instantiates a new syntactic species element.
@@ -33,9 +33,15 @@ public class SyntacticSpeciesElement extends SyntacticStructuralElement {
 	 * @param statement
 	 *            the statement
 	 */
-	SyntacticSpeciesElement(final String keyword, final Facets facets, final EObject statement) {
+	SyntacticSkillElement(final String keyword, final Facets facets, final EObject statement) {
 		super(keyword, facets, statement);
 	}
+
+	@Override
+	public void visitSpecies(final SyntacticVisitor visitor) {}
+
+	@Override
+	public void visitGrids(final SyntacticVisitor visitor) {}
 
 	/*
 	 * (non-Javadoc)

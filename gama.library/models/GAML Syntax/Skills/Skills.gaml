@@ -8,13 +8,6 @@
 
 model Skills
 
-/* Insert your model definition here */
-
-global {
-	
-	
-}
-
 skill trial {
 	
 }

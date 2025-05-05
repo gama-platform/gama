@@ -242,7 +242,7 @@ public class SpeciesDescription extends TypeDescription {
 	private void addSkills(final ListExpression list) {
 		for (final IExpression exp : list.getElements()) {
 			if (exp instanceof SkillConstantExpression) {
-				final SkillDescription sk = ((ISkill) exp.getConstValue()).getDescription();
+				final SkillDescription sk = (SkillDescription) ((ISkill) exp.getConstValue()).getDescription();
 				final String dep = sk.getDeprecated();
 				if (dep != null) {
 					warning("Skill " + sk.getName() + " is deprecated: " + dep, IGamlIssue.DEPRECATED, SKILLS);
@@ -627,7 +627,7 @@ public class SpeciesDescription extends TypeDescription {
 		// Takes care of invalid species (see Issue 711)
 		// built-in parents are not considered as their actions/variables are
 		// normally already copied as java additions
-		if ((parentSpecies == null) || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
+		if (parentSpecies == null || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
 		tryInheritMicroSpecies(parentSpecies);
 		super.inheritFromParent();
 	}

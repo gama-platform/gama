@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -98,9 +100,10 @@ public class SkillDescription extends TypeDescription {
 	public Skill createInstance() {
 		Skill instance = null;
 		try {
-			instance = (Skill) getJavaBase().newInstance();
-			instance.setDescription(this);
-		} catch (InstantiationException | IllegalAccessException e) {}
+			Constructor<Skill> con = getJavaBase().getDeclaredConstructor(IDescription.class);
+			instance = con.newInstance(this);
+		} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException
+				| IllegalArgumentException | InvocationTargetException e) {}
 		return instance;
 	}
 

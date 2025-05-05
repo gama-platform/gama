@@ -3,12 +3,12 @@
  */
 package gama.ui.editor.internal;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import gaml.compiler.GamlRuntimeModule;
 import gaml.compiler.ui.GamlUiModule;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -29,7 +29,7 @@ public class EditorActivator extends AbstractUIPlugin {
 	
 	private static EditorActivator INSTANCE;
 	
-	private Map<String, Injector> injectors = Collections.synchronizedMap(Maps.<String, Injector> newHashMapWithExpectedSize(1));
+	private Map<String, Injector> injectors = Collections.synchronizedMap(new HashMap<>(2));
 	
 	@Override
 	public void start(BundleContext context) throws Exception {

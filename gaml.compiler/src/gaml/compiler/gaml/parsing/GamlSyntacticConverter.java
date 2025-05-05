@@ -257,6 +257,7 @@ public class GamlSyntacticConverter {
 		keyword = convertKeyword(keyword, upper.getKeyword());
 
 		final boolean upperContainsAttributes = !doesNotDefineAttributes(upper.getKeyword());
+
 		final boolean isVar = stm instanceof S_Definition && !DescriptionFactory.isStatementProto(keyword)
 				&& upperContainsAttributes && !EGaml.getInstance().hasChildren(stm);
 
