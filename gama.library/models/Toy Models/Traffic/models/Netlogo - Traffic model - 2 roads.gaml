@@ -35,36 +35,33 @@ global torus: true {
 	int nb_cars <- 25;
 	float acceleration1 <- 0.0045 min: 0.0 max: 0.01;
 	float deceleration1 <- 0.026 min: 0.0 max: 0.1;	
-	float acceleration2 <- 0.0005 min: 0.0 max: 0.01;
-	float deceleration2 <- 0.004 min: 0.0 max: 0.1;	
+	float acceleration2 <- 0.0025 min: 0.0 max: 0.01;
+	float deceleration2 <- 0.013 min: 0.0 max: 0.1;	
 
 	float max_speed <- 50.0;
 	
 	init {
 		road1 <- pavement where(each.grid_y = y_road1);
-		cars_on_road1 <- create_cars_on_road(nb_cars, road1);
-//		cars_on_road1 <- create_cars_on_road(1, road1, acceleration1, deceleration1);
+		cars_on_road1 <- create_cars_on_road(1, road1,1);
 		sample_car1 <- pick_sample(cars_on_road1, #red, voit_red_image_file);
 		
 		road2 <- pavement where(each.grid_y = y_road2);		
-		cars_on_road2 <- create_cars_on_road(nb_cars, road2);
-//		cars_on_road2 <- create_cars_on_road(1, road2, acceleration2, deceleration2);		
+		cars_on_road2 <- create_cars_on_road(1, road2,2);
 		sample_car2 <- pick_sample(cars_on_road2, #blue, voit_blue_image_file);		
 	}
 	
 	reflex create_cars when: (length(car) < nb_cars * 2) and every(10 #cycles) {
-		do create_cars_on_road(1, road1, acceleration1, deceleration1);
-		do create_cars_on_road(1, road2, acceleration2, deceleration2);		
+		do create_cars_on_road(1, road1, 1);
+		do create_cars_on_road(1, road2, 2);		
 	}
 	
-	list<car> create_cars_on_road(int num_cars, list<pavement> road, float acc, float dec){
+	list<car> create_cars_on_road(int num_cars, list<pavement> road, int t){
 		create car number: num_cars returns: cars_on_road {
 			pavement free_pavement <- one_of(road where(empty(car inside self)));
 			if(free_pavement != nil) {
 				my_pavement <- free_pavement;
 				location <- my_pavement.location;
-				acceleration <- acc;
-				deceleration <- dec;
+				type <- t;
 			} else {
 				do die;
 			}
@@ -83,7 +80,6 @@ global torus: true {
 		return a_car;	
 	}
 
-	
 }
 
 grid pavement height: pavement_height width: pavement_width {
@@ -105,6 +101,7 @@ species car skills: [moving] {
 	rgb color;
 	image_file icon;
 	pavement my_pavement;
+	int type;
 	
 	init {
 		color <- #blue;
@@ -131,11 +128,11 @@ species car skills: [moving] {
 	}
 
 	action slow_down(car car_ahead) {
-		speed <- max(speed_min, car_ahead.speed - deceleration) ;
+		speed <- max(speed_min, car_ahead.speed - ((type=1)?deceleration1:deceleration2)) ;
 	}
 	
 	action speed_up {
-		speed <- min(speed + acceleration, speed_limit);
+		speed <- min(speed + ((type=1)?acceleration1:acceleration2), speed_limit);
 	}
 
 	aspect rect {
