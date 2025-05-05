@@ -37,17 +37,18 @@ global torus: true {
 	float deceleration1 <- 0.026 min: 0.0 max: 0.1;	
 	float acceleration2 <- 0.0005 min: 0.0 max: 0.01;
 	float deceleration2 <- 0.004 min: 0.0 max: 0.1;	
+
 	float max_speed <- 50.0;
 	
 	init {
 		road1 <- pavement where(each.grid_y = y_road1);
-//		cars_on_road1 <- create_cars_on_road(nb_cars, road1);
-		cars_on_road1 <- create_cars_on_road(1, road1, acceleration1, deceleration1);
+		cars_on_road1 <- create_cars_on_road(nb_cars, road1);
+//		cars_on_road1 <- create_cars_on_road(1, road1, acceleration1, deceleration1);
 		sample_car1 <- pick_sample(cars_on_road1, #red, voit_red_image_file);
 		
 		road2 <- pavement where(each.grid_y = y_road2);		
-//		cars_on_road2 <- create_cars_on_road(nb_cars, road2);
-		cars_on_road2 <- create_cars_on_road(1, road2, acceleration2, deceleration2);		
+		cars_on_road2 <- create_cars_on_road(nb_cars, road2);
+//		cars_on_road2 <- create_cars_on_road(1, road2, acceleration2, deceleration2);		
 		sample_car2 <- pick_sample(cars_on_road2, #blue, voit_blue_image_file);		
 	}
 	
@@ -148,10 +149,10 @@ species car skills: [moving] {
 
 experiment NetlogoTrafficmodel type: gui {
 	
-	parameter var:acceleration1;
-	parameter var:deceleration1;
-	parameter var:acceleration2;
-	parameter var:deceleration2;
+	parameter "Acceleration 1" var:acceleration1;
+	parameter "Deceleration 1" var:deceleration1;
+	parameter "Acceleration 2" var:acceleration2;
+	parameter "Deceleration 2" var:deceleration2;
 	float minimum_cycle_duration <- 0.01;
 	
 	output {

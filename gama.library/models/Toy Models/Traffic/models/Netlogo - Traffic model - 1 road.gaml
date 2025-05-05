@@ -111,9 +111,9 @@ species car skills: [moving] {
 experiment NetlogoTrafficmodel type: gui {
 	
 		
-	parameter var:nb_cars;
-	parameter var:acceleration;
-	parameter var:deceleration;
+	parameter "Number of cars" var:nb_cars;
+	parameter "Acceleration" var:acceleration;
+	parameter "Decdeleration" var:deceleration;
 	
 	float minimum_cycle_duration <- 0.01;
 	
