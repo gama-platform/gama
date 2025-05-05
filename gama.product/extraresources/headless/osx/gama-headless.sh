@@ -19,12 +19,12 @@ memory="0"
 for arg do
   shift
   case $arg in
-    -m) 
-    memory="${1}" 
-    shift 
+    -m)
+    memory="${1}"
+    shift
     ;;
-    *) 
-    set -- "$@" "$arg" 
+    *)
+    set -- "$@" "$arg"
     ;;
   esac
 done
@@ -36,11 +36,18 @@ else
 fi
 
 workspaceCreate=0
-case "$@" in 
-  *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
+
+# Run `-help` if no parameter given
+if [[ -z "$@" ]]; then
+    set -- "$@" "-help"
     workspaceCreate=1
-    ;;
-esac
+else
+    case "$@" in
+    *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
+        workspaceCreate=1
+        ;;
+    esac
+fi
 
 function read_from_ini {
   start_line=$(grep -n -- '-server' "$( dirname "${BASH_SOURCE[0]}" )/../Eclipse/Gama.ini" | cut -d ':' -f 1)
