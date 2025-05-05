@@ -161,7 +161,7 @@ public class GamaToolbarFactory {
 		layout.verticalSpacing = 0;
 		layout.horizontalSpacing = 0;
 		layout.marginWidth = 0;
-		final int margin = 0; // REDUCED_VIEW_TOOLBAR_HEIGHT.getValue() ? -1 : 0;
+		final int margin = 0;
 		layout.marginTop = margin;
 		layout.marginBottom = margin;
 		layout.marginHeight = margin;
@@ -204,7 +204,7 @@ public class GamaToolbarFactory {
 	 * @return the grid data
 	 */
 	public static GridData layoutDataForToolbar() {
-		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
 		data.minimumHeight = TOOLBAR_HEIGHT;
 		data.minimumWidth = TOOLBAR_HEIGHT * 2;
 		return data;
@@ -235,10 +235,6 @@ public class GamaToolbarFactory {
 		if (view instanceof IToolbarDecoratedView.Sizable sz) { FontSizer.install(sz, tb); }
 		if (view instanceof IToolbarDecoratedView.Pausable ps) { new Pauser(ps).install(tb); }
 		if (view instanceof IToolbarDecoratedView.Zoomable zm) { new ZoomController(zm).install(tb); }
-		// if (view instanceof IToolbarDecoratedView.Colorizable cl) { BackgroundChooser.install(cl, tb); }
-		// if (view instanceof IToolbarDecoratedView.CSVExportable ce) {
-		// tb.button(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "CSV Export", "CSV Export", e -> ce.saveAsCSV(), SWT.RIGHT);
-		// }
 		view.createToolItems(tb);
 		tb.requestLayout();
 	}
