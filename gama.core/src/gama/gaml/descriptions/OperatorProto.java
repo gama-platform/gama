@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OperatorProto.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,13 +20,13 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.ImmutableSet;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.GamlProperties;
+import gama.annotations.precompiler.ISymbolKind;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -46,6 +46,7 @@ import gama.gaml.expressions.operators.TypeFieldExpression;
 import gama.gaml.expressions.operators.UnaryOperator;
 import gama.gaml.expressions.types.TypeExpression;
 import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Signature;
 import gama.gaml.types.Types;
@@ -88,8 +89,8 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 	public static final Set<String> noMandatoryParenthesis = ImmutableSet.copyOf(Arrays.<String> asList("-", "!"));
 
 	/** The binaries. */
-	public static final Set<String> binaries = ImmutableSet.copyOf(Arrays.<String> asList("=", "+", "-", "/", "*", "^", "<",
-			">", "<=", ">=", "?", "!=", ":", ".", "where", "select", "collect", "first_with", "last_with",
+	public static final Set<String> binaries = ImmutableSet.copyOf(Arrays.<String> asList("=", "+", "-", "/", "*", "^",
+			"<", ">", "<=", ">=", "?", "!=", ":", ".", "where", "select", "collect", "first_with", "last_with",
 			"overlapping", "at_distance", "in", "inside", "among", "contains", "contains_any", "contains_all", "min_of",
 			"max_of", "with_max_of", "with_min_of", "of_species", "of_generic_species", "sort_by", "accumulate", "or",
 			"and", "at", "is", "group_by", "index_of", "last_index_of", "index_by", "count", "sort", "::", "as_map"));
@@ -217,7 +218,11 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 		iterator = GAML.ITERATORS.contains(name);
 		if (constantDoc != null) { documentation = new ConstantDoc(constantDoc); }
 		if (IKeyword.AS.equals(name)) { AS = this; }
+		if ("cells_overlapping".equals(name)) {
 
+			DEBUG.LOG("");
+
+		}
 		this.returnType = returnType;
 		this.canBeConst = canBeConst;
 		this.isVarOrField = isVarOrField;
@@ -308,7 +313,20 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 	public String getTitle() {
 		if (isVarOrField) return "field " + getName() + " of type " + returnType + ", for values of type "
 				+ signature.asPattern(false);
-		return "operator " + getName() + "(" + signature.asPattern(false) + "), returns " + returnType;
+		return "operator " + getName() + "(" + signature.asPattern(false) + "), returns " + documentReturnType();
+	}
+
+	/**
+	 * Document return type.
+	 *
+	 * @return the string
+	 */
+	public String documentReturnType() {
+		IType result = returnType;
+		if (!result.isContainer()) return result.toString();
+		IType keyType = keyTypeProvider > 0 ? Types.get(keyTypeProvider) : Types.NO_TYPE;
+		IType contentType = contentTypeProvider > 0 ? Types.get(contentTypeProvider) : Types.NO_TYPE;
+		return GamaType.from(result, keyType, contentType).toString();
 	}
 
 	@Override
