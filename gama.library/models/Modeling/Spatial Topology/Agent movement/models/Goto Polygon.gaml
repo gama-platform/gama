@@ -90,6 +90,8 @@ species people skills: [moving] {
 }
 
 experiment goto_polygon type: gui {
+	float minimum_cycle_duration <- 0.1;
+	
 	output {
 		display objects_display {
 			species object aspect: default ;
