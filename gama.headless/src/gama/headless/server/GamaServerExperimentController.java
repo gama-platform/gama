@@ -146,6 +146,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				paused = true;
 				return true;
 			case _STEP:
+				previouslock.acquire();
 				paused = true;
 				lock.release();
 				return true;
@@ -255,6 +256,8 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			_job.doStep();
 		} catch (RuntimeException e) {
 			e.printStackTrace();
+		}finally {
+			previouslock.release();
 		}
 	}
 

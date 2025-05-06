@@ -93,6 +93,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				if (!disposing) { GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED); }
 				return true;
 			case _STEP:
+				previouslock.acquire();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release();
@@ -215,6 +216,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
+		}finally {
+			previouslock.release();
 		}
 	}
 
