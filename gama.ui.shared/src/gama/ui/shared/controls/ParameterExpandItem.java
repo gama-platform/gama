@@ -282,7 +282,7 @@ public class ParameterExpandItem extends Item {
 		}
 		if (size) {
 			this.width = width;
-			this.height = height;
+			this.height = height + parent.bandHeight;
 			redraw();
 		}
 		if (control != null && !control.isDisposed()) {
