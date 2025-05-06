@@ -501,7 +501,7 @@ public interface IGui {
 	 * @param b
 	 *            the b
 	 */
-	default void openWelcomePage(final boolean b) {}
+	default void openWebDocumentationPage() {}
 
 	/**
 	 * Run.

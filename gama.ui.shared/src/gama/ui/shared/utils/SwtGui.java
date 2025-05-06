@@ -258,9 +258,12 @@ public class SwtGui implements IGui {
 		return (String) WorkbenchHelper.run(() -> getClipboard().getContents(TextTransfer.getInstance()));
 	}
 
+	/**
+	 * Open welcome page.
+	 */
 	@Override
-	public void openWelcomePage(final boolean ifEmpty) {
-		WebHelper.openWelcomePage(ifEmpty);
+	public void openWebDocumentationPage() {
+		WebHelper.openWelcomePage();
 	}
 
 	@Override

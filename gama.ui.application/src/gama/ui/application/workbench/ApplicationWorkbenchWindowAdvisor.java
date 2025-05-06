@@ -145,7 +145,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 	@Override
 	public void postWindowOpen() {
 		PerspectiveHelper.cleanPerspectives();
-		GAMA.getGui().openWelcomePage(true);
+		// GAMA.getGui().openWelcomePage(true);
 		// GAMA.updateExperimentState(null, IExperimentStateListener.STATE_NONE);
 	}
 

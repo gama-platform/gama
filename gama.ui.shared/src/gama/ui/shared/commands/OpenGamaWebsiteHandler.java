@@ -28,7 +28,7 @@ public class OpenGamaWebsiteHandler extends AbstractHandler {
 	 */
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		GAMA.getGui().openWelcomePage(false);
+		GAMA.getGui().openWebDocumentationPage();
 		return null;
 	}
 

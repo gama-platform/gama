@@ -130,8 +130,8 @@ public class GamaPreferences {
 		public static final String STARTUP = "Startup";
 
 		/** The Constant CORE_SHOW_PAGE. */
-		public static final Pref<Boolean> CORE_SHOW_PAGE =
-				create("pref_show_welcome_page", "Display welcome page", true, IType.BOOL, false).in(NAME, STARTUP);
+		// public static final Pref<Boolean> CORE_SHOW_PAGE =
+		// create("pref_show_welcome_page", "Display welcome page", true, IType.BOOL, false).in(NAME, STARTUP);
 
 		/** The Constant CORE_REMEMBER_WINDOW. */
 		public static final Pref<Boolean> CORE_REMEMBER_WINDOW =

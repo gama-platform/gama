@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * WebHelper.java, in gama.ui.shared.shared, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * WebHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
@@ -28,7 +28,6 @@ import org.eclipse.ui.internal.part.NullEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
 import gama.core.common.interfaces.IGamaView.Html;
-import gama.core.common.preferences.GamaPreferences;
 import gama.ui.application.workbench.IWebHelper;
 
 /**
@@ -44,9 +43,7 @@ public class WebHelper implements IWebHelper {
 	 *
 	 * @return single instance of WebHelper
 	 */
-	public static WebHelper getInstance() {
-		return instance;
-	}
+	public static WebHelper getInstance() { return instance; }
 
 	/**
 	 * Instantiates a new web helper.
@@ -62,24 +59,24 @@ public class WebHelper implements IWebHelper {
 	 * @return the welcome page URL
 	 */
 	public static URL getWelcomePageURL() {
-		if (HOME_URL == null)
+		if (HOME_URL == null) {
 			try {
 				final var welcomePage = "/welcome/" + (isDark() ? "dark" : "light") + "/welcome.html";
 				HOME_URL = toFileURL(getBundle("gama.ui.shared").getEntry(welcomePage));
 			} catch (final IOException e) {
 				e.printStackTrace();
 			}
+		}
 		return HOME_URL;
 	}
 
 	/**
 	 * Open welcome page.
 	 *
-	 * @param ifEmpty the if empty
+	 * @param ifEmpty
+	 *            the if empty
 	 */
-	public static void openWelcomePage(final boolean ifEmpty) {
-		if (ifEmpty && WorkbenchHelper.getPage().getActiveEditor() != null) { return; }
-		if (ifEmpty && !GamaPreferences.Interface.CORE_SHOW_PAGE.getValue()) { return; }
+	public static void openWelcomePage() {
 		// get the workspace
 		final var workspace = ResourcesPlugin.getWorkspace();
 
@@ -109,7 +106,8 @@ public class WebHelper implements IWebHelper {
 	/**
 	 * Show web 2 editor.
 	 *
-	 * @param url the url
+	 * @param url
+	 *            the url
 	 */
 	public static void showWeb2Editor(final URL url) {
 
@@ -143,7 +141,8 @@ public class WebHelper implements IWebHelper {
 	/**
 	 * Open page.
 	 *
-	 * @param string the string
+	 * @param string
+	 *            the string
 	 */
 	public static void openPage(final String string) {
 		try {
@@ -153,12 +152,6 @@ public class WebHelper implements IWebHelper {
 		} catch (final PartInitException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void showWelcome() {
-		openWelcomePage(false);
-
 	}
 
 	@Override

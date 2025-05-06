@@ -15,7 +15,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 /**
  * The Class ModelingPerspective. Not much to do or add as everything is defined in the plugin.xml
- * (perspectiveExtensiions)
+ * (perspectiveExtensions)
  */
 public class ModelingPerspective implements IPerspectiveFactory {
 

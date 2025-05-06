@@ -730,7 +730,7 @@
           point="org.eclipse.ui.perspectiveExtensions">
        <perspectiveExtension
              editorOnboardingImage="onboarding.icon.png"
-             editorOnboardingText="Select a model file in the navigator or create a new model file"
+             editorOnboardingText="Select a model in the navigator, create a new model file or consult the documentation to get started !"
              targetID="gama.ui.application.perspectives.ModelingPerspective">
           <view
                 closeable="false"
@@ -798,6 +798,9 @@
          </editorOnboardingCommand>
          <editorOnboardingCommand
                id="org.eclipse.ui.newWizard">
+         </editorOnboardingCommand>
+         <editorOnboardingCommand
+               id="gama.application.command.web">
          </editorOnboardingCommand>
          <viewShortcut
                id="gama.ui.application.view.minimap">
