@@ -110,7 +110,9 @@ public class GamaPointType extends GamaType<GamaPoint> {
 		if (str.startsWith("{") && str.endsWith("}")) {
 			str = str.replace("{", "").replace("}", "").trim();
 			return staticCast(scope, Arrays.asList(str.split(",")), false);
-		}
+		} 
+		Double v = Cast.asFloat(scope, str);
+		if (v != null) return new GamaPoint(v, v, v);
 		throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);
 	}
 
