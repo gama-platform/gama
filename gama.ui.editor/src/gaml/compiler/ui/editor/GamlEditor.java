@@ -10,13 +10,9 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static org.eclipse.ui.texteditor.ITextEditorActionConstants.COPY;
-import static org.eclipse.ui.texteditor.ITextEditorActionConstants.CUT;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.DELETE;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.FIND;
-import static org.eclipse.ui.texteditor.ITextEditorActionConstants.PASTE;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.REDO;
-import static org.eclipse.ui.texteditor.ITextEditorActionConstants.SELECT_ALL;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.UNDO;
 
 import java.util.Collections;
@@ -495,10 +491,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), getAction(DELETE));
 					actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(), getAction(UNDO));
 					actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(), getAction(REDO));
-					actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(), getAction(CUT));
-					actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), getAction(COPY));
-					actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), getAction(PASTE));
-					actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), getAction(SELECT_ALL));
+					// actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(), getAction(CUT));
+					// actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), getAction(COPY));
+					// actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), getAction(PASTE));
+					// actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), getAction(SELECT_ALL));
 					actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), getAction(FIND));
 					actionBars.updateActionBars();
 				}
