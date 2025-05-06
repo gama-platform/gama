@@ -1,19 +1,21 @@
 /*******************************************************************************************************
  *
- * FloatEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FloatEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.InputParameter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
@@ -24,6 +26,12 @@ import gama.ui.shared.interfaces.EditorListener;
  * The Class FloatEditor.
  */
 public class FloatEditor extends NumberEditor<Double> {
+
+	/** The formatter. */
+	final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+
+	/** The nb ints. */
+	int nbInts, nbFracs;
 
 	/**
 	 * Instantiates a new float editor.
@@ -41,35 +49,30 @@ public class FloatEditor extends NumberEditor<Double> {
 	 */
 	FloatEditor(final IAgent agent, final IParameter param, final boolean canBeNull, final EditorListener<Double> l) {
 		super(agent, param, l, canBeNull);
+		computeFormatterParameters();
 	}
 
 	/**
-	 * Instantiates a new float editor.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param value
-	 *            the value
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @param step
-	 *            the step
-	 * @param canBeNull
-	 *            the can be null
-	 * @param whenModified
-	 *            the when modified
+	 * Compute formatter parameters.
 	 */
-	FloatEditor(final IScope scope, final EditorsGroup parent, final String title, final Double value, final Double min,
-			final Double max, final Double step, final boolean canBeNull, final EditorListener<Double> whenModified) {
-		// Convenience method
-		super(scope.getAgent(), new InputParameter(title, value, min, max, step), whenModified, canBeNull);
-		this.createControls(parent);
+	protected void computeFormatterParameters() {
+		final int minChars = String.valueOf(Cast.asInt(getScope(), getMinValue())).length();
+		final int maxChars = String.valueOf(Cast.asInt(getScope(), getMaxValue())).length();
+		nbInts = Math.max(minChars, maxChars);
+		formatter.setMaximumIntegerDigits(nbInts);
+		formatter.setMinimumIntegerDigits(nbInts);
+		String s = String.valueOf(getStepValue());
+		s = s.contains(".") ? s.replaceAll("0*$", "").replaceAll("\\.$", "") : s;
+		final String[] segments = s.split("\\.");
+		if (segments.length > 1) {
+			nbFracs = segments[1].length();
+		} else {
+			nbFracs = 1;
+		}
+		formatter.setMaximumFractionDigits(nbFracs);
+		formatter.setMinimumFractionDigits(nbFracs);
+		formatter.setGroupingUsed(false);
+
 	}
 
 	@Override
@@ -123,5 +126,22 @@ public class FloatEditor extends NumberEditor<Double> {
 				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asFloat(getScope(), getMaxValue())));
 		editorToolbar.enable(MINUS,
 				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asFloat(getScope(), getMinValue())));
+	}
+
+	@Override
+	public boolean formatsValue() {
+		return true;
+	}
+
+	/**
+	 * Value formatted.
+	 *
+	 * @param value
+	 *            the value
+	 * @return the string
+	 */
+	@Override
+	public String valueFormatted(final Object value) {
+		return formatter.format(value == null ? 0 : value);
 	}
 }

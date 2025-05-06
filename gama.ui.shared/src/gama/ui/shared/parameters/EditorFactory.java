@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorFactory.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorFactory.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,50 +40,6 @@ public class EditorFactory {
 	public static EditorFactory getInstance() { return instance; }
 
 	/**
-	 * Creates the.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param value
-	 *            the value
-	 * @param whenModified
-	 *            the when modified
-	 * @return the boolean editor
-	 */
-	// public static AbstractEditor create(final IScope scope, final EditorsGroup parent, final String title,
-	// final Boolean value, final EditorListener<Boolean> whenModified) {
-	// AbstractEditor ed = instance.create(scope, null, new InputParameter(title, value), whenModified);
-	// ed.createControls(parent);
-	// return ed;
-	// }
-
-	/**
-	 * Creates the.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param value
-	 *            the value
-	 * @param whenModified
-	 *            the when modified
-	 * @return the color editor
-	 */
-	// public static AbstractEditor create(final IScope scope, final EditorsGroup parent, final String title,
-	// final java.awt.Color value, final EditorListener<java.awt.Color> whenModified) {
-	// AbstractEditor ed = instance.create(scope, null, new InputParameter(title, value), whenModified);
-	// ed.createControls(parent);
-	// return ed;
-	// }
-
-	/**
 	 * Creates a new Editor object.
 	 *
 	 * @param scope
@@ -107,96 +63,6 @@ public class EditorFactory {
 		ed.createControls(parent);
 		return ed;
 	}
-
-	/**
-	 * Creates the.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param value
-	 *            the value
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @param step
-	 *            the step
-	 * @param canBeNull
-	 *            the can be null
-	 * @param isSlider
-	 *            the is slider
-	 * @param whenModified
-	 *            the when modified
-	 * @return the abstract editor
-	 */
-	// public static AbstractEditor create(final IScope scope, final EditorsGroup parent, final String title,
-	// final Double value, final Double min, final Double max, final Double step, final boolean canBeNull,
-	// final boolean isSlider, final EditorListener<Double> whenModified) {
-	// final InputParameter par = new InputParameter(title, value, min, max, step);
-	// AbstractEditor ed = isSlider ? new SliderEditor.Float(scope, null, par, whenModified)
-	// : new FloatEditor(scope, null, par, canBeNull, whenModified);
-	// ed.createControls(parent);
-	// return ed;
-	// }
-
-	/**
-	 * Creates the.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param unit
-	 *            the unit
-	 * @param value
-	 *            the value
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @param step
-	 *            the step
-	 * @param whenModified
-	 *            the when modified
-	 * @return the int editor
-	 */
-	// public static IntEditor create(final IScope scope, final EditorsGroup parent, final String title, final String
-	// unit,
-	// final Integer value, final Integer min, final Integer max, final Integer step,
-	// final EditorListener<Integer> whenModified) {
-	// IntEditor ed =
-	// new IntEditor(scope, null, new InputParameter(title, unit, value, min, max, step), false, whenModified);
-	// ed.createControls(parent);
-	// return ed;
-	// }
-
-	/**
-	 * Creates the.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parent
-	 *            the parent
-	 * @param title
-	 *            the title
-	 * @param value
-	 *            the value
-	 * @param whenModified
-	 *            the when modified
-	 * @return the point editor
-	 */
-	// public static AbstractEditor create(final IScope scope, final EditorsGroup parent, final String title,
-	// final GamaPoint value, final EditorListener<GamaPoint> whenModified) {
-	// AbstractEditor ed = instance.create(scope, null, new InputParameter(title, value), whenModified);
-	// ed.createControls(parent);
-	// return ed;
-	// }
 
 	/**
 	 * Creates the.

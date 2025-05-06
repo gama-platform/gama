@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ExpressionControl.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ExpressionControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -288,9 +288,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 		final var value = getCurrentValue();
 		if (currentException != null) {
 			result.append(currentException.getMessage());
-		} else if (!isOK(value)) {
-			result.append("The current value should be of type ").append(expectedType);
-		}
+		} else if (!isOK(value)) { result.append("The current value should be of type ").append(expectedType); }
 		return result.toString();
 	}
 
@@ -303,10 +301,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	 */
 	private Boolean isOK(final Object value) {
 		if (evaluateExpression) return expectedType.canBeTypeOf(scope, value);
-		if (value instanceof IExpression)
-			return expectedType.isAssignableFrom(((IExpression) value).getGamlType());
-		else
-			return false;
+		return value instanceof IExpression;
 	}
 
 	/**
@@ -335,7 +330,9 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 				? StringUtils.toJavaString(GamaStringType.staticCast(scope, currentValue2, false))
 				: expectedType.cast(scope, currentValue2, null, false) : currentValue2);
 		if (text.isDisposed()) return;
-		if (expectedType == Types.STRING) {
+		if (editor.formatsValue()) {
+			text.setText(editor.valueFormatted(currentValue));
+		} else if (expectedType == Types.STRING) {
 			text.setText(currentValue == null ? "" : StringUtils.toJavaString(currentValue.toString()));
 		} else {
 			text.setText(StringUtils.toGaml(currentValue2, false));
