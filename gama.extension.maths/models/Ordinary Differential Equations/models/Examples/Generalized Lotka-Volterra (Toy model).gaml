@@ -17,8 +17,12 @@
 model GeneralizedLotkaVolterra
 
 global {
-	int max_species <- 8;
-	string dummy <- '';
+	int maxSpecies <- 8;
+	
+	int fontSize <- 9;
+	float edgeSpacing <- 10.0;
+	bool graphType <- true;
+	int xRange <- 200;
 
 	string language <- "english" among: ["french","english"];
 
@@ -33,25 +37,37 @@ global {
 										["Go","rilla"],["Croco","dile"],["Platy","pus"],["Octo","pus"],["Porcu","pine"]]
 										);
 
+	list<rgb> color_list <- shuffle([
+			rgb(255,222,0),
+			rgb(255,108,44),
+			rgb(255,80,87),
+			rgb(295,85,180),
+			rgb(27,63,148),
+			rgb(0,167,143),
+			rgb(0,174,239),
+			rgb(30,181,58)
+	]);
 
 	list<string> possible_type <-["neutral","positive","negative"];
-	map<string,rgb> type_color <- ["neutral"::rgb(240,240,240),"negative"::rgb(250,65,65),"positive"::rgb(150,217,100)];
+	map<string,rgb> typeColor <- ["neutral"::rgb(200,200,200),"negative"::rgb(250,65,65),"positive"::rgb(150,217,100)];
 	
 	image_file arrow <- image_file("../../includes/arrow.png");
 	
-	list<rgb> color_list <- list_with(max_species,rgb(0,0,0,0));
-	list<animal> species_list <- list_with(max_species, nil);
+	list<animal> speciesList <- list_with(maxSpecies, nil);
 	
-	geometry shape<-square(1000);
+	geometry shape <- square(1000);
 	graph the_graph <- [] ;
 	map<pair<animal,animal>,string> edge_type <- [];
 	float hKR4 <- 0.01;
 	
 	init{
-	//	create population_count;
-		loop i from: 0 to: max_species-1{
-			color_list[i] <- rgb(int(240/max_species*i),int(240/max_species*i),255);
+		if (maxSpecies > 8){
+			color_list <- list_with(maxSpecies, rgb(0,0,0));
+			loop i from: 0 to: maxSpecies-1{
+				color_list[i] <- rgb(int(240/maxSpecies*i),int(240/maxSpecies*i),255);
+			}
 		}
+
 		create solver_and_scheduler;
 	}
 	
@@ -59,15 +75,34 @@ global {
 		the_graph <- layout_circle(the_graph,rectangle(world.shape.width * 0.7, world.shape.height*0.7),false);
 	}
 	
-	action activate_act {
-		button selected_button <- first(button overlapping (circle(1) at_location #user_location));
-		if selected_button != nil {
-			if ((selected_button.grid_x > 0) and (selected_button.grid_y = 0)){
-				selected_button <- button[selected_button.grid_y,selected_button.grid_x];
-			}
-			selected_button.button_pressed <- true;					
+	// apply actions for the buttons that have been pressed since the last time step
+	action buttonPressed {
+		// identify which button has been pressed
+		// **********************************************
+		// previously this part of the code was in the solve statement
+		// button pressed where flagged has pressed, and the flag was removed$
+		// after updating.
+		// can changes by pushing button make the solver crash ?
+		// **********************************************
+		button selectedButton <- first(button overlapping (circle(1) at_location #user_location));
+		if selectedButton != nil {
+			// perform action depending on the button type 
+			if (selectedButton.buttonType = 'species'){
+				// action for species buttons 
+				// if the buttion is in the row, switch to the button in the corresponding column
+				if (selectedButton.grid_x > 0) {
+					ask selectedButton.oppositeButton {do speciesButtonAction;}
+				}else{
+					ask selectedButton {do speciesButtonAction;}
+				}
+			}else{
+				// action for buttons in the main matrix
+				if (selectedButton.active) and (selectedButton.grid_x != selectedButton.grid_y){
+					ask selectedButton {do interactionButtonAction;}
+				}	
+			}				
 		}
-	}	
+	}
 }
 
 
@@ -76,6 +111,7 @@ species animal{
 	float pop;
 	float r;
 	float k;
+	rgb color;
 	
 	list<animal> positive_species <-[];
 	list<animal> negative_species <-[];
@@ -97,8 +133,8 @@ species animal{
         
  
 	aspect default{
-		draw circle(20) color: #blue;
-		draw name anchor: #left_center at: location+{30,0,0} color: #black font:font("SansSerif", 13, #bold);
+		draw circle(30) color: color;
+		draw name anchor: #left_center at: location+{38,-25,0} color: #black font:font("SansSerif", 10, #bold);
 	}
 }
 
@@ -106,67 +142,29 @@ species animal{
 species solver_and_scheduler{
 	float t;
 	float dummy;
-	list<float> pop <- list_with(max_species,0.0);
+	list<float> pop <- list_with(maxSpecies,0.0);
+	list<float> cumulatedPop <- list_with(maxSpecies,0.0);
+	list<int> lastValues <- list_with(xRange,0);
+	
 	
 	
 	equation dynamics simultaneously: [animal]{ 
 		diff(dummy,t)=0;		
     }
     
-    	
-	reflex solveEquation {      
- 
-    	loop selected_button over: (button where each.button_pressed){
-    		// action for buttons in left column or upper row
-			if ((selected_button.grid_x = 0) or (selected_button.grid_y = 0)) and (selected_button.grid_y != selected_button.grid_x){
-				if (selected_button.grid_x > 0) {selected_button <- button[selected_button.grid_y,selected_button.grid_x];}
-				button opposite_button <- button[selected_button.grid_y,selected_button.grid_x];
-				if (selected_button.active){
-					// remove animal species and reset interactions
-					animal species_to_be_removed <- species_list[selected_button.grid_y - 1];
-					the_graph <- species_to_be_removed remove_node_from the_graph;
-					ask button where ((each.grid_x = selected_button.grid_y) or (each.grid_y = selected_button.grid_y)) {self.type <- "neutral";}
-					ask animal {
-						remove species_to_be_removed from: self.positive_species;
-						remove key: species_to_be_removed from: self.interaction_coef;
-					}
-					ask species_to_be_removed {do die;}
-					species_list[selected_button.grid_y - 1] <- nil;
-				}else{
-					// add a new animal species
-					create animal{
-						name <- animal_names[language][rnd(length(animal_names[language])-1)][0]+animal_names[language][rnd(length(animal_names[language])-1)][1];
-						species_list[selected_button.grid_y - 1] <- self;
-						r <- rnd(100)/100;
-						k <- 30.0+rnd(50);
-						pop <- rnd(k);
-						the_graph <- the_graph add_node species_list[selected_button.grid_y - 1];
-					}
-				}
-				selected_button.active <- !selected_button.active;
-				opposite_button.active <- !opposite_button.active;
-				ask button where (each.grid_x > 0 and each.grid_y > 0){
-					self.active <- (species_list[self.grid_x-1] != nil) and (species_list[self.grid_y-1] != nil);
-				}
-			}
-				
-			// action for buttons in the main matrix
-			if (selected_button.active) and (selected_button.grid_x > 0) and (selected_button.grid_y > 0) and (selected_button.grid_x != selected_button.grid_y){
-				string new_type <- possible_type[mod(possible_type index_of(selected_button.type)+1,length(possible_type))];
-				selected_button.type <- new_type;
-				ask species_list[selected_button.grid_y - 1] {do change_type(species_list[selected_button.grid_x - 1], new_type);}
-				add edge(species_list[selected_button.grid_x - 1], species_list[selected_button.grid_y - 1]) to: the_graph;
-				add (species_list[selected_button.grid_x - 1]::species_list[selected_button.grid_y - 1])::new_type to: edge_type;
-			}
-			selected_button.button_pressed <- false;
-    	} 	
-    solve dynamics method: "rk4" step_size:0.01;
+
+	reflex solveEquation {
+	    solve dynamics method: "rk4" step_size:0.01;
     }
 
-	reflex update_count{
-		loop i from: 0 to: max_species-1{
-			pop[i] <- (species_list[i] != nil)?species_list[i].pop:0;
+	reflex updateCount{
+		loop i from: 0 to: maxSpecies-1{
+			pop[i] <- (speciesList[i] != nil)?speciesList[i].pop:0;
+			cumulatedPop[i] <- i=0?pop[0]:cumulatedPop[i-1]+pop[i];
 		}
+		int tmp;
+		remove from: lastValues index: 0;
+		lastValues << cumulatedPop[maxSpecies-1];
 	}
 	
 	
@@ -174,58 +172,151 @@ species solver_and_scheduler{
 
 
 
-grid button width:max_species+1 height:max_species+1 
+grid button width:maxSpecies+1 height:maxSpecies+1 
 {
 	string type <- "neutral";
 	bool active <- false;
-	bool button_pressed <- false;
+	button oppositeButton <- button[self.grid_y,self.grid_x];
+	string buttonType <- 'arrow';
+	point buttonDimensions <- {shape.width * 0.8,shape.height * 0.8};
+	point locationShift <-  (grid_x = 0)?{-0.1*shape.width,0}:{0,-0.1*shape.height};
+	point cornerShift <- {2 #px, -3 #px};
+	
+	
+	init{
+		// sets the type of button action
+		if (grid_x*grid_y > 0){
+			buttonType <- (grid_x = grid_y)?'none':'interaction';
+		}else if (grid_x > 0 or grid_y > 0){
+			buttonType <- 'species';
+		}
+		// sets the dimensions of the button
+		if (grid_x = 0 and grid_y > 0){
+			buttonDimensions <- {shape.width, shape.height * 0.8};
+			color <- color_list[grid_y - 1];
+		}
+		if (grid_y = 0 and grid_x > 0){
+			buttonDimensions <- {shape.width * 0.8, shape.height};
+			color <- color_list[grid_x - 1];
+		}
+		
+	}
+	
+	// action for species button
+	action speciesButtonAction{
+		if (active) {
+		// remove animal species and reset interactions
+			animal species_to_be_removed <- speciesList[grid_y - 1];
+			the_graph <- species_to_be_removed remove_node_from the_graph;
+			ask button where ((each.grid_x = self.grid_y) or (each.grid_y = self.grid_y)) {
+				self.type <- "neutral";
+			}
+
+			ask animal {
+				remove species_to_be_removed from: self.positive_species;
+				remove key: species_to_be_removed from: self.interaction_coef;
+			}
+
+			ask species_to_be_removed {
+				do die;
+			}
+
+			speciesList[self.grid_y - 1] <- nil;
+		} else {
+		// add a new animal species
+			create animal {
+				name <- animal_names[language][rnd(length(animal_names[language]) - 1)][0] + animal_names[language][rnd(length(animal_names[language]) - 1)][1];
+				speciesList[myself.grid_y - 1] <- self;
+				r <- rnd(100) / 1000;
+				k <- 30.0 + rnd(50);
+				pop <- 1.0;
+				self.color <- myself.color;
+				the_graph <- the_graph add_node speciesList[myself.grid_y - 1];
+			}
+
+		}
+
+		// change active level for the button and the corresponding interaction buttons
+		active <- !active;
+		oppositeButton.active <- !oppositeButton.active;
+		ask button where (each.grid_x > 0 and each.grid_y > 0 and each.grid_x > 0) {
+			self.active <- (speciesList[self.grid_x - 1] != nil) and (speciesList[self.grid_y - 1] != nil);
+		}
+	}
+	
+	// action for interaction button
+	action interactionButtonAction{
+		string new_type <- possible_type[mod(possible_type index_of(type)+1,length(possible_type))];
+		// change the button to the new type
+		type <- new_type;
+		// add the interaction type to the concerned animal species (x->y)
+		ask speciesList[grid_y - 1] {
+			do change_type(speciesList[myself.grid_x - 1], new_type);
+		}
+		if (new_type != 'neutral'){
+			add edge(speciesList[grid_x - 1], speciesList[grid_y - 1]) to: the_graph;
+			add (speciesList[grid_x - 1]::speciesList[grid_y - 1])::new_type to: edge_type;	
+		}else{
+			remove edge(speciesList[grid_x - 1], speciesList[grid_y - 1]) from: the_graph;
+		}
+		
+	}
+	
 	
 	aspect classic {
 		if (grid_x = 0 and grid_y > 0) {
-			draw rectangle(shape.width,shape.height * 0.8) at: location - {0.1*shape.width,0,0} color: active?color_list[grid_y - 1]:rgb(230,230,230) ;
-			if (species_list[grid_y - 1] != nil)  {draw species_list[grid_y -1].name font:font("SansSerif", 13, #bold) anchor: #left_center at: location - {shape.width*0.48,0,0} color: #black;}
+			draw rectangle(shape.width*0.8,shape.height * 0.8) at: location  color: active?color_list[grid_y - 1]:rgb(230,230,230) ;
+			if (speciesList[grid_y - 1] != nil)  {
+				draw speciesList[grid_y -1].name font:font("SansSerif", 13, #bold) anchor: #left_center at: location - {shape.width*0.48,0,0} color: #black;
+			}
 
 		} else if (grid_y = 0 and grid_x > 0) {
-			draw rectangle(shape.width*0.8,shape.height) at: location - {0,0.1*shape.height,0} color: active?color_list[grid_x - 1]:rgb(230,230,230) ;
-			if (species_list[grid_x - 1] != nil)  {draw species_list[grid_x -1].name font:font("SansSerif", 13, #bold) anchor: #left_center at: location - {0,shape.height*0.0,0} rotate: -90 color: #black;}
+			draw rectangle(shape.width*0.8,shape.height*0.8) at: location  color: active?color_list[grid_x - 1]:rgb(230,230,230) ;
+			if (speciesList[grid_x - 1] != nil)  {draw speciesList[grid_x -1].name font:font("SansSerif", 13, #bold) anchor: #left_center at: location - {0,shape.height*0.0,0} rotate: -90 color: #black;}
 		} else if (grid_x = grid_y){
-			if grid_x != 0 {draw rectangle(shape.width * 0.8,shape.height * 0.8) color: active?rgb(200,200,200):rgb(240,240,240) ;}
+			if (grid_x != 0) {
+				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: active?rgb(200,200,200):rgb(240,240,240) ;
+			}
 		} else {
-			draw rectangle(shape.width * 0.8,shape.height * 0.8) color: active?type_color[type]:rgb(240,240,240) ;
+			draw rectangle(shape.width * 0.8,shape.height * 0.8) color: active?typeColor[type]:rgb(240,240,240) ;
 		}
 	}
 	
 	
 	aspect modern {
-		if (grid_x = 0 and grid_y > 0) {
-			draw rectangle(shape.width,shape.height * 0.8) at: location - {0.1*shape.width,0,0} color: active?color_list[grid_y - 1]:rgb(230,230,230) ;
-			if (species_list[grid_y - 1] != nil)  {
-				draw species_list[grid_y -1].name font:font("SansSerif", 12, #bold) anchor: #center at: location - {shape.width*0.05,0,0} color: #white;
-			}
-			if !active {
-				draw "?" font:font("Arial", 60, #bold)  at: location - {0.1*shape.width,0.06 * shape.height,0} anchor: #center color: #white;
-			}
-		} else if (grid_y = 0 and grid_x > 0) {
-			draw rectangle(shape.width*0.8,shape.height) at: location - {0,0.1*shape.height,0} color: active?color_list[grid_x - 1]:rgb(230,230,230) ;
-			if !active {
-				draw "?" font:font("Arial", 60, #bold)  at: location - {0.0*shape.width, 0.1 * shape.height,0} anchor: #center color: #white;
-			}
-			if (species_list[grid_x - 1] != nil)  {draw species_list[grid_x -1].name font:font("SansSerif", 12, #bold) anchor: #center at: location + {0.2 * shape.width,-shape.height*0.25,0} rotate: -90 color: #white;}
-		} else if (grid_x = grid_y){
+		if (buttonType = 'species'){
+			// rectangle
+			draw rectangle(buttonDimensions) at: location + locationShift  color: active?color:rgb(230,230,230);
 			
-			if grid_x != 0 {
-				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: #white  border: rgb(240,240,240);
-			} else {
-				draw arrow size: shape.width *0.7;
+			if !active {
+				//question mark for inactive species
+				point textShift <- (grid_x = 0)?{-0.15*shape.width,0,0.1}:{-0.05*shape.width, -0.1 * shape.height,0.1};
+				draw "?" font:font("Arial", 40, #bold)  at: location + textShift anchor: #center color: #white;
 			}
-		} else {
-			if active{
-				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: type_color[type];	
-				if type != "neutral" {draw rectangle(shape.width * 0.55,shape.height * 0.15) color: #white;}
-				if type = "positive" {draw rectangle(shape.width * 0.15,shape.height * 0.55) color: #white;}
+			// column
+			if (grid_x = 0 and speciesList[grid_y - 1] != nil)  {
+				draw speciesList[grid_y -1].name font:font("SansSerif", fontSize, #bold) anchor: #bottom_left at: location + locationShift + {-buttonDimensions.x/2,buttonDimensions.y/2,0.1} + cornerShift color: #white;
+			} 
+			// row
+			if (grid_y = 0 and speciesList[grid_x - 1] != nil)  {
+				draw speciesList[grid_x -1].name font:font("SansSerif", fontSize, #bold) rotate: -90 anchor: #bottom_left at: location + locationShift + {buttonDimensions.x/2,buttonDimensions.y/2,0.1} + {cornerShift.y,-cornerShift.x}  color: #white;
+			}
+			
+		} else if (buttonType = 'arrow'){
+			draw arrow size: shape.width *0.7;
+		}else if (buttonType = 'interaction' and active){
+			if (type = "neutral"){
+				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: rgb(230,230,230);// border: rgb(210,210,210);
 			}else{
-				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: #white  border: rgb(240,240,240);
+				draw rectangle(shape.width * 0.8,shape.height * 0.8) color: typeColor[type];
 			}
+				
+			// draw a "+" or "-"
+			if type != "neutral" {draw rectangle(shape.width * 0.55,shape.height * 0.15) color: #white at: location + {0,0,0.1};}
+			if type = "positive" {draw rectangle(shape.width * 0.15,shape.height * 0.55) color: #white at: location + {0,0,0.1};}
+		}else{
+			draw rectangle(buttonDimensions) color: rgb(245,245,245) ;
+//			draw rectangle(buttonDimensions) color: #white  border: rgb(230,220,230);
 		}
 	}
 }
@@ -242,30 +333,52 @@ experiment Simulation type: gui autorun: true  {
 '-' is for negative impact.
 grey is neutral."
  		category: "Help";
+ 	category "Help" expanded: true;
+ 	parameter "Font size" var: fontSize category: "Display" min: 1 max: 15;
+ 	parameter "Graph edges spacing" var: edgeSpacing category: "Display" min: 0.0 max: 20.0;
  			
 	output { 
-		layout value: horizontal([0::50,vertical([1::50,2::50])::50]) tabs:true;
-		display action_button name:"Interaction matrix" toolbar: false type:2d{
-			species button aspect:modern ;
-			event #mouse_down {ask simulation {do activate_act;}} 
+		layout value: horizontal([0::50,vertical([1::50,2::50])::50]) tabs:false;
+		display action_button name:"Species interactions" toolbar: false type:3d axes: false{
+			camera 'default' location: {500.0,500.0231,1273.0} target: {500.0,500.0,0.0} locked: true;
+//			camera name: 'myCamera' locked: true;
+			light #default intensity: 120;
+			species button aspect: modern;
+			event #mouse_down {ask simulation {do buttonPressed;}} 
+			overlay position: {0, 0} size: { 0 #px, 0 #px } background: #white transparency: 0.0{
+				draw string("Interaction matrix") at: {10 #px,10 #px}  anchor: #top_left color: #black font: font("SansSerif", 15, #bold) ; 
+            }
 		}
-		display LV name: "Time series" refresh: every(1#cycle) type: 2d toolbar: false{
-			chart "Population size" type: series background: rgb('white') x_range: 200 x_tick_line_visible: false{
-				loop i from: 0 to: max_species-1{
-					data "Species "+i value: first(solver_and_scheduler).pop[i] color: (species_list[i] != nil)?color_list[i]:rgb(0,0,0,0) marker: false;
+		display "Graphs" name: "Time series" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
+			camera name: "myCamera" locked: true;
+			chart "Cumulated population size" type: series style: area background: #white 
+			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(100,max(first(solver_and_scheduler).lastValues))} 
+			series_label_position: none title_visible: false label_font: font("SansSerif", 16) {
+				loop i from: 0 to: maxSpecies-1{
+					data i value: first(solver_and_scheduler).cumulatedPop[i] color: color_list[i] marker: false;
 				}
 			}
+			
+			 overlay position: {0, 0} size: {2000, 32#px} background: #white transparency: 0 rounded: false{
+				draw string("Population evolution") at: {10 #px,10 #px}  anchor: #top_left color: #black font:font("SansSerif", 15, #bold) ; 
+            }
+           
 		}
-		display "Interaction graph" type: 2d {
+		display "Interaction graph" toolbar: false type:3d axes: false {
+			camera #default locked: true;
 			graphics "edges" {
 				loop edge over: the_graph.edges {
 					float angle <- (pair<animal,animal>(edge)).key towards (pair<animal,animal>(edge)).value;
 					point centre <- centroid(polyline([pair<animal,animal>(edge).key.location,pair<animal,animal>(edge).value.location]));
-					draw geometry(edge) + 2 at: centre + {2.5*sin(angle),-2.5*cos(angle),0}color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:#green;
-					draw triangle(20) rotate: angle + 90 at: centre + {12*cos(angle),12*sin(angle),0} color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:#green;
+					draw geometry(edge) + 3 at: centre + {sin(angle),-cos(angle),0}*edgeSpacing color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:rgb(53,174,36);
+//					draw geometry(edge) + 2 at: centre + {sin(angle),-cos(angle),0}*edgeSpacing color: typeColor[edge_type[pair<animal,animal>(edge)]];
+					draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 + {sin(angle),-cos(angle),0}*edgeSpacing color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:rgb(53,174,36);
 				}
  			}
  			species animal aspect: default;
+ 			overlay position: { 0, 0} size: { 0 #px, 0 #px } background: #white transparency: 0.0{
+				draw string("Interaction graph") at: {10 #px,10 #px} anchor: #top_left color: #black font:font("SansSerif", 15, #bold) ; 
+            }
 		}
 	
 	}
