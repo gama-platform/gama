@@ -17,8 +17,8 @@ global {
 			name <-clients[0];
 			dest <- clients[1];
 			/**
-			 * Demo connection based on the demo gama server. 
-			 * Using the demo gama server requires an available internet connection. Depending on your web access, It could be slow down the simulation. 
+			 * Demo connection based on a default free remote server (broker.mqtt.cool, with port 1883). 
+			 * Using the default MQQT server requires an available internet connection. Depending on your web access, it could be slow down the simulation. 
 			 * It is a free and unsecure server.
 			 * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
 			 */
@@ -31,7 +31,6 @@ global {
 }
 
 species NetworkingAgent skills:[network]{
-	string name; 
 	string dest;
 	
 	reflex send when: cycle mod 10  = 3
@@ -52,7 +51,7 @@ species NetworkingAgent skills:[network]{
 	reflex send3 when: cycle mod 10  = 8
 	{
 		write "sending message: " + self;
-		do send to:"sender" contents:self;
+		do send to:"sender" contents:self;		
 	}
 	
 	reflex receive
