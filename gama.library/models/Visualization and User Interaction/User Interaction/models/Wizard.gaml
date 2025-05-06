@@ -19,7 +19,9 @@ global {
 	}
 	
 	bool eval_finish(map<string,map> input_map) {
-		 return input_map["page1"]["file"] != nil;
+		write input_map;
+		
+		 return input_map["page2"]["var2"] != nil;
 	}
 }
 

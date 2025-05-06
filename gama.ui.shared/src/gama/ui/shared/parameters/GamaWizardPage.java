@@ -36,6 +36,8 @@ public class GamaWizardPage extends WizardPage {
 
 	/** The scope. */
 	private final IScope scope;
+	
+	private GamaWizard wizard = null;
 
 	/**
 	 * Instantiates a new gama wizard page.
@@ -58,7 +60,22 @@ public class GamaWizardPage extends WizardPage {
 		this.scope = scope;
 		this.parameters = parameters;
 		parameters.forEach(p -> { values.put(p.getName(), p.getInitialValue(scope)); });
+		
 	}
+	
+	
+
+	public GamaWizard getWizard() {
+		return wizard;
+	}
+
+
+
+	public void setWizard(GamaWizard wizard) {
+		this.wizard = wizard;
+	}
+
+
 
 	@Override
 	public void createControl(final Composite parent) {
@@ -72,6 +89,11 @@ public class GamaWizardPage extends WizardPage {
 			final EditorListener<?> listener = newValue -> {
 				param.setValue(scope, newValue);
 				values.put(param.getName(), newValue);
+				if (wizard != null) {
+					boolean canFinish = wizard.canFinish();
+					setPageComplete(canFinish);
+				}
+			
 			};
 			EditorFactory.create(scope, composite, param, listener, false);
 		});

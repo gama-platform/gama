@@ -338,6 +338,7 @@ public class SwtGui implements IGui {
 		WorkbenchHelper.run(() -> {
 			final GamaWizard wizard = new GamaWizard(title, finish, wizardPages);
 			GamaWizardDialog wizardDialog = new GamaWizardDialog(WorkbenchHelper.getShell(), wizard);
+			
 			if (wizardDialog.open() == Window.OK) { result.putAll(wizardDialog.getValues()); }
 		});
 		return result;
