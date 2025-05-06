@@ -28,18 +28,25 @@ else
 fi
 
 memory="0"
+userWorkspace=""
+args=""
 
-for arg do
-  shift
-  case $arg in
-    -m)
-    memory="${1}"
-    shift
-    ;;
-    *)
-    set -- "$@" "$arg"
-    ;;
-  esac
+while [[ "$#" -gt 0 ]]; do
+echo "===$1"
+    case "$1" in
+        -m)
+            memory="$2"
+            shift 2
+            ;;
+        -ws)
+            userWorkspace="$2"
+            shift 2
+            ;;
+        *)
+            args+="$1"
+            shift
+            ;;
+    esac
 done
 
 if [[ $memory == "0" ]]; then
@@ -51,11 +58,11 @@ fi
 workspaceCreate=0
 
 # Run `-help` if no parameter given
-if [[ -z "$@" ]]; then
-    set -- "$@" "-help"
+if [[ -z "$args" ]]; then
+    args+="-help"
     workspaceCreate=1
 else
-    case "$@" in
+    case "$args" in
     *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
         workspaceCreate=1
         ;;
@@ -76,25 +83,37 @@ echo "******************************************************************"
 # Create Workspace
 # ======================
 pathWorkspace=.workspace
-workspaceRootPath="./"
 
-# Create ws in output folder
-if [ $workspaceCreate -eq 0 ]; then
-  # create workspace in output folder
-  workspaceRootPath="${@: -1}"
-  if [ ! -d "$workspaceRootPath" ]; then
-      mkdir $workspaceRootPath
-  fi
-fi
+if [[ -z $userWorkspace ]]; then
+    # No user workspace specified
+    workspaceRootPath="./"
 
-# Set new ws folder for new run and create it
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # `expr` use is to remove whitespace from MacOS's result
-    pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -name ".workspace*" | expr $(wc -l))"
+    if [ $workspaceCreate -eq 0 ]; then
+      # create workspace in output folder
+      workspaceRootPath="${args: -1}"
+      if [ ! -d "$workspaceRootPath" ]; then
+          mkdir $workspaceRootPath
+      fi
+    fi
+
+    # Set new ws folder for new run and create it
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # `expr` use is to remove whitespace from MacOS's result
+        pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -name ".workspace*" | expr $(wc -l))"
+    else
+        pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -maxdepth 1 -name ".workspace*" | wc -l)"
+    fi
+
 else
-    pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -maxdepth 1 -name ".workspace*" | wc -l)"
+    # User gave a userspace
+    pathWorkspace="$userWorkspace"
+    # Prevent cleaning workspace after running
+    workspaceCreate=0
 fi
-mkdir -p $pathWorkspace
+
+echo "$pathWorkspace"
+
+mkdir -p "$pathWorkspace"
 
 ini_arguments=$(read_from_ini)
 
@@ -105,8 +124,8 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
         org.eclipse.equinox.launcher.Main \
         -configuration "${headlessPath}"/configuration \
         -application gama.headless.product \
-        -data $pathWorkspace \
-        "$@"; then
+        -data "$pathWorkspace" \
+        "$args"; then
     echo "Error in you command, here's the log :"
     cat $pathWorkspace/.metadata/.log
     exit 1
