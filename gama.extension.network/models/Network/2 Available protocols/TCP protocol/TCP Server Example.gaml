@@ -13,7 +13,7 @@ global {
 		write "HOW TO USE" color: #red;
 		write "1. Launch this model";
 		write "2. Execute the client scripts/client.py";
-		write "3. Step on the the server model";
+		write "3. Step on this server model";
 		
 		create Server {
 			do connect protocol: "tcp_server" port: 3001 with_name: name raw: true;
