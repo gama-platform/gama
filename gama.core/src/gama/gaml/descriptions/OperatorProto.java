@@ -218,11 +218,6 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 		iterator = GAML.ITERATORS.contains(name);
 		if (constantDoc != null) { documentation = new ConstantDoc(constantDoc); }
 		if (IKeyword.AS.equals(name)) { AS = this; }
-		if ("cells_overlapping".equals(name)) {
-
-			DEBUG.LOG("");
-
-		}
 		this.returnType = returnType;
 		this.canBeConst = canBeConst;
 		this.isVarOrField = isVarOrField;

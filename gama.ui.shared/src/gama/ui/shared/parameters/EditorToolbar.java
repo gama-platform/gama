@@ -114,7 +114,7 @@ public class EditorToolbar<T> {
 	final AbstractEditor<T> editor;
 
 	/** The active. */
-	boolean active;
+	boolean active = true;
 
 	/** The Constant commands. */
 	protected static final GamaCommand[] commands = new GamaCommand[10];
