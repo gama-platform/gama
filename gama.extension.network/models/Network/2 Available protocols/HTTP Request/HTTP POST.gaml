@@ -31,9 +31,7 @@ species NetworkingAgent skills:[network] {
 		
 		do send to: "/test" contents: ["POST",to_json(["toto"::34,"titi"::world]), ["Content-Type"::"application/json"] ];
 		
-//		do send to: "/test" contents: ["POST",as_json_string(["toto"::34,"titi"::world]) ];
 // 		do send to: "/api/user/" contents: ["POST","raw-query-param", ["Content-Type"::"text/plain"] ];		
-//		do send to: "/api/user/" contents: ["PUT",as_json_string(["toto"::34,"titi"::12]), ["Content-Type"::"application/json"]];
 //		do send to: "/api/user/" contents: ["DELETE"];
 	}
 
