@@ -11,19 +11,15 @@ global {
 	int tolerance <- 0;
 	int buffer <- 0;
 	file complex <- file("../gis/water_body.shp");
-	geometry shape <- envelope(envelope(complex));
+	geometry shape <- envelope(complex);
 	
 	init {
-		create shapes from: complex + (circle(1000) translated_to {1000,1000});
+		create shapes from: complex ;
 	}
 }
 
 
-species shapes {
-	reflex expand  {
-		shape <- shape + 1;
-	}
-}
+species shapes;
 
 experiment "Simplify this ! " {
 	
