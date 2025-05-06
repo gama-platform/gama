@@ -193,20 +193,12 @@ public abstract class DelegateHighlightingConfiguration implements IHighlighting
 	public void configurePreferences() {
 		// we create and/or read the preferences
 		configure((id, name, style) -> {
-			// var key = "pref_" + id + "_font_" + theme;
-			// final var pref = create(key, theme + " theme " + name + " font", () -> getFont(style), IType.FONT, false)
-			// .in(Modeling.NAME, "Syntax coloring (" + theme + " theme)").onChange(font -> {
-			// applyFont(id, name, style, font);
-			// });
-			// applyFont(id, name, style, pref.getValue());
-			// preferences.put(key, pref);
 			var key = "pref_" + id + "_color_" + theme;
 			final var pref2 = create(key, theme + " theme " + name + " color", () -> toGamaColor(style.getColor()),
 					IType.COLOR, false).in(Theme.NAME, "Syntax coloring (" + theme + " theme)").onChange(color -> {
 						applyColor(id, name, style, color);
 					});
 			applyColor(id, name, style, pref2.getValue());
-			// preferences.put(key, pref2);
 			final var color = pref2.getValue();
 			if (color != null) { style.setColor(new RGB(color.red(), color.green(), color.blue())); }
 		});

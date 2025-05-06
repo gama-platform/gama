@@ -530,10 +530,14 @@ public class GamaPreferencesView {
 		saveTab();
 	}
 
+	/** The preloaded. */
+	boolean preloaded;
+
 	/**
 	 * Open.
 	 */
 	public void open() {
+		if (!preloaded) { preload(); }
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
 		final int tab = DIALOG_TAB.getValue();
