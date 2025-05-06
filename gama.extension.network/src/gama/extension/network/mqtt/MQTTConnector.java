@@ -151,7 +151,7 @@ public final class MQTTConnector extends Connector {
 			server = server == null ? DEFAULT_HOST : server;
 			port = port == null ? DEFAULT_PORT : port;
 			userName = userName == null ? DEFAULT_USER : userName;
-			password = password == null ? DEFAULT_PASSWORD : userName;
+			password = password == null ? DEFAULT_PASSWORD : password;
 			localName = localName == null ? DEFAULT_LOCAL_NAME + server : localName;
 
 			DEBUG.OUT("url "+ "tcp://" + server + ":" + port);
