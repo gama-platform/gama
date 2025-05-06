@@ -180,7 +180,8 @@
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
 
-		<module>../gama.product</module>
+		<!-- @LATER Removed product to compile GAMA with JDK 21, and package with JDK 23
+			<module>../gama.product</module> -->
 		<!--
 		// @TODO
 		<module>../msi.gama.p2updatesite</module>
