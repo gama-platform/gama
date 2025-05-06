@@ -49,6 +49,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 
 	/** The lock. Used to pause the experiment */
 	protected final GeneralSynchronizer lock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
+	protected final GeneralSynchronizer previouslock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	/** The experiment. */
 	protected IExperimentPlan experiment;
