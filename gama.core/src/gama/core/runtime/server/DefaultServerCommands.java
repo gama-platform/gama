@@ -190,8 +190,10 @@ public class DefaultServerCommands {
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		for (int i = 0; i < nb_step; i++) {
 			try {
-				if (!plan.getController().processStep(sync))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+				if (!plan.getController().processStep(sync)) {
+					String advise = sync ? "." : ", consider using the sync parameter";
+					return new CommandResponse(UnableToExecuteRequest, "Controller is full" + advise, map, false);
+				}
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
 				return new CommandResponse(GamaServerError, e, map, false);
