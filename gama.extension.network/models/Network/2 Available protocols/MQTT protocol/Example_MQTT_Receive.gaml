@@ -15,9 +15,10 @@ global {
 		write "Another instance of GAMA should run the model Example_MQTT_Send.gaml, so that an agent can send messages.";
 		
 		create NetworkingAgent number:1 {
+			name <- "receiver";
 			/**
-			 * Demo connection based on the demo gama server. 
-			 * Using the demo gama server requires an available internet connection. Depending on your web access, It could slow down the simulation. 
+			 * Demo connection based on a default free remote server (broker.mqtt.cool, with port 1883). 
+			 * Using the default MQQT server requires an available internet connection. Depending on your web access, it could be slow down the simulation. 
 			 * It is a free and unsecure server.
 			 * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
 			 */
@@ -30,7 +31,6 @@ global {
 }
 
 species NetworkingAgent skills:[network]{
-	string name;
 	string dest;
 
 	reflex fetch when:has_more_message() {	

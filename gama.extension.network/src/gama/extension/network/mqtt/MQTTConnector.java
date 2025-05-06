@@ -47,10 +47,10 @@ public final class MQTTConnector extends Connector {
 	public static final String DEFAULT_PASSWORD = "gama_demo";
 	
 	/** The default host. */
-	public static final String DEFAULT_HOST = "vmpams.ird.fr";
+	public static final String DEFAULT_HOST = "broker.mqtt.cool";// "vmpams.ird.fr";
 	
 	/** The default port. */
-	public static final String DEFAULT_PORT = "1935";
+	public static final String DEFAULT_PORT = "1883"; // "1935";
 
 	/** The send connection. */
 	protected MqttClient sendConnection = null;
@@ -151,7 +151,7 @@ public final class MQTTConnector extends Connector {
 			server = server == null ? DEFAULT_HOST : server;
 			port = port == null ? DEFAULT_PORT : port;
 			userName = userName == null ? DEFAULT_USER : userName;
-			password = password == null ? DEFAULT_PASSWORD : userName;
+			password = password == null ? DEFAULT_PASSWORD : password;
 			localName = localName == null ? DEFAULT_LOCAL_NAME + server : localName;
 
 			DEBUG.OUT("url "+ "tcp://" + server + ":" + port);

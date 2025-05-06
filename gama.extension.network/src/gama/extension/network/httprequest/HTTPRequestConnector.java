@@ -96,7 +96,7 @@ public class HTTPRequestConnector extends Connector {
 
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" }) 	
+	@SuppressWarnings({ "unchecked" }) 	
 	@Override
 	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
 		Object cont = content.getContents(sender.getScope());

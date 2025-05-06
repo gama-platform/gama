@@ -179,40 +179,40 @@ species people skills: [pedestrian]{
 experiment normal_sim type: gui {
 	
 	
-	parameter "display_free_space" var:display_free_space;
-	parameter "display_force" var:display_force;
-	parameter "display_target" var:display_target; 
-	parameter "display_circle_min_dist" var:display_circle_min_dist;
-	parameter "P_shoulder_length" var:P_shoulder_length;
-	parameter "P_proba_detour" var:P_proba_detour;
-	parameter "P_avoid_other" var:P_avoid_other;
-	parameter "P_obstacle_consideration_distance" var:P_obstacle_consideration_distance;
-	parameter "P_pedestrian_consideration_distance" var:P_pedestrian_consideration_distance;
-	parameter "P_tolerance_target" var:P_tolerance_target;
-	parameter "P_use_geometry_target" var:P_use_geometry_target;
+	parameter "display free space" var:display_free_space;
+	parameter "display force" var:display_force;
+	parameter "display target" var:display_target; 
+	parameter "display circle_min_dist" var:display_circle_min_dist;
+	parameter "P shoulder_length" var:P_shoulder_length;
+	parameter "P proba_detour" var:P_proba_detour;
+	parameter "P avoid_other" var:P_avoid_other;
+	parameter "P obstacle_consideration_distance" var:P_obstacle_consideration_distance;
+	parameter "P pedestrian_consideration_distance" var:P_pedestrian_consideration_distance;
+	parameter "P tolerance_target" var:P_tolerance_target;
+	parameter "P use_geometry_target" var:P_use_geometry_target;
 
 
-	parameter "P_model_type" var:P_model_type among: ["simple", "advanced"]; 
+	parameter "P model_type" var:P_model_type among: ["simple", "advanced"]; 
 
-	parameter "P_A_pedestrian_SFM_advanced" var:P_A_pedestrian_SFM_advanced   category: "SFM advanced";
-	parameter "P_A_obstacles_SFM_advanced" var:P_A_obstacles_SFM_advanced   category: "SFM advanced";
-	parameter "P_B_pedestrian_SFM_advanced" var:P_B_pedestrian_SFM_advanced   category: "SFM advanced";
-	parameter "P_B_obstacles_SFM_advanced" var:P_B_obstacles_SFM_advanced   category: "SFM advanced";
-	parameter "P_relaxion_SFM_advanced" var:P_relaxion_SFM_advanced    category: "SFM advanced";
-	parameter "P_gama_SFM_advanced" var:P_gama_SFM_advanced category: "SFM advanced";
-	parameter "P_lambda_SFM_advanced" var:P_lambda_SFM_advanced   category: "SFM advanced";
-	parameter "P_minimal_distance_advanced" var:P_minimal_distance_advanced   category: "SFM advanced";
+	parameter "P A_pedestrian_SFM_advanced" var:P_A_pedestrian_SFM_advanced   category: "SFM advanced";
+	parameter "P A_obstacles_SFM_advanced" var:P_A_obstacles_SFM_advanced   category: "SFM advanced";
+	parameter "P B_pedestrian_SFM_advanced" var:P_B_pedestrian_SFM_advanced   category: "SFM advanced";
+	parameter "P B_obstacles_SFM_advanced" var:P_B_obstacles_SFM_advanced   category: "SFM advanced";
+	parameter "P relaxion_SFM_advanced" var:P_relaxion_SFM_advanced    category: "SFM advanced";
+	parameter "P gama_SFM_advanced" var:P_gama_SFM_advanced category: "SFM advanced";
+	parameter "P lambda_SFM_advanced" var:P_lambda_SFM_advanced   category: "SFM advanced";
+	parameter "P minimal_distance_advanced" var:P_minimal_distance_advanced   category: "SFM advanced";
 
-	parameter "P_n_prime_SFM_simple" var:P_n_prime_SFM_simple   category: "SFM simple";
-	parameter "P_n_SFM_simple" var:P_n_SFM_simple   category: "SFM simple";
-	parameter "P_lambda_SFM_simple" var:P_lambda_SFM_simple   category: "SFM simple";
-	parameter "P_gama_SFM_simple" var:P_gama_SFM_simple   category: "SFM simple";
-	parameter "P_relaxion_SFM_simple" var:P_relaxion_SFM_simple   category: "SFM simple";
-	parameter "P_A_pedestrian_SFM_simple" var:P_A_pedestrian_SFM_simple   category:"SFM simple";
+	parameter "P n_prime_SFM_simple" var:P_n_prime_SFM_simple   category: "SFM simple";
+	parameter "P n_SFM_simple" var:P_n_SFM_simple   category: "SFM simple";
+	parameter "P lambda_SFM_simple" var:P_lambda_SFM_simple   category: "SFM simple";
+	parameter "P gama_SFM_simple" var:P_gama_SFM_simple   category: "SFM simple";
+	parameter "P relaxion_SFM_simple" var:P_relaxion_SFM_simple   category: "SFM simple";
+	parameter "P A_pedestrian_SFM_simple" var:P_A_pedestrian_SFM_simple   category:"SFM simple";
 	
 	
 	float minimum_cycle_duration <- 0.02;
-		output {
+	output {
 		display map type: 3d{
 			species wall refresh: false;
 			species pedestrian_path aspect:free_area_aspect transparency: 0.5 ;

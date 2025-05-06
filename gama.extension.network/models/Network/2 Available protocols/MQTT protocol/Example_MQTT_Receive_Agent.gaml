@@ -12,8 +12,8 @@ global skills:[network] {
 		write "A MQTT server should run." color: #red;
 		write "Another instance of GAMA should run the model Example_MQTT_Send_Agent.gaml, to show how agents can send messages.";
 		/**
-		 * Demo connection based on the demo gama server. 
-		 * Using the demo gama server requires an available internet connection. Depending on your web access, It could be slow down the simulation. 
+		 * Demo connection based on a default free remote server (broker.mqtt.cool, with port 1883). 
+		 * Using the default MQQT server requires an available internet connection. Depending on your web access, it could be slow down the simulation. 
 		 * It is a free and unsecure server.
 		 * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
 		 */
@@ -27,12 +27,11 @@ global skills:[network] {
 		message mess <- fetch_message();
 		
 		// Accessing the content of a message unserialised the received object
-		// In the case of an agent, it is recreated.
+		// In the case of an agent:
+		//  - if it does not exist (same species and id) in the receiving simulation, it is recreated.
+		//  - Otherwise the existing agent is updated (update of the attribute values) 
 		write name + " fecth this message: " + mess.contents;	
 		
-		//loop agt over: mess.contents as list{
-		//	create NetworkingAgent with: [shape::agt["shape"], color::agt["color"]];
-		//}
 	}
 }
 

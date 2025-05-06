@@ -8,7 +8,9 @@ experiment start {
 	init {
 		// we just open the html page to control gama-server in the default web browser
 		try {
-			write command("open " + project_path + "scripts/connector/onnector.html");
+			string cmd <- "open " + project_path + "scripts/connector/connector.html";
+			write cmd;
+			write command(cmd);
 		}
 
 		catch {

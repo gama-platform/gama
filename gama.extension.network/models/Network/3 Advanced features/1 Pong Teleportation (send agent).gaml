@@ -8,8 +8,8 @@
 */
 
 /**
- * Demo connection based on the demo gama server. 
- * Using the demo gama server requires an available internet connection. Depending on your web access, It could be slow down the simulation. 
+ * Demo connection based on a default free remote server (broker.mqtt.cool, with port 1883). 
+ * Using the default MQQT server requires an available internet connection. Depending on your web access, it could be slow down the simulation. 
  * It is a free and unsecure server.
  * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
  */
