@@ -134,7 +134,7 @@ public class PathComputer<V, E> {
 	protected int version = 1;
 
 	/** The shortest path computed. */
-	protected Map<Pair<V, V>, IList<IList<E>>> shortestPathComputed = new ConcurrentHashMap<>();
+	protected volatile Map<Pair<V, V>, IList<IList<E>>> shortestPathComputed = new ConcurrentHashMap<>();
 
 	/** The shortest path matrix. */
 	protected GamaIntMatrix shortestPathMatrix = null;
@@ -742,7 +742,9 @@ public class PathComputer<V, E> {
 	 */
 	public void setVersion(final int version) {
 		this.version = version;
-		shortestPathComputed.clear();
+		//shortestPathComputed.clear();
+		shortestPathComputed = new ConcurrentHashMap<>();
+		
 	}
 
 	/**
@@ -753,7 +755,8 @@ public class PathComputer<V, E> {
 	 */
 	public void incVersion() {
 		version++;
-		shortestPathComputed.clear();
+		//shortestPathComputed.clear();
+		shortestPathComputed = new ConcurrentHashMap<>();
 		contractionHierarchyBD = null;
 		transitNodeRouting = null;
 		linkedJGraph = null;
