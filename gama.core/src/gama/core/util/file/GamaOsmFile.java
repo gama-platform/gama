@@ -100,6 +100,8 @@ public class GamaOsmFile extends GamaGisFile {
 	/** The env. */
 	final ReferencedEnvelope env = new ReferencedEnvelope();
 
+	static final List<String> RESERVED_KEYS = List.of("location", "shape");
+
 	/**
 	 * The Class OSMInfo.
 	 */
@@ -120,6 +122,7 @@ public class GamaOsmFile extends GamaGisFile {
 		/** The attributes. */
 		final Map<String, String> attributes = new LinkedHashMap();
 
+		
 		/**
 		 * Instantiates a new OSM info.
 		 *
@@ -450,6 +453,8 @@ public class GamaOsmFile extends GamaGisFile {
 	 *            the val
 	 */
 	private void addAttribute(final Map<String, String> atts, final String nameAt, final Object val) {
+		if (RESERVED_KEYS.contains(nameAt)) return;
+		
 		final String type = atts.get(nameAt);
 		if ("string".equals(type)) return;
 		String newType = "int";
@@ -524,6 +529,8 @@ public class GamaOsmFile extends GamaGisFile {
 
 				for (final Tag tg : node.getTags()) {
 					final String key = tg.getKey();
+					if (RESERVED_KEYS.contains(key)) continue;
+					
 					final Object val = tg.getValue();
 					if (val != null) { addAttribute(atts, key, val); }
 					pt.setAttribute(key, val);
@@ -563,6 +570,7 @@ public class GamaOsmFile extends GamaGisFile {
 
 			for (final Tag tg : way.getTags()) {
 				final String key = tg.getKey();
+				if (RESERVED_KEYS.contains(key)) continue;
 				final Object val = tg.getValue();
 				if (val != null) { addAttribute(atts, key, val); }
 				values.put(key, tg.getValue());
@@ -636,6 +644,7 @@ public class GamaOsmFile extends GamaGisFile {
 
 			for (final Tag tg : relation.getTags()) {
 				final String key = tg.getKey();
+				if (RESERVED_KEYS.contains(key)) continue;
 				values.put(key, tg.getValue());
 			}
 			String type = (String) values.get("type");
