@@ -48,6 +48,12 @@ public class GamaWizard extends Wizard{
         super();
         this.title = title;
         this.pages = pages;
+       if (pages != null) {
+    	   for (GamaWizardPage p :pages) {
+           		p.setWizard(this);
+           }
+       }
+       
         setNeedsProgressMonitor(true);
        	this.finish = finish;
     }
