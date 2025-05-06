@@ -110,4 +110,9 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
     echo "Error in you command, here's the log :"
     cat $pathWorkspace/.metadata/.log
     exit 1
+else
+    if [ $workspaceCreate -eq 1 ]; then
+        # create workspace in output folder
+        rm -fr workspaceRootPath $pathWorkspace
+    fi
 fi
