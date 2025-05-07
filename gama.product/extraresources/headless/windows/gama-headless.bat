@@ -27,7 +27,7 @@ IF (%1) == () GOTO NEXT_CODE
         SET "userWorkspace=%~2"
         SHIFT
         SHIFT
-        GOTO ParseArgs
+	GOTO DECALE
     )
 	set param=%param% %1
 	GOTO DECALE
@@ -85,11 +85,11 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 @echo %ini_arguments%
 
 IF "%userWorkspace%"=="" (
-    @echo workDir = %workDir%
+    set workDir=%workDir%
 ) ELSE (
-    @echo workDir = %userWorkspace%
+    set workDir=%userWorkspace%
 )
-
+@echo workDir = %workDir%
 @echo memory = %memory%
 
 if exist ..\jdk\ (
