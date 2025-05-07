@@ -17,6 +17,10 @@
 model GeneralizedLotkaVolterra
 
 global {
+	// behaviour parameters
+	bool saturation <- true;
+	bool externalFoodForPredators <- false;
+	
 	// number of species
 	int maxSpecies <- 8;
 	
@@ -25,6 +29,7 @@ global {
 	float edgeSpacing <- 10.0;
 	bool graphType <- true;
 	int xRange <- 200;
+	bool showCumulatedGraph <- true;
 	
 	// names generator parameters
 	string language <- "english" among: ["french","english"];
@@ -81,9 +86,15 @@ global {
 		create solver_and_scheduler;
 	}
 	
+//	reflex test {
+//		ask animal where (!dead(each) and length(each.interactionMap)>0){
+//			write self.name + ' '+self.interactionMap;
+//		}
+//	}
+	
 	// update the interaction graph
 	reflex layout_graph {
-		the_graph <- layout_circle(the_graph,rectangle(world.shape.width * 0.7, world.shape.height*0.7),false);
+		the_graph <- directed(layout_circle(the_graph,rectangle(world.shape.width * 0.7, world.shape.height*0.7),false));
 	}
 	
 	// apply actions for the buttons that have been pressed since the last time step
@@ -124,6 +135,9 @@ species animal{
 	float r;
 	float k;
 	rgb color;
+	map<animal,string> interactionMap;
+	
+	bool isPredator;
 	
 	// list of interactions with this animal species, sorted by type
 	list<animal> positive_species <-[];
@@ -139,15 +153,50 @@ species animal{
 		if type != "neutral" {interaction_coef <+ ani::(rnd(100)/100);}
 	}
 	
+	// find a predation relationship exists
+	action updateInteractionsTypes{
+		interactionMap <- [];
+		loop ani over: positive_species{
+			if (self in ani.positive_species){
+				interactionMap << ani::"mutualism";
+			}else if (self in ani.negative_species){
+				interactionMap << ani::"predator";
+			}else {
+				interactionMap << ani::"positive";
+			}
+		}
+		loop ani over: negative_species{
+			if (self in ani.positive_species){
+				interactionMap << ani::"prey";
+			}else if (self in ani.negative_species){
+				interactionMap << ani::"competition";
+			}else {
+				interactionMap << ani::"negative";
+			}
+		}
+		isPredator <- "predator" in interactionMap.values;
+//		write "updated "+name+": "+interactionMap;
+	}
+	
 	// part of the ODE system
-	equation dynamics simultaneously: [animal]{ 
-		diff(pop,t) = r*pop * (1 - pop/k + sum((positive_species where (!dead(each))) collect(interaction_coef[each]*each.pop/k)) - sum((negative_species where (!dead(each))) collect(interaction_coef[each]*each.pop/k)));		
-        }
+	equation dynamics simultaneously: [animal]{
+		diff(pop,t) = r*pop * (1 - pop/k 
+			+ int(saturation) * (
+			sum((positive_species where (!dead(each))) collect(interaction_coef[each]*each.pop/k)) 
+			- sum((negative_species where (!dead(each))) collect(interaction_coef[each]*each.pop/k)))
+		);	
+    }
         
  	// aspect for the interaction graph
 	aspect interactionGraphAspect{
 		draw circle(30) color: color;
 		draw name anchor: #left_center at: location+{38,-25,0} color: #black font:font("SansSerif", 10, #bold);
+	}
+	
+	
+		aspect interactionGraphAspect{
+		draw circle(30) color: color;
+		draw name anchor: #left_center at: location+{38,-25,0} color: #black font:font("SansSerif", 10, #bold);		
 	}
 }
 
@@ -158,6 +207,7 @@ species solver_and_scheduler{
 	list<float> pop <- list_with(maxSpecies,0.0);
 	list<float> cumulatedPop <- list_with(maxSpecies,0.0);
 	list<int> lastValues <- list_with(xRange,0);
+	list<int> lastCumValues <- list_with(xRange,0);
 	
 	
 	// Master equation. 
@@ -178,8 +228,10 @@ species solver_and_scheduler{
 			pop[i] <- (speciesList[i] != nil)?speciesList[i].pop:0;
 			cumulatedPop[i] <- i=0?pop[0]:cumulatedPop[i-1]+pop[i];
 		}
+		remove from: lastCumValues index: 0;
+		lastCumValues << cumulatedPop[maxSpecies-1];
 		remove from: lastValues index: 0;
-		lastValues << cumulatedPop[maxSpecies-1];
+		lastValues << max(pop);
 	}
 	
 	
@@ -230,6 +282,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 			ask animal {
 				remove species_to_be_removed from: self.positive_species;
 				remove key: species_to_be_removed from: self.interaction_coef;
+				do updateInteractionsTypes;
 			}
 
 			ask species_to_be_removed {
@@ -267,14 +320,19 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 		// add the interaction type to the concerned animal species (x->y)
 		ask speciesList[grid_y - 1] {
 			do change_type(speciesList[myself.grid_x - 1], new_type);
+			do updateInteractionsTypes;
 		}
 		if (new_type != 'neutral'){
 			add edge(speciesList[grid_x - 1], speciesList[grid_y - 1]) to: the_graph;
 			add (speciesList[grid_x - 1]::speciesList[grid_y - 1])::new_type to: edge_type;	
 		}else{
+			write "before "+the_graph.edges;
 			remove edge(speciesList[grid_x - 1], speciesList[grid_y - 1]) from: the_graph;
+			write "after "+the_graph.edges;
 		}
-		
+		ask speciesList[grid_x - 1]{
+			do updateInteractionsTypes;
+		}
 	}
 	
 	
@@ -314,6 +372,8 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 		}
 	}
 }
+
+
 
 
 
@@ -360,19 +420,33 @@ grey is neutral." category: "Help";
             }
 		}
 		
-		// top-right display: time series
-		display "Graphs" name: "Time series" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
+		// top-right display: charts
+		display "Graphs" name: "Charts" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
 			camera name: "myCamera" locked: true;
 			
-			// chart definition
+			// chart definition: cumulated population
 			chart "Cumulated population size" type: series style: area background: #white 
-			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(100,max(first(solver_and_scheduler).lastValues))} 
-			series_label_position: none title_visible: false label_font: font("SansSerif", 16) {
+			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(100,max(first(solver_and_scheduler).lastCumValues))} 
+			y_label: "Population (cumulated)"
+			visible: showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", 16) {
 				loop i from: 0 to: maxSpecies-1{
 					data "species"+i value: first(solver_and_scheduler).cumulatedPop[i] color: color_list[i] marker: false;
 				}
 			}
-
+			
+			// chart definition: time series
+			chart "Time series" type: series style: line background: #white 
+			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(30,max(first(solver_and_scheduler).lastValues))} 
+			y_label: "Population"
+			visible: !showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", 16) {
+				loop i from: 0 to: maxSpecies-1{
+					data "species"+i value: first(solver_and_scheduler).pop[i] color: color_list[i] marker: false thickness: 3;
+				}
+			}
+			
+			// mouse event listener
+			event #mouse_down {showCumulatedGraph <- !showCumulatedGraph;} 
+			
 			// window title
 			overlay position: {0, 0} size: {2000, 32#px} background: #white transparency: 0 rounded: false{
 				draw string("Population evolution") at: {10 #px,10 #px}  anchor: #top_left color: #black font:font("SansSerif", 15, #bold) ; 
@@ -384,12 +458,51 @@ grey is neutral." category: "Help";
 		display "Interaction graph" toolbar: false type:3d axes: false {
 			camera #default locked: true;
 			graphics "edges" {
-				loop edge over: the_graph.edges {
-					float angle <- (pair<animal,animal>(edge)).key towards (pair<animal,animal>(edge)).value;
-					point centre <- centroid(polyline([pair<animal,animal>(edge).key.location,pair<animal,animal>(edge).value.location]));
-					draw geometry(edge) + 3 at: centre + {sin(angle),-cos(angle),0}*edgeSpacing color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:rgb(53,174,36);
-					draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 + {sin(angle),-cos(angle),0}*edgeSpacing color: edge_type[pair<animal,animal>(edge)] = "negative"?#red:rgb(53,174,36);
+				list<pair> myEdges <- the_graph.edges;
+				// draw the edges
+				loop while: !empty(myEdges){
+					pair<animal,animal> myEdge <- first(myEdges);
+					remove myEdge from: myEdges;
+					animal ani1 <- first(myEdge);
+					animal ani2 <- last(myEdge);
+					if ((ani2::ani1) in myEdges){
+						// reciprocal interaction
+						remove (ani2::ani1) from: myEdges;
+						float angle <- ani1 towards ani2;
+						point centre <- centroid(polyline([ani1.location,ani2.location]));
+						if (ani1.interactionMap[ani2] = 'predator'){
+							draw geometry(myEdge) + 8  color: #red;
+							draw triangle(40) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 color: #red;
+						}
+						if (ani1.interactionMap[ani2] = 'mutualism'){
+							if (angle >= 90 and angle < 270){angle <- angle + 180;}
+							draw geometry(myEdge) + 3  color: rgb(53,174,36);
+							draw "Mutualism" rotate: angle at: centre + {sin(angle),-cos(angle),0}*edgeSpacing*3 
+								anchor: #center color: #black font:font("SansSerif", 10, #bold);
+							int textLength <- 110;
+							draw triangle(40) rotate: angle + 90 at: centre +{cos(angle),sin(angle),0} * textLength +  {sin(angle),-cos(angle),0}*edgeSpacing*3 color: rgb(53,174,36);
+							draw triangle(40) rotate: angle + 270 at: centre - {cos(angle),sin(angle),0} * textLength +  {sin(angle),-cos(angle),0}*edgeSpacing*3 color: rgb(53,174,36);
+						}
+						
+					} else {
+						// one way interaction
+						float angle <- first(myEdge) towards last(myEdge);
+						point centre <- centroid(polyline([first(myEdge).location,last(myEdge).location]));
+						rgb myColor <- edge_type[myEdge] = "negative"?#red:rgb(53,174,36);
+						draw geometry(myEdge) + 3  color: myColor;
+						draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 color: myColor;
+					}
 				}
+				
+//				loop edge over: the_graph.edges {
+//					// mandatory cast
+//					pair<animal,animal> myEdge <- edge;
+//					float angle <- first(myEdge) towards last(myEdge);
+//					point centre <- centroid(polyline([first(myEdge).location,last(myEdge).location]));
+//					rgb myColor <- edge_type[myEdge] = "negative"?#red:rgb(53,174,36);
+//					draw geometry(edge) + 3 at: centre + {sin(angle),-cos(angle),0}*edgeSpacing color: myColor;
+//					draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 + {sin(angle),-cos(angle),0}*edgeSpacing color: myColor;
+//				}
  			}
  			species animal aspect: interactionGraphAspect;
  			
