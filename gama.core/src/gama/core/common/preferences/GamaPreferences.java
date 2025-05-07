@@ -660,7 +660,7 @@ public class GamaPreferences {
 
 		/** The Constant CHART_QUALITY. */
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)",
+				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
 				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
 
 		/**
