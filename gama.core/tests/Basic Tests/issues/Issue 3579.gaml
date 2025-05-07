@@ -13,7 +13,7 @@ import "Issue 3570.gaml"
 
 global {
 	init {
-		gaml_file ff <- gaml_file("Issue3579.gaml");
+		gaml_file ff <- gaml_file("Issue 3579.gaml");
 		write ff.experiments; // Only the experiments defined in this file are listed, not the ones imported
 		write ff.tags; // try adding new tags and run the model again
 		write ff.uses; // if no file is used (resp. imported) these fields return an empty list
