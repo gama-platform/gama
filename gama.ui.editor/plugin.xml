@@ -809,6 +809,9 @@
           <viewShortcut
                 id="gama.ui.application.view.outline">
           </viewShortcut>
+          <viewShortcut
+                id="gama.ui.application.view.GamaNavigator">
+          </viewShortcut>
        </perspectiveExtension>
     </extension>
     <extension
