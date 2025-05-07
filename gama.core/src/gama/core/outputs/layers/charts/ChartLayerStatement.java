@@ -479,6 +479,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		expression = getFacet("flat");
 		if (expression != null) {
 			ChartJFreeChartOutputHistogram.enableFlatLook(Cast.asBool(scope, expression.value(scope)));
+		} else {
+			ChartJFreeChartOutputHistogram.enableFlatLook(true);
 		}
 
 		chartOutput.createChart(scope);

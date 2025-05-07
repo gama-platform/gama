@@ -774,7 +774,8 @@
                id="gama.ui.application.view.minimap"
                minimized="false"
                moveable="true"
-               relationship="stack"
+               ratio="0.5"
+               relationship="bottom"
                relative="gama.ui.application.view.outline"
                showTitle="true"
                visible="true">

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * InspectDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * InspectDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,6 +40,7 @@ import gama.dev.COUNTER;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.SymbolTracer;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
@@ -350,12 +352,18 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	// return rootAgent.getSpecies().getMicroSpecies(speciesName);
 	// }
 
+	/**
+	 * Gets the species description.
+	 *
+	 * @return the species description
+	 */
 	public SpeciesDescription getSpeciesDescription() {
 		final IExpression valueExpr = getValue();
 		if (valueExpr == null) return null;
 		final IType theType = valueExpr.getGamlType().getContentType();
 		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
 		final SpeciesDescription sd = theType.getSpecies();
+		if (sd instanceof ModelDescription) return sd;
 		if (sd == null) return Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();
 		if (speciesName == null) return Types.AGENT.getDenotedSpecies();

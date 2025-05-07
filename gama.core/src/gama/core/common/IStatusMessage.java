@@ -56,6 +56,9 @@ public interface IStatusMessage {
 	/** The download icon. */
 	String DOWNLOAD_ICON = "status/status.download";
 
+	/** The idle icon. */
+	String IDLE_ICON = "overlays/status.clock";
+
 	/** The job key. */
 	QualifiedName JOB_KEY = new QualifiedName("status", "property");
 

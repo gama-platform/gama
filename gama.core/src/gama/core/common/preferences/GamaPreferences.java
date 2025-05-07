@@ -12,6 +12,7 @@ package gama.core.common.preferences;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
 
+import java.awt.Font;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -659,7 +660,7 @@ public class GamaPreferences {
 
 		/** The Constant CHART_QUALITY. */
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Graphical resolution of the charts (from 0, small and fast, to 1, best but consuming lots of resources)",
+				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
 				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
 
 		/**
@@ -802,6 +803,12 @@ public class GamaPreferences {
 		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
 				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
 						.in(NAME, RENDERING).between(0, 255);
+
+		/** The Constant DEFAULT_DISPLAY_FONT. */
+		public static final Pref<GamaFont> DEFAULT_DISPLAY_FONT = GamaPreferences
+				.create("pref_display_default_font", "Default font to use in 'draw'",
+						() -> new GamaFont("Helvetica", Font.PLAIN, 12), IType.FONT, true)
+				.in(GamaPreferences.Displays.NAME, GamaPreferences.Displays.DRAWING);
 
 	}
 
@@ -961,7 +968,9 @@ public class GamaPreferences {
 						.in(NAME, CATEGORY).onChange(v -> {
 							try {
 								ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-							} catch (CoreException e) {}
+							} catch (
+										/** The e. */
+							CoreException e) {}
 						}).hidden();
 
 		/** The Constant AT_DISTANCE_OPTIMIZATION. */
@@ -1089,7 +1098,7 @@ public class GamaPreferences {
 		getStore().register(gp);
 		// Adds the preferences to the platform species if it is already created
 		final var spec = GamaMetaModel.getPlatformSpeciesDescription();
-		if (spec != null && !spec.hasAttribute(key)) {
+		if (spec != null && !spec.hasAttribute(key) && gp.inGaml()) {
 			spec.addPref(key, gp);
 			// spec.validate();
 		}
@@ -1218,29 +1227,32 @@ public class GamaPreferences {
 
 	// To force preferences to load
 
+	/** The inter. */
+	static Interface inter = new Interface();
+
+	/** The theme. */
+	static Theme theme = new Theme();
+
+	/** The modeling. */
+	static Modeling modeling = new Modeling();
+
+	/** The runtime. */
+	static Runtime runtime = new Runtime();
+
+	/** The displays. */
+	static Displays displays = new Displays();
+
+	/** The network. */
+	static Network network = new Network();
+
+	/** The external. */
+	static External external = new External();
+
+	/** The exp. */
+	static Experimental exp = new Experimental();
+
 	/** The order of preferences. */
 	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
 			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);
-	//
-	// /** The i. */
-	// static Interface i_ = new Interface();
-	//
-	// /** The m. */
-	// static Modeling m_ = new Modeling();
-	//
-	// /** The r. */
-	// static Runtime r_ = new Runtime();
-	//
-	// /** The s. */
-	// static Simulations s_ = new Simulations();
-	//
-	// /** The d. */
-	// static Displays d_ = new Displays();
-	//
-	// /** The ext. */
-	// static External ext_ = new External();
-	//
-	// /** The exp. */
-	// static Experimental exp_ = new Experimental();
 
 }

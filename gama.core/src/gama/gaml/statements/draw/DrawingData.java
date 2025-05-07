@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * DrawingData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * DrawingData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,7 +26,6 @@ import gama.core.util.IList;
 import gama.gaml.constants.GamlCoreConstants;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaFontType;
 import gama.gaml.types.GamaListType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -106,7 +104,7 @@ public class DrawingData extends AttributeHolder {
 		this.empty = create(IKeyword.WIREFRAME, Types.BOOL, false);
 		this.border = create(IKeyword.BORDER, this::castBorder, Types.COLOR, null);
 		this.color = create(IKeyword.COLOR, this::castColor, Types.COLOR, null);
-		this.font = create(IKeyword.FONT, Types.FONT, GamaFontType.DEFAULT_DISPLAY_FONT.getValue());
+		this.font = create(IKeyword.FONT, Types.FONT, GamaPreferences.Displays.DEFAULT_DISPLAY_FONT.getValue());
 		this.texture = create(IKeyword.TEXTURE, this::castTexture, Types.LIST, null);
 		// this.material = create(IKeyword.MATERIAL, Types.MATERIAL, null);
 		this.perspective = create(IKeyword.PERSPECTIVE, Types.BOOL, true);

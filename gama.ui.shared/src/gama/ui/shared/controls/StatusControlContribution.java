@@ -12,6 +12,9 @@ package gama.ui.shared.controls;
 
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -25,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.eclipse.ui.progress.UIJob;
 
 import gama.core.common.IStatusMessage;
 import gama.core.common.IStatusMessage.StatusType;
@@ -84,6 +88,17 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 	/** The icon provider. */
 	StatusIconProvider iconProvider = new StatusIconProvider();
+
+	/** The idle job. */
+	UIJob idleJob = new UIJob("Idle") {
+
+		@Override
+		public IStatus runInUIThread(final IProgressMonitor monitor) {
+			label.setImageWithoutRecomputingSize(GamaIcon.named(IStatusMessage.IDLE_ICON).image());
+			label.setTextWithoutRecomputingSize("Idle");
+			return Status.OK_STATUS;
+		}
+	};
 
 	/**
 	 * Gets the single instance of ExperimentControlContribution.
@@ -146,7 +161,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 					"Update Capability Enablement for Natures", "Status refresh", "Update for Decoration Completion",
 					"Change cursor", "Searching for local changes", "Hooking to commands", "Update Job",
 					"Check for workspace changes", "Refreshing view", "Mark Occurrences", "XtextReconcilerJob",
-					"Xtext validation", "Searching for markers");
+					"Xtext validation", "Searching for markers", "Idle");
 
 			@Override
 			public void aboutToRun(final IJobChangeEvent event) {
@@ -296,6 +311,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			}
 		} finally {
 			isUpdating = false;
+			idleJob.schedule(2000);
 		}
 
 	}
