@@ -2,10 +2,11 @@ echo off
 cls
 setLocal EnableDelayedExpansion
 set inputFile=""
-set outputFile="" 
+set outputFile=""
 
 REM memory is defined in the ../Gama.ini file
 set "memory=-1m"
+SET userWorkspace=""
 
 set workDir=.work%RANDOM%
 SETLOCAL enabledelayedexpansion
@@ -14,7 +15,7 @@ SETLOCAL enabledelayedexpansion
 :TOP
 
 IF (%1) == () GOTO NEXT_CODE
-	if %1 EQU -m ( 
+	if %1 EQU -m (
 		set  comm=%1
 		set  next=%2
 		set memory=!next!
@@ -22,6 +23,12 @@ IF (%1) == () GOTO NEXT_CODE
 		GOTO DECALE
 	)
 
+    IF "%~1"=="-ws" (
+        SET "userWorkspace=%~2"
+        SHIFT
+        SHIFT
+        GOTO ParseArgs
+    )
 	set param=%param% %1
 	GOTO DECALE
 :DECALE
@@ -36,9 +43,9 @@ echo * (c) 2007-2024 UMI 209 UMMISCO IRD/SU and Partners              *
 echo ******************************************************************
 
 set FILENAME="..\plugins\"
-FOR /F %%e in ('dir /b %FILENAME%') do ( 
+FOR /F %%e in ('dir /b %FILENAME%') do (
  	SET result=%%e
-	if "!result:~0,29!" == "org.eclipse.equinox.launcher_" (  
+	if "!result:~0,29!" == "org.eclipse.equinox.launcher_" (
 		goto END
 	)
 )
@@ -66,10 +73,10 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 			set "ini_arguments=!ini_arguments!!line! "
 		)
 	) else (
-		if "!line:~0,4!"=="-Xmx" ( 
+		if "!line:~0,4!"=="-Xmx" (
 			if "!memory!"=="-1m" ( set "memory=!line:~4!" )
-		) else ( 
-			set "ini_arguments=!ini_arguments!!line! " 
+		) else (
+			set "ini_arguments=!ini_arguments!!line! "
 		)
 	)
 )
@@ -77,13 +84,18 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 @echo Will run with these options:
 @echo %ini_arguments%
 
-@echo workDir = %workDir% 
-@echo memory = %memory% 
+IF "%userWorkspace%"=="" (
+    @echo workDir = %workDir%
+) ELSE (
+    @echo workDir = %userWorkspace%
+)
+
+@echo memory = %memory%
 
 if exist ..\jdk\ (
 	echo "JDK"
-	call ..\jdk\bin\java -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
+	call ..\jdk\bin\java -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param!
 ) else (
 	echo "JAVA_HOME"
-  	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
+  	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param!
 )
