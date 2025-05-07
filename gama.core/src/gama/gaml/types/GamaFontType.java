@@ -1,26 +1,25 @@
 /*******************************************************************************************************
  *
- * GamaFontType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaFontType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.types;
 
+import static gama.core.common.preferences.GamaPreferences.Displays.DEFAULT_DISPLAY_FONT;
+
 import java.awt.Font;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaFont;
@@ -42,12 +41,6 @@ import gama.gaml.operators.Cast;
 		doc = { @doc ("Represents font objects that can be passed directly as arguments to draw statements and text layers. A font is identified by its face name (e.g. 'Helvetica'), its size in points (e.g. 12) and its style (i.e., #bold, #italic, or an addition of the 2") },
 		concept = { IConcept.TYPE, IConcept.TEXT, IConcept.DISPLAY })
 public class GamaFontType extends GamaType<GamaFont> {
-
-	/** The Constant DEFAULT_DISPLAY_FONT. */
-	public static final Pref<GamaFont> DEFAULT_DISPLAY_FONT = GamaPreferences
-			.create("pref_display_default_font", "Default font to use in 'draw'",
-					() -> new GamaFont("Helvetica", Font.PLAIN, 12), IType.FONT, true)
-			.in(GamaPreferences.Displays.NAME, GamaPreferences.Displays.DRAWING);
 
 	@doc (
 			value = "Cast any object as a font",

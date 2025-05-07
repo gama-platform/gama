@@ -12,6 +12,7 @@ package gama.core.common.preferences;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
 
+import java.awt.Font;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -802,6 +803,12 @@ public class GamaPreferences {
 		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
 				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
 						.in(NAME, RENDERING).between(0, 255);
+
+		/** The Constant DEFAULT_DISPLAY_FONT. */
+		public static final Pref<GamaFont> DEFAULT_DISPLAY_FONT = GamaPreferences
+				.create("pref_display_default_font", "Default font to use in 'draw'",
+						() -> new GamaFont("Helvetica", Font.PLAIN, 12), IType.FONT, true)
+				.in(GamaPreferences.Displays.NAME, GamaPreferences.Displays.DRAWING);
 
 	}
 
