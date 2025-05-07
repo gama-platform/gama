@@ -866,7 +866,7 @@ public class LayeredDisplayData {
 	/**
 	 * @return the cameraLens
 	 */
-	public int getCameraLens() { return camera.getLens(); }
+	public double getCameraLens() { return camera.getLens(); }
 
 	/**
 	 * Gets the preset camera.

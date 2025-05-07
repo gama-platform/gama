@@ -103,7 +103,7 @@ public interface ICameraDefinition extends INamed {
 	 *
 	 * @return the lens
 	 */
-	Integer getLens();
+	Double getLens();
 
 	/**
 	 * Checks if is interacting.
@@ -144,7 +144,7 @@ public interface ICameraDefinition extends INamed {
 	 * @param cameraLens
 	 *            the new lens
 	 */
-	void setLens(Integer cameraLens);
+	void setLens(Double cameraLens);
 
 	/**
 	 * Sets the distance.

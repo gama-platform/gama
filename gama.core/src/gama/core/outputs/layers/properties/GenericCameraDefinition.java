@@ -24,7 +24,7 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	final GamaPoint initialLocation, initialTarget;
 
 	/** The lens. */
-	Integer lens = 45;
+	Double lens = 45.0;
 
 	/** The is interactive. */
 	Boolean isLocked = false;
@@ -79,7 +79,7 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	public GamaPoint getTarget() { return currentTarget; }
 
 	@Override
-	public Integer getLens() { return lens; }
+	public Double getLens() { return lens; }
 
 	@Override
 	public Boolean isLocked() { return isLocked; }
@@ -108,7 +108,7 @@ public class GenericCameraDefinition implements ICameraDefinition {
 	}
 
 	@Override
-	public void setLens(final Integer cameraLens) { lens = cameraLens; }
+	public void setLens(final Double cameraLens) { lens = cameraLens; }
 
 	@Override
 	public void reset() {
