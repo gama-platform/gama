@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Chart
+Bundle-SymbolicName: gama.ui.display.chart;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Require-Bundle: org.eclipse.swt,
+ org.eclipse.jface
+Automatic-Module-Name: gama.ui.display.chart
+Bundle-ClassPath: lib/jzy3d-core-2.2.1.jar,
+ lib/jzy3d-io-xls-2.2.1.jar,
+ lib/jzy3d-jdt-core-2.2.1.jar,
+ lib/jzy3d-native-jogl-core-2.2.1.jar,
+ lib/jzy3d-native-jogl-newt-2.2.1.jar,
+ lib/jzy3d-native-jogl-swt-2.2.1.jar,
+ .
+Bundle-RequiredExecutionEnvironment: JavaSE-21
