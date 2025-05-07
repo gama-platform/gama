@@ -1,109 +1,89 @@
-@echo off
-SETLOCAL EnableDelayedExpansion
+echo off
+cls
+setLocal EnableDelayedExpansion
+set inputFile=""
+set outputFile="" 
 
-:: Determine script directory
-SET "headlessPath=%~dp0"
+REM memory is defined in the ../Gama.ini file
+set "memory=-1m"
 
-:: Set paths for Windows
-SET "gamaIniPath=%headlessPath%..\Gama.ini"
-SET "pluginPath=%headlessPath%..\plugins"
+set workDir=.work%RANDOM%
+SETLOCAL enabledelayedexpansion
 
-:: Java detection
-SET "java=java"
-IF EXIST "%headlessPath%..\jdk" (
-    SET "java=%headlessPath%..\jdk\bin\java.exe"
-) ELSE (
-    FOR /f "tokens=2 delims==" %%a IN ('java -version 2^>^&1 ^| findstr "version"') DO SET "javaVersion=%%a"
-    SET "javaVersion=!javaVersion:"=!"
-    IF "!javaVersion:~2,2!" == "23" (
-        echo You should use Java 23 to run GAMA
-        echo Found you using version : !javaVersion!
-        exit /b 1
-    )
+
+:TOP
+
+IF (%1) == () GOTO NEXT_CODE
+	if %1 EQU -m ( 
+		set  comm=%1
+		set  next=%2
+		set memory=!next!
+		SHIFT
+		GOTO DECALE
+	)
+
+	set param=%param% %1
+	GOTO DECALE
+:DECALE
+SHIFT
+GOTO TOP
+
+:NEXT_CODE
+echo ******************************************************************
+echo * GAMA version 0.0.0-SNAPSHOT                                         *
+echo * http://gama-platform.org                                       *
+echo * (c) 2007-2024 UMI 209 UMMISCO IRD/SU and Partners              *
+echo ******************************************************************
+
+set FILENAME="..\plugins\"
+FOR /F %%e in ('dir /b %FILENAME%') do ( 
+ 	SET result=%%e
+	if "!result:~0,29!" == "org.eclipse.equinox.launcher_" (  
+		goto END
+	)
+)
+:END
+@echo !result!
+
+set "result=..\plugins\%result%"
+
+echo %result%
+echo %JAVA_HOME%
+
+REM We don't want to use the options before the `-server` options in the GAMA.ini file
+REM because they are not compatible with the headless mode
+
+set "ini_arguments="
+set "skip_until_line=-server"
+set "skipping=true"
+
+for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
+	set "line=%%a"
+
+	if !skipping!==true (
+		if !skip_until_line!==%%a (
+			set "skipping=false"
+			set "ini_arguments=!ini_arguments!!line! "
+		)
+	) else (
+		if "!line:~0,4!"=="-Xmx" ( 
+			if "!memory!"=="-1m" ( set "memory=!line:~4!" )
+		) else ( 
+			set "ini_arguments=!ini_arguments!!line! " 
+		)
+	)
 )
 
-:: Argument parsing
-SET memory=0
-SET userWorkspace=
-SET args=
+@echo Will run with these options:
+@echo %ini_arguments%
 
-:ParseArgs
-IF "%~1"=="" GOTO ArgsDone
-    IF "%~1"=="-m" (
-        SET "memory=%~2"
-        SHIFT
-        SHIFT
-        GOTO ParseArgs
-    )
-    IF "%~1"=="-ws" (
-        SET "userWorkspace=%~2"
-        SHIFT
-        SHIFT
-        GOTO ParseArgs
-    )
-    SET "args=!args! %1"
-    SHIFT
-    GOTO ParseArgs
-:ArgsDone
+@echo workDir = %workDir% 
+@echo memory = %memory% 
 
-:: Memory configuration
-SET "memorySetting="
-IF "%memory%"=="0" (
-    FOR /f "usebackq delims=" %%a IN (`findstr /c:"-Xmx" "%gamaIniPath%"`) DO SET "memorySetting=%%a"
-    IF "!memorySetting!"=="" SET "memorySetting=-Xmx4096m"
-) ELSE (
-    SET "memorySetting=-Xmx%memory%"
-)
-
-:: Determine workspace behavior
-SET "workspaceCreate=1"
-IF NOT "x%args%"=="x" (
-    echo.%args% | findstr /c:"-help" /c:"-version" /c:"-validate" /c:"-test" /c:"-xml" /c:"-batch" /c:"-write-xmi" /c:"-socket" >nul && SET "workspaceCreate=1"
-)
-
-:: Function to read ini arguments
-SET "ini_arguments="
-FOR /f "tokens=*" %%a IN ('findstr /n "-server" "%gamaIniPath%"') DO SET "start_line=%%a"
-SET "start_line=!start_line:~0,1!"
-SET "ini_args="
-FOR /f "skip=%start_line% tokens=*" %%a IN (%gamaIniPath%) DO SET "ini_args=!ini_args! %%a"
-
-:: Workspace setup
-SET "pathWorkspace=.workspace"
-
-IF "%userWorkspace%"=="" (
-    SET "workspaceRootPath=."
-    IF %workspaceCreate%==0 (
-        SET "workspaceRootPath=%args:~-1%"
-        IF NOT EXIST "%workspaceRootPath%" MD "%workspaceRootPath%"
-    )
-
-    SET /A count=0
-    FOR /f "tokens=*" %%a IN ('dir /b /ad "%workspaceRootPath%\.workspace*" 2^>nul') DO SET /A count+=1
-    SET /A count+=1
-    SET "pathWorkspace=%workspaceRootPath%\.workspace!count!"
-) ELSE (
-    SET "pathWorkspace=%userWorkspace%"
-)
-
-MD "%pathWorkspace%"
-
-:: Java command execution
-"%java%" -cp "%pluginPath%\org.eclipse.equinox.launcher*.jar;!ini_arguments!" ^
-    -Xms512m ^
-    %memorySetting% ^
-    org.eclipse.equinox.launcher.Main ^
-    -configuration "%headlessPath%configuration" ^
-    -application gama.headless.product ^
-    -data "%pathWorkspace%" ^
-    %args%
-
-IF ERRORLEVEL 1 (
-    echo Error in your command, here's the log:
-    TYPE "%pathWorkspace%\.metadata\.log"
-    exit /b 1
-) ELSE (
-    IF %workspaceCreate%==1 (
-        RD /s /q "%pathWorkspace%"
-    )
+if exist ..\jdk\ (
+	echo "JDK"
+	call ..\jdk\bin\java -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
+) else (
+	echo "JAVA_HOME"
+  	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param! 
 )
