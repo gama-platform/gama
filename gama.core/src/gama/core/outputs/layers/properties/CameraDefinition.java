@@ -49,7 +49,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	final Attribute<Double> initialDistanceAttribute;
 
 	/** The lens. */
-	Attribute<Integer> lens;
+	Attribute<Double> lens;
 
 	/** The interaction. */
 	Attribute<Boolean> locked;
@@ -66,7 +66,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 		initialLocationAttribute = locationAttribute = create(IKeyword.LOCATION, Types.NO_TYPE, null);
 		initialTargetAttribute = targetAttribute = create(IKeyword.TARGET, Types.POINT, null);
 		initialDistanceAttribute = distanceAttribute = create("distance", Types.FLOAT, null);
-		lens = create("lens", Types.INT, 45);
+		lens = create("lens", Types.FLOAT, 45.0);
 		locked = create("locked", Types.BOOL, false);
 	}
 
@@ -170,13 +170,13 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 *            the new lens
 	 */
 	@Override
-	public void setLens(final Integer lens) { this.lens = new ConstantAttribute<>(lens == null ? 45 : lens); }
+	public void setLens(final Double lens) { this.lens = new ConstantAttribute<>(lens == null ? 45.0 : lens); }
 
 	@Override
 	public GamaPoint getTarget() { return current.getTarget(); }
 
 	@Override
-	public Integer getLens() { return lens.get(); }
+	public Double getLens() { return lens.get(); }
 
 	@Override
 	public Boolean isLocked() { return locked.get(); }
