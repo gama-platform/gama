@@ -961,7 +961,9 @@ public class GamaPreferences {
 						.in(NAME, CATEGORY).onChange(v -> {
 							try {
 								ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-							} catch (CoreException e) {}
+							} catch (
+										/** The e. */
+							CoreException e) {}
 						}).hidden();
 
 		/** The Constant AT_DISTANCE_OPTIMIZATION. */
@@ -1089,7 +1091,7 @@ public class GamaPreferences {
 		getStore().register(gp);
 		// Adds the preferences to the platform species if it is already created
 		final var spec = GamaMetaModel.getPlatformSpeciesDescription();
-		if (spec != null && !spec.hasAttribute(key)) {
+		if (spec != null && !spec.hasAttribute(key) && gp.inGaml()) {
 			spec.addPref(key, gp);
 			// spec.validate();
 		}
@@ -1218,29 +1220,32 @@ public class GamaPreferences {
 
 	// To force preferences to load
 
+	/** The inter. */
+	static Interface inter = new Interface();
+
+	/** The theme. */
+	static Theme theme = new Theme();
+
+	/** The modeling. */
+	static Modeling modeling = new Modeling();
+
+	/** The runtime. */
+	static Runtime runtime = new Runtime();
+
+	/** The displays. */
+	static Displays displays = new Displays();
+
+	/** The network. */
+	static Network network = new Network();
+
+	/** The external. */
+	static External external = new External();
+
+	/** The exp. */
+	static Experimental exp = new Experimental();
+
 	/** The order of preferences. */
 	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
 			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);
-	//
-	// /** The i. */
-	// static Interface i_ = new Interface();
-	//
-	// /** The m. */
-	// static Modeling m_ = new Modeling();
-	//
-	// /** The r. */
-	// static Runtime r_ = new Runtime();
-	//
-	// /** The s. */
-	// static Simulations s_ = new Simulations();
-	//
-	// /** The d. */
-	// static Displays d_ = new Displays();
-	//
-	// /** The ext. */
-	// static External ext_ = new External();
-	//
-	// /** The exp. */
-	// static Experimental exp_ = new Experimental();
 
 }
