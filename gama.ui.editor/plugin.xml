@@ -808,6 +808,11 @@
           <viewShortcut
                 id="gama.ui.application.view.outline">
           </viewShortcut>
+          <view
+                id="gama.ui.display.chart"
+                minimized="false"
+                relationship="stack">
+          </view>
        </perspectiveExtension>
     </extension>
     <extension

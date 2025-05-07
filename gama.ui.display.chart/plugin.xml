@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension point="gaml.extension">
+    <extension
+          point="org.eclipse.ui.views">
+       <view
+             allowMultiple="true"
+             category="gama.ui.category.gama"
+             class="gama.ui.display.chart.Trial"
+             icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.display.png"
+             id="gama.ui.display.chart"
+             name="Jzy3D"
+             restorable="false">
+       </view>
     </extension>
+    <extension
+          point="gama.draw">
+       <implementation
+             class="gama.ui.display.chart.TrialDraw">
+       </implementation>
+    </extension>    
 </plugin>
