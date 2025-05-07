@@ -561,6 +561,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	public void createToolItems(final GamaToolbar2 tb) {
 		toolbar = tb;
+		if (view.getOutput() == null) return;
 		tb.setBackgroundColor(GamaColors.get(view.getOutput().getData().getToolbarColor()).color());
 		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
 		tb.button(takeSnapshot, SWT.RIGHT);
