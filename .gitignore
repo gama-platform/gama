@@ -26,3 +26,4 @@ release/
 gama.dependencies/lib/
 .__*
 /*/.tycho-consumer-pom.xml
+**/org.eclipse.jdt.core.prefs

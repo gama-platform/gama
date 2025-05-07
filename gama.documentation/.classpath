@@ -8,5 +8,7 @@
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="libs/jdom-2.0.1.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gama.annotations"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="libs/"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
