@@ -110,6 +110,11 @@ public class Constants {
 	public final static String XSL_XML2PRISM_FOLDER =
 			INPUT_FOLDER + File.separator + "xsl" + File.separator + "xml2prism";
 
+	/** The Constant XSL_XML2LLM_FOLDER. */
+	public final static String XSL_XML2LLM_FOLDER =
+			INPUT_FOLDER + File.separator + "xsl" + File.separator + "xml2docLLM";
+	
+	
 	/** The Constant DOCGAMA_FILE. */
 	public final static String DOCGAMA_FILE = "target" + File.separator + "docGAMA.xml";
 
