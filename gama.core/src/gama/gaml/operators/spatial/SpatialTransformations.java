@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialTransformations.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import java.util.ArrayList;
@@ -140,8 +150,12 @@ public class SpatialTransformations {
 							value = "shape * {0.5,0.5,2}",
 							equals = "a geometry corresponding to the geometry of the agent applying the operator scaled by a coefficient of 0.5 in x, 0.5 in y and 2 in z",
 							test = false) }) })
-	@test ("geometry g <- cube (2);" + "float v1 <- g.area * g.height; " + "g <- g * {5, 5, 5};"
-			+ "float v2 <- g.area * g.height;  " + "v1 < v2")
+	@test ("""
+			geometry g <- cube (2);\
+			float v1 <- g.area * g.height; \
+			g <- g * {5, 5, 5};\
+			float v2 <- g.area * g.height;  \
+			v1 < v2""")
 	public static IShape scaled_by(final IScope scope, final IShape g, final GamaPoint coefficients) {
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(coefficients), false);
 	}
@@ -167,12 +181,15 @@ public class SpatialTransformations {
 					value = "shape scaled_to {10,10}",
 					equals = "a geometry corresponding to the geometry of the agent applying the operator scaled so that it fits a square of 10x10",
 					test = false) })
-	@test ("geometry g <- cube (2);" + "float v1 <- g.area * g.height; " + "g <- g scaled_to {20,20};"
-			+ "float v2 <- g.area * g.height;  " + "v1 < v2")
+	@test ("""
+			geometry g <- cube (2);\
+			float v1 <- g.area * g.height; \
+			g <- g scaled_to {20,20};\
+			float v2 <- g.area * g.height;  \
+			v1 < v2""")
 	public static IShape scaled_to(final IScope scope, final IShape g, final GamaPoint bounds) {
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(bounds), true);
 	}
-
 
 	/**
 	 * Enlarged by.
@@ -439,6 +456,9 @@ public class SpatialTransformations {
 	 */
 	@operator (
 			value = "normalized_rotation",
+			content_type = IType.POINT,
+			index_type = IType.FLOAT,
+			type = IType.PAIR,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
@@ -472,6 +492,9 @@ public class SpatialTransformations {
 	 */
 	@operator (
 			value = "rotation_composition",
+			content_type = IType.POINT,
+			index_type = IType.FLOAT,
+			type = IType.PAIR,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
@@ -626,8 +649,8 @@ public class SpatialTransformations {
 
 	/**
 	 * @throws GamaRuntimeException
-	 *             Apply a affinite operation (of a given coefficient and angle)to the agent geometry. Angle is
-	 *             given by the point.x ; Coefficient by the point.y
+	 *             Apply a affinite operation (of a given coefficient and angle)to the agent geometry. Angle is given by
+	 *             the point.x ; Coefficient by the point.y
 	 *
 	 * @param args
 	 *            : coefficient --: double; angle --: double, rad
@@ -749,8 +772,7 @@ public class SpatialTransformations {
 			for (int i = 0; i < mp.getNumGeometries(); i++) {
 				final Polygon p = (Polygon) mp.getGeometryN(i);
 				polys[i] = GeometryUtils.GEOMETRY_FACTORY.createPolygon(
-						GeometryUtils.GEOMETRY_FACTORY.createLinearRing(p.getExteriorRing().getCoordinates()),
-						null);
+						GeometryUtils.GEOMETRY_FACTORY.createLinearRing(p.getExteriorRing().getCoordinates()), null);
 			}
 			result = GeometryUtils.GEOMETRY_FACTORY.createMultiPolygon(polys);
 		}
@@ -781,8 +803,8 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance) {
-		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(),
-				triangulationTolerance, clippingTolerance, false);
+		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(), triangulationTolerance,
+				clippingTolerance, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
@@ -814,8 +836,8 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance, final boolean approxiClipping) {
-		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(),
-				triangulationTolerance, clippingTolerance, approxiClipping);
+		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(), triangulationTolerance,
+				clippingTolerance, approxiClipping);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
@@ -904,7 +926,6 @@ public class SpatialTransformations {
 		return GeometryUtils.triangulation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
 	}
 
-	
 	/**
 	 * Triangulate.
 	 *
@@ -960,8 +981,18 @@ public class SpatialTransformations {
 		if (gs == null || gs.isEmpty()) return null;
 		return GeometryUtils.triangulation(scope, gs, 0.0);
 	}
-	
-	
+
+	/**
+	 * Triangulate.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param gs
+	 *            the gs
+	 * @param tol
+	 *            the tol
+	 * @return the i list
+	 */
 	@operator (
 			value = { "triangulate", "to_triangles" },
 			content_type = IType.GEOMETRY,
@@ -979,7 +1010,6 @@ public class SpatialTransformations {
 		if (gs == null || gs.isEmpty()) return null;
 		return GeometryUtils.triangulation(scope, gs, tol);
 	}
-
 
 	/**
 	 * Triangulate.
@@ -1010,8 +1040,7 @@ public class SpatialTransformations {
 	public static IList<IShape> triangulate(final IScope scope, final IShape g, final Double clipTolerance,
 			final Double triangulationTolerance) {
 		if (g == null) return null;
-		return GeometryUtils.triangulation(scope, g.getInnerGeometry(), triangulationTolerance, clipTolerance,
-				false);
+		return GeometryUtils.triangulation(scope, g.getInnerGeometry(), triangulationTolerance, clipTolerance, false);
 	}
 
 	/**
@@ -1292,8 +1321,8 @@ public class SpatialTransformations {
 					equals = "the list of rectangles corresponding to the discretization by a grid of 5 columns and 20 rows into rectangles of the geometry of the agent applying the operator. The rectangles overlapping the border of the geometry are kept",
 					test = false) })
 	@no_test
-	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols,
-			final int nbRows, final boolean overlaps) {
+	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols, final int nbRows,
+			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
 		final Envelope3D envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
@@ -1489,8 +1518,7 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "as_4_grid", "as_hexagonal_grid" })
 	@no_test
-	public static IMatrix as_grid(final IScope scope, final IShape g, final GamaPoint dim)
-			throws GamaRuntimeException {
+	public static IMatrix as_grid(final IScope scope, final IShape g, final GamaPoint dim) throws GamaRuntimeException {
 		// cols, rows
 		return new GamaSpatialMatrix(scope, g, (int) dim.x, (int) dim.y, false, false, false, false, "");
 	}
@@ -1615,8 +1643,7 @@ public class SpatialTransformations {
 			} else {
 				comp = (o1, o2) -> Double.compare(o1.getLocation().getY(), o2.getLocation().getY());
 			}
-			ArrayList<IShape> listSq =
-					new ArrayList(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
+			ArrayList<IShape> listSq = new ArrayList(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
 			final Double sum = (Double) Containers.sum(scope, rates);
 			final int totalNumber = listSq.size();
 			for (final Double rate : rates) {
@@ -1801,8 +1828,8 @@ public class SpatialTransformations {
 	public static IShape clean(final IScope scope, final IShape g) {
 
 		if (g == null || g.getInnerGeometry() == null) return g;
-		if (g.getInnerGeometry() instanceof Polygon) return GamaShapeFactory
-				.createFrom(GeometryUtils.cleanGeometry(g.getInnerGeometry())).withAttributesOf(g);
+		if (g.getInnerGeometry() instanceof Polygon)
+			return GamaShapeFactory.createFrom(GeometryUtils.cleanGeometry(g.getInnerGeometry())).withAttributesOf(g);
 		if (g.getInnerGeometry() instanceof MultiPolygon) {
 			final MultiPolygon mp = (MultiPolygon) g.getInnerGeometry();
 			final int nb = mp.getNumGeometries();
@@ -1835,10 +1862,11 @@ public class SpatialTransformations {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
-			value = "A list of polylines corresponding to the cleaning of the first operand (list of polyline geometry or agents), considering the tolerance distance given "
-					+ "by the second operand; the third operator is used to define if the operator should as well split the lines at their intersections(true to split the lines); the last operand"
-					+ "is used to specify if the operator should as well keep only the main connected component of the network. "
-					+ "Usage: clean_network(lines:list of geometries or agents, tolerance: float, split_lines: bool, keepMainConnectedComponent: bool)",
+			value = """
+					A list of polylines corresponding to the cleaning of the first operand (list of polyline geometry or agents), considering the tolerance distance given \
+					by the second operand; the third operator is used to define if the operator should as well split the lines at their intersections(true to split the lines); the last operand\
+					is used to specify if the operator should as well keep only the main connected component of the network. \
+					Usage: clean_network(lines:list of geometries or agents, tolerance: float, split_lines: bool, keepMainConnectedComponent: bool)""",
 			comment = "The cleaned set of polylines",
 			examples = { @example (
 					value = "clean_network(my_road_shapefile.contents, 1.0, true, false)",
@@ -1889,8 +1917,8 @@ public class SpatialTransformations {
 
 		if (splitlines) {
 			results = SpatialTransformations.split_lines(scope, results, true);
-			results.removeIf(a -> !a.getInnerGeometry().isValid() || a.getInnerGeometry().isEmpty()
-					|| a.getPerimeter() == 0);
+			results.removeIf(
+					a -> !a.getInnerGeometry().isValid() || a.getInnerGeometry().isEmpty() || a.getPerimeter() == 0);
 		}
 		if (keepMainGraph) {
 			IGraph graph = Graphs.spatialFromEdges(scope, results);
@@ -1919,8 +1947,8 @@ public class SpatialTransformations {
 	 *            the tolerance
 	 * @return true, if successful
 	 */
-	private static boolean connectLine(final IScope scope, final GamaPoint pt, final IShape shape,
-			final boolean first, final IList<IShape> geoms, final IList<IShape> results, final double tolerance) {
+	private static boolean connectLine(final IScope scope, final GamaPoint pt, final IShape shape, final boolean first,
+			final IList<IShape> geoms, final IList<IShape> results, final double tolerance) {
 		final IList<IShape> tot = geoms.copy(scope);
 		tot.addAll(results);
 		tot.remove(shape);
@@ -1969,8 +1997,7 @@ public class SpatialTransformations {
 	 * if (first) {g <- line([pt] + (g.points - first(g.points)));} else {g <- line((g.points - last(g.points)) +
 	 * [pt]);} return g;
 	 */
-	private static void modifyPoint(final IScope scope, final IShape shape, final GamaPoint pt,
-			final boolean first) {
+	private static void modifyPoint(final IScope scope, final IShape shape, final GamaPoint pt, final boolean first) {
 		if (first) {
 			shape.getInnerGeometry().getCoordinates()[0] = pt;
 		} else {
