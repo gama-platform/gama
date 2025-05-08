@@ -49,6 +49,7 @@ import gama.core.metamodel.agent.AgentReference;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.ExecutionResult;
 import gama.core.runtime.GAMA;
+import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.ISocketCommand.CommandException;
@@ -89,6 +90,12 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
+		if (!GAMA.isInHeadLessMode()
+				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY
+			) {
+				return new CommandResponse(MessageType.UnableToExecuteRequest, "Unable to start new experiment, another one is loading", map, false);
+		}
+
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
 		if (modelPath == null || experiment == null) return new CommandResponse(MalformedRequest,
