@@ -10,9 +10,15 @@ model switchmatch
  
 global {
 	string my_play; // parameter:true init:"ROCK" among:RPS;
-	file my_image;
-	file bot_image;
+
 	
+	image paper <- image("img/paper.png");
+	image rock <- image("img/rock.png");
+	image scissor <- image("img/scissors.png");
+	
+	image my_image <- paper;
+	image bot_image <- paper;
+
 	string the_result;
 	
 	int win_sign;
@@ -39,8 +45,8 @@ global {
 				win_sign <- 0;
 			} 
 		}
-		bot_image <- file(rps_image(first(rps_bot).bp));
-		my_image <- file(rps_image(my_play));
+		bot_image <- (rps_image(first(rps_bot).bp));
+		my_image <- (rps_image(my_play));
 		write rps_result(win_sign);
 	}
 	
@@ -62,16 +68,16 @@ global {
 		}
 	}
 	
-	string rps_image(string play) {
+	image rps_image(string play) {
 		switch play {
 			match "ROCK" {
-				return "img/rock.png";
+				return rock;
 			}
 			match "PAPER" {
-				return "img/paper.png";
+				return paper;
 			}
 			match "SCISSORS" {
-				return "img/scissors.png";
+				return scissor;
 			}
 		}
 	}
