@@ -142,18 +142,8 @@ public class ObjFileDrawer {
 				vertex.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
 				gl.drawVertex(vertex, hasNormal ? normal : null, hasTex ? tex : null);
 			}
-
-			//// Quad End Footer /////
 			gl.endDrawing();
 		}
-
-		if (texture != null) {
-			gl.disableTextures();
-			texture.destroy(gl.getGL());
-			texture = null;
-		}
-		// gl.glEndList();
-
 	}
 
 }
