@@ -12,8 +12,8 @@ package gama.core.runtime.server;
 
 import static gama.core.runtime.server.ISocketCommand.ARGS;
 import static gama.core.runtime.server.ISocketCommand.ESCAPED;
-import static gama.core.runtime.server.ISocketCommand.EVALUATE;
 import static gama.core.runtime.server.ISocketCommand.EXPR;
+import static gama.core.runtime.server.ISocketCommand.EXPRESSION;
 import static gama.core.runtime.server.ISocketCommand.NB_STEP;
 import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
@@ -307,7 +307,7 @@ public class DefaultServerCommands {
 		}
 		final Object expr = map.get(EXPR);
 		if (expr == null) return new CommandResponse(MalformedRequest,
-				"For " + EVALUATE + ", mandatory parameter is: " + EXPR, map, false);
+				"For " + EXPRESSION + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		String res = null;
 		ITopLevelAgent agent = plan.getAgent();
@@ -318,7 +318,7 @@ public class DefaultServerCommands {
 		} else {
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
-				if (expression != null) { res = "" + scope.evaluate(expression, agent).getValue(); }
+				if (expression != null) { res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString(); }
 			} catch (final Exception e) {
 				// error = true;
 				res = "> Error: " + e.getMessage();
