@@ -137,7 +137,7 @@ experiment "Test it !" type: gui {
 			}
 			species wall refresh: false {draw shape color: #cadetblue;}
 			species ball {
-				draw shape texture: image_file("../images/ball.jpg") rotate: rotation color: #darkseagreen;
+				draw shape texture: image_file("../images/ball.jpg") rotate: float(rotation.key) color: #darkseagreen;
 			}
 
 			event "mouse_down" {

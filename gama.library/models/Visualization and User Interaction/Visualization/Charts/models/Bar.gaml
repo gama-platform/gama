@@ -5,7 +5,7 @@
 * Tags: gui, chart
 */
 
-model bars
+model bars 
 
 global
 {

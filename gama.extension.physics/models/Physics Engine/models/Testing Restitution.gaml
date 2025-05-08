@@ -156,7 +156,7 @@ experiment "Test Restitution !" type: gui {
 				}
 			}
 			species wall refresh: false {draw shape color: #cadetblue;}
-			species ball {draw shape texture: image_file("../images/ball.jpg") rotate: rotation color: #darkseagreen;}
+			species ball {draw shape texture: image_file("../images/ball.jpg") rotate: float(rotation.key) color: #darkseagreen;}
 			event "mouse_down" {
 				point target <- #user_location;
 				float divisor <- distance_to(target, ball[0].location);

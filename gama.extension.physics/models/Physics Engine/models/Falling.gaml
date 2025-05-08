@@ -52,7 +52,7 @@ species ball skills: [dynamic_body] {
 	}
 
 	aspect default {
-		draw shape color: color rotate: rotation;
+		draw shape color: color rotate: float(rotation.key);
 		// We can also draw the bounding box of the agent in the physical world
 //	draw aabb color: #black wireframe: true;
 	}

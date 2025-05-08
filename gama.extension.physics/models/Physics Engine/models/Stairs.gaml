@@ -77,7 +77,7 @@ species ball skills: [dynamic_body] {
 	}
 
 	aspect default {
-		draw shape rotate: (rotation) texture: "../images/" + textures[type] + ".jpg";
+		draw shape rotate: float(rotation.key) texture: "../images/" + textures[type] + ".jpg";
 		//draw aabb wireframe: true color: #blue;
 	}
 
