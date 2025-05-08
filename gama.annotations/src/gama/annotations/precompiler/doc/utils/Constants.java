@@ -46,7 +46,7 @@ public class Constants {
 
 	/** The Constant WIKI_FOLDER. */
 	public final static String WIKI_FOLDER = SRC_FOLDER + File.separator + ".." + File.separator + ".." + File.separator
-			+ ".." + File.separator + "gama.wiki";
+			+ ".." + File.separator + "gama.wiki" + File.separator + "gama.wiki";
 	// public static String WIKI_FOLDER = "C:/git/gama.wiki";
 
 	/** The Constant WIKI_FOLDER_EXT. */

@@ -251,6 +251,7 @@ Note that due to the fact that actions are written by modelers, the general func
 
 
 **See also:** <xsl:for-each select="documentation/seeAlso/see">
+    <xsl:sort select="@id" />
   	<xsl:variable name="idOpSee" select="@id"/>
    <xsl:text>[</xsl:text><xsl:value-of select="@id"/><xsl:text>](</xsl:text><xsl:choose><xsl:when test="/doc/operators/operator[@id = $idOpSee]/@alphabetOrder = $aa"><xsl:value-of select="$fileAA"/></xsl:when><xsl:when test="/doc/operators/operator[@id = $idOpSee]/@alphabetOrder = $bc"><xsl:value-of select="$fileBC"/></xsl:when><xsl:when test="/doc/operators/operator[@id = $idOpSee]/@alphabetOrder = $dh"><xsl:value-of select="$fileDH"/></xsl:when><xsl:when test="/doc/operators/operator[@id = $idOpSee]/@alphabetOrder = $im"><xsl:value-of select="$fileIM"/></xsl:when><xsl:when test="/doc/operators/operator[@id = $idOpSee]/@alphabetOrder = $nr"><xsl:value-of select="$fileNR"/></xsl:when><xsl:otherwise><xsl:value-of select="$fileSZ"/></xsl:otherwise></xsl:choose><xsl:text>#</xsl:text><xsl:value-of select="translate(@id, $uppercase, $smallcase)"/><xsl:text>), </xsl:text> </xsl:for-each>
   </xsl:if>

@@ -61,7 +61,7 @@ public class MainGenerateWiki {
 					Constants.PRISM_GEN_FOLDER + File.separator + "prism-gaml.js");	
 			System.out.println("DONE\n");
 			
-			System.out.print("GENERATION of latex file.....");			
+			System.out.print("GENERATION of latex style file  ....");			
 			GamaStyleGeneration.generateGamaStyle();
 			System.out.println("DONE\n");
 
