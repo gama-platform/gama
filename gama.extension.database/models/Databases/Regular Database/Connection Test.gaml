@@ -13,11 +13,15 @@ global {
 	// Note that the postgis extension needs to be installed in the postgres database.
 	// Enable the postGIS extension in the database with: CREATE EXTENSION postgis;
 	// https://postgis.net/install/
-	map<string, string> POSTGRES <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'postgres', 'port'::'5432', 'user'::'postgres', 'passwd'::''];
+	map<string, string> POSTGRES <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'benoitgaudou', 'port'::'5434', 'user'::'postgres', 'passwd'::''];
 	
 	init {
 		
 		write "This model will work only if the corresponding database is installed and the database management server launched." color: #red;
+
+		write "Note that the postgis extension needs to be installed in the postgres database." color: #orange;
+		write " Enable the postGIS extension in the database with: CREATE EXTENSION postgis;" color: #orange;
+
 
 		write "TESTS CONNECTIONS WITH SQLSKILL";
 		create DB_connection_tester;

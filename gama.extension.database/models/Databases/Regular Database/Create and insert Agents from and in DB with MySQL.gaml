@@ -44,12 +44,12 @@ global {
 	}
 
 	reflex endSimu when: (cycle = 10) {
-		ask DB_accessor {
-			write "Data: " + (select(PARAMS, "select * FROM " + res_DB + ";"));
-			do executeUpdate params: PARAMS updateComm: "DROP TABLE " + res_DB + ";";
-		}
-
-		write "DROP the table = " + res_DB;
+//		ask DB_accessor {
+//			write "Data: " + (select(PARAMS, "select * FROM " + res_DB + ";"));
+//			do executeUpdate params: PARAMS updateComm: "DROP TABLE " + res_DB + ";";
+//		}
+//
+//		write "DROP the table = " + res_DB;
 		do pause; 
 	}
 
