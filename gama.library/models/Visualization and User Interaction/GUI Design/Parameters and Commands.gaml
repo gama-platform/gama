@@ -62,6 +62,11 @@ experiment "Show Parameters" type: gui {
 	text "This is a text in a different font, in italic and a size of 12" category: "Explanation" color: #orange font: font("Times New Roman",16,#italic); 
 	text "Texts are justified on both sides by default. There is no possiblity so far to specify a left, right or no justification" category: "Explanation" color: #lightgray background: #black font: font("Courier New",12); 
 	text "This bold light green text \rspans over \r3 lines." category: "Explanation" color: #lightgreen background: #black font: font("Helvetica",12,#bold); 
+
+	text "There is now the possibility to insert some formatting elements and hyperlinks in texts. They need to have their facet `format` set to `true` to enable this. For instance: 
+					<li>Goto https://gama-platform.org</li>
+					<li>Or goto <a href=\"https://gama-platform.org\">GAMA</a></li>" category: "Explanation" background: #lightgray font: font("Helvetica",12,#italic) format: true; 
+
 	
 	// Category: Various types	
 	//////////////////////////////////////////////

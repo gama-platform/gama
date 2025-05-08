@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WriteStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TextStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,13 +14,13 @@ import static gama.core.common.interfaces.IKeyword.FONT;
 
 import java.awt.Color;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -62,24 +62,52 @@ import gama.gaml.types.IType;
 						name = FONT,
 						type = { IType.FONT, IType.STRING },
 						optional = true,
-						doc = @doc ("the font used to draw the text, which can be built with the operator \"font\". ex : font:font(\"Helvetica\", 20 , #bold)")),
+						doc = @doc ("The font used to draw the text, which can be built with the operator \"font\". ex : font:font(\"Helvetica\", 20 , #bold).")),
 				@facet (
 						name = IKeyword.CATEGORY,
 						type = IType.LABEL,
 						optional = true,
-						doc = @doc ("a category label, used to group parameters in the interface")),
+						doc = @doc ("A category label, used to group parameters in the interface")),
+				@facet (
+						name = IKeyword.FORMAT,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Whether or not to interpret the text as formatted using XML / hyperlinks.")),
 				@facet (
 						name = IKeyword.MESSAGE,
 						type = IType.NONE,
 						optional = false,
-						doc = @doc ("the text to display.")), },
+						doc = @doc ("""
+								The text to display.
+								If `format` is false or not specified, the font, color, and background are controlled by the respective facets.
+								If `format` is true, the text will instead be interpreted as a text with a few XML tags and hyperlinks that will be automatically detected. When configured to use formatting XML, it requires any ampersand (&) characters in the text to be replaced by the entity &amp;. The following tags can be used:\r
+								\r
+								p - for defining paragraphs. The following attributes are allowed:\r
+									vspace - if set to 'false', no vertical space will be added (default is 'true')\r
+								li - for defining list items. The following attributes are allowed:\r
+									vspace - the same as with the p tag\r
+									indent - the number of pixels to indent the text in the list item\r
+									bindent - the number of pixels to indent the bullet itself\r
+								Text in paragraphs and list items will be wrapped according to the width of the control. The following tags can appear as children of either p or li elements:\r
+								\r
+								a - to render a hyperlink. Element accepts attribute 'href'. The element also accepts 'nowrap' attribute (default is false). When set to 'true', the hyperlink will not be wrapped. Hyperlinks automatically created when 'http://' is encountered in text are not wrapped.\r
+								br - forced line break (no attributes).\r
+								\r
+								""")), },
 		omissible = IKeyword.MESSAGE)
 @doc (
 		value = "The statement makes an experiment display text in the parameters view.")
 public class TextStatement extends AbstractStatement implements IExperimentDisplayable {
 
+	/**
+	 * Instantiates a new text statement.
+	 *
+	 * @param desc
+	 *            the desc
+	 */
 	public TextStatement(final IDescription desc) {
 		super(desc);
+		format = getFacet(IKeyword.FORMAT);
 		message = getFacet(IKeyword.MESSAGE);
 		color = getFacet(IKeyword.COLOR);
 		category = getFacet(IKeyword.CATEGORY);
@@ -91,17 +119,43 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	final IExpression message;
 
 	/** The color. */
-	final IExpression color, category, font, background;
+	final IExpression color, category, font, background, format;
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		return null;
 	}
 
+	/**
+	 * Gets the text.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the text
+	 */
 	public String getText(final IScope scope) {
 		return Cast.asString(scope, message.value(scope));
 	}
 
+	/**
+	 * Checks if is xml.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return true, if is xml
+	 */
+	public boolean isXML(final IScope scope) {
+		if (format == null) return false;
+		return Cast.asBool(scope, format.value(scope));
+	}
+
+	/**
+	 * Gets the font.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the font
+	 */
 	public GamaFont getFont(final IScope scope) {
 		if (font == null) return null;
 		return GamaFontType.staticCast(scope, font.value(scope), false);
@@ -114,6 +168,13 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 		return rgb;
 	}
 
+	/**
+	 * Gets the background.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the background
+	 */
 	public Color getBackground(final IScope scope) {
 		GamaColor rgb = null;
 		if (background != null) { rgb = Cast.asColor(scope, background.value(scope)); }

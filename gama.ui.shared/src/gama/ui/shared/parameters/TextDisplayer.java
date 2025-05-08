@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * TextDisplayer.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * TextDisplayer.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,10 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Layout;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.events.IHyperlinkListener;
+import org.eclipse.ui.forms.widgets.FormText;
 
 import gama.core.kernel.experiment.InputParameter;
 import gama.core.kernel.experiment.TextStatement;
@@ -26,12 +30,16 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaFont;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class TextDisplayer.
  */
 public class TextDisplayer extends AbstractEditor<TextStatement> {
+
+	/** The text. */
+	FormText form;
 
 	/** The text. */
 	StyledText text;
@@ -45,6 +53,9 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	/** The font. */
 	final Font font;
 
+	/** The is XML. */
+	final boolean isXML;
+
 	/**
 	 * Instantiates a new command editor.
 	 *
@@ -57,6 +68,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	 */
 	public TextDisplayer(final IScope scope, final TextStatement command) {
 		super(scope.getAgent(), new InputParameter(command.getName(), null), null);
+		isXML = command.isXML(scope);
 		statement = command;
 		java.awt.Color c = command.getColor(scope);
 		java.awt.Color b = command.getBackground(scope);
@@ -91,23 +103,53 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		data.minimumWidth = 100;
 		data.horizontalSpan = 3;
 		composite.setLayoutData(data);
-		final var layout = new FillLayout();
+		// Layout layout = isXML ? new FormLayout() : new FillLayout();
+		Layout layout = new FillLayout();
 		composite.setLayout(layout);
 		return composite;
 	}
 
 	@Override
 	protected Control createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+		if (isXML) {
+			form = new FormText(composite, SWT.NONE);
+			form.setFont(font);
+			form.marginHeight = 4;
+			form.marginWidth = 4;
+			form.setText("<form>" + statement.getText(getScope()) + "</form>", true, true);
+			if (back != null) {
+				if (front != null) {
+					GamaColors.setBackAndForeground(back, front, form);
+				} else {
+					GamaColors.setBackground(back, form);
+				}
+			} else if (front != null) { GamaColors.setForeground(front, form); }
+
+			form.addHyperlinkListener(new IHyperlinkListener() {
+
+				@Override
+				public void linkExited(final HyperlinkEvent e) {}
+
+				@Override
+				public void linkEntered(final HyperlinkEvent e) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void linkActivated(final HyperlinkEvent e) {
+					WebHelper.openPage(e.getHref().toString());
+				}
+			});
+
+			// form.setLayoutData(new FormData());
+			form.requestLayout();
+			composite.requestLayout();
+			return form;
+		}
 		text = new StyledText(composite, SWT.WRAP | SWT.READ_ONLY);
 		text.setJustify(true);
 		text.setMargins(4, 4, 4, 4);
-		if (back != null) {
-			if (front != null) {
-				GamaColors.setBackAndForeground(back, front, text);
-			} else {
-				GamaColors.setBackground(back, text);
-			}
-		} else if (front != null) { GamaColors.setForeground(front, text); }
 		text.setText(statement.getText(getScope()));
 		if (font != null) {
 			int a = text.getCharCount();
@@ -129,6 +171,13 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 			sr[0].background = back;
 			text.replaceStyleRanges(sr[0].start, sr[0].length, sr);
 		}
+		if (back != null) {
+			if (front != null) {
+				GamaColors.setBackAndForeground(back, front, text);
+			} else {
+				GamaColors.setBackground(back, text);
+			}
+		} else if (front != null) { GamaColors.setForeground(front, text); }
 		composite.requestLayout();
 		return text;
 
@@ -152,5 +201,8 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	protected void displayParameterValue() {
 
 	}
+
+	// @Override
+	// protected Object getEditorControlGridData() { return isXML ? new FormData() : super.getEditorControlGridData(); }
 
 }
