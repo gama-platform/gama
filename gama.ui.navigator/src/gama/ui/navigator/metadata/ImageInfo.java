@@ -1,9 +1,21 @@
+/*******************************************************************************************************
+ *
+ * ImageInfo.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.ui.navigator.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import gama.core.util.file.GamaFileMetaData;
+import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Strings;
 
 /**
@@ -52,8 +64,8 @@ public class ImageInfo extends GamaFileMetaData {
 	 * @param origHeight
 	 *            the orig height
 	 */
-	public ImageInfo(final long modificationStamp, /* final Object thumbnail, */final int origType,
-			final int origWidth, final int origHeight) {
+	public ImageInfo(final long modificationStamp, /* final Object thumbnail, */final int origType, final int origWidth,
+			final int origHeight) {
 		super(modificationStamp);
 		this.type = origType;
 		this.width = origWidth;
@@ -94,11 +106,11 @@ public class ImageInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public String getDocumentation() {
-		final StringBuilder sb = new StringBuilder();
+	public Doc getDocumentation() {
+		final RegularDoc sb = new RegularDoc();
 		sb.append(getShortLabel(type)).append(" Image File").append(Strings.LN);
 		sb.append("Dimensions: ").append(width + " pixels x " + height + " pixels").append(Strings.LN);
-		return sb.toString();
+		return sb;
 	}
 
 	/**

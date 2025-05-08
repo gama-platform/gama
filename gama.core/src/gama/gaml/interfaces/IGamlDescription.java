@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IGamlDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,6 +12,7 @@ package gama.gaml.interfaces;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import gama.annotations.precompiler.GamlProperties;
 
@@ -56,6 +57,17 @@ public interface IGamlDescription extends INamed {
 		 *            the string
 		 */
 		default Doc append(final String string) {
+			return this;
+		}
+
+		/**
+		 * Append.
+		 *
+		 * @param string
+		 *            the string
+		 * @return the doc
+		 */
+		default Doc append(final Character string) {
 			return this;
 		}
 
@@ -124,6 +136,19 @@ public interface IGamlDescription extends INamed {
 
 		@Override
 		public Doc append(final String string) {
+			builder.append(string);
+			return this;
+		}
+
+		/**
+		 * Append.
+		 *
+		 * @param string
+		 *            the string
+		 * @return the doc
+		 */
+		@Override
+		public Doc append(final Character string) {
 			builder.append(string);
 			return this;
 		}
@@ -218,5 +243,10 @@ public interface IGamlDescription extends INamed {
 	default void collectMetaInformation(final GamlProperties meta) {
 		meta.put(GamlProperties.PLUGINS, getDefiningPlugin());
 	}
+
+	/**
+	 * @return
+	 */
+	default Consumer<IGamlDescription> getContextualAction() { return null; }
 
 }

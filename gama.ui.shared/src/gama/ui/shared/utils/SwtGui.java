@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -338,7 +339,7 @@ public class SwtGui implements IGui {
 		WorkbenchHelper.run(() -> {
 			final GamaWizard wizard = new GamaWizard(title, finish, wizardPages);
 			GamaWizardDialog wizardDialog = new GamaWizardDialog(WorkbenchHelper.getShell(), wizard);
-			
+
 			if (wizardDialog.open() == Window.OK) { result.putAll(wizardDialog.getValues()); }
 		});
 		return result;
@@ -698,6 +699,11 @@ public class SwtGui implements IGui {
 	public boolean isHiDPI() {
 		int zoom = WorkbenchHelper.run(() -> WorkbenchHelper.getDisplay().getPrimaryMonitor().getZoom());
 		return zoom > 100;
+	}
+
+	@Override
+	public void openFile(final URI uri) {
+		FileOpener.openFile(uri);
 	}
 
 }

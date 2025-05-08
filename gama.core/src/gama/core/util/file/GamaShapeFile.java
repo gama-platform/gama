@@ -54,6 +54,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -235,10 +237,10 @@ public class GamaShapeFile extends GamaGisFile {
 		}
 
 		@Override
-		public String getDocumentation() {
-			final StringBuilder sb = new StringBuilder();
+		public Doc getDocumentation() {
+			final RegularDoc sb = new RegularDoc();
 			sb.append("Shapefile").append(Strings.LN);
-			sb.append(itemNumber).append(" objects").append(Strings.LN);
+			sb.append(String.valueOf(itemNumber)).append(" objects").append(Strings.LN);
 			sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m").append(Strings.LN);
 			sb.append("Coordinate Reference System: ").append(crs == null ? "Unknown CRS" : crs.getName().getCode())
 					.append(Strings.LN);
@@ -246,7 +248,7 @@ public class GamaShapeFile extends GamaGisFile {
 				sb.append("Attributes: ").append(Strings.LN);
 				attributes.forEach((k, v) -> sb.append("<li>").append(k).append(" (" + v + ")").append("</li>"));
 			}
-			return sb.toString();
+			return sb;
 		}
 
 		/**

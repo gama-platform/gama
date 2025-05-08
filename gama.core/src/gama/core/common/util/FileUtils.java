@@ -38,7 +38,7 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.IModel;
@@ -82,7 +82,7 @@ public class FileUtils {
 	public static final IPath EXTERNAL_FOLDER_PATH = new Path("external");
 
 	/** The root. */
-	static IWorkspaceRoot ROOT = ResourcesPlugin.getWorkspace().getRoot();
+	public static IWorkspaceRoot ROOT = ResourcesPlugin.getWorkspace().getRoot();
 
 	/** The file system. */
 	static IFileSystem FILE_SYSTEM = EFS.getLocalFileSystem();
@@ -813,7 +813,7 @@ public class FileUtils {
 		String pathName = constructRelativeTempFilePath(scope, url);
 		final String urlPath = url.toExternalForm();
 		final String status = "Downloading file " + urlPath.substring(urlPath.lastIndexOf(SEPARATOR));
-		scope.getGui().getStatus().beginTask(status, StatusMessage.DOWNLOAD_ICON);
+		scope.getGui().getStatus().beginTask(status, IStatusMessage.DOWNLOAD_ICON);
 		final Webb web = WEB.get();
 		try {
 			try (InputStream in = web.get(urlPath).ensureSuccess()
@@ -830,7 +830,7 @@ public class FileUtils {
 		} catch (final IOException | WebbException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
-			scope.getGui().getStatus().endTask(status, StatusMessage.DOWNLOAD_ICON);
+			scope.getGui().getStatus().endTask(status, IStatusMessage.DOWNLOAD_ICON);
 		}
 		return pathName;
 	}
