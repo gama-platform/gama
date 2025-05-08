@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ErrorToDiagnoticTranslator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gaml.compiler.gaml.validation;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.util.Arrays;
@@ -31,7 +30,6 @@ import gama.gaml.descriptions.ValidationContext;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Statement;
@@ -84,17 +82,16 @@ public class ErrorToDiagnoticTranslator {
 	 */
 	public Diagnostic translate(final GamlCompilationError e, final GamlResource r, final CheckMode mode) {
 		final URI errorURI = e.getURI();
-		if (!GamlResourceServices.equals(errorURI, r.getURI())) {
-			final String s = URI.decode(errorURI.lastSegment());
-			final EObject m = r.getContents().get(0);
-			final EObject eObject = findImportWith(m, s);
-			final EAttribute feature = eObject instanceof Model ? GamlPackage.Literals.GAML_DEFINITION__NAME
-					: eObject instanceof HeadlessExperiment ? GamlPackage.Literals.HEADLESS_EXPERIMENT__IMPORT_URI
-					: GamlPackage.Literals.IMPORT__IMPORT_URI;
-			return createDiagnostic(CheckMode.NORMAL_ONLY, Diagnostic.ERROR,
-					e.toString() + " (" + ValidationContext.IMPORTED_FROM + " " + s + ")", eObject, feature,
-					ValidationMessageAcceptor.INSIGNIFICANT_INDEX, e.getCode(), e.getData());
-		}
+		if (!GamlResourceServices.equals(errorURI, r.getURI())) // final String s = URI.decode(errorURI.lastSegment());
+			// final EObject m = r.getContents().get(0);
+			// final EObject eObject = findImportWith(m, s);
+			// final EAttribute feature = eObject instanceof Model ? GamlPackage.Literals.GAML_DEFINITION__NAME
+			// : eObject instanceof HeadlessExperiment ? GamlPackage.Literals.HEADLESS_EXPERIMENT__IMPORT_URI
+			// : GamlPackage.Literals.IMPORT__IMPORT_URI;
+			return null;
+		// return createDiagnostic(CheckMode.NORMAL_ONLY, Diagnostic.ERROR,
+		// e.toString() + " (" + ValidationContext.IMPORTED_FROM + " " + s + ")", eObject, feature,
+		// ValidationMessageAcceptor.INSIGNIFICANT_INDEX, e.getCode(), e.getData());
 		EStructuralFeature feature = null;
 		final EObject object = e.getStatement();
 		String[] data = e.getData();
@@ -140,9 +137,8 @@ public class ErrorToDiagnoticTranslator {
 	private Diagnostic createDiagnostic(final CheckMode mode, final int diagnosticSeverity, final String message,
 			final EObject object, final EStructuralFeature feature, final int index, final String code,
 			final String... issueData) {
-		final Diagnostic result = new FeatureBasedDiagnostic(diagnosticSeverity, message, object, feature, index,
-				getType(mode), code, issueData);
-		return result;
+		return new FeatureBasedDiagnostic(diagnosticSeverity, message, object, feature, index, getType(mode), code,
+				issueData);
 	}
 
 	/**
