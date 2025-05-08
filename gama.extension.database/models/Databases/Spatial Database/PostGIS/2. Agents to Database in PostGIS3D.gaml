@@ -19,7 +19,7 @@ global {
 	 
 	map<string,string> PARAMS <-  ['srid'::'32846', // 32648 represents for the WGS 84 - Zone 48 Northern.
 								   'host'::'localhost','dbtype'::'postgres','database'::'spatial_db3d',
-								   'port'::'5432','user'::'postgres','passwd'::''];
+								   'port'::'5434','user'::'postgres','passwd'::''];
 
 	init {
 		write "This model will work only if the corresponding database is installed" color:#red;

@@ -13,7 +13,7 @@ global {
 	// Note that the postgis extension needs to be installed in the postgres database.
 	// Enable the postGIS extension in the database with: CREATE EXTENSION postgis;
 	// https://postgis.net/install/
-	map<string, string> POSTGRES <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'benoitgaudou', 'port'::'5434', 'user'::'postgres', 'passwd'::''];
+	map<string, string> POSTGRES <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'postgres', 'port'::'5434', 'user'::'postgres', 'passwd'::''];
 	
 	init {
 		

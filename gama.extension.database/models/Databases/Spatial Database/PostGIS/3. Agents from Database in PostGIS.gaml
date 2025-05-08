@@ -12,7 +12,7 @@ global {
 	 								'host'::'localhost',
 									'dbtype'::'postgis',
 									'database'::'spatial_db',
-									'port'::'5432',
+									'port'::'5434',
 									'user'::'postgres',
 									'passwd'::'',
 								  	'select'::'SELECT ST_AsEWKB(geom) as geom FROM bounds;' ];
@@ -20,7 +20,7 @@ global {
 									'host'::'localhost',
 									'dbtype'::'postgis',
 									'database'::'spatial_db',
-									'port'::'5432',
+									'port'::'5434',
 									'user'::'postgres',
 									'passwd'::''];
 	

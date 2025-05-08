@@ -7,7 +7,7 @@
 model CreateBuildingTablePostGIS
 
 global {
-	map<string, string> PARAMS <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'', 'port'::'5432', 'user'::'postgres', 'passwd'::''];
+	map<string, string> PARAMS <- ['host'::'localhost', 'dbtype'::'postgres', 'database'::'', 'port'::'5434', 'user'::'postgres', 'passwd'::''];
 	string database_name <- "spatial_db"; // "spatial_db2d" or "spatial_db3d"
 
 	init {
@@ -23,7 +23,7 @@ global {
 		ask dummy {
 			if (testConnection(PARAMS)) {
 				do executeUpdate params: PARAMS updateComm: "DROP DATABASE IF EXISTS " + database_name + " ;";
-				do executeUpdate params: PARAMS updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template_postgis;";
+				do executeUpdate params: PARAMS updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template1;";
 				write "spatial_BD database has been created. ";
 
 				// remove "database" from: PARAMS;
@@ -33,7 +33,7 @@ global {
 				do executeUpdate params: PARAMS updateComm: "CREATE TABLE buildings " + "( " + " name character varying(255), " + " type character varying(255), " + " geom GEOMETRY " + ")";
 				write "buildings table has been created. ";
 			} else {
-				write "Connection to MySQL cannot be established ";
+				write "Connection to POSTGRESQL cannot be established ";
 			}
 
 		}

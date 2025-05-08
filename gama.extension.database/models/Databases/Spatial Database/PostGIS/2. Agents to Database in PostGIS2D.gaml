@@ -19,7 +19,7 @@ global {
 	 
 	map<string,string> PARAMS <-  ['srid'::'4326', // optinal postgis
 								   'host'::'localhost','dbtype'::'postgres','database'::'spatial_db2d',
-								   'port'::'5432','user'::'postgres','passwd'::''];
+								   'port'::'5434','user'::'postgres','passwd'::''];
 
 	init {
 		write "This model will work only if the corresponding database is installed" color: #red;
