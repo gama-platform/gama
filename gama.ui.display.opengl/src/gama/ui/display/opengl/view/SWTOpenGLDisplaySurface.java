@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SWTOpenGLDisplaySurface.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and
- * simulation platform (v.2024-06).
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -763,7 +763,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public void dispatchSpecialKeyEvent(final int e) {
-		DEBUG.OUT("Special key received by the surface " + e);
+		// DEBUG.OUT("Special key received by the surface " + e);
 		for (final IEventLayerListener gl : listeners) { gl.specialKeyPressed(e); }
 	}
 

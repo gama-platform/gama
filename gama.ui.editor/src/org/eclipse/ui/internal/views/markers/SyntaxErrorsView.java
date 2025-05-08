@@ -94,11 +94,14 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		tb.update(true);
 
 		MarkersTreeViewer viewer = this.getAdapter(MarkersTreeViewer.class);
+
 		viewer.addFilter(new ViewerFilter() {
 
 			@Override
 			public boolean select(final Viewer viewer, final Object parentElement, final Object element) {
-				if (element instanceof MarkerItem item) {
+				if (element instanceof MarkerCategory cat) {
+					DEBUG.LOG(cat.getDescription());
+				} else if (element instanceof MarkerItem item) {
 					IMarker marker = item.getMarker();
 					if (marker == null) return true;
 					String text = marker.getAttribute(IMarker.MESSAGE, "");
