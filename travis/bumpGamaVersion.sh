@@ -68,6 +68,17 @@ find $path -type f -name "*.java" -exec sed -i "s/(c) 2007-$(( $(date "+%Y") - 1
 echo "Update everything in gama.product/extraresources"
 find $path/gama.product/extraresources -not -wholename "*/samples/*" -type f -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
 
+#
+#	UPDATING INSTALLERS
+#
+echo "Update installer files"
+# Windows
+sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.product/extraresources/installer/windows/windows_installer_script.iss
+# Linux
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/gama-platform.desktop
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/DEBIAN/control.desktop
+# MacOS
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist
 
 #
 #	EXTRA Forgotten
@@ -79,8 +90,6 @@ sed -i "s/V$oldVersion-SNAPSHOT http/V$newVersion http/g" $path/gama.ui.applicat
 
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.core/src/gama/core/runtime/GAMA.java
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.annotations/src/gama/annotations/precompiler/doc/utils/Constants.java
-
-sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist
 
 #
 #	Meta-Data generator
