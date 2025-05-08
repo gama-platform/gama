@@ -59,7 +59,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				WorkbenchHelper.run(() -> {
 					if (!PerspectiveHelper.showConsoles()) return;
 					console[0] = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
-							IWorkbenchPage.VIEW_VISIBLE);
+							IWorkbenchPage.VIEW_ACTIVATE);
 				});
 			}
 			if (console[0] != null) {
