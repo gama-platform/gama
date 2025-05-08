@@ -538,7 +538,14 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		}
 		if (this.getUseXRangeMinMax(scope)) {
-			domainAxis.setRange(getXRangeMin(scope), getXRangeMax(scope));
+			double max = getXRangeMax(scope);
+			double min = getXRangeMin(scope);
+			// See issue #588
+			if (max - min > 0) {
+				domainAxis.setRange(min, max);
+			} else {
+				domainAxis.setAutoRange(true);
+			}
 
 		}
 		if (this.getXTickLineVisible(scope)) {
@@ -563,7 +570,14 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			rangeAxis.setAutoRange(true);
 		}
 		if (this.getUseYRangeMinMax(scope)) {
-			rangeAxis.setRange(getYRangeMin(scope), getYRangeMax(scope));
+			double max = getYRangeMax(scope);
+			double min = getYRangeMin(scope);
+			// See issue #588
+			if (max - min > 0) {
+				rangeAxis.setRange(min, max);
+			} else {
+				rangeAxis.setAutoRange(true);
+			}
 
 		}
 		if (this.getYTickLineVisible(scope)) {
@@ -589,7 +603,14 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				range2Axis.setAutoRange(true);
 			}
 			if (this.getUseY2RangeMinMax(scope)) {
-				range2Axis.setRange(getY2RangeMin(scope), getY2RangeMax(scope));
+				double max = getY2RangeMax(scope);
+				double min = getY2RangeMin(scope);
+				// See issue #588
+				if (max - min > 0) {
+					range2Axis.setRange(min, max);
+				} else {
+					range2Axis.setAutoRange(true);
+				}
 
 			}
 			if (this.getYTickLineVisible(scope)) {
