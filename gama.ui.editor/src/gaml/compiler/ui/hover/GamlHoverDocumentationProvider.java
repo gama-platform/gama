@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlHoverDocumentationProvider.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamlHoverDocumentationProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,11 +16,11 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 
+import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDocManager;
+import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IGamaFileMetaData;
@@ -35,11 +35,10 @@ import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.DoStatement;
 import gama.gaml.types.Types;
-import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
+import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
@@ -58,6 +57,7 @@ import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.speciesOrGridDisplayStatement;
+import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
 
@@ -158,7 +158,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 					final String ext = file.getFileExtension();
 					doc = "This " + ext + " file has no metadata associated with it";
 				} else {
-					String s = data.getDocumentation();
+					String s = data.getDocumentation().toString();
 					if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
 				}
 			} else { // absolute file
@@ -171,7 +171,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 						final String ext = file.getFileExtension();
 						doc = "This external " + ext + " file has no metadata associated with it";
 					} else {
-						String s = data.getDocumentation();
+						String s = data.getDocumentation().toString();
 						if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
 					}
 				}

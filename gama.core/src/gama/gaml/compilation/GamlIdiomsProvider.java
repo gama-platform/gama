@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlIdiomsProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,6 +11,7 @@
 
 package gama.gaml.compilation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -27,8 +28,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import gama.core.common.interfaces.IKeyword;
 import gama.core.util.IMap;
+import gama.core.util.file.GamlFileInfo;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.FacetProto;
@@ -40,7 +41,6 @@ import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlDescription;
-import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
@@ -59,61 +59,64 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 */
 	public static final int NOT_FOUND = -1;
 
-	/** The Constant SPECIES. */
-	public final static GamlIdiomsProvider<SpeciesDescription> SPECIES = new GamlIdiomsProvider<>("species",
-									"Built-in species", Types.getBuiltInSpecies().values());
+	/** The providers. */
+	static List<GamlIdiomsProvider<?>> PROVIDERS;
 
-	/** The Constant SPECIES_ATTRIBUTES. */
-	public final static GamlIdiomsProvider<VariableDescription> SPECIES_ATTRIBUTES =
-			new GamlIdiomsProvider<>("variables",  "Built-in species attribute", Iterables.concat(
-					Iterables.transform(Types.getBuiltInSpecies().values(), SpeciesDescription::getOwnAttributes)));
+	/**
+	 * Gets the providers.
+	 *
+	 * @return the providers
+	 */
+	public static List<GamlIdiomsProvider<?>> getProviders() {
+		if (PROVIDERS == null) {
 
-	/** The Constant SPECIES_ACTIONS. */
-	public final static GamlIdiomsProvider<ActionDescription> SPECIES_ACTIONS =
-			new GamlIdiomsProvider<>("actions", "Built-in species action", Iterables.concat(
-					Iterables.transform(Types.getBuiltInSpecies().values(), SpeciesDescription::getOwnActions)));
+			GamlIdiomsProvider<GamlFileInfo> FILES =
+					new GamlIdiomsProvider<>("models", "Models (title & tags)", GamlFileInfo.getAllModels());
+			GamlIdiomsProvider<SpeciesDescription> SPECIES =
+					new GamlIdiomsProvider<>("species", "Built-in species", Types.getBuiltInSpecies().values());
 
-	/** The Constant SKILLS. */
-	public final static GamlIdiomsProvider<SkillDescription> SKILLS = new GamlIdiomsProvider<>("skills", 
-			"Skill", GamaSkillRegistry.INSTANCE.getRegisteredSkills());
+			GamlIdiomsProvider<VariableDescription> SPECIES_ATTRIBUTES =
+					new GamlIdiomsProvider<>("variables", "Built-in species attribute", Iterables.concat(Iterables
+							.transform(Types.getBuiltInSpecies().values(), SpeciesDescription::getOwnAttributes)));
 
-	/** The Constant SKILLS_ATTRIBUTES. */
-	public final static GamlIdiomsProvider<VariableDescription> SKILLS_ATTRIBUTES =
-			new GamlIdiomsProvider<>("variables", "Skill Attribute",
-					GamaSkillRegistry.INSTANCE.getRegisteredSkillsAttributes());
+			GamlIdiomsProvider<ActionDescription> SPECIES_ACTIONS =
+					new GamlIdiomsProvider<>("actions", "Built-in species action", Iterables.concat(Iterables
+							.transform(Types.getBuiltInSpecies().values(), SpeciesDescription::getOwnActions)));
 
-	/** The Constant SKILLS_ACTIONS. */
-	public final static GamlIdiomsProvider<ActionDescription> SKILLS_ACTIONS = new GamlIdiomsProvider<>("actions",
-				"Skill Action", GamaSkillRegistry.INSTANCE.getRegisteredSkillsActions());
+			GamlIdiomsProvider<SkillDescription> SKILLS =
+					new GamlIdiomsProvider<>("skills", "Skill", GamaSkillRegistry.INSTANCE.getRegisteredSkills());
 
-	/** The Constant STATEMENTS. */
-	public final static GamlIdiomsProvider<SymbolProto> STATEMENTS =
-			new GamlIdiomsProvider<>("statements", "Statements", DescriptionFactory.getStatementProtos());
+			GamlIdiomsProvider<VariableDescription> SKILLS_ATTRIBUTES = new GamlIdiomsProvider<>("variables",
+					"Skill Attribute", GamaSkillRegistry.INSTANCE.getRegisteredSkillsAttributes());
 
-	/** The Constant CONSTANTS. */
-	public final static GamlIdiomsProvider<UnitConstantExpression> CONSTANTS =
-			new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.UNITS.values());
+			GamlIdiomsProvider<ActionDescription> SKILLS_ACTIONS = new GamlIdiomsProvider<>("actions", "Skill Action",
+					GamaSkillRegistry.INSTANCE.getRegisteredSkillsActions());
 
-	/** The Constant OPERATORS. */
-	public final static GamlIdiomsProvider<OperatorProto> OPERATORS = new GamlIdiomsProvider<>("operators", 
-			"Operators", Iterables.concat(Iterables.transform(GAML.OPERATORS.values(), IMap::values)));
+			GamlIdiomsProvider<SymbolProto> STATEMENTS =
+					new GamlIdiomsProvider<>("statements", "Statements", DescriptionFactory.getStatementProtos());
 
-	/** The Constant TYPES. */
-	public final static GamlIdiomsProvider<IType<?>> TYPES =
-			new GamlIdiomsProvider<>("types", "Types", Types.builtInTypes.getAllTypes());
+			GamlIdiomsProvider<UnitConstantExpression> CONSTANTS =
+					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.UNITS.values());
 
-	/** The Constant FACETS. */
-	public final static GamlIdiomsProvider<FacetProto> FACETS =
-			new GamlIdiomsProvider<>("facets", "Facets", DescriptionFactory.getFacetsProtos());
+			GamlIdiomsProvider<OperatorProto> OPERATORS = new GamlIdiomsProvider<>("operators", "Operators",
+					Iterables.concat(Iterables.transform(GAML.OPERATORS.values(), IMap::values)));
 
-	/** The Constant FIELDS. */
-	public final static GamlIdiomsProvider<OperatorProto> FIELDS =
-			new GamlIdiomsProvider<>("attributes", "Fields", Types.getAllFields());
+			GamlIdiomsProvider<IType<?>> TYPES =
+					new GamlIdiomsProvider<>("types", "Types", Types.builtInTypes.getAllTypes());
 
-	/** The Constant PROVIDERS. */
-	public final static List<GamlIdiomsProvider<?>> PROVIDERS =
-			Arrays.asList(SPECIES, SPECIES_ATTRIBUTES, SPECIES_ACTIONS, SKILLS, SKILLS_ATTRIBUTES, SKILLS_ACTIONS,
-					STATEMENTS, CONSTANTS, OPERATORS, TYPES, FACETS, FIELDS);
+			GamlIdiomsProvider<FacetProto> FACETS =
+					new GamlIdiomsProvider<>("facets", "Facets", DescriptionFactory.getFacetsProtos());
+
+			GamlIdiomsProvider<OperatorProto> FIELDS =
+					new GamlIdiomsProvider<>("attributes", "Fields", Types.getAllFields());
+
+			/** The Constant PROVIDERS. */
+			PROVIDERS = new ArrayList<>(Arrays.asList(FILES, SPECIES, SPECIES_ATTRIBUTES, SPECIES_ACTIONS, SKILLS,
+					SKILLS_ATTRIBUTES, SKILLS_ACTIONS, STATEMENTS, CONSTANTS, OPERATORS, TYPES, FACETS, FIELDS));
+		}
+
+		return PROVIDERS;
+	}
 
 	/** The search. */
 	public final String name, search;
@@ -146,8 +149,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 * @param elmts
 	 *            the elmts
 	 */
-	public GamlIdiomsProvider(final String search, final String name,
-			final Iterable<? extends T> elmts) {
+	public GamlIdiomsProvider(final String search, final String name, final Iterable<? extends T> elmts) {
 		this(search, name, elmts, null);
 	}
 
@@ -165,8 +167,8 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 * @param titles
 	 *            the titles
 	 */
-	public GamlIdiomsProvider(final String search, final String name,
-			final Iterable<? extends T> elmts, final Map<T, String> titles) {
+	public GamlIdiomsProvider(final String search, final String name, final Iterable<? extends T> elmts,
+			final Map<T, String> titles) {
 		this.search = search;
 		this.name = name;
 		this.elements = elmts;
@@ -184,18 +186,18 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	public String document(final IGamlDescription element) {
 		return documenter.apply((T) element).toString();
 	}
-
-	/**
-	 * With.
-	 *
-	 * @param doc
-	 *            the doc
-	 * @return the gaml idioms provider
-	 */
-	public GamlIdiomsProvider<T> withStringProvider(final Function<T, String> doc) {
-		documenter = t -> new ConstantDoc(doc.apply(t));
-		return this;
-	}
+	//
+	// /**
+	// * With.
+	// *
+	// * @param doc
+	// * the doc
+	// * @return the gaml idioms provider
+	// */
+	// public GamlIdiomsProvider<T> withStringProvider(final Function<T, String> doc) {
+	// documenter = t -> new ConstantDoc(doc.apply(t));
+	// return this;
+	// }
 
 	/**
 	 * Gets the search category.

@@ -29,7 +29,7 @@ import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 import com.google.inject.Inject;
 
 import gama.core.common.util.FileUtils;
-import gama.ui.navigator.commands.FileOpener;
+import gama.ui.shared.utils.FileOpener;
 import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.StringLiteral;
