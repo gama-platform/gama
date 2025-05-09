@@ -43,7 +43,7 @@ import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 public class ImportersContributionItem extends ContributionItem {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -65,32 +65,42 @@ public class ImportersContributionItem extends ContributionItem {
 	public void fill(final Menu parentMenu, final int index) {
 		IStructuredSelection sel = WorkbenchHelper.getSelection();
 		if (sel == null || sel.isEmpty() || !(sel.getFirstElement() instanceof WrappedGamaFile file)) return;
-		if (!ResourceManager.getInstance().hasBeenBuiltOnce()) {
-			if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is not already built. Proceeding with building"); }
-			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			try {
-				GamlResourceIndexer.eraseIndex();
-				workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, new NullProgressMonitor());
-			} catch (final CoreException ex) {
-				ex.printStackTrace();
-			}
-		} else if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is already built. Proceeding with imports"); }
-		while (!ResourceManager.getInstance().hasBeenBuiltOnce()) {}
-		final Set<URI> imp =
-				directImportersOf(createPlatformResourceURI(file.getResource().getFullPath().toString(), true));
-		if (imp.isEmpty()) return;
 		MenuItem item = new MenuItem(parentMenu, SWT.CASCADE);
-		final Menu menu = new Menu(item);
-		item.setMenu(menu);
 		item.setText("Imported by...");
 		item.setImage(GamaIcon.named(IGamaIcons.IMPORTED_IN).image());
 		item.setToolTipText("Lists all the models that directly import this model.");
-		for (final URI uri : imp) {
-			item = new MenuItem(menu, SWT.PUSH);
-			item.setText(URI.decode(uri.lastSegment()));
-			item.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
-			item.addSelectionListener((Selector) e -> GAMA.getGui().editModel(uri));
-		}
+		final Menu menu = new Menu(item);
+		item.setMenu(menu);
+		menu.addListener(SWT.Show, e -> {
+			for (final MenuItem i : menu.getItems()) { i.dispose(); }
+			final Set<URI> imp =
+					directImportersOf(createPlatformResourceURI(file.getResource().getFullPath().toString(), true));
+			if (imp.isEmpty()) {
+				MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+				item2.setText("No importers");
+				item2.setEnabled(false);
+				return;
+			}
+			if (!ResourceManager.getInstance().hasBeenBuiltOnce()) {
+				if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is not already built. Proceeding with building"); }
+				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+				try {
+					GamlResourceIndexer.eraseIndex();
+					workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, new NullProgressMonitor());
+				} catch (final CoreException ex) {
+					ex.printStackTrace();
+				}
+			} else if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is already built. Proceeding with imports"); }
+			while (!ResourceManager.getInstance().hasBeenBuiltOnce()) {}
+			for (final URI uri : imp) {
+				MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+				item2.setText(URI.decode(uri.lastSegment()));
+				item2.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
+				item2.addSelectionListener((Selector) eee -> GAMA.getGui().editModel(uri));
+			}
+
+		});
+
 	}
 
 	@Override
