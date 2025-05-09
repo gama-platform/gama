@@ -38,6 +38,7 @@ import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.BufferingController;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
+import gama.core.runtime.server.GamaGuiWebSocketServer;
 import gama.core.runtime.server.IGamaServer;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
@@ -660,13 +661,6 @@ public class GAMA {
 	}
 
 	/**
-	 * Gets the current websocket server
-	 *
-	 * @return the current top level agent
-	 */
-	public static IGamaServer getServer() { return getPlatformAgent().getServer(); }
-
-	/**
 	 * Gets the current top level agent.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -852,6 +846,54 @@ public class GAMA {
 	 */
 	public static void updateExperimentState(final IExperimentPlan exp) {
 		updateExperimentState(exp, getExperimentState(exp));
+	}
+
+	/**
+	 * Start server.
+	 */
+	public static void startGuiServer() {
+		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { createGuiServer(); }
+		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> { if (newValue) { createGuiServer(); } });
+	}
+
+	/** The my server. */
+	private static IGamaServer myServer;
+
+	/**
+	 * Creates the gui server.
+	 */
+	private static void createGuiServer() {
+		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
+		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
+		setServer(GamaGuiWebSocketServer.startForGUI(port, ping));
+	}
+
+	/**
+	 * Gets the server.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @return the server
+	 * @date 3 nov. 2023
+	 */
+	public static IGamaServer getServer() { return myServer; }
+
+	/**
+	 * Sets the server.
+	 *
+	 * @param server
+	 *            the new server
+	 */
+	public static void setServer(final IGamaServer server) {
+		if (myServer != null) {
+			try {
+				myServer.stop();
+				myServer = null;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		myServer = server;
 	}
 
 }
