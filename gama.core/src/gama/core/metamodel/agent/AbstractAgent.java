@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -122,7 +122,7 @@ public abstract class AbstractAgent implements IAgent {
 		if (dead) return;
 		dead = true;
 		final IPopulation<? extends IAgent> p = getPopulation();
-		if (p != null) { p.removeValue(null, this); }
+		if (p != null && !p.isDisposing()) { p.removeValue(null, this); }
 		final IShape s = getGeometry();
 		if (s != null) { s.dispose(); }
 		if (attributes != null) {
@@ -499,7 +499,6 @@ public abstract class AbstractAgent implements IAgent {
 				m + "\nsender: " + Cast.asMap(scope, this, false), scope.getRoot());
 		return m;
 	}
-
 
 	/**
 	 * Prim error.
