@@ -102,9 +102,8 @@ import one.util.streamex.StreamEx;
 				name = "platform",
 				type = IType.STRING,
 				constant = true,
-				doc = @doc(
-						value = "Returns the platform on which GAMA is currently executing.")
-				),
+				doc = @doc (
+						value = "Returns the platform on which GAMA is currently executing.")),
 		@variable (
 				name = "version",
 				type = IType.STRING,
@@ -120,16 +119,16 @@ import one.util.streamex.StreamEx;
 						value = "Lists all the plugins present in this installation of GAMA")),
 		@variable (
 				name = "free_memory",
-				type = IType.INT,
+				type = IType.FLOAT,
 				constant = false,
 				doc = @doc (
-						value = "Returns the free memory available to GAMA in bytes")),
+						value = "A float number that represents the free memory available to GAMA in bytes")),
 		@variable (
 				name = "max_memory",
-				type = IType.INT,
+				type = IType.FLOAT,
 				constant = false,
 				doc = @doc (
-						value = "Returns the maximum amount of memory available to GAMA in bytes")),
+						value = "A float number that represents the maximum amount of memory available to GAMA in bytes")),
 		@variable (
 				name = "workspace",
 				type = IType.FILE,
@@ -356,7 +355,12 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			value = "info",
 			initializer = true)
 	public String getInfo() { return SystemInfo.getSystemInfo(); }
-	
+
+	/**
+	 * Gets the platform.
+	 *
+	 * @return the platform
+	 */
 	@getter (
 			value = "platform",
 			initializer = true)
@@ -383,7 +387,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	@getter (
 			value = "free_memory",
 			initializer = true)
-	public long getAvailableMemory() {
+	public double getAvailableMemory() {
 		final long allocatedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		return Runtime.getRuntime().maxMemory() - allocatedMemory;
 	}
@@ -396,7 +400,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	@getter (
 			value = "max_memory",
 			initializer = true)
-	public long getMaxMemory() { return Runtime.getRuntime().maxMemory(); }
+	public double getMaxMemory() { return Runtime.getRuntime().maxMemory(); }
 
 	/**
 	 * Gets the machine time.
