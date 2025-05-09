@@ -82,6 +82,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.quickaccess.QuickAccessMessages;
 import org.eclipse.ui.keys.IBindingService;
@@ -90,7 +91,10 @@ import org.osgi.framework.FrameworkUtil;
 
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * Provides the contents for the quick access shell.
@@ -134,7 +138,7 @@ public class GamlAccessContents2 extends PopupDialog {
 	private TextLayout textLayout;
 
 	/** The show all matches. */
-	private boolean showAllMatches = true;
+	private static boolean showAllMatches = false;
 
 	/** The resized. */
 	protected boolean resized = false;
@@ -391,7 +395,8 @@ public class GamlAccessContents2 extends PopupDialog {
 				if (!entries.isEmpty()) { entriesPerProvider.put(provider, entries); }
 			}
 		} else {
-			int numberOfSlotsLeft = perfectMatch != null ? maxNumberOfItemsInTable - 1 : maxNumberOfItemsInTable;
+			int numberOfSlotsLeft =
+					perfectMatch != null ? maxNumberOfItemsInTable * 2 - 1 : maxNumberOfItemsInTable * 2;
 			while (!elementsForProviders.isEmpty() && numberOfSlotsLeft > 0) {
 				int nbEntriesPerProvider = numberOfSlotsLeft / elementsForProviders.size();
 				if (nbEntriesPerProvider > 0) {
@@ -811,6 +816,11 @@ public class GamlAccessContents2 extends PopupDialog {
 	@Override
 	protected Control createTitleControl(final Composite parent) {
 		parent.getShell().setText(QuickAccessMessages.QuickAccessContents_QuickAccess);
+		ToolBar tt = new ToolBar(parent, SWT.NONE | SWT.FLAT);
+		GamaCommand
+				.build(IGamaIcons.LEXICAL_SORT, "", "Toggle the display of all proposals",
+						(Selector) e -> setShowAllMatches(!showAllMatches))
+				.toCheckItem(tt).setSelection(!showAllMatches);
 		filterText = new Text(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(filterText);
 		hookFilterText(filterText);
