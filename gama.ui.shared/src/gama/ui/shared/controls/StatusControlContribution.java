@@ -168,7 +168,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			public void aboutToRun(final IJobChangeEvent event) {
 				Job job = event.getJob();
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
-				String name = job.getName().strip();
+				String name = job.getName() == null ? "" : job.getName().strip();
 				if (uselessJobs.contains(name)) return;
 				// DEBUG.OUT("Name " + job.getName() + " - Group " + job.getJobGroup() + " - Rule " + job.getRule()
 				// + " - Priority " + jobPriority(job.getPriority()));
