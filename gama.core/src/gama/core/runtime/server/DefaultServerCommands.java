@@ -329,8 +329,7 @@ public class DefaultServerCommands {
 		}
 		if (res == null || res.length() == 0 || res.startsWith("> Error: "))
 			return new CommandResponse(UnableToExecuteRequest, res, map, false);
-		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, res, map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 
 	/**
