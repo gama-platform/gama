@@ -82,7 +82,7 @@ public class FileUtils {
 	public static final IPath EXTERNAL_FOLDER_PATH = new Path("external");
 
 	/** The root. */
-	public static IWorkspaceRoot ROOT = ResourcesPlugin.getWorkspace().getRoot();
+	public static final IWorkspaceRoot ROOT = ResourcesPlugin.getWorkspace().getRoot();
 
 	/** The file system. */
 	static IFileSystem FILE_SYSTEM = EFS.getLocalFileSystem();
