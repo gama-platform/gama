@@ -15,6 +15,11 @@ import static org.eclipse.emf.common.util.URI.createPlatformResourceURI;
 
 import java.util.Set;
 
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -23,16 +28,23 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import gama.core.runtime.GAMA;
+import gama.dev.DEBUG;
+import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
+import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 
 /**
  * The Class ImportersContributionItem.
  */
 public class ImportersContributionItem extends ContributionItem {
+
+	static {
+		DEBUG.OFF();
+	}
 
 	/**
 	 * Instantiates a new importers contribution item.
@@ -53,6 +65,17 @@ public class ImportersContributionItem extends ContributionItem {
 	public void fill(final Menu parentMenu, final int index) {
 		IStructuredSelection sel = WorkbenchHelper.getSelection();
 		if (sel == null || sel.isEmpty() || !(sel.getFirstElement() instanceof WrappedGamaFile file)) return;
+		if (!ResourceManager.getInstance().hasBeenBuiltOnce()) {
+			if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is not already built. Proceeding with building"); }
+			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			try {
+				GamlResourceIndexer.eraseIndex();
+				workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, new NullProgressMonitor());
+			} catch (final CoreException ex) {
+				ex.printStackTrace();
+			}
+		} else if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is already built. Proceeding with imports"); }
+		while (!ResourceManager.getInstance().hasBeenBuiltOnce()) {}
 		final Set<URI> imp =
 				directImportersOf(createPlatformResourceURI(file.getResource().getFullPath().toString(), true));
 		if (imp.isEmpty()) return;

@@ -105,6 +105,9 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	/** The current selection. */
 	private static IStructuredSelection currentSelection;
 
+	/** The has been built once. */
+	private static boolean hasBeenBuiltOnce;
+
 	/**
 	 * Block.
 	 */
@@ -161,10 +164,20 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the navigator
 	 */
 	public ResourceManager(final IResourceChangeListener delegate, final CommonViewer navigator) {
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		this.viewer = navigator;
 		viewer.addSelectionChangedListener(this);
 		this.delegate = delegate;
 		INSTANCE = this;
+	}
+
+	/**
+	 * Checks for been built once.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean hasBeenBuiltOnce() {
+		return ResourceManager.hasBeenBuiltOnce;
 	}
 
 	/**
@@ -320,6 +333,9 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			// begin();
 			final int type = event.getType();
 			switch (type) {
+				case IResourceChangeEvent.POST_BUILD:
+					hasBeenBuiltOnce = true;
+					break;
 				case POST_CHANGE:
 					if (viewer.isBusy()) {
 						WorkbenchHelper.runInUI("Check for workspace changes", 50,
