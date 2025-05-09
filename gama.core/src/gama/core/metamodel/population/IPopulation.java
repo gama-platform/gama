@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -447,6 +447,21 @@ public interface IPopulation<T extends IAgent>
 		// return json.valueOf(new SerialisedPopulation(this));
 	}
 
+	/**
+	 * Fire agents added.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param agents
+	 *            the agents
+	 */
 	default <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {}
+
+	/**
+	 * @return
+	 */
+	boolean isDisposing();
 
 }

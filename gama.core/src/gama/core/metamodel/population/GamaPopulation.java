@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -89,6 +90,9 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	static {
 		DEBUG.ON();
 	}
+
+	/** The is disposing. */
+	protected volatile boolean isDisposing;
 
 	/**
 	 * The agent hosting this population which is considered as the direct macro-agent.
@@ -193,6 +197,14 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	}
 
 	/**
+	 * Checks if is disposing.
+	 *
+	 * @return true, if is disposing
+	 */
+	@Override
+	public boolean isDisposing() { return isDisposing; }
+
+	/**
 	 * Order attributes.
 	 *
 	 * @param ecd
@@ -288,8 +300,8 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		/*
 		 * PATRICK TAILLANDIER: the problem of having the host here is that depending on the simulation the hashcode
 		 * will be different... and this hashcode is very important for the manipulation of GamaMap thus, having two
-		 * different hashcodes depending on the simulation ensures the replication of simulation. So I remove the
-		 * host for the moment.
+		 * different hashcodes depending on the simulation ensures the replication of simulation. So I remove the host
+		 * for the moment.
 		 */
 		/*
 		 * AD: Reverting this as different populations in different hosts should not have the same hash code ! See
@@ -449,14 +461,15 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	 */
 	@Override
 	public void dispose() {
+		isDisposing = true;
 		killMembers();
-		clear();
 		final IScope scope = getHost() == null ? GAMA.getRuntimeScope() : getHost().getScope();
 		firePopulationCleared(scope);
 		if (topology != null) {
 			topology.dispose();
 			topology = null;
 		}
+		clear();
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -727,7 +740,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	public void killMembers() throws GamaRuntimeException {
 		final T[] ag = toArray();
 		for (final IAgent a : ag) { if (a != null) { a.dispose(); } }
-		this.clear();
 	}
 
 	@Override
