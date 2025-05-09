@@ -46,9 +46,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.MemoryUtils;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.server.GamaGuiWebSocketServer;
 import gama.core.runtime.server.GamaServerMessage;
-import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaMapFactory;
@@ -160,9 +158,6 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	/** The current task. */
 	private TimerTask currentTask;
 
-	/** The my server. */
-	private IGamaServer myServer;
-
 	/** The json encoder. */
 	private final Json jsonEncoder = Json.getNew();
 
@@ -198,17 +193,6 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 			startPollingMemory();
 		});
 
-		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { createGuiServer(); }
-		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> { if (newValue) { createGuiServer(); } });
-	}
-
-	/**
-	 * Creates the gui server.
-	 */
-	private void createGuiServer() {
-		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-		setServer(GamaGuiWebSocketServer.startForGUI(port, ping));
 	}
 
 	/**
@@ -501,34 +485,6 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	public boolean isPlatform() { return true; }
 
 	/**
-	 * Gets the server.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the server
-	 * @date 3 nov. 2023
-	 */
-	public IGamaServer getServer() { return myServer; }
-
-	/**
-	 * Sets the server.
-	 *
-	 * @param server
-	 *            the new server
-	 */
-	public void setServer(final IGamaServer server) {
-		if (myServer != null) {
-			try {
-				myServer.stop();
-				myServer = null;
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		myServer = server;
-	}
-
-	/**
 	 * Send message through server.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -578,7 +534,9 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 		try {
 			var socket = scope.getServerConfiguration().socket();
 			// try to get the socket in platformAgent if the request is too soon before agent.schedule()
-			if (socket == null && myServer != null) { socket = myServer.obtainGuiServerConfiguration().socket(); }
+			if (socket == null && GAMA.getServer() != null) {
+				socket = GAMA.getServer().obtainGuiServerConfiguration().socket();
+			}
 			if (socket == null) {
 				DEBUG.OUT("No socket found, maybe the client is already disconnected. Unable to send message: "
 						+ message);
