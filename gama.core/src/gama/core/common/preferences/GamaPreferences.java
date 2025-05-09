@@ -1010,7 +1010,7 @@ public class GamaPreferences {
 		/** The Constant USE_POOLING. */
 		public static final Pref<Boolean> USE_POOLING =
 				create("pref_use_pooling", "Use object pooling to reduce memory usage (still experimental)", false,
-						IType.BOOL, true).in(NAME, CATEGORY).hidden();
+						IType.BOOL, true).in(NAME, CATEGORY);
 
 	}
 
