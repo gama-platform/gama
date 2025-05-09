@@ -447,6 +447,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public void dispose() {
+		isDisposing = true;
 		killMembers();
 		clear();
 		if (topology != null) {
@@ -1176,6 +1177,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	/** The current agent index. */
 	protected int currentAgentIndex;
 
+	private boolean isDisposing;
+
 	@Override
 	public IGridAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,
 			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
@@ -1356,5 +1359,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		return (JsonObject) IPopulation.super.serializeToJson(json).add("cols", json.valueOf(getNbCols())).add("rows",
 				json.valueOf(getNbRows()));
 	}
+
+	@Override
+	public boolean isDisposing() { // TODO Auto-generated method stub
+	return isDisposing; }
 
 }
