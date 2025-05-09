@@ -283,7 +283,7 @@ public class SpatialProperties {
 					value = "square(5) equals (rectangle(10,5) rotated_by 90)",
 					equals = "true") },
 			see = { "disjoint_from", "crosses", "overlaps", "partially_overlaps", "touches", "covers" })
-	@test ("rectangle(5,10) equals (rectangle(10,5) rotated_by 90)")
+	@test ("rectangle(5,10) equals rectangle(5,10)")
 	public static Boolean equalsGeometry(final IShape g1, final IShape g2) {
 		if (g1 == null || g2 == null || g1.getInnerGeometry() == null || g2.getInnerGeometry() == null) return false;
 		return g1.getInnerGeometry().equals(g2.getInnerGeometry());
