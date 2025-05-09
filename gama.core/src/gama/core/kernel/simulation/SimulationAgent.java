@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * SimulationAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * SimulationAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,6 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
+import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -433,17 +435,19 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 	@Override
 	public void dispose() {
+		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (dead) return;
 		executer.executeDisposeActions();
 		// hqnghi if simulation comes from an external population, dispose this population first
 		// and then its outputs
 
 		if (externMicroPopulations != null) { externMicroPopulations.clear(); }
-
+		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (outputs != null) {
 			outputs.dispose();
 			outputs = null;
 		}
+		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (topology != null) {
 			if (!isMicroSimulation()) {
 				topology.dispose();
@@ -459,6 +463,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 		GAMA.getBufferingController().flushWriteOfAgent(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
+		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		super.dispose();
 
 	}
