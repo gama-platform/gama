@@ -657,6 +657,18 @@
              id="gama.ui.description.field"
              name="Description">
        </markerField>
+       <markerTypeCategory
+             name="All markers">
+          <markerTypeReference
+                id="gama.ui.editor.gaml.check.expensive">
+          </markerTypeReference>
+          <markerTypeReference
+                id="gama.ui.editor.gaml.check.fast">
+          </markerTypeReference>
+          <markerTypeReference
+                id="gama.ui.editor.gaml.check.normal">
+          </markerTypeReference>
+       </markerTypeCategory>
     </extension>
     <extension
           point="org.eclipse.ui.ide.markerImageProviders">
@@ -680,34 +692,6 @@
              id="org.eclipse.ui.problemMarkerProvider"
              markertype="org.eclipse.core.resources.problemmarker">
        </imageprovider>
-    </extension>
-    <extension
-          point="org.eclipse.ui.editors.markerAnnotationSpecification">
-       <specification
-             annotationType="org.eclipse.ui.workbench.texteditor.info"
-             colorPreferenceKey="infoIndicationColor"
-             colorPreferenceValue="0,0,255"
-             contributesToHeader="false"
-             highlightPreferenceKey="infoIndicationHighlighting"
-             highlightPreferenceValue="false"
-             isGoToNextNavigationTarget="false"
-             isGoToNextNavigationTargetKey="isInfoGoToNextNavigationTarget"
-             isGoToPreviousNavigationTarget="false"
-             isGoToPreviousNavigationTargetKey="isInfoGoToPreviousNavigationTarget"
-             label="Information"
-             overviewRulerPreferenceKey="infoIndicationInOverviewRuler"
-             overviewRulerPreferenceValue="true"
-             presentationLayer="4"
-             showInNextPrevDropdownToolbarAction="true"
-             showInNextPrevDropdownToolbarActionKey="showInfoInNextPrevDropdownToolbarAction"
-             symbolicIcon="info"
-             textPreferenceKey="infoIndication"
-             textPreferenceValue="false"
-             textStylePreferenceKey="infoTextStyle"
-             textStylePreferenceValue="SQUIGGLES"
-             verticalRulerPreferenceKey="infoIndicationInVerticalRuler"
-             verticalRulerPreferenceValue="true">
-       </specification>
     </extension>
     <extension
           point="org.eclipse.ui.actionSets">
