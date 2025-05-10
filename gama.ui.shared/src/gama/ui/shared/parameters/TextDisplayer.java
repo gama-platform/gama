@@ -32,9 +32,11 @@ import gama.core.kernel.experiment.TextStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
+import gama.core.util.GamaFont;<<<<<<<Updated upstream
 import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.controls.XmlText;
+import gama.ui.shared.controls.XmlText;=======<<<<<<<Updated upstream=======
+import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.controls.text.XmlText;>>>>>>>Stashed changes>>>>>>>Stashed changes
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WebHelper;
@@ -141,9 +143,8 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	 * @return the control
 	 */
 	private Control buildForm(final Composite composite, final String text) {
-
 		XmlText form = new XmlText(composite, SWT.NONE | SWT.READ_ONLY);
-		form.setText("<form>" + text + "</form>", true, true);
+		form.setText("<form><p>" + text + "</p></form>", true, true);
 		form.setHyperlinkSettings(getHyperlinkSettings());
 		form.addHyperlinkListener(new HyperlinkAdapter() {
 
