@@ -973,11 +973,6 @@ public class GamaPreferences {
 							CoreException e) {}
 						}).hidden();
 
-		/** The Constant AT_DISTANCE_OPTIMIZATION. */
-		public static final Pref<Boolean> AT_DISTANCE_OPTIMIZATION =
-				create("pref_optimize_at_distance", "Optimize the 'at_distance' operator", true, IType.BOOL, true)
-						.in(NAME, OPTIMIZATIONS);
-
 		/** The Constant PATH_COMPUTATION_OPTIMIZATION. */
 		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
 				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
