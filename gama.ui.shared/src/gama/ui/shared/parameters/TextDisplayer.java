@@ -32,11 +32,9 @@ import gama.core.kernel.experiment.TextStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;<<<<<<<Updated upstream
+import gama.core.util.GamaFont;
 import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.controls.XmlText;=======<<<<<<<Updated upstream=======
-import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.controls.text.XmlText;>>>>>>>Stashed changes>>>>>>>Stashed changes
+import gama.ui.shared.controls.text.XmlText;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WebHelper;
