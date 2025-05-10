@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ArrangeDisplayViews.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,6 +42,10 @@ import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+
+/**
+ * The Class ArrangeDisplayViews.
+ */
 
 /**
  * The Class ArrangeDisplayViews.
@@ -98,15 +102,16 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 */
 	@SuppressWarnings ("unchecked")
 	public static void execute(final Object layout) {
-		// collectAndPrepareDisplayViews();
-		if (layout instanceof Integer i) {
-			execute(LayoutTreeConverter.convert(i));
-		} else if (layout instanceof GamaTree t) {
-			execute(t);
-		} else if (layout instanceof GamaNode n) {
-			final GamaTree<String> tree = LayoutTreeConverter.newLayoutTree();
-			n.attachTo(tree.getRoot());
-			execute(tree);
+		switch (layout) {
+			case Integer i -> execute(LayoutTreeConverter.convert(i));
+			case GamaTree t -> execute(t);
+			case GamaNode n -> {
+				final GamaTree<String> tree = LayoutTreeConverter.newLayoutTree();
+				n.attachTo(tree.getRoot());
+				execute(tree);
+			}
+			case null, default -> {
+			}
 		}
 	}
 
@@ -119,24 +124,33 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	public static void execute(final GamaTree<String> tree) {
 		try {
 			final List<MPlaceholder> holders = collectAndPrepareDisplayViews();
-			if (tree != null && tree.getRoot().hasChildren()) {
-				GamaNode<String> child = tree.getRoot().getChildren().get(0);
-				// DEBUG.LOG("Tree root = " + child.getData() + " weight " + child.getWeight());
-				if (child.getWeight() == null) { child.setWeight(5000); }
-				final MPartStack displayStack = getDisplaysPlaceholder();
-				if (displayStack == null) return;
-				displayStack.setToBeRendered(true);
-				final MElementContainer<?> root = displayStack.getParent();
-
-				displayStack.getChildren().addAll(holders);
-				process(root, child, holders);
-				showDisplays(root, holders);
-			}
+			if (tree != null && tree.getRoot().hasChildren()) { layoutDisplays(tree, holders); }
 			decorateDisplays();
 
 		} catch (Exception e) {
 			DEBUG.ERR(e);
 		}
+	}
+
+	/**
+	 * Layout displays.
+	 *
+	 * @param tree
+	 *            the tree
+	 * @param holders
+	 *            the holders
+	 */
+	private static void layoutDisplays(final GamaTree<String> tree, final List<MPlaceholder> holders) {
+		GamaNode<String> child = tree.getRoot().getChildren().get(0);
+		// DEBUG.LOG("Tree root = " + child.getData() + " weight " + child.getWeight());
+		if (child.getWeight() == null) { child.setWeight(5000); }
+		final MPartStack displayStack = getDisplaysPlaceholder();
+		if (displayStack == null) return;
+		// displayStack.setToBeRendered(true);
+		final MElementContainer<?> root = displayStack.getParent();
+		displayStack.getChildren().addAll(holders);
+		process(root, child, holders);
+		showDisplays(root, holders);
 	}
 
 	/**
@@ -159,24 +173,25 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the holders
 	 */
 	private static void showDisplays(final MElementContainer<?> root, final List<MPlaceholder> holders) {
-		root.setVisible(true);
+		// root.setVisible(false);
 		// DEBUG.OUT("Holders to show " +
 		// DEBUG.TO_STRING(StreamEx.of(holders).map(MPlaceholder::getElementId).toArray()));
 		holders.forEach(ph -> {
 			if (ph.getRef() instanceof MPart part) {
+				//
+				// // Necessary as otherwise the Java2D display does not show up if it is alone
+				// // ph.setToBeRendered(true);
+				// // ph.setVisible(true);
 
-				// Necessary as otherwise the Java2D display does not show up if it is alone
-				ph.setToBeRendered(true);
-				ph.setVisible(true);
-				getPartService().showPart(part, PartState.VISIBLE);
-				// getPartService().showPart(part, PartState.ACTIVATE);
-				// getPartService().activate(part, true);
-				// getPartService().bringToTop(part);
-
+				getPartService().showPart(part, PartState.ACTIVATE);
+				// // getPartService().showPart(part, PartState.ACTIVATE);
+				// // getPartService().activate(part, true);
+				// // getPartService().bringToTop(part);
+				//
 			}
 
 		});
-
+		// root.setVisible(true);
 	}
 
 	/**
