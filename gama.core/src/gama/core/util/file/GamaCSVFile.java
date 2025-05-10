@@ -33,6 +33,8 @@ import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
+import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaMatrixType;
@@ -275,19 +277,18 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		}
 
 		@Override
-		public String getDocumentation() {
-			final StringBuilder sb = new StringBuilder();
+		public Doc getDocumentation() {
+			RegularDoc sb = new RegularDoc();
 			sb.append("CSV File ").append(header ? "with header" : "no header").append(Strings.LN);
 			sb.append("Dimensions: ").append(cols + " columns x " + (header ? rows - 1 : rows) + " rows")
 					.append(Strings.LN);
-			sb.append("Delimiter: ").append(delimiter).append(Strings.LN);
-			sb.append("Contents type: ").append(type).append(Strings.LN);
+			sb.append("Delimiter: ").append(delimiter).append(Strings.LN).append("Contents type: ")
+					.append(type.toString()).append(Strings.LN);
 			if (header && headers != null) {
 				sb.append("Headers: ");
 				for (final String header2 : headers) { sb.append(header2).append(" | "); }
-				sb.setLength(sb.length() - 3);
 			}
-			return sb.toString();
+			return sb;
 		}
 
 		@Override

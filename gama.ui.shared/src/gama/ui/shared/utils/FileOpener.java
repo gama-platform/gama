@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * FileOpener.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * FileOpener.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
-package gama.ui.navigator.commands;
+package gama.ui.shared.utils;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
@@ -23,8 +23,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
 import gama.core.common.util.FileUtils;
-import gama.ui.navigator.view.contents.NavigatorRoot;
-import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * Utility methods related to open file from different type of locations.
@@ -39,7 +37,8 @@ public class FileOpener {
 	/**
 	 * Open file.
 	 *
-	 * @param uri the uri
+	 * @param uri
+	 *            the uri
 	 * @return the i editor part
 	 */
 	public static IEditorPart openFile(final URI uri) {
@@ -61,19 +60,16 @@ public class FileOpener {
 	/**
 	 * Open file in workspace.
 	 *
-	 * @param uri the uri
+	 * @param uri
+	 *            the uri
 	 * @return the i editor part
-	 * @throws PartInitException the part init exception
+	 * @throws PartInitException
+	 *             the part init exception
 	 */
 	public static IEditorPart openFileInWorkspace(final URI uri) throws PartInitException {
 		final IFile file = FileUtils.getWorkspaceFile(uri);
 		if (file == null) {
 			MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
-			return null;
-		}
-		if (file.isLinked() && !NavigatorRoot.getInstance().getManager().validateLocation(file)) {
-			MessageDialog.openWarning(null, "No file found",
-					"The file'" + file.getRawLocation() + "' referenced by '" + file.getName() + "' cannot be found.");
 			return null;
 		}
 		return IDE.openEditor(PAGE, file);
@@ -82,9 +78,11 @@ public class FileOpener {
 	/**
 	 * Open file in file system.
 	 *
-	 * @param uri the uri
+	 * @param uri
+	 *            the uri
 	 * @return the i editor part
-	 * @throws PartInitException the part init exception
+	 * @throws PartInitException
+	 *             the part init exception
 	 */
 	public static IEditorPart openFileInFileSystem(final URI uri) throws PartInitException {
 		if (uri == null) return null;

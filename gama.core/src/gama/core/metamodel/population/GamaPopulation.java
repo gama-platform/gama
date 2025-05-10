@@ -92,7 +92,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	}
 
 	/** The is disposing. */
-	protected volatile boolean isDisposing;
+	private volatile boolean isDisposing = false;
 
 	/**
 	 * The agent hosting this population which is considered as the direct macro-agent.
@@ -640,7 +640,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 	@Override
 	public void initializeFor(final IScope scope) throws GamaRuntimeException {
-		dispose();
 		computeTopology(scope);
 		if (topology != null) { topology.initialize(scope, this); }
 	}

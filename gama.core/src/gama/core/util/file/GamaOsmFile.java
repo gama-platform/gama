@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaOsmFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaOsmFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -76,6 +75,8 @@ import gama.dependencies.osmosis.Tag;
 import gama.dependencies.osmosis.Way;
 import gama.dependencies.osmosis.WayNode;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Strings;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialTransformations;
@@ -100,6 +101,7 @@ public class GamaOsmFile extends GamaGisFile {
 	/** The env. */
 	final ReferencedEnvelope env = new ReferencedEnvelope();
 
+	/** The Constant RESERVED_KEYS. */
 	static final List<String> RESERVED_KEYS = List.of("location", "shape");
 
 	/**
@@ -122,7 +124,6 @@ public class GamaOsmFile extends GamaGisFile {
 		/** The attributes. */
 		final Map<String, String> attributes = new LinkedHashMap();
 
-		
 		/**
 		 * Instantiates a new OSM info.
 		 *
@@ -236,14 +237,14 @@ public class GamaOsmFile extends GamaGisFile {
 		}
 
 		@Override
-		public String getDocumentation() {
-			final StringBuilder sb = new StringBuilder();
+		public Doc getDocumentation() {
+			final RegularDoc sb = new RegularDoc();
 			if (hasFailed) {
 				sb.append("Unreadable OSM file").append(Strings.LN)
 						.append("Decompress the file to an .osm file and retry");
 			} else {
 				sb.append("OSM file").append(Strings.LN);
-				sb.append(itemNumber).append(" objects").append(Strings.LN);
+				sb.append(String.valueOf(itemNumber)).append(" objects").append(Strings.LN);
 				sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m")
 						.append(Strings.LN);
 				sb.append("Coordinate Reference System: ").append(crs == null ? "No CRS" : crs.getName().getCode())
@@ -253,7 +254,7 @@ public class GamaOsmFile extends GamaGisFile {
 					attributes.forEach((k, v) -> sb.append("<li>").append(k).append(" (" + v + ")").append("</li>"));
 				}
 			}
-			return sb.toString();
+			return sb;
 		}
 
 		/**
@@ -317,10 +318,11 @@ public class GamaOsmFile extends GamaGisFile {
 	 *            the filtering options
 	 */
 	@doc (
-			value = "This file constructor allows to read an osm (.osm, .pbf, .bz2, .gz) file (using WGS84 coordinate system for the data)"
-					+ "The map is used to filter the objects in the file according their attributes: for each key (string) of the map, only the objects that have a value for the  attribute "
-					+ "contained in the value set are kept."
-					+ " For an exhaustive list of the attibute of OSM data, see: http://wiki.openstreetmap.org/wiki/Map_Features",
+			value = """
+					This file constructor allows to read an osm (.osm, .pbf, .bz2, .gz) file (using WGS84 coordinate system for the data)\
+					The map is used to filter the objects in the file according their attributes: for each key (string) of the map, only the objects that have a value for the  attribute \
+					contained in the value set are kept.\
+					 For an exhaustive list of the attibute of OSM data, see: http://wiki.openstreetmap.org/wiki/Map_Features""",
 
 			examples = { @example (
 					value = "file f <- osm_file(\"file\", map([\"highway\"::[\"primary\", \"secondary\"], \"building\"::[\"yes\"], \"amenity\"::[]]));",
@@ -384,15 +386,16 @@ public class GamaOsmFile extends GamaGisFile {
 						nodes.add(node);
 
 					} else if (entity instanceof Way) {
-						/*boolean keepObject = keepEntity(toFilter, entity);
-						if (!keepObject) return;*/
+						/*
+						 * boolean keepObject = keepEntity(toFilter, entity); if (!keepObject) return;
+						 */
 						registerHighway((Way) entity, usedNodes, intersectionNodes);
 						ways.add((Way) entity);
 
 					} else if (entity instanceof Relation) {
 						boolean keepObject = keepEntity(toFilter, entity);
 						if (!keepObject) return;
-						relations.add((Relation) entity); 
+						relations.add((Relation) entity);
 					}
 				}
 
@@ -454,7 +457,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 */
 	private void addAttribute(final Map<String, String> atts, final String nameAt, final Object val) {
 		if (RESERVED_KEYS.contains(nameAt)) return;
-		
+
 		final String type = atts.get(nameAt);
 		if ("string".equals(type)) return;
 		String newType = "int";
@@ -501,7 +504,7 @@ public class GamaOsmFile extends GamaGisFile {
 	public IList<IShape> buildGeometries(final IScope scope, final Set<Node> nodes, final List<Way> ways,
 			final List<Relation> relations, final Set<Long> intersectionNodes, final Map<Long, GamaShape> nodesPt,
 			final Map<Long, Node> nodesFromId) {
-		
+
 		boolean toFilter = filteringOptions != null && !filteringOptions.isEmpty();
 		for (final Way way : ways) {
 			for (WayNode wn : way.getWayNodes()) { nodes.add(nodesFromId.get(wn.getNodeId())); }
@@ -520,7 +523,7 @@ public class GamaOsmFile extends GamaGisFile {
 		final Map<Long, Entity> geomMap = new HashMap<>();
 
 		for (final Node node : nodes) {
-			//geomMap.put(node.getId(), node);
+			// geomMap.put(node.getId(), node);
 			final GamaShape pt = nodesPt.get(node.getId());
 			final boolean hasAttributes = !node.getTags().isEmpty();
 			final Map<String, String> atts = new HashMap<>();
@@ -529,8 +532,8 @@ public class GamaOsmFile extends GamaGisFile {
 
 				for (final Tag tg : node.getTags()) {
 					final String key = tg.getKey();
-					if (RESERVED_KEYS.contains(key)) continue;
-					
+					if (RESERVED_KEYS.contains(key)) { continue; }
+
 					final Object val = tg.getValue();
 					if (val != null) { addAttribute(atts, key, val); }
 					pt.setAttribute(key, val);
@@ -564,13 +567,13 @@ public class GamaOsmFile extends GamaGisFile {
 		for (final Way way : ways) {
 			geomMap.put(way.getId(), way);
 			boolean keepObject = keepEntity(toFilter, way);
-			if (!keepObject) continue;
+			if (!keepObject) { continue; }
 			final IMap<String, Object> values = GamaMapFactory.create();
 			final Map<String, String> atts = GamaMapFactory.createUnordered();
 
 			for (final Tag tg : way.getTags()) {
 				final String key = tg.getKey();
-				if (RESERVED_KEYS.contains(key)) continue;
+				if (RESERVED_KEYS.contains(key)) { continue; }
 				final Object val = tg.getValue();
 				if (val != null) { addAttribute(atts, key, val); }
 				values.put(key, tg.getValue());
@@ -644,55 +647,74 @@ public class GamaOsmFile extends GamaGisFile {
 
 			for (final Tag tg : relation.getTags()) {
 				final String key = tg.getKey();
-				if (RESERVED_KEYS.contains(key)) continue;
+				if (RESERVED_KEYS.contains(key)) { continue; }
 				values.put(key, tg.getValue());
 			}
 			String type = (String) values.get("type");
 			if ("polygon".equals(type) || "multipolygon".equals(type)) {
-				
-				managePolygonRelation(scope, relation, geometries, geomMap, values,  nodesPt,intersectionNodes , atts) ;
-						
+
+				managePolygonRelation(scope, relation, geometries, geomMap, values, nodesPt, intersectionNodes, atts);
+
 			} else {
-				 manageNormalRelation(scope, relation, geometries, geomMap, values,  nodesPt,intersectionNodes ) ;
-					
+				manageNormalRelation(scope, relation, geometries, geomMap, values, nodesPt, intersectionNodes);
+
 			}
 
-			
 		}
 		nbObjects = geometries == null ? 0 : geometries.size();
 		return geometries;
 	}
-	
-	
-	private void managePolygonRelation(IScope scope, Relation relation, final IList<IShape> geometries, final Map<Long, Entity> geomMap, final Map<String, Object> values,  final Map<Long, GamaShape> nodesPt, final Set<Long> intersectionNodes, Map<String, String> atts ) {
+
+	/**
+	 * Manage polygon relation.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param relation
+	 *            the relation
+	 * @param geometries
+	 *            the geometries
+	 * @param geomMap
+	 *            the geom map
+	 * @param values
+	 *            the values
+	 * @param nodesPt
+	 *            the nodes pt
+	 * @param intersectionNodes
+	 *            the intersection nodes
+	 * @param atts
+	 *            the atts
+	 */
+	private void managePolygonRelation(final IScope scope, final Relation relation, final IList<IShape> geometries,
+			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, GamaShape> nodesPt,
+			final Set<Long> intersectionNodes, final Map<String, String> atts) {
 		final List<IShape> points = GamaListFactory.create(Types.GEOMETRY);
-		
-		IList<IList<IShape>> ptsList = GamaListFactory.create() ;
-		IList<IShape> inner = GamaListFactory.create() ;
+
+		IList<IList<IShape>> ptsList = GamaListFactory.create();
+		IList<IShape> inner = GamaListFactory.create();
 		for (final RelationMember member : relation.getMembers()) {
 			final Entity entity = geomMap.get(member.getMemberId());
 			if (entity instanceof Way) {
-				IList<IShape> pts = GamaListFactory.create() ;
-				final Way way = ((Way) entity);
+				IList<IShape> pts = GamaListFactory.create();
+				final Way way = (Way) entity;
 				for (final WayNode node : way.getWayNodes()) {
 					final GamaShape pp = nodesPt.get(node.getNodeId());
 					if (pp == null) { continue; }
 					pts.add(pp);
-					
-					
+
 				}
-				if (member.getMemberRole().equals("outer"))
+				if ("outer".equals(member.getMemberRole())) {
 					ptsList.add(pts);
-				else {
+				} else {
 					inner.add(GamaGeometryType.buildPolygon(pts));
 				}
-				
+
 			}
 		}
 		if (ptsList.size() > 1) {
 			IList<IShape> ptsCurrent = ptsList.get(0);
 			ptsList.remove(ptsCurrent);
-			for(IList<IShape>  pts : ptsList) {
+			for (IList<IShape> pts : ptsList) {
 				int id = ptsCurrent.indexOf(pts.get(0));
 				if (id >= 0) {
 					if (id == 0) {
@@ -700,31 +722,26 @@ public class GamaOsmFile extends GamaGisFile {
 					} else {
 						ptsCurrent.addAll(id, pts);
 					}
-					
+
 				}
-					
+
 			}
 			points.addAll(ptsCurrent);
-			
-		} else if (!ptsList.isEmpty()){
-			points.addAll(ptsList.get(0));
-		}
-		
-		if (points.size() < 3) { return; }
+
+		} else if (!ptsList.isEmpty()) { points.addAll(ptsList.get(0)); }
+
+		if (points.size() < 3) return;
 
 		IShape geomTmp = GamaGeometryType.buildPolygon(points);
-		
-		
+
 		if (geomTmp != null && geomTmp.getInnerGeometry() != null && !geomTmp.getInnerGeometry().isEmpty()
 				&& geomTmp.getInnerGeometry().getArea() > 0) {
-			
-			if (inner != null &&!inner.isEmpty())
-				geomTmp = SpatialOperators.minus(scope, geomTmp, inner);
-			
-			
+
+			if (inner != null && !inner.isEmpty()) { geomTmp = SpatialOperators.minus(scope, geomTmp, inner); }
+
 			final IShape geom = SpatialTransformations.clean(scope, geomTmp);
 			values.forEach((k, v) -> geom.setAttribute(k, v));
-			
+
 			geometries.add(geom);
 			geom.forEachAttribute((att, val) -> {
 				final String idType = att + " (polygon)";
@@ -745,10 +762,29 @@ public class GamaOsmFile extends GamaGisFile {
 			});
 		}
 
-		
 	}
-	
-	private void manageNormalRelation(IScope scope, Relation relation, final IList<IShape> geometries, final Map<Long, Entity> geomMap, final Map<String, Object> values,  final Map<Long, GamaShape> nodesPt, final Set<Long> intersectionNodes ) {
+
+	/**
+	 * Manage normal relation.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param relation
+	 *            the relation
+	 * @param geometries
+	 *            the geometries
+	 * @param geomMap
+	 *            the geom map
+	 * @param values
+	 *            the values
+	 * @param nodesPt
+	 *            the nodes pt
+	 * @param intersectionNodes
+	 *            the intersection nodes
+	 */
+	private void manageNormalRelation(final IScope scope, final Relation relation, final IList<IShape> geometries,
+			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, GamaShape> nodesPt,
+			final Set<Long> intersectionNodes) {
 		int order = 0;
 		for (final RelationMember member : relation.getMembers()) {
 			final Entity entity = geomMap.get(member.getMemberId());
@@ -758,13 +794,13 @@ public class GamaOsmFile extends GamaGisFile {
 				wayValues.put("entity_order", order++);
 				// TODO FIXME AD: What's that ??
 				wayValues.put("gama_bus_line", values.get("name"));
-				wayValues.put("osm_way_id", ((Way) entity).getId());
+				wayValues.put("osm_way_id", entity.getId());
 				if (relationWays.size() > 0) {
 					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
 					geometries.addAll(geoms);
 				}
 			} else if (entity instanceof Node) {
-				final GamaShape pt = nodesPt.get(((Node) entity).getId());
+				final GamaShape pt = nodesPt.get(entity.getId());
 				final GamaShape pt2 = pt.copy(scope);
 
 				final List objs = GamaListFactory.create(Types.GEOMETRY);

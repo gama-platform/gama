@@ -12,8 +12,8 @@ package gama.core.runtime.server;
 
 import static gama.core.runtime.server.ISocketCommand.ARGS;
 import static gama.core.runtime.server.ISocketCommand.ESCAPED;
-import static gama.core.runtime.server.ISocketCommand.EVALUATE;
 import static gama.core.runtime.server.ISocketCommand.EXPR;
+import static gama.core.runtime.server.ISocketCommand.EXPRESSION;
 import static gama.core.runtime.server.ISocketCommand.NB_STEP;
 import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
@@ -314,7 +314,7 @@ public class DefaultServerCommands {
 		}
 		final Object expr = map.get(EXPR);
 		if (expr == null) return new CommandResponse(MalformedRequest,
-				"For " + EVALUATE + ", mandatory parameter is: " + EXPR, map, false);
+				"For " + EXPRESSION + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		String res = null;
 		ITopLevelAgent agent = plan.getAgent();
@@ -325,7 +325,7 @@ public class DefaultServerCommands {
 		} else {
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
-				if (expression != null) { res = "" + scope.evaluate(expression, agent).getValue(); }
+				if (expression != null) { res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString(); }
 			} catch (final Exception e) {
 				// error = true;
 				res = "> Error: " + e.getMessage();
@@ -336,8 +336,7 @@ public class DefaultServerCommands {
 		}
 		if (res == null || res.length() == 0 || res.startsWith("> Error: "))
 			return new CommandResponse(UnableToExecuteRequest, res, map, false);
-		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, res, map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 
 	/**

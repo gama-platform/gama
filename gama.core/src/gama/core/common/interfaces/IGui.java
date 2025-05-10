@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -39,6 +40,8 @@ import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.descriptions.ActionDescription;
+import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
 
@@ -91,7 +94,7 @@ public interface IGui {
 				public long getModificationStamp() { return 0; }
 
 				@Override
-				public String getDocumentation() { return ""; }
+				public Doc getDocumentation() { return IGamlDescription.EMPTY_DOC; }
 			};
 		}
 
@@ -704,5 +707,10 @@ public interface IGui {
 	 * @date 17 oct. 2023
 	 */
 	default Map<String, ISocketCommand> getServerCommands() { return CommandExecutor.getDefaultCommands(); }
+
+	/**
+	 * @param uri
+	 */
+	default void openFile(final URI uri) {}
 
 }

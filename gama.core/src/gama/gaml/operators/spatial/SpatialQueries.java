@@ -183,22 +183,6 @@ public class SpatialQueries {
 	@no_test // already done in Spatial tests Models
 	public static IList<? extends IShape> at_distance(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final Double distance) {
-		if (GamaPreferences.Experimental.AT_DISTANCE_OPTIMIZATION.getValue() && scope.getAgent().isPoint()) {
-			final ITopology topo = scope.getTopology();
-			if (topo.isContinuous() && !topo.isTorus()
-					&& (double) list.length(scope) / (double) scope.getSimulation().getMembersSize(scope) < 0.1) {
-				try (final Collector.AsList<IAgent> results = Collector.getList()) {
-					final IAgent ag = scope.getAgent();
-					for (final IShape sp : list.iterable(scope)) {
-						if (ag.euclidianDistanceTo(sp) <= distance) { results.add((IAgent) sp); }
-					}
-					results.remove(ag);
-					return results.items();
-				}
-			}
-
-		}
-
 		final IType contentType = list.getGamlType().getContentType();
 		if (contentType.isAgentType()) return _neighbors(scope, In.list(scope, list), scope.getAgent(), distance);
 		if (contentType == Types.GEOMETRY) return geomAtDistance(scope, list, distance);

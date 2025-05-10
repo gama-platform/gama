@@ -271,5 +271,22 @@ public class SpatialProperties {
 		if (g1 == null || g2 == null) return false;
 		return g1.covers(g2);
 	}
+	
+	@operator (
+			value = "equals",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_PROPERTIES },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION })
+	@doc (
+			value = "A boolean, equal to true if the left-geometry (or agent/point) equals the right-geometry (or agent/point).",
+			usages = { @usage ("if one of the operand is null, returns false.") },
+			examples = { @example (
+					value = "square(5) equals (rectangle(10,5) rotated_by 90)",
+					equals = "true") },
+			see = { "disjoint_from", "crosses", "overlaps", "partially_overlaps", "touches", "covers" })
+	@test ("rectangle(5,10) equals rectangle(5,10)")
+	public static Boolean equalsGeometry(final IShape g1, final IShape g2) {
+		if (g1 == null || g2 == null || g1.getInnerGeometry() == null || g2.getInnerGeometry() == null) return false;
+		return g1.getInnerGeometry().equals(g2.getInnerGeometry());
+	}
 
 }

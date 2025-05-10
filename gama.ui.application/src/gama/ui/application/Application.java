@@ -145,6 +145,7 @@ public class Application implements IApplication {
 					clearWorkspace(false);
 				}
 				try {
+					GAMA.startGuiServer();
 					final int returnCode = Workbench.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {

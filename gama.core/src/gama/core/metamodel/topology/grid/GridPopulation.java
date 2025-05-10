@@ -1177,7 +1177,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	/** The current agent index. */
 	protected int currentAgentIndex;
 
-	private boolean isDisposing;
+	private boolean isDisposing = false;
 
 	@Override
 	public IGridAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,

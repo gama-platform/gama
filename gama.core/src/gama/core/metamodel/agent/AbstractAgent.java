@@ -122,6 +122,7 @@ public abstract class AbstractAgent implements IAgent {
 		if (dead) return;
 		dead = true;
 		final IPopulation<? extends IAgent> p = getPopulation();
+		// if (p != null) { p.removeValue(null, this); }
 		if (p != null && !p.isDisposing()) { p.removeValue(null, this); }
 		final IShape s = getGeometry();
 		if (s != null) { s.dispose(); }

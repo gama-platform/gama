@@ -22,7 +22,7 @@ import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor;
 import org.eclipse.xtext.validation.Issue;
 
 import gama.gaml.interfaces.IGamlIssue;
-import gama.ui.navigator.commands.FileOpener;
+import gama.ui.shared.utils.FileOpener;
 
 /**
  * The Class GamlQuickfixProvider.
