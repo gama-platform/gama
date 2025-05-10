@@ -12,8 +12,6 @@ package gama.core.kernel.experiment;
 
 import static gama.core.common.interfaces.IKeyword.FONT;
 
-import java.awt.Color;
-
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
@@ -68,35 +66,23 @@ import gama.gaml.types.IType;
 						type = IType.LABEL,
 						optional = true,
 						doc = @doc ("A category label, used to group parameters in the interface")),
-				@facet (
-						name = IKeyword.FORMAT,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc ("Whether or not to interpret the text as formatted using XML / hyperlinks.")),
+				// @facet (
+				// name = IKeyword.FORMAT,
+				// type = IType.BOOL,
+				// optional = true,
+				// doc = @doc ("Whether or not to interpret the text as formatted using XML / hyperlinks.")),
 				@facet (
 						name = IKeyword.MESSAGE,
 						type = IType.NONE,
 						optional = false,
 						doc = @doc ("""
 								The text to display.
-								If `format` is false or not specified, the font, color, and background are controlled by the respective facets.
-								If `format` is true, the text will instead be interpreted as a text with a few XML tags and hyperlinks that will be automatically detected. When configured to use formatting XML, it requires any ampersand (&) characters in the text to be replaced by the entity &amp;. The following tags can be used:\r
-								\r
-								p - for defining paragraphs. The following attributes are allowed:\r
-									vspace - if set to 'false', no vertical space will be added (default is 'true')\r
-								li - for defining list items. The following attributes are allowed:\r
-									vspace - the same as with the p tag\r
-									indent - the number of pixels to indent the text in the list item\r
-									bindent - the number of pixels to indent the bullet itself\r
-								Text in paragraphs and list items will be wrapped according to the width of the control. The following tags can appear as children of either p or li elements:\r
-								\r
-								a - to render a hyperlink. Element accepts attribute 'href'. The element also accepts 'nowrap' attribute (default is false). When set to 'true', the hyperlink will not be wrapped. Hyperlinks automatically created when 'http://' is encountered in text are not wrapped.\r
-								br - forced line break (no attributes).\r
-								\r
+								If the text does not begin with <html>, the font, color, and background are controlled by the respective facets. A few formatting tags like <li> ... </li> / <a href=".."> ... </a> are supported. Weblinks (http, https) are automatically detected. Beware that not closing the tags correctly will result in the text not being displayed.
+								If the text begins with <html>, it will instead be interpreted and displayed in a mini-browser. Most of the regular html tags can be used, including displaying images, and all links will be treated as external (i.e. opening a new browser).
 								""")), },
 		omissible = IKeyword.MESSAGE)
 @doc (
-		value = "The statement makes an experiment display text in the parameters view.")
+		value = "The statement makes an experiment display formatted text in the parameters view.")
 public class TextStatement extends AbstractStatement implements IExperimentDisplayable {
 
 	/**
@@ -107,7 +93,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	 */
 	public TextStatement(final IDescription desc) {
 		super(desc);
-		format = getFacet(IKeyword.FORMAT);
+		// format = getFacet(IKeyword.FORMAT);
 		message = getFacet(IKeyword.MESSAGE);
 		color = getFacet(IKeyword.COLOR);
 		category = getFacet(IKeyword.CATEGORY);
@@ -119,7 +105,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	final IExpression message;
 
 	/** The color. */
-	final IExpression color, category, font, background, format;
+	final IExpression color, category, font, background;
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
@@ -137,17 +123,19 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 		return Cast.asString(scope, message.value(scope));
 	}
 
-	/**
-	 * Checks if is xml.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return true, if is xml
-	 */
-	public boolean isXML(final IScope scope) {
-		if (format == null) return false;
-		return Cast.asBool(scope, format.value(scope));
-	}
+	// /**
+	// * Checks if is xml.
+	// *
+	// * @param scope
+	// * the scope
+	// * @return true, if is xml
+	// */
+	// public boolean isXML(final IScope scope) {
+	// if (message == null) return false;
+	// return Cast.asString(scope, message.value(scope))
+	// if (format == null) return false;
+	// return Cast.asBool(scope, format.value(scope));
+	// }
 
 	/**
 	 * Gets the font.
@@ -175,7 +163,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	 *            the scope
 	 * @return the background
 	 */
-	public Color getBackground(final IScope scope) {
+	public GamaColor getBackground(final IScope scope) {
 		GamaColor rgb = null;
 		if (background != null) { rgb = Cast.asColor(scope, background.value(scope)); }
 		return rgb;
