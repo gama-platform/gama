@@ -112,6 +112,15 @@ public class GamaPreferences {
 		/** The Constant EDITOR. */
 		public static final String HTTP = "Http connections";
 
+		/** The Constant WEB. */
+		public static final String WEB = "Web access";
+
+		/** The Constant CORE_EXTERNAL_BROWSER. */
+		public static final Pref<Boolean> CORE_EXTERNAL_BROWSER = create("pref_external_browser",
+				"Browser to open to display web links (in documentation or text statements)", true, IType.BOOL, true)
+						.withLabels("Internal", "System").withColors(GamaColor.get("lightgray"), GamaColor.get("gray"))
+						.in(Network.NAME, WEB);
+
 	}
 
 	/**
