@@ -63,6 +63,9 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 			if (member instanceof IContainer) {
 				processContainer((IContainer) member, list);
 			} else if (member instanceof IFile && GamlFileExtension.isGaml(member.getName())) {
+				GamlFileInfo data = (GamlFileInfo) provider.getMetaData(member, true, true);
+				// in case the data is not compatible anymore
+				if (data.uri == null || data.uri.isEmpty() || data.getName() == null) { provider.refreshAllMetaData(); }
 				list.add((GamlFileInfo) provider.getMetaData(member, true, true));
 			}
 		}
