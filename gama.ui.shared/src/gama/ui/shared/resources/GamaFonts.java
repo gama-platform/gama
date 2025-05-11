@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.resources;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
@@ -65,6 +66,18 @@ public class GamaFonts {
 	}
 
 	/**
+	 * Gets the font.
+	 *
+	 * @param font
+	 *            the font
+	 * @return the font
+	 */
+	public static GamaFont getFont(final Font font) {
+		FontData data = font.getFontData()[0];
+		return new GamaFont(data.getName(), (int) data.height, data.style);
+	}
+
+	/**
 	 * With size.
 	 *
 	 * @param font
@@ -108,6 +121,34 @@ public class GamaFonts {
 	 */
 	private static int cap(final int i) {
 		return Math.min(MAX_SIZE, Math.max(MIN_SIZE, i));
+	}
+
+	/**
+	 * In bold.
+	 *
+	 * @param font
+	 *            the font
+	 * @param wantedSize
+	 *            the wanted size
+	 * @return the font
+	 */
+	public static Font inBold(final Font font) {
+		FontData bold = font.getFontData()[0];
+		bold.setStyle(bold.getStyle() | SWT.BOLD);
+		return getFont(bold);
+	}
+
+	/**
+	 * In italic.
+	 *
+	 * @param font
+	 *            the font
+	 * @return the font
+	 */
+	public static Font inItalic(final Font font) {
+		FontData italic = font.getFontData()[0];
+		italic.setStyle(italic.getStyle() | SWT.ITALIC);
+		return getFont(italic);
 	}
 
 }

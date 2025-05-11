@@ -172,6 +172,9 @@ public interface IGui {
 	/** The perspective modeling id. */
 	String PERSPECTIVE_MODELING_ID = "gama.ui.application.perspectives.ModelingPerspective";
 
+	/** The browser view id. */
+	String BROWSER_VIEW_ID = "gama.ui.application.browser";
+
 	/**
 	 * Gets the status.
 	 *
