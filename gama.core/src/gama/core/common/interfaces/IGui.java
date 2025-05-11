@@ -98,6 +98,9 @@ public interface IGui {
 			};
 		}
 
+		@Override
+		public void refreshAllMetaData() {}
+
 	};
 
 	/** The null status displayer. */
