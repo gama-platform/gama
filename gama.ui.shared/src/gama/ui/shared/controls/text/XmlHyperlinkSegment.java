@@ -19,11 +19,14 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+import gama.ui.shared.resources.GamaFonts;
+
 /**
  * @version 1.0
  * @author
  */
-public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSegment {
+public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSegment, IXmlFontUser {
 
 	/** The href. */
 	private String href;
@@ -44,8 +47,9 @@ public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSeg
 	 * @param fontId
 	 *            the font id
 	 */
-	public XmlHyperlinkSegment(final String text, final HyperlinkSettings settings, final boolean bold) {
-		super(text, bold);
+	public XmlHyperlinkSegment(final String text, final HyperlinkSettings settings, final boolean bold,
+			final boolean italic, final GamaFont font) {
+		super(text, bold, italic, false, font);
 		this.settings = settings;
 	}
 
@@ -82,6 +86,7 @@ public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSeg
 
 	@Override
 	protected void drawText(final GC gc, final String s, final int clipX, final int clipY) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : getFont());
 		gc.drawText(s, clipX, clipY, false);
 	}
 

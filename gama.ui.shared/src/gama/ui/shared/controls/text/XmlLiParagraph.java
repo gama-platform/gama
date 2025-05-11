@@ -18,10 +18,12 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+
 /**
  * The Class XmlLiParagraph.
  */
-public class XmlLiParagraph extends XmlParagraph {
+public class XmlLiParagraph extends XmlParagraph implements IXmlFontUser {
 
 	/** The Constant CIRCLE. */
 	public static final int CIRCLE = 1;
@@ -56,8 +58,8 @@ public class XmlLiParagraph extends XmlParagraph {
 	/**
 	 * Constructor for BulletParagraph.
 	 */
-	public XmlLiParagraph(final boolean addVerticalSpace) {
-		super(addVerticalSpace);
+	public XmlLiParagraph(final boolean addVerticalSpace, final GamaFont font) {
+		super(addVerticalSpace, font);
 	}
 
 	@Override
@@ -149,6 +151,7 @@ public class XmlLiParagraph extends XmlParagraph {
 	@Override
 	public void layout(final GC gc, final int width, final Locator loc, final int lineHeight,
 			final IHyperlinkSegment selectedLink) {
+		gc.setFont(getFont());
 		computeRowHeights(gc, width, loc, lineHeight);
 		layoutBullet(gc, loc, lineHeight);
 		super.layout(gc, width, loc, lineHeight, selectedLink);
@@ -171,6 +174,7 @@ public class XmlLiParagraph extends XmlParagraph {
 	@Override
 	public void paint(final GC gc, final Rectangle repaintRegion, final IHyperlinkSegment selectedLink,
 			final SelectionData selData) {
+		gc.setFont(getFont());
 		paintBullet(gc, repaintRegion);
 		super.paint(gc, repaintRegion, selectedLink, selData);
 	}
@@ -188,6 +192,7 @@ public class XmlLiParagraph extends XmlParagraph {
 	 *            the resource table
 	 */
 	private void layoutBullet(final GC gc, final Locator loc, final int lineHeight) {
+		gc.setFont(getFont());
 		int x = loc.x - getIndent() + getBulletIndent();
 		int rowHeight = loc.heights.get(0)[0];
 		if (style == CIRCLE) {
@@ -211,6 +216,7 @@ public class XmlLiParagraph extends XmlParagraph {
 	 *            the resource table
 	 */
 	public void paintBullet(final GC gc, final Rectangle repaintRegion) {
+		gc.setFont(getFont());
 		if (bbounds == null) return;
 		int x = bbounds.x;
 		int y = bbounds.y;

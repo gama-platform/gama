@@ -16,7 +16,6 @@ import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -36,6 +35,7 @@ import gama.core.util.GamaFont;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.text.XmlText;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -52,7 +52,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	final Color back, front;
 
 	/** The font. */
-	final Font font;
+	final GamaFont font;
 
 	/** The is XML. */
 	// boolean isHtml;
@@ -74,8 +74,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		GamaColor b = command.getBackground(scope);
 		front = c == null ? null : GamaColors.toSwtColor(c);
 		back = b == null ? null : GamaColors.toSwtColor(b);
-		GamaFont f = command.getFont(scope);
-		font = f == null ? null : new Font(WorkbenchHelper.getDisplay(), f.getFontName(), f.getSize(), f.getStyle());
+		font = command.getFont(scope);
 	}
 
 	/**
@@ -125,7 +124,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		if (text == null) return new Text(composite, SWT.None);
 		Control result = text.contains("<html>") ? buildBrowser(composite, text) : buildForm(composite, text);
 		GamaColors.setBackAndForeground(back, front, result);
-		result.setFont(font);
+		result.setFont(GamaFonts.getFont(font));
 		composite.requestLayout();
 		return result;
 
@@ -141,7 +140,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	 * @return the control
 	 */
 	private Control buildForm(final Composite composite, final String text) {
-		XmlText form = new XmlText(composite, SWT.NONE | SWT.READ_ONLY);
+		XmlText form = new XmlText(composite, SWT.NONE | SWT.READ_ONLY, font);
 		form.setText("<form><p>" + text + "</p></form>", true, true);
 		form.setHyperlinkSettings(getHyperlinkSettings());
 		form.addHyperlinkListener(new HyperlinkAdapter() {

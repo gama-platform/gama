@@ -17,7 +17,6 @@ import java.util.Vector;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -25,10 +24,13 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+import gama.ui.shared.resources.GamaFonts;
+
 /**
  * @version 1.0
  */
-public class XmlTextSegment extends XmlParagraphSegment {
+public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser {
 
 	/** The text. */
 	private String text;
@@ -44,6 +46,9 @@ public class XmlTextSegment extends XmlParagraphSegment {
 
 	/** The text fragments. */
 	private TextFragment[] textFragments;
+
+	/** The bold. */
+	final boolean bold, italic;
 
 	/**
 	 * The Class AreaRectangle.
@@ -169,26 +174,16 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 *            the font id
 	 * @param colorId
 	 *            the color id
-	 */
-	public XmlTextSegment(final String text, final boolean bold) {
-		this(text, bold, true);
-	}
-
-	/**
-	 * Instantiates a new text segment.
-	 *
-	 * @param text
-	 *            the text
-	 * @param fontId
-	 *            the font id
-	 * @param colorId
-	 *            the color id
 	 * @param wrapAllowed
 	 *            the wrap allowed
 	 */
-	public XmlTextSegment(final String text, final boolean bold, final boolean wrapAllowed) {
+	public XmlTextSegment(final String text, final boolean bold, final boolean italic, final boolean wrapAllowed,
+			final GamaFont font) {
+		super(font);
 		this.text = cleanup(text);
 		this.wrapAllowed = wrapAllowed;
+		this.bold = bold;
+		this.italic = italic;
 	}
 
 	/**
@@ -344,7 +339,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	@Override
 	public boolean advanceLocator(final GC gc, final int wHint, final Locator locator,
 			final boolean computeHeightOnly) {
-		if (XmlTextModel.REGULAR_FONT != null) { gc.setFont(XmlTextModel.REGULAR_FONT); }
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		FontMetrics fm = gc.getFontMetrics();
 		int lineHeight = fm.getHeight();
 		boolean newLine = false;
@@ -434,6 +429,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	private void layoutWithoutWrapping(final GC gc, final int width, final Locator locator, final boolean selected,
 			final FontMetrics fm, final int lineHeight, final int descent) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		Point extent = gc.textExtent(text);
 		int ewidth = extent.x;
 		if (isSelectable()) { ewidth += 1; }
@@ -470,6 +466,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	protected int convertOffsetToStringIndex(final GC gc, final String s, final int x, int swidth,
 			final int selOffset) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		int index = s.length();
 		while (index > 0 && x + swidth > selOffset) {
 			index--;
@@ -494,26 +491,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 *            the repaint region
 	 */
 	public void paintFocus(final GC gc, final Color bg, final Color fg, final boolean selected,
-			final Rectangle repaintRegion) {
-		if (areaRectangles == null) return;
-		for (AreaRectangle areaRectangle : areaRectangles) {
-			Rectangle br = areaRectangle.rect;
-			int bx = br.x;
-			int by = br.y;
-			if (repaintRegion != null) {
-				bx -= repaintRegion.x;
-				by -= repaintRegion.y;
-			}
-			if (selected) {
-				gc.setBackground(bg);
-				gc.setForeground(fg);
-				gc.drawFocus(bx, by, br.width, br.height);
-			} else {
-				gc.setForeground(bg);
-				gc.drawRectangle(bx, by, br.width - 1, br.height - 1);
-			}
-		}
-	}
+			final Rectangle repaintRegion) {}
 
 	/**
 	 * Paint.
@@ -558,7 +536,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	protected void paint(final GC gc, final boolean hover, final boolean selected, final boolean rollover,
 			final SelectionData selData, final Rectangle repaintRegion) {
 		// apply segment-specific font, color and background
-		if (XmlTextModel.REGULAR_FONT != null) { gc.setFont(XmlTextModel.REGULAR_FONT); }
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 
 		FontMetrics fm = gc.getFontMetrics();
 		int lineHeight = fm.getHeight();
@@ -587,18 +565,13 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	@Override
 	public void computeSelection(final GC gc, final SelectionData selData) {
-		Font oldFont = null;
-
-		if (XmlTextModel.REGULAR_FONT != null) { gc.setFont(XmlTextModel.REGULAR_FONT); }
-
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		for (AreaRectangle areaRectangle : areaRectangles) {
 			Rectangle rect = areaRectangle.rect;
 			String text = areaRectangle.getText();
 			Point extent = gc.textExtent(text);
 			computeSelection(gc, text, extent.x, selData, rect);
 		}
-		// restore GC resources
-		if (oldFont != null) { gc.setFont(oldFont); }
 	}
 
 	/**
@@ -701,6 +674,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	private void computeSelection(final GC gc, final String s, final int swidth, final SelectionData selData,
 			final Rectangle bounds) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		int leftOffset = selData.getLeftOffset(bounds.height);
 		int rightOffset = selData.getRightOffset(bounds.height);
 		boolean firstRow = selData.isFirstSelectionRow(bounds.y, bounds.height);
@@ -749,6 +723,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	private void paintStringSegment(final GC gc, final String s, final int swidth, final int x, final int y,
 			final int lineY, final boolean hover, final boolean rolloverMode, final Rectangle repaintRegion) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		boolean reverse = false;
 		int clipX = x;
 		int clipY = y;
@@ -781,6 +756,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 *            the clip Y
 	 */
 	protected void drawText(final GC gc, final String s, final int clipX, final int clipY) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		gc.drawText(s, clipX, clipY, true);
 	}
 
@@ -802,6 +778,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	private void drawUnderline(final GC gc, final int swidth, final int x, final int y, final boolean hover,
 			final boolean rolloverMode) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		if (underline || rolloverMode) {
 			Color saved = null;
 			if (rolloverMode && !hover) {
@@ -829,11 +806,8 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 */
 	@Override
 	public void layout(final GC gc, final int width, final Locator locator, final boolean selected) {
-		Font oldFont = null;
-
 		areaRectangles.clear();
-
-		if (XmlTextModel.REGULAR_FONT != null) { gc.setFont(XmlTextModel.REGULAR_FONT); }
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		FontMetrics fm = gc.getFontMetrics();
 		int lineHeight = fm.getHeight();
 		int descent = fm.getDescent();
@@ -887,7 +861,6 @@ public class XmlTextSegment extends XmlParagraphSegment {
 			locator.x += lastWidth;
 			locator.rowHeight = Math.max(locator.rowHeight, lineExtent.y);
 		}
-		if (oldFont != null) { gc.setFont(oldFont); }
 	}
 
 	/**
@@ -897,6 +870,7 @@ public class XmlTextSegment extends XmlParagraphSegment {
 	 *            the gc
 	 */
 	private void computeTextFragments(final GC gc) {
+		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		if (textFragments != null) return;
 		ArrayList<TextFragment> list = new ArrayList<>();
 		BreakIterator wb = BreakIterator.getLineInstance();

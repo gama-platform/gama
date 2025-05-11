@@ -25,7 +25,6 @@ package gama.ui.shared.controls.text;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.internal.forms.widgets.BulletParagraph;
 import org.eclipse.ui.internal.forms.widgets.IFocusSelectable;
 import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
-import org.eclipse.ui.internal.forms.widgets.ObjectSegment;
 import org.eclipse.ui.internal.forms.widgets.SWTUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -51,12 +49,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
+import gama.ui.shared.resources.GamaFonts;
 
 /**
  * The Class XmlTextModel.
  */
-public class XmlTextModel {
+public class XmlTextModel implements IXmlFontUser {
 
 	static {
 		DEBUG.ON();
@@ -105,18 +105,19 @@ public class XmlTextModel {
 	/** The hyperlink settings. */
 	private HyperlinkSettings hyperlinkSettings;
 
-	/** The bold font. */
-	public static Font BOLD_FONT;
-
 	/** The regular font. */
-	public static Font REGULAR_FONT;
+	public GamaFont font;
 
 	/**
 	 * Instantiates a new xml text model.
 	 */
-	public XmlTextModel() {
+	public XmlTextModel(final GamaFont font) {
+		this.font = font;
 		reset();
 	}
+
+	@Override
+	public Font getFont() { return GamaFonts.getFont(font); }
 
 	/**
 	 * Gets the paragraphs.
@@ -126,21 +127,6 @@ public class XmlTextModel {
 	public XmlParagraph[] getParagraphs() {
 		if (paragraphs == null) return new XmlParagraph[0];
 		return paragraphs.toArray(new XmlParagraph[paragraphs.size()]);
-	}
-
-	/**
-	 * Gets the accessible text.
-	 *
-	 * @return the accessible text
-	 */
-	public String getAccessibleText() {
-		if (paragraphs == null) return ""; //$NON-NLS-1$
-		StringBuilder sbuf = new StringBuilder();
-		for (XmlParagraph paragraph : paragraphs) {
-			String text = paragraph.getAccessibleText();
-			sbuf.append(text);
-		}
-		return sbuf.toString();
 	}
 
 	/**
@@ -173,10 +159,20 @@ public class XmlTextModel {
 	 */
 	private String processAmpersandEscapes(final String pTaggedText) {
 		try {
+
 			String taggedText = pTaggedText.replace("&quot;", "&#034;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("<br>", "<br/>"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("</br>", "<br/>"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace(" \"", " &#034;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("\" ", "&#034; "); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace(" '", " &#039;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("' ", "&#039; "); //$NON-NLS-1$//$NON-NLS-2$
 			taggedText = taggedText.replace("&apos;", "&#039;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("< ", "&#060; "); //$NON-NLS-1$//$NON-NLS-2$
 			taggedText = taggedText.replace("&lt;", "&#060;"); //$NON-NLS-1$//$NON-NLS-2$
 			taggedText = taggedText.replace("&gt;", "&#062;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace(" >", " &#062;"); //$NON-NLS-1$//$NON-NLS-2$
+			taggedText = taggedText.replace("& ", "&#038; "); //$NON-NLS-1$//$NON-NLS-2$
 			taggedText = taggedText.replace("&amp;", "&#038;"); //$NON-NLS-1$//$NON-NLS-2$
 			return taggedText.replaceAll("&([^#])", "&#038;$1"); //$NON-NLS-1$//$NON-NLS-2$
 		} catch (Exception e) {
@@ -205,8 +201,10 @@ public class XmlTextModel {
 			Document doc = parser.parse(source);
 			processDocument(doc, expandURLs);
 		} catch (ParserConfigurationException | SAXException | IOException e) {
-			DEBUG.ERR("Error in parsing: ", e);
+			String text = "Error in the text: " + e.getMessage();
+			parseRegularText(text, false);
 		}
+
 	}
 
 	/**
@@ -240,8 +238,8 @@ public class XmlTextModel {
 				// Make an implicit paragraph
 				String text = getSingleNodeText(child);
 				if (text != null && !isIgnorableWhiteSpace(text, true)) {
-					XmlParagraph p = new XmlParagraph(true);
-					p.parseRegularText(text, expandURLs, true, getHyperlinkSettings(), false);
+					XmlParagraph p = new XmlParagraph(true, font);
+					p.parseRegularText(text, expandURLs, true, getHyperlinkSettings(), false, false);
 					plist.add(p);
 				}
 			} else if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -280,7 +278,7 @@ public class XmlTextModel {
 			String value = addSpaceAtt.getNodeValue();
 			addSpace = "true".equalsIgnoreCase(value); //$NON-NLS-1$
 		}
-		XmlParagraph p = new XmlParagraph(addSpace);
+		XmlParagraph p = new XmlParagraph(addSpace, font);
 
 		processSegments(p, children, expandURLs);
 		return p;
@@ -342,7 +340,7 @@ public class XmlTextModel {
 			} catch (NumberFormatException e) {}
 		}
 
-		XmlLiParagraph p = new XmlLiParagraph(addSpace);
+		XmlLiParagraph p = new XmlLiParagraph(addSpace, font);
 		p.setIndent(indent);
 		p.setBulletIndent(bindent);
 		p.setBulletStyle(style);
@@ -370,7 +368,7 @@ public class XmlTextModel {
 			if (child.getNodeType() == Node.TEXT_NODE) {
 				String value = getSingleNodeText(child);
 				if (value != null && !isIgnorableWhiteSpace(value, false)) {
-					p.parseRegularText(value, expandURLs, true, getHyperlinkSettings(), false);
+					p.parseRegularText(value, expandURLs, true, getHyperlinkSettings(), false, false);
 				}
 			} else if (child.getNodeType() == Node.ELEMENT_NODE) {
 				String name = child.getNodeName();
@@ -380,9 +378,17 @@ public class XmlTextModel {
 					processTextSegment(p, expandURLs, child);
 				} else if ("b".equalsIgnoreCase(name)) { //$NON-NLS-1$
 					String text = getNodeText(child);
-					p.parseRegularText(text, expandURLs, true, getHyperlinkSettings(), true);
+					p.parseRegularText(text, expandURLs, true, getHyperlinkSettings(), true, false);
+				} else if ("i".equalsIgnoreCase(name)) { //$NON-NLS-1$
+					String text = getNodeText(child);
+					p.parseRegularText(text, expandURLs, true, getHyperlinkSettings(), false, true);
 				} else if ("br".equalsIgnoreCase(name)) { //$NON-NLS-1$
-					segment = new XmlBreakSegment();
+					segment = new XmlBreakSegment(font);
+				} else {
+					String value = getNodeText(child);
+					if (value != null && !isIgnorableWhiteSpace(value, false)) {
+						p.parseRegularText(value, expandURLs, true, getHyperlinkSettings(), false, false);
+					}
 				}
 			}
 			if (segment != null) { p.addSegment(segment); }
@@ -406,48 +412,6 @@ public class XmlTextModel {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Process object segment.
-	 *
-	 * @param segment
-	 *            the segment
-	 * @param object
-	 *            the object
-	 * @param prefix
-	 *            the prefix
-	 */
-	private void processObjectSegment(final ObjectSegment segment, final Node object, final String prefix) {
-		NamedNodeMap atts = object.getAttributes();
-		Node id = atts.getNamedItem("href"); //$NON-NLS-1$
-		Node align = atts.getNamedItem("align"); //$NON-NLS-1$
-		try {
-			Method soi = ObjectSegment.class.getMethod("setObjectId", String.class);
-			soi.setAccessible(true);
-			Method sva = ObjectSegment.class.getMethod("setVerticalAlignment", int.class);
-			sva.setAccessible(true);
-			if (id != null) {
-				String value = id.getNodeValue();
-				soi.invoke(segment, prefix + value);
-			}
-			if (align != null) {
-				String value = align.getNodeValue().toLowerCase();
-				switch (value) {
-					case "top": //$NON-NLS-1$
-						sva.invoke(segment, ObjectSegment.TOP);
-						break;
-					case "middle": //$NON-NLS-1$
-						sva.invoke(segment, ObjectSegment.MIDDLE);
-						break;
-					case "bottom": //$NON-NLS-1$
-						sva.invoke(segment, ObjectSegment.BOTTOM);
-						break;
-					default:
-						break;
-				}
-			}
-		} catch (Exception e) {}
 	}
 
 	/**
@@ -559,11 +523,14 @@ public class XmlTextModel {
 		String href = null;
 		boolean wrapAllowed = true;
 		boolean bold = false;
+		boolean italic = false;
 
 		Node hrefAtt = atts.getNamedItem("href"); //$NON-NLS-1$
 		if (hrefAtt != null) { href = hrefAtt.getNodeValue(); }
 		Node boldAtt = atts.getNamedItem("bold"); //$NON-NLS-1$
 		if (boldAtt != null) { bold = true; }
+		Node itAtt = atts.getNamedItem("italic"); //$NON-NLS-1$
+		if (itAtt != null) { italic = true; }
 		Node nowrap = atts.getNamedItem("nowrap"); //$NON-NLS-1$
 		if (nowrap != null) {
 			String value = nowrap.getNodeValue();
@@ -571,7 +538,7 @@ public class XmlTextModel {
 				wrapAllowed = false;
 			}
 		}
-		XmlHyperlinkSegment segment = new XmlHyperlinkSegment(getNodeText(link), settings, bold);
+		XmlHyperlinkSegment segment = new XmlHyperlinkSegment(getNodeText(link), settings, bold, italic, font);
 		segment.setHref(href);
 		Node alt = atts.getNamedItem("alt"); //$NON-NLS-1$
 		if (alt != null) { segment.setTooltipText(alt.getNodeValue()); }
@@ -601,7 +568,7 @@ public class XmlTextModel {
 				wrapAllowed = false;
 			}
 		}
-		p.parseRegularText(text, expandURLs, wrapAllowed, getHyperlinkSettings(), false);
+		p.parseRegularText(text, expandURLs, wrapAllowed, getHyperlinkSettings(), false, false);
 	}
 
 	/**
@@ -619,27 +586,27 @@ public class XmlTextModel {
 
 		regularText = getNormalizedText(regularText);
 
-		XmlParagraph p = new XmlParagraph(true);
+		XmlParagraph p = new XmlParagraph(true, font);
 		paragraphs.add(p);
 		int pstart = 0;
 
 		for (int i = 0; i < regularText.length(); i++) {
 			char c = regularText.charAt(i);
 			if (p == null) {
-				p = new XmlParagraph(true);
+				p = new XmlParagraph(true, font);
 				paragraphs.add(p);
 			}
 			if (c == '\n') {
 				String text = regularText.substring(pstart, i);
 				pstart = i + 1;
-				p.parseRegularText(text, convertURLs, true, getHyperlinkSettings(), false);
+				p.parseRegularText(text, convertURLs, true, getHyperlinkSettings(), false, false);
 				p = null;
 			}
 		}
 		if (p != null) {
 			// no new line
 			String text = regularText.substring(pstart);
-			p.parseRegularText(text, convertURLs, true, getHyperlinkSettings(), false);
+			p.parseRegularText(text, convertURLs, true, getHyperlinkSettings(), false, false);
 		}
 	}
 
@@ -794,43 +761,6 @@ public class XmlTextModel {
 	}
 
 	/**
-	 * Traverse focus selectable objects.
-	 *
-	 * @param next
-	 *            the next
-	 * @return true, if successful
-	 */
-	public boolean traverseFocusSelectableObjects(final boolean next) {
-		IFocusSelectable[] selectables = getFocusSelectableSegments();
-		if (selectables == null) return false;
-		int size = selectables.length;
-		if (next) {
-			selectedSegmentIndex++;
-		} else {
-			selectedSegmentIndex--;
-		}
-
-		if (selectedSegmentIndex < 0 || selectedSegmentIndex > size - 1) { selectedSegmentIndex = -1; }
-		return selectedSegmentIndex != -1;
-	}
-
-	/**
-	 * Gets the next focus segment.
-	 *
-	 * @param next
-	 *            the next
-	 * @return the next focus segment
-	 */
-	public IFocusSelectable getNextFocusSegment(final boolean next) {
-		IFocusSelectable[] selectables = getFocusSelectableSegments();
-		if (selectables == null) return null;
-		int nextIndex = next ? selectedSegmentIndex + 1 : selectedSegmentIndex - 1;
-
-		if (nextIndex < 0 || nextIndex > selectables.length - 1) return null;
-		return selectables[nextIndex];
-	}
-
-	/**
 	 * Select link.
 	 *
 	 * @param link
@@ -896,4 +826,5 @@ public class XmlTextModel {
 	public void setWhitespaceNormalized(final boolean whitespaceNormalized) {
 		this.whitespaceNormalized = whitespaceNormalized;
 	}
+
 }

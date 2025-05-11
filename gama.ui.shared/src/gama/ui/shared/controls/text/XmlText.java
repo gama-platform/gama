@@ -26,12 +26,6 @@ import java.io.InputStream;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -41,7 +35,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -63,6 +56,7 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
@@ -135,7 +129,7 @@ import gama.ui.shared.resources.GamaFonts;
  * @see TableWrapLayout
  * @since 3.0
  */
-public class XmlText extends Canvas {
+public class XmlText extends Canvas implements IXmlFontUser {
 
 	/**
 	 * Value of the horizontal margin (default is 0).
@@ -274,7 +268,6 @@ public class XmlText extends Canvas {
 			Rectangle carea = composite.getClientArea();
 			GC gc = new GC(composite);
 			gc.setFont(getFont());
-			ensureBoldFontPresent(getFont());
 			gc.setForeground(getForeground());
 			gc.setBackground(getBackground());
 
@@ -312,10 +305,10 @@ public class XmlText extends Canvas {
 	 * @param style
 	 *            the widget style
 	 */
-	public XmlText(final Composite parent, final int style) {
+	public XmlText(final Composite parent, final int style, final GamaFont font) {
 		super(parent, SWT.NO_BACKGROUND | SWT.WRAP | style);
 		setLayout(new XmlTextLayout());
-		model = new XmlTextModel();
+		model = new XmlTextModel(font == null ? GamaFonts.getFont(getFont()) : font);
 		addDisposeListener(e -> { model.dispose(); });
 		addPaintListener(this::paint);
 		addMouseListener(new MouseListener() {
@@ -355,9 +348,6 @@ public class XmlText extends Canvas {
 			}
 		});
 		addMouseMoveListener(this::handleMouseMove);
-		initAccessible();
-		ensureBoldFontPresent(getFont());
-
 	}
 
 	/**
@@ -383,20 +373,6 @@ public class XmlText extends Canvas {
 	 * @return <samp>true </samp> if paragraphs are separated, <samp>false </samp> otherwise.
 	 */
 	public boolean getParagraphsSeparated() { return paragraphsSeparated; }
-
-	/**
-	 * Sets the font to use to render the default text (text that does not have special font property assigned). Bold
-	 * font will be constructed from this font.
-	 *
-	 * @param font
-	 *            the default font to use
-	 */
-	@Override
-	public void setFont(final Font font) {
-		super.setFont(font);
-		XmlTextModel.REGULAR_FONT = font;
-		ensureBoldFontPresent(font);
-	}
 
 	/**
 	 * Sets the provided text. Text can be rendered as-is, or by parsing the formatting tags. Optionally, sections of
@@ -624,142 +600,6 @@ public class XmlText extends Canvas {
 		IFocusSelectable segment = model.getSelectedSegment();
 		if (segment instanceof IHyperlinkSegment) return (IHyperlinkSegment) segment;
 		return null;
-	}
-
-	/**
-	 * Inits the accessible.
-	 */
-	private void initAccessible() {
-		Accessible accessible = getAccessible();
-		accessible.addAccessibleListener(new AccessibleAdapter() {
-			@Override
-			public void getName(final AccessibleEvent e) {
-				if (e.childID == ACC.CHILDID_SELF) {
-					e.result = model.getAccessibleText();
-				} else {
-					int linkCount = model.getHyperlinkCount();
-					if (e.childID >= 0 && e.childID < linkCount) {
-						IHyperlinkSegment link = model.getHyperlink(e.childID);
-						e.result = link.getText();
-					}
-				}
-			}
-
-			@Override
-			public void getHelp(final AccessibleEvent e) {
-				e.result = getToolTipText();
-				int linkCount = model.getHyperlinkCount();
-				if (e.result == null && e.childID >= 0 && e.childID < linkCount) {
-					IHyperlinkSegment link = model.getHyperlink(e.childID);
-					e.result = link.getText();
-				}
-			}
-		});
-		accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-			@Override
-			public void getChildAtPoint(final AccessibleControlEvent e) {
-				Point pt = toControl(new Point(e.x, e.y));
-				IHyperlinkSegment link = model.findHyperlinkAt(pt.x, pt.y);
-				if (link != null) {
-					e.childID = model.indexOf(link);
-				} else {
-					e.childID = ACC.CHILDID_SELF;
-				}
-			}
-
-			@Override
-			public void getLocation(final AccessibleControlEvent e) {
-				Rectangle location = null;
-				if (e.childID != ACC.CHILDID_SELF && e.childID != ACC.CHILDID_NONE) {
-					int index = e.childID;
-					IHyperlinkSegment link = model.getHyperlink(index);
-					if (link != null) { location = link.getBounds(); }
-				}
-				if (location == null) { location = getBounds(); }
-				Point pt = toDisplay(new Point(location.x, location.y));
-				e.x = pt.x;
-				e.y = pt.y;
-				e.width = location.width;
-				e.height = location.height;
-			}
-
-			@Override
-			public void getFocus(final AccessibleControlEvent e) {
-				int childID = ACC.CHILDID_NONE;
-
-				if (model.hasFocusSegments()) {
-					int selectedIndex = model.getSelectedSegmentIndex();
-					if (selectedIndex != -1) { childID = selectedIndex; }
-				}
-				e.childID = childID;
-			}
-
-			@Override
-			public void getDefaultAction(final AccessibleControlEvent e) {
-				if (model.getHyperlinkCount() > 0) {
-					e.result = SWT.getMessage("SWT_Press"); //$NON-NLS-1$
-				}
-			}
-
-			@Override
-			public void getChildCount(final AccessibleControlEvent e) {
-				e.detail = model.getHyperlinkCount();
-			}
-
-			@Override
-			public void getRole(final AccessibleControlEvent e) {
-				int role = 0;
-				int childID = e.childID;
-				int linkCount = model.getHyperlinkCount();
-				if (childID == ACC.CHILDID_SELF) {
-					if (linkCount > 0) {
-						role = ACC.ROLE_LINK;
-					} else {
-						role = ACC.ROLE_TEXT;
-					}
-				} else if (childID >= 0 && childID < linkCount) { role = ACC.ROLE_LINK; }
-				e.detail = role;
-			}
-
-			@Override
-			public void getSelection(final AccessibleControlEvent e) {
-				int selectedIndex = model.getSelectedSegmentIndex();
-				e.childID = selectedIndex == -1 ? ACC.CHILDID_NONE : selectedIndex;
-			}
-
-			@Override
-			public void getState(final AccessibleControlEvent e) {
-				int linkCount = model.getHyperlinkCount();
-				int selectedIndex = model.getSelectedSegmentIndex();
-				int state = 0;
-				int childID = e.childID;
-				if (childID == ACC.CHILDID_SELF) {
-					state = ACC.STATE_NORMAL;
-				} else if (childID >= 0 && childID < linkCount) {
-					state = ACC.STATE_SELECTABLE;
-					if (isFocusControl()) { state |= ACC.STATE_FOCUSABLE; }
-					if (selectedIndex == childID) {
-						state |= ACC.STATE_SELECTED;
-						if (isFocusControl()) { state |= ACC.STATE_FOCUSED; }
-					}
-				}
-				state |= ACC.STATE_READONLY;
-				e.detail = state;
-			}
-
-			@Override
-			public void getChildren(final AccessibleControlEvent e) {
-				int linkCount = model.getHyperlinkCount();
-				Object[] children = new Object[linkCount];
-				for (int i = 0; i < linkCount; i++) { children[i] = Integer.valueOf(i); }
-				e.children = children;
-			}
-
-			@Override
-			public void getValue(final AccessibleControlEvent e) {
-				// e.result = model.getAccessibleText();
-			}
-		});
 	}
 
 	/**
@@ -994,18 +834,6 @@ public class XmlText extends Canvas {
 	}
 
 	/**
-	 * Ensure bold font present.
-	 *
-	 * @param regularFont
-	 *            the regular font
-	 */
-	private void ensureBoldFontPresent(final Font regularFont) {
-		Font boldFont = XmlTextModel.BOLD_FONT;
-		if (boldFont != null) return;
-		XmlTextModel.BOLD_FONT = GamaFonts.inBold(regularFont);
-	}
-
-	/**
 	 * Paint.
 	 *
 	 * @param e
@@ -1014,7 +842,6 @@ public class XmlText extends Canvas {
 	private void paint(final PaintEvent e) {
 		GC gc = e.gc;
 		gc.setFont(getFont());
-		ensureBoldFontPresent(getFont());
 		gc.setForeground(getForeground());
 		gc.setBackground(getBackground());
 		repaint(gc, e.x, e.y, e.width, e.height);

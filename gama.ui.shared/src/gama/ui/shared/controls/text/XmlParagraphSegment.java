@@ -10,15 +10,36 @@
  ********************************************************************************************************/
 package gama.ui.shared.controls.text;
 
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+import gama.ui.shared.resources.GamaFonts;
+
 /**
  * The Class XmlParagraphSegment.
  */
-public abstract class XmlParagraphSegment {
+public abstract class XmlParagraphSegment implements IXmlFontUser {
+
+	/** The font. */
+	GamaFont font;
+
+	/**
+	 * Instantiates a new xml paragraph segment.
+	 *
+	 * @param fontToUse
+	 *            the font to use
+	 */
+	public XmlParagraphSegment(final GamaFont fontToUse) {
+		this.font = fontToUse;
+	}
+
+	@Override
+	public Font getFont() { return GamaFonts.getFont(font); }
+
 	/**
 	 * Moves the locator according to the content of this segment.
 	 *

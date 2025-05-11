@@ -16,11 +16,20 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+
 /**
  * This segment serves as break within a paragraph. It has no data - just starts a new line and resets the locator.
  */
 
-public class XmlBreakSegment extends XmlParagraphSegment {
+public class XmlBreakSegment extends XmlParagraphSegment implements IXmlFontUser {
+
+	/**
+	 * @param fontToUse
+	 */
+	public XmlBreakSegment(final GamaFont fontToUse) {
+		super(fontToUse);
+	}
 
 	/**
 	 * Advance locator.
@@ -40,6 +49,7 @@ public class XmlBreakSegment extends XmlParagraphSegment {
 	@Override
 	public boolean advanceLocator(final GC gc, final int wHint, final Locator locator,
 			final boolean computeHeightOnly) {
+		gc.setFont(getFont());
 		if (locator.rowHeight == 0) {
 			FontMetrics fm = gc.getFontMetrics();
 			locator.rowHeight = fm.getHeight();
@@ -71,9 +81,7 @@ public class XmlBreakSegment extends XmlParagraphSegment {
 	 */
 	@Override
 	public void paint(final GC gc, final boolean hover, final boolean selected, final SelectionData selData,
-			final Rectangle repaintRegion) {
-		// nothing to paint
-	}
+			final Rectangle repaintRegion) {}
 
 	/**
 	 * Contains.
@@ -117,6 +125,7 @@ public class XmlBreakSegment extends XmlParagraphSegment {
 	 */
 	@Override
 	public void layout(final GC gc, final int width, final Locator locator, final boolean selected) {
+		gc.setFont(getFont());
 		locator.resetCaret();
 		if (locator.rowHeight == 0) {
 			FontMetrics fm = gc.getFontMetrics();

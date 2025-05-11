@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
@@ -24,10 +25,13 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
+import gama.core.util.GamaFont;
+import gama.ui.shared.resources.GamaFonts;
+
 /**
  * @version 1.0
  */
-public class XmlParagraph {
+public class XmlParagraph implements IXmlFontUser {
 
 	/** The Constant PROTOCOLS. */
 	public static final String[] PROTOCOLS = { "http://", "https://", "ftp://" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -38,15 +42,22 @@ public class XmlParagraph {
 	/** The add vertical space. */
 	private boolean addVerticalSpace = true;
 
+	/** The font. */
+	private final GamaFont font;
+
 	/**
 	 * Instantiates a new xml paragraph.
 	 *
 	 * @param addVerticalSpace
 	 *            the add vertical space
 	 */
-	public XmlParagraph(final boolean addVerticalSpace) {
+	public XmlParagraph(final boolean addVerticalSpace, final GamaFont font) {
+		this.font = font;
 		this.addVerticalSpace = addVerticalSpace;
 	}
+
+	@Override
+	public Font getFont() { return GamaFonts.getFont(font); }
 
 	/**
 	 * Gets the indent.
@@ -100,38 +111,38 @@ public class XmlParagraph {
 	 *            the color id
 	 */
 	public void parseRegularText(final String text, final boolean expandURLs, final boolean wrapAllowed,
-			final HyperlinkSettings settings, final boolean bold) {
+			final HyperlinkSettings settings, final boolean bold, final boolean italic) {
 		if (text.isEmpty()) return;
 		if (expandURLs) {
 			int loc = findUrl(text, 0);
 			if (loc == -1) {
-				addSegment(new XmlTextSegment(text, bold, wrapAllowed));
+				addSegment(new XmlTextSegment(text, bold, italic, wrapAllowed, font));
 			} else {
 				int textLoc = 0;
 				while (loc != -1) {
-					addSegment(new XmlTextSegment(text.substring(textLoc, loc), bold, wrapAllowed));
+					addSegment(new XmlTextSegment(text.substring(textLoc, loc), bold, italic, wrapAllowed, font));
 					boolean added = false;
 					for (textLoc = loc; textLoc < text.length(); textLoc++) {
 						char c = text.charAt(textLoc);
 						if (Character.isSpaceChar(c)) {
-							addHyperlinkSegment(text.substring(loc, textLoc), settings, bold);
+							addHyperlinkSegment(text.substring(loc, textLoc), settings, bold, italic);
 							added = true;
 							break;
 						}
 					}
 					if (!added) {
 						// there was no space - just end of text
-						addHyperlinkSegment(text.substring(loc), settings, bold);
+						addHyperlinkSegment(text.substring(loc), settings, bold, italic);
 						break;
 					}
 					loc = findUrl(text, textLoc);
 				}
 				if (textLoc < text.length()) {
-					addSegment(new XmlTextSegment(text.substring(textLoc), bold, wrapAllowed));
+					addSegment(new XmlTextSegment(text.substring(textLoc), bold, italic, wrapAllowed, font));
 				}
 			}
 		} else {
-			addSegment(new XmlTextSegment(text, bold, wrapAllowed));
+			addSegment(new XmlTextSegment(text, bold, italic, wrapAllowed, font));
 		}
 	}
 
@@ -163,8 +174,9 @@ public class XmlParagraph {
 	 * @param fontId
 	 *            the font id
 	 */
-	private void addHyperlinkSegment(final String text, final HyperlinkSettings settings, final boolean bold) {
-		XmlHyperlinkSegment hs = new XmlHyperlinkSegment(text, settings, bold);
+	private void addHyperlinkSegment(final String text, final HyperlinkSettings settings, final boolean bold,
+			final boolean italic) {
+		XmlHyperlinkSegment hs = new XmlHyperlinkSegment(text, settings, bold, italic, font);
 		hs.setWordWrapAllowed(false);
 		hs.setHref(text);
 		addSegment(hs);
@@ -186,6 +198,7 @@ public class XmlParagraph {
 	 */
 	protected void computeRowHeights(final GC gc, final int width, final Locator loc, final int lineHeight) {
 		// compute heights
+		gc.setFont(getFont());
 		Locator hloc = loc.create();
 		ArrayList<int[]> heights = new ArrayList<>();
 		hloc.heights = heights;
@@ -218,6 +231,7 @@ public class XmlParagraph {
 	 */
 	public void layout(final GC gc, final int width, final Locator loc, final int lineHeight,
 			final IHyperlinkSegment selectedLink) {
+		gc.setFont(getFont());
 		XmlParagraphSegment[] segs = getSegments();
 		if (segs.length > 0) {
 			if (loc.heights == null) { computeRowHeights(gc, width, loc, lineHeight); }
@@ -249,6 +263,7 @@ public class XmlParagraph {
 	 */
 	public void paint(final GC gc, final Rectangle repaintRegion, final IHyperlinkSegment selectedLink,
 			final SelectionData selData) {
+		gc.setFont(getFont());
 		for (XmlParagraphSegment segment : getSegments()) {
 			if (!segment.intersects(repaintRegion)) { continue; }
 			boolean doSelect = false;
@@ -317,4 +332,5 @@ public class XmlParagraph {
 	public void clearCache(final String fontId) {
 		if (segments != null) { for (XmlParagraphSegment segment : segments) { segment.clearCache(fontId); } }
 	}
+
 }

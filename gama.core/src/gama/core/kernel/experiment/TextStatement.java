@@ -50,17 +50,17 @@ import gama.gaml.types.IType;
 				name = IKeyword.COLOR,
 				type = IType.COLOR,
 				optional = true,
-				doc = @doc ("The color with wich the text will be displayed")),
+				doc = @doc ("The color with wich the text will be displayed. Not used when HTML text is displayed.")),
 				@facet (
 						name = IKeyword.BACKGROUND,
 						type = IType.COLOR,
 						optional = true,
-						doc = @doc ("The color of the background of the text")),
+						doc = @doc ("The color of the background of the text. Not used when HTML text is displayed.")),
 				@facet (
 						name = FONT,
 						type = { IType.FONT, IType.STRING },
 						optional = true,
-						doc = @doc ("The font used to draw the text, which can be built with the operator \"font\". ex : font:font(\"Helvetica\", 20 , #bold).")),
+						doc = @doc ("The font used to draw the text, which can be built with the operator \"font\". ex : font:font(\"Helvetica\", 20 , #bold). Not used when HTML text is displayed.")),
 				@facet (
 						name = IKeyword.CATEGORY,
 						type = IType.LABEL,
@@ -77,7 +77,7 @@ import gama.gaml.types.IType;
 						optional = false,
 						doc = @doc ("""
 								The text to display.
-								If the text does not begin with <html>, the font, color, and background are controlled by the respective facets. A few formatting tags like <li> ... </li> / <a href=".."> ... </a> are supported. Weblinks (http, https) are automatically detected. Beware that not closing the tags correctly will result in the text not being displayed.
+								If the text does not begin with <html>, the font, color, and background are controlled by the respective facets. A few formatting tags: <br/> / <b> ... </b> / <i> ... </i> / <a href=".."> ... </a> are supported. Others are ignored. Weblinks (http, https) are automatically detected. Beware that not closing the tags correctly will result in an error.
 								If the text begins with <html>, it will instead be interpreted and displayed in a mini-browser. Most of the regular html tags can be used, including displaying images, and all links will be treated as external (i.e. opening a new browser).
 								""")), },
 		omissible = IKeyword.MESSAGE)

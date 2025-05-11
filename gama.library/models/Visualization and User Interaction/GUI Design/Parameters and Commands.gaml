@@ -57,15 +57,13 @@ experiment "Show Parameters" type: gui {
 	category "Explanation" expanded: false color: #green; 
 	category "Various types" expanded: false color: #orange;
 	category "Monitors" expanded: false color: #red;
-	text "This is a simple text using default values. It adapts automatically to the light/dark themes" category: "Explanation";
+	text "This is a simple text using default values. It adapts automatically to the light/dark themes. Some special elements like < , >, & or ' can be specified directly if they can't be interpreted as tags or one needs to use the corresponding HTML entities (see the text in the model : &lt; &gt; &amp; or &apos;)" category: "Explanation";
 	text "This is in a different color and a background" color: #white background: #violet category: "Explanation";
 	text "This is a text in a different font, in italic and a size of 12" category: "Explanation" color: #orange font: font("Times New Roman",16,#italic); 
-	text "Texts are justified on both sides by default. There is no possiblity so far to specify a left, right or no justification" category: "Explanation" color: #lightgray background: #black font: font("Courier New",12); 
+	text "Texts are not justified on both sides by default. There is no possiblity so far to do it unless using a html text" category: "Explanation" color: #lightgray background: #black font: font("Courier New",12); 
+	text '<html><p style="text-align:justify;color:#FF0000;">This text is for example justified using a CSS style directly passed to the paragraph tag. Beware of correctly writing your html code as GAMA provides only a minimal verification. The background, foreground, styles of characters are all determined by the styles specified in HTML/CSS. All links inserted in this html text are redirected to open a browser view in GAMA, like for instance <a href="https://across-lab.org">going to visit one of the laboratories that build the platform</a></p></html>' category: "Explanation"; 
 	text "This bold light green text \rspans over \r3 lines." category: "Explanation" color: #lightgreen background: #black font: font("Helvetica",12,#bold); 
-
-	text "There is now the possibility to insert some formatting elements and hyperlinks in texts. For instance: 
-					<li>Goto https://gama-platform.org</li>
-					Or goto <a href=\"https://gama-platform.org\">GAMA</a> followed by some text" category: "Explanation" background: #lightgray font: font("Helvetica",12,#italic) ; 
+	text "Without using complicated HTML tags, there is also the possibility to insert hyperlinks directly in texts. For instance: you can go to https://gama-platform.org or to <a href=\"https://gama-platform.org\">GAMA</a> with a html-style link. Bold and italic text can also be specified directly using &lt;b&gt; and &lt;i&gt; tags (which need to be properly closed).<b>Other formatting options might be added in the future</b>." category: "Explanation" background: #lightgray font: font("Helvetica",12,#italic) ; 
 
 	
 	// Category: Various types	

@@ -66,6 +66,18 @@ public class GamaFonts {
 	}
 
 	/**
+	 * Gets the font.
+	 *
+	 * @param font
+	 *            the font
+	 * @return the font
+	 */
+	public static GamaFont getFont(final Font font) {
+		FontData data = font.getFontData()[0];
+		return new GamaFont(data.getName(), (int) data.height, data.style);
+	}
+
+	/**
 	 * With size.
 	 *
 	 * @param font
