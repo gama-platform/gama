@@ -62,15 +62,9 @@ public class ImportersContributionItem extends ContributionItem {
 	}
 
 	@Override
-	public void fill(final Menu parentMenu, final int index) {
+	public void fill(final Menu menu, final int index) {
 		IStructuredSelection sel = WorkbenchHelper.getSelection();
 		if (sel == null || sel.isEmpty() || !(sel.getFirstElement() instanceof WrappedGamaFile file)) return;
-		MenuItem item = new MenuItem(parentMenu, SWT.CASCADE);
-		item.setText("Imported by...");
-		item.setImage(GamaIcon.named(IGamaIcons.IMPORTED_IN).image());
-		item.setToolTipText("Lists all the models that directly import this model.");
-		final Menu menu = new Menu(item);
-		item.setMenu(menu);
 		menu.addListener(SWT.Show, e -> {
 			for (final MenuItem i : menu.getItems()) { i.dispose(); }
 			final Set<URI> imp =

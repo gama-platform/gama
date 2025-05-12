@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FileMetaDataProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -486,10 +486,8 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @return the image info
 	 */
 	private ImageInfo createImageFileMetaData(final IFile file) {
-		ImageData imageData = null;
-
 		int type = -1, width = -1, height = -1;
-		imageData = ImageDataLoader.getImageData(file);
+		ImageData imageData = ImageDataLoader.getImageData(file);
 		if (imageData != null) {
 			width = imageData.width;
 			height = imageData.height;
