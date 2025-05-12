@@ -26,129 +26,135 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class GamaFonts {
 
-	/** The max size. */
-	static int MAX_SIZE = 512;
+    /** The max size. */
+    static int MAX_SIZE = 512;
 
-	/** The min size. */
-	static int MIN_SIZE = 6;
+    /** The min size. */
+    static int MIN_SIZE = 6;
 
-	/** The cache. */
-	static LoadingCache<FontData, Font> CACHE = CacheBuilder.newBuilder().build(new CacheLoader<FontData, Font>() {
+    /** The cache. */
+    static LoadingCache<FontData, Font> CACHE = CacheBuilder.newBuilder().build(new CacheLoader<FontData, Font>() {
 
-		@Override
-		public Font load(final FontData key) throws Exception {
-			return new Font(WorkbenchHelper.getDisplay(), key);
-		}
-	});
-
-	/**
-	 * Gets the font.
-	 *
-	 * @param data
-	 *            the data
-	 * @return the font
-	 */
-	public static Font getFont(final FontData data) {
-		if (data == null) return null;
-		return CACHE.getUnchecked(data);
+	@Override
+	public Font load(final FontData key) throws Exception {
+	    return new Font(WorkbenchHelper.getDisplay(), key);
 	}
+    });
 
-	/**
-	 * Gets the font.
-	 *
-	 * @param font
-	 *            the font
-	 * @return the font
-	 */
-	public static Font getFont(final GamaFont font) {
-		if (font == null) return null;
-		return getFont(new FontData(font.getName(), font.getSize(), font.getStyle()));
+    /**
+     * Gets the font.
+     *
+     * @param data
+     *            the data
+     * @return the font
+     */
+    public static Font getFont(final FontData data) {
+	if (data == null) {
+	    return null;
 	}
+	return CACHE.getUnchecked(data);
+    }
 
-	/**
-	 * Gets the font.
-	 *
-	 * @param font
-	 *            the font
-	 * @return the font
-	 */
-	public static GamaFont getFont(final Font font) {
-		FontData data = font.getFontData()[0];
-		return new GamaFont(data.getName(), (int) data.height, data.style);
+    /**
+     * Gets the font.
+     *
+     * @param font
+     *            the font
+     * @return the font
+     */
+    public static Font getFont(final GamaFont font) {
+	if (font == null) {
+	    return null;
 	}
+	return getFont(new FontData(font.getName(), font.getSize(), font.getStyle()));
+    }
 
-	/**
-	 * With size.
-	 *
-	 * @param font
-	 *            the font
-	 * @param newSize
-	 *            the new size
-	 * @return the font
-	 */
-	public static Font withSize(final Font font, final int wantedSize) {
-		return getFont(withSize(font.getFontData()[0], wantedSize));
-	}
+    /**
+     * Gets the font.
+     *
+     * @param font
+     *            the font
+     * @return the font
+     */
+    public static GamaFont getFont(final Font font) {
+	FontData data = font.getFontData()[0];
+	return new GamaFont(data.getName(), (int) data.height, data.getStyle());
+    }
 
-	/**
-	 * With size.
-	 *
-	 * @return the font data
-	 */
-	private static FontData withSize(final FontData data, final int wantedSize) {
-		int newSize = cap(wantedSize);
-		if (newSize != data.getHeight()) { data.setHeight(newSize); }
-		return data;
-	}
+    /**
+     * With size.
+     *
+     * @param font
+     *            the font
+     * @param newSize
+     *            the new size
+     * @return the font
+     */
+    public static Font withSize(final Font font, final int wantedSize) {
+	return getFont(withSize(font.getFontData()[0], wantedSize));
+    }
 
-	/**
-	 * With magnification.
-	 *
-	 * @param font
-	 *            the font
-	 * @param magnification
-	 *            the magnification
-	 * @return the font
-	 */
-	public static Font withMagnification(final Font font, final int magnification) {
-		FontData data = font.getFontData()[0];
-		return getFont(withSize(data, data.getHeight() + magnification));
+    /**
+     * With size.
+     *
+     * @return the font data
+     */
+    private static FontData withSize(final FontData data, final int wantedSize) {
+	int newSize = cap(wantedSize);
+	if (newSize != data.getHeight()) {
+	    data.setHeight(newSize);
 	}
+	return data;
+    }
 
-	/**
-	 * @param i
-	 * @return
-	 */
-	private static int cap(final int i) {
-		return Math.min(MAX_SIZE, Math.max(MIN_SIZE, i));
-	}
+    /**
+     * With magnification.
+     *
+     * @param font
+     *            the font
+     * @param magnification
+     *            the magnification
+     * @return the font
+     */
+    public static Font withMagnification(final Font font, final int magnification) {
+	FontData data = font.getFontData()[0];
+	return getFont(withSize(data, data.getHeight() + magnification));
+    }
 
-	/**
-	 * In bold.
-	 *
-	 * @param font
-	 *            the font
-	 * @param wantedSize
-	 *            the wanted size
-	 * @return the font
-	 */
-	public static Font inBold(final Font font) {
-		FontData bold = font.getFontData()[0];
-		bold.setStyle(bold.getStyle() | SWT.BOLD);
-		return getFont(bold);
-	}
+    /**
+     * @param i
+     * @return
+     */
+    private static int cap(final int i) {
+	return Math.min(MAX_SIZE, Math.max(MIN_SIZE, i));
+    }
 
-	/**
-	 * In italic.
-	 *
-	 * @param font
-	 *            the font
-	 * @return the font
-	 */
-	public static Font inItalic(final Font font) {
-		FontData italic = font.getFontData()[0];
-		italic.setStyle(italic.getStyle() | SWT.ITALIC);
-		return getFont(italic);
-	}
+    /**
+     * In bold.
+     *
+     * @param font
+     *            the font
+     * @param wantedSize
+     *            the wanted size
+     * @return the font
+     */
+    public static Font inBold(final Font font) {
+	FontData bold = font.getFontData()[0];
+	bold.setStyle(bold.getStyle() | SWT.BOLD);
+	return getFont(bold);
+    }
+
+    /**
+     * In italic.
+     *
+     * @param font
+     *            the font
+     * @return the font
+     */
+    public static Font inItalic(final Font font) {
+	FontData italic = font.getFontData()[0];
+	italic.setStyle(italic.getStyle() | SWT.ITALIC);
+	return getFont(italic);
+    }
 
 }
