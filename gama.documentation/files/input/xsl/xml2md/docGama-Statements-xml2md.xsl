@@ -52,7 +52,6 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
 <xsl:template name="buildStatements">
 	<xsl:for-each select="doc/statements/statement">
     	<xsl:sort select="@name" />
-		<xsl:if test="not(@alt_name_of)">
 
 ----
 <!-- <xsl:call-template name="keyword">     -->
@@ -60,10 +59,19 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
 <!-- 	<xsl:with-param name="nameGAMLElement" select="@name"/> -->
 <!-- </xsl:call-template> -->
 ### <xsl:value-of select="@name"/>
+  	<xsl:if test="not(@alt_name_of)">
+
 		<xsl:call-template name="buildFacets"/>
 		<xsl:call-template name="buildDefinition"/>				
 		<xsl:call-template name="buildEmbedments"/>
-		</xsl:if>
+	</xsl:if>
+		
+<xsl:if test="@alt_name_of">
+<xsl:text>
+See: [</xsl:text><xsl:value-of select="@alt_name_of"/><xsl:text>](#</xsl:text><xsl:value-of select="translate(@alt_name_of, $uppercase, $smallcase)"/><xsl:text>)</xsl:text>
+
+</xsl:if>
+		
 	</xsl:for-each>
 </xsl:template>
 
@@ -140,14 +148,18 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
 		<xsl:for-each select="/doc/statements/statement"> 
 			<xsl:sort select="@name" />
 				<xsl:if test="@kind = $kindGlobal "> 
-					<xsl:choose>				
+					<xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@name, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
+				
+	<!--				<xsl:choose>	
+								
 					  <xsl:when test="@alt_name_of">
 					      <xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@alt_name_of, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
 					  </xsl:when>
 					  <xsl:otherwise>
 					      <xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@name, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
 					  </xsl:otherwise>
-					 </xsl:choose>				
+					 </xsl:choose>		
+	-->		
 				</xsl:if>							
 		</xsl:for-each>    	
 	</xsl:for-each>
@@ -156,7 +168,9 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
 <xsl:template name="buildStatementsByName">
 	<xsl:for-each select="/doc/statements/statement"> 
 		<xsl:sort select="@name" />
-		<xsl:choose>
+<xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@name, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
+		
+<!-- 		<xsl:choose>
 		  <xsl:when test="@alt_name_of">
 		      <xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@alt_name_of, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
 		  </xsl:when>
@@ -164,6 +178,7 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
 		      <xsl:text>[</xsl:text> <xsl:value-of select="@name"/> <xsl:text>](#</xsl:text> <xsl:value-of select="translate(@name, $uppercase, $smallcase)"/> <xsl:text>), </xsl:text> 
 		  </xsl:otherwise>
 		</xsl:choose>
+ -->		
 	</xsl:for-each>  
 </xsl:template>
 

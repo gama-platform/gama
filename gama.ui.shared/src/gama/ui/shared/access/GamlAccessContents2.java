@@ -1,16 +1,13 @@
-/*******************************************************************************
- * Copyright (c) 2005, 2020 IBM Corporation and others.
+/*******************************************************************************************************
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which accompanies this distribution, and is available at https://www.eclipse.org/legal/epl-2.0/
+ * GamlAccessContents2.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * SPDX-License-Identifier: EPL-2.0
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
- * Contributors: IBM Corporation - initial API and implementation Tom Hochstein (Freescale) - Bug 393703 -
- * NotHandledException selecting inactive command under 'Previous Choices' in Quick access Lars Vogel
- * <Lars.Vogel@vogella.com> - Bug 472654, 491272, 491398 Leung Wang Hei <gemaspecial@yahoo.com.hk> - Bug 483343 Patrik
- * Suzzi <psuzzi@gmail.com> - Bug 491291, 491529, 491293, 492434, 492452, 459989, 507322
- *******************************************************************************/
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.ui.shared.access;
 
 import static org.eclipse.ui.internal.progress.ProgressManagerUtil.getDefaultParent;
@@ -30,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -84,6 +82,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.quickaccess.QuickAccessMessages;
 import org.eclipse.ui.keys.IBindingService;
@@ -92,7 +91,10 @@ import org.osgi.framework.FrameworkUtil;
 
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * Provides the contents for the quick access shell.
@@ -104,19 +106,26 @@ public class GamlAccessContents2 extends PopupDialog {
 	 */
 	private static final String QUICK_ACCESS_COMMAND_ID = "org.eclipse.ui.window.quickAccess"; //$NON-NLS-1$
 
+	/** The Constant EMPTY_ENTRIES. */
 	@SuppressWarnings ("unchecked") private static final List<GamlAccessEntry>[] EMPTY_ENTRIES =
 			(List<GamlAccessEntry>[]) Array.newInstance(List.class, 0);
 
+	/** The filter text. */
 	protected Text filterText;
 
+	/** The elements to providers. */
 	private final Map<IGamlDescription, GamlIdiomsProvider> elementsToProviders = new HashMap<>();
 
+	/** The table. */
 	protected Table table;
 
+	/** The resource manager. */
 	private LocalResourceManager resourceManager = new LocalResourceManager(JFaceResources.getResources());
 
+	/** The remembered text. */
 	protected String rememberedText;
 
+	/** The browser data. */
 	GridData browserData;
 
 	/**
@@ -124,15 +133,27 @@ public class GamlAccessContents2 extends PopupDialog {
 	 * {@link #resourceManager} is disposed.
 	 */
 	private Color grayColor;
+
+	/** The text layout. */
 	private TextLayout textLayout;
-	private boolean showAllMatches = true;
+
+	/** The show all matches. */
+	private static boolean showAllMatches = false;
+
+	/** The resized. */
 	protected boolean resized = false;
+
+	/** The key sequence. */
 	private TriggerSequence keySequence;
+
+	/** The compute proposals job. */
 	private Job computeProposalsJob;
 	/** The popup. */
 	GamlBrowserPane browser;
-	// BrowserInformationControl popup;
 
+	/**
+	 * Instantiates a new gaml access contents 2.
+	 */
 	public GamlAccessContents2() {
 		super(getDefaultParent(), SWT.RESIZE, true, true, false, false, false, "GAML Reference", null);
 	}
@@ -259,6 +280,14 @@ public class GamlAccessContents2 extends PopupDialog {
 	 */
 	public boolean getShowAllMatches() { return showAllMatches; }
 
+	/**
+	 * Refresh table.
+	 *
+	 * @param entries
+	 *            the entries
+	 * @param filter
+	 *            the filter
+	 */
 	private void refreshTable(final List<GamlAccessEntry>[] entries, final String filter) {
 		if (table.isDisposed()) return;
 		if (table.getItemCount() > entries.length && table.getItemCount() - entries.length > 20) { table.removeAll(); }
@@ -327,9 +356,8 @@ public class GamlAccessContents2 extends PopupDialog {
 		final String finalFilter = filter;
 
 		// collect matching elements
-		LinkedHashMap<GamlIdiomsProvider, List<IGamlDescription>> elementsForProviders =
-				new LinkedHashMap<>(GamlIdiomsProvider.PROVIDERS.size());
-		for (GamlIdiomsProvider provider : GamlIdiomsProvider.PROVIDERS) {
+		LinkedHashMap<GamlIdiomsProvider, List<IGamlDescription>> elementsForProviders = new LinkedHashMap<>();
+		for (GamlIdiomsProvider provider : GamlIdiomsProvider.getProviders()) {
 			if (aMonitor.isCanceled()) { break; }
 			// boolean isPreviousPickProvider = provider instanceof PreviousPicksProvider;
 			// skip if filter contains a category, and current provider isn't this category
@@ -367,7 +395,8 @@ public class GamlAccessContents2 extends PopupDialog {
 				if (!entries.isEmpty()) { entriesPerProvider.put(provider, entries); }
 			}
 		} else {
-			int numberOfSlotsLeft = perfectMatch != null ? maxNumberOfItemsInTable - 1 : maxNumberOfItemsInTable;
+			int numberOfSlotsLeft =
+					perfectMatch != null ? maxNumberOfItemsInTable * 2 - 1 : maxNumberOfItemsInTable * 2;
 			while (!elementsForProviders.isEmpty() && numberOfSlotsLeft > 0) {
 				int nbEntriesPerProvider = numberOfSlotsLeft / elementsForProviders.size();
 				if (nbEntriesPerProvider > 0) {
@@ -423,6 +452,15 @@ public class GamlAccessContents2 extends PopupDialog {
 		return (List<GamlAccessEntry>[]) res.toArray(new List<?>[res.size()]);
 	}
 
+	/**
+	 * Put prefix match first.
+	 *
+	 * @param elements
+	 *            the elements
+	 * @param prefix
+	 *            the prefix
+	 * @return the list
+	 */
 	/*
 	 * Consider whether we could directly check the "matchQuality" here, but it seems to be a more expensive operation
 	 */
@@ -449,6 +487,7 @@ public class GamlAccessContents2 extends PopupDialog {
 		return res;
 	}
 
+	/** The category pattern. */
 	Pattern categoryPattern;
 
 	/**
@@ -462,11 +501,11 @@ public class GamlAccessContents2 extends PopupDialog {
 			// build regex like "^(:?Views|Perspective):\\s?(.*)"
 			StringBuilder sb = new StringBuilder();
 			sb.append("^(:?"); //$NON-NLS-1$
-			for (int i = 0; i < GamlIdiomsProvider.PROVIDERS.size(); i++) {
+			for (int i = 0; i < GamlIdiomsProvider.getProviders().size(); i++) {
 				if (i != 0) {
 					sb.append("|"); //$NON-NLS-1$
 				}
-				sb.append(GamlIdiomsProvider.PROVIDERS.get(i).getSearchCategory());
+				sb.append(GamlIdiomsProvider.getProviders().get(i).getSearchCategory());
 			}
 			sb.append("):\\s?(.*)"); //$NON-NLS-1$
 			String regex = sb.toString();
@@ -475,6 +514,9 @@ public class GamlAccessContents2 extends PopupDialog {
 		return categoryPattern;
 	}
 
+	/**
+	 * Do dispose.
+	 */
 	private void doDispose() {
 		if (textLayout != null && !textLayout.isDisposed()) { textLayout.dispose(); }
 		if (resourceManager != null) {
@@ -484,16 +526,37 @@ public class GamlAccessContents2 extends PopupDialog {
 		}
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	protected String getId() {
 		return "org.eclipse.ui.internal.QuickAccess"; //$NON-NLS-1$
 	}
 
+	/**
+	 * Handle element selected.
+	 *
+	 * @param text
+	 *            the text
+	 * @param element
+	 *            the element
+	 */
 	protected void handleElementSelected(final String text, final IGamlDescription element) {
 		if (element == null) return;
+		Consumer<IGamlDescription> action = element.getContextualAction();
+		if (action != null) {
+			action.accept(element);
+			return;
+		}
 		final String search = "https://gama-platform.org/search?q=" + element.getName();
 		WebHelper.openPage(search);
 	}
 
+	/**
+	 * Handle selection.
+	 */
 	private void handleSelection() {
 		IGamlDescription selectedElement = null;
 		String text = filterText.getText().toLowerCase();
@@ -555,7 +618,10 @@ public class GamlAccessContents2 extends PopupDialog {
 		});
 	}
 
+	/** The hint text. */
 	Label hintText;
+
+	/** The display hint text. */
 	private boolean displayHintText;
 
 	/** Create HintText as child of the given parent composite */
@@ -611,12 +677,11 @@ public class GamlAccessContents2 extends PopupDialog {
 
 		textLayout = new TextLayout(table.getDisplay());
 		Font boldFont = resourceManager.create(FontDescriptor.createFrom(table.getFont()).setStyle(SWT.BOLD));
-		// textLayout.setFont(table.getFont());
 		textLayout.setFont(boldFont);
-		textLayout.setText("Available categories");
+		textLayout.setText("Available categories to search into");
 		int maxProviderWidth = textLayout.getBounds().width;
 
-		for (GamlIdiomsProvider provider : GamlIdiomsProvider.PROVIDERS) {
+		for (GamlIdiomsProvider provider : GamlIdiomsProvider.getProviders()) {
 			textLayout.setText(provider.getSearchCategory());
 			int width = textLayout.getBounds().width;
 			if (width > maxProviderWidth) { maxProviderWidth = width; }
@@ -734,19 +799,40 @@ public class GamlAccessContents2 extends PopupDialog {
 		return table;
 	}
 
+	/**
+	 * Gets the filter text.
+	 *
+	 * @return the filter text
+	 */
 	public Text getFilterText() { return filterText; }
 
+	/**
+	 * Gets the table.
+	 *
+	 * @return the table
+	 */
 	public Table getTable() { return table; }
 
 	@Override
 	protected Control createTitleControl(final Composite parent) {
 		parent.getShell().setText(QuickAccessMessages.QuickAccessContents_QuickAccess);
+		ToolBar tt = new ToolBar(parent, SWT.NONE | SWT.FLAT);
+		GamaCommand
+				.build(IGamaIcons.LEXICAL_SORT, "", "Toggle the display of all proposals",
+						(Selector) e -> setShowAllMatches(!showAllMatches))
+				.toCheckItem(tt).setSelection(!showAllMatches);
 		filterText = new Text(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(filterText);
 		hookFilterText(filterText);
 		return filterText;
 	}
 
+	/**
+	 * Creates the browser.
+	 *
+	 * @param composite
+	 *            the composite
+	 */
 	private void createBrowser(final Composite composite) {
 		browser = new GamlBrowserPane();
 		browserData = GridDataFactory.fillDefaults().grab(true, true).create();
@@ -755,6 +841,9 @@ public class GamlAccessContents2 extends PopupDialog {
 		hideBrowser();
 	}
 
+	/**
+	 * Show browser.
+	 */
 	private void showBrowser() {
 		browserData.exclude = false;
 		browser.getControl().setVisible(true);
@@ -762,6 +851,9 @@ public class GamlAccessContents2 extends PopupDialog {
 
 	}
 
+	/**
+	 * Hide browser.
+	 */
 	private void hideBrowser() {
 		browserData.exclude = true;
 		browser.getControl().setVisible(false);

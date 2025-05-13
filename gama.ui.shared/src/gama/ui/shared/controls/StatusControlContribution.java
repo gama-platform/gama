@@ -94,6 +94,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
+			if (label == null || label.isDisposed()) return Status.CANCEL_STATUS;
 			label.setImageWithoutRecomputingSize(GamaIcon.named(IStatusMessage.IDLE_ICON).image());
 			label.setTextWithoutRecomputingSize("Idle");
 			return Status.OK_STATUS;
@@ -157,7 +158,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		});
 		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
 
-			final Set<String> uselessJobs = Set.of("Animation start", "Decoration Calculation",
+			final Set<String> uselessJobs = Set.of("Win32 refresh daemon", "Animation start", "Decoration Calculation",
 					"Update Capability Enablement for Natures", "Status refresh", "Update for Decoration Completion",
 					"Change cursor", "Searching for local changes", "Hooking to commands", "Update Job",
 					"Check for workspace changes", "Refreshing view", "Mark Occurrences", "XtextReconcilerJob",
@@ -167,7 +168,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			public void aboutToRun(final IJobChangeEvent event) {
 				Job job = event.getJob();
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
-				String name = job.getName();
+				String name = job.getName() == null ? "" : job.getName().strip();
 				if (uselessJobs.contains(name)) return;
 				// DEBUG.OUT("Name " + job.getName() + " - Group " + job.getJobGroup() + " - Rule " + job.getRule()
 				// + " - Priority " + jobPriority(job.getPriority()));

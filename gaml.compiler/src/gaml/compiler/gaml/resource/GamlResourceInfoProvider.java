@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceInfoProvider.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceInfoProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -148,7 +148,7 @@ public class GamlResourceInfoProvider implements IGamlResourceInfoProvider {
 			e1.printStackTrace();
 		}
 
-		return new GamlFileInfo(stamp, imports, uses, exps, tags);
+		return new GamlFileInfo(originalURI, stamp, imports, uses, exps, tags);
 
 	}
 

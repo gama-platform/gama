@@ -57,7 +57,7 @@ import gama.gaml.types.IType;
 @doc (
 		value = "Reflexes are sequences of statements that can be executed by the agent. Reflexes prefixed by the 'reflex' keyword are executed continuously. Reflexes prefixed by 'init' are executed only immediately after the agent has been created. Reflexes prefixed by 'abort' just before the agent is killed. If a facet when: is defined, a reflex is executed only if the boolean expression evaluates to true.",
 		usages = { @usage (
-				value = "Example:",
+				value = "Reflexes are sequences of statements that are executed by the agent at each step, when scheduled and if the when: condition is true.",
 				examples = { @example (
 						value = "reflex my_reflex when: flip (0.5){ 		//Only executed when flip returns true",
 						isExecutable = false),
@@ -66,7 +66,16 @@ import gama.gaml.types.IType;
 								isExecutable = false),
 						@example (
 								value = "}",
-								isExecutable = false) }) })
+								isExecutable = false) }),
+				 @usage (  value = " 'init' reflexes are executed only immediately after the agent has been created.",
+							examples = { @example (
+									value = "init { write \"I am created\"; }",
+									isExecutable = false) }),
+				 @usage (  value = " 'abort' reflexes are executed just before the agent is killed.",
+					examples = { @example (
+							value = "abort { write \"Last actions before being removed \"; }",
+							isExecutable = false) }) 
+		})
 public class ReflexStatement extends AbstractStatementSequence {
 
 	/** The when. */

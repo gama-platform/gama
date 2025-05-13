@@ -43,6 +43,8 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.graphics.ImageData;
 
 import gama.core.common.GamlFileExtension;
+import gama.core.common.IStatusMessage;
+import gama.core.runtime.GAMA;
 import gama.core.util.file.GamaCSVFile;
 import gama.core.util.file.GamaCSVFile.CSVInfo;
 import gama.core.util.file.GamaFileMetaData;
@@ -56,6 +58,8 @@ import gama.core.util.file.IGamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
+import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
+import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
 
 /**
@@ -195,7 +199,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		}
 
 		@Override
-		public String getDocumentation() { return suffix; }
+		public Doc getDocumentation() { return new ConstantDoc(suffix); }
 	}
 
 	/**
@@ -249,7 +253,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		}
 
 		@Override
-		public String getDocumentation() { return comment; }
+		public Doc getDocumentation() { return new ConstantDoc(comment); }
 	}
 
 	/** The Constant CLASSES. */
@@ -723,6 +727,23 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 */
 	public boolean hasSupportFiles(final IResource r) {
 		return r instanceof IFile && SHAPEFILE_CT_ID.equals(getContentTypeId((IFile) r));
+	}
+
+	@Override
+	public void refreshAllMetaData() {
+		try {
+			GAMA.getGui().getStatus().informStatus("Refreshing metadata of files in workspace",
+					IStatusMessage.COMPILE_ICON);
+			ResourcesPlugin.getWorkspace().getRoot().accept(resource -> {
+				if (resource.isAccessible()) {
+					storeMetaData(resource, null, true);
+					getMetaData(resource, false, true);
+				}
+				return true;
+			});
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

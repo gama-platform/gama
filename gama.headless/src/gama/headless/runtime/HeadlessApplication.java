@@ -419,8 +419,7 @@ public class HeadlessApplication implements IApplication {
 			final String jks = args.contains(SSOCKET_PARAMETER_JKSPATH) ? after(args, SSOCKET_PARAMETER_JKSPATH) : "";
 			final String spwd = args.contains(SSOCKET_PARAMETER_SPWD) ? after(args, SSOCKET_PARAMETER_SPWD) : "";
 			final String kpwd = args.contains(SSOCKET_PARAMETER_KPWD) ? after(args, SSOCKET_PARAMETER_KPWD) : "";
-			GAMA.getPlatformAgent()
-					.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping));
+			GAMA.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping));
 		} else {
 			runSimulation(args);
 		}
