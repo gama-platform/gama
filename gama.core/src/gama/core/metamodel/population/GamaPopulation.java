@@ -88,7 +88,7 @@ import gama.gaml.variables.IVariable;
 public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPopulation<T> {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The is disposing. */

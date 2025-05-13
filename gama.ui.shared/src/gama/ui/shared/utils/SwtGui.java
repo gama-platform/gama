@@ -93,7 +93,7 @@ import gama.ui.shared.resources.GamaColors;
 public class SwtGui implements IGui {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The all tests running. */

@@ -65,7 +65,7 @@ import gama.ui.application.workbench.ThemeHelper;
 public class GamaIcon implements IGamaIcons {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The icon cache. */

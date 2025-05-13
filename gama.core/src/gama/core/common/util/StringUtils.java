@@ -33,7 +33,7 @@ import gama.gaml.types.Types;
 public class StringUtils {
 
 	// static {
-	// DEBUG.ON();
+	// DEBUG.OFF();
 	// }
 
 	/** The Constant DEFAULT_DECIMAL_FORMAT. */

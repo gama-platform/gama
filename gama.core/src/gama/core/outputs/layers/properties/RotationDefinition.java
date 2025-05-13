@@ -24,7 +24,7 @@ import gama.gaml.types.Types;
 public class RotationDefinition extends AbstractDefinition {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The location. */

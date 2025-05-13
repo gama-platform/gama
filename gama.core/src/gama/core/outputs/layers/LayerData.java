@@ -45,7 +45,7 @@ import gama.gaml.statements.draw.AttributeHolder;
 public class LayerData extends AttributeHolder implements ILayerData {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The position in pixels. */

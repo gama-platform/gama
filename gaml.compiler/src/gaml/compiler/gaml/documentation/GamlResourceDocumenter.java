@@ -38,7 +38,7 @@ import gaml.compiler.gaml.resource.GamlResourceServices;
 public class GamlResourceDocumenter implements IDocManager {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The documentation queue. */

@@ -62,7 +62,7 @@ import gaml.compiler.gaml.validation.GamlResourceValidator;
 public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecoratedView.Expandable {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The parent. */

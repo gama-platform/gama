@@ -22,7 +22,7 @@ import gama.dev.THREADS;
  */
 public class MultiThreadedArduinoReceiver extends Thread {
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The my agent. */

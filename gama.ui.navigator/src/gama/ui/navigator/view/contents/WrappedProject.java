@@ -30,7 +30,7 @@ import gama.ui.shared.resources.IGamaIcons;
 public class WrappedProject extends WrappedContainer<IProject> {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The plugin. */

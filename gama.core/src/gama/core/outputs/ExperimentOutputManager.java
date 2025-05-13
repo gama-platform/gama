@@ -71,7 +71,7 @@ import gama.gaml.factories.DescriptionFactory;
 public class ExperimentOutputManager extends AbstractOutputManager {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

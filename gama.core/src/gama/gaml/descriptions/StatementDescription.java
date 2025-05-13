@@ -43,7 +43,7 @@ import gama.gaml.types.Types;
 public class StatementDescription extends SymbolDescription {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The passed args. */

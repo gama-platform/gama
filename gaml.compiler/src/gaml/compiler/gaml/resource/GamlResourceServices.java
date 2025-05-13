@@ -52,7 +52,7 @@ import gaml.compiler.gaml.validation.IGamlBuilderListener;
 public class GamlResourceServices {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The resource count. */

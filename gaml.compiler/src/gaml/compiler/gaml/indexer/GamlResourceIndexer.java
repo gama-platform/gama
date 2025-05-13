@@ -49,7 +49,7 @@ public class GamlResourceIndexer {
 	static GamlResourceGraph index = new GamlResourceGraph();
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		workspace.addResourceChangeListener(event -> {
 			if (event.getBuildKind() == IncrementalProjectBuilder.CLEAN_BUILD) { eraseIndex(); }

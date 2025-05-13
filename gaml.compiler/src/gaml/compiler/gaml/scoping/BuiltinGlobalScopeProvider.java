@@ -155,7 +155,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	private final XtextResourceSet rs = new XtextResourceSet();
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

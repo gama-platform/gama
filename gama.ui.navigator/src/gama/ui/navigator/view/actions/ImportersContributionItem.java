@@ -35,7 +35,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class ImportersContributionItem extends ContributionItem {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

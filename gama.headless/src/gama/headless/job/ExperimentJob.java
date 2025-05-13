@@ -53,7 +53,7 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
 public class ExperimentJob implements IExperimentJob {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

@@ -219,7 +219,7 @@ import gama.gaml.types.IType;
 public class LayeredDisplayOutput extends AbstractOutput {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The layers. */

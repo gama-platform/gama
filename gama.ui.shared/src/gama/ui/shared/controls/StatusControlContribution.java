@@ -50,7 +50,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class StatusControlContribution extends WorkbenchWindowControlContribution implements IStatusControl {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The current status. */

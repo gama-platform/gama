@@ -37,7 +37,7 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 public class HeapControl {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The item. */

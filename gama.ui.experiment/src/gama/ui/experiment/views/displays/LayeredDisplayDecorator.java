@@ -69,7 +69,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class LayeredDisplayDecorator implements DisplayDataListener, IExperimentStateListener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The key and mouse listener. */

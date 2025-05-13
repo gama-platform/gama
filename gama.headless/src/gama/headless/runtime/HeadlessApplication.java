@@ -198,7 +198,7 @@ public class HeadlessApplication implements IApplication {
 	 * Show version.
 	 */
 	private static void showVersion() {
-		DEBUG.ON();
+		DEBUG.OFF();
 		DEBUG.LOG("Welcome to Gama-platform.org version " + GAMA.VERSION + "\n");
 		DEBUG.OFF();
 	}
@@ -208,7 +208,7 @@ public class HeadlessApplication implements IApplication {
 	 */
 	private static void showHelp() {
 		showVersion();
-		DEBUG.ON();
+		DEBUG.OFF();
 		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
 				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
@@ -260,7 +260,7 @@ public class HeadlessApplication implements IApplication {
 		if (args.contains(VERBOSE_PARAMETER)) {
 			size = size - 1;
 			this.verbose = true;
-			DEBUG.ON();
+			DEBUG.OFF();
 			DEBUG.LOG("Log active", true);
 		}
 
@@ -352,7 +352,7 @@ public class HeadlessApplication implements IApplication {
 	 * @return true, if successful
 	 */
 	private static boolean showError(final int errorCode, final String path) {
-		DEBUG.ON();
+		DEBUG.OFF();
 		DEBUG.ERR(HeadLessErrors.getError(errorCode, path));
 		DEBUG.OFF();
 
@@ -460,7 +460,7 @@ public class HeadlessApplication implements IApplication {
 	public void buildXML(final List<String> arg)
 			throws ParserConfigurationException, TransformerException, IOException, GamaHeadlessException {
 		if (arg.size() < 3) {
-			DEBUG.ON();
+			DEBUG.OFF();
 			DEBUG.ERR("Check your parameters!");
 			showHelp();
 			return;
@@ -481,7 +481,7 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		if (selectedJob.size() == 0) {
-			DEBUG.ON();
+			DEBUG.OFF();
 			DEBUG.ERR("""
 
 					=== ERROR ===\
@@ -498,7 +498,7 @@ public class HeadlessApplication implements IApplication {
 			final File output = new File(argXMLFile);
 			final StreamResult result = new StreamResult(output);
 			transformer.transform(source, result);
-			DEBUG.ON();
+			DEBUG.OFF();
 			DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
 		}
 	}
@@ -536,7 +536,7 @@ public class HeadlessApplication implements IApplication {
 		output.createNewFile();
 		final StreamResult result = new StreamResult(output);
 		transformer.transform(source, result);
-		DEBUG.ON();
+		DEBUG.OFF();
 		DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
 	}
 

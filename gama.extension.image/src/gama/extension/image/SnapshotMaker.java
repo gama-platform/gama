@@ -43,7 +43,7 @@ import gama.gaml.operators.Files;
 public class SnapshotMaker implements ISnapshotMaker {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The robot. */

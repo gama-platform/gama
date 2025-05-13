@@ -140,7 +140,7 @@ import one.util.streamex.StreamEx;
 public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpression {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The Constant WORKSPACE_PATH. */

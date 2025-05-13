@@ -32,7 +32,7 @@ import gama.dev.DEBUG;
 public class FieldDiffuser {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	// static ThreadLocal<FieldDiffuser> CACHE = new ThreadLocal<>();

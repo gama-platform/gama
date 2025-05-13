@@ -47,7 +47,7 @@ import gama.ui.shared.resources.IGamaColors;
 public class GamaToolbar2 extends Composite {
 
 	{
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The right. */

@@ -57,7 +57,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class SimulationPopupMenu extends PopupDialog {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The contents. */

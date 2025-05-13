@@ -35,7 +35,7 @@ import gama.ui.shared.views.WorkaroundForIssue1353;
 public class LayeredDisplayMultiListener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The view. */

@@ -179,7 +179,7 @@ import gaml.compiler.ui.templates.GamlTemplateStore;
 public class GamlEditor extends XtextEditor implements IGamlBuilderListener, IToolbarDecoratedView {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The preference store. */
