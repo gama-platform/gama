@@ -7,10 +7,10 @@ model Mainxp
 
 global schedules: people_ordered{
 	
-	shape_file buildings_shape_file <- shape_file("../includes/buildings.shp");
-	shape_file evacuation_shape_file <- shape_file("../includes/evacuation_points.shp");
-	shape_file roads_shape_file <- shape_file("../includes/roads.shp");
-	shape_file intersections_shape_file <- shape_file("../includes/intersections.shp");
+	shape_file buildings_shape_file <- shape_file("../includes/PhucXa/buildings.shp");
+	shape_file evacuation_shape_file <- shape_file("../includes/PhucXa/evacuation_points.shp");
+	shape_file roads_shape_file <- shape_file("../includes/PhucXa/roads.shp");
+	shape_file intersections_shape_file <- shape_file("../includes/PhucXa/intersections.shp");
 	
 	
 	string qualitativePalette <- "Set1" among:["Accents","Paired","Set3","Set2","Set1","Dark2","Pastel2","Pastel1"];
