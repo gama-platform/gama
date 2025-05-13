@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WrappedProject.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WrappedProject.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,9 +18,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.xml.type.internal.DataValue.URI;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 
-import gama.core.runtime.GAMA;
 import gama.gaml.statements.test.AbstractSummary;
 import gama.gaml.statements.test.CompoundSummary;
 import gama.ui.shared.resources.GamaIcon;
@@ -146,7 +144,7 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	 */
 	String getPlugin() {
 		if (plugin == null) {
-			final var data = GAMA.getGui().getMetaDataProvider().getMetaData(getResource(), false, false);
+			final var data = getMetaDataProvider().getMetaData(getResource(), false, false);
 			if (data != null) {
 				setPlugin(data.getSuffix());
 			} else {

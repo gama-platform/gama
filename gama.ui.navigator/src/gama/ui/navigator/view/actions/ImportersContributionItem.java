@@ -10,17 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
-import static gaml.compiler.gaml.indexer.GamlResourceIndexer.directImportersOf;
-import static org.eclipse.emf.common.util.URI.createPlatformResourceURI;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.Set;
-
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -29,13 +21,13 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
-import gama.ui.navigator.view.contents.ResourceManager;
+import gama.ui.navigator.view.contents.VirtualContent.IContentVisitor;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
+import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 
 /**
  * The Class ImportersContributionItem.
@@ -67,30 +59,23 @@ public class ImportersContributionItem extends ContributionItem {
 		if (sel == null || sel.isEmpty() || !(sel.getFirstElement() instanceof WrappedGamaFile file)) return;
 		menu.addListener(SWT.Show, e -> {
 			for (final MenuItem i : menu.getItems()) { i.dispose(); }
-			final Set<URI> imp =
-					directImportersOf(createPlatformResourceURI(file.getResource().getFullPath().toString(), true));
+			WrappedProject project = file.getProject();
+			final List<WrappedGamaFile> imp = new ArrayList<>();
+			project.accept((IContentVisitor) wf -> {
+				if (wf instanceof WrappedGamaFile wgf && wgf.hasImport(file)) { imp.add(wgf); }
+				return true;
+			});
 			if (imp.isEmpty()) {
 				MenuItem item2 = new MenuItem(menu, SWT.PUSH);
 				item2.setText("No importers");
 				item2.setEnabled(false);
-				return;
-			}
-			if (!ResourceManager.getInstance().hasBeenBuiltOnce()) {
-				if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is not already built. Proceeding with building"); }
-				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				try {
-					GamlResourceIndexer.eraseIndex();
-					workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, new NullProgressMonitor());
-				} catch (final CoreException ex) {
-					ex.printStackTrace();
+			} else {
+				for (final WrappedGamaFile r : imp) {
+					MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+					item2.setText(r.getName());
+					item2.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
+					item2.addSelectionListener((Selector) eee -> GAMA.getGui().editModel(r));
 				}
-			} else if (DEBUG.IS_ON()) { DEBUG.OUT("The workspace is already built. Proceeding with imports"); }
-			while (!ResourceManager.getInstance().hasBeenBuiltOnce()) {}
-			for (final URI uri : imp) {
-				MenuItem item2 = new MenuItem(menu, SWT.PUSH);
-				item2.setText(URI.decode(uri.lastSegment()));
-				item2.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
-				item2.addSelectionListener((Selector) eee -> GAMA.getGui().editModel(uri));
 			}
 
 		});
