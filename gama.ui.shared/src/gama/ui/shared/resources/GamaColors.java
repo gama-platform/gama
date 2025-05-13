@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaColors.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaColors.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,6 +43,7 @@ public class GamaColors {
 		/** The reverse. */
 		Color active, inactive, darker, gray, reverse;
 
+		/** The lighter colors. */
 		Map<Float, Color> lighterColors;
 
 		/**
@@ -126,6 +128,13 @@ public class GamaColors {
 			return lighter(0.2f);
 		}
 
+		/**
+		 * Lighter.
+		 *
+		 * @param percentage
+		 *            the percentage
+		 * @return the color
+		 */
 		public Color lighter(final float percentage) {
 			if (lighterColors == null) { lighterColors = new HashMap<>(); }
 			Color lighter = lighterColors.get(percentage);
@@ -504,6 +513,7 @@ public class GamaColors {
 		for (Control w : controls) {
 			if (w == null) { continue; }
 			if (b == null) {
+				if (f == null) return;
 				setForeground(f, w);
 			} else if (f == null) {
 				setBackground(b, w);

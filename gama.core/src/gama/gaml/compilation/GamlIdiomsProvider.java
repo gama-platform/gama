@@ -186,18 +186,6 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	public String document(final IGamlDescription element) {
 		return documenter.apply((T) element).toString();
 	}
-	//
-	// /**
-	// * With.
-	// *
-	// * @param doc
-	// * the doc
-	// * @return the gaml idioms provider
-	// */
-	// public GamlIdiomsProvider<T> withStringProvider(final Function<T, String> doc) {
-	// documenter = t -> new ConstantDoc(doc.apply(t));
-	// return this;
-	// }
 
 	/**
 	 * Gets the search category.

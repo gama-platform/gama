@@ -202,9 +202,6 @@ experiment 'Display Preferences' type: gui {
 		//In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts
 		write sample(gama.pref_opengl_z_fighting);
 
-		//Optimize the 'at_distance' operator
-		write sample(gama.pref_optimize_at_distance);
-
 		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
 		write sample(gama.pref_optimize_path_computation);
 
@@ -477,9 +474,6 @@ experiment 'Set Preferences' type: gui {
 
 		//In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts
 		gama.pref_opengl_z_fighting <- true;
-
-		//Optimize the 'at_distance' operator
-		gama.pref_optimize_at_distance <- true;
 
 		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
 		gama.pref_optimize_path_computation <- false;

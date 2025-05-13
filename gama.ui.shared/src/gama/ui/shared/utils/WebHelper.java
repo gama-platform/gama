@@ -15,6 +15,7 @@ import static org.eclipse.core.runtime.FileLocator.toFileURL;
 import static org.eclipse.core.runtime.Platform.getBundle;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.filesystem.EFS;
@@ -23,11 +24,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.part.NullEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
 import gama.core.common.interfaces.IGamaView.Html;
+import gama.core.common.interfaces.IGui;
+import gama.core.common.preferences.GamaPreferences;
 import gama.ui.application.workbench.IWebHelper;
 
 /**
@@ -145,12 +149,20 @@ public class WebHelper implements IWebHelper {
 	 *            the string
 	 */
 	public static void openPage(final String string) {
-		try {
-			final var view =
-					(Html) WorkbenchHelper.getPage().openEditor(new NullEditorInput(), "gama.ui.application.browser");
-			view.setUrl(string);
-		} catch (final PartInitException e) {
-			e.printStackTrace();
+		if (GamaPreferences.Network.CORE_EXTERNAL_BROWSER.getValue()) {
+			try {
+				final var view =
+						(Html) WorkbenchHelper.getPage().openEditor(new NullEditorInput(), IGui.BROWSER_VIEW_ID);
+				view.setUrl(string);
+			} catch (final PartInitException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(string));
+			} catch (PartInitException | MalformedURLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

@@ -11,25 +11,32 @@
 package gama.ui.shared.parameters;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.HyperlinkSettings;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-import org.eclipse.ui.forms.events.IHyperlinkListener;
-import org.eclipse.ui.forms.widgets.FormText;
 
 import gama.core.kernel.experiment.InputParameter;
 import gama.core.kernel.experiment.TextStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.controls.text.XmlText;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaFonts;
+import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -38,171 +45,190 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class TextDisplayer extends AbstractEditor<TextStatement> {
 
-	/** The text. */
-	FormText form;
+    /** The statement. */
+    TextStatement statement;
 
-	/** The text. */
-	StyledText text;
+    /** The front. */
+    final Color back, front;
 
-	/** The statement. */
-	TextStatement statement;
+    /** The font. */
+    final GamaFont font;
 
-	/** The front. */
-	final Color back, front;
+    /** The is XML. */
+    // boolean isHtml;
 
-	/** The font. */
-	final Font font;
+    /**
+     * Instantiates a new command editor.
+     *
+     * @param scope
+     *            the scope
+     * @param command
+     *            the command
+     * @param l
+     *            the l
+     */
+    public TextDisplayer(final IScope scope, final TextStatement command) {
+	super(scope.getAgent(), new InputParameter(command.getName(), null), null);
+	statement = command;
+	GamaColor c = command.getColor(scope);
+	GamaColor b = command.getBackground(scope);
+	front = c == null ? null : GamaColors.toSwtColor(c);
+	back = b == null ? null : GamaColors.toSwtColor(b);
+	font = command.getFont(scope);
+    }
 
-	/** The is XML. */
-	final boolean isXML;
+    /**
+     * Checks if is html.
+     *
+     * @param message
+     *            the message
+     */
+    public boolean isHtml(final String message) {
+	return message.contains("<html>");
+    }
 
-	/**
-	 * Instantiates a new command editor.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param command
-	 *            the command
-	 * @param l
-	 *            the l
-	 */
-	public TextDisplayer(final IScope scope, final TextStatement command) {
-		super(scope.getAgent(), new InputParameter(command.getName(), null), null);
-		isXML = command.isXML(scope);
-		statement = command;
-		java.awt.Color c = command.getColor(scope);
-		java.awt.Color b = command.getBackground(scope);
-		front = c == null ? null : GamaColors.toSwtColor(c);
-		back = b == null ? null : GamaColors.toSwtColor(b);
-		GamaFont f = command.getFont(scope);
-		font = f == null ? null : new Font(WorkbenchHelper.getDisplay(), f.getFontName(), f.getSize(), f.getStyle());
+    @Override
+    public void createControls(final EditorsGroup parent) {
+	this.parent = parent;
+	internalModification = true;
+	// Create the label of the value editor
+	editorLabel = createEditorLabel();
+	// Create the composite that will hold the value editor and the toolbar
+	createValueComposite();
+	// Create and initialize the value editor
+	editorControl = createEditorControl();
+
+	// Create and initialize the toolbar associated with the value editor
+	editorToolbar = null;
+	internalModification = false;
+	parent.requestLayout();
+    }
+
+    @Override
+    Composite createValueComposite() {
+	composite = new Composite(parent, SWT.NONE);
+	GamaColors.setBackground(parent.getBackground(), composite);
+	final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
+	data.minimumWidth = 100;
+	data.horizontalSpan = 3;
+	composite.setLayoutData(data);
+	// Layout layout = isXML ? new FormLayout() : new FillLayout();
+	Layout layout = new FillLayout();
+	composite.setLayout(layout);
+	return composite;
+    }
+
+    @Override
+    protected Control createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+	String text = statement.getText(getScope());
+	if (text == null) {
+	    return new Text(composite, SWT.None);
 	}
+	Control result = text.contains("<html>") ? buildBrowser(composite, text) : buildForm(composite, text);
+	GamaColors.setBackAndForeground(back, front, result);
+	result.setFont(GamaFonts.getFont(font));
+	composite.requestLayout();
+	return result;
 
-	@Override
-	public void createControls(final EditorsGroup parent) {
-		this.parent = parent;
-		internalModification = true;
-		// Create the label of the value editor
-		editorLabel = createEditorLabel();
-		// Create the composite that will hold the value editor and the toolbar
-		createValueComposite();
-		// Create and initialize the value editor
-		editorControl = createEditorControl();
+    }
 
-		// Create and initialize the toolbar associated with the value editor
-		editorToolbar = null;
-		internalModification = false;
-		parent.requestLayout();
-	}
+    /**
+     * Builds the form.
+     *
+     * @param composite
+     *            the composite
+     * @param text
+     *            the text
+     * @return the control
+     */
+    private Control buildForm(final Composite composite, final String text) {
+	XmlText form = new XmlText(composite, SWT.NONE | SWT.READ_ONLY, font);
+	form.setText("<form><p>" + text + "</p></form>", true, true);
+	form.setHyperlinkSettings(getHyperlinkSettings());
+	form.addHyperlinkListener(new HyperlinkAdapter() {
 
-	@Override
-	Composite createValueComposite() {
-		composite = new Composite(parent, SWT.NONE);
-		GamaColors.setBackground(parent.getBackground(), composite);
-		final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.minimumWidth = 100;
-		data.horizontalSpan = 3;
-		composite.setLayoutData(data);
-		// Layout layout = isXML ? new FormLayout() : new FillLayout();
-		Layout layout = new FillLayout();
-		composite.setLayout(layout);
-		return composite;
-	}
+	    @Override
+	    public void linkActivated(final HyperlinkEvent e) {
+		WebHelper.openPage(e.getHref().toString());
+	    }
 
-	@Override
-	protected Control createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
-		if (isXML) {
-			form = new FormText(composite, SWT.NONE);
-			form.setFont(font);
-			form.marginHeight = 4;
-			form.marginWidth = 4;
-			form.setText("<form>" + statement.getText(getScope()) + "</form>", true, true);
-			if (back != null) {
-				if (front != null) {
-					GamaColors.setBackAndForeground(back, front, form);
-				} else {
-					GamaColors.setBackground(back, form);
-				}
-			} else if (front != null) { GamaColors.setForeground(front, form); }
+	});
+	return form;
+    }
 
-			form.addHyperlinkListener(new IHyperlinkListener() {
+    /**
+     * @return
+     */
+    private HyperlinkSettings getHyperlinkSettings() {
+	HyperlinkSettings settings = new HyperlinkSettings(WorkbenchHelper.getDisplay());
+	settings.setActiveForeground(
+		ThemeHelper.isDark() ? IGamaColors.TOOLTIP.color() : IGamaColors.DARK_ORANGE.color());
+	settings.setActiveBackground(back);
+	settings.setForeground(ThemeHelper.isDark() ? IGamaColors.TOOLTIP.color() : IGamaColors.DARK_ORANGE.color());
+	settings.setBackground(back);
+	settings.setHyperlinkUnderlineMode(HyperlinkSettings.UNDERLINE_HOVER);
+	settings.setHyperlinkCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
+	settings.setBusyCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
+	settings.setTextCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
+	return settings;
+    }
 
-				@Override
-				public void linkExited(final HyperlinkEvent e) {}
+    /**
+     * Builds the browser.
+     *
+     * @param composite
+     *            the composite
+     * @param text
+     *            the text
+     * @return the control
+     */
+    private Control buildBrowser(final Composite composite, final String text) {
+	Browser browser = new Browser(composite, SWT.NONE | SWT.READ_ONLY);
+	browser.setText(text);
+	browser.addLocationListener(new LocationAdapter() {
 
-				@Override
-				public void linkEntered(final HyperlinkEvent e) {
-					// TODO Auto-generated method stub
-
-				}
-
-				@Override
-				public void linkActivated(final HyperlinkEvent e) {
-					WebHelper.openPage(e.getHref().toString());
-				}
-			});
-
-			// form.setLayoutData(new FormData());
-			form.requestLayout();
-			composite.requestLayout();
-			return form;
+	    @Override
+	    public void changing(final LocationEvent event) {
+		// Problem with Edge on Win32, which opens a blank page at
+		// startup
+		if (event.location == null || event.location.equals("about:blank")) {
+		    return;
 		}
-		text = new StyledText(composite, SWT.WRAP | SWT.READ_ONLY);
-		text.setJustify(true);
-		text.setMargins(4, 4, 4, 4);
-		text.setText(statement.getText(getScope()));
-		if (font != null) {
-			int a = text.getCharCount();
-			StyleRange[] sr = new StyleRange[1];
-			sr[0] = new StyleRange();
-			sr[0].start = 0;
-			sr[0].length = a;
-			sr[0].font = font;
-			sr[0].foreground = front;
-			sr[0].background = back;
-			text.replaceStyleRanges(sr[0].start, sr[0].length, sr);
-		} else if (front != null || back != null) {
-			int a = text.getCharCount();
-			StyleRange[] sr = new StyleRange[1];
-			sr[0] = new StyleRange();
-			sr[0].start = 0;
-			sr[0].length = a;
-			sr[0].foreground = front;
-			sr[0].background = back;
-			text.replaceStyleRanges(sr[0].start, sr[0].length, sr);
-		}
-		if (back != null) {
-			if (front != null) {
-				GamaColors.setBackAndForeground(back, front, text);
-			} else {
-				GamaColors.setBackground(back, text);
-			}
-		} else if (front != null) { GamaColors.setForeground(front, text); }
-		composite.requestLayout();
-		return text;
+		WorkbenchHelper.asyncRun(() -> WebHelper.openPage(event.location));
+		event.doit = false;
+	    }
 
-	}
+	});
+	return browser;
+    }
 
-	@Override
-	EditorLabel createEditorLabel() {
-		return null;
-	}
+    @Override
+    EditorLabel createEditorLabel() {
+	return null;
+    }
 
-	@Override
-	Color getEditorControlBackground() { return back == null ? super.getEditorControlBackground() : back; }
+    @Override
+    Color getEditorControlBackground() {
+	return back == null ? super.getEditorControlBackground() : back;
+    }
 
-	@Override
-	Color getEditorControlForeground() { return front == null ? super.getEditorControlForeground() : front; }
+    @Override
+    Color getEditorControlForeground() {
+	return front == null ? super.getEditorControlForeground() : front;
+    }
 
-	@Override
-	protected int[] getToolItems() { return new int[0]; }
+    @Override
+    protected int[] getToolItems() {
+	return new int[0];
+    }
 
-	@Override
-	protected void displayParameterValue() {
+    @Override
+    protected void displayParameterValue() {
 
-	}
+    }
 
-	// @Override
-	// protected Object getEditorControlGridData() { return isXML ? new FormData() : super.getEditorControlGridData(); }
+    // @Override
+    // protected Object getEditorControlGridData() { return isXML ? new
+    // FormData() : super.getEditorControlGridData(); }
 
 }

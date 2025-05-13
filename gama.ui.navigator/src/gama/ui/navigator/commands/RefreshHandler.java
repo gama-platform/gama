@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * RefreshHandler.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * RefreshHandler.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,6 @@ import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.PROJECT;
 import static org.eclipse.core.resources.IResource.ROOT;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -114,8 +113,8 @@ public class RefreshHandler implements IRefreshHandler {
 	public void completeRefresh(final List<? extends IResource> list) {
 		final IStatus[] errorStatus = new IStatus[1];
 		errorStatus[0] = Status.OK_STATUS;
-		final List<? extends IResource> resources =
-				list == null || list.isEmpty() ? Collections.singletonList(ResourcesPlugin.getWorkspace().getRoot()) : list;
+		final List<? extends IResource> resources = list == null || list.isEmpty()
+				? Collections.singletonList(ResourcesPlugin.getWorkspace().getRoot()) : list;
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override
 			public void execute(final IProgressMonitor monitor) {
@@ -150,17 +149,7 @@ public class RefreshHandler implements IRefreshHandler {
 					WorkspaceModelsManager.instance.loadModelsLibrary();
 					monitor.beginTask("Refreshing GAMA Workspace: recreating files metadata", 1000);
 					DEBUG.LOG("Refreshing GAMA Workspace: recreating files metadata");
-					for (final IResource r : resources) {
-						r.accept(proxy -> {
-							final IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
-							final IResource file = proxy.requestResource();
-							provider.storeMetaData(file, null, true);
-							provider.getMetaData(file, false, true);
-							monitor.worked(1);
-							return true;
-						}, IResource.NONE);
-
-					}
+					reconstructMetadata(resources, monitor);
 					monitor.beginTask("Refreshing GAMA Workspace: refreshing resources", resources.size());
 					DEBUG.LOG("Refreshing GAMA Workspace: refreshing resources");
 					op.run(monitor);
@@ -193,6 +182,31 @@ public class RefreshHandler implements IRefreshHandler {
 		};
 		job.setUser(true);
 		job.schedule();
+	}
+
+	/**
+	 * Reconstruct metadata.
+	 *
+	 * @param resources
+	 *            the resources
+	 * @param monitor
+	 *            the monitor
+	 * @throws CoreException
+	 *             the core exception
+	 */
+	public static void reconstructMetadata(final List<? extends IResource> resources, final IProgressMonitor monitor)
+			throws CoreException {
+		final IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		for (final IResource r : resources) {
+			r.accept(proxy -> {
+				final IResource file = proxy.requestResource();
+				provider.storeMetaData(file, null, true);
+				provider.getMetaData(file, false, true);
+				if (monitor != null) { monitor.worked(1); }
+				return true;
+			}, IResource.NONE);
+
+		}
 	}
 
 	/**
