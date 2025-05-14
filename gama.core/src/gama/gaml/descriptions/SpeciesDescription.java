@@ -58,7 +58,7 @@ import gama.gaml.types.IType;
 public class SpeciesDescription extends TypeDescription {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The behaviors. */

@@ -25,7 +25,7 @@ import gama.dev.DEBUG;
 public abstract class AbstractLayer implements ILayer {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The definition. */

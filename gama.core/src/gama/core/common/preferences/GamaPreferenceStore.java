@@ -60,7 +60,7 @@ import gama.gaml.types.IType;
 public abstract class GamaPreferenceStore<T> {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The store. */

@@ -35,7 +35,7 @@ import gama.dev.DEBUG;
 public class GamlResourceGraph {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

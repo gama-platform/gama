@@ -32,7 +32,7 @@ import gama.ui.display.opengl.scene.ModelScene;
 public class SceneHelper extends AbstractRendererHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The back scene. */

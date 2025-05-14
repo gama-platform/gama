@@ -78,7 +78,7 @@ public class DescriptionFactory {
 	static Map<Integer, SymbolProto> KINDS_PROTOS = new HashMap();
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 		initialize();
 	}
 

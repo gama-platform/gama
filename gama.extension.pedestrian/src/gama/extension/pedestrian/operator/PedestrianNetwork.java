@@ -64,7 +64,7 @@ public class PedestrianNetwork {
 			final double valDensityOpenArea, final boolean cleanNetwork, final double toleranceClip,
 			final double toleranceTriang, final double minDistPath, final double simplicationDistance,
 			final double sizeSquare) {
-		DEBUG.ON();
+		DEBUG.OFF();
 		DEBUG.OUT("Start generating pedestrian network");
 
 		double t = System.currentTimeMillis();

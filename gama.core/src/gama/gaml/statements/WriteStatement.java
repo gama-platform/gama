@@ -118,7 +118,7 @@ public class WriteStatement extends AbstractStatement {
 	}
 	
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	@Override

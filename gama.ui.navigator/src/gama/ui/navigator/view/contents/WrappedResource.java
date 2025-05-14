@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * WrappedResource.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * WrappedResource.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
@@ -19,26 +19,30 @@ import org.eclipse.jface.resource.ImageDescriptor;
 /**
  * The Class WrappedResource.
  *
- * @param <P> the generic type
- * @param <T> the generic type
+ * @param <P>
+ *            the generic type
+ * @param <T>
+ *            the generic type
  */
 public abstract class WrappedResource<P extends VirtualContent<?>, T extends IResource> extends VirtualContent<P>
 		implements IAdaptable {
-	
+
 	/** The Constant NOT_COMPUTED. */
 	final static int NOT_COMPUTED = Integer.MAX_VALUE;
-	
+
 	/** The resource. */
 	final T resource;
-	
+
 	/** The severity. */
 	int severity = NOT_COMPUTED;
 
 	/**
 	 * Instantiates a new wrapped resource.
 	 *
-	 * @param root the root
-	 * @param wrapped the wrapped
+	 * @param root
+	 *            the root
+	 * @param wrapped
+	 *            the wrapped
 	 */
 	public WrappedResource(final P root, final T wrapped) {
 		super(root, wrapped.getName());
@@ -49,7 +53,7 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	@SuppressWarnings ({ "unchecked" })
 	@Override
 	public <C> C getAdapter(final Class<C> adapter) {
-		if (adapter.isInstance(resource)) { return (C) resource; }
+		if (adapter.isInstance(resource)) return (C) resource;
 		return null;
 	}
 
@@ -58,9 +62,7 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	 *
 	 * @return the resource
 	 */
-	public T getResource() {
-		return resource;
-	}
+	public T getResource() { return resource; }
 
 	/**
 	 * Can be decorated.
@@ -74,9 +76,7 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	 *
 	 * @return true, if is open
 	 */
-	public boolean isOpen() {
-		return resource.isAccessible();
-	}
+	public boolean isOpen() { return resource.isAccessible(); }
 
 	@Override
 	public int findMaxProblemSeverity() {
@@ -93,9 +93,7 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	}
 
 	@Override
-	public ImageDescriptor getOverlay() {
-		return canBeDecorated() ? DESCRIPTORS.get(findMaxProblemSeverity()) : null;
-	}
+	public ImageDescriptor getOverlay() { return canBeDecorated() ? DESCRIPTORS.get(findMaxProblemSeverity()) : null; }
 
 	/**
 	 * Invalidate severity.
@@ -103,9 +101,7 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	public void invalidateSeverity() {
 		severity = NOT_COMPUTED;
 		final Object p = getParent();
-		if (p instanceof WrappedContainer) {
-			((WrappedContainer<?>) p).invalidateSeverity();
-		}
+		if (p instanceof WrappedContainer) { ((WrappedContainer<?>) p).invalidateSeverity(); }
 	}
 
 	/**
@@ -114,5 +110,10 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	 * @return the int
 	 */
 	public abstract int countModels();
+
+	@Override
+	public String toString() {
+		return getName();
+	}
 
 }

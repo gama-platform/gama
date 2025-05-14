@@ -65,7 +65,7 @@ import gama.gaml.operators.Cast;
 public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/**

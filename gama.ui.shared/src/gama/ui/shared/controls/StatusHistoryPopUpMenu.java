@@ -61,7 +61,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	int limit = 30;
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

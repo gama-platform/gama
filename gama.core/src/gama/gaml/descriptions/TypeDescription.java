@@ -47,7 +47,7 @@ import gama.gaml.types.IType;
 public abstract class TypeDescription extends SymbolDescription {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	// AD 08/16 : actions and attributes are now inherited dynamically and built

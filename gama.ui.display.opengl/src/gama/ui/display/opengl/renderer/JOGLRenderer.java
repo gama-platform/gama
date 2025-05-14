@@ -68,7 +68,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The keystone helper. */

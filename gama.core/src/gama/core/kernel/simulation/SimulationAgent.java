@@ -162,7 +162,7 @@ import gama.gaml.types.IType;
 public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The Constant DURATION. */

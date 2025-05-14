@@ -127,7 +127,7 @@ import gaml.compiler.gaml.resource.GamlResourceServices;
 public class GamlSyntacticConverter {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The builder of proto-expressions (not yet compiled). */

@@ -29,7 +29,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 public class PickingHelper extends AbstractRendererHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The select buffer. */

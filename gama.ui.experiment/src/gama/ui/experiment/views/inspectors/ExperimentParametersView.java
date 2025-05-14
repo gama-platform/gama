@@ -59,7 +59,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class ExperimentParametersView extends AttributesEditorsView<String> implements IGamaView.Parameters {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

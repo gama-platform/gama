@@ -38,7 +38,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class GamaKeyBindings implements Listener {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The command. */

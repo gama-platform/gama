@@ -55,6 +55,7 @@ import gama.ui.navigator.view.contents.WrappedSyntacticContent;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
@@ -307,6 +308,9 @@ public class GamaNavigator extends CommonNavigator
 		findControl = new NavigatorSearchControl(this).fill(toolbar.getToolbar(SWT.LEFT));
 	}
 
+	@Override
+	public NavigatorCommonViewer getCommonViewer() { return (NavigatorCommonViewer) super.getCommonViewer(); }
+
 	/**
 	 * Method selectionChanged()
 	 *
@@ -326,7 +330,7 @@ public class GamaNavigator extends CommonNavigator
 
 	@Override
 	public void expandAll() {
-		getCommonViewer().expandAll();
+		WorkbenchHelper.asyncRun(() -> getCommonViewer().expandAll());
 	}
 
 	@Override

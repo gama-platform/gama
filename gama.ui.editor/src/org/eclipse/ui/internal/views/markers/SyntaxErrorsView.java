@@ -62,7 +62,7 @@ import gaml.compiler.gaml.validation.GamlResourceValidator;
 public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecoratedView.Expandable {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The parent. */
@@ -79,7 +79,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	 */
 	public SyntaxErrorsView() {
 		super("gaml.compiler.gaml.ui.error.generator");
-		listener = new BuildPreferenceChangeListener(this);
+		listener = new BuildPreferenceChangeListener();
 		GamaPreferences.Modeling.WARNINGS_ENABLED.addChangeListener(listener);
 		GamaPreferences.Modeling.INFO_ENABLED.addChangeListener(listener);
 	}
@@ -127,20 +127,10 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	 */
 	public static class BuildPreferenceChangeListener implements IPreferenceAfterChangeListener<Boolean> {
 
-		/** The view. */
-		SyntaxErrorsView view;
-
 		/**
-		 * Instantiates a new builds the preference change listener.
 		 *
-		 * @param v
-		 *            the v
-		 */
-		BuildPreferenceChangeListener(final SyntaxErrorsView v) {
-			view = v;
-		}
-
-		/**
+		 * /**
+		 *
 		 * @see gama.core.common.preferences.IPreferenceChangeListener#afterValueChange(java.lang.Object)
 		 */
 		@Override

@@ -24,7 +24,7 @@ import gama.gaml.types.Types;
 public class CameraDefinition extends AbstractDefinition implements ICameraDefinition {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The current. */

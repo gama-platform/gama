@@ -67,7 +67,7 @@ import one.util.streamex.StreamEx;
 public class GamaBundleLoader {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 		Toolkit.getDefaultToolkit();
 	}
 

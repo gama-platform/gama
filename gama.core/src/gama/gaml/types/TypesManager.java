@@ -31,7 +31,7 @@ import gama.gaml.interfaces.IGamlIssue;
 public class TypesManager implements ITypesManager {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The current index. */

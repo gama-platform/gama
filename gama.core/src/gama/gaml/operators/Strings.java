@@ -43,7 +43,7 @@ import gama.gaml.types.Types;
 public class Strings {
 
 	// static {
-	// DEBUG.ON();
+	// DEBUG.OFF();
 	// }
 
 	/** The Constant LN. */

@@ -59,7 +59,7 @@ import gaml.compiler.ui.editor.GamlEditor;
 public class EditorToolbar {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 		Command command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
 		if (command != null) { command.setHandler(null); }
 		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomIn");

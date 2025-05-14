@@ -47,7 +47,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library runner.
 	 */
 	private ModelLibraryRunner() {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	@Override

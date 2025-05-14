@@ -47,7 +47,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	public static record Signature(int x, int y, boolean triangle) {}
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant BLACK. */

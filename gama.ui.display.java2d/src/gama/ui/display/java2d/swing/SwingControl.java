@@ -39,7 +39,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public abstract class SwingControl extends Composite {
 
     static {
-	DEBUG.ON();
+	DEBUG.OFF();
     }
 
     /**

@@ -69,7 +69,7 @@ import gama.gaml.types.IType;
 public class ThemeHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**
@@ -148,7 +148,7 @@ public class ThemeHelper {
 	private static Bundle bundle = Platform.getBundle("gama.ui.application");
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant CORE_THEME_FOLLOW. */

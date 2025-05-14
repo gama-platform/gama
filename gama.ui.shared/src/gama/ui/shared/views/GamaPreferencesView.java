@@ -68,7 +68,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class GamaPreferencesView {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The dialog location. */

@@ -44,7 +44,7 @@ import gama.ui.display.opengl.scene.layers.OverlayLayerObject;
 public class ModelScene {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant AXES_KEY. */

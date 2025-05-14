@@ -24,7 +24,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class GamaKeyAndMouseDispatcher implements Listener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	@Override

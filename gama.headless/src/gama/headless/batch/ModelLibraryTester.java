@@ -55,7 +55,7 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library tester.
 	 */
 	private ModelLibraryTester() {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	@Override

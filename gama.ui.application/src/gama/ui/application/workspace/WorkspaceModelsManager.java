@@ -74,7 +74,7 @@ import gama.gaml.compilation.kernel.GamaBundleLoader;
 public class WorkspaceModelsManager {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant GAMA_NATURE. */

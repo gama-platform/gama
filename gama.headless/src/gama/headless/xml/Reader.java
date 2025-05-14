@@ -42,7 +42,7 @@ import gama.headless.job.Parameter;
 public class Reader {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The file name. */

@@ -51,7 +51,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 		IToolbarDecoratedView.LogExportable, IGamaView.Console {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/** The msg console. */
