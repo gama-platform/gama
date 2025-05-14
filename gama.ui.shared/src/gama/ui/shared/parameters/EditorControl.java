@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorControl.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -52,6 +52,7 @@ public class EditorControl<T extends Control> {
 		Color back = editor.getEditorControlBackground();
 		Color front = editor.getEditorControlForeground();
 		if (control instanceof FlatButton button) {
+			control.setBackground(GamaColors.get(back).color());
 			button.setColor(GamaColors.get(back));
 		} else {
 			GamaColors.setBackAndForeground(back, front, control);
@@ -83,16 +84,16 @@ public class EditorControl<T extends Control> {
 	 *            the new text
 	 */
 	public void setText(final String s) {
-		if (control.isDisposed()) return;
-		if (control instanceof Text t) {
-			t.setText(s);
-		} else if (control instanceof Button b) {
-			b.setText(s);
-		} else if (control instanceof FlatButton f) {
-			f.setText(s);
-		} else if (control instanceof Label l) {
-			l.setText(s);
-		} else if (control instanceof CLabel c) { c.setText(s); }
+		if (control == null || control.isDisposed()) return;
+		switch (control) {
+			case Text t -> t.setText(s);
+			case Button b -> b.setText(s);
+			case FlatButton f -> f.setText(s);
+			case Label l -> l.setText(s);
+			case CLabel c -> c.setText(s);
+			case null, default -> {
+			}
+		}
 	}
 
 	/**
@@ -105,14 +106,14 @@ public class EditorControl<T extends Control> {
 		if (control.isDisposed()) return;
 		control.setEnabled(b);
 	}
-	
+
 	/**
-	* Checks if is disposed.
-	*
-	* @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	* @return true, if is disposed
-	* @date 21 févr. 2024
-	*/
+	 * Checks if is disposed.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @return true, if is disposed
+	 * @date 21 févr. 2024
+	 */
 	public boolean isDisposed() { return control != null && control.isDisposed(); }
 
 	/**
