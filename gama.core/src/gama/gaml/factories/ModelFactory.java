@@ -67,7 +67,7 @@ import gama.gaml.types.Types;
 public class ModelFactory extends SymbolFactory {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

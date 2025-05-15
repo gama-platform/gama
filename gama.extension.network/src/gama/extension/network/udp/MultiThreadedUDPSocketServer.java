@@ -28,7 +28,7 @@ import gama.extension.network.common.NetworkMessage;
 public class MultiThreadedUDPSocketServer extends Thread {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The my agent. */

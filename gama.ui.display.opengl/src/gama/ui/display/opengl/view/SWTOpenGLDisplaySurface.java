@@ -90,7 +90,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 
 	}
 

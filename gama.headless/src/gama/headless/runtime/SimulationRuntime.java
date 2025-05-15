@@ -63,7 +63,7 @@ public class SimulationRuntime extends ThreadPoolExecutor implements RejectedExe
 	@Override
 	public void rejectedExecution(final Runnable r, final ThreadPoolExecutor executor) {
 		if (r instanceof IExperimentJob or) {
-			DEBUG.ON();
+			DEBUG.OFF();
 			DEBUG.ERR("The execution of  " + or.getExperimentID() + " has been rejected");
 		}
 	}

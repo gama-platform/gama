@@ -128,22 +128,8 @@ jobs:
       # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝
       #
 
-      - name: Compiling gama with JDK 21
+      - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
-
-      - name: Set up Adopt OpenJDK 23
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "23"
-          java-package: jdk
-
-      - name: Packaging gama with JDK 23
-        run: |
-          java -version
-          cd $GITHUB_WORKSPACE/gama.product
-          mvn clean install
-
 
       # Spotbugs
       - name: Running SpotBugs

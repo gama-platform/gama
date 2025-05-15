@@ -25,7 +25,7 @@ import gama.dev.DEBUG;
 public abstract class ConsoleReader {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 	
 	/** The end of file. */

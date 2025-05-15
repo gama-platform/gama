@@ -33,7 +33,7 @@ import gama.gaml.types.IType;
 public class SpeciesConstantExpression extends ConstantExpression {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WrappedGamaFile.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WrappedGamaFile.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,7 +21,6 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.GAMA;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.core.util.file.GamlFileInfo;
@@ -125,7 +124,7 @@ public class WrappedGamaFile extends WrappedFile {
 	 * @return true, if successful
 	 */
 	public boolean hasTag(final String tag) {
-		final IGamaFileMetaData metaData = GAMA.getGui().getMetaDataProvider().getMetaData(getResource(), false, false);
+		final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(getResource(), false, false);
 		// DEBUG.LOG("Tags of " + getName() + ": " + ((GamlFileInfo) metaData).getTags());
 		if (metaData instanceof GamlFileInfo) {
 			for (final String t : ((GamlFileInfo) metaData).getTags()) { if (t.contains(tag)) return true; }
@@ -133,9 +132,28 @@ public class WrappedGamaFile extends WrappedFile {
 		return false;
 	}
 
+	/**
+	 * Checks for import.
+	 *
+	 * @param tag
+	 *            the tag
+	 * @return true, if successful
+	 */
+	public boolean hasImport(final WrappedGamaFile file) {
+		URI otherURI = URI.createURI(file.getResource().getLocationURI().toString());
+		URI myURI = URI.createURI(getResource().getLocationURI().toString());
+		String relativePath = otherURI.deresolve(myURI).toString();
+		if (relativePath.isBlank()) return false;
+		final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(getResource(), false, false);
+		if (metaData instanceof GamlFileInfo) {
+			for (final String t : ((GamlFileInfo) metaData).getImports()) { if (t.contains(relativePath)) return true; }
+		}
+		return false;
+	}
+
 	@Override
 	public Object[] getFileChildren() {
-		final IGamaFileMetaData metaData = GAMA.getGui().getMetaDataProvider().getMetaData(getResource(), false, false);
+		final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(getResource(), false, false);
 		if (metaData instanceof GamlFileInfo info) {
 			final List<VirtualContent<?>> l = new ArrayList<>();
 			if (PreferencesHelper.NAVIGATOR_OUTLINE.getValue()) {
@@ -160,7 +178,8 @@ public class WrappedGamaFile extends WrappedFile {
 				if (wf.getNavigatorChildren().length > 0) { l.add(wf); }
 			}
 			if (!info.getTags().isEmpty()) {
-				final Tags wf = new Tags(this, StreamEx.of(info.getTags()).toMap(s -> "Double-click to search"), "Tags");
+				final Tags wf =
+						new Tags(this, StreamEx.of(info.getTags()).toMap(s -> "Double-click to search"), "Tags");
 				if (wf.getNavigatorChildren().length > 0) { l.add(wf); }
 			}
 			return l.toArray();

@@ -69,7 +69,7 @@ import gama.gaml.types.Types;
 public class GamlExpressionFactory implements IExpressionFactory {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

@@ -54,7 +54,7 @@ import gama.ui.shared.resources.IGamaIcons;
 public class CleanupHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

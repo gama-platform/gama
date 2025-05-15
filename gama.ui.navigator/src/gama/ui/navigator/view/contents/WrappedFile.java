@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WrappedFile.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WrappedFile.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,9 +23,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFileMetaData;
 import gama.core.util.file.GamaShapeFile.ShapeInfo;
+import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.ui.navigator.metadata.FileMetaDataProvider;
@@ -143,7 +142,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 					sub.add(getManager().findWrappedInstanceOf(r));
 				}
 			}
-			final IGamaFileMetaData metaData = GAMA.getGui().getMetaDataProvider().getMetaData(p, false, false);
+			final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(p, false, false);
 			Map<String, String> attributes;
 			if (metaData instanceof ShapeInfo info && !(attributes = info.getAttributes()).isEmpty()) {
 				Map<String, String> tags = new LinkedHashMap<>(attributes);
@@ -175,7 +174,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	@Override
 	public void getSuffix(final StringBuilder sb) {
 		if (PreferencesHelper.NAVIGATOR_METADATA.getValue()) {
-			final IGamaFileMetaData data = GAMA.getGui().getMetaDataProvider().getMetaData(getResource(), false, true);
+			final IGamaFileMetaData data = getMetaDataProvider().getMetaData(getResource(), false, true);
 			if (data != null) { data.appendSuffix(sb); }
 		}
 	}

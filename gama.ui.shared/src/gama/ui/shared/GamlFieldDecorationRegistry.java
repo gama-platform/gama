@@ -30,7 +30,7 @@ import gama.ui.shared.resources.IGamaIcons;
 public class GamlFieldDecorationRegistry extends FieldDecorationRegistry {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The error fd. */

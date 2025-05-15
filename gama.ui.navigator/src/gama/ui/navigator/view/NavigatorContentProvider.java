@@ -1,16 +1,17 @@
 /*******************************************************************************************************
  *
- * NavigatorContentProvider.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NavigatorContentProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
 import static gama.ui.navigator.view.contents.NavigatorRoot.getInstance;
+import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_CHANGE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_DELETE;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -37,19 +38,19 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 
 	@Override
 	public Object getParent(final Object element) {
-		if (element instanceof VirtualContent) { return ((VirtualContent) element).getParent(); }
+		if (element instanceof VirtualContent) return ((VirtualContent) element).getParent();
 		return super.getParent(element);
 	}
 
 	@Override
 	public Object[] getChildren(final Object p) {
-		if (p instanceof VirtualContent) { return ((VirtualContent) p).getNavigatorChildren(); }
+		if (p instanceof VirtualContent) return ((VirtualContent) p).getNavigatorChildren();
 		return super.getChildren(p);
 	}
 
 	@Override
 	public boolean hasChildren(final Object element) {
-		if (element instanceof VirtualContent) { return ((VirtualContent) element).hasChildren(); }
+		if (element instanceof VirtualContent) return ((VirtualContent) element).hasChildren();
 		return super.hasChildren(element);
 	}
 
@@ -58,7 +59,7 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 		final CommonViewer viewer = (CommonViewer) v;
 		final ResourceManager mapper = new ResourceManager(this, viewer);
 		getInstance().resetVirtualFolders(mapper);
-		getWorkspace().addResourceChangeListener(mapper, POST_CHANGE | PRE_DELETE);
+		getWorkspace().addResourceChangeListener(mapper, POST_CHANGE | PRE_DELETE | POST_BUILD);
 		super.inputChanged(viewer, oldInput, newInput);
 	}
 
@@ -78,10 +79,9 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 		Object parent = element;
 		do {
 			parent = getParent(parent);
-			if (parent != null && parent != getInstance())
-				segments.add(0, parent);
+			if (parent != null && parent != getInstance()) { segments.add(0, parent); }
 		} while (parent != null && parent != getInstance());
-		if (!segments.isEmpty()) { return new TreePath[] { new TreePath(segments.toArray()) }; }
+		if (!segments.isEmpty()) return new TreePath[] { new TreePath(segments.toArray()) };
 		return new TreePath[0];
 	}
 

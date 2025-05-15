@@ -44,7 +44,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class HistoryPopUpMenu extends PopupDialog {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The contents. */

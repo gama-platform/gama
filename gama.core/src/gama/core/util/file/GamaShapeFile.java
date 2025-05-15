@@ -78,7 +78,7 @@ import gama.gaml.types.Types;
 public class GamaShapeFile extends GamaGisFile {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	// FileDataStore store;

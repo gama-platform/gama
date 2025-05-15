@@ -32,7 +32,7 @@ import gama.gaml.constants.GamlCoreConstants;
 public class DrawingAttributes {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**

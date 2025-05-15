@@ -10,12 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
-import static gaml.compiler.gaml.indexer.GamlResourceIndexer.directImportersOf;
-import static org.eclipse.emf.common.util.URI.createPlatformResourceURI;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.Set;
-
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -23,7 +20,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import gama.core.runtime.GAMA;
+import gama.dev.DEBUG;
+import gama.ui.navigator.view.contents.VirtualContent.IContentVisitor;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
+import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -33,6 +33,10 @@ import gama.ui.shared.views.toolbar.Selector;
  * The Class ImportersContributionItem.
  */
 public class ImportersContributionItem extends ContributionItem {
+
+	static {
+		DEBUG.OFF();
+	}
 
 	/**
 	 * Instantiates a new importers contribution item.
@@ -50,24 +54,32 @@ public class ImportersContributionItem extends ContributionItem {
 	}
 
 	@Override
-	public void fill(final Menu parentMenu, final int index) {
+	public void fill(final Menu menu, final int index) {
 		IStructuredSelection sel = WorkbenchHelper.getSelection();
 		if (sel == null || sel.isEmpty() || !(sel.getFirstElement() instanceof WrappedGamaFile file)) return;
-		final Set<URI> imp =
-				directImportersOf(createPlatformResourceURI(file.getResource().getFullPath().toString(), true));
-		if (imp.isEmpty()) return;
-		MenuItem item = new MenuItem(parentMenu, SWT.CASCADE);
-		final Menu menu = new Menu(item);
-		item.setMenu(menu);
-		item.setText("Imported by...");
-		item.setImage(GamaIcon.named(IGamaIcons.IMPORTED_IN).image());
-		item.setToolTipText("Lists all the models that directly import this model.");
-		for (final URI uri : imp) {
-			item = new MenuItem(menu, SWT.PUSH);
-			item.setText(URI.decode(uri.lastSegment()));
-			item.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
-			item.addSelectionListener((Selector) e -> GAMA.getGui().editModel(uri));
-		}
+		menu.addListener(SWT.Show, e -> {
+			for (final MenuItem i : menu.getItems()) { i.dispose(); }
+			WrappedProject project = file.getProject();
+			final List<WrappedGamaFile> imp = new ArrayList<>();
+			project.accept((IContentVisitor) wf -> {
+				if (wf instanceof WrappedGamaFile wgf && wgf.hasImport(file)) { imp.add(wgf); }
+				return true;
+			});
+			if (imp.isEmpty()) {
+				MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+				item2.setText("No importers");
+				item2.setEnabled(false);
+			} else {
+				for (final WrappedGamaFile r : imp) {
+					MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+					item2.setText(r.getName());
+					item2.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
+					item2.addSelectionListener((Selector) eee -> GAMA.getGui().editModel(r));
+				}
+			}
+
+		});
+
 	}
 
 	@Override

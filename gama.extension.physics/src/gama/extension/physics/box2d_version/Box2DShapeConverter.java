@@ -33,7 +33,7 @@ import gama.extension.physics.common.IShapeConverter;
 public class Box2DShapeConverter implements IShapeConverter<Shape, Vec2>, IBox2DPhysicalEntity {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The scale. */

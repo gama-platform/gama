@@ -39,7 +39,7 @@ import gama.dev.DEBUG;
 public class UniversalContactAddedListener implements ContactAddedCallback, PhysicsCollisionListener, ContactListener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The new contacts. */

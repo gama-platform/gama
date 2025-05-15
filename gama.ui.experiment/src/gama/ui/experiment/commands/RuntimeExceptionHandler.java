@@ -36,7 +36,7 @@ import gama.dev.THREADS;
 public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHandler {
 
 	static {
-		// DEBUG.ON();
+		// DEBUG.OFF();
 	}
 
 	/**

@@ -59,7 +59,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class ExperimentParametersView extends AttributesEditorsView<String> implements IGamaView.Parameters {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**
@@ -170,6 +170,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	 *            the a monitor is about to be created
 	 */
 	private void createMonitorSectionIfNeeded(final boolean aMonitorIsAboutToBeCreated) {
+		if (monitorSection != null && monitorSection.isDisposed()) { monitorSection = null; }
 		if (monitorSection != null || !GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
 				|| !aMonitorIsAboutToBeCreated && !getEditorsList().hasMonitors())
 			return;
@@ -257,6 +258,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				agent = newSimulation;
 				editors = new ExperimentsParametersList(newSimulation);
 				getEditorsList().setItemValues(newSimulation.getExternalInits());
+				DEBUG.OUT("Displaying simulation items");
 				displayItems();
 				return;
 			}
@@ -301,6 +303,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 			final String expInfo = "Model " + newExperiment.getModel().getDescription().getTitle() + " / "
 					+ StringUtils.capitalize(newExperiment.getSpecies().getDescription().getTitle());
 			this.setPartName(expInfo);
+			DEBUG.OUT("Displaying experiment items");
 			displayItems();
 		}
 

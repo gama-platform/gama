@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MonitorDisplayer.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MonitorDisplayer.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -92,6 +92,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+		composite.setBackground(null);
 		textBox = FlatButton.menu(composite, GamaColors.get(getStatement().getColor(getScope())),
 				getStatement().getTitle());
 		textBox.addSelectionListener((Selector) e -> {
@@ -109,8 +110,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			separate(m);
 			action(m, "Copy value", ex -> {
 				final Object v = getStatement().getLastValue();
-				WorkbenchHelper
-						.copy(v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
+				WorkbenchHelper.copy(
+						v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
 			});
 			final IExpression exp = getStatement().getValue();
 			final IType<?> type = exp == null ? Types.NO_TYPE : exp.getGamlType();
@@ -199,5 +200,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	 *            the new closer
 	 */
 	public void setCloser(final Runnable object) { closer = object; }
+	//
+	// @Override
+	// Color getEditorControlBackground() { return GamaColors.get(getStatement().getColor(getScope())).color(); }
 
 }

@@ -44,7 +44,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		MouseTrackListener, MouseWheelListener, KeyListener, DragDetectListener, FocusListener, IDisposable {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The delegate. */

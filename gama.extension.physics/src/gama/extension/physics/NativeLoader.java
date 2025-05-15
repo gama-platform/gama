@@ -24,7 +24,7 @@ import gama.dev.DEBUG;
 public class NativeLoader {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant LOAD_NATIVE_BULLET_LIBRARY. */

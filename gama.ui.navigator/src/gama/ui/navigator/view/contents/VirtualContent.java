@@ -21,6 +21,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
+import gama.core.runtime.GAMA;
+import gama.core.util.file.IFileMetaDataProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
@@ -54,7 +56,25 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 		/** The category. */
 		CATEGORY,
 		/** The gaml element. */
-		GAML_ELEMENT
+		GAML_ELEMENT,
+		/** None of the above. */
+		NONE
+	}
+
+	/**
+	 * The Interface IContentVisitor.
+	 */
+	public interface IContentVisitor {
+
+		/**
+		 * Visit. Return true to continue, false to prune.
+		 *
+		 * @param content
+		 *            the content
+		 * @return true, if successful
+		 */
+		boolean visit(final VirtualContent content);
+
 	}
 
 	/** The default label provider. */
@@ -118,11 +138,31 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	}
 
 	/**
+	 * @param visitor
+	 * @param none
+	 */
+	public boolean accept(final IContentVisitor visitor) {
+		if (!visitor.visit(this)) return false;
+		Object o[] = this.getNavigatorChildren();
+		if (o != null) {
+			for (Object child : o) { if (!(child instanceof VirtualContent vc) || !vc.accept(visitor)) return false; }
+		}
+		return true;
+	}
+
+	/**
 	 * Gets the manager.
 	 *
 	 * @return the manager
 	 */
 	public ResourceManager getManager() { return NavigatorRoot.getInstance().getManager(); }
+
+	/**
+	 * Gets the meta data provider.
+	 *
+	 * @return the meta data provider
+	 */
+	public IFileMetaDataProvider getMetaDataProvider() { return GAMA.getGui().getMetaDataProvider(); }
 
 	/**
 	 * Should both perform something and answer whether or not it has performed it, so that the navigator knows whether

@@ -81,7 +81,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	private static EModelService getModelService() { return WorkbenchHelper.getService(EModelService.class); }
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant LAYOUT_KEY. */

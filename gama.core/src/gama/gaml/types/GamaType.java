@@ -51,7 +51,7 @@ import gama.gaml.expressions.types.TypeExpression;
 public abstract class GamaType<Support> implements IType<Support> {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The id. */

@@ -66,7 +66,7 @@ import gama.ui.application.workspace.WorkspaceModelsManager;
 public class WorkbenchHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant NULL. */

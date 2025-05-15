@@ -41,7 +41,7 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library validator.
 	 */
 	private ModelLibraryValidator() {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	@Override

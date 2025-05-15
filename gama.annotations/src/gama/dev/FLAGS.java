@@ -64,7 +64,7 @@ public class FLAGS {
 
 	/**
 	 * Used in DEBUG, set to true to enable logging the debug messages (DEBUG.OUT(...), DEBUG.ERR(...) which will follow
-	 * the declaration of DEBUG.ON() on the classes). Set to false to suppress all debug logging (but regular logging
+	 * the declaration of DEBUG.OFF() on the classes). Set to false to suppress all debug logging (but regular logging
 	 * using DEBUG.LOG(...) or DEBUG.TIMER(...) will still operate). True by default.
 	 *
 	 * Important to KEEP IT THE FIRST PROPERTY

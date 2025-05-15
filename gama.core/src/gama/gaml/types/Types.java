@@ -55,7 +55,7 @@ import one.util.streamex.StreamEx;
 public class Types {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant builtInTypes. */
