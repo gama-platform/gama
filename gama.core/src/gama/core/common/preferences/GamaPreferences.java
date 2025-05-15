@@ -483,9 +483,9 @@ public class GamaPreferences {
 
 		/** The Constant CORE_SLIDER_TYPE. */
 		public static final Pref<Boolean> CORE_SLIDER_TYPE =
-				create("pref_experiment_type_slider", "Incrementation of the step duration slider", true, IType.BOOL,
-						true).in(NAME, EXECUTION).withLabels("Linear", "Logarithmic").withColors(GamaColor.get("white"),
-								GamaColor.get("darkgray"));
+				create("pref_experiment_type_slider", "Scale of the step duration slider", true, IType.BOOL, true)
+						.in(NAME, EXECUTION).withLabels("Linear", "Logarithmic")
+						.withColors(GamaColor.get("white"), GamaColor.get("darkgray"));
 
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =

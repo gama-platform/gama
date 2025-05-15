@@ -1177,4 +1177,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	}
 
+	/**
+	 * @return
+	 */
+	public void updateToolbar() {
+		updateToolbar(state, true);
+	}
+
 }

@@ -51,6 +51,15 @@ public abstract class GamaMenu {
 	/**
 	 * Separate.
 	 *
+	 * @return the menu item
+	 */
+	public MenuItem separate() {
+		return separate(mainMenu);
+	}
+
+	/**
+	 * Separate.
+	 *
 	 * @param parent
 	 *            the parent
 	 * @return the menu item
@@ -458,8 +467,8 @@ public abstract class GamaMenu {
 	 * @param pref
 	 *            the pref
 	 */
-	public void check(final String string, final Pref<Boolean> pref) {
-		check(mainMenu, string, pref);
+	public MenuItem check(final String string, final Pref<Boolean> pref) {
+		return check(mainMenu, string, pref);
 	}
 
 	/**
@@ -467,7 +476,7 @@ public abstract class GamaMenu {
 	 * @param string
 	 * @param coreConsoleKeep
 	 */
-	public static void check(final Menu menu, final String string, final Pref<Boolean> pref) {
+	public MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref) {
 		final MenuItem item = check(menu, string, pref.getValue(), null, null);
 		item.setToolTipText(pref.getTitle());
 		Selector listener = e -> {
@@ -475,6 +484,7 @@ public abstract class GamaMenu {
 			item.setSelection(pref.getValue());
 		};
 		item.addSelectionListener(listener);
+		return item;
 	}
 
 }
