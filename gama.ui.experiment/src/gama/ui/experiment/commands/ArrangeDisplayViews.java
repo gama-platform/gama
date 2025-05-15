@@ -28,13 +28,11 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-import org.eclipse.ui.IWorkbenchPart;
 
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IGamaView;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.util.tree.GamaNode;
 import gama.core.util.tree.GamaTree;
 import gama.dev.DEBUG;
@@ -42,6 +40,10 @@ import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+
+/**
+ * The Class ArrangeDisplayViews.
+ */
 
 /**
  * The Class ArrangeDisplayViews.
@@ -146,7 +148,6 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		if (child.getWeight() == null) { child.setWeight(5000); }
 		final MPartStack displayStack = getDisplaysPlaceholder();
 		if (displayStack == null) return;
-		// displayStack.setToBeRendered(true);
 		final MElementContainer<?> root = displayStack.getParent();
 		displayStack.getChildren().addAll(holders);
 		process(root, child, holders);
@@ -173,25 +174,14 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the holders
 	 */
 	private static void showDisplays(final MElementContainer<?> root, final List<MPlaceholder> holders) {
-		// root.setVisible(false);
-		// DEBUG.OUT("Holders to show " +
-		// DEBUG.TO_STRING(StreamEx.of(holders).map(MPlaceholder::getElementId).toArray()));
-		holders.forEach(ph -> {
-			if (ph.getRef() instanceof MPart part) {
-				//
-				// // Necessary as otherwise the Java2D display does not show up if it is alone
-				// // ph.setToBeRendered(true);
-				// // ph.setVisible(true);
-
-				getPartService().showPart(part, PartState.ACTIVATE);
-				// // getPartService().showPart(part, PartState.ACTIVATE);
-				// // getPartService().activate(part, true);
-				// // getPartService().bringToTop(part);
-				//
-			}
-
-		});
-		// root.setVisible(true);
+		root.setVisible(false);
+		try {
+			holders.forEach(ph -> {
+				if (ph.getRef() instanceof MPart part) { getPartService().showPart(part, PartState.VISIBLE); }
+			});
+		} finally {
+			root.setVisible(true);
+		}
 	}
 
 	/**
@@ -199,29 +189,11 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 */
 	public static void decorateDisplays() {
 		List<IGamaView.Display> displays = ViewsHelper.getDisplayViews(null);
-		// DEBUG.OUT("Displays to decorate "
-		// + DEBUG.TO_STRING(StreamEx.of(displays).select(IViewPart.class).map(IViewPart::getTitle).toArray()));
-
 		displays.forEach(v -> {
 			final Boolean tb = PerspectiveHelper.keepToolbars();
 			if (tb != null) { v.showToolbar(tb); }
 			v.showOverlay(PerspectiveHelper.showOverlays());
 		});
-		displays.forEach(v -> {
-			LayeredDisplayOutput output = v.getOutput();
-			if (output != null && output.getData().fullScreen() > -1) {
-				WorkbenchHelper.runInUI("Expand " + output.getName(), 100, m -> {
-					WorkbenchHelper.getPage().bringToTop((IWorkbenchPart) v);
-					v.showCanvas();
-					v.focusCanvas();
-					v.getOutput().update();
-					//
-					// // v.toggleFullScreen();
-				});
-			}
-
-		});
-		// displays.forEach(d -> ViewsHelper.activate((IWorkbenchPart) d));
 		if (PerspectiveHelper.getBackground() != null) {
 			ThemeHelper.changeSashBackground(PerspectiveHelper.getBackground());
 			PerspectiveHelper.getActiveSimulationPerspective().setRestoreBackground(ThemeHelper::restoreSashBackground);
@@ -229,7 +201,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		// Attempt to solve the problem expressed in #3587 by forcing the focus on the canvases at least once
 		// Modified to only target 2d displays as it was creating a problem on macOS (perspective not able to go back to
 		// modeling and forth)
-		displays.forEach(d -> { if (d.is2D()) { d.focusCanvas(); } });
+		// displays.forEach(d -> { if (d.is2D()) { d.focusCanvas(); } });
 
 	}
 
@@ -276,11 +248,11 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		for (final MPlaceholder h : holders) {
 			final IGamaView.Display display = ViewsHelper.findDisplay(h.getElementId());
 			if (display != null) {
-				display.setIndex(currentIndex++);
-				h.getTransientData().put(DISPLAY_INDEX_KEY, String.valueOf(currentIndex - 1));
+				display.setIndex(currentIndex);
+				h.getTransientData().put(DISPLAY_INDEX_KEY, String.valueOf(currentIndex));
+				currentIndex++;
 			}
 		}
-		// DEBUG.OUT(Sets.newHashSet(Iterables.transform(holders, @Nullable MPlaceholder::getElementId)));
 		return holders;
 	}
 
