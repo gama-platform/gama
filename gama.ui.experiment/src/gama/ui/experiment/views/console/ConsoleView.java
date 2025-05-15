@@ -252,7 +252,9 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 							e -> saveAsLog()).toItem(mainMenu);
 					GamaMenu.separate(mainMenu);
 					check("Keep contents", GamaPreferences.Interface.CORE_CONSOLE_KEEP);
-					check("Wrap long lines", GamaPreferences.Interface.CORE_CONSOLE_WRAP);
+					check("Wrap long lines", GamaPreferences.Interface.CORE_CONSOLE_WRAP, e -> {
+						viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
+					});
 				}
 
 			};

@@ -468,7 +468,22 @@ public abstract class GamaMenu {
 	 *            the pref
 	 */
 	public MenuItem check(final String string, final Pref<Boolean> pref) {
-		return check(mainMenu, string, pref);
+		return check(string, pref, null);
+	}
+
+	/**
+	 * Check.
+	 *
+	 * @param string
+	 *            the string
+	 * @param pref
+	 *            the pref
+	 * @param additionalListener
+	 *            the additional listener
+	 * @return the menu item
+	 */
+	public MenuItem check(final String string, final Pref<Boolean> pref, final Selector additionalListener) {
+		return check(mainMenu, string, pref, additionalListener);
 	}
 
 	/**
@@ -476,7 +491,8 @@ public abstract class GamaMenu {
 	 * @param string
 	 * @param coreConsoleKeep
 	 */
-	public MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref) {
+	public MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref,
+			final Selector additionalListener) {
 		final MenuItem item = check(menu, string, pref.getValue(), null, null);
 		item.setToolTipText(pref.getTitle());
 		Selector listener = e -> {
@@ -484,6 +500,7 @@ public abstract class GamaMenu {
 			item.setSelection(pref.getValue());
 		};
 		item.addSelectionListener(listener);
+		if (additionalListener != null) { item.addSelectionListener(additionalListener); }
 		return item;
 	}
 

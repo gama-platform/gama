@@ -214,9 +214,8 @@ public class EditorToolbar {
 					check("Mark occurences", GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES);
 					check("Inline markers", GamaPreferences.Modeling.EDITOR_MINING);
 					separate();
-					MenuItem item =
-							check("Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU);
-					item.addSelectionListener((Selector) e1 -> editor.updateToolbar());
+					check("Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU,
+							e1 -> editor.updateToolbar());
 				}
 
 			};
