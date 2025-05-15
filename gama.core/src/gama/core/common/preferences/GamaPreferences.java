@@ -328,6 +328,11 @@ public class GamaPreferences {
 				create("pref_simulation_color", "Pivot color of simulations", GamaColor.get(64, 224, 208), IType.COLOR,
 						true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
 
+		/** The Constant CORE_CONSOLE_KEEP. */
+		public static final Pref<Boolean> CORE_CONSOLE_KEEP =
+				create("pref_console_keep", "Keep the console contents between experiments", false, IType.BOOL, true)
+						.in(NAME, CONSOLE).withLabels("Yes", "No");
+
 	}
 
 	/**

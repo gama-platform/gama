@@ -144,20 +144,9 @@ public class GamaNavigator extends CommonNavigator
 
 				@Override
 				protected void fillMenu() {
-					boolean metadata = PreferencesHelper.NAVIGATOR_METADATA.getValue();
-					GamaCommand
-							.build(null, metadata ? "Hide metadata" : "Display metadata",
-									"Hide or display the metadata attached to the different categories of file",
-									e -> PreferencesHelper.NAVIGATOR_METADATA.setValue(null, !metadata))
-							.toItem(mainMenu);
-					boolean hidden = PreferencesHelper.NAVIGATOR_HIDDEN.getValue();
-					GamaCommand.build(null, hidden ? "Hide hidden files" : "Show hidden files",
-							"Hide or display the files considered as 'hidden' by the OS",
-							e -> PreferencesHelper.NAVIGATOR_HIDDEN.setValue(null, !hidden)).toItem(mainMenu);
-					boolean outline = PreferencesHelper.NAVIGATOR_OUTLINE.getValue();
-					GamaCommand.build(null, outline ? "Hide GAML outlines" : "Show GAML outlines",
-							"Hide or display the outline of GAML files",
-							e -> PreferencesHelper.NAVIGATOR_OUTLINE.setValue(null, !outline)).toItem(mainMenu);
+					check("Show file metadata", PreferencesHelper.NAVIGATOR_METADATA);
+					check("Show hidden files", PreferencesHelper.NAVIGATOR_HIDDEN);
+					check("Show model outlines", PreferencesHelper.NAVIGATOR_OUTLINE);
 				}
 
 			};

@@ -44,7 +44,7 @@ global {
 	matrix<float> grid_values <- matrix<float>(as_matrix(terrain, {gridsize, gridsize}));
 
 	init {
-
+		write "Hello from the simulation";
 	// Normalization of the grid values
 		float min <- min(grid_values);
 		float max <- max(grid_values);

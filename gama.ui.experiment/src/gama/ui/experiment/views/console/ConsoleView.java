@@ -246,10 +246,13 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 				@Override
 				protected void fillMenu() {
-					GamaCommand.build(ACTION_CLEAR, "Clear", "Clear the console", e -> reset()).toItem(mainMenu);
-					GamaMenu.separate(mainMenu);
+					GamaCommand.build(ACTION_CLEAR, "Clear", "Clear the console", e -> ConsoleView.this.reset())
+							.toItem(mainMenu);
 					GamaCommand.build(DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
 							e -> saveAsLog()).toItem(mainMenu);
+					GamaMenu.separate(mainMenu);
+					check("Keep contents", GamaPreferences.Interface.CORE_CONSOLE_KEEP);
+					check("Wrap long lines", GamaPreferences.Interface.CORE_CONSOLE_WRAP);
 				}
 
 			};

@@ -35,6 +35,7 @@ import gama.core.common.interfaces.IConsoleListener;
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGamaView;
+import gama.core.common.interfaces.IGamaView.Console;
 import gama.core.common.interfaces.IGamaView.Error;
 import gama.core.common.interfaces.IGamaView.Parameters;
 import gama.core.common.interfaces.IGamaView.Test;
@@ -539,7 +540,7 @@ public class SwtGui implements IGui {
 			m.reset();
 			hideView(MONITOR_VIEW_ID);
 		}
-		getConsole().eraseConsole(true);
+		if (!GamaPreferences.Interface.CORE_CONSOLE_KEEP.getValue()) { getConsole().eraseConsole(true); }
 		final IGamaView icv = (IGamaView) ViewsHelper.findView(INTERACTIVE_CONSOLE_VIEW_ID, null, false);
 		if (icv != null) { icv.reset(); }
 		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
@@ -605,7 +606,10 @@ public class SwtGui implements IGui {
 
 			for (final IViewReference view : views) {
 				final IViewPart part = view.getView(false);
-				if (part instanceof IGamaView) { ((IGamaView) part).close(scope); }
+				if (part instanceof IGamaView gv) {
+					if (part instanceof Console && GamaPreferences.Interface.CORE_CONSOLE_KEEP.getValue()) { continue; }
+					gv.close(scope);
+				}
 			}
 			if (openModelingPerspective) {
 				DEBUG.OUT("Deleting simulation perspective and opening immediately the modeling perspective = "

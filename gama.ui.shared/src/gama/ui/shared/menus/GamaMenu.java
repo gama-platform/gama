@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
+import gama.core.common.preferences.Pref;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.views.toolbar.Selector;
 
@@ -193,7 +194,7 @@ public abstract class GamaMenu {
 	public static MenuItem action(final Menu m, final String s, final SelectionListener listener, final Image image) {
 		final MenuItem action = createItem(m, SWT.PUSH);
 		action.setText(s);
-		action.addSelectionListener(listener);
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(image); }
 		return action;
 	}
@@ -214,7 +215,7 @@ public abstract class GamaMenu {
 	public static MenuItem action(final Menu m, final String s, final Selector listener, final Image image) {
 		final MenuItem action = createItem(m, SWT.PUSH);
 		action.setText(s);
-		action.addSelectionListener(listener);
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(image); }
 		return action;
 	}
@@ -276,7 +277,7 @@ public abstract class GamaMenu {
 		final MenuItem action = createItem(m, SWT.CHECK);
 		action.setText(s);
 		action.setSelection(select);
-		action.addSelectionListener(listener);
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(image); }
 		return action;
 	}
@@ -301,7 +302,7 @@ public abstract class GamaMenu {
 		final MenuItem action = createItem(m, SWT.CHECK);
 		action.setText(s);
 		action.setSelection(select);
-		action.addSelectionListener(listener);
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(image); }
 		return action;
 	}
@@ -448,5 +449,32 @@ public abstract class GamaMenu {
 	 * Fill menu.
 	 */
 	protected abstract void fillMenu();
+
+	/**
+	 * Check.
+	 *
+	 * @param string
+	 *            the string
+	 * @param pref
+	 *            the pref
+	 */
+	public void check(final String string, final Pref<Boolean> pref) {
+		check(mainMenu, string, pref);
+	}
+
+	/**
+	 * @param mainMenu2
+	 * @param string
+	 * @param coreConsoleKeep
+	 */
+	public static void check(final Menu menu, final String string, final Pref<Boolean> pref) {
+		final MenuItem item = check(menu, string, pref.getValue(), null, null);
+		item.setToolTipText(pref.getTitle());
+		Selector listener = e -> {
+			pref.set(!pref.getValue());
+			item.setSelection(pref.getValue());
+		};
+		item.addSelectionListener(listener);
+	}
 
 }
