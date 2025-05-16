@@ -14,32 +14,26 @@ SETLOCAL enabledelayedexpansion
 
 :TOP
 
-IF (%1) == () GOTO NEXT_CODE
-	if %1 EQU -m (
-		set  comm=%1
-		set  next=%2
-		set memory=!next!
-		SHIFT
-		GOTO DECALE
-	)
+	IF (%1) == () GOTO NEXT_CODE
 
-    IF "%~1"=="-ws" (
+	if %1 EQU -m (
+		set memory=%2
+		SHIFT
+	) else IF "%~1"=="-ws" (
         SET "userWorkspace=%~2"
         SHIFT
-        SHIFT
-	GOTO DECALE
-    )
-	set param=%param% %1
-	GOTO DECALE
-:DECALE
-SHIFT
+    ) else (
+		set param=%param% %1
+	)
+	SHIFT
+
 GOTO TOP
 
 :NEXT_CODE
 echo ******************************************************************
 echo * GAMA version 0.0.0-SNAPSHOT                                         *
 echo * http://gama-platform.org                                       *
-echo * (c) 2007-2024 UMI 209 UMMISCO IRD/SU and Partners              *
+echo * (c) 2007-2025 UMI 209 UMMISCO IRD/SU and Partners              *
 echo ******************************************************************
 
 set FILENAME="..\plugins\"
