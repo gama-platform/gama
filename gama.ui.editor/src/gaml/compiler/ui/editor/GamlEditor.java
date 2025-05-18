@@ -88,6 +88,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -97,7 +98,6 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
-import org.eclipse.ui.internal.texteditor.LineNumberColumn;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -138,12 +138,14 @@ import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.CleanupHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
@@ -239,7 +241,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI).image());
 
 		images.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
-		// for (Image im : images.values()) { maxImageHeight = Math.max(maxImageHeight, im.getBounds().height); }
+		// for (Image im : images.values()) { maxImageHeight =
+		// Math.max(maxImageHeight, im.getBounds().height); }
 	}
 
 	/**
@@ -262,7 +265,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	private EditorSearchControls findControl;
 
 	/** The decoration enabled. */
-	// boolean decorationEnabled = GamaPreferences.Modeling.EDITBOX_ENABLED.getValue();
+	// boolean decorationEnabled =
+	// GamaPreferences.Modeling.EDITBOX_ENABLED.getValue();
 	// boolean editToolbarEnabled = AutoStartup.EDITOR_SHOW_TOOLBAR.getValue();
 
 	/** The resource set provider. */
@@ -387,13 +391,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Builds the right toolbar.
 	 */
 	private void buildRightToolbar() {
-		toolbar.wipe(SWT.LEFT, false);
-
-		final var t = toolbar.button(IGamaColors.NEUTRAL, "Waiting...", GamaIcon.named(IGamaIcons.STATUS_CLOCK).image(),
-				null, SWT.LEFT);
-		toolbar.sep(4, SWT.LEFT);
+		// toolbar.wipe(SWT.LEFT, false);
+		//
+		// toolbar.button(IGamaColors.NEUTRAL, "Waiting...",
+		// GamaIcon.named(IGamaIcons.STATUS_CLOCK).image(), null,
+		// SWT.LEFT);
+		// toolbar.sep(4, SWT.LEFT);
 		findControl = new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
-		fakeButton = FlatButton.button(toolbar.getToolbar(SWT.LEFT), IGamaColors.OK, "", images.get(IKeyword.BATCH));
+		fakeButton = FlatButton.button(toolbar.getToolbar(SWT.RIGHT), IGamaColors.OK, "", images.get(IKeyword.BATCH));
 		fakeButton.setVisible(false);
 		toolbar.requestLayout();
 	}
@@ -491,10 +496,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), getAction(DELETE));
 					actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(), getAction(UNDO));
 					actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(), getAction(REDO));
-					// actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(), getAction(CUT));
-					// actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), getAction(COPY));
-					// actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), getAction(PASTE));
-					// actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), getAction(SELECT_ALL));
 					actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), getAction(FIND));
 					actionBars.updateActionBars();
 				}
@@ -582,23 +583,34 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * @param forceState
 	 *            the force state
 	 */
+
+	ToolItem addExperiments = null;
+
+	/** The previous show experiments. */
+	boolean previousShowExperiments = false;
+
+	/**
+	 * Update toolbar.
+	 *
+	 * @param newState
+	 *            the new state
+	 * @param forceState
+	 *            the force state
+	 */
 	private void updateToolbar(final GamlEditorState newState, final boolean forceState) {
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
+				toolbar.wipe(SWT.LEFT, 1);
 				boolean showExperiments =
 						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
 								&& newState.showExperiments;
-				toolbar.wipe(SWT.LEFT, true);
-				if (showExperiments) {
-					toolbar.getToolbar(SWT.LEFT).button("editor/add.experiment", null, "Add an experiment to the model",
-							new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)));
-					toolbar.getToolbar(SWT.LEFT).space(8);
+				if (addExperiments == null || showExperiments != previousShowExperiments && addExperiments != null) {
+					updateAddExperimentButton(showExperiments);
 				}
-
-				final var c = state.getColor();
-				var msg = state.getStatus();
+				final GamaUIColor c = state.getColor();
+				String msg = state.getStatus();
 
 				Selector listener = null;
 				String imageName = null;
@@ -639,6 +651,27 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	}
 
+	/** The listener. */
+
+	/**
+	 * @param showExperiments
+	 */
+	private void updateAddExperimentButton(final boolean showExperiments) {
+		if (addExperiments == null) {
+			addExperiments = GamaCommand
+					.build("editor/add.experiment", null, "",
+							new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)))
+					.toItem(toolbar.getToolbar(SWT.LEFT));
+			toolbar.getToolbar(SWT.LEFT).space(8);
+		}
+		if (showExperiments) {
+			addExperiments.setToolTipText("Add an experiment to the model");
+		} else {
+			addExperiments.setToolTipText("No experiment can be added");
+		}
+		addExperiments.setEnabled(showExperiments);
+	}
+
 	/**
 	 * Compute width.
 	 *
@@ -648,14 +681,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private int computeWidth(final GamlEditorState newState) {
 		int width = 0;
-		FlatButton t;
 		for (final String text : newState.abbreviations) {
 			if (text == null) { continue; }
 			fakeButton.setText(text);
 			width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2 * buttonPadding;
 		}
-		fakeButton.setText("Add Experiment");
-		width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2 * buttonPadding;
+		// fakeButton.setText("Add Experiment");
+		// width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2 *
+		// buttonPadding;
+		// DEBUG.OUT("Estimated width of the whole toolbar is " + width);
 		return width;
 	}
 
@@ -676,15 +710,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
 			final var image = images.get(type);
 			final var t = toolbar.button(IGamaColors.OK, text, image, SWT.LEFT);
-			// t.setWidth(t.getWidth() + buttonPadding);
 			final FlatButton b = (FlatButton) t.getControl();
 			b.setRightPadding(buttonPadding);
-			// b.setImageHeight(maxImageHeight);
-			b.setToolTipText("Executes the " + type + " experiment " + text);
+			b.setToolTipText("Executes the " + type + " experiment named '" + text + "'");
 			b.addSelectionListener(listener);
 			t.setData("index", index);
 			b.setData("exp", text);
+			b.computePreferredSize();
+			t.setWidth(b.getSize().x);
+			// DEBUG.OUT("Size of the item containing '" + text + "' is " + t.getWidth());
 		}
+		// Necessary to recompute the width correctly
+		toolbar.normalizeToolbars();
+		toolbar.requestLayout();
 	}
 
 	/**
@@ -697,11 +735,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private void displayExperimentMenu(final GamlEditorState state, final Selector listener) {
 
-		final var menu = toolbar.menu(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
+		final ToolItem menu = toolbar.menu(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
 		final FlatButton b = (FlatButton) menu.getControl();
 		b.setRightPadding(buttonPadding);
 
-		((FlatButton) menu.getControl()).addSelectionListener(new SelectionAdapter() {
+		b.addSelectionListener(new SelectionAdapter() {
 
 			Menu menu;
 
@@ -728,6 +766,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				}
 			}
 		});
+		menu.setWidth(b.getSize().x);
+		toolbar.normalizeToolbars();
+		toolbar.requestLayout();
 	}
 
 	@Override
@@ -741,7 +782,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			GamlProperties meta = new GamlProperties();
 			model.collectMetaInformation(meta);
 			String newLine = requires + " " + meta.get(GamlProperties.PLUGINS);
-			GamaSourceViewer viewer = getInternalSourceViewer();
+			getInternalSourceViewer();
 			IXtextDocument document = getDocument();
 			WorkbenchHelper.asyncRun(() -> {
 				int offset;
@@ -781,13 +822,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			return super.getTextHover(sourceViewer, contentType);
 		}
 
-		// See issue #391 : automatically surrounds the selected words with a pair of "brackets"
+		// See issue #391 : automatically surrounds the selected words with a
+		// pair of "brackets"
 		@Override
 		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
 			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
 			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) return strategies;
-			for (IAutoEditStrategy strategy : strategies)
+			for (IAutoEditStrategy strategy : strategies) {
 				if (strategy instanceof SurroundWithBracketsStrategy) return strategies;
+			}
 			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
 		}
 
@@ -975,7 +1018,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	protected void handlePreferenceStoreChanged(final PropertyChangeEvent event) {
-		final LineNumberColumn c;
 		super.handlePreferenceStoreChanged(event);
 		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty())) {
 			// this.fSourceViewerDecorationSupport.updateOverviewDecorations();
