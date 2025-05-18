@@ -7,7 +7,7 @@ inputVersion=$1
 # Flip workflow bool parameter "isRelease" to "isSnapshot"
 isSnapshot=true
 if [ "$2" = true ]; then
-    flipped_value=false
+    isSnapshot=false
 fi
 
 month=$(echo $inputVersion | awk -F'.' '{print $2}' | awk '{print int($1)}')
@@ -76,7 +76,7 @@ echo "Update installer files"
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.product/extraresources/installer/windows/windows_installer_script.iss
 # Linux
 sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/gama-platform.desktop
-sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/DEBIAN/control.desktop
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/DEBIAN/control.desktop
 # MacOS
 sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist
 
