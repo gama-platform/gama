@@ -57,8 +57,24 @@
 						<artifactId>wagon-maven-plugin</artifactId>
 						<version>2.0.2</version>
 						<executions>
+							
 							<execution>
-								<id>p2Repo</id>
+								<id>p2-clear-remote</id>
+								<phase>install</phase>
+								<goals>
+									<goal>sshexec</goal>
+								</goals>
+								<configuration>
+									<serverId>p2Repo</serverId>
+									<url>${ftp.url}</url>
+									<commands>
+										<command>rm -rf ${ftp.toDir}</command>
+									</commands>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>p2-upload-to-remote</id>
 								<phase>install</phase>
 								<goals>
 									<goal>upload</goal>
@@ -76,13 +92,6 @@
 									<toDir>${ftp.toDir}</toDir>
 									<url>${ftp.url}</url>
 									<serverId>p2Repo</serverId>
-									<!-- Points to your settings.xml where the connection settings are 
-										stored as shown below -->
-									<!-- <server> -->
-									<!-- <id>p2Repo</id> -->
-									<!-- <username>username</username> -->
-									<!-- <password>password</password> -->
-									<!-- </server> -->
 								</configuration>
 							</execution>
 						</executions>

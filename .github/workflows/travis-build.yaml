@@ -175,10 +175,6 @@ jobs:
           sed -i "s/<username>GAMA_PASS/<username>$GAMA_SERVER_USERNAME/g" $GITHUB_WORKSPACE/travis/settings.xml
           sed -i "s/<password>GAMA_PASS/<password>$GAMA_SERVER_PASSWORD/g" $GITHUB_WORKSPACE/travis/settings.xml
           bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
-          echo "Publishing m2 repository"
-          cd ~/.m2/repository
-          rm -fr org/gama/gama.product org/gama/gama.p2site .cache
-          rsync -avPq -e ssh . $GAMA_SERVER_USERNAME@152.228.133.219:/var/www/gama_updates/0.0.0
 
       - name: Export linux release
         uses: actions/upload-artifact@v4
