@@ -21,7 +21,10 @@ Require-Bundle: gama.ui.application,
  org.eclipse.ui,
  org.eclipse.core.expressions,
  org.eclipse.core.commands,
- gama.extension.serialize
+ gama.extension.serialize,
+ org.eclipse.e4.ui.workbench.renderers.swt,
+ org.eclipse.e4.ui.workbench.swt,
+ jakarta.inject.jakarta.inject-api
 Export-Package: gama.ui.experiment.activator,
  gama.ui.experiment.commands,
  gama.ui.experiment.controls,
