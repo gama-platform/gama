@@ -9,6 +9,10 @@
       <product
             application="gama.ui.application.GamaApplication"
             name="Gama">
+	<property
+            name="rendererFactoryUri"
+            value="bundleclass://gama.ui.experiment/gama.ui.experiment.commands.GamaStackRendererFactory">
+      </property>
          <property
                name="windowImages"
                value="icons/window/icon16.png,icons/window/icon32.png,icons/window/icon48.png,icons/window/icon64.png,icons/window/icon128.png,icons/window/icon256.png">

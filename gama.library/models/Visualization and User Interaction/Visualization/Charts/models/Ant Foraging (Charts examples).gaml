@@ -158,7 +158,7 @@ experiment "Experiment" type: gui {
 	}
 	//The different displays
 	output {
-	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false consoles: false parameters: false;
+	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false consoles: false parameters: false background: #white tabs: false;
 		
 		display Ants type: 2d antialias:false toolbar: false{
 			grid ant_grid ;
