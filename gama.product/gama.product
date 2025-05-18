@@ -29,7 +29,7 @@
 -Xms2G
 -Xmx16G
 -Xss128m
--Xmn1G
+-XX:G1NewSizePercent
 -XX:+UseG1GC 
 -XX:+ParallelRefProcEnabled 
 -XX:MaxGCPauseMillis=200 
@@ -41,12 +41,8 @@
 -XX:ProfiledCodeHeapSize=194M
 -XX:NonProfiledCodeHeapSize=194M 
 -XX:-DontCompileHugeMethods
--XX:MaxNodeLimit=240000 
--XX:NodeLimitFudgeFactor=8000 
 -XX:+UseVectorCmov
 -XX:+UseFastUnorderedTimeStamps 
--XX:+UseCriticalJavaThreadPriority 
--XX:ThreadPriorityPolicy=1
 -XX:+AlwaysPreTouch 
 -XX:G1HeapWastePercent=5 
 -XX:G1MixedGCCountTarget=4 
@@ -64,7 +60,6 @@
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
--XX:+UseCompressedOops
 -Dosgi.locking=none
 -Dswt.enable.themedScrollBar=true
 -Dosgi.checkConfiguration=false

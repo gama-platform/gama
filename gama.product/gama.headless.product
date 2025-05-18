@@ -32,7 +32,6 @@
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
--XX:+UseCompressedOops
 -Dosgi.locking=none
 -Dosgi.checkConfiguration=false
 -Declipse.log.level=ERROR
