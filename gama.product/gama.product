@@ -29,7 +29,6 @@
 -Xms2G
 -Xmx16G
 -Xss128m
--XX:G1NewSizePercent
 -XX:+UseG1GC 
 -XX:+ParallelRefProcEnabled 
 -XX:MaxGCPauseMillis=200 
