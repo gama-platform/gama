@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Java2DDisplaySurface.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -63,6 +63,7 @@ import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.utils.DPIHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class Java2DDisplaySurface.
@@ -128,7 +129,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	int frames;
 
 	/** The rendered. */
-	private volatile boolean rendered = false;
+	private volatile boolean rendered = false, renderedOnce = false;
 
 	/** The listeners. */
 	Set<IEventLayerListener> listeners = new HashSet<>();
@@ -374,9 +375,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 			repaint();
 			if (synchronizer != null) { synchronizer.release(); }
 		};
-		if (GAMA.isSynchronized()) {
+		if (GAMA.isSynchronized() && renderedOnce) {
 
-			if (EventQueue.isDispatchThread()) {
+			if (EventQueue.isDispatchThread() || WorkbenchHelper.isDisplayThread()) {
 				toRun.run();
 			} else {
 				try {
@@ -452,6 +453,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 */
 	public boolean isCameraLocked() { return isLocked; }
 
+	/**
+	 * Checks if is camera dynamic.
+	 *
+	 * @return true, if is camera dynamic
+	 */
 	public boolean isCameraDynamic() { return false; }
 
 	/**
@@ -522,6 +528,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		g2d.dispose();
 		frames++;
 		rendered = true;
+		renderedOnce = true;
 		// getOutput().setRendered(true);
 	}
 

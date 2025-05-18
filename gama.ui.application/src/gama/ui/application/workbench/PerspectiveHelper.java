@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PerspectiveHelper.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -444,7 +444,7 @@ public class PerspectiveHelper {
 	 */
 	public final static Boolean keepTabs() {
 		final IPerspectiveDescriptor d = getActivePerspective();
-		if (d instanceof SimulationPerspectiveDescriptor) return ((SimulationPerspectiveDescriptor) d).keepTabs;
+		if (d instanceof SimulationPerspectiveDescriptor) return ((SimulationPerspectiveDescriptor) d).keepTabs();
 		return true;
 	}
 

@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
+import gama.gaml.operators.Maths;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaColors;
@@ -95,8 +96,6 @@ public class GamaToolbar2 extends Composite {
 	 */
 	// Necessary to have the background color "stick"
 	public void setBackgroundColor(final Color c) {
-		// DEBUG.OUT("setBackgroundColor() called by = " + DEBUG.METHOD() + " of " +
-		// DEBUG.CALLER());
 		// Calls super explicitly
 		Color color = c;
 		if (color == null) { color = isDark() ? getShell().getBackground() : IGamaColors.WHITE.color(); }
@@ -513,14 +512,6 @@ public class GamaToolbar2 extends Composite {
 	}
 
 	/**
-	 * Visually update.
-	 */
-	// public void visuallyUpdate() {
-	// GamaToolbarFactory.visuallyUpdate(left);
-	// GamaToolbarFactory.visuallyUpdate(right);
-	// }
-
-	/**
 	 * Wipes the toolbar (left or right), including or not the simple tool items.
 	 *
 	 * @param side
@@ -528,13 +519,33 @@ public class GamaToolbar2 extends Composite {
 	 * @return
 	 */
 	public void wipe(final int side /* SWT.LEFT or SWT.RIGHT */, final boolean includingToolItems) {
-		final var items = getToolbar(side).getItems();
+		final ToolItem[] items = getToolbar(side).getItems();
 		for (final ToolItem t : items) {
 			final Control c = t.getControl();
 			if (c == null && includingToolItems || c != null) {
 				if (c != null && !c.isDisposed()) { c.dispose(); }
 				t.dispose();
 			}
+		}
+		normalizeToolbars();
+		status = null;
+		requestLayout();
+	}
+
+	/**
+	 * Wipe.
+	 *
+	 * @param side
+	 *            the side
+	 * @param startingAt
+	 *            the starting at
+	 */
+	public void wipe(final int side /* SWT.LEFT or SWT.RIGHT */, final int startingAt) {
+		final ToolItem[] items = getToolbar(side).getItems();
+		for (int i = startingAt; i < items.length; i++) {
+			final Control c = items[i].getControl();
+			if (c != null) { c.dispose(); }
+			items[i].dispose();
 		}
 		normalizeToolbars();
 		status = null;
@@ -578,14 +589,14 @@ public class GamaToolbar2 extends Composite {
 			final int style, final boolean forceText, final Control control,
 			final int side /* SWT.LEFT or SWT.RIGHT */) {
 		final var tb = getToolbar(side);
-		if (tb.getItemCount() == 0 && PlatformHelper.isWindows() && control != null) {
-			final var icon = GamaIcon.ofSize(2, GamaToolbarFactory.TOOLBAR_HEIGHT);
-			final var button = new ToolItem(tb, SWT.NONE);
-			final var im = icon.image();
-			button.setImage(im);
-			button.setDisabledImage(im);
-			button.setEnabled(false);
-		}
+		// if (tb.getItemCount() == 0 && PlatformHelper.isWindows() && control != null) {
+		// final var icon = GamaIcon.ofSize(2, GamaToolbarFactory.TOOLBAR_HEIGHT);
+		// final var button = new ToolItem(tb, SWT.NONE);
+		// final var im = icon.image();
+		// button.setImage(im);
+		// button.setDisabledImage(im);
+		// button.setEnabled(false);
+		// }
 		final var button = new ToolItem(tb, style);
 		if (text != null && forceText) { button.setText(text); }
 		if (tip != null) { button.setToolTipText(tip); }
@@ -618,11 +629,27 @@ public class GamaToolbar2 extends Composite {
 	/**
 	 * Normalize toolbars.
 	 */
-	private void normalizeToolbars() {
+	public void normalizeToolbars() {
+		right.requestLayout();
 		// final int n = right.getItemCount();
-		var size = 0;
+		float size = 0;
 		for (final ToolItem t : right.getItems()) { size += t.getWidth(); }
-		((GridData) right.getLayoutData()).minimumWidth = size;
+		((GridData) right.getLayoutData()).minimumWidth = Math.round(size);
+		size = 0;
+		left.requestLayout();
+		for (final ToolItem t : left.getItems()) {
+			// if (t.getControl() instanceof FlatButton b) {
+			// DEBUG.OUT("Button " + b.getText() + " width " + b.getSize().x + " attached to item of width "
+			// + t.getWidth());
+			// }
+			size += t.getWidth();
+		}
+		// Seems necessary for Windows !
+		int even = Math.round(size);
+		if (!Maths.even(even)) { even++; }
+		((GridData) left.getLayoutData()).minimumWidth = even;
+
+		// DEBUG.OUT("Size of the left toolbar is " + size + " => " + even);
 	}
 
 	/**
@@ -699,10 +726,5 @@ public class GamaToolbar2 extends Composite {
 		item.setSelection(selected);
 		checkSelectionIcon(item);
 	}
-
-	/**
-	 * @return
-	 */
-	public ToolItem getStatus() { return null; }
 
 }

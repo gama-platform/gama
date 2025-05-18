@@ -77,8 +77,8 @@ import gama.gaml.types.IType;
 						optional = false,
 						doc = @doc ("""
 								The text to display.
-								If the text does not begin with <html>, the font, color, and background are controlled by the respective facets. A few formatting tags: <br/> / <b> ... </b> / <i> ... </i> / <a href=".."> ... </a> are supported. Others are ignored. Weblinks (http, https) are automatically detected. Beware that not closing the tags correctly will result in an error.
-								If the text begins with <html>, it will instead be interpreted and displayed in a mini-browser. Most of the regular html tags can be used, including displaying images, and all links will be treated as external (i.e. opening a new browser).
+								If the text does not begin with < html >, the font, color, and background are controlled by the respective facets. A few formatting tags: < br/ > / < b > ... < /b > / < i > ... < /i > / < a href=".." > ... < /a > are supported. Others are ignored. Weblinks (http, https) are automatically detected. Beware that not closing the tags correctly will result in an error.
+								If the text begins with < html >, it will instead be interpreted and displayed in a mini-browser. Most of the regular html tags can be used, including displaying images, and all links will be treated as external (i.e. opening a new browser).
 								""")), },
 		omissible = IKeyword.MESSAGE)
 @doc (
