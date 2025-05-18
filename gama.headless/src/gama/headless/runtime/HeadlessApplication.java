@@ -210,7 +210,8 @@ public class HeadlessApplication implements IApplication {
 		showVersion();
 		DEBUG.OFF();
 		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
-				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" + "\n\t\t" + CONSOLE_PARAMETER
+				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" 
+				+ "\n\t\t-ws [./path/to/ws]            -- manually set a workspace" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
 				+ VERBOSE_PARAMETER + "                            -- verbose mode" + "\n\t\t" + THREAD_PARAMETER
 				+ " [core]                   -- set the number of core available for experimentation" + "\n\t\t"

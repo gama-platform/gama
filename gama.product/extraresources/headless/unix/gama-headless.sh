@@ -1,37 +1,56 @@
 #!/bin/bash
 
-headless_path=$( dirname $( realpath "${BASH_SOURCE[0]}" ) )
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    headlessPath=$( dirname "${BASH_SOURCE[0]}" )
+    gamaIniPath="${headlessPath}/../Eclipse/Gama.ini"
+    pluginPath="${headlessPath}/../Eclipse/plugins"
+else
+    # Assuming Linux
+    headlessPath=$( dirname $( realpath "${BASH_SOURCE[0]}" ) )
+    gamaIniPath="${headlessPath}/../Gama.ini"
+    pluginPath="${headlessPath}/../plugins"
+fi
+
 java="java"
 
-if [ -d "${headless_path}/../jdk" ]; then
-  java="${headless_path}"/../jdk/bin/java
+if [ -d "${headlessPath}/../jdk" ]; then
+  java="${headlessPath}"/../jdk/
+    [[ "$OSTYPE" == "darwin"* ]] && java+="Contents/Home/" # DMG path
+    java+="bin/java"
 else
   javaVersion=$(java -version 2>&1 | head -n 1 | cut -d "\"" -f 2)
   # Check if good Java version before everything
-  if [[ ${javaVersion:2} == 21 ]]; then
-    echo "You should use Java 21 to run GAMA"
+  if [[ ${javaVersion:2} == 23 ]]; then
+    echo "You should use Java 23 to run GAMA"
     echo "Found you using version : $javaVersion"
     exit 1
   fi
 fi
 
 memory="0"
+userWorkspace=""
+args=""
 
-for arg do
-  shift
-  case $arg in
-    -m)
-    memory="${1}"
-    shift
-    ;;
-    *)
-    set -- "$@" "$arg"
-    ;;
-  esac
+while [[ "$#" -gt 0 ]]; do
+echo "===$1"
+    case "$1" in
+        -m)
+            memory="$2"
+            shift 2
+            ;;
+        -ws)
+            userWorkspace="$2"
+            shift 2
+            ;;
+        *)
+            args+="$1"
+            shift
+            ;;
+    esac
 done
 
 if [[ $memory == "0" ]]; then
-  memory=$(grep Xmx "${headless_path}"/../Gama.ini || echo "-Xmx4096m")
+  memory=$(grep Xmx "${gamaIniPath}" || echo "-Xmx4096m")
 else
   memory=-Xmx$memory
 fi
@@ -39,11 +58,11 @@ fi
 workspaceCreate=0
 
 # Run `-help` if no parameter given
-if [[ -z "$@" ]]; then
-    set -- "$@" "-help"
+if [[ -z "$args" ]]; then
+    args+="-help"
     workspaceCreate=1
 else
-    case "$@" in
+    case "$args" in
     *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
         workspaceCreate=1
         ;;
@@ -51,8 +70,8 @@ else
 fi
 
 function read_from_ini {
-  start_line=$(grep -n -- '-server' "${headless_path}"/../Gama.ini | cut -d ':' -f 1)
-  tail -n +$start_line "${headless_path}"/../Gama.ini | tr '\n' ' '
+  start_line=$(grep -n -- '-server' "${gamaIniPath}" | cut -d ':' -f 1)
+  tail -n +$start_line "${gamaIniPath}" | tr '\n' ' '
 }
 
 echo "******************************************************************"
@@ -60,27 +79,59 @@ echo "* GAMA version 0.0.0-SNAPSHOT                                         *"
 echo "* http://gama-platform.org                                       *"
 echo "* (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners                *"
 echo "******************************************************************"
-passWork=.workspace
-# w/ output folder
-if [ $workspaceCreate -eq 0 ]; then
-  # create output folder if not existing
-  if [ ! -d "${@: -1}" ]; then
-      mkdir ${@: -1}
-  fi
-  # create workspace in output folder
-  passWork=${@: -1}/.workspace$(find ${@: -1} -name ".workspace*" | wc -l)
-  mkdir -p $passWork
 
-# w/o output folder
+# Create Workspace
+# ======================
+pathWorkspace=.workspace
+
+if [[ -z $userWorkspace ]]; then
+    # No user workspace specified
+    workspaceRootPath="./"
+
+    if [ $workspaceCreate -eq 0 ]; then
+      # create workspace in output folder
+      workspaceRootPath="${args: -1}"
+      if [ ! -d "$workspaceRootPath" ]; then
+          mkdir $workspaceRootPath
+      fi
+    fi
+
+    # Set new ws folder for new run and create it
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # `expr` use is to remove whitespace from MacOS's result
+        pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -name ".workspace*" | expr $(wc -l))"
+    else
+        pathWorkspace="${workspaceRootPath}/.workspace$(find ${workspaceRootPath} -maxdepth 1 -name ".workspace*" | wc -l)"
+    fi
+
 else
-  # create workspace in current folder
-  passWork=.workspace$(find ./ -maxdepth 1 -name ".workspace*" | wc -l)
+    # User gave a userspace
+    pathWorkspace="$userWorkspace"
+    # Prevent cleaning workspace after running
+    workspaceCreate=0
 fi
+
+echo "$pathWorkspace"
+
+mkdir -p "$pathWorkspace"
 
 ini_arguments=$(read_from_ini)
 
-if ! $java -cp "${headless_path}"/../plugins/org.eclipse.equinox.launcher*.jar -Xms512m $memory ${ini_arguments[@]} org.eclipse.equinox.launcher.Main -configuration "${headless_path}"/configuration -application gama.headless.product -data $passWork "$@"; then
+if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
+        -Xms512m \
+        $memory \
+        ${ini_arguments[@]} \
+        org.eclipse.equinox.launcher.Main \
+        -configuration "${headlessPath}"/configuration \
+        -application gama.headless.product \
+        -data "$pathWorkspace" \
+        "$args"; then
     echo "Error in you command, here's the log :"
-    cat $passWork/.metadata/.log
+    cat $pathWorkspace/.metadata/.log
     exit 1
+else
+    if [ $workspaceCreate -eq 1 ]; then
+        # create workspace in output folder
+        rm -fr workspaceRootPath $pathWorkspace
+    fi
 fi
