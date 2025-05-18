@@ -4,12 +4,12 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>msi.gama</groupId>
-		<artifactId>msi.gama.parent</artifactId>
-		<version>0.0.0-SNAPSHOT</version>
-		<relativePath>../msi.gama.parent/</relativePath>
+	  	<groupId>org.gama</groupId>
+	  	<artifactId>gama.parent</artifactId>
+	  	<version>0.0.0-SNAPSHOT</version>
+	  	<relativePath>../gama.parent/</relativePath>
 	</parent>
-	<artifactId>msi.gama.p2updatesite</artifactId>
+	<artifactId>gama.p2site</artifactId>
 	<packaging>eclipse-repository</packaging>
 
 	<distributionManagement>
@@ -33,7 +33,7 @@
 			<properties>
 				<!-- Properties relative to the distant host where to upload the repo -->
 				<ftp.url>scp://152.228.133.219</ftp.url>
-				<ftp.toDir>./var/www/gama_updates/0.0.0</ftp.toDir>
+				<ftp.toDir>/var/www/gama_updates/0.0.0</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
 			</properties>
@@ -57,8 +57,24 @@
 						<artifactId>wagon-maven-plugin</artifactId>
 						<version>2.0.2</version>
 						<executions>
+							
 							<execution>
-								<id>p2Repo</id>
+								<id>p2-clear-remote</id>
+								<phase>install</phase>
+								<goals>
+									<goal>sshexec</goal>
+								</goals>
+								<configuration>
+									<serverId>p2Repo</serverId>
+									<url>${ftp.url}</url>
+									<commands>
+										<command>rm -rf ${ftp.toDir}</command>
+									</commands>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>p2-upload-to-remote</id>
 								<phase>install</phase>
 								<goals>
 									<goal>upload</goal>
@@ -76,13 +92,6 @@
 									<toDir>${ftp.toDir}</toDir>
 									<url>${ftp.url}</url>
 									<serverId>p2Repo</serverId>
-									<!-- Points to your settings.xml where the connection settings are 
-										stored as shown below -->
-									<!-- <server> -->
-									<!-- <id>p2Repo</id> -->
-									<!-- <username>username</username> -->
-									<!-- <password>password</password> -->
-									<!-- </server> -->
 								</configuration>
 							</execution>
 						</executions>
@@ -109,7 +118,4 @@
 			</extension>
 		</extensions>
 	</build>
-
-	<groupId>msi.gama</groupId>
-	<version>0.0.0-SNAPSHOT</version>
 </project>

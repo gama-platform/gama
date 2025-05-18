@@ -180,12 +180,13 @@
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
 
+		<!-- Can be automatically published by uncommenting
+		However, it's prefered to keep it separated and executed
+		with the script travis/deploy-p2.sh
+		<module>../gama.p2site</module> -->
+
 		<module>../gama.product</module>
 		
-		<!--
-		// @TODO
-		<module>../msi.gama.p2updatesite</module>
-		-->
 	</modules>
 
 	<properties>
