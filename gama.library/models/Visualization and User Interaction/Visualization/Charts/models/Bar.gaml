@@ -12,8 +12,10 @@ global
 }
 
 experiment "Multiple displays" type: gui {
+	float minimum_cycle_duration <- 0.3#s;
+	
 	output synchronized: false {
-		layout #split parameters: false navigator: false editors: false consoles: false toolbars: false tray: false tabs: true;	
+		layout #split parameters: false navigator: false editors: false consoles: false toolbars: false tray: false tabs: false;	
 		display "nice_bar_chart"  type: 2d {
 			chart "Nice Cumulative Bar Chart" type:histogram 
 			 	background: #darkblue
@@ -42,8 +44,8 @@ experiment "Multiple displays" type: gui {
 					marker_shape:marker_circle ;
 			}
 		} 
-		display "data_cumulative_bar_chart" type:2d {
-			chart "data_cumulative_bar_chart" type:histogram 
+		display "Cumulative bar chart" type:2d {
+			chart "Cumulative bar chart" type:histogram 
 			style:stack
 			x_serie_labels:("cycle"+cycle)
 			x_range:5
@@ -60,8 +62,8 @@ experiment "Multiple displays" type: gui {
 			}
 		} 
  		
-		display "data_non_cumulative_bar_chart" type: 2d {
-			chart "data_non_cumulative_bar_chart" type:histogram 
+		display "Non cumulative bar chart" type: 2d {
+			chart "Non cumulative bar chart" type:histogram 
 			x_serie_labels: ["categ1","categ2"]
 			style:"3d"
 			series_label_position: xaxis
@@ -78,8 +80,8 @@ experiment "Multiple displays" type: gui {
 			}
 		} 
  		
-		display "datalist_bar_cchart" type:2d {
-			chart "datalist_bar" type:histogram 
+		display "Datalist bar chart" type:2d {
+			chart "Datalist bar chart" type:histogram 
 			series_label_position: onchart
 			{
 				datalist legend:["cycle","cosinus normalized","offsetted cosinus normalized"] 
@@ -90,7 +92,7 @@ experiment "Multiple displays" type: gui {
 		}
 
 		display "onvalue_cumulative_bar_chart" type:2d {
-			chart "onvalue_cumulative_bar_chart" type:histogram 
+			chart "Onvalue cumulative bar chart" type:histogram 
 			series_label_position: yaxis
 			x_label: "my_time_label"
 			{
