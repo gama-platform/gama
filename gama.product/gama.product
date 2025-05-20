@@ -70,7 +70,6 @@
 -Denable_logging=true
 -Denable_debug=true
 -Duse_global_preference_store=true
--Dswt.autoScale=exact
 -Dread_only=false
 -Duse_old_tabs=true
 -Duse_legacy_drawers=false
@@ -107,11 +106,18 @@
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
       </vmArgs>
+      <vmArgsLin>-Dswt.enable.autoScale=true
+-Dswt.autoScale=150
+-Dswt.autoScale.method=nearest
+      </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
       <vmArgsWin>-Dfile.encoding=UTF-8
 -Dorg.eclipse.swt.browser.DefaultType=edge
+-Dswt.enable.autoScale=true
+-Dswt.autoScale=150
+-Dswt.autoScale.method=nearest
       </vmArgsWin>
    </launcherArgs>
 
