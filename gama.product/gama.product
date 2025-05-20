@@ -116,8 +116,9 @@
       <vmArgsWin>-Dfile.encoding=UTF-8
 -Dorg.eclipse.swt.browser.DefaultType=edge
 -Dswt.enable.autoScale=true
--Dswt.autoScale=150
--Dswt.autoScale.method=nearest
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
+-Dswt.autoScale.updateOnRuntime=true
       </vmArgsWin>
    </launcherArgs>
 
