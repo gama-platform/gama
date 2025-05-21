@@ -74,18 +74,19 @@ public class GamaMetaType extends GamaType<IType<?>> {
 			doc = @doc ("Returns the GAML type of the operand"))
 	@doc (
 			value = "Returns the GAML type of the operand",
-			examples = { @example (
-					value = "string(type_of(\"a string\"))",
-					equals = "\"string\"",
-					returnType = "string"),
+			examples = { 
 					@example (
-							value = "string(type_of([1,2,3,4,5]))",
-							equals = "\"list<int>\"",
-							returnType = "string"),
-					@example ("geometry g0 <- to_GAMA_CRS({121,14}, \"EPSG:4326\"); "), @example (
-							value = "string(type_of(g0))",
-							equals = "\"point\"",
-							returnType = "string")
+						value = "string(type_of(\"a string\"))",
+						equals = "\"string\"",
+						returnType = "string"),
+					@example (
+						value = "string(type_of([1,2,3,4,5]))",
+						equals = "\"list<int>\"",
+						returnType = "string"),
+					@example (
+						value = "string(type_of(g0))",
+						equals = "\"point\"",
+						returnType = "string")
 
 			})
 	@no_test
