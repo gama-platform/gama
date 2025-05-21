@@ -48,7 +48,6 @@
 -Duse_delayed_resize=false 
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
---add-modules=jdk.incubator.vector
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt=ALL-UNNAMED
 --add-exports=java.desktop/sun.java2d=ALL-UNNAMED
