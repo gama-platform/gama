@@ -40,7 +40,6 @@
 -XX:ProfiledCodeHeapSize=194M
 -XX:NonProfiledCodeHeapSize=194M 
 -XX:-DontCompileHugeMethods
--XX:+UseVectorCmov
 -XX:+UseFastUnorderedTimeStamps 
 -XX:+AlwaysPreTouch 
 -XX:G1HeapWastePercent=5 
@@ -70,13 +69,13 @@
 -Denable_logging=true
 -Denable_debug=true
 -Duse_global_preference_store=true
+-Dswt.autoScale=exact
 -Dread_only=false
 -Duse_old_tabs=true
 -Duse_legacy_drawers=false
 -Duse_delayed_resize=false
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
---add-modules=jdk.incubator.vector
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt=ALL-UNNAMED
 --add-exports=java.desktop/sun.java2d=ALL-UNNAMED
