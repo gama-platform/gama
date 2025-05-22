@@ -32,7 +32,6 @@ userWorkspace=""
 args=""
 
 while [[ "$#" -gt 0 ]]; do
-echo "===$1"
     case "$1" in
         -m)
             memory="$2"
@@ -43,7 +42,7 @@ echo "===$1"
             shift 2
             ;;
         *)
-            args+="$1"
+            args+="$1 "
             shift
             ;;
     esac
@@ -111,8 +110,6 @@ else
     workspaceCreate=0
 fi
 
-echo "$pathWorkspace"
-
 mkdir -p "$pathWorkspace"
 
 ini_arguments=$(read_from_ini)
@@ -125,9 +122,15 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
         -configuration "${headlessPath}"/configuration \
         -application gama.headless.product \
         -data "$pathWorkspace" \
-        "$args"; then
-    echo "Error in you command, here's the log :"
-    cat $pathWorkspace/.metadata/.log
+        $args; then
+    if [ $workspaceCreate -eq 1 ]; then
+        # create workspace in output folder
+        echo "GAMA encountered an error and crashed, please check again your command..."
+        rm -fr workspaceRootPath $pathWorkspace
+    else
+        echo "Error in you command, here's the log :"
+        cat $pathWorkspace/.metadata/.log
+    fi
     exit 1
 else
     if [ $workspaceCreate -eq 1 ]; then
