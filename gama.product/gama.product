@@ -106,8 +106,8 @@
 --add-opens=java.sql/java.sql=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>-Dswt.enable.autoScale=true
--Dswt.autoScale=150
--Dswt.autoScale.method=nearest
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
       </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
@@ -117,7 +117,7 @@
 -Dswt.enable.autoScale=true
 -Dswt.autoScale=quarter
 -Dswt.autoScale.method=smooth
--Dswt.autoScale.updateOnRuntime=true
+-Dswt.autoScale.updateOnRuntime=false
       </vmArgsWin>
    </launcherArgs>
 

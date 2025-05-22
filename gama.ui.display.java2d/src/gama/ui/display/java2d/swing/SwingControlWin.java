@@ -100,6 +100,9 @@ public class SwingControlWin extends SwingControl {
 	    Rectangle r = this.getBounds();
 	    int w = r.width;
 	    int h = r.height;
+	    DEBUG.LOG(
+		    "" + System.currentTimeMillis() + " -- In WorkbenchHelper.asyncRun, Set size sent by SwingControl "
+			    + width + " x  " + height + " / SWT Bounds = " + w + " x " + h);
 	    // Solves a problem where the last view on HiDPI screens on Windows
 	    // would be outscaled
 	    if (!this.isDisposed()) {
@@ -107,8 +110,9 @@ public class SwingControlWin extends SwingControl {
 	    }
 	    try {
 		EventQueue.invokeAndWait(() -> {
-		    // DEBUG.OUT("Set size sent by SwingControl " + width + " "
-		    // + height);
+		    DEBUG.LOG("" + System.currentTimeMillis()
+			    + " -- In EventQueue.invokeAndWait, Set size sent by SwingControl " + width + " x  "
+			    + height + " / SWT Bounds = " + w + " x " + h);
 		    // frame.setBounds(x, y, width, height);
 		    // frame.setVisible(false);
 		    surface.setSize(w, h);
