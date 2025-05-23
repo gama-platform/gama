@@ -146,11 +146,11 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		GamaNode<String> child = tree.getRoot().getChildren().get(0);
 		// DEBUG.LOG("Tree root = " + child.getData() + " weight " +
 		// child.getWeight());
-		if (child.getWeight() == null) { child.setWeight(5000); }
+		if (child.getWeight() == null) { child.setWeight(holders.size() == 1 ? Integer.MAX_VALUE : 5000); }
 		final MPartStack displayStack = getDisplaysPlaceholder();
 		if (displayStack == null) return;
 		final MElementContainer<?> root = displayStack.getParent();
-		displayStack.getChildren().addAll(holders);
+		// displayStack.getChildren().addAll(holders);
 		process(root, child, holders);
 		showDisplays(root, holders);
 	}
@@ -233,7 +233,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			Object s = h.getTransientData().get(DISPLAY_INDEX_KEY);
 			return s != null && s.equals(data);
 		}, null);
-		final MElementContainer container = create(uiRoot, weight, dir);
+		final MElementContainer container = create(uiRoot, weight, dir, holders.size());
 		if (holder != null) {
 			if (container.equals(uiRoot)) { holder.setContainerData(weight); }
 			container.getChildren().add(holder);
@@ -274,7 +274,8 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the dir
 	 * @return the m element container
 	 */
-	static MElementContainer create(final MElementContainer root, final String weight, final Boolean dir) {
+	static MElementContainer create(final MElementContainer root, final String weight, final Boolean dir,
+			final int number) {
 		if (dir == null && root instanceof MPartStack) return root;
 		final MElementContainer c;
 		if (dir == null) {
