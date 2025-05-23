@@ -905,7 +905,7 @@ public class PopulationInspectView extends GamaViewPart
 			// TODO let the list of agents remain the same ??
 		}, SWT.RIGHT);
 		createExpressionComposite();
-		populationMenu = tb.menu(IGamaIcons.BROWSE_POPULATIONS, "", "Browse a species", trigger -> {
+		populationMenu = tb.menuItem(IGamaIcons.BROWSE_POPULATIONS, "", "Browse a species", trigger -> {
 			if (locked) return;
 			final GamaMenu menu = new GamaMenu() {
 

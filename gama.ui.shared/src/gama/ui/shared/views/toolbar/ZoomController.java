@@ -121,7 +121,7 @@ public class ZoomController {
 				"Zoom out", e -> view.zoomOut(), SWT.RIGHT);
 		tb.sep(SWT.RIGHT);
 		if (view.hasCameras()) {
-			tb.menu(DISPLAY_TOOLBAR_CAMERA, "", "Choose a camera...", trigger -> {
+			tb.menuItem(DISPLAY_TOOLBAR_CAMERA, "", "Choose a camera...", trigger -> {
 				final GamaMenu menu = new GamaMenu() {
 
 					@Override

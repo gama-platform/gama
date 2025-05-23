@@ -523,6 +523,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	    if (im != null) {
 		imageBounds = im.getBounds();
 		preferredWidth = imageBounds.width + imagePadding;
+	    } else {
+		preferredWidth = 0;
 	    }
 	    if (addMenuSign) {
 		imageBounds.height = Math.max(imageBounds.height, menuImageBounds.height);
