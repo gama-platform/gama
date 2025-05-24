@@ -50,7 +50,7 @@ public class FontEditor extends AbstractEditor<GamaFont> {
 
 	@Override
 	public Control createCustomParameterControl(final Composite compo) {
-		edit = FlatButton.menu(compo, null, "").light().small();
+		edit = FlatButton.menu(compo, null, "");
 		edit.addSelectionListener(this);
 		displayParameterValue();
 		return edit;

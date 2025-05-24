@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FileEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -102,14 +102,13 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 		super(agent, param, l);
 		this.isFolder = isFolder;
 		this.isWorkspace = param.isWorkspace();
-		this.fileExtensions = param.getFileExtensions() == null || param.getFileExtensions().length == 0 
-						? null
-						: new HashSet(Arrays.asList(param.getFileExtensions()));
+		this.fileExtensions = param.getFileExtensions() == null || param.getFileExtensions().length == 0 ? null
+				: new HashSet(Arrays.asList(param.getFileExtensions()));
 	}
 
 	@Override
 	public Control createCustomParameterControl(final Composite comp) {
-		textBox = FlatButton.menu(comp, null, "").light().small();
+		textBox = FlatButton.menu(comp, null, "");
 		textBox.setText("No " + (isFolder ? "folder" : "file"));
 		textBox.addSelectionListener(this);
 		return textBox;
@@ -123,7 +122,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 				IFile result = WorkspaceResourceDialog.openFileSelection(null, "Choose file",
 						"Choose a file for parameter '" + param.getTitle() + "'", false,
 						file == null ? null : new IFile[] { FileUtils.getFile(file.getPath(getScope()), null, true) },
-								Collections.singletonList(new ViewerFilter() {
+						Collections.singletonList(new ViewerFilter() {
 
 							@Override
 							public boolean select(final Viewer viewer, final Object parentElement,
@@ -141,7 +140,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 						"Choose a folder for parameter '" + param.getTitle() + "'", false,
 						file == null ? null
 								: new IContainer[] { FileUtils.getFolder(file.getPath(getScope()), null, true) },
-								Collections.singletonList(new ViewerFilter() {
+						Collections.singletonList(new ViewerFilter() {
 
 							@Override
 							public boolean select(final Viewer viewer, final Object parentElement,

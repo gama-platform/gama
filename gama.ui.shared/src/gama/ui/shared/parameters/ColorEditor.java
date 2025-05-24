@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ColorEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ColorEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,8 +30,8 @@ import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.menus.GamaColorMenu.IColorRunnable;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 
 /**
  * The Class ColorEditor.
@@ -78,21 +78,6 @@ public class ColorEditor extends AbstractEditor<Color> {
 	ColorEditor(final IAgent agent, final IParameter param, final EditorListener<Color> l) {
 		super(agent, param, l);
 	}
-	//
-	// /**
-	// * Instantiates a new color editor.
-	// *
-	// * @param scope the scope
-	// * @param parent the parent
-	// * @param title the title
-	// * @param value the value
-	// * @param whenModified the when modified
-	// */
-	// ColorEditor(final IScope scope, final EditorsGroup parent, final String title, final Object value,
-	// final EditorListener<java.awt.Color> whenModified) {
-	// super(scope, new InputParameter(title, value), whenModified);
-	// this.createControls(parent);
-	// }
 
 	@Override
 	public void widgetSelected(final SelectionEvent event) {
@@ -101,7 +86,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 
 	@Override
 	public Control createCustomParameterControl(final Composite compo) {
-		edit = FlatButton.menu(compo, IGamaColors.WHITE, "").light().small();
+		edit = FlatButton.menu(compo, IGamaColors.WHITE, "255,255,255");
 		edit.addSelectionListener(this);
 		displayParameterValue();
 		return edit;
@@ -112,7 +97,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 		internalModification = true;
 		final GamaUIColor color =
 				GamaColors.get(currentValue == null ? GamaColor.get(0) : (java.awt.Color) currentValue);
-		edit.setText(color.toString());
+		edit.setTextWithoutRecomputingSize(color.toString());
 		edit.setColor(color);
 		internalModification = false;
 	}
