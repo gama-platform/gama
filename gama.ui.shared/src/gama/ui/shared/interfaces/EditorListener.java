@@ -14,6 +14,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * Written by drogoul Modified on 27 mai 2011
@@ -23,40 +24,42 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
  */
 public interface EditorListener<T> {
 
-	/**
-	 * Value modified.
-	 *
-	 * @param val
-	 *            the val
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	void valueModified(T val) throws GamaRuntimeException;
+    /**
+     * Value modified.
+     *
+     * @param val
+     *            the val
+     * @throws GamaRuntimeException
+     *             the gama runtime exception
+     */
+    void valueModified(T val) throws GamaRuntimeException;
 
-	/**
-	 * The Interface Command.
-	 */
-	public interface Command extends EditorListener<Object>, SelectionListener {
+    /**
+     * The Interface Command.
+     */
+    public interface Command extends EditorListener<Object>, Selector {
 
-		@Override
-		default void valueModified(final Object o) {
-			this.widgetSelected(null);
-		}
-
-		@Override
-		default void widgetDefaultSelected(final SelectionEvent o) {
-			this.widgetSelected(null);
-		}
-
+	@Override
+	default void valueModified(final Object o) {
+	    this.widgetSelected(null);
 	}
 
-	public interface Static extends EditorListener<Object>, SelectionListener {
-		@Override
-		default void valueModified(final Object o) {}
-
-		@Override
-		default void widgetDefaultSelected(final SelectionEvent o) {}
-
+	@Override
+	default void widgetDefaultSelected(final SelectionEvent o) {
+	    this.widgetSelected(null);
 	}
+
+    }
+
+    public interface Static extends EditorListener<Object>, SelectionListener {
+	@Override
+	default void valueModified(final Object o) {
+	}
+
+	@Override
+	default void widgetDefaultSelected(final SelectionEvent o) {
+	}
+
+    }
 
 }
