@@ -206,7 +206,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
 	MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
 	md.createControls((EditorsGroup) monitorSection.getControl());
-	monitorSection.computeHeight();
+	monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
 	md.setCloser(() -> deleteMonitor(md));
     }
 
@@ -221,7 +221,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	mo.close();
 	getEditorsList().removeMonitor(mo);
 	md.dispose();
-	monitorSection.computeHeight();
+	monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
 	deleteMonitorSectionIfEmpty();
     }
 
