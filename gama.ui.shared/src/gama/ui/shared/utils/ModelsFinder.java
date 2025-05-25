@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.ui.shared.access;
+package gama.ui.shared.utils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.swt,
  org.eclipse.e4.core.contexts,
  org.eclipse.core.expressions,
  org.eclipse.ui.navigator,
- gama.extension.image
+ gama.extension.image,
+ org.eclipse.e4.ui.workbench.renderers.swt
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,
  gama.ui.shared.bindings,
@@ -40,6 +41,7 @@ Export-Package: gama.ui.shared,
  gama.ui.shared.parameters,
  gama.ui.shared.resources,
  gama.ui.shared.shared,
+ gama.ui.shared.toolbar,
  gama.ui.shared.utils,
  gama.ui.shared.views,
  gama.ui.shared.views.toolbar
