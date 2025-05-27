@@ -35,6 +35,7 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.Strings;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -490,15 +491,36 @@ public abstract class AbstractAgent implements IAgent {
 
 	@action (
 			name = "debug",
-			args = { @arg (
-					name = "message",
-					type = IType.STRING,
-					doc = @doc ("The message to display")) })
+			args = { 
+					@arg (
+						name = "message",
+						type = IType.STRING,
+						doc = @doc ("The message to display.")
+					),
+					@arg (
+							name = "separator",
+							type = IType.STRING,
+							optional = true,
+							doc = @doc ("The string to place between the message and the sender. By default a new line.")
+					),					@arg (
+						name = "end",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The string to append at the end. By default a new line.")
+					),
+
+				}
+			)
 	public final Object primDebug(final IScope scope) throws GamaRuntimeException {
-		final String m = (String) scope.getArg("message", IType.STRING);
-		scope.getGui().getConsole().debugConsole(scope.getClock().getCycle(),
-				m + "\nsender: " + Cast.asMap(scope, this, false), scope.getRoot());
-		return m;
+		final String message 	= (String) scope.getArg("message", IType.STRING);
+		final String end 		= scope.getTypedArgIfExists("end", IType.STRING, Strings.LN);
+		final String separator 	= scope.getTypedArgIfExists("separator", IType.STRING, Strings.LN);
+		
+		scope.getGui().getConsole()
+				.debugConsole(	scope.getClock().getCycle(),
+								message + separator + "sender: " + Cast.asMap(scope, this, false) + end, 
+								scope.getRoot());
+		return message;
 	}
 
 	/**
