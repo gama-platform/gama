@@ -110,11 +110,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);
-		configurer.setShowStatusLine(true);
-		configurer.setShowProgressIndicator(true);
+		configurer.setShowStatusLine(false);
+		configurer.setShowProgressIndicator(false);
 		configurer.setShowPerspectiveBar(false);
 		configurer.setTitle(GAMA.VERSION);
-		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
+		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, false);
 		ThemeHelper.applyCSSWhenWindowOpens();
 		Resource.setNonDisposeHandler(null);
 	}

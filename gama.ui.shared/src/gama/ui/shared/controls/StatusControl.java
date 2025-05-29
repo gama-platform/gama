@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * StatusControlContribution.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * StatusControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -27,7 +27,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.progress.UIJob;
 
 import gama.core.common.IStatusMessage;
@@ -45,9 +44,9 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
- * The Class ExperimentControlContribution.
+ * The Class ExperimentControl.
  */
-public class StatusControlContribution extends WorkbenchWindowControlContribution implements IStatusControl {
+public class StatusControl implements IStatusControl {
 
 	static {
 		DEBUG.OFF();
@@ -75,7 +74,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	private final static int WIDTH = 400;
 
 	/** The instance. */
-	static StatusControlContribution INSTANCE;
+	static StatusControl INSTANCE = new StatusControl();
 
 	/** The inactive color. */
 	private GamaUIColor inactiveColor;
@@ -102,45 +101,45 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	};
 
 	/**
-	 * Gets the single instance of ExperimentControlContribution.
+	 * Gets the single instance of ExperimentControl.
 	 *
-	 * @return single instance of ExperimentControlContribution
+	 * @return single instance of ExperimentControl
 	 */
-	public static StatusControlContribution getInstance() { return INSTANCE; }
+	public static StatusControl getInstance() { return INSTANCE; }
 
 	/**
 	 * Instantiates a new status control contribution.
 	 */
-	public StatusControlContribution() {
-		INSTANCE = this;
+	public StatusControl() {
 		WorkbenchHelper.getService(IStatusDisplayer.class).setStatusTarget(this);
 	}
 
 	/**
-	 * Instantiates a new status control contribution.
+	 * Install on.
 	 *
-	 * @param id
-	 *            the id
+	 * @param parent
+	 *            the parent
+	 * @return the tool item
 	 */
-	public StatusControlContribution(final String id) { // NO_UCD (unused code)
-		super(id);
-		INSTANCE = this;
+	public static Control installOn(final Composite parent) {
+		return INSTANCE.createControl(parent);
 	}
 
-	@Override
-	protected int computeWidth(final Control control) {
-		return WIDTH;
-	}
-
-	@Override
+	/**
+	 * Creates the control.
+	 *
+	 * @param parent
+	 *            the parent
+	 * @return the control
+	 */
 	protected Control createControl(final Composite parent) {
 		final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
+		GridLayoutFactory.fillDefaults().spacing(0, 0).applyTo(compo);
 		inactiveColor = ThemeHelper.isDark() ? GamaColors.get(GamaColors.get(parent.getBackground()).lighter())
 				: GamaColors.get(GamaColors.get(parent.getBackground()).darker());
-		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
-		label = FlatButton.label(compo, inactiveColor, "", WIDTH).withMinimalHeight(24).addMenuSign();
+		label = FlatButton.label(compo, inactiveColor, "", WIDTH).addMenuSign();
 		label.setEnabled(false);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(label);
 		historyPopup = new StatusHistoryPopUpMenu(this);
 
 		label.addMouseListener(new MouseAdapter() {
@@ -170,36 +169,15 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
 				String name = job.getName() == null ? "" : job.getName().strip();
 				if (uselessJobs.contains(name)) return;
-				// DEBUG.OUT("Name " + job.getName() + " - Group " + job.getJobGroup() + " - Rule " + job.getRule()
-				// + " - Priority " + jobPriority(job.getPriority()));
 				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
 				if (IStatusMessage.INTERNAL_STATUS_REFRESH_JOB.equals(jobProperty)) return;
 				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
-				// if (isView ? !showViewEvents : !showSystemEvents) {}
 				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessageFactory.CUSTOM(name, StatusType.REGULAR,
 						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null)));
 			}
 
-			// private boolean intersect(final String s1, final String s2) {
-			// if (s1 == null) return s2 == null;
-			// if (s2 == null) return false;
-			// return s1.contains(s2) || s2.contains(s1);
-			// }
-
 			@Override
-			public void done(final IJobChangeEvent event) {
-				// if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof StatusRefresher) return;
-				// String message = event.getJob().getName();
-				// if (intersect(label.getText(), message)) {
-				// WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.IDLE()));
-				// }
-				// else {
-				// WorkbenchHelper
-				// .asyncRun(() -> updateWith(StatusMessage.END(event.getJob().getName() + " (ended)")));
-				// }
-				// DEBUG.OUT("Job finished : " + event.getJob().toString() + " with priority "
-				// + jobPriority(event.getJob().getPriority()));
-			}
+			public void done(final IJobChangeEvent event) {}
 
 			private String jobPriority(final int p) {
 				return switch (p) {
@@ -222,22 +200,6 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			public void sleeping(final IJobChangeEvent event) {}
 		});
 
-		// label.addMouseListener(new MouseAdapter() {
-		//
-		// @Override
-		// public void mouseDown(final MouseEvent e) {
-		//
-		// if (currentStatus == StatusType.ERROR) {
-		// if (historyPopup.isVisible()) {
-		// historyPopup.hide();
-		// } else {
-		// WorkbenchHelper.asyncRun(() -> historyPopup.display(currentException));
-		// }
-		// }
-		//
-		// }
-		//
-		// });
 		return compo;
 	}
 
@@ -377,6 +339,12 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 */
 	public boolean showViewEvents() {
 		return showSystemEvents;
+	}
+
+	@Override
+	public void setWidth(final int i) {
+		label.withWidth(i);
+		label.computePreferredSize();
 	}
 
 }

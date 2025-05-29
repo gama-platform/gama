@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * MemoryControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * MemoryItem.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -20,7 +20,15 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 /**
  *
  */
-public class MemoryControl {
+public class MemoryItem extends GlobalToolbarItem {
+
+	/**
+	 * @param toolbar
+	 */
+	MemoryItem(final GamaToolbarSimple toolbar) {
+		super(toolbar);
+
+	}
 
 	/**
 	 * Install on.
@@ -29,7 +37,8 @@ public class MemoryControl {
 	 *            the toolbar
 	 * @return the tool item
 	 */
-	public ToolItem installOn(final GamaToolbarSimple toolbar) {
+	@Override
+	public ToolItem createItem(final GamaToolbarSimple toolbar) {
 		ToolItem item = toolbar.button("generic/garbage.collect", "", "", e -> {
 			Runtime runtime = Runtime.getRuntime();
 			long totalMem = convertToMeg(runtime.totalMemory());
@@ -49,6 +58,9 @@ public class MemoryControl {
 		return item;
 	}
 
+	@Override
+	public void reinit() {}
+
 	/**
 	 * Convert to meg.
 	 *
@@ -56,8 +68,13 @@ public class MemoryControl {
 	 *            the num bytes
 	 * @return the long
 	 */
-	private long convertToMeg(final long numBytes) {
+	private static long convertToMeg(final long numBytes) {
 		return (numBytes + 512 * 1024) / (1024 * 1024);
+	}
+
+	@Override
+	public void update() {
+
 	}
 
 }

@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * ExperimentControlContribution.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
- * simulation platform (v.2025-03).
+ * ExperimentControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.controls;
+package gama.ui.shared.controls;
 
 import static gama.ui.shared.resources.GamaColors.get;
 
@@ -21,7 +21,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IStatusControl;
@@ -35,16 +34,18 @@ import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
 import gama.gaml.operators.Strings;
-import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
- * The Class ExperimentControlContribution.
+ * The Class ExperimentControl.
  */
-public class ExperimentControlContribution extends WorkbenchWindowControlContribution implements IStatusControl {
+public class ExperimentControl implements IStatusControl {
+
+	/** The instance. */
+	static ExperimentControl INSTANCE = new ExperimentControl();
 
 	/** The is updating. */
 	private volatile boolean isUpdating;
@@ -64,39 +65,39 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	/**
 	 * Instantiates a new status control contribution.
 	 */
-	public ExperimentControlContribution() {
+	private ExperimentControl() {
 		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
 
 	/**
-	 * Instantiates a new status control contribution.
+	 * Install on.
 	 *
-	 * @param id
-	 *            the id
+	 * @param parent
+	 *            the parent
+	 * @return the tool item
 	 */
-	public ExperimentControlContribution(final String id) { // NO_UCD (unused code)
-		super(id);
-		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
+	public static Control installOn(final Composite parent) {
+		return INSTANCE.createControl(parent);
 	}
 
-	@Override
-	protected int computeWidth(final Control control) {
-		return WIDTH;
-	}
-
-	@Override
+	/**
+	 * Creates the control.
+	 *
+	 * @param parent
+	 *            the parent
+	 * @return the control
+	 */
 	protected Control createControl(final Composite parent) {
 		final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
-		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
+		GridLayoutFactory.fillDefaults().spacing(0, 0).applyTo(compo);
 		label = FlatButton.label(compo, IGamaColors.NEUTRAL, "No experiment running", WIDTH)
-				.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image()).withMinimalHeight(24);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
+				.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image());
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(label);
 		popup = new SimulationPopupMenu(this);
 		label.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseDown(final MouseEvent e) {
-
 				if (popup.isVisible()) {
 					popup.hide();
 				} else {
@@ -240,6 +241,12 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		final IExperimentPlan plan = exp.getSpecies();
 		if (plan.shouldBeBenchmarked()) { text.append(" [benchmarking]"); }
 		return text.toString();
+	}
+
+	@Override
+	public void setWidth(final int i) {
+		label.withWidth(i);
+		label.computePreferredSize();
 	}
 
 }

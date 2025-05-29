@@ -25,9 +25,7 @@ Require-Bundle: gama.ui.application,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  jakarta.inject.jakarta.inject-api
-Export-Package: gama.ui.experiment.activator,
- gama.ui.experiment.commands,
- gama.ui.experiment.controls,
+Export-Package: gama.ui.experiment.commands,
  gama.ui.experiment.factories,
  gama.ui.experiment.menus,
  gama.ui.experiment.parameters,
@@ -38,5 +36,4 @@ Export-Package: gama.ui.experiment.activator,
  gama.ui.experiment.views.inspectors,
  gama.ui.experiment.views.user
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: gama.ui.experiment.activator.ExperimentUIActivator
 Automatic-Module-Name: gama.ui.experiment

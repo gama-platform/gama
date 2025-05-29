@@ -49,8 +49,8 @@ import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 import gama.ui.application.workbench.PerspectiveHelper;
-import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
+import gama.ui.shared.controls.SimulationSpeedControl;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -330,8 +330,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			runExperimentItem.setImage(GamaIcon.named(IGamaIcons.MENU_PAUSE_ACTION).image());
 		}
 		toolbar.button(stepExperiment, SWT.LEFT);
-		toolbar.control(SimulationSpeedContributionItem.create(toolbar.getToolbar(SWT.LEFT)),
-				SimulationSpeedContributionItem.totalWidth(), SWT.LEFT);
+		toolbar.control(SimulationSpeedControl.installOn(toolbar.getToolbar(SWT.LEFT)),
+				SimulationSpeedControl.totalWidth(), SWT.LEFT);
 		toolbar.button(relaunchExperiment, SWT.LEFT);
 		toolbar.button(closeExperiment, SWT.LEFT);
 	}

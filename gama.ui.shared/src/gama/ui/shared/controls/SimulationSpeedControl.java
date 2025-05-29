@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * SimulationSpeedContributionItem.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * SimulationSpeedControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.controls;
+package gama.ui.shared.controls;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,22 +18,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.ui.shared.controls.IPositionChangeListener;
-import gama.ui.shared.controls.SimpleSlider;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 
 /**
- * The class SimulationSpeedContributionItem.
+ * The class SimulationSpeedControl.
  *
  * @author drogoul
  * @since 19 janv. 2012
@@ -41,14 +38,14 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
  * @modification now obeys a cubic power law from 0 to BASE_UNIT milliseconds
  *
  */
-public class SimulationSpeedContributionItem extends WorkbenchWindowControlContribution implements ISpeedDisplayer {
+public class SimulationSpeedControl implements ISpeedDisplayer {
 
 	static {
 		DEBUG.OFF();
 	}
 
 	/** The instance. */
-	private static SimulationSpeedContributionItem INSTANCE;
+	private static SimulationSpeedControl INSTANCE = new SimulationSpeedControl();
 
 	/** The max. */
 	static double max = 1000;
@@ -84,11 +81,6 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 		return 1 - lambda * Math.log(v / max * (Math.exp(1 / lambda) - 1) + 1);
 	}
 
-	@Override
-	protected int computeWidth(final Control control) {
-		return control.computeSize(widthSize, SWT.DEFAULT, true).x;
-	}
-
 	/**
 	 * p between 0 and 1. Returns a value in milliseconds
 	 *
@@ -101,24 +93,12 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	}
 
 	/**
-	 * Instantiates a new simulation speed contribution item.
-	 */
-	public SimulationSpeedContributionItem() {
-		INSTANCE = this;
-	}
-
-	/**
 	 * Total width.
 	 *
 	 * @return the int
 	 */
 	public static int totalWidth() {
 		return widthSize + 2 * marginWidth;
-	}
-
-	@Override
-	public Control createControl(final Composite parent) {
-		return create(parent);
 	}
 
 	/**
@@ -128,7 +108,18 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	 *            the parent
 	 * @return the control
 	 */
-	public static Control create(final Composite parent) {
+	public static Control installOn(final Composite parent) {
+		return INSTANCE.createOn(parent);
+	}
+
+	/**
+	 * Creates the on.
+	 *
+	 * @param parent
+	 *            the parent
+	 * @return the control
+	 */
+	public Control createOn(final Composite parent) {
 		final Composite composite = new Composite(parent, SWT.DOUBLE_BUFFERED | SWT.INHERIT_DEFAULT);
 		GamaColors.setBackground(parent.getBackground(), composite);
 		final GridLayout layout = new GridLayout(1, false);
@@ -137,8 +128,6 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 		layout.marginHeight = 0;
 		layout.marginWidth = marginWidth;
 		composite.setLayout(layout);
-		// composite.setBackground(parent.getBackground());
-		// final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, true);
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		data.widthHint = widthSize;
 		data.minimumWidth = widthSize;
@@ -171,6 +160,13 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 		max = maximum;
 		// if (maximum > max) { max = maximum; }
 		return positionFromValue(value);
+	}
+
+	/**
+	 * Reinit.
+	 */
+	public static void reinit() {
+		INSTANCE.setInit(getInitialValue(), false);
 	}
 
 	/*
@@ -209,10 +205,10 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	};
 
 	/**
-	 * Gets the single instance of SimulationSpeedContributionItem.
+	 * Gets the single instance of SimulationSpeedControl.
 	 *
-	 * @return single instance of SimulationSpeedContributionItem
+	 * @return single instance of SimulationSpeedControl
 	 */
-	public static SimulationSpeedContributionItem getInstance() { return INSTANCE; }
+	public static SimulationSpeedControl getInstance() { return INSTANCE; }
 
 }

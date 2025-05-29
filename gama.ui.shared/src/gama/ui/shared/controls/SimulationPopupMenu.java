@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * SimulationPopupMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * SimulationPopupMenu.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.controls;
+package gama.ui.shared.controls;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +18,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.layout.RowDataFactory;
-import org.eclipse.jface.layout.RowLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -32,7 +30,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -43,10 +40,9 @@ import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.ui.experiment.menus.SimulationsMenu;
+// import gama.ui.experiment.menus.SimulationsMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class CustomMenu. An alternative to Popup & Regular menus
@@ -61,7 +57,8 @@ public class SimulationPopupMenu extends PopupDialog {
 	}
 
 	/** The contents. */
-	Composite parent, contents, toolbarComposite;
+	Composite parent, contents;
+	// Composite toolbarComposite;
 
 	/** The toolbar. */
 	ToolBar toolbar;
@@ -70,13 +67,13 @@ public class SimulationPopupMenu extends PopupDialog {
 	List<Composite> labels = new CopyOnWriteArrayList<>();
 
 	/** The save. */
-	ToolItem add, kill, loadNew, loadAndReplace, duplicate, save, saveHistory;
+	// ToolItem add, kill, loadNew, loadAndReplace, duplicate, save, saveHistory;
 
 	/** The hide. */
 	final Listener hide = event -> hide();
 
 	/** The provider. */
-	private final ExperimentControlContribution status;
+	private final ExperimentControl status;
 
 	/**
 	 * Instantiates a new popup 2.
@@ -89,8 +86,9 @@ public class SimulationPopupMenu extends PopupDialog {
 	/*
 	 *
 	 */
-	public SimulationPopupMenu(final ExperimentControlContribution status) {
-		super(WorkbenchHelper.getShell(), PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
+	public SimulationPopupMenu(final ExperimentControl status) {
+		super(status.getControllingShell(), PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null,
+				null);
 		this.status = status;
 		final Shell shell = status.getControllingShell();
 		shell.addListener(SWT.Move, hide);
@@ -251,38 +249,38 @@ public class SimulationPopupMenu extends PopupDialog {
 	 */
 	@SuppressWarnings ("unused")
 	private void createToolbar() {
-		if (toolbarComposite == null || toolbarComposite.isDisposed()) {
-			try {
-				toolbarComposite = new Composite(parent, SWT.BORDER);
-				RowLayoutFactory.swtDefaults().center(true).fill(true).applyTo(toolbarComposite);
-				GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(toolbarComposite);
-				toolbar = new ToolBar(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL);
-				RowDataFactory.swtDefaults().exclude(false).applyTo(toolbar);
-				add = SimulationsMenu.addNewSimulation.toItem(toolbar);
-				kill = SimulationsMenu.killCurrentSimulation.toItem(toolbar);
-				duplicate = SimulationsMenu.duplicateCurrentSimulation.toItem(toolbar);
-				new ToolItem(toolbar, SWT.SEPARATOR);
-				save = SimulationsMenu.saveCurrentSimulation.toItem(toolbar);
-				saveHistory = SimulationsMenu.saveCurrentSimulationAndHistory.toItem(toolbar);
-				loadAndReplace = SimulationsMenu.replaceCurrentSimulation.toItem(toolbar);
-				loadNew = SimulationsMenu.loadNewSimulation.toItem(toolbar);
-			} catch (Exception e) {
-				toolbarComposite = null;
-				toolbar = null;
-				return; // will be initialised next time
-			}
-		}
+		// if (toolbarComposite == null || toolbarComposite.isDisposed()) {
+		// try {
+		// toolbarComposite = new Composite(parent, SWT.BORDER);
+		// RowLayoutFactory.swtDefaults().center(true).fill(true).applyTo(toolbarComposite);
+		// GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(toolbarComposite);
+		// toolbar = new ToolBar(toolbarComposite, SWT.FLAT | SWT.HORIZONTAL);
+		// RowDataFactory.swtDefaults().exclude(false).applyTo(toolbar);
+		// add = SimulationsMenu.addNewSimulation.toItem(toolbar);
+		// kill = SimulationsMenu.killCurrentSimulation.toItem(toolbar);
+		// duplicate = SimulationsMenu.duplicateCurrentSimulation.toItem(toolbar);
+		// new ToolItem(toolbar, SWT.SEPARATOR);
+		// save = SimulationsMenu.saveCurrentSimulation.toItem(toolbar);
+		// saveHistory = SimulationsMenu.saveCurrentSimulationAndHistory.toItem(toolbar);
+		// loadAndReplace = SimulationsMenu.replaceCurrentSimulation.toItem(toolbar);
+		// loadNew = SimulationsMenu.loadNewSimulation.toItem(toolbar);
+		// } catch (Exception e) {
+		// toolbarComposite = null;
+		// toolbar = null;
+		// return; // will be initialised next time
+		// }
+		// }
 		// GamaColors.setBackground(provider.getColor(), toolbar, toolbarComposite);
 		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
 		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof SimulationAgent;
 		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
-		add.setEnabled(isExperiment || isSimulation);
-		kill.setEnabled(isSimulation);
-		duplicate.setEnabled(isSimulation);
-		save.setEnabled(isSimulation);
-		saveHistory.setEnabled(isBackward);
-		loadAndReplace.setEnabled(isSimulation);
-		loadNew.setEnabled(isExperiment || isSimulation);
+		// add.setEnabled(isExperiment || isSimulation);
+		// kill.setEnabled(isSimulation);
+		// duplicate.setEnabled(isSimulation);
+		// save.setEnabled(isSimulation);
+		// saveHistory.setEnabled(isBackward);
+		// loadAndReplace.setEnabled(isSimulation);
+		// loadNew.setEnabled(isExperiment || isSimulation);
 	}
 
 	@Override

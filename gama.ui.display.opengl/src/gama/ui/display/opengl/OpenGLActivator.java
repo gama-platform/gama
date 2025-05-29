@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OpenGLActivator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,6 @@ import org.osgi.framework.BundleContext;
 
 import com.jogamp.common.util.JarUtil;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLDrawableFactory;
@@ -108,10 +107,10 @@ public class OpenGLActivator extends AbstractUIPlugin {
 			DEBUG.BANNER(prefix, property, "between",
 					String.valueOf(fresult[0]) + " and " + String.valueOf(fresult[1]));
 			GamaPreferences.Displays.CORE_LINE_WIDTH.between(fresult[0], fresult[1]);
-			property = "Line width granularity";
-			gl.glGetFloatv(GL2GL3.GL_SMOOTH_LINE_WIDTH_GRANULARITY, fresult, 0);
-			DEBUG.BANNER(prefix, property, "value", String.valueOf(fresult[0]));
-			GamaPreferences.Displays.CORE_LINE_WIDTH.step(fresult[0]);
+			// property = "Line width granularity";
+			// gl.glGetFloatv(GL2GL3.GL_SMOOTH_LINE_WIDTH_GRANULARITY, fresult, 0);
+			// DEBUG.BANNER(prefix, property, "value", String.valueOf(fresult[0]));
+			// GamaPreferences.Displays.CORE_LINE_WIDTH.step(fresult[0]);
 			property = "Point size range";
 			gl.glGetFloatv(GL.GL_POINT_SIZE, fresult, 0);
 			DEBUG.BANNER(prefix, property, "between",
