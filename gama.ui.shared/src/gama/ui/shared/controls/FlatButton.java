@@ -67,8 +67,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
     private RGB colorCode;
 
     /** The preferred height. */
-    private int preferredHeight = SWT.DEFAULT, minimalHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT,
-	    forcedWidth = SWT.DEFAULT;
+    private int preferredHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT, forcedWidth = SWT.DEFAULT;
+    private static int MINIMAL_HEIGHT = 25;
 
     /** States */
     private boolean enabled = true, hovered = false, down = false, border = false, menu = false;
@@ -335,6 +335,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
     public Point computeSize(final int wHint, final int hHint, final boolean changed) {
 	// DEBUG.OUT("Computing size of '" + text + "' called from ");
 	// DEBUG.STACK();
+	computePreferredSize();
 	int width = wHint != SWT.DEFAULT ? wHint : preferredWidth;
 	int height = hHint != SWT.DEFAULT ? hHint : preferredHeight;
 	return super.computeSize(width, height, changed);
@@ -477,8 +478,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	if (forcedWidth != SWT.DEFAULT) {
 	    bounds.width = forcedWidth;
 	}
-	if (minimalHeight > preferredHeight) {
-	    bounds.height = minimalHeight;
+	if (MINIMAL_HEIGHT > preferredHeight) {
+	    bounds.height = MINIMAL_HEIGHT;
 	}
 	preferredWidth = bounds.width;
 	preferredHeight = bounds.height;
@@ -572,18 +573,6 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
      */
     public FlatButton withWidth(final int width) {
 	forcedWidth = width;
-	return this;
-    }
-
-    /**
-     * With minimal height.
-     *
-     * @param height
-     *            the height
-     * @return the flat button
-     */
-    public FlatButton withMinimalHeight(final int height) {
-	minimalHeight = height;
 	return this;
     }
 

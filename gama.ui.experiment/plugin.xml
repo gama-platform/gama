@@ -528,22 +528,10 @@
                   </and>
                </visibleWhen>
             </command>
-            <command
-                  commandId="gama.ui.experiment.dummy"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/spacer.png" 
-                  style="push"
-                  tooltip="  ">
-            </command>
             <control
                   class="gama.ui.experiment.controls.ExperimentControlContribution"
                   id="gama.application.status">
             </control>
-            <command
-                  commandId="gama.ui.experiment.dummy"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/spacer.png"
-                  style="push"
-                  tooltip="  "> 
-            </command>
             <command
                   commandId="gama.application.commands.StepBackSimulation"
                   disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.back_disabled.png"
@@ -669,10 +657,6 @@
                   </and>
                </visibleWhen>
             </command>
-            <control
-                  class="gama.ui.shared.controls.Separator"
-                  id="separator2876">
-            </control>
       </menuContribution>
    </extension>
    <extension

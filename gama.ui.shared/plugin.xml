@@ -239,12 +239,14 @@
             locationURI="menu:file?after=open.ext">
          <command
                commandId="gama.ui.switchWorkspace"
+               disabledIcon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.switch_disabled.png"
                icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.switch.png"
                label="Switch Workspace..."
                style="push">
          </command>
          <command
                commandId="gama.ui.restart"
+               disabledIcon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.restart_disabled.png"
                icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.restart.png"
                label="Restart GAMA"
                style="push">
