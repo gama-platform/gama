@@ -40,7 +40,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The menu image. */
@@ -56,7 +56,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	private static final Point nullExtent = new Point(0, 0);
 
 	/** The Constant MINIMAL_HEIGHT. */
-	private static final int MINIMAL_HEIGHT = 25;
+	private static final int MINIMAL_HEIGHT = 24;
 
 	/** The selection listener. */
 	private Selector selectionListener;
@@ -245,8 +245,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		Font f = getFont();
 		gc.setFont(f);
 		float v_inset;
-		DEBUG.OUT("Button '" + getText() + "' preferred height = " + preferredHeight + " bounds height = "
-				+ getBounds().height);
+		// DEBUG.OUT("Button '" + getText() + "' preferred width = " + preferredWidth + " bounds width = "
+		// + getBounds().width);
 		if (preferredHeight < getBounds().height) {
 			v_inset = (getBounds().height - preferredHeight) / 2f;
 		} else {
@@ -332,22 +332,22 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public String newText() {
 		if (text == null) return null;
-		final float parentWidth = getParent().getBounds().width;
+		// final float parentWidth = getParent().getBounds().width;
 		final float width = preferredWidth;
 		final float textWidth = computeExtentOfText().x;
-		if (parentWidth < width || textWidth > width) {
+		if (textWidth > width) {
 			float imageWidth = 0;
 			final Image im = getImage();
 			if (im != null || menu) {
-				if (im != null) { imageWidth = im.getBounds().width + imagePadding; }
+				if (im != null) { imageWidth = im.getBounds().width + imagePadding * 2; }
 				if (menu) { imageWidth += menuImageBounds.width + imagePadding * 2; }
 			}
-			float r;
-			if (parentWidth < width) {
-				r = (parentWidth - imageWidth) / width;
-			} else {
-				r = (width - imageWidth) / textWidth;
-			}
+
+			// if (parentWidth < width) {
+			// r = (parentWidth - imageWidth) / width;
+			// } else {
+			float r = (width - imageWidth) / textWidth;
+			// }
 			final int nbChars = text.length();
 			final int newNbChars = Math.max(0, (int) (nbChars * r));
 			return text.substring(0, newNbChars / 2) + "..." + text.substring(nbChars - newNbChars / 2, nbChars);

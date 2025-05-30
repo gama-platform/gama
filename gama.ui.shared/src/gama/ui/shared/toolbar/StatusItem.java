@@ -10,13 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.toolbar;
 
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.ToolItem;
 
 import gama.ui.shared.controls.StatusControl;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
@@ -24,36 +19,13 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 /**
  *
  */
-public class StatusItem extends GlobalToolbarItem {
-
-	/** The composite. */
-	Composite composite;
-
-	/** The normal control. */
-	Control normalControl;
-
-	/** The blank data. */
-	GridData normalData;
+public class StatusItem extends GlobalToolbarCompoundItem {
 
 	/**
 	 * @param toolbar
 	 */
 	StatusItem(final GamaToolbarSimple toolbar) {
 		super(toolbar);
-	}
-
-	/**
-	 * @param toolbar
-	 * @return
-	 */
-	@Override
-	public ToolItem createItem(final GamaToolbarSimple toolbar) {
-		composite = new Composite(toolbar, SWT.NONE);
-		GridLayoutFactory.fillDefaults().spacing(0, 0).applyTo(composite);
-		normalControl = StatusControl.installOn(composite);
-		normalData = GridDataFactory.fillDefaults().grab(true, true).create();
-		normalControl.setLayoutData(normalData);
-		return toolbar.control(composite, 400);
 	}
 
 	@Override
@@ -73,8 +45,13 @@ public class StatusItem extends GlobalToolbarItem {
 	 */
 	@Override
 	public void setWidth(final int i) {
-		normalData.widthHint = i;
+		StatusControl.getInstance().setWidth(i);
 		super.setWidth(i);
+	}
+
+	@Override
+	protected Control createInnerControl(final Composite composite) {
+		return StatusControl.installOn(composite);
 	}
 
 }

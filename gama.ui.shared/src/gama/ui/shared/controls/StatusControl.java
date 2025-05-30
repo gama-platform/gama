@@ -19,8 +19,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -133,11 +131,11 @@ public class StatusControl implements IStatusControl {
 	 * @return the control
 	 */
 	protected Control createControl(final Composite parent) {
-		final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
-		GridLayoutFactory.fillDefaults().spacing(0, 0).applyTo(compo);
+		// final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
+		// GridLayoutFactory.fillDefaults().spacing(0, 0).applyTo(compo);
 		inactiveColor = ThemeHelper.isDark() ? GamaColors.get(GamaColors.get(parent.getBackground()).lighter())
 				: GamaColors.get(GamaColors.get(parent.getBackground()).darker());
-		label = FlatButton.label(compo, inactiveColor, "", WIDTH).addMenuSign();
+		label = FlatButton.label(parent, inactiveColor, "", WIDTH).addMenuSign();
 		label.setEnabled(false);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(label);
 		historyPopup = new StatusHistoryPopUpMenu(this);
@@ -200,7 +198,7 @@ public class StatusControl implements IStatusControl {
 			public void sleeping(final IJobChangeEvent event) {}
 		});
 
-		return compo;
+		return label;
 	}
 
 	@Override

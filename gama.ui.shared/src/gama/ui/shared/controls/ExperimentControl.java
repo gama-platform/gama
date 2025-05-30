@@ -249,4 +249,9 @@ public class ExperimentControl implements IStatusControl {
 		label.computePreferredSize();
 	}
 
+	/**
+	 * @return
+	 */
+	public static ExperimentControl getInstance() { return INSTANCE; }
+
 }

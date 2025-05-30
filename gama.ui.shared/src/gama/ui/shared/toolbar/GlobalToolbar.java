@@ -18,8 +18,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolItem;
@@ -40,7 +40,7 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 /**
  * The Class GlobalToolbar.
  */
-public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStateListener {
+public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStateListener, ControlListener {
 
 	/** The Constant INSTANCE. */
 	static private final GlobalToolbar INSTANCE = new GlobalToolbar();
@@ -60,10 +60,10 @@ public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStat
 	GamaToolbarSimple toolbar;
 
 	/** The experiment item. */
-	ExperimentItem experimentItem;
+	ExperimentItem experimentStatusItem;
 
-	/** The speed item. */
-	SpeedItem speedItem;
+	/** The experiment control item. */
+	ExperimentControlsItem experimentControlsItem;
 
 	/** The item. */
 	MemoryItem memoryItem;
@@ -76,24 +76,6 @@ public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStat
 
 	/** The space item. */
 	ToolItem spaceItem;
-
-	/** The stop item. */
-	StopItem stopItem;
-
-	/** The reload item. */
-	ReloadItem reloadItem;
-
-	/** The sync item. */
-	SyncItem syncItem;
-
-	/** The step item. */
-	StepItem stepItem;
-
-	/** The run item. */
-	RunItem runItem;
-
-	/** The back item. */
-	BackItem backItem;
 
 	/** The items. */
 	final List<GlobalToolbarItem> items = new ArrayList<>();
@@ -119,15 +101,9 @@ public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStat
 		// From left to right
 		items.add(perspectiveItem = new PerspectiveItem(toolbar));
 		toolbar.space(24);
-		items.add(experimentItem = new ExperimentItem(toolbar));
+		items.add(experimentStatusItem = new ExperimentItem(toolbar));
 		toolbar.space(24);
-		items.add(backItem = new BackItem(toolbar));
-		items.add(runItem = new RunItem(toolbar));
-		items.add(stepItem = new StepItem(toolbar));
-		items.add(speedItem = new SpeedItem(toolbar));
-		items.add(syncItem = new SyncItem(toolbar));
-		items.add(reloadItem = new ReloadItem(toolbar));
-		items.add(stopItem = new StopItem(toolbar));
+		items.add(experimentControlsItem = new ExperimentControlsItem(toolbar));
 		spaceItem = toolbar.space(1);
 		items.add(statusItem = new StatusItem(toolbar));
 		toolbar.space(24);
@@ -135,42 +111,7 @@ public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStat
 		items.add(memoryItem = new MemoryItem(toolbar));
 
 		parent.requestLayout();
-		parent.addControlListener(new ControlAdapter() {
-
-			@Override
-			public void controlResized(final ControlEvent e) {
-				if (toolbar.isDisposed()) return;
-				toolbar.setLayoutDeferred(true);
-				try {
-					int availableWidth = toolbar.getParent().getSize().x;
-					DEBUG.OUT("Available width is " + availableWidth);
-					for (GlobalToolbarItem item : items) { availableWidth -= item.getDefaultWidth(); }
-					// Remove the spacers
-					availableWidth -= 72;
-					// Remove the spacing between items + spacers
-					availableWidth -= (items.size() + 3) * 5;
-					if (availableWidth < 0) {
-						int widthToRemove = -availableWidth / 2;
-						if (widthToRemove >= 300) { widthToRemove = 300; }
-						statusItem.setWidth(statusItem.getDefaultWidth() - widthToRemove);
-						experimentItem.setWidth(experimentItem.getDefaultWidth() - widthToRemove);
-					} else {
-						statusItem.setWidth(statusItem.getDefaultWidth());
-						experimentItem.setWidth(experimentItem.getDefaultWidth());
-					}
-					// for (ToolItem item : toolbar.getItems()) {
-					// DEBUG.OUT(item.getToolTipText() + " -- Item width is " + item.getWidth());
-					// availableWidth -= item.getWidth() + 20;
-					// }
-					spaceItem.setWidth(availableWidth);
-				} finally {
-					toolbar.setLayoutDeferred(false);
-					parent.requestLayout();
-				}
-
-			}
-
-		});
+		parent.getShell().addControlListener(this);
 	}
 
 	/**
@@ -262,6 +203,53 @@ public class GlobalToolbar extends PerspectiveAdapter implements IExperimentStat
 		previousState = state;
 		DEBUG.OUT("Updating the state of the Experiment to " + state);
 		updateStates();
+	}
+
+	@Override
+	public void controlMoved(final ControlEvent e) {}
+
+	/** The resizing. */
+	volatile boolean resizing = false;
+
+	@Override
+	public void controlResized(final ControlEvent e) {
+
+		if (toolbar.isDisposed()) return;
+		// toolbar.setLayoutDeferred(true);
+		// WorkbenchHelper.runInUI("Resize toolbar", 0, ee -> {
+		try {
+			// resizing = true;
+			// toolbar.pack();
+			// int availableWidth = toolbar.getParent().getSize().x;
+
+			// for (GlobalToolbarItem item : items) { availableWidth -= item.getDefaultWidth(); }
+			// Remove the spacers
+			// availableWidth -= 72;
+			// Remove the spacing between items + spacers
+			// availableWidth -= (items.size() + 3) * 5;
+			// DEBUG.OUT("Available width is " + availableWidth);
+			// if (availableWidth < 0) {
+			// int widthToRemove = -availableWidth / 2;
+			// if (widthToRemove >= 300) { widthToRemove = 300; }
+			// statusItem.setWidth(statusItem.getDefaultWidth() - widthToRemove);
+			// experimentStatusItem.setWidth(experimentStatusItem.getDefaultWidth() - widthToRemove);
+			// } else {
+			// statusItem.setWidth(statusItem.getDefaultWidth());
+			// experimentStatusItem.setWidth(experimentStatusItem.getDefaultWidth());
+			// }
+			// for (ToolItem item : toolbar.getItems()) {
+			// DEBUG.OUT(item.getToolTipText() + " -- Item width is " + item.getWidth());
+			// availableWidth -= item.getWidth() + 20;
+			// }
+			// spaceItem.setWidth(availableWidth);
+		} finally {
+			// toolbar.setLayoutDeferred(false);
+			toolbar.getParent().requestLayout();
+			// resizing = false;
+		}
+
+		// }
+		// );
 	}
 
 }

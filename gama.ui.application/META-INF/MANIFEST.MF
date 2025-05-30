@@ -24,7 +24,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.css.core,
- org.osgi.service.event
+ org.osgi.service.event,
+ org.eclipse.ui.views;bundle-version="3.12.500"
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2
