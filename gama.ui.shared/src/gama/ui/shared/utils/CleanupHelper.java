@@ -107,20 +107,22 @@ public class CleanupHelper {
 				// lock is the opposite of the original value before toggle
 				final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
 				for (MToolBar el : children) {
-					if (!el.getTags().contains("toolbarSeparator")) {
-						// locks the toolbars
-						if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
-							el.getTags().add(IPresentationEngine.NO_MOVE);
-						}
-						if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
-							el.getTags().remove(IPresentationEngine.DRAGGABLE);
-						}
+					// if (!el.getTags().contains("toolbarSeparator")) {
+					// locks the toolbars
+					if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
+						el.getTags().add(IPresentationEngine.NO_MOVE);
 					}
+					if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
+						el.getTags().remove(IPresentationEngine.DRAGGABLE);
+					}
+					// }
 					// Force the render, and then the call of frameMeIfPossible.
 					el.setToBeRendered(false);
 					el.setToBeRendered(true);
 				}
+				coolBarManager.setContextMenuManager(null);
 			}
+
 		}
 	}
 
