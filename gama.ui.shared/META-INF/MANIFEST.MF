@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.swt,
  org.eclipse.e4.core.contexts,
  org.eclipse.core.expressions,
  org.eclipse.ui.navigator,
- gama.extension.image
+ gama.extension.image,
+ org.eclipse.e4.ui.workbench
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,
  gama.ui.shared.bindings,

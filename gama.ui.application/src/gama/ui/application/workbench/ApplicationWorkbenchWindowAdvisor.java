@@ -114,6 +114,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		configurer.setShowProgressIndicator(true);
 		configurer.setShowPerspectiveBar(false);
 		configurer.setTitle(GAMA.VERSION);
+
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
 		ThemeHelper.applyCSSWhenWindowOpens();
 		Resource.setNonDisposeHandler(null);
@@ -145,6 +146,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 	@Override
 	public void postWindowOpen() {
 		PerspectiveHelper.cleanPerspectives();
+
 		// GAMA.getGui().openWelcomePage(true);
 		// GAMA.updateExperimentState(null, IExperimentStateListener.STATE_NONE);
 	}

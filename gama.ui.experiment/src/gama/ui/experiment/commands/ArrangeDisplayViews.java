@@ -150,7 +150,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		final MPartStack displayStack = getDisplaysPlaceholder();
 		if (displayStack == null) return;
 		final MElementContainer<?> root = displayStack.getParent();
-		displayStack.getChildren().addAll(holders);
+		// displayStack.getChildren().addAll(holders);
 		process(root, child, holders);
 		showDisplays(root, holders);
 	}

@@ -18,8 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolBar;
+import org.eclipse.e4.ui.workbench.IPresentationEngine;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -66,6 +71,10 @@ public class CleanupHelper {
 		RearrangeMenus.run();
 		ForceMaximizeRestoration.run();
 		RemoveActivities.run();
+		LockToolbars.run();
+
+		// return null;
+		// }
 		// Job prefs = new Job("Preloading preferences") {
 		//
 		// @Override
@@ -78,6 +87,41 @@ public class CleanupHelper {
 		// prefs.setPriority(Job.DECORATE);
 		// prefs.schedule();
 
+	}
+
+	/**
+	 * The Class LockToolbars.
+	 */
+	static class LockToolbars {
+
+		/**
+		 * Run.
+		 */
+		static void run() {
+			WorkbenchWindow window = WorkbenchHelper.getWindow();
+			MTrimmedWindow winModel = window.getService(MTrimmedWindow.class);
+			EModelService modelService = window.getService(EModelService.class);
+
+			ICoolBarManager coolBarManager = window.getCoolBarManager2();
+			if (coolBarManager != null) {
+				// lock is the opposite of the original value before toggle
+				final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
+				for (MToolBar el : children) {
+					if (!el.getTags().contains("toolbarSeparator")) {
+						// locks the toolbars
+						if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
+							el.getTags().add(IPresentationEngine.NO_MOVE);
+						}
+						if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
+							el.getTags().remove(IPresentationEngine.DRAGGABLE);
+						}
+					}
+					// Force the render, and then the call of frameMeIfPossible.
+					el.setToBeRendered(false);
+					el.setToBeRendered(true);
+				}
+			}
+		}
 	}
 
 	/**
