@@ -62,6 +62,9 @@ public class PerspectiveHelper {
 	/** The current perspective id. */
 	public static String currentPerspectiveId = PERSPECTIVE_MODELING_ID;
 
+	/** To indicate the next perspective when it is changing **/
+	public static String nextPerspectiveId = null;
+
 	/** The current simulation perspective. */
 	public static volatile SimulationPerspectiveDescriptor currentSimulationPerspective = null;
 
@@ -138,11 +141,30 @@ public class PerspectiveHelper {
 	public static boolean isModelingPerspective() { return PERSPECTIVE_MODELING_ID.equals(currentPerspectiveId); }
 
 	/**
+	 * Checks if is next or current modeling perspective.
+	 *
+	 * @return true, if is next or current modeling perspective
+	 */
+	public static boolean isNextOrCurrentModelingPerspective() {
+		return PERSPECTIVE_MODELING_ID.equals(currentPerspectiveId)
+				|| PERSPECTIVE_MODELING_ID.equals(nextPerspectiveId);
+	}
+
+	/**
 	 * Checks if is simulation perspective.
 	 *
 	 * @return true, if is simulation perspective
 	 */
 	public static boolean isSimulationPerspective() { return isSimulationPerspective(currentPerspectiveId); }
+
+	/**
+	 * Checks if is next or current simulation perspective.
+	 *
+	 * @return true, if is next or current simulation perspective
+	 */
+	public static boolean isNextOrCurrentSimulationPerspective() {
+		return isSimulationPerspective(currentPerspectiveId) || isSimulationPerspective(nextPerspectiveId);
+	}
 
 	/**
 	 * Checks if is simulation perspective.
@@ -152,7 +174,7 @@ public class PerspectiveHelper {
 	 * @return true, if is simulation perspective
 	 */
 	private static boolean isSimulationPerspective(final String perspectiveId) {
-		return perspectiveId.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
+		return perspectiveId != null && perspectiveId.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
 	}
 
 	/**
@@ -208,6 +230,7 @@ public class PerspectiveHelper {
 	 */
 	public static final boolean switchToSimulationPerspective() {
 		if (currentSimulationPerspective == null) return false;
+		nextPerspectiveId = currentSimulationPerspective.getId();
 		IWorkbenchPage activePage = null;
 		try {
 			activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -238,6 +261,7 @@ public class PerspectiveHelper {
 			applyActiveEditor(page);
 		});
 		currentPerspectiveId = currentSimulationPerspective.getId();
+		nextPerspectiveId = null;
 		return true;
 	}
 
@@ -320,6 +344,7 @@ public class PerspectiveHelper {
 			final boolean withAutoSave, final boolean memorizeEditors) {
 		if (perspectiveId == null) return false;
 		if (perspectiveId.equals(currentPerspectiveId)) return true;
+		nextPerspectiveId = perspectiveId;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		// } catch (final Exception e) {
 		// try {
@@ -346,7 +371,6 @@ public class PerspectiveHelper {
 			// if (displays.size() > 0) { page.activate((IWorkbenchPart) displays.get(0)); }
 			// }
 			try {
-
 				page.setPerspective(descriptor);
 			} catch (final NullPointerException e) {
 				DEBUG.ERR("NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
@@ -360,6 +384,7 @@ public class PerspectiveHelper {
 			}
 
 			currentPerspectiveId = perspectiveId;
+			nextPerspectiveId = null;
 			if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
 				// Early activation or deactivation of editors based on the global preference
 				page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
@@ -580,6 +605,15 @@ public class PerspectiveHelper {
 			currentSimulationPerspective = null;
 		}
 
+	}
+
+	/**
+	 * Gets the current simulation perspective.
+	 *
+	 * @return the current simulation perspective
+	 */
+	public static SimulationPerspectiveDescriptor getCurrentSimulationPerspective() {
+		return currentSimulationPerspective;
 	}
 
 	/**

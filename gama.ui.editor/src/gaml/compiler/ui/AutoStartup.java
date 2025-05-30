@@ -24,7 +24,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
-import gama.ui.shared.access.HeapControl;
+import gama.ui.shared.toolbar.GlobalToolbar;
 
 /**
  * The Class AutoStartup.
@@ -77,7 +77,7 @@ public class AutoStartup implements IStartup {
 		});
 		// GamlRuntimeModule.staticInitialize();
 		// GamlEditorBindings.install();
-		HeapControl.install();
+		GlobalToolbar.install();
 		DEBUG.OUT("Startup of editor plugin finished");
 	}
 

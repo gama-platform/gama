@@ -82,7 +82,7 @@ public class ParameterExpandBar extends Composite {
 	private final ItemList underlyingObjects;
 
 	/** The band height. */
-	int bandHeight = ParameterExpandItem.CHEVRON_SIZE;
+	int bandHeight = ParameterExpandItem.HEADER_HEIGHT;
 
 	/** The ignore mouse up. */
 	private boolean ignoreMouseUp;
@@ -283,7 +283,7 @@ public class ParameterExpandBar extends Composite {
 		final var gc = new GC(this);
 		final var metrics = gc.getFontMetrics();
 		gc.dispose();
-		bandHeight = Math.max(ParameterExpandItem.CHEVRON_SIZE, metrics.getHeight());
+		bandHeight = Math.max(ParameterExpandItem.HEADER_HEIGHT, metrics.getHeight());
 	}
 
 	/**

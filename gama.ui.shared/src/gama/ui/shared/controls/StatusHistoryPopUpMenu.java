@@ -120,7 +120,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	final Listener hide = event -> hide();
 
 	/** The provider. */
-	private final StatusControlContribution status;
+	private final StatusControl status;
 
 	/**
 	 * Instantiates a new popup 2.
@@ -133,7 +133,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	/*
 	 *
 	 */
-	public StatusHistoryPopUpMenu(final StatusControlContribution status) {
+	public StatusHistoryPopUpMenu(final StatusControl status) {
 		super(WorkbenchHelper.getShell(), PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
 		this.status = status;
 		final Shell shell = status.getControllingShell();

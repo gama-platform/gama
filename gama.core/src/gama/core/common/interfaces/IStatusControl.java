@@ -35,4 +35,12 @@ public interface IStatusControl {
 	 */
 	default void updateWith(final IStatusMessage m) {}
 
+	/**
+	 * Sets the width.
+	 *
+	 * @param i
+	 *            the new width
+	 */
+	default void setWidth(final int i) {}
+
 }

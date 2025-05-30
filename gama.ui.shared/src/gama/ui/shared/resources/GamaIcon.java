@@ -203,8 +203,8 @@ public class GamaIcon implements IGamaIcons {
 		url = computeURL(code);
 		DEBUG.OUT(" with URL " + url);
 		disabledUrl = computeURL(code + DISABLED_SUFFIX);
-		descriptor = ImageDescriptor.createFromURL(url);
-		disabledDescriptor = ImageDescriptor.createFromURL(disabledUrl);
+		descriptor = new SimplifiedURLImageDescriptor(url);
+		disabledDescriptor = new SimplifiedURLImageDescriptor(disabledUrl);
 	}
 
 	/**

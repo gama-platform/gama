@@ -27,7 +27,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
-import gama.ui.shared.access.ModelsFinder;
+import gama.ui.shared.utils.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
 import gama.ui.shared.utils.WorkbenchHelper;
 

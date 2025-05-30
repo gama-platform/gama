@@ -64,23 +64,6 @@ public class GamaToolbarSimple extends ToolBar {
 	}
 
 	/**
-	 * Menu.
-	 *
-	 * @param image
-	 *            the image
-	 * @param text
-	 *            the text
-	 * @param tip
-	 *            the tip
-	 * @param listener
-	 *            the listener
-	 * @return the tool item
-	 */
-	public ToolItem menu(final String image, final String text, final String tip, final Selector listener) {
-		return create(image, text, tip, listener, SWT.DROP_DOWN);
-	}
-
-	/**
 	 * Control.
 	 *
 	 * @param c
@@ -111,6 +94,15 @@ public class GamaToolbarSimple extends ToolBar {
 		Label label = new Label(this, SWT.NONE);
 		GamaColors.setBackground(this.getBackground(), label);
 		return control(label, width);
+	}
+
+	/**
+	 * @return
+	 */
+	public ToolItem stretch() {
+		ToolItem stretch = new ToolItem(this, SWT.NONE);
+		stretch.setWidth(SWT.SEPARATOR_FILL);
+		return stretch;
 	}
 
 	/**

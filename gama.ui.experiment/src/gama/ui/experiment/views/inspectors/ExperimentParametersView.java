@@ -58,350 +58,379 @@ import gama.ui.shared.views.toolbar.Selector;
  */
 public class ExperimentParametersView extends AttributesEditorsView<String> implements IGamaView.Parameters {
 
-	static {
-		DEBUG.OFF();
+    static {
+	DEBUG.OFF();
+    }
+
+    /**
+     * Instantiates a new experiment parameters view.
+     *
+     * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+     * @date 14 août 2023
+     */
+    public ExperimentParametersView() {
+	GAMA.registerTopLevelAgentChangeListener(this);
+    }
+
+    /** The Constant MONITOR_CATEGORY. */
+    private static final String MONITOR_SECTION_NAME = "Monitors";
+
+    /** The Constant ID. */
+    public static final String ID = IGui.PARAMETER_VIEW_ID;
+
+    /** The Constant REVERT. */
+    public final static int REVERT = 0;
+
+    /**
+     * 'agent' represents the "real" listening agent, which can be an experiment
+     * or a simulation
+     */
+    ITopLevelAgent agent;
+
+    /** The monitor section. */
+    ParameterExpandItem monitorSection;
+
+    /** The status. */
+    ToolItem status;
+
+    @Override
+    public void ownCreatePartControl(final Composite view) {
+	final Composite intermediate = new Composite(view, SWT.NONE);
+	final GridLayout parentLayout = new GridLayout(1, false);
+	parentLayout.marginWidth = 0;
+	parentLayout.marginHeight = 0;
+	parentLayout.verticalSpacing = 5;
+	intermediate.setLayout(parentLayout);
+	setParentComposite(intermediate);
+    }
+
+    /**
+     * Gets the editors list.
+     *
+     * @return the editors list
+     */
+    ExperimentsParametersList getEditorsList() {
+	return (ExperimentsParametersList) editors;
+    }
+
+    @Override
+    public List<String> getItems() {
+	if (!(editors instanceof ExperimentsParametersList eds)) {
+	    return Collections.EMPTY_LIST;
 	}
+	return eds.getItems();
+    }
 
-	/**
-	 * Instantiates a new experiment parameters view.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 14 août 2023
-	 */
-	public ExperimentParametersView() {
-		GAMA.registerTopLevelAgentChangeListener(this);
-	}
-
-	/** The Constant MONITOR_CATEGORY. */
-	private static final String MONITOR_SECTION_NAME = "Monitors";
-
-	/** The Constant ID. */
-	public static final String ID = IGui.PARAMETER_VIEW_ID;
-
-	/** The Constant REVERT. */
-	public final static int REVERT = 0;
-
-	/** 'agent' represents the "real" listening agent, which can be an experiment or a simulation */
-	ITopLevelAgent agent;
-
-	/** The monitor section. */
-	ParameterExpandItem monitorSection;
-
-	/** The status. */
-	ToolItem status;
-
-	@Override
-	public void ownCreatePartControl(final Composite view) {
-		final Composite intermediate = new Composite(view, SWT.NONE);
-		final GridLayout parentLayout = new GridLayout(1, false);
-		parentLayout.marginWidth = 0;
-		parentLayout.marginHeight = 0;
-		parentLayout.verticalSpacing = 5;
-		intermediate.setLayout(parentLayout);
-		setParentComposite(intermediate);
-	}
-
-	/**
-	 * Gets the editors list.
-	 *
-	 * @return the editors list
-	 */
-	ExperimentsParametersList getEditorsList() { return (ExperimentsParametersList) editors; }
-
-	@Override
-	public List<String> getItems() {
-		if (!(editors instanceof ExperimentsParametersList eds)) return Collections.EMPTY_LIST;
-		return eds.getItems();
-	}
-
-	/**
-	 * Display items.
-	 */
-	@Override
-	public void displayItems() {
-		WorkbenchHelper.run(() -> {
-			super.displayItems();
-			createMonitorSectionIfNeeded(false);
-			final Map<MonitorOutput, MonitorDisplayer> monitors = getEditorsList().getMonitors();
-			monitors.forEach((mo, md) -> {
-				md.createControls((EditorsGroup) monitorSection.getControl());
-				md.setCloser(() -> deleteMonitor(md));
-			});
-		});
-		updateToolbar();
-	}
-
-	/**
-	 * Update toolbar.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 13 août 2023
-	 */
-	private void updateToolbar() {
-		ITopLevelAgent a = GAMA.getCurrentTopLevelAgent();
-		if (a != null) {
-			WorkbenchHelper.asyncRun(() -> {
-				if (toolbar != null && !toolbar.isDisposed()) {
-					toolbar.status(GamaIcon.ofColor(a.getColor()).getCode(),
-							"Parameters for " + a.getFamilyName() + " " + a.getName());
-				}
-			});
-		} else {
-			WorkbenchHelper.asyncRun(
-					() -> { if (toolbar != null && !toolbar.isDisposed()) { toolbar.wipe(SWT.LEFT, true); } });
-		}
-	}
-
-	/**
-	 * Delete monitor section if empty.
-	 */
-	private void deleteMonitorSectionIfEmpty() {
-		if (monitorSection == null || getEditorsList().hasMonitors()
-				|| getEditorsList().getItems().contains(MONITOR_SECTION_NAME))
-			return;
-		monitorSection.dispose();
-		monitorSection = null;
-	}
-
-	/**
-	 * Creates the monitor section if needed.
-	 *
-	 * @param aMonitorIsAboutToBeCreated
-	 *            the a monitor is about to be created
-	 */
-	private void createMonitorSectionIfNeeded(final boolean aMonitorIsAboutToBeCreated) {
-		if (monitorSection != null && monitorSection.isDisposed()) { monitorSection = null; }
-		if (monitorSection != null || !GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
-				|| !aMonitorIsAboutToBeCreated && !getEditorsList().hasMonitors())
-			return;
-		final EditorsGroup compo = (EditorsGroup) createItemContentsFor(MONITOR_SECTION_NAME);
-		Composite parent = getParentComposite();
-		boolean isExpanded = editors.getItemExpanded(MONITOR_SECTION_NAME);
-		GamaUIColor color = GamaColors.get(editors.getItemDisplayColor(MONITOR_SECTION_NAME));
-
-		monitorSection =
-				createItem(parent, MONITOR_SECTION_NAME, MONITOR_SECTION_NAME, compo, getViewer(), isExpanded, color);
-	}
-
-	/**
-	 * Creates the new monitor.
-	 */
-	private void createNewMonitor() {
-		createMonitorSectionIfNeeded(true);
-		IScope scope = GAMA.getRuntimeScope();
-		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
-		MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
+    /**
+     * Display items.
+     */
+    @Override
+    public void displayItems() {
+	WorkbenchHelper.run(() -> {
+	    super.displayItems();
+	    createMonitorSectionIfNeeded(false);
+	    final Map<MonitorOutput, MonitorDisplayer> monitors = getEditorsList().getMonitors();
+	    monitors.forEach((mo, md) -> {
 		md.createControls((EditorsGroup) monitorSection.getControl());
-		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		md.setCloser(() -> deleteMonitor(md));
-	}
+	    });
+	});
+	updateToolbar();
+    }
 
-	/**
-	 * Delete monitor.
-	 *
-	 * @param md
-	 *            the md
-	 */
-	private void deleteMonitor(final MonitorDisplayer md) {
-		MonitorOutput mo = md.getStatement();
-		mo.close();
-		getEditorsList().removeMonitor(mo);
-		md.dispose();
-		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		deleteMonitorSectionIfEmpty();
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	protected Composite createItemContentsFor(final String cat) {
-		final Map<String, IParameterEditor<?>> parameters = editors.getSections().get(cat);
-		createViewer(getParentComposite());
-		final EditorsGroup compo = new EditorsGroup(getViewer());
-		if (parameters != null) {
-			final List<IParameterEditor> list = new ArrayList<>(parameters.values());
-			Collections.sort(list);
-			for (final IParameterEditor<?> gpParam : list) {
-				gpParam.createControls(compo);
-				if (!editors.isEnabled(gpParam)) { gpParam.setActive(false); }
-			}
+    /**
+     * Update toolbar.
+     *
+     * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+     * @date 13 août 2023
+     */
+    private void updateToolbar() {
+	ITopLevelAgent a = GAMA.getCurrentTopLevelAgent();
+	if (a != null) {
+	    WorkbenchHelper.asyncRun(() -> {
+		if (toolbar != null && !toolbar.isDisposed()) {
+		    toolbar.status(GamaIcon.ofColor(a.getColor()).getCode(),
+			    "Parameters for " + a.getFamilyName() + " " + a.getName());
 		}
+	    });
+	} else {
+	    WorkbenchHelper.asyncRun(() -> {
+		if (toolbar != null && !toolbar.isDisposed()) {
+		    toolbar.wipe(SWT.LEFT, true);
+		}
+	    });
+	}
+    }
 
-		return compo;
+    /**
+     * Delete monitor section if empty.
+     */
+    private void deleteMonitorSectionIfEmpty() {
+	if (monitorSection == null || getEditorsList().hasMonitors()
+		|| getEditorsList().getItems().contains(MONITOR_SECTION_NAME)) {
+	    return;
+	}
+	monitorSection.dispose();
+	monitorSection = null;
+    }
+
+    /**
+     * Creates the monitor section if needed.
+     *
+     * @param aMonitorIsAboutToBeCreated
+     *            the a monitor is about to be created
+     */
+    private void createMonitorSectionIfNeeded(final boolean aMonitorIsAboutToBeCreated) {
+	if (monitorSection != null && monitorSection.isDisposed()) {
+	    monitorSection = null;
+	}
+	if (monitorSection != null || !GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
+		|| !aMonitorIsAboutToBeCreated && !getEditorsList().hasMonitors()) {
+	    return;
+	}
+	final EditorsGroup compo = (EditorsGroup) createItemContentsFor(MONITOR_SECTION_NAME);
+	Composite parent = getParentComposite();
+	boolean isExpanded = editors.getItemExpanded(MONITOR_SECTION_NAME);
+	GamaUIColor color = GamaColors.get(editors.getItemDisplayColor(MONITOR_SECTION_NAME));
+
+	monitorSection = createItem(parent, MONITOR_SECTION_NAME, MONITOR_SECTION_NAME, compo, getViewer(), isExpanded,
+		color);
+    }
+
+    /**
+     * Creates the new monitor.
+     */
+    private void createNewMonitor() {
+	createMonitorSectionIfNeeded(true);
+	IScope scope = GAMA.getRuntimeScope();
+	MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
+	MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
+	md.createControls((EditorsGroup) monitorSection.getControl());
+	monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
+	md.setCloser(() -> deleteMonitor(md));
+    }
+
+    /**
+     * Delete monitor.
+     *
+     * @param md
+     *            the md
+     */
+    private void deleteMonitor(final MonitorDisplayer md) {
+	MonitorOutput mo = md.getStatement();
+	mo.close();
+	getEditorsList().removeMonitor(mo);
+	md.dispose();
+	monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
+	deleteMonitorSectionIfEmpty();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Composite createItemContentsFor(final String cat) {
+	final Map<String, IParameterEditor<?>> parameters = editors.getSections().get(cat);
+	createViewer(getParentComposite());
+	final EditorsGroup compo = new EditorsGroup(getViewer());
+	if (parameters != null) {
+	    final List<IParameterEditor> list = new ArrayList<>(parameters.values());
+	    Collections.sort(list);
+	    for (final IParameterEditor<?> gpParam : list) {
+		gpParam.createControls(compo);
+		if (!editors.isEnabled(gpParam)) {
+		    gpParam.setActive(false);
+		}
+	    }
 	}
 
-	/**
-	 * Sets the listening agent.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param experiment
-	 *            the experiment
-	 * @param previous
-	 *            the previous
-	 * @param current
-	 *            the current
-	 * @date 14 août 2023
-	 */
-	@Override
-	public void topLevelAgentChanged(final ITopLevelAgent newTopLevelAgent) {
-		if (newTopLevelAgent == null || newTopLevelAgent.isPlatform()) {
-			agent = null;
-			reset();
-			updateToolbar();
-			return;
-		}
+	return compo;
+    }
 
-		if (newTopLevelAgent.isSimulation()) {
-			SimulationAgent newSimulation = (SimulationAgent) newTopLevelAgent;
-			if (agent == null || agent.isPlatform() || !agent.getExperiment().getSpecies().isBatch()) {
-				// Platform ==> Simulation
-				reset();
-				agent = newSimulation;
-				editors = new ExperimentsParametersList(newSimulation);
-				getEditorsList().setItemValues(newSimulation.getExternalInits());
-				DEBUG.OUT("Displaying simulation items");
-				displayItems();
-				return;
-			}
-			if (agent.isSimulation()) {
-				// Simulation ==> Simulation
-				saveParameterValuesForCurrentAgent();
-				agent = newSimulation;
-				getEditorsList().setItemValues(newSimulation.getExternalInits());
-				getEditorsList().updateItemValues(false);
-				updateToolbar();
-				return;
-			}
-			if (agent.isExperiment()) {
-				// Experiment ==> Simulation
-				agent = newSimulation;
-				getEditorsList().updateItemValues(false);
-				if (getEditorsList().hasMonitors()) { createMonitorSectionIfNeeded(false); }
-				updateToolbar();
-				return;
-			}
-		}
-
-		if (newTopLevelAgent.isExperiment()) {
-			IExperimentAgent newExperiment = (IExperimentAgent) newTopLevelAgent;
-			if (agent == newExperiment || !newExperiment.hasParametersOrUserCommands()) return;
-			if (monitorSection != null) {
-				WorkbenchHelper.run(() -> monitorSection.dispose());
-				monitorSection = null;
-			}
-			if (agent != null && agent.isSimulation()) {
-				// Simulation ==> Experiment
-				saveParameterValuesForCurrentAgent();
-				agent = newExperiment;
-				getEditorsList().updateItemValues(false);
-				updateToolbar();
-				return;
-			}
-			// Platform/Experiment ==> Experiment
-			agent = newExperiment;
-			reset();
-			editors = new ExperimentsParametersList(newExperiment);
-			final String expInfo = "Model " + newExperiment.getModel().getDescription().getTitle() + " / "
-					+ StringUtils.capitalize(newExperiment.getSpecies().getDescription().getTitle());
-			this.setPartName(expInfo);
-			DEBUG.OUT("Displaying experiment items");
-			displayItems();
-		}
-
+    /**
+     * Sets the listening agent.
+     *
+     * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+     * @param experiment
+     *            the experiment
+     * @param previous
+     *            the previous
+     * @param current
+     *            the current
+     * @date 14 août 2023
+     */
+    @Override
+    public void topLevelAgentChanged(final ITopLevelAgent newTopLevelAgent) {
+	if (newTopLevelAgent == null || newTopLevelAgent.isPlatform()) {
+	    agent = null;
+	    reset();
+	    updateToolbar();
+	    return;
 	}
 
-	/**
-	 * Save parameter values for current simulation.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 12 août 2023
-	 */
-	private void saveParameterValuesForCurrentAgent() {
-		if (!(agent instanceof SimulationAgent sim)) return;
-		sim.setExternalInits(getEditorsList().getItemValues());
-		// DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
+	if (newTopLevelAgent.isSimulation()) {
+	    SimulationAgent newSimulation = (SimulationAgent) newTopLevelAgent;
+	    if (agent == null || agent.isPlatform() || !agent.getExperiment().getSpecies().isBatch()) {
+		// Platform ==> Simulation
+		reset();
+		agent = newSimulation;
+		editors = new ExperimentsParametersList(newSimulation);
+		getEditorsList().setItemValues(newSimulation.getExternalInits());
+		DEBUG.OUT("Displaying simulation items");
+		displayItems();
+		return;
+	    }
+	    if (agent.isSimulation()) {
+		// Simulation ==> Simulation
+		saveParameterValuesForCurrentAgent();
+		agent = newSimulation;
+		getEditorsList().setItemValues(newSimulation.getExternalInits());
+		getEditorsList().updateItemValues(false);
+		updateToolbar();
+		return;
+	    }
+	    if (agent.isExperiment()) {
+		// Experiment ==> Simulation
+		agent = newSimulation;
+		getEditorsList().updateItemValues(false);
+		if (getEditorsList().hasMonitors()) {
+		    createMonitorSectionIfNeeded(false);
+		}
+		updateToolbar();
+		return;
+	    }
 	}
 
-	@Override
-	public void createToolItems(final GamaToolbar2 tb) {
-		super.createToolItems(tb);
-		GridData data = (GridData) tb.getToolbar(SWT.LEFT).getLayoutData();
-		data.grabExcessHorizontalSpace = true;
-		data.horizontalAlignment = SWT.FILL;
-		status = toolbar.button(GamaColors.get(toolbar.getBackground()), "", (Selector) null, SWT.LEFT);
+	if (newTopLevelAgent.isExperiment()) {
+	    IExperimentAgent newExperiment = (IExperimentAgent) newTopLevelAgent;
+	    if (agent == newExperiment || !newExperiment.hasParametersOrUserCommands()) {
+		return;
+	    }
+	    if (monitorSection != null) {
+		WorkbenchHelper.run(() -> monitorSection.dispose());
+		monitorSection = null;
+	    }
+	    if (agent != null && agent.isSimulation()) {
+		// Simulation ==> Experiment
+		saveParameterValuesForCurrentAgent();
+		agent = newExperiment;
+		getEditorsList().updateItemValues(false);
+		updateToolbar();
+		return;
+	    }
+	    // Platform/Experiment ==> Experiment
+	    agent = newExperiment;
+	    reset();
+	    editors = new ExperimentsParametersList(newExperiment);
+	    final String expInfo = "Model " + newExperiment.getModel().getDescription().getTitle() + " / "
+		    + StringUtils.capitalize(newExperiment.getSpecies().getDescription().getTitle());
+	    this.setPartName(expInfo);
+	    DEBUG.OUT("Displaying experiment items");
+	    displayItems();
+	}
 
-		if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) return;
-		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
-		tbs.button("editor/local.menu", "More...", "More options", e -> {
+    }
 
-			final GamaMenu menu = new GamaMenu() {
+    /**
+     * Save parameter values for current simulation.
+     *
+     * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+     * @date 12 août 2023
+     */
+    private void saveParameterValuesForCurrentAgent() {
+	if (!(agent instanceof SimulationAgent sim)) {
+	    return;
+	}
+	sim.setExternalInits(getEditorsList().getItemValues());
+	// DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
+    }
 
-				@Override
-				protected void fillMenu() {
-					GamaCommand.build(IGamaIcons.ACTION_REVERT, "Revert parameter values",
-							"Revert parameters to their initial values", e -> {
-								final EditorsList<?> eds = editors;
-								if (eds != null) { eds.revertToDefaultValue(); }
-							}).toItem(mainMenu);
+    @Override
+    public void createToolItems(final GamaToolbar2 tb) {
+	super.createToolItems(tb);
+	GridData data = (GridData) tb.getToolbar(SWT.LEFT).getLayoutData();
+	data.grabExcessHorizontalSpace = true;
+	data.horizontalAlignment = SWT.FILL;
+	status = toolbar.button(GamaColors.get(toolbar.getBackground()), "", (Selector) null, SWT.LEFT);
 
-					if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
-						GamaMenu.separate(mainMenu);
-						GamaCommand.build(IGamaIcons.MENU_ADD_MONITOR, "Add new monitor", "Add new monitor",
-								e -> createNewMonitor()).toItem(mainMenu);
-					}
+	if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) {
+	    return;
+	}
+	GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+	tbs.button("editor/local.menu", "More...", "More options", e -> {
+
+	    final GamaMenu menu = new GamaMenu() {
+
+		@Override
+		protected void fillMenu() {
+		    GamaCommand.build(IGamaIcons.ACTION_REVERT, "Revert parameter values",
+			    "Revert parameters to their initial values", e -> {
+				final EditorsList<?> eds = editors;
+				if (eds != null) {
+				    eds.revertToDefaultValue();
 				}
+			    }).toItem(mainMenu);
 
-			};
-			menu.open(tbs, e, tbs.getSize().y, 0);
-		});
-
-	}
-
-	@Override
-	public boolean addItem(final String object) {
-		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
-				&& ExperimentParametersView.MONITOR_SECTION_NAME.equals(object)) {
-			createMonitorSectionIfNeeded(true);
-			return true;
+		    if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
+			GamaMenu.separate(mainMenu);
+			GamaCommand.build(IGamaIcons.MENU_ADD_MONITOR, "Add new monitor", "Add new monitor",
+				e -> createNewMonitor()).toItem(mainMenu);
+		    }
 		}
-		createItem(getParentComposite(), object, editors.getItemExpanded(object),
-				GamaColors.get(editors.getItemDisplayColor(object)));
-		return true;
+
+	    };
+	    menu.open(tbs, e, tbs.getSize().y, 0);
+	});
+
+    }
+
+    @Override
+    public boolean addItem(final String object) {
+	if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
+		&& ExperimentParametersView.MONITOR_SECTION_NAME.equals(object)) {
+	    createMonitorSectionIfNeeded(true);
+	    return true;
+	}
+	createItem(getParentComposite(), object, editors.getItemExpanded(object),
+		GamaColors.get(editors.getItemDisplayColor(object)));
+	return true;
+    }
+
+    @Override
+    protected ViewUpdateUIJob createUpdateJob() {
+	ExperimentsParametersList editorsList = getEditorsList();
+	if (editorsList != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
+		&& editorsList.hasMonitors()) {
+	    return new ViewUpdateUIJob() {
+
+		@Override
+		protected UpdatePriority jobPriority() {
+		    return UpdatePriority.LOW;
+		}
+
+		@Override
+		public IStatus runInUIThread(final IProgressMonitor monitor) {
+		    if (!isOpen) {
+			return Status.CANCEL_STATUS;
+		    }
+		    if (getViewer() != null && !getViewer().isDisposed()) {
+			((ExperimentsParametersList) editors).updateMonitors(GAMA.isSynchronized());
+		    }
+		    return Status.OK_STATUS;
+		}
+	    };
 	}
 
-	@Override
-	protected ViewUpdateUIJob createUpdateJob() {
-		ExperimentsParametersList editorsList = getEditorsList();
-		if (editorsList != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
-				&& editorsList.hasMonitors())
-			return new ViewUpdateUIJob() {
+	return null;
+    }
 
-				@Override
-				protected UpdatePriority jobPriority() {
-					return UpdatePriority.LOW;
-				}
+    @Override
+    protected boolean needsOutput() {
+	return false;
+    }
 
-				@Override
-				public IStatus runInUIThread(final IProgressMonitor monitor) {
-					if (!isOpen) return Status.CANCEL_STATUS;
-					if (getViewer() != null && !getViewer().isDisposed()) {
-						((ExperimentsParametersList) editors).updateMonitors(GAMA.isSynchronized());
-					}
-					return Status.OK_STATUS;
-				}
-			};
-
-		return null;
-	}
-
-	@Override
-	protected boolean needsOutput() {
-		return false;
-	}
-
-	@Override
-	public void dispose() {
-		GAMA.removeTopLevelAgentChangeListener(this);
-		super.dispose();
-	}
+    @Override
+    public void dispose() {
+	GAMA.removeTopLevelAgentChangeListener(this);
+	super.dispose();
+    }
 
 }

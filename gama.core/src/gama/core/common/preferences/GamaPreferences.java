@@ -736,7 +736,7 @@ public class GamaPreferences {
 		/** The Constant CORE_LINE_WIDTH. */
 		public static final Pref<Double> CORE_LINE_WIDTH = create("pref_display_line_width",
 				"Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations",
-				1d, IType.FLOAT, true).in(NAME, RENDERING);
+				0.5, IType.FLOAT, true).between(0, 1).step(0.01).in(NAME, RENDERING);
 
 		/** The Constant ONLY_VISIBLE_FACES. */
 		public static final Pref<Boolean> ONLY_VISIBLE_FACES =
