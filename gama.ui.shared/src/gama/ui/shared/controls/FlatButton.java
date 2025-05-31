@@ -52,6 +52,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
     /** The Constant innerMargin. */
     private static final int innerMargin = 5, imagePadding = 5;
 
+    private static final String ellipsis = "...";
+
     /** The Constant nullExtent. */
     private static final Point nullExtent = new Point(0, 0);
 
@@ -352,31 +354,39 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	if (text == null) {
 	    return null;
 	}
-	final float parentWidth = getParent().getBounds().width;
-	final float width = preferredWidth;
-	final float textWidth = computeExtentOfText().x;
-	if (parentWidth < width || textWidth > width) {
-	    float imageWidth = 0;
-	    final Image im = getImage();
-	    if (im != null || menu) {
-		if (im != null) {
-		    imageWidth = im.getBounds().width + imagePadding;
+	String text = this.text;
+	GC gc = new GC(this);
+
+	try {
+	    final float width = computeWidthAvailableForText();
+	    final float textWidth = computeExtentOfText(gc, text).x;
+	    if (textWidth > width) {
+		for (int i = text.length() - 1; i > 0; i--) {
+		    text = text.substring(0, i);
+		    if (computeExtentOfText(gc, text + ellipsis).x < width) {
+			break;
+		    }
 		}
-		if (menu) {
-		    imageWidth += menuImageBounds.width + imagePadding * 2;
-		}
+
 	    }
-	    float r;
-	    if (parentWidth < width) {
-		r = (parentWidth - imageWidth) / width;
-	    } else {
-		r = (width - imageWidth) / textWidth;
-	    }
-	    final int nbChars = text.length();
-	    final int newNbChars = Math.max(0, (int) (nbChars * r));
-	    return text.substring(0, newNbChars / 2) + "..." + text.substring(nbChars - newNbChars / 2, nbChars);
+	} finally {
+	    gc.dispose();
 	}
 	return text;
+    }
+
+    private int computeWidthAvailableForText() {
+	final Image im = getImage();
+	int r = 0;
+	if (im != null || menu) {
+	    if (im != null) {
+		r += im.getBounds().width + imagePadding * 2;
+	    }
+	    if (menu) {
+		r += menuImageBounds.x + imagePadding * 2;
+	    }
+	}
+	return preferredWidth - (r + innerMargin * 2);
     }
 
     /**
@@ -441,19 +451,26 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
     }
 
     /**
-     * Compute width of text.
+     * Compute width of text.Does not dispose of the gc !
      *
      * @return the int
      */
-    public Point computeExtentOfText() {
+    public static Point computeExtentOfText(GC gc, String text) {
 	if (text != null) {
-	    final GC gc = new GC(this);
-	    gc.setFont(getFont());
-	    final Point extent = gc.textExtent(text);
-	    gc.dispose();
-	    return extent;
+	    return gc.textExtent(text);
 	}
 	return nullExtent;
+    }
+
+    public Point computeExtentOfText() {
+	GC gc = new GC(this);
+	Point result = nullExtent;
+	try {
+	    result = computeExtentOfText(gc, text);
+	} finally {
+	    gc.dispose();
+	}
+	return result;
     }
 
     /**

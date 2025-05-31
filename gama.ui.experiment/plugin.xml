@@ -511,7 +511,25 @@
          </menu>
       </menuContribution>
       <menuContribution
-            locationURI="toolbar:gama.application.common.toolbar?after=gama.application.goto.modeling">
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="gama.ui.toolbar">
+            <command
+                  commandId="gama.application.goto.modeling"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling.png"
+                  label="Modeling perspective"
+                  style="push"
+                  tooltip="Open modeling perspective">
+               <visibleWhen
+                     checkEnabled="false">
+                  <not>
+                     <reference
+                           definitionId="isInModelingPerspective">
+                     </reference>
+                  </not>
+               </visibleWhen>
+            </command>
             <command
                   commandId="gama.application.goto.simulation"
                   disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation_disabled.png"
@@ -525,12 +543,23 @@
                      <reference
                            definitionId="isInModelingPerspective">
                      </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
                   </and>
                </visibleWhen>
             </command>
             <control
                   class="gama.ui.experiment.controls.ExperimentControlContribution"
                   id="gama.application.status">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                  </and>
+               </visibleWhen>
             </control>
             <command
                   commandId="gama.application.commands.StepBackSimulation"
@@ -553,8 +582,8 @@
             </command>
             <command
                   commandId="gama.application.commands.PlaySimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run.png"
                   disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run.png"
                   label="Run Experiment"
                   style="push"
                   tooltip="Run the currently opened experiment">
@@ -568,7 +597,7 @@
             <command
                   commandId="gama.application.commands.PauseSimulation"
                   disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause_disabled.png"
-                     icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause.png"
+                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause.png"
                   label="Pause Experiment"
                   style="push"
                   tooltip="Pause the currently opened experiment">
@@ -657,6 +686,7 @@
                   </and>
                </visibleWhen>
             </command>
+         </toolbar>
       </menuContribution>
    </extension>
    <extension
@@ -947,9 +977,6 @@
       <definition
             id="isSimulationExisting">
          <and>
-            <reference
-                  definitionId="isInSimulationPerspective">
-            </reference>
             <not>
                <with
                      variable="gama.ui.experiment.SimulationRunningState">

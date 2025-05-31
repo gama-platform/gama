@@ -91,14 +91,14 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
 	GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).applyTo(compo);
 	Label l = new Label(compo, SWT.NONE);
-	l.setText(" ");
-	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(25, 25).applyTo(l);
+	l.setText("");
+	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(8, 25).applyTo(l);
 	label = FlatButton.label(compo, IGamaColors.NEUTRAL, "No experiment running", WIDTH)
 		.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image());
 	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(WIDTH, 25).applyTo(label);
 	l = new Label(compo, SWT.NONE);
-	l.setText(" ");
-	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(25, 25).applyTo(l);
+	l.setText("");
+	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(8, 25).applyTo(l);
 	popup = new SimulationPopupMenu(this);
 	label.addMouseListener(new MouseAdapter() {
 
