@@ -296,7 +296,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	float x = innerMargin;
 	final Image im = getImage();
 	float y_text = 0;
-	final String contents = newText();
+	final String contents = newText(gc);
 	if (contents != null) {
 	    y_text += (getBounds().height - gc.textExtent(contents).y) / 2f;
 	}
@@ -346,31 +346,26 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
     }
 
     /**
-     * New text.
+     * New text. Does not dispose of the gc !
      *
      * @return the string
      */
-    public String newText() {
+    public String newText(GC gc) {
 	if (text == null) {
 	    return null;
 	}
 	String text = this.text;
-	GC gc = new GC(this);
 
-	try {
-	    final float width = computeWidthAvailableForText();
-	    final float textWidth = computeExtentOfText(gc, text).x;
-	    if (textWidth > width) {
-		for (int i = text.length() - 1; i > 0; i--) {
-		    text = text.substring(0, i);
-		    if (computeExtentOfText(gc, text + ellipsis).x < width) {
-			break;
-		    }
+	final float width = computeWidthAvailableForText();
+	final float textWidth = computeExtentOfText(gc, text).x;
+	if (textWidth > width) {
+	    for (int i = text.length() - 1; i > 0; i--) {
+		text = text.substring(0, i);
+		if (computeExtentOfText(gc, text + ellipsis).x < width) {
+		    break;
 		}
-
 	    }
-	} finally {
-	    gc.dispose();
+	    return text + ellipsis;
 	}
 	return text;
     }
@@ -386,7 +381,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		r += menuImageBounds.x + imagePadding * 2;
 	    }
 	}
-	return preferredWidth - (r + innerMargin * 2);
+	return preferredWidth - r;
     }
 
     /**

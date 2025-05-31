@@ -30,55 +30,62 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class ExperimentStateProvider extends AbstractSourceProvider implements IExperimentStateListener {
 
-	/** The Constant SOURCE_NAMES. */
-	final static String[] SOURCE_NAMES = { EXPERIMENT_RUNNING_STATE, EXPERIMENT_TYPE, EXPERIMENT_STEPBACK };
+    /** The Constant SOURCE_NAMES. */
+    final static String[] SOURCE_NAMES = { EXPERIMENT_RUNNING_STATE, EXPERIMENT_TYPE, EXPERIMENT_STEPBACK };
 
-	/** The Constant map. */
-	private final Map<String, String> states = new HashMap<>(of(EXPERIMENT_RUNNING_STATE, State.NONE.name(),
-			EXPERIMENT_TYPE, Type.NONE.name(), EXPERIMENT_STEPBACK, CANNOT_STEP_BACK));
+    /** The Constant map. */
+    private final Map<String, String> states = new HashMap<>(of(EXPERIMENT_RUNNING_STATE, State.NONE.name(),
+	    EXPERIMENT_TYPE, Type.NONE.name(), EXPERIMENT_STEPBACK, CANNOT_STEP_BACK));
 
-	@Override
-	public void initialize(final IServiceLocator locator) {
-		super.initialize(locator);
-		GAMA.addExperimentStateListener(this);
+    @Override
+    public void initialize(final IServiceLocator locator) {
+	super.initialize(locator);
+	GAMA.addExperimentStateListener(this);
+    }
+
+    @Override
+    public void dispose() {
+	GAMA.removeExperimentStateListener(this);
+    }
+
+    @Override
+    public String[] getProvidedSourceNames() {
+	return SOURCE_NAMES;
+    }
+
+    /**
+     * FALSE: should target the experiment ?
+     */
+    @Override
+    public Map<String, String> getCurrentState() {
+	return states;
+    }
+
+    /**
+     * Change the UI state based on the state of the experiment (see
+     * IExperimentStateListener.State)
+     */
+    @Override
+    public void updateStateTo(final IExperimentPlan exp, final State newState) {
+	String state = newState.name();
+	if (!Objects.equals(states.get(EXPERIMENT_RUNNING_STATE), state)) {
+	    states.put(EXPERIMENT_RUNNING_STATE, state);
+	    WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_RUNNING_STATE, state));
 	}
-
-	@Override
-	public void dispose() {
-		GAMA.removeExperimentStateListener(this);
-	}
-
-	@Override
-	public String[] getProvidedSourceNames() { return SOURCE_NAMES; }
-
-	/**
-	 * FALSE: should target the experiment ?
-	 */
-	@Override
-	public Map<String, String> getCurrentState() { return states; }
-
-	/**
-	 * Change the UI state based on the state of the experiment (see IExperimentStateListener.State)
-	 */
-	@Override
-	public void updateStateTo(final IExperimentPlan exp, final State newState) {
-		String state = newState.name();
-		if (!Objects.equals(states.get(EXPERIMENT_RUNNING_STATE), state)) {
-			states.put(EXPERIMENT_RUNNING_STATE, state);
-			WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_RUNNING_STATE, state));
-		}
-		String simulationType = exp == null ? Type.NONE.name() : exp.isBatch() ? Type.BATCH.name()
+	String simulationType = exp == null ? Type.NONE.name()
+		: exp.isTest() ? Type.TEST.name()
+			: exp.isBatch() ? Type.BATCH.name()
 				: exp.isMemorize() ? Type.RECORD.name() : Type.REGULAR.name();
-		if (!Objects.equals(states.get(EXPERIMENT_TYPE), simulationType)) {
-			states.put(EXPERIMENT_TYPE, simulationType);
-			WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_TYPE, simulationType));
-		}
-		String canStepBack = exp != null && exp.getAgent() != null && exp.getAgent().canStepBack() ? CAN_STEP_BACK
-				: CANNOT_STEP_BACK;
-		if (!Objects.equals(states.get(EXPERIMENT_STEPBACK), canStepBack)) {
-			states.put(EXPERIMENT_STEPBACK, canStepBack);
-			WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_STEPBACK, canStepBack));
-		}
+	if (!Objects.equals(states.get(EXPERIMENT_TYPE), simulationType)) {
+	    states.put(EXPERIMENT_TYPE, simulationType);
+	    WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_TYPE, simulationType));
 	}
+	String canStepBack = exp != null && exp.getAgent() != null && exp.getAgent().canStepBack() ? CAN_STEP_BACK
+		: CANNOT_STEP_BACK;
+	if (!Objects.equals(states.get(EXPERIMENT_STEPBACK), canStepBack)) {
+	    states.put(EXPERIMENT_STEPBACK, canStepBack);
+	    WorkbenchHelper.run(() -> fireSourceChanged(ISources.WORKBENCH, EXPERIMENT_STEPBACK, canStepBack));
+	}
+    }
 
 }

@@ -429,11 +429,19 @@
                   tooltip="Open simulation perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
+                  <and>
                      <reference
-                           definitionId="isInSimulationPerspective">
+                           definitionId="isSimulationExisting">
                      </reference>
-                  </not>
+                     <reference
+                           definitionId="isInModelingPerspective">
+                     </reference>
+                     <not>
+                        <reference
+                              definitionId="isSimulationTest">
+                        </reference>
+                     </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -541,11 +549,16 @@
                      checkEnabled="false">
                   <and>
                      <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                     <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <reference
+                           definitionId="isInModelingPerspective">
+                     </reference>
+                     <not>
+                        <reference
+                              definitionId="isSimulationTest">
+                        </reference>
+                     </not>
                   </and>
                </visibleWhen>
             </command>
@@ -558,6 +571,11 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <not>
+                        <reference
+                              definitionId="isSimulationTest">
+                        </reference>
+                     </not>
                   </and>
                </visibleWhen>
             </control>
@@ -1060,6 +1078,17 @@
                   variable="gama.ui.experiment.SimulationRunningState">
                <equals
                      value="FINISHED">
+               </equals>
+            </with>
+         </and>
+      </definition>
+      <definition
+            id="isSimulationTest">
+         <and>
+            <with
+                  variable="gama.ui.experiment.SimulationType">
+               <equals
+                     value="TEST">
                </equals>
             </with>
          </and>
