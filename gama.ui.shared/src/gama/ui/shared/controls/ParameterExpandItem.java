@@ -355,6 +355,9 @@ public class ParameterExpandItem extends Item {
 				for (final Control c : control.getChildren()) { c.dispose(); }
 				if (control instanceof ScrolledComposite) { ((ScrolledComposite) control).setContent(null); }
 			}
+		} else if (expanded && control != null) {
+			setHeight(control.computeSize(width, SWT.DEFAULT, true).y);
+			setBounds(0, 0, width, height, false, true);
 		}
 		parent.showItem(this);
 	}

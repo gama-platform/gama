@@ -174,7 +174,12 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @return the absolute origin
 	 * @date 26 août 2023
 	 */
-	public Point getLocation() { return label.toDisplay(label.getLocation()); }
+	public Point getLocation() {
+		Point p = label.toDisplay(label.getLocation());
+		p.x -= 14;
+		p.y += getHeight() - 4;
+		return p;
+	}
 
 	/**
 	 * Gets the popup width.

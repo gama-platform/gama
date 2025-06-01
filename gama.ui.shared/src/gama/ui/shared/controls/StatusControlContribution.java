@@ -139,7 +139,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				: GamaColors.get(GamaColors.get(parent.getBackground()).darker());
 		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
 		label = FlatButton.label(compo, inactiveColor, "", WIDTH).addMenuSign().withHeight(25);
-		label.setEnabled(false);
+		label.setEnabled(true);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(WIDTH, 25).applyTo(label);
 		historyPopup = new StatusHistoryPopUpMenu(this);
 
@@ -267,7 +267,11 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 * @return the absolute origin
 	 * @date 26 août 2023
 	 */
-	public Point getLocation() { return label.toDisplay(label.getLocation()); }
+	public Point getLocation() {
+		Point p = label.toDisplay(label.getLocation());
+		p.y += getHeight() - 4;
+		return p;
+	}
 
 	/**
 	 * Gets the popup width.

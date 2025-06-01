@@ -72,8 +72,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	Composite createValueComposite() {
 		composite = new Composite(parent, SWT.NONE);
 		final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.minimumWidth = 100;
-		data.minimumHeight = 20;
+		data.heightHint = 30;
+		data.minimumHeight = 24;
 		data.horizontalSpan = 2;
 		composite.setLayoutData(data);
 		GridLayout l = new GridLayout(1, false);
@@ -96,7 +96,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 		composite.setBackground(null);
 		textBox = FlatButton
 				.menu(composite, GamaColors.get(getStatement().getColor(getScope())), getStatement().getTitle())
-				.withHeight(20).withFixedWidth(100);
+				.withHeight(20);
 		textBox.setSelectionListener((Selector) e -> {
 			final Menu m = new Menu(textBox);
 			action(m, "Edit...", ex -> { applyEdit(); });
@@ -130,7 +130,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			}
 			m.setVisible(true);
 		});
-		composite.requestLayout();
+		// composite.requestLayout();
 		return textBox;
 
 	}
@@ -146,7 +146,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			Runnable run = () -> {
 				internalModification = true;
 				if (parent != null && !parent.isDisposed() && !textBox.isDisposed()) {
-					textBox.setTextWithoutRecomputingSize(getStatement().getTitle());
+					textBox.setText(getStatement().getTitle());
 					composite.update();
 				}
 				internalModification = false;
@@ -190,8 +190,9 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 
 	@Override
 	protected GridData getEditorControlGridData() {
-		final var d = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		d.minimumWidth = 50;
+		final var d = new GridData(SWT.FILL, SWT.FILL, true, true);
+		d.heightHint = 30;
+		d.minimumHeight = 24;
 		return d;
 	}
 

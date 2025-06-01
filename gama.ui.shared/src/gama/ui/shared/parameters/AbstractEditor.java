@@ -300,7 +300,6 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 		// Create and initialize the toolbar associated with the value editor
 		editorToolbar = createEditorToolbar();
 		internalModification = false;
-		parent.requestLayout();
 	}
 
 	/**

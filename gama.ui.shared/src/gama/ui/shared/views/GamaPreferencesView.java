@@ -184,7 +184,7 @@ public class GamaPreferencesView {
 		final var viewer = new ParameterExpandBar(tab.getParent(), SWT.V_SCROLL);
 		viewer.setBackground(
 				!ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.DARK_GRAY.darker());
-		viewer.setSpacing(5);
+		viewer.setSpacing(10);
 		tab.setControl(viewer);
 
 		for (final String groupName : entries.keySet()) {

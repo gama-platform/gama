@@ -60,7 +60,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	final GamaFont font;
 
 	/** The Constant MARGIN. */
-	final static int MARGIN = 20;
+	final static int MARGIN = 0;
 
 	/** The is XML. */
 	// boolean isHtml;
@@ -96,26 +96,10 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	}
 
 	@Override
-	public void createControls(final EditorsGroup parent) {
-		this.parent = parent;
-		internalModification = true;
-		// Create the label of the value editor
-		editorLabel = createEditorLabel();
-		// Create the composite that will hold the value editor and the toolbar
-		createValueComposite();
-		// Create and initialize the value editor
-		editorControl = createEditorControl();
-
-		// Create and initialize the toolbar associated with the value editor
-		editorToolbar = null;
-		internalModification = false;
-	}
-
-	@Override
 	Composite createValueComposite() {
 		composite = new Composite(parent, SWT.NONE);
 		GamaColors.setBackground(parent.getBackground(), composite);
-		GridData data = GridDataFactory.fillDefaults().grab(true, true).span(3, 1).create();
+		GridData data = GridDataFactory.fillDefaults().grab(true, false).span(3, 1).create();
 		composite.setLayoutData(data);
 		Layout layout = new FillLayout();
 		composite.setLayout(layout);
@@ -123,7 +107,6 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 			int height = composite.computeSize(composite.getSize().x, SWT.DEFAULT, true).y + MARGIN;
 			data.heightHint = height;
 			data.minimumHeight = height;
-			composite.requestLayout();
 			parent.requestLayout();
 		}));
 		return composite;
@@ -154,6 +137,8 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		cc.setLayout(new FillLayout());
 		GridData bData = (GridData) composite.getLayoutData();
 		XmlText form = new XmlText(cc, SWT.NONE | SWT.READ_ONLY, font);
+		form.marginHeight = 5;
+		form.marginWidth = 5;
 		form.setText("<form><p>" + text + "</p></form>", true, true);
 		form.setHyperlinkSettings(getHyperlinkSettings());
 		form.addHyperlinkListener(new HyperlinkAdapter() {
@@ -168,6 +153,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 			int height = form.computeSize(composite.getSize().x, SWT.DEFAULT, true).y + MARGIN;
 			bData.heightHint = height;
 			bData.minimumHeight = height;
+			parent.requestLayout();
 		}));
 		return form;
 	}
@@ -209,6 +195,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 				Double height = (Double) browser.evaluate("return document.body.scrollHeight;"); //$NON-NLS-1$
 				bData.heightHint = height.intValue() + MARGIN;
 				bData.minimumHeight = bData.heightHint;
+				parent.requestLayout();
 			} catch (SWTException e) {
 				DEBUG.OUT("Error in computing the height of the browser: " + e.getMessage());
 			}
