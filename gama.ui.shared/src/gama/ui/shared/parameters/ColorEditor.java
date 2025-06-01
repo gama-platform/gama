@@ -38,87 +38,81 @@ import gama.ui.shared.resources.IGamaColors;
  */
 public class ColorEditor extends AbstractEditor<Color> {
 
-    /** The runnable. */
-    final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColor.get(r, g, b, 255));
+	/** The runnable. */
+	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColor.get(r, g, b, 255));
 
-    /** The listener. */
-    final SelectionListener listener = new SelectionAdapter() {
+	/** The listener. */
+	final SelectionListener listener = new SelectionAdapter() {
 
-	@Override
-	public void widgetDefaultSelected(final SelectionEvent e) {
-	    widgetSelected(e);
+		@Override
+		public void widgetDefaultSelected(final SelectionEvent e) {
+			widgetSelected(e);
+		}
+
+		@Override
+		public void widgetSelected(final SelectionEvent e) {
+			final MenuItem i = (MenuItem) e.widget;
+			final String color = i.getText().replace("#", "");
+			final GamaColor c = GamaColor.colors.get(color);
+			if (c == null) return;
+			modifyAndDisplayValue(c);
+		}
+
+	};
+
+	/** The edit. */
+	private FlatButton edit;
+
+	/**
+	 * Instantiates a new color editor.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @param param
+	 *            the param
+	 * @param l
+	 *            the l
+	 */
+	ColorEditor(final IAgent agent, final IParameter param, final EditorListener<Color> l) {
+		super(agent, param, l);
 	}
 
 	@Override
-	public void widgetSelected(final SelectionEvent e) {
-	    final MenuItem i = (MenuItem) e.widget;
-	    final String color = i.getText().replace("#", "");
-	    final GamaColor c = GamaColor.colors.get(color);
-	    if (c == null) {
-		return;
-	    }
-	    modifyAndDisplayValue(c);
+	public void widgetSelected(final SelectionEvent event) {
+		new GamaColorMenu(null).open(edit, event, listener, runnable);
 	}
 
-    };
+	@Override
+	public Control createCustomParameterControl(final Composite compo) {
+		edit = FlatButton.menu(compo, IGamaColors.WHITE, "255,255,255   ").withFixedWidth();
+		edit.setSelectionListener(this);
+		displayParameterValue();
+		return edit;
+	}
 
-    /** The edit. */
-    private FlatButton edit;
+	@Override
+	protected void displayParameterValue() {
+		internalModification = true;
+		final GamaUIColor color =
+				GamaColors.get(currentValue == null ? GamaColor.get(0) : (java.awt.Color) currentValue);
+		edit.setTextWithoutRecomputingSize(color.toString());
+		edit.setColor(color);
+		internalModification = false;
+	}
 
-    /**
-     * Instantiates a new color editor.
-     *
-     * @param scope
-     *            the scope
-     * @param agent
-     *            the agent
-     * @param param
-     *            the param
-     * @param l
-     *            the l
-     */
-    ColorEditor(final IAgent agent, final IParameter param, final EditorListener<Color> l) {
-	super(agent, param, l);
-    }
+	@Override
+	public GamaColorType getExpectedType() { return Types.COLOR; }
 
-    @Override
-    public void widgetSelected(final SelectionEvent event) {
-	new GamaColorMenu(null).open(edit, event, listener, runnable);
-    }
+	@Override
+	protected void applyEdit() {
+		final java.awt.Color color = currentValue;
+		final RGB rgb = new RGB(color.getRed(), color.getGreen(), color.getBlue());
+		GamaColorMenu.openView(runnable, rgb);
+	}
 
-    @Override
-    public Control createCustomParameterControl(final Composite compo) {
-	edit = FlatButton.menu(compo, IGamaColors.WHITE, "255,255,255");
-	edit.setSelectionListener(this);
-	displayParameterValue();
-	return edit;
-    }
-
-    @Override
-    protected void displayParameterValue() {
-	internalModification = true;
-	final GamaUIColor color = GamaColors
-		.get(currentValue == null ? GamaColor.get(0) : (java.awt.Color) currentValue);
-	edit.setTextWithoutRecomputingSize(color.toString());
-	edit.setColor(color);
-	internalModification = false;
-    }
-
-    @Override
-    public GamaColorType getExpectedType() {
-	return Types.COLOR;
-    }
-
-    @Override
-    protected void applyEdit() {
-	final java.awt.Color color = currentValue;
-	final RGB rgb = new RGB(color.getRed(), color.getGreen(), color.getBlue());
-	GamaColorMenu.openView(runnable, rgb);
-    }
-
-    @Override
-    protected int[] getToolItems() {
-	return new int[] { EDIT, REVERT };
-    }
+	@Override
+	protected int[] getToolItems() { return new int[] { EDIT, REVERT }; }
 
 }

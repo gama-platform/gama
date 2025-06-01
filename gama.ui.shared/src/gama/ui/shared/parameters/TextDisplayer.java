@@ -10,12 +10,14 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.FillLayout;
@@ -56,6 +58,9 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 
 	/** The font. */
 	final GamaFont font;
+
+	/** The Constant MARGIN. */
+	final static int MARGIN = 20;
 
 	/** The is XML. */
 	// boolean isHtml;
@@ -104,19 +109,23 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		// Create and initialize the toolbar associated with the value editor
 		editorToolbar = null;
 		internalModification = false;
-		parent.requestLayout();
 	}
 
 	@Override
 	Composite createValueComposite() {
 		composite = new Composite(parent, SWT.NONE);
 		GamaColors.setBackground(parent.getBackground(), composite);
-		final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.minimumWidth = 100;
-		data.horizontalSpan = 3;
+		GridData data = GridDataFactory.fillDefaults().grab(true, true).span(3, 1).create();
 		composite.setLayoutData(data);
 		Layout layout = new FillLayout();
 		composite.setLayout(layout);
+		composite.addControlListener(ControlListener.controlResizedAdapter(c -> {
+			int height = composite.computeSize(composite.getSize().x, SWT.DEFAULT, true).y + MARGIN;
+			data.heightHint = height;
+			data.minimumHeight = height;
+			composite.requestLayout();
+			parent.requestLayout();
+		}));
 		return composite;
 	}
 
@@ -127,7 +136,6 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		Control result = text.contains("<html>") ? buildBrowser(composite, text) : buildForm(composite, text);
 		GamaColors.setBackAndForeground(back, front, result);
 		result.setFont(GamaFonts.getFont(font));
-		composite.requestLayout();
 		return result;
 
 	}
@@ -142,7 +150,10 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	 * @return the control
 	 */
 	private Control buildForm(final Composite composite, final String text) {
-		XmlText form = new XmlText(composite, SWT.NONE | SWT.READ_ONLY, font);
+		Composite cc = new Composite(composite, SWT.NONE);
+		cc.setLayout(new FillLayout());
+		GridData bData = (GridData) composite.getLayoutData();
+		XmlText form = new XmlText(cc, SWT.NONE | SWT.READ_ONLY, font);
 		form.setText("<form><p>" + text + "</p></form>", true, true);
 		form.setHyperlinkSettings(getHyperlinkSettings());
 		form.addHyperlinkListener(new HyperlinkAdapter() {
@@ -153,6 +164,11 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 			}
 
 		});
+		form.addControlListener(ControlListener.controlResizedAdapter(c -> {
+			int height = form.computeSize(composite.getSize().x, SWT.DEFAULT, true).y + MARGIN;
+			bData.heightHint = height;
+			bData.minimumHeight = height;
+		}));
 		return form;
 	}
 
@@ -191,9 +207,8 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		browser.addProgressListener(ProgressListener.completedAdapter(event -> {
 			try {
 				Double height = (Double) browser.evaluate("return document.body.scrollHeight;"); //$NON-NLS-1$
-				bData.heightHint = height.intValue();
+				bData.heightHint = height.intValue() + MARGIN;
 				bData.minimumHeight = bData.heightHint;
-				composite.requestLayout();
 			} catch (SWTException e) {
 				DEBUG.OUT("Error in computing the height of the browser: " + e.getMessage());
 			}

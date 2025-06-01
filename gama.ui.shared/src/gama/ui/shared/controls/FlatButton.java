@@ -40,23 +40,23 @@ import gama.ui.shared.views.toolbar.Selector;
 public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The menu image. */
-	static final Image menuImage = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
+	static final Image MENU_IMAGE = GamaIcon.named(IGamaIcons.SMALL_DROPDOWN).image();
 
-	/** The Constant menuImageBounds. */
-	static final Rectangle menuImageBounds = menuImage.getBounds();
+	/** The Constant MENU_BOUNDS. */
+	static final Rectangle MENU_BOUNDS = MENU_IMAGE.getBounds();
 
-	/** The Constant innerMargin. */
-	private static final int innerMargin = 5, imagePadding = 5;
+	/** The Constant INNER_MARGIN. */
+	private static final int INNER_MARGIN = 4, IMAGE_PADDING = 4, MINIMAL_HEIGHT = MENU_BOUNDS.height + IMAGE_PADDING;
 
-	/** The Constant ellipsis. */
-	private static final String ellipsis = "...";
+	/** The Constant ELLIPSIS. */
+	private static final char ELLIPSIS = '…';
 
-	/** The Constant nullExtent. */
-	private static final Point nullExtent = new Point(0, 0);
+	/** The Constant NULL_EXTENT. */
+	private static final Point NULL_EXTENT = new Point(0, 0);
 
 	/** The selection listener. */
 	private Selector selectionListener;
@@ -70,14 +70,12 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	/** The color code. */
 	private RGB colorCode;
 
-	/** The preferred height. */
-	private int preferredHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT, forcedWidth = SWT.DEFAULT;
-
-	/** The minimal height. */
-	private static final int MINIMAL_HEIGHT = 24;
+	/** Dimensions. */
+	private int preferredHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT, forcedWidth = SWT.DEFAULT,
+			minimalHeight = MINIMAL_HEIGHT;
 
 	/** States */
-	private boolean enabled = true, hovered = false, down = false, border = false, menu = false;
+	private boolean enabled = true, hovered = false, down = false, border = false, menu = false, computeSize = true;
 
 	/**
 	 * Creates the.
@@ -107,7 +105,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public static FlatButton label(final Composite comp, final GamaUIColor color, final String text,
 			final int forcedWidth) {
-		return create(comp, SWT.None).withWidth(forcedWidth).setText(text).setColor(color);
+		return create(comp, SWT.None).withFixedWidth(forcedWidth).setText(text).setColor(color);
 	}
 
 	/**
@@ -246,7 +244,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		Font f = getFont();
 		gc.setFont(f);
 
-		computePreferredSize(gc);
+		if (computeSize) { computePreferredSize(gc); }
+		// DEBUG.OUT("Painting. Preferred size of '" + getText() + "' is " + preferredWidth + " x " + preferredHeight);
 
 		float v_inset;
 		if (preferredHeight < getBounds().height) {
@@ -280,7 +279,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		}
 		gc.setForeground(foreground);
 
-		float x = innerMargin;
+		float x = INNER_MARGIN;
 		final Image im = getImage();
 		float y_text = 0;
 		final String contents = newText(gc);
@@ -292,10 +291,10 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		}
 		gc.drawString(contents, Math.round(x), Math.round(y_text));
 		if (menu) {
-			float y_image = (getBounds().height - menuImageBounds.height) / 2f;
-			x = innerMargin;
-			x = rect.width - x - menuImageBounds.width;
-			drawImage(menuImage, gc, Math.round(x), Math.round(y_image));
+			float y_image = (getBounds().height - MENU_BOUNDS.height) / 2f;
+			x = INNER_MARGIN;
+			x = rect.width - x - MENU_BOUNDS.width;
+			drawImage(MENU_IMAGE, gc, Math.round(x), Math.round(y_image));
 		}
 	}
 
@@ -313,14 +312,14 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	private int drawImage(final Image image, final GC gc, final int x, final int y) {
 		if (image == null) return x;
 		gc.drawImage(image, x, y);
-		return x + image.getBounds().width + imagePadding;
+		return x + image.getBounds().width + IMAGE_PADDING;
 	}
 
 	@Override
 	public Point computeSize(final int wHint, final int hHint, final boolean changed) {
-		// DEBUG.OUT("Computing size of '" + text + "' called from ");
+		// DEBUG.OUT("Computing size of '" + text + "' called with " + wHint + " x " + hHint);
 		// DEBUG.STACK();
-		computePreferredSize();
+		if (computeSize) { computePreferredSize(); }
 		int width = wHint != SWT.DEFAULT ? wHint : preferredWidth;
 		int height = hHint != SWT.DEFAULT ? hHint : preferredHeight;
 		return super.computeSize(width, height, changed);
@@ -335,16 +334,14 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public String newText(final GC gc) {
 		if (text == null) return null;
-		String text = this.text;
-
 		final float width = computeWidthAvailableForText();
 		final float textWidth = computeExtentOfText(gc, text).x;
+		// DEBUG.OUT("Text size. Size of '" + text + "' is " + textWidth + " ; available size is " + width);
 		if (textWidth > width) {
 			for (int i = text.length() - 1; i > 0; i--) {
-				text = text.substring(0, i);
-				if (computeExtentOfText(gc, text + ellipsis).x < width) { break; }
+				text = text.substring(0, i) + ELLIPSIS;
+				if (computeExtentOfText(gc, text).x < width) { break; }
 			}
-			return text + ellipsis;
 		}
 		return text;
 	}
@@ -358,8 +355,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		final Image im = getImage();
 		int r = 0;
 		if (im != null || menu) {
-			if (im != null) { r += im.getBounds().width + imagePadding * 2; }
-			if (menu) { r += menuImageBounds.x + imagePadding * 2; }
+			if (im != null) { r += im.getBounds().width + IMAGE_PADDING * 2; }
+			if (menu) { r += MENU_BOUNDS.x + IMAGE_PADDING * 2; }
 		}
 		return preferredWidth - r;
 	}
@@ -374,7 +371,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	public FlatButton setImage(final Image image) {
 		if (this.image == image) return this;
 		this.image = image;
-		computePreferredSize();
+		computeSize = true;
 		redraw();
 		return this;
 	}
@@ -402,7 +399,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton addMenuSign() {
 		menu = true;
-		computePreferredSize();
+		computeSize = true;
 		return this;
 	}
 
@@ -415,7 +412,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton removeMenuSign() {
 		menu = false;
-		computePreferredSize();
+		computeSize = true;
 		return this;
 	}
 
@@ -424,50 +421,21 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *
 	 * @return the int
 	 */
-	public static Point computeExtentOfText(final GC gc, final String text) {
+	private Point computeExtentOfText(final GC gc, final String text) {
 		if (text != null) return gc.textExtent(text);
-		return nullExtent;
-	}
-
-	/**
-	 * Compute extent of text.
-	 *
-	 * @return the point
-	 */
-	public Point computeExtentOfText() {
-		GC gc = new GC(this);
-		Point result = nullExtent;
-		try {
-			result = computeExtentOfText(gc, text);
-		} finally {
-			gc.dispose();
-		}
-		return result;
+		return NULL_EXTENT;
 	}
 
 	/**
 	 * Compute preferred size.
 	 */
 	public void computePreferredSize() {
-		Rectangle bounds = new Rectangle(0, 0, 0, 0);
-		final Image im = getImage();
-		if (im != null) {
-			bounds = im.getBounds();
-			bounds.width += imagePadding * 2;
+		GC gc = new GC(this);
+		try {
+			computePreferredSize(gc);
+		} finally {
+			gc.dispose();
 		}
-		if (menu) {
-			bounds.width += menuImageBounds.width + imagePadding * 2;
-			bounds.height = Math.max(bounds.height, menuImageBounds.height);
-		}
-		if (text != null) {
-			Point extent = computeExtentOfText();
-			bounds.width += extent.x + innerMargin * 2;
-			bounds.height = Math.max(bounds.height, extent.y + innerMargin);
-		}
-		if (forcedWidth != SWT.DEFAULT) { bounds.width = forcedWidth; }
-		if (MINIMAL_HEIGHT > preferredHeight) { bounds.height = MINIMAL_HEIGHT; }
-		preferredWidth = bounds.width;
-		preferredHeight = bounds.height;
 	}
 
 	/**
@@ -477,25 +445,36 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *            the gc
 	 */
 	public void computePreferredSize(final GC gc) {
-		Rectangle bounds = new Rectangle(0, 0, 0, 0);
-		final Image im = getImage();
-		if (im != null) {
-			bounds = im.getBounds();
-			bounds.width += imagePadding * 2;
+		if (!computeSize) return;
+		try {
+			// DEBUG.OUT("Computing. Preferred size of '" + getText() + "'. ", false);
+			preferredWidth = 0;
+			preferredHeight = 0;
+			final Image im = getImage();
+			if (im != null) {
+				Rectangle imb = im.getBounds();
+				preferredWidth += imb.width + IMAGE_PADDING * 2;
+				preferredHeight += imb.height;
+				// DEBUG.OUT("image " + (imb.width + IMAGE_PADDING * 2) + " x " + imb.height + "; ", false);
+			}
+			if (menu) {
+				preferredWidth += MENU_BOUNDS.width + IMAGE_PADDING * 2;
+				preferredHeight = Math.max(preferredHeight, MENU_BOUNDS.height);
+				// DEBUG.OUT("menu " + (MENU_BOUNDS.width + IMAGE_PADDING * 2) + " x " + MENU_BOUNDS.height + "; ",
+				// false);
+			}
+			if (text != null) {
+				Point extent = computeExtentOfText(gc, text);
+				preferredWidth += extent.x + INNER_MARGIN * 2;
+				preferredHeight = Math.max(preferredHeight, extent.y + INNER_MARGIN);
+				// DEBUG.OUT("text " + (extent.x + INNER_MARGIN * 2) + " x " + (extent.y + INNER_MARGIN) + "; ", false);
+			}
+			if (forcedWidth != SWT.DEFAULT) { preferredWidth = forcedWidth; }
+			if (minimalHeight >= preferredHeight) { preferredHeight = minimalHeight; }
+		} finally {
+			computeSize = false;
 		}
-		if (menu) {
-			bounds.width += menuImageBounds.width + imagePadding * 2;
-			bounds.height = Math.max(bounds.height, menuImageBounds.height);
-		}
-		if (text != null) {
-			Point extent = computeExtentOfText(gc, text);
-			bounds.width += extent.x + innerMargin * 2;
-			bounds.height = Math.max(bounds.height, extent.y + innerMargin);
-		}
-		if (forcedWidth != SWT.DEFAULT) { bounds.width = forcedWidth; }
-		if (MINIMAL_HEIGHT > preferredHeight) { bounds.height = MINIMAL_HEIGHT; }
-		preferredWidth = bounds.width;
-		preferredHeight = bounds.height;
+
 	}
 
 	/**
@@ -515,7 +494,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	public FlatButton setText(final String text) {
 		if (text == null || text.equals(this.text)) return this;
 		this.text = text;
-		computePreferredSize();
+		computeSize = true;
 		redraw();
 		return this;
 	}
@@ -574,8 +553,27 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *            the width
 	 * @return the flat button
 	 */
-	public FlatButton withWidth(final int width) {
+	public FlatButton withFixedWidth(final int width) {
 		forcedWidth = width;
+		return this;
+	}
+
+	/**
+	 * Sets the fixed width.
+	 */
+	public FlatButton withFixedWidth() {
+		return withFixedWidth(computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+	}
+
+	/**
+	 * With height.
+	 *
+	 * @param height
+	 *            the height
+	 * @return the flat button
+	 */
+	public FlatButton withHeight(final int height) {
+		minimalHeight = height;
 		return this;
 	}
 
@@ -594,16 +592,6 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	private Image getImage() { return image; }
 
 	/**
-	 * Sent by the layout
-	 */
-	// @Override
-	// public void setBounds(final int x, final int y, final int width, final
-	// int height) {
-	// // withWidth(width);
-	// super.setBounds(x, y, width, height);
-	// }
-
-	/**
 	 * With border.
 	 *
 	 * @return the flat button
@@ -620,6 +608,15 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		if (image == null) return;
 		image.dispose();
 		image = null;
+	}
+
+	/**
+	 *
+	 */
+	public void click(final Event e) {
+		SelectionEvent event = new SelectionEvent(e);
+		event.widget = this;
+		this.selectionListener.widgetSelected(event);
 	}
 
 }
