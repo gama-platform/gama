@@ -455,11 +455,6 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public void computePreferredSize(final GC gc) {
 		if (!computeSize) { return; }
-		if (text.equals("1802 items")) {
-
-			DEBUG.OUT("");
-
-		}
 		try {
 			// DEBUG.OUT("Computing. Preferred size of '" + getText() + "'. ", false);
 			preferredWidth = 0;
@@ -486,7 +481,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			if (forcedWidth != SWT.DEFAULT) { preferredWidth = forcedWidth; }
 			if (minimalHeight >= preferredHeight) { preferredHeight = minimalHeight; }
 		} finally {
-			DEBUG.OUT("==> " + preferredWidth + " x " + preferredHeight);
+			// DEBUG.OUT("==> " + preferredWidth + " x " + preferredHeight);
 			computeSize = false;
 		}
 
