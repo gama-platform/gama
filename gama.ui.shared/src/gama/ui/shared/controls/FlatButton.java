@@ -40,7 +40,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The menu image. */
@@ -177,7 +177,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	@Override
 	public void handleEvent(final Event e) {
-		if (!enabled) return;
+		if (!enabled) { return; }
 		switch (e.type) {
 			case SWT.MouseExit:
 				doHover(false);
@@ -211,7 +211,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * Do button down.
 	 */
 	private void doButtonDown() {
-		if (!enabled) return;
+		if (!enabled) { return; }
 		down = true;
 		if (!isDisposed()) { redraw(); }
 	}
@@ -281,7 +281,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 
 		float x = INNER_MARGIN;
 		final Image im = getImage();
-		float y_text = 0;
+		float y_text = -1;
 		final String contents = newText(gc);
 		if (contents != null) { y_text += (getBounds().height - gc.textExtent(contents).y) / 2f; }
 
@@ -310,7 +310,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the int
 	 */
 	private int drawImage(final Image image, final GC gc, final int x, final int y) {
-		if (image == null) return x;
+		if (image == null) { return x; }
 		gc.drawImage(image, x, y);
 		return x + image.getBounds().width + IMAGE_PADDING;
 	}
@@ -333,7 +333,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the string
 	 */
 	public String newText(final GC gc) {
-		if (text == null) return null;
+		if (text == null) { return null; }
 		final float width = computeWidthAvailableForText();
 		final float textWidth = computeExtentOfText(gc, text).x;
 		// DEBUG.OUT("Text size. Size of '" + text + "' is " + textWidth + " ; available size is " + width);
@@ -369,7 +369,12 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @param image
 	 */
 	public FlatButton setImage(final Image image) {
-		if (this.image == image) return this;
+		if (image == null && this.image == null) {
+			computeSize = true;
+			redraw();
+			return this;
+		}
+		if (this.image == image) { return this; }
 		this.image = image;
 		computeSize = true;
 		redraw();
@@ -384,7 +389,11 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the flat button
 	 */
 	public FlatButton setImageWithoutRecomputingSize(final Image image) {
-		if (this.image == image) return this;
+		if (image == null && this.image == null) {
+			redraw();
+			return this;
+		}
+		if (this.image == image) { return this; }
 		this.image = image;
 		redraw();
 		return this;
@@ -422,7 +431,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the int
 	 */
 	private Point computeExtentOfText(final GC gc, final String text) {
-		if (text != null) return gc.textExtent(text);
+		if (text != null) { return gc.textExtent(text); }
 		return NULL_EXTENT;
 	}
 
@@ -445,7 +454,12 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *            the gc
 	 */
 	public void computePreferredSize(final GC gc) {
-		if (!computeSize) return;
+		if (!computeSize) { return; }
+		if (text.equals("1802 items")) {
+
+			DEBUG.OUT("");
+
+		}
 		try {
 			// DEBUG.OUT("Computing. Preferred size of '" + getText() + "'. ", false);
 			preferredWidth = 0;
@@ -472,6 +486,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			if (forcedWidth != SWT.DEFAULT) { preferredWidth = forcedWidth; }
 			if (minimalHeight >= preferredHeight) { preferredHeight = minimalHeight; }
 		} finally {
+			DEBUG.OUT("==> " + preferredWidth + " x " + preferredHeight);
 			computeSize = false;
 		}
 
@@ -492,7 +507,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the flat button
 	 */
 	public FlatButton setText(final String text) {
-		if (text == null || text.equals(this.text)) return this;
+		if (text == null || text.equals(this.text)) { return this; }
 		this.text = text;
 		computeSize = true;
 		redraw();
@@ -507,7 +522,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the flat button
 	 */
 	public FlatButton setTextWithoutRecomputingSize(final String text) {
-		if (text == null || text.equals(this.text)) return this;
+		if (text == null || text.equals(this.text)) { return this; }
 		this.text = text;
 		redraw();
 		return this;
@@ -537,10 +552,10 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 * @return the flat button
 	 */
 	public FlatButton setColor(final GamaUIColor c) {
-		if (c == null) return this;
+		if (c == null) { return this; }
 		final RGB oldColorCode = colorCode;
 		final RGB newColorCode = c.getRGB();
-		if (newColorCode.equals(oldColorCode)) return this;
+		if (newColorCode.equals(oldColorCode)) { return this; }
 		colorCode = c.getRGB();
 		redraw();
 		return this;
@@ -605,7 +620,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 *
 	 */
 	public void disposeImage() {
-		if (image == null) return;
+		if (image == null) { return; }
 		image.dispose();
 		image = null;
 	}
