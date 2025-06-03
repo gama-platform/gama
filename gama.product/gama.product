@@ -117,7 +117,7 @@
 -Dswt.enable.autoScale=true
 -Dswt.autoScale=quarter
 -Dswt.autoScale.method=smooth
--Dswt.autoScale.updateOnRuntime=false
+-Dswt.autoScale.updateOnRuntime=true
       </vmArgsWin>
    </launcherArgs>
 
