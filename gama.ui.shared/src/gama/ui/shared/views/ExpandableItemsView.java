@@ -69,7 +69,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 			}
 			// viewer.setBackground(!ThemeHelper.isDark() ? IGamaColors.WHITE.color() : IGamaColors.DARK_GRAY.darker());
 			// viewer.computeSize(parent.getSize().x, SWT.DEFAULT);
-			viewer.setSpacing(8);
+			viewer.setSpacing(10);
 		}
 	}
 

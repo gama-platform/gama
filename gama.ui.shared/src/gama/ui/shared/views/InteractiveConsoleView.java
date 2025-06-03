@@ -306,7 +306,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public Control getSizableFontControl() {
-		if (viewer == null) return null;
+		if (viewer == null) { return null; }
 		return viewer.getTextWidget();
 	}
 
@@ -533,5 +533,13 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public void setCurrentSymbol(final ISymbol statement) {}
+
+	@Override
+	public void setFocus() {
+		Control c = getSizableFontControl();
+		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+			c.setFocus(); // Necessary ?
+		}
+	}
 
 }

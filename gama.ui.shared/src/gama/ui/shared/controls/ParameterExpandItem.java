@@ -56,7 +56,7 @@ public class ParameterExpandItem extends Item {
 	Color headerColor = ThemeHelper.isDark() ? IGamaColors.DARK_GRAY.color() : IGamaColors.VERY_LIGHT_GRAY.color();
 
 	/** The image width. */
-	private static int imageHeight = 16, imageWidth = 16;
+	private int imageHeight = 16, imageWidth = 16;
 
 	/** The is paused. */
 	boolean isPaused = false;
@@ -71,10 +71,10 @@ public class ParameterExpandItem extends Item {
 	private static final int SEPARATION = 3;
 
 	/** The Constant BORDER. */
-	static final int BORDER = 4;
+	static final int BORDER = 0;
 
 	/** The Constant CHEVRON_SIZE. */
-	static final int CHEVRON_SIZE = 20;
+	static final int HEADER_HEIGHT = 24;
 
 	/**
 	 * Instantiates a new parameter expand item.
@@ -230,13 +230,10 @@ public class ParameterExpandItem extends Item {
 	 * @return the preferred width
 	 */
 	int getPreferredWidth(final GC gc) {
-		var width = ParameterExpandItem.TEXT_INSET * 2 + ParameterExpandItem.CHEVRON_SIZE;
-		if (getImage() != null) { width += ParameterExpandItem.TEXT_INSET + imageWidth; }
-		if (getText().length() > 0) {
-			// gc.setFont(GamaFonts.getExpandfont());
-			width += gc.stringExtent(getText()).x;
-		}
-		if (control != null) { width += control.computeSize(SWT.DEFAULT, SWT.DEFAULT).x; }
+		var width = TEXT_INSET * 2 + HEADER_HEIGHT;
+		if (getImage() != null) { width += TEXT_INSET + imageWidth; }
+		if (getText().length() > 0) { width += gc.stringExtent(getText()).x; }
+		if (control != null) { width = Math.max(width, control.computeSize(SWT.DEFAULT, SWT.DEFAULT).x); }
 		return width;
 	}
 
@@ -282,21 +279,23 @@ public class ParameterExpandItem extends Item {
 		}
 		if (size) {
 			this.width = width;
-			this.height = height + parent.bandHeight;
+			this.height = height /* + parent.bandHeight */;
 			redraw();
 		}
 		if (control != null && !control.isDisposed()) {
 			if (move) { control.setLocation(x + BORDER, y + headerHeight); }
 			if (size) {
-				var w = width - 2 * BORDER;
-				var h = height + BORDER;
-				if (control.getVerticalBar() != null) { w = w - control.getVerticalBar().getSize().x; }
-				if (control.getHorizontalBar() != null && control.getHorizontalBar().isVisible()) {
+				control.setSize(Math.max(0, width - 2 * BORDER), Math.max(0, height - BORDER));
 
-					h = h - 2 * control.getHorizontalBar().getSize().y;
-				}
-				control.setSize(control.computeSize(w, h));
-				control.layout(true);
+				// var w = width - 2 * BORDER;
+				// var h = height + BORDER;
+				// if (control.getVerticalBar() != null) { w = w - control.getVerticalBar().getSize().x; }
+				// if (control.getHorizontalBar() != null && control.getHorizontalBar().isVisible()) {
+				//
+				// h = h - 2 * control.getHorizontalBar().getSize().y;
+				// }
+				// control.setSize(control.computeSize(w, h));
+				// control.layout(true);
 			}
 		}
 	}
@@ -347,7 +346,6 @@ public class ParameterExpandItem extends Item {
 	 */
 	public void setExpanded(final boolean expanded) {
 		if (parent == null) return;
-		// checkWidget();
 		this.expanded = expanded;
 		if (onExpandBlock != null) {
 			if (expanded) {
@@ -357,6 +355,9 @@ public class ParameterExpandItem extends Item {
 				for (final Control c : control.getChildren()) { c.dispose(); }
 				if (control instanceof ScrolledComposite) { ((ScrolledComposite) control).setContent(null); }
 			}
+		} else if (expanded && control != null) {
+			setHeight(control.computeSize(width, SWT.DEFAULT, true).y);
+			setBounds(0, 0, width, height, false, true);
 		}
 		parent.showItem(this);
 	}

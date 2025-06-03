@@ -105,11 +105,19 @@
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
       </vmArgs>
+      <vmArgsLin>-Dswt.enable.autoScale=true
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
+      </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
       <vmArgsWin>-Dfile.encoding=UTF-8
 -Dorg.eclipse.swt.browser.DefaultType=edge
+-Dswt.enable.autoScale=true
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
+-Dswt.autoScale.updateOnRuntime=true
       </vmArgsWin>
    </launcherArgs>
 

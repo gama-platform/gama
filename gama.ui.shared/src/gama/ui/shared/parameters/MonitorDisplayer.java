@@ -72,7 +72,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	Composite createValueComposite() {
 		composite = new Composite(parent, SWT.NONE);
 		final var data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.minimumWidth = 100;
+		data.heightHint = 30;
+		data.minimumHeight = 24;
 		data.horizontalSpan = 2;
 		composite.setLayoutData(data);
 		GridLayout l = new GridLayout(1, false);
@@ -93,9 +94,10 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	@Override
 	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
 		composite.setBackground(null);
-		textBox = FlatButton.menu(composite, GamaColors.get(getStatement().getColor(getScope())),
-				getStatement().getTitle());
-		textBox.addSelectionListener((Selector) e -> {
+		textBox = FlatButton
+				.menu(composite, GamaColors.get(getStatement().getColor(getScope())), getStatement().getTitle())
+				.withHeight(20);
+		textBox.setSelectionListener((Selector) e -> {
 			final Menu m = new Menu(textBox);
 			action(m, "Edit...", ex -> { applyEdit(); });
 			// item.setEnabled(false); // for the moment
@@ -128,7 +130,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			}
 			m.setVisible(true);
 		});
-		composite.requestLayout();
+		// composite.requestLayout();
 		return textBox;
 
 	}
@@ -188,8 +190,9 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 
 	@Override
 	protected GridData getEditorControlGridData() {
-		final var d = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		d.minimumWidth = 50;
+		final var d = new GridData(SWT.FILL, SWT.FILL, true, true);
+		d.heightHint = 30;
+		d.minimumHeight = 24;
 		return d;
 	}
 
@@ -202,6 +205,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 	public void setCloser(final Runnable object) { closer = object; }
 	//
 	// @Override
-	// Color getEditorControlBackground() { return GamaColors.get(getStatement().getColor(getScope())).color(); }
+	// Color getEditorControlBackground() { return
+	// GamaColors.get(getStatement().getColor(getScope())).color(); }
 
 }

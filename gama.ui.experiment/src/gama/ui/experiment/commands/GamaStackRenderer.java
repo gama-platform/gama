@@ -245,6 +245,6 @@ public class GamaStackRenderer extends StackRenderer {
 
     @Override
     protected void populateTabMenu(Menu menu, MPart part) {
-	// TODO your menu items
+	super.populateTabMenu(menu, part);
     }
 }

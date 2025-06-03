@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IGui;
@@ -51,7 +50,6 @@ import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
-import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class ExperimentParametersView.
@@ -81,14 +79,13 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	/** The Constant REVERT. */
 	public final static int REVERT = 0;
 
-	/** 'agent' represents the "real" listening agent, which can be an experiment or a simulation */
+	/**
+	 * 'agent' represents the "real" listening agent, which can be an experiment or a simulation
+	 */
 	ITopLevelAgent agent;
 
 	/** The monitor section. */
 	ParameterExpandItem monitorSection;
-
-	/** The status. */
-	ToolItem status;
 
 	@Override
 	public void ownCreatePartControl(final Composite view) {
@@ -192,7 +189,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
 		MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
 		md.createControls((EditorsGroup) monitorSection.getControl());
-		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
 		md.setCloser(() -> deleteMonitor(md));
 	}
 
@@ -207,7 +204,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		mo.close();
 		getEditorsList().removeMonitor(mo);
 		md.dispose();
-		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
 		deleteMonitorSectionIfEmpty();
 	}
 
@@ -327,7 +324,6 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		GridData data = (GridData) tb.getToolbar(SWT.LEFT).getLayoutData();
 		data.grabExcessHorizontalSpace = true;
 		data.horizontalAlignment = SWT.FILL;
-		status = toolbar.button(GamaColors.get(toolbar.getBackground()), "", (Selector) null, SWT.LEFT);
 
 		if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) return;
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);

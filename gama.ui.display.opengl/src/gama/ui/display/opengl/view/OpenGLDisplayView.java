@@ -141,4 +141,12 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	public boolean largePauseIcon() {
 		return true;
 	}
+
+	@Override
+	public void setFocus() {
+		Control c = this.getSurfaceComposite();
+		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+			c.setFocus(); // Necessary ?
+		}
+	}
 }

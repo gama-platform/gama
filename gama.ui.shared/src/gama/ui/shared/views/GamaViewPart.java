@@ -259,7 +259,7 @@ public abstract class GamaViewPart extends ViewPart
 		// DEBUG.OUT("Root Composite is " + composite.getClass().getSimpleName());
 		composite.addDisposeListener(this);
 		// getTopComposite().addControlListener(this);
-		if (needsOutput() && getOutput() == null) return;
+		if (needsOutput() && getOutput() == null) { return; }
 		this.setParentComposite(GamaToolbarFactory.createToolbars(this, composite));
 		ownCreatePartControl(getParentComposite());
 		// activateContext();
@@ -326,7 +326,7 @@ public abstract class GamaViewPart extends ViewPart
 
 	@Override
 	public IOutput getOutput() {
-		if (outputs.isEmpty()) return null;
+		if (outputs.isEmpty()) { return null; }
 		return outputs.get(0);
 	}
 
@@ -338,7 +338,7 @@ public abstract class GamaViewPart extends ViewPart
 	 */
 	@Override
 	public void addOutput(final IOutput out) {
-		if (out == null) return;
+		if (out == null) { return; }
 		if (!outputs.contains(out)) {
 			outputs.add(out);
 		} else if (toolbar != null) {
@@ -349,8 +349,8 @@ public abstract class GamaViewPart extends ViewPart
 
 	}
 
-	@Override
-	public void setFocus() {}
+	// @Override
+	// public void setFocus() {}
 
 	@Override
 	public void widgetDisposed(final DisposeEvent e) {
@@ -372,13 +372,13 @@ public abstract class GamaViewPart extends ViewPart
 	 */
 	@Override
 	public void stopDisplayingTooltips() {
-		if (toolbar == null || toolbar.isDisposed()) return;
+		if (toolbar == null || toolbar.isDisposed()) { return; }
 		if (toolbar.hasTooltip()) { toolbar.wipe(SWT.LEFT, false); }
 	}
 
 	@Override
 	public void displayTooltip(final String text, final GamaUIColor color) {
-		if (toolbar == null || toolbar.isDisposed()) return;
+		if (toolbar == null || toolbar.isDisposed()) { return; }
 		toolbar.tooltip(text, color, SWT.LEFT);
 	}
 
@@ -437,7 +437,7 @@ public abstract class GamaViewPart extends ViewPart
 		String overlay = over;
 		int start = s;
 		int end = e;
-		if (str == null) return null;
+		if (str == null) { return null; }
 		if (overlay == null) { overlay = ""; }
 		final int len = str.length();
 		if (start < 0) { start = 0; }

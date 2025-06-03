@@ -10,6 +10,11 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
+import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
+import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
+import static gama.ui.shared.resources.IGamaIcons.MARKER_ERROR;
+import static gama.ui.shared.resources.IGamaIcons.SMALL_DROPDOWN;
+import static gaml.compiler.ui.editor.GamlEditorState.NO_EXP_DEFINED;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.DELETE;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.FIND;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.REDO;
@@ -75,7 +80,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -217,32 +221,32 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The diagram opener. */
 	static IDiagramOpener diagramOpener;
 
-	/** The images. */
-	static Map<String, Image> images = new HashMap();
+	/** The BUTTON_IMAGES. */
+	static final Map<String, Image> BUTTON_IMAGES = new HashMap();
 
-	/** The menu images. */
-	static Map<String, Image> menu_images = new HashMap();
+	/** The menu BUTTON_IMAGES. */
+	static final Map<String, Image> MENU_IMAGES = new HashMap();
+
+	/** The Constant BUTTON_HEIGHT. */
+	static final int BUTTON_HEIGHT = 20;
 
 	/** The button padding. How much space between each experiment button */
-	static int buttonPadding = 4;
 	static {
 		final var store = EditorsUI.getPreferenceStore();
 		store.setDefault(AbstractDecoratedTextEditorPreferenceConstants.SHOW_RANGE_INDICATOR, false);
 		store.setDefault("spellingEnabled", false);
 		store.setValue("spellingEnabled", false);
-		images.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
-		images.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
-		images.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
-		menu_images.put(IKeyword.BATCH,
+		BUTTON_IMAGES.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
+		BUTTON_IMAGES.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
+		BUTTON_IMAGES.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
+		MENU_IMAGES.put(IKeyword.BATCH,
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH).image());
-		menu_images.put(IKeyword.RECORD,
+		MENU_IMAGES.put(IKeyword.RECORD,
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK).image());
-		menu_images.put("regular",
+		MENU_IMAGES.put("regular",
 				GamaIcon.named(ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI).image());
 
-		images.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
-		// for (Image im : images.values()) { maxImageHeight =
-		// Math.max(maxImageHeight, im.getBounds().height); }
+		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
 
 	/**
@@ -263,11 +267,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	/** The find control. */
 	private EditorSearchControls findControl;
-
-	/** The decoration enabled. */
-	// boolean decorationEnabled =
-	// GamaPreferences.Modeling.EDITBOX_ENABLED.getValue();
-	// boolean editToolbarEnabled = AutoStartup.EDITOR_SHOW_TOOLBAR.getValue();
 
 	/** The resource set provider. */
 	@Inject public IResourceSetProvider resourceSetProvider;
@@ -391,14 +390,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Builds the right toolbar.
 	 */
 	private void buildRightToolbar() {
-		// toolbar.wipe(SWT.LEFT, false);
-		//
-		// toolbar.button(IGamaColors.NEUTRAL, "Waiting...",
-		// GamaIcon.named(IGamaIcons.STATUS_CLOCK).image(), null,
-		// SWT.LEFT);
-		// toolbar.sep(4, SWT.LEFT);
 		findControl = new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
-		fakeButton = FlatButton.button(toolbar.getToolbar(SWT.RIGHT), IGamaColors.OK, "", images.get(IKeyword.BATCH));
+		fakeButton =
+				FlatButton.button(toolbar.getToolbar(SWT.RIGHT), IGamaColors.OK, "", BUTTON_IMAGES.get(IKeyword.BATCH));
 		fakeButton.setVisible(false);
 		toolbar.requestLayout();
 	}
@@ -447,7 +441,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			folder.setMRUVisible(true);
 			folder.setUnselectedCloseVisible(true);
 			folder.setHighlightEnabled(true);
-			// folder.setTabHeight(16);
 		}
 
 	}
@@ -567,9 +560,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	protected void handleCursorPositionChanged() {
-		if (getSelectionProvider() == null || getInternalSourceViewer() == null
-				|| getInternalSourceViewer().getControl() == null
-				|| getInternalSourceViewer().getControl().isDisposed())
+		GamaSourceViewer v = getInternalSourceViewer();
+		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
 		super.handleCursorPositionChanged();
 		this.markInNavigationHistory();
@@ -615,25 +607,24 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				Selector listener = null;
 				String imageName = null;
 
-				if (GamlEditorState.NO_EXP_DEFINED.equals(msg)) {
+				if (NO_EXP_DEFINED.equals(msg)) {
 					msg = null;
 				} else if (newState.hasImportedErrors) {
 					listener = new OpenImportedErrorSelectionListener(GamlEditor.this, newState,
 							toolbar.getToolbar(SWT.LEFT));
-					imageName = IGamaIcons.SMALL_DROPDOWN;
+					imageName = SMALL_DROPDOWN;
 				} else if (msg != null) {
 					listener = new RevalidateModelSelectionListener(GamlEditor.this);
-					imageName = IGamaIcons.MARKER_ERROR;
+					imageName = MARKER_ERROR;
 				} else {
 					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, runner);
 				}
 				if (msg != null) {
-					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, SWT.LEFT);
+					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);
 				} else if (newState.showExperiments) {
-					if (GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU.getValue()) {
+					if (EDITOR_EXPERIMENT_MENU.getValue()) {
 						displayExperimentMenu(newState, listener);
-					} else if (newState.abbreviations.size() <= 1
-							|| !GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS.getValue()) {
+					} else if (newState.abbreviations.size() <= 1 || !EDITOR_COLLAPSE_BUTTONS.getValue()) {
 						displayExperimentButtons(newState, listener);
 					} else {
 						int width = computeWidth(newState);
@@ -684,12 +675,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		for (final String text : newState.abbreviations) {
 			if (text == null) { continue; }
 			fakeButton.setText(text);
-			width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2 * buttonPadding;
+			width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2;
 		}
-		// fakeButton.setText("Add Experiment");
-		// width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2 *
-		// buttonPadding;
-		// DEBUG.OUT("Estimated width of the whole toolbar is " + width);
 		return width;
 	}
 
@@ -708,21 +695,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			final var expType = state.types.get(index++);
 			final var type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
-			final var image = images.get(type);
-			final var t = toolbar.button(IGamaColors.OK, text, image, SWT.LEFT);
-			final FlatButton b = (FlatButton) t.getControl();
-			b.setRightPadding(buttonPadding);
-			b.setToolTipText("Executes the " + type + " experiment named '" + text + "'");
-			b.addSelectionListener(listener);
+			final var t =
+					toolbar.button(IGamaColors.OK, text, BUTTON_IMAGES.get(type), listener, BUTTON_HEIGHT, SWT.LEFT);
+			t.setToolTipText("Executes the " + type + " experiment named '" + text + "'");
 			t.setData("index", index);
-			b.setData("exp", text);
-			b.computePreferredSize();
-			t.setWidth(b.getSize().x);
-			// DEBUG.OUT("Size of the item containing '" + text + "' is " + t.getWidth());
+			t.getControl().setData("exp", text);
 		}
 		// Necessary to recompute the width correctly
 		toolbar.normalizeToolbars();
-		toolbar.requestLayout();
 	}
 
 	/**
@@ -735,11 +715,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private void displayExperimentMenu(final GamlEditorState state, final Selector listener) {
 
-		final ToolItem menu = toolbar.menu(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
-		final FlatButton b = (FlatButton) menu.getControl();
-		b.setRightPadding(buttonPadding);
+		final ToolItem menu = toolbar.menuButton(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
+		final FlatButton b = ((FlatButton) menu.getControl()).withHeight(BUTTON_HEIGHT);
 
-		b.addSelectionListener(new SelectionAdapter() {
+		b.setSelectionListener(new Selector() {
 
 			Menu menu;
 
@@ -761,14 +740,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					final var expType = state.types.get(index++);
 					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
-					final Image image = menu_images.get(type);
+					final Image image = MENU_IMAGES.get(type);
 					GamaMenu.action(menu, text, listener, image).setData("exp", text);
 				}
 			}
 		});
-		menu.setWidth(b.getSize().x);
 		toolbar.normalizeToolbars();
-		toolbar.requestLayout();
 	}
 
 	@Override

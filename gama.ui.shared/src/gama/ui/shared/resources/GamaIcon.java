@@ -150,28 +150,41 @@ public class GamaIcon implements IGamaIcons {
 		}
 	}
 
+	/** The color template. */
+	static GamaImage COLOR_TEMPLATE;
+
+	/** The transparent. */
+	static Color TRANSPARENT = new Color(0, 0, 0, 0);
+
+	static {
+		try {
+			COLOR_TEMPLATE = GamaImage.from(ImageIO.read(computeURL("spacer")), true);
+		} catch (IOException e) {}
+	}
+
 	/**
-	 * Of small color.
+	 * Of color size 24.
 	 *
 	 * @param gcolor
 	 *            the gcolor
 	 * @return the gama icon
 	 */
 	public static GamaIcon ofColor(final GamaColor gcolor) {
-		String name = COLOR_PATH + "circle.color." + String.format("%X", gcolor.getRGB()) + ".16";
+		String name = COLOR_PATH + "circle.color." + String.format("%X", gcolor.getRGB()) + ".24";
 		try {
 			return ICON_CACHE.get(name, () -> {
-				GamaImage bi = GamaImage.from(ImageIO.read(computeURL("spacer16")), true);
-				Graphics2D gc = bi.createGraphics();
+				Graphics2D gc = COLOR_TEMPLATE.createGraphics();
 				gc.setRenderingHints(HINTS);
-				int size = 16; // bi.getWidth();
 				gc.setColor(gcolor);
-				gc.fillOval(1, 1, size - 1, size - 1);
+				gc.fillOval(5, 5, 15, 15);
 				gc.setColor(ThemeHelper.isDark() ? GamaColor.get(227, 230, 225) : Color.gray);
 				gc.setStroke(new BasicStroke((float) 0.3));
-				gc.drawOval(1, 1, size - 2, size - 2);
+				gc.drawOval(5, 5, 14, 14);
+				GamaIcon result = new GamaIcon(name, COLOR_TEMPLATE);
+				gc.setBackground(TRANSPARENT);
+				gc.clearRect(0, 0, 25, 25);
 				gc.dispose();
-				return new GamaIcon(name, bi);
+				return result;
 			});
 		} catch (Exception e) {
 			return null;
@@ -203,8 +216,8 @@ public class GamaIcon implements IGamaIcons {
 		url = computeURL(code);
 		DEBUG.OUT(" with URL " + url);
 		disabledUrl = computeURL(code + DISABLED_SUFFIX);
-		descriptor = ImageDescriptor.createFromURL(url);
-		disabledDescriptor = ImageDescriptor.createFromURL(disabledUrl);
+		descriptor = new SimplifiedURLImageDescriptor(url);
+		disabledDescriptor = new SimplifiedURLImageDescriptor(disabledUrl);
 	}
 
 	/**

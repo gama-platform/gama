@@ -567,7 +567,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		ToolItem item = tb.check(antiAlias, SWT.RIGHT);
 		tb.setSelection(item, view.getOutput().getData().isAntialias());
 		if (!isFullScreen() && WorkbenchHelper.getNumberOfMonitors() > 1) {
-			fs = tb.menu(DISPLAY_FULLSCREEN_ENTER, "", "Enter fullscreen", e -> {
+			fs = tb.menuItem(DISPLAY_FULLSCREEN_ENTER, "", "Enter fullscreen", e -> {
 				final GamaMenu menu = new GamaMenu() {
 
 					@Override
@@ -594,7 +594,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			fs = tb.button(toggleFullScreen, SWT.RIGHT);
 		}
 		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.menu(IGamaIcons.LAYERS_MENU, "Browse displayed agents by layers", "Properties and contents of layers",
+		tb.menuItem(IGamaIcons.LAYERS_MENU, "Browse displayed agents by layers", "Properties and contents of layers",
 				trigger -> menuManager.buildToolbarMenu(trigger, (ToolItem) trigger.widget), SWT.RIGHT);
 
 	}
