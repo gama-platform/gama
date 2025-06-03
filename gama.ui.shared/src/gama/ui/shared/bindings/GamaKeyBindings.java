@@ -98,7 +98,7 @@ public class GamaKeyBindings implements Listener {
 			}
 			return;
 		}
-		if (event.stateMask == 0) return;
+		if (event.stateMask == 0) { return; }
 
 		switch (event.keyCode) {
 
@@ -147,7 +147,7 @@ public class GamaKeyBindings implements Listener {
 				}
 				break;
 			default:
-				DEBUG.LOG(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
+				DEBUG.OUT(" KEY CODE " + event.keyCode + " MODS " + event.stateMask);
 				final PluggableBinding pb = bindings.get(KeyStroke.getInstance(event.stateMask, event.keyCode));
 				if (pb != null) {
 					consume(event);

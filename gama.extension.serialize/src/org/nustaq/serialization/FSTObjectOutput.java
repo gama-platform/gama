@@ -361,7 +361,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	// avoid creation of dummy ref
 	protected FSTClazzInfo.FSTFieldInfo getCachedFI(final Class... possibles) {
 		if (refs == null) { refs = refsLocal.get(); }
-		if (curDepth >= refs.length) return new FSTClazzInfo.FSTFieldInfo(possibles, null, true);
+		if (curDepth >= refs.length) { return new FSTClazzInfo.FSTFieldInfo(possibles, null, true); }
 		FSTClazzInfo.FSTFieldInfo inf = refs[curDepth];
 		if (inf == null) {
 			inf = new FSTClazzInfo.FSTFieldInfo(possibles, null, true);
@@ -386,7 +386,7 @@ public class FSTObjectOutput implements ObjectOutput {
 		curDepth++;
 		FSTClazzInfo fstClazzInfo = writeObjectWithContext(info, obj, ci);
 		curDepth--;
-		if (fstClazzInfo == null) return null;
+		if (fstClazzInfo == null) { return null; }
 		return fstClazzInfo.useCompatibleMode() ? null : fstClazzInfo;
 	}
 
@@ -487,7 +487,7 @@ public class FSTObjectOutput implements ObjectOutput {
 					}
 				}
 				// shortpath
-				if (!dontShare && writeHandleIfApplicable(toWrite, stringInfo)) return stringInfo;
+				if (!dontShare && writeHandleIfApplicable(toWrite, stringInfo)) { return stringInfo; }
 				getCodec().writeTag(STRING, toWrite, 0, toWrite, this);
 				getCodec().writeStringUTF((String) toWrite);
 				return null;
@@ -507,8 +507,9 @@ public class FSTObjectOutput implements ObjectOutput {
 						toWrite, this);
 				return null;
 			}
-			if (referencee.getType() != null && referencee.getType().isEnum() || toWrite instanceof Enum)
+			if (referencee.getType() != null && referencee.getType().isEnum() || toWrite instanceof Enum) {
 				return writeEnum(referencee, toWrite);
+			}
 
 			FSTClazzInfo serializationInfo = ci == null ? getFstClazzInfo(referencee, clazz) : ci;
 
@@ -516,15 +517,17 @@ public class FSTObjectOutput implements ObjectOutput {
 			FSTObjectSerializer ser = serializationInfo.getSer();
 			if (!dontShare && !referencee.isFlat() && !serializationInfo.isFlat()
 					&& (ser == null || !ser.alwaysCopy())) {
-				if (writeHandleIfApplicable(toWrite, serializationInfo)) return serializationInfo;
+				if (writeHandleIfApplicable(toWrite, serializationInfo)) { return serializationInfo; }
 			}
 			if (clazz.isArray()) {
-				if (getCodec().writeTag(ARRAY, toWrite, 0, toWrite, this)) return serializationInfo; // some codecs
-																										// handle
-																										// primitive
-																										// arrays like
-																										// an primitive
-																										// type
+				if (getCodec().writeTag(ARRAY, toWrite, 0, toWrite, this)) {
+					return serializationInfo; // some codecs
+				}
+				// handle
+				// primitive
+				// arrays like
+				// an primitive
+				// type
 				writeArray(referencee, toWrite);
 				getCodec().writeArrayEnd();
 			} else if (ser == null) {
@@ -609,7 +612,7 @@ public class FSTObjectOutput implements ObjectOutput {
 			// anonymous enum subclass
 			Class c = toWrite.getClass();
 			c = toWrite.getClass().getSuperclass();
-			if (c == null) throw new RuntimeException("Can't handle this enum: " + toWrite.getClass());
+			if (c == null) { throw new RuntimeException("Can't handle this enum: " + toWrite.getClass()); }
 			getCodec().writeClass(c);
 			getCodec().writeFInt(((Enum) toWrite).ordinal());
 		}
@@ -632,16 +635,15 @@ public class FSTObjectOutput implements ObjectOutput {
 	protected boolean writeHandleIfApplicable(final Object toWrite, final FSTClazzInfo serializationInfo)
 			throws IOException {
 		if (toWrite instanceof IAgent || toWrite instanceof IShape || toWrite instanceof IList
-				|| toWrite instanceof IType || toWrite instanceof GamaGeometryFactory)
+				|| toWrite instanceof IType || toWrite instanceof GamaGeometryFactory) {
 			return false;
+		}
 		int writePos = getCodec().getWritten();
 		int handle = objects.registerObjectForWrite(toWrite, writePos, serializationInfo, tmp);
 		// determine class header
 		if (handle >= 0) {
 			final boolean isIdentical = tmp[0] == 0; // objects.getReadRegisteredObject(handle) == toWrite;
 			if (isIdentical) {
-				// String s = toWrite.getClass().getSimpleName();
-				// if (!"String".equals(s)) { System.out.println("POK writeHandle" + handle + " " + s); }
 				if (!getCodec().writeTag(HANDLE, null, handle, toWrite, this)) { getCodec().writeFInt(handle); }
 				return true;
 			}
@@ -727,8 +729,10 @@ public class FSTObjectOutput implements ObjectOutput {
 	protected void writeObjectCompatibleRecursive(final FSTClazzInfo.FSTFieldInfo referencee, final Object toWrite,
 			final FSTClazzInfo serializationInfo, final Class cl) throws IOException {
 		FSTClazzInfo.FSTCompatibilityInfo fstCompatibilityInfo = serializationInfo.getCompInfo().get(cl);
-		if (!Serializable.class.isAssignableFrom(cl)) return; // ok here, as compatible mode will never be triggered for
-																// "forceSerializable"
+		if (!Serializable.class.isAssignableFrom(cl)) {
+			return; // ok here, as compatible mode will never be triggered for
+		}
+		// "forceSerializable"
 		writeObjectCompatibleRecursive(referencee, toWrite, serializationInfo, cl.getSuperclass());
 		if (fstCompatibilityInfo != null && fstCompatibilityInfo.getWriteMethod() != null) {
 			try {
@@ -939,8 +943,9 @@ public class FSTObjectOutput implements ObjectOutput {
 	 */
 	protected boolean writeObjectHeader(final FSTClazzInfo clsInfo, final FSTClazzInfo.FSTFieldInfo referencee,
 			final Object toWrite) throws IOException {
-		if (toWrite.getClass() == referencee.getType() && !clsInfo.useCompatibleMode())
+		if (toWrite.getClass() == referencee.getType() && !clsInfo.useCompatibleMode()) {
 			return getCodec().writeTag(TYPED, clsInfo, 0, toWrite, this);
+		}
 		final Class[] possibleClasses = referencee.getPossibleClasses();
 		if (possibleClasses != null) {
 			final int length = possibleClasses.length;
@@ -1053,7 +1058,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 * @param out
 	 */
 	public void resetForReUse(final OutputStream out) {
-		if (closed) throw new RuntimeException("Can't reuse closed stream");
+		if (closed) { throw new RuntimeException("Can't reuse closed stream"); }
 		getCodec().reset(null);
 		if (out != null) { getCodec().setOutstream(out); }
 		objects.clearForWrite(conf);
@@ -1075,7 +1080,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 * @date 29 sept. 2023
 	 */
 	public void resetForReUse(final byte[] out) {
-		if (closed) throw new RuntimeException("Can't reuse closed stream");
+		if (closed) { throw new RuntimeException("Can't reuse closed stream"); }
 		getCodec().reset(out);
 		objects.clearForWrite(conf);
 	}
@@ -1322,7 +1327,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 *         anyways.
 	 */
 	public byte[] getCopyOfWrittenBuffer() {
-		if (!getCodec().isByteArrayBased()) return getBuffer();
+		if (!getCodec().isByteArrayBased()) { return getBuffer(); }
 		byte res[] = new byte[getCodec().getWritten()];
 		byte[] buffer = getBuffer();
 		System.arraycopy(buffer, 0, res, 0, getCodec().getWritten());

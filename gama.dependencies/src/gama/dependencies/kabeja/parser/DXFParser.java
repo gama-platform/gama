@@ -183,8 +183,6 @@ public class DXFParser implements HandlerManager, Handler, Parser, DXFHandler {
 
 	@Override
 	public void parseGroup(final int keyCode, final DXFValue value) throws ParseException {
-		// System.out.println(""+keyCode);
-		// System.out.println(" "+value.getValue());
 		try {
 			if (sectionstarts) {
 				sectionstarts = false;

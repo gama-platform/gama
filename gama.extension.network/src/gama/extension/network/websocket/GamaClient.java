@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaClient.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaClient.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -105,7 +104,7 @@ public class GamaClient extends WebSocketClient {
 	 */
 	@Override
 	public void onMessage(final String message) {
-		System.out.println(": " + message);
+		// DEBUG.LOG(": " + message);
 		String msg = message;
 		msg = msg.replace("@n@", "\n");
 		msg = msg.replace("@b@@r@", "\b\r");

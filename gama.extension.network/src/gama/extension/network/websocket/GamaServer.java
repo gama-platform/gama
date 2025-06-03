@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaServer.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaServer.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -46,6 +45,10 @@ import gama.extension.network.tcp.ServerService;
  */
 public class GamaServer extends WebSocketServer {
 
+	static {
+		DEBUG.OFF();
+	}
+
 	/** The my service. */
 	private final ServerService myService;
 
@@ -67,7 +70,7 @@ public class GamaServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(final WebSocket conn, final ClientHandshake handshake) {
-		System.out.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+		DEBUG.OUT(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
 	}
 
 	@Override

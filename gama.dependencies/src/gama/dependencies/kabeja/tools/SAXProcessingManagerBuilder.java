@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SAXProcessingManagerBuilder.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SAXProcessingManagerBuilder.java, in gama.dependencies, is part of the source code of the GAMA modeling and
+ * simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -35,6 +35,7 @@ import gama.dependencies.kabeja.xml.AggregatorGenerator;
 import gama.dependencies.kabeja.xml.SAXFilter;
 import gama.dependencies.kabeja.xml.SAXGenerator;
 import gama.dependencies.kabeja.xml.SAXSerializer;
+import gama.dev.DEBUG;
 
 /**
  * @author <a href="mailto:simon.mieth@gmx.de">Simon Mieth</a>
@@ -387,7 +388,7 @@ public class SAXProcessingManagerBuilder implements ContentHandler {
 				factory.setFeature("http://apache.org/xml/features/xinclude", true);
 			} catch (Exception e) {
 				// OK older jaxp
-				System.out.println("No XInclude support (use JAXP 1.4 or later for XInclude)");
+				DEBUG.LOG("No XInclude support (use JAXP 1.4 or later for XInclude)");
 			}
 
 			try {

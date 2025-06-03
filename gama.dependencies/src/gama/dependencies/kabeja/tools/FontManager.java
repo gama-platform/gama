@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * FontManager.java, in gama.dependencies, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * FontManager.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -22,13 +21,13 @@ import java.util.Hashtable;
  *
  */
 public class FontManager {
-	
+
 	/** The instance. */
 	private static FontManager instance = new FontManager();
-	
+
 	/** The font description. */
 	private String fontDescription = "conf/font.properties";
-	
+
 	/** The font properties. */
 	private final Hashtable<String, String> fontProperties = new Hashtable<>();
 
@@ -42,7 +41,8 @@ public class FontManager {
 	/**
 	 * Sets the font description.
 	 *
-	 * @param file the new font description
+	 * @param file
+	 *            the new font description
 	 */
 	public void setFontDescription(final String file) {
 		this.fontDescription = file;
@@ -77,9 +77,7 @@ public class FontManager {
 						fontProperties.put(font, svgFont);
 					}
 				}
-			} else {
-				// System.out.println("no font.properties");
-			}
+			} else {}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -102,7 +100,7 @@ public class FontManager {
 	public boolean hasFontDescription(String font) {
 		font = getFontKey(font);
 
-		if (fontProperties.containsKey(font)) return true;
+		if (fontProperties.containsKey(font)) { return true; }
 
 		return false;
 	}
@@ -110,7 +108,8 @@ public class FontManager {
 	/**
 	 * Gets the font description.
 	 *
-	 * @param font the font
+	 * @param font
+	 *            the font
 	 * @return the font description
 	 */
 	public String getFontDescription(final String font) {
@@ -120,7 +119,8 @@ public class FontManager {
 	/**
 	 * Gets the font key.
 	 *
-	 * @param font the font
+	 * @param font
+	 *            the font
 	 * @return the font key
 	 */
 	private String getFontKey(String font) {

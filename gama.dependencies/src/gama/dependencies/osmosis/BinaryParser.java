@@ -52,7 +52,7 @@ public abstract class BinaryParser implements BlockReaderAdapter {
 
 	@Override
 	public void handleBlock(final FileBlock message) {
-		
+
 		try {
 			if (message.getType().equals("OSMHeader")) {
 				final Osmformat.HeaderBlock headerblock = Osmformat.HeaderBlock.parseFrom(message.getData());
@@ -62,7 +62,7 @@ public abstract class BinaryParser implements BlockReaderAdapter {
 				parse(primblock);
 			}
 		} catch (final InvalidProtocolBufferException e) {
-			
+
 			e.printStackTrace();
 			throw new Error("ParseError"); // TODO
 		}
@@ -71,10 +71,8 @@ public abstract class BinaryParser implements BlockReaderAdapter {
 
 	@Override
 	public boolean skipBlock(final FileBlockPosition block) {
-		// System.out.println("Seeing block of type: "+block.getType());
 		if (block.getType().equals("OSMData")) { return false; }
 		if (block.getType().equals("OSMHeader")) { return false; }
-		System.out.println("Skipped block of type: " + block.getType());
 		return true;
 	}
 
@@ -97,9 +95,7 @@ public abstract class BinaryParser implements BlockReaderAdapter {
 		final Osmformat.StringTable stablemessage = block.getStringtable();
 		strings = new String[stablemessage.getSCount()];
 
-		for (int i = 0; i < strings.length; i++) {
-			strings[i] = stablemessage.getS(i).toStringUtf8();
-		}
+		for (int i = 0; i < strings.length; i++) { strings[i] = stablemessage.getS(i).toStringUtf8(); }
 
 		granularity = block.getGranularity();
 		lat_offset = block.getLatOffset();
@@ -111,9 +107,7 @@ public abstract class BinaryParser implements BlockReaderAdapter {
 			parseNodes(groupmessage.getNodesList());
 			parseWays(groupmessage.getWaysList());
 			parseRelations(groupmessage.getRelationsList());
-			if (groupmessage.hasDense()) {
-				parseDense(groupmessage.getDense());
-			}
+			if (groupmessage.hasDense()) { parseDense(groupmessage.getDense()); }
 		}
 	}
 
