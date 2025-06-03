@@ -11,9 +11,10 @@
 package gama.ui.display.java2d.swing;
 
 import java.awt.EventQueue;
+import java.awt.GridBagLayout;
 import java.lang.reflect.InvocationTargetException;
 
-import javax.swing.JApplet;
+import javax.swing.JPanel;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -55,20 +56,22 @@ public class SwingControlWin extends SwingControl {
 		if (!populated) {
 			populated = true;
 			WorkbenchHelper.asyncRun(() -> {
-				JApplet applet = new JApplet();
 				frame = SWT_AWT.new_Frame(SwingControlWin.this);
 				frame.setAlwaysOnTop(false);
 				surface.setVisibility(() -> visible);
-				applet.add(surface);
-				frame.add(applet);
-				Listener resizeListener = e -> { surface.setMonitor(this.getMonitor()); };
+				JPanel rootPane = new JPanel();
+				rootPane.setLayout(new GridBagLayout());
+				rootPane.add(surface);
+				frame.add(rootPane);
+				frame.validate();
 
+				Listener resizeListener = e -> { surface.setMonitor(this.getMonitor()); };
 				addListener(SWT.Resize, resizeListener);
 				addListener(SWT.Dispose, e -> {
 					removeListener(SWT.Resize, resizeListener);
 					EventQueue.invokeLater(() -> {
 						try {
-							applet.getContentPane().removeAll();
+							rootPane.removeAll();
 							frame.removeAll();
 							surface.dispose();
 							frame.dispose();
@@ -88,6 +91,53 @@ public class SwingControlWin extends SwingControl {
 
 		}
 	}
+
+	// @Override
+	// protected void populate() {
+	// if (isDisposed()) { return; }
+	// if (!populated) {
+	// populated = true;
+	// WorkbenchHelper.asyncRun(() -> {
+	// JApplet applet = new JApplet();
+	// frame = SWT_AWT.new_Frame(SwingControlWin.this);
+	// frame.setAlwaysOnTop(false);
+	// surface.setVisibility(() -> visible);
+	// applet.add(surface);
+	// frame.add(applet);
+	// // if (swingKeyListener != null) {
+	// // applet.addKeyListener(swingKeyListener);
+	// // Tested but do not provide any improvement
+	// // frame.addKeyListener(swingKeyListener);
+	// // surface.addKeyListener(swingKeyListener);
+	// // }
+	// // if (swingMouseListener != null) { applet.addMouseMotionListener(swingMouseListener); }
+	// Listener resizeListener = e -> { surface.setMonitor(this.getMonitor()); };
+	//
+	// addListener(SWT.Resize, resizeListener);
+	// addListener(SWT.Dispose, e -> {
+	// removeListener(SWT.Resize, resizeListener);
+	// EventQueue.invokeLater(() -> {
+	// try {
+	// applet.getContentPane().removeAll();
+	// frame.removeAll();
+	// surface.dispose();
+	// frame.dispose();
+	// // Removes the reference to the different objects
+	// // (see #489)
+	// removeAllReferences();
+	// } catch (final Exception e1) {
+	// DEBUG.LOG(e1.getMessage());
+	// }
+	//
+	// });
+	// }
+	//
+	// );
+	//
+	// });
+	//
+	// }
+	// }
 
 	@Override
 	protected void privateSetDimensions(final int width, final int height) {
