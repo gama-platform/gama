@@ -67,6 +67,8 @@ public class ParameterExpandBar extends Composite {
 	/** The band height. */
 	int bandHeight = ParameterExpandItem.HEADER_HEIGHT;
 
+	static int SCROLL_INCREMENT = ParameterExpandItem.HEADER_HEIGHT / 2;
+
 	/** The listener. */
 	private final Listener listener;
 
@@ -220,13 +222,13 @@ public class ParameterExpandBar extends Composite {
 	 *            the item
 	 */
 	public void destroyItem(final ParameterExpandItem item) {
-		if (inDispose) return;
+		if (inDispose) { return; }
 		var index = 0;
 		while (index < itemCount) {
 			if (items[index] == item) { break; }
 			index++;
 		}
-		if (index == itemCount) return;
+		if (index == itemCount) { return; }
 		System.arraycopy(items, index + 1, items, index, --itemCount - index);
 		items[itemCount] = null;
 		item.redraw();
@@ -238,7 +240,7 @@ public class ParameterExpandBar extends Composite {
 	 * Compute band height.
 	 */
 	void computeBandHeight() {
-		if (getFont() == null) return;
+		if (getFont() == null) { return; }
 		final var gc = new GC(this);
 		final var metrics = gc.getFontMetrics();
 		gc.dispose();
@@ -254,7 +256,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 	public ParameterExpandItem getItem(final Object data) {
 		for (final ParameterExpandItem item : items) {
-			if (item != null && Objects.equal(item.getData(), data)) return item;
+			if (item != null && Objects.equal(item.getData(), data)) { return item; }
 		}
 		return null;
 	}
@@ -314,7 +316,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 	public int indexOf(final ParameterExpandItem item) {
 		if (item == null) { SWT.error(SWT.ERROR_NULL_ARGUMENT); }
-		for (var i = 0; i < itemCount; i++) { if (items[i] == item) return i; }
+		for (var i = 0; i < itemCount; i++) { if (items[i] == item) { return i; } }
 		return -1;
 	}
 
@@ -348,7 +350,7 @@ public class ParameterExpandBar extends Composite {
 	 * Update item names.
 	 */
 	public void updateItemNames() {
-		if (underlyingObjects == null) return;
+		if (underlyingObjects == null) { return; }
 		for (var i = 0; i < itemCount; i++) {
 			items[i].setText(underlyingObjects.getItemDisplayName(items[i].getData(), items[i].getText()));
 		}
@@ -358,7 +360,7 @@ public class ParameterExpandBar extends Composite {
 	 * Update item colors.
 	 */
 	public void updateItemColors() {
-		if (underlyingObjects == null) return;
+		if (underlyingObjects == null) { return; }
 		for (var i = 0; i < itemCount; i++) {
 			items[i].setColor(underlyingObjects.getItemDisplayColor(items[i].getData()));
 		}
@@ -376,9 +378,9 @@ public class ParameterExpandBar extends Composite {
 	 * Sets the scrollbar.
 	 */
 	void setScrollbar() {
-		if (itemCount == 0) return;
+		if (itemCount == 0) { return; }
 		final var verticalBar = getVerticalBar();
-		if (verticalBar == null) return;
+		if (verticalBar == null) { return; }
 		final var height = getClientArea().height;
 		final var item = items[itemCount - 1];
 		var maxHeight = item.y + bandHeight + spacing;
@@ -391,7 +393,7 @@ public class ParameterExpandBar extends Composite {
 		}
 		maxHeight += yCurrentScroll;
 		final var selection = Math.min(yCurrentScroll, maxHeight);
-		final var increment = verticalBar.getIncrement();
+		final var increment = SCROLL_INCREMENT;
 		final var pageIncrement = verticalBar.getPageIncrement();
 		verticalBar.setValues(selection, 0, maxHeight, height, increment, pageIncrement);
 		verticalBar.setVisible(maxHeight > height);
@@ -405,7 +407,7 @@ public class ParameterExpandBar extends Composite {
 	 *
 	 */
 	public void setSpacing(final int spacing) {
-		if (spacing < 0 || spacing == this.spacing) return;
+		if (spacing < 0 || spacing == this.spacing) { return; }
 		this.spacing = spacing;
 		final var width = Math.max(0, getClientArea().width - spacing * 2);
 		for (var i = 0; i < itemCount; i++) {
@@ -486,7 +488,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 	void changeHoverTo(final ParameterExpandItem item) {
 		int i = indexOf(item);
-		if (hoverItem == i) return;
+		if (hoverItem == i) { return; }
 		final var oldHoverItem = hoverItem;
 		hoverItem = i;
 		if (oldHoverItem != -1) { items[oldHoverItem].redraw(); }
@@ -510,7 +512,7 @@ public class ParameterExpandBar extends Composite {
 				ignoreMouseUp = true;
 				final var p = toDisplay(x, y);
 				final Map<String, Runnable> menuContents = underlyingObjects.handleMenu(item.getData(), p.x, p.y);
-				if (menuContents == null) return;
+				if (menuContents == null) { return; }
 				final var menu = new Menu(getShell(), SWT.POP_UP);
 
 				for (final Map.Entry<String, Runnable> entry : menuContents.entrySet()) {
@@ -535,7 +537,7 @@ public class ParameterExpandBar extends Composite {
 	 *            the event
 	 */
 	void onMouseDown(final Event event) {
-		if (event.button != 1) return;
+		if (event.button != 1) { return; }
 		final var x = event.x;
 		final var y = event.y;
 		for (var i = 0; i < itemCount; i++) {
@@ -574,7 +576,7 @@ public class ParameterExpandBar extends Composite {
 			ignoreMouseUp = false;
 			return;
 		}
-		if (event.button != 1 || hoverItem == -1) return;
+		if (event.button != 1 || hoverItem == -1) { return; }
 		ParameterExpandItem item = items[hoverItem];
 		item.setExpanded(!item.expanded);
 	}
@@ -597,7 +599,7 @@ public class ParameterExpandBar extends Composite {
 	 * On resize.
 	 */
 	void onResize() {
-		if (this.isDisposed()) return;
+		if (this.isDisposed()) { return; }
 		final Rectangle rect = getClientArea();
 		final int width = Math.max(0, rect.width - spacing * 2);
 		for (int i = 0; i < itemCount; i++) {
@@ -632,7 +634,7 @@ public class ParameterExpandBar extends Composite {
 	 *            the data
 	 */
 	public void collapseItemWithData(final Object data) {
-		if (data == null) return;
+		if (data == null) { return; }
 		for (final ParameterExpandItem i : items) {
 			if (data.equals(i.getData())) {
 				i.setExpanded(false);
