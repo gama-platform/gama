@@ -33,6 +33,7 @@ import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IGamaView;
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.runtime.PlatformHelper;
 import gama.core.util.tree.GamaNode;
 import gama.core.util.tree.GamaTree;
 import gama.dev.DEBUG;
@@ -148,7 +149,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		// child.getWeight());
 		if (child.getWeight() == null) { child.setWeight(5000); }
 		final MPartStack displayStack = getDisplaysPlaceholder();
-		if (displayStack == null) return;
+		if (displayStack == null) { return; }
 		final MElementContainer<?> root = displayStack.getParent();
 		// displayStack.getChildren().addAll(holders);
 		process(root, child, holders);
@@ -199,16 +200,11 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			ThemeHelper.changeSashBackground(PerspectiveHelper.getBackground());
 			PerspectiveHelper.getActiveSimulationPerspective().setRestoreBackground(ThemeHelper::restoreSashBackground);
 		}
-		// Attempt to solve the problem expressed in #3587 by forcing the focus
-		// on the canvases at least once
-		// Modified to only target 2d displays as it was creating a problem on
-		// macOS (perspective not able to go back to
-		// modeling and forth)
-		// displays.forEach(d -> {
-		// if (d.is2D()) {
-		// d.focusCanvas();
-		// }
-		// });
+		// Attempt to solve the problem expressed in #3587 and #667 by forcing the focus
+		// on the canvases at least once. Modified to only target 2d displays as it was creating a problem on macOS
+		// (perspective not able to go back to modeling and forth)
+
+		if (PlatformHelper.isWindows()) { displays.forEach(d -> { if (d.is2D()) { d.focusCanvas(); } }); }
 
 	}
 
@@ -275,7 +271,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 * @return the m element container
 	 */
 	static MElementContainer create(final MElementContainer root, final String weight, final Boolean dir) {
-		if (dir == null && root instanceof MPartStack) return root;
+		if (dir == null && root instanceof MPartStack) { return root; }
 		final MElementContainer c;
 		if (dir == null) {
 			if (!PerspectiveHelper.keepTabs()) {

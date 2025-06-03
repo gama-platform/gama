@@ -50,163 +50,166 @@ import gama.ui.shared.views.toolbar.GamaToolbar2;
  */
 public class UserControlView extends GamaViewPart implements IGamaView.User {
 
-    /** The id. */
-    public static String ID = IGui.USER_CONTROL_VIEW_ID;
+	/** The id. */
+	public static String ID = IGui.USER_CONTROL_VIEW_ID;
 
-    /** The scope. */
-    IScope scope;
+	/** The scope. */
+	IScope scope;
 
-    /** The panel. */
-    UserPanelStatement panel;
+	/** The panel. */
+	UserPanelStatement panel;
 
-    /** The body. */
-    private Composite body;
+	/** The body. */
+	private Composite body;
 
-    /** The continue item. */
-    ToolItem inspectItem, continueItem;
+	/** The continue item. */
+	ToolItem inspectItem, continueItem;
 
-    @Override
-    public void initFor(final IScope scope, final UserPanelStatement panel) {
-	this.panel = panel;
-	this.scope = scope;
+	@Override
+	public void initFor(final IScope scope, final UserPanelStatement panel) {
+		this.panel = panel;
+		this.scope = scope;
 
-	if (body != null && !body.isDisposed()) {
-	    body.dispose();
-	    body = null;
-	}
-
-	ownCreatePartControl(getParentComposite());
-	getParentComposite().layout();
-    }
-
-    /**
-     * Deactivate.
-     *
-     * @param parent
-     *            the parent
-     */
-    private void deactivate(final Composite parent) {
-	for (final Control c : parent.getChildren()) {
-	    if (c instanceof Composite) {
-		deactivate((Composite) c);
-	    } else {
-		c.setEnabled(false);
-	    }
-	}
-    }
-
-    @Override
-    public void ownCreatePartControl(final Composite parent) {
-	// parent.setBackground(IGamaColors.WHITE.color());
-	if (scope == null) {
-	    return;
-	}
-	inspectItem.setEnabled(true);
-	continueItem.setEnabled(true);
-	setPartName(
-		"[" + scope.getAgent().getName() + " in " + scope.getSimulation().getName() + "] " + panel.getName());
-	parent.setLayout(new FillLayout());
-	toolbar.status(null,
-		"User control, agent " + scope.getAgent().getName() + ", cycle " + scope.getClock().getCycle(), null);
-	body = new Composite(parent, SWT.None);
-	GridLayout layout = new GridLayout(3, false);
-	body.setLayout(layout);
-	// body.setBackground(IGamaColors.WHITE.color());
-	for (final IStatement statement : panel.getUserCommands()) {
-	    if (statement instanceof UserCommandStatement c) {
-		final EditorsGroup commandComposite = new EditorsGroup(body, SWT.NONE);
-		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		commandComposite.setLayoutData(data);
-		// layout = new GridLayout(3, false);
-		// commandComposite.setLayout(layout);
-		// commandComposite.setBackground(IGamaColors.WHITE.color());
-		final List<UserInputStatement> inputs = c.getInputs();
-		final int nbLines = inputs.size() > 1 ? inputs.size() : 1;
-		final int nbCol = inputs.size() > 0 ? 1 : 3;
-		GamaUIColor color = GamaColors.get(c.getColor(scope));
-		if (color == null) {
-		    color = IGamaColors.BLUE;
-		}
-		final Image image = GamaIcon
-			.named(c.isContinue(scope) ? "overlays/small.continue" : "overlays/small.exp.run.white")
-			.image();
-		final FlatButton b = FlatButton.button(commandComposite, color, c.getName(), image);
-		b.setEnabled(c.isEnabled(scope));
-		final GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, true, nbCol, nbLines);
-		b.setLayoutData(gd);
-		b.setSelectionListener(e -> {
-		    scope.execute(c);
-		    GAMA.getExperiment().refreshAllOutputs();
-		    if (c.isContinue(scope)) {
-			doContinue();
-		    }
-		});
-		for (final UserInputStatement i : inputs) {
-		    scope.addVarWithValue(i.getTempVarName(), i.value(scope));
-		    EditorFactory.create(scope, commandComposite, i, newValue -> {
-			i.setValue(scope, newValue);
-			scope.execute(i);
-		    }, false);
+		if (body != null && !body.isDisposed()) {
+			body.dispose();
+			body = null;
 		}
 
-	    }
+		ownCreatePartControl(getParentComposite());
+		getParentComposite().layout();
 	}
 
-    }
+	/**
+	 * Deactivate.
+	 *
+	 * @param parent
+	 *            the parent
+	 */
+	private void deactivate(final Composite parent) {
+		for (final Control c : parent.getChildren()) {
+			if (c instanceof Composite) {
+				deactivate((Composite) c);
+			} else {
+				c.setEnabled(false);
+			}
+		}
+	}
 
-    /**
-     * Do continue.
-     */
-    protected void doContinue() {
-	scope.setOnUserHold(false);
-	deactivate(getParentComposite());
-	ViewsHelper.hideView(this);
-    }
+	@Override
+	public void ownCreatePartControl(final Composite parent) {
+		// parent.setBackground(IGamaColors.WHITE.color());
+		if (scope == null) { return; }
+		inspectItem.setEnabled(true);
+		continueItem.setEnabled(true);
+		setPartName(
+				"[" + scope.getAgent().getName() + " in " + scope.getSimulation().getName() + "] " + panel.getName());
+		parent.setLayout(new FillLayout());
+		toolbar.status(null,
+				"User control, agent " + scope.getAgent().getName() + ", cycle " + scope.getClock().getCycle(), null);
+		body = new Composite(parent, SWT.None);
+		GridLayout layout = new GridLayout(3, false);
+		body.setLayout(layout);
+		// body.setBackground(IGamaColors.WHITE.color());
+		for (final IStatement statement : panel.getUserCommands()) {
+			if (statement instanceof UserCommandStatement c) {
+				final EditorsGroup commandComposite = new EditorsGroup(body, SWT.NONE);
+				final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+				commandComposite.setLayoutData(data);
+				// layout = new GridLayout(3, false);
+				// commandComposite.setLayout(layout);
+				// commandComposite.setBackground(IGamaColors.WHITE.color());
+				final List<UserInputStatement> inputs = c.getInputs();
+				final int nbLines = inputs.size() > 1 ? inputs.size() : 1;
+				final int nbCol = inputs.size() > 0 ? 1 : 3;
+				GamaUIColor color = GamaColors.get(c.getColor(scope));
+				if (color == null) { color = IGamaColors.BLUE; }
+				final Image image =
+						GamaIcon.named(c.isContinue(scope) ? "overlays/small.continue" : "overlays/small.exp.run.white")
+								.image();
+				final FlatButton b = FlatButton.button(commandComposite, color, c.getName(), image);
+				b.setEnabled(c.isEnabled(scope));
+				final GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, true, nbCol, nbLines);
+				b.setLayoutData(gd);
+				b.setSelectionListener(e -> {
+					scope.execute(c);
+					GAMA.getExperiment().refreshAllOutputs();
+					if (c.isContinue(scope)) { doContinue(); }
+				});
+				for (final UserInputStatement i : inputs) {
+					scope.addVarWithValue(i.getTempVarName(), i.value(scope));
+					EditorFactory.create(scope, commandComposite, i, newValue -> {
+						i.setValue(scope, newValue);
+						scope.execute(i);
+					}, false);
+				}
 
-    @Override
-    public void widgetDisposed(final DisposeEvent e) {
-	scope.setOnUserHold(false);
-	super.widgetDisposed(e);
-    }
+			}
+		}
 
-    @Override
-    protected ViewUpdateUIJob createUpdateJob() {
-	return new ViewUpdateUIJob() {
+	}
 
-	    @Override
-	    protected UpdatePriority jobPriority() {
-		return UpdatePriority.HIGH;
-	    }
+	/**
+	 * Do continue.
+	 */
+	protected void doContinue() {
+		scope.setOnUserHold(false);
+		deactivate(getParentComposite());
+		ViewsHelper.hideView(this);
+	}
 
-	    @Override
-	    public IStatus runInUIThread(final IProgressMonitor monitor) {
-		initFor(scope, panel);
-		return Status.OK_STATUS;
-	    }
-	};
-    }
+	@Override
+	public void widgetDisposed(final DisposeEvent e) {
+		scope.setOnUserHold(false);
+		super.widgetDisposed(e);
+	}
 
-    /**
-     * Method createToolItem()
-     *
-     * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView#createToolItem(int,
-     *      gama.ui.shared.views.toolbar.GamaToolbar2)
-     */
-    @Override
-    public void createToolItems(final GamaToolbar2 tb) {
-	super.createToolItems(tb);
+	@Override
+	protected ViewUpdateUIJob createUpdateJob() {
+		return new ViewUpdateUIJob() {
 
-	inspectItem = tb.button(IGamaIcons.PANEL_INSPECT, "Inspect", "Inspect",
-		e -> scope.getGui().setSelectedAgent(scope.getAgent()), SWT.RIGHT);
-	inspectItem.setEnabled(false);
-	continueItem = tb.button(IGamaIcons.PANEL_CONTINUE, "Continue", "Continue", e -> doContinue(), SWT.RIGHT);
-	continueItem.setEnabled(false);
+			@Override
+			protected UpdatePriority jobPriority() {
+				return UpdatePriority.HIGH;
+			}
 
-    }
+			@Override
+			public IStatus runInUIThread(final IProgressMonitor monitor) {
+				initFor(scope, panel);
+				return Status.OK_STATUS;
+			}
+		};
+	}
 
-    @Override
-    protected boolean needsOutput() {
-	return false;
-    }
+	/**
+	 * Method createToolItem()
+	 *
+	 * @see gama.ui.shared.views.toolbar.IToolbarDecoratedView#createToolItem(int,
+	 *      gama.ui.shared.views.toolbar.GamaToolbar2)
+	 */
+	@Override
+	public void createToolItems(final GamaToolbar2 tb) {
+		super.createToolItems(tb);
+
+		inspectItem = tb.button(IGamaIcons.PANEL_INSPECT, "Inspect", "Inspect",
+				e -> scope.getGui().setSelectedAgent(scope.getAgent()), SWT.RIGHT);
+		inspectItem.setEnabled(false);
+		continueItem = tb.button(IGamaIcons.PANEL_CONTINUE, "Continue", "Continue", e -> doContinue(), SWT.RIGHT);
+		continueItem.setEnabled(false);
+
+	}
+
+	@Override
+	protected boolean needsOutput() {
+		return false;
+	}
+
+	@Override
+	public void setFocus() {
+		if (getParentComposite() != null && !getParentComposite().isDisposed()
+				&& !getParentComposite().isFocusControl()) {
+			getParentComposite().setFocus(); // Necessary ?
+		}
+
+	}
 
 }

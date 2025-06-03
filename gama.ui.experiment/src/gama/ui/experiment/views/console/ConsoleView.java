@@ -215,8 +215,17 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 	@Override
 	public Control getSizableFontControl() {
-		if (viewer == null) return null;
+		if (viewer == null) { return null; }
 		return viewer.getTextWidget();
+	}
+
+	@Override
+	public void setFocus() {
+		Control c = getSizableFontControl();
+		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+			c.setFocus(); // Necessary ?
+		}
+
 	}
 
 	@Override
