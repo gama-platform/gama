@@ -3,6 +3,8 @@ package gama.gaml.compilation;
 
 import java.util.List;
 
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+
 import gama.core.common.util.FileUtils;
 
 public class GamaCompilationFailedException extends RuntimeException{
@@ -36,8 +38,13 @@ public class GamaCompilationFailedException extends RuntimeException{
 			sb.append("\"message\":\"").append(error.message).append("\",");
 			sb.append("\"code\":\"").append(error.code).append("\",");
 			sb.append("\"data\":[\"").append(String.join("\",\"", error.data != null ? error.data : new String[0])).append("\"],");
-			sb.append("\"source\":\"").append(error.source != null ? FileUtils.escapeFilePath(error.source.eResource().getURI().toFileString()) : "" ).append("\",");	
-			sb.append("\"uri\":\"").append(error.getURI()).append("\"");
+			sb.append("\"source\":\"").append(FileUtils.escapeFilePath(error.uri != null ? error.uri.toFileString() : "")).append("\"");	
+			sb.append("\"uri\":\"").append(error.uri).append("\"");
+			var node = error.source == null ? null : NodeModelUtils.getNode(error.source);
+			if (error.source != null) {
+				sb.append(",\"starting_at_line\":").append(node.getStartLine()).append(",");
+				sb.append("\"offset\":").append(node.getTotalOffset()).append("");
+			}
 			sb.append("}");
 			atLeastSecond = true;
 		}
