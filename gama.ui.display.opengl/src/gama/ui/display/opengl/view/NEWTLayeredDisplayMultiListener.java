@@ -37,7 +37,7 @@ import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
 public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListener, WindowListener, IDisposable {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The delegate. */
@@ -73,9 +73,9 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
-			if (!viewOk) return false;
+			if (!viewOk) { return false; }
 			final boolean controlOk = control != null;
-			if (!controlOk) return false;
+			if (!controlOk) { return false; }
 			return surface != null && !surface.isDisposed();
 		};
 
@@ -122,19 +122,19 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void keyPressed(final KeyEvent e) {
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
 		boolean isPrintable =
 				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
 		if (isPrintable) {
-			if (isCommand)
+			if (isCommand) {
 				if (PlatformHelper.isWindows()) {
 					keyListenerForWindows.accept(e.getKeySymbol());
 				} else {
 					keyListenerForMacAndLinux.accept(e.getKeyChar());
 				}
-			else {
+			} else {
 				delegate.keyPressed(e.getKeyChar());
 			}
 		} else if (e.getModifiers() == 0
@@ -160,9 +160,9 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
-		if (e.isAutoRepeat()) return;
+		if (e.isAutoRepeat()) { return; }
 		DEBUG.OUT("Key released in Newt listener: " + e);
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		boolean isPrintable =
 				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
@@ -198,25 +198,25 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void mouseEntered(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseEnter(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseExited(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseExit(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseMoved(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
 	}
 
 	@Override
 	public void mousePressed(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		// DEBUG.OUT("Mouse pressed with button " + e.getButton() + " modifiers " + e.getModifiersString(null));
 		if (e.getButton() == 3 || e.isControlDown()) {
 			delegate.menuDetected(e.getX(), e.getY());
@@ -227,13 +227,13 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void mouseReleased(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
 	}
 
 	@Override
 	public void mouseDragged(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.dragDetected(e.getX(), e.getY());
 	}
 
@@ -251,13 +251,13 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void windowGainedFocus(final WindowEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.focusGained();
 	}
 
 	@Override
 	public void windowLostFocus(final WindowEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.focusLost();
 
 	}
