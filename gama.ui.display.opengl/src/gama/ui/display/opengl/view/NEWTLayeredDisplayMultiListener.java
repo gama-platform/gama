@@ -52,6 +52,9 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	/** The key listener. */
 	final Consumer<Short> keyListenerForWindows;
 
+	/** The key listener for mac and linux. */
+	final Consumer<Character> keyListenerForMacAndLinux;
+
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
 	 *
@@ -74,6 +77,18 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 			final boolean controlOk = control != null;
 			if (!controlOk) return false;
 			return surface != null && !surface.isDisposed();
+		};
+
+		keyListenerForMacAndLinux = keyCode -> {
+			switch (keyCode) {
+				case 'o':
+				case 'O':
+					deco.toggleOverlay();
+					break;
+				case 't':
+				case 'T':
+					deco.toggleToolbar();
+			}
 		};
 
 		keyListenerForWindows = code -> {
@@ -113,10 +128,14 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
 		if (isPrintable) {
-			if (isCommand && PlatformHelper.isWindows()) {
-				keyListenerForWindows.accept(e.getKeySymbol());
-			} else {
-				delegate.keyPressed(e.getKeyChar(), isCommand);
+			if (isCommand)
+				if (PlatformHelper.isWindows()) {
+					keyListenerForWindows.accept(e.getKeySymbol());
+				} else {
+					keyListenerForMacAndLinux.accept(e.getKeyChar());
+				}
+			else {
+				delegate.keyPressed(e.getKeyChar());
 			}
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
@@ -147,8 +166,8 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		boolean isPrintable =
 				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
-		if (isPrintable) {
-			delegate.keyReleased(e.getKeyChar(), isCommand);
+		if (isPrintable && !isCommand) {
+			delegate.keyReleased(e.getKeyChar());
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyReleased(switch (e.getKeyCode()) {

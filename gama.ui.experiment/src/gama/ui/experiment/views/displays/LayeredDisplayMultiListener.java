@@ -1,18 +1,17 @@
 /*******************************************************************************************************
  *
- * LayeredDisplayMultiListener.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * LayeredDisplayMultiListener.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -59,9 +58,6 @@ public class LayeredDisplayMultiListener {
 	/** The suppress next enter. */
 	volatile boolean suppressNextEnter;
 
-	/** The key listener. */
-	final Consumer<Character> keyListener;
-
 	/** The pressed characters. */
 	final Set<Character> pressedCharacters = new HashSet<>();
 
@@ -80,17 +76,6 @@ public class LayeredDisplayMultiListener {
 		this.view = deco;
 		this.surface = surface;
 
-		keyListener = keyCode -> {
-			switch (keyCode) {
-				case 'o':
-				case 'O':
-					deco.toggleOverlay();
-					break;
-				case 't':
-				case 'T':
-					deco.toggleToolbar();
-			}
-		};
 	}
 
 	/**
@@ -100,12 +85,8 @@ public class LayeredDisplayMultiListener {
 	 *            the e
 	 * @param isCommand
 	 */
-	public void keyPressed(final char e, final boolean isCommand) {
+	public void keyPressed(final char e) {
 		DEBUG.OUT("Key pressed: " + e);
-		if (isCommand) {
-			keyListener.accept(e);
-			return;
-		}
 		pressedCharacters.add(e);
 		for (Character c : pressedCharacters) { surface.dispatchKeyEvent(c); }
 		WorkbenchHelper.asyncRun(view.displayOverlay);
@@ -131,13 +112,9 @@ public class LayeredDisplayMultiListener {
 	 * @param command
 	 *            the command
 	 */
-	public void keyReleased(final char e, final boolean command) {
+	public void keyReleased(final char e) {
 		DEBUG.OUT("Key released: " + e);
-		if (PlatformHelper.isWindows() && command) {
-			keyListener.accept(e);
-			return;
-		}
-		if (!command) { pressedCharacters.remove(e); }
+		pressedCharacters.remove(e);
 	}
 
 	/**
@@ -168,12 +145,12 @@ public class LayeredDisplayMultiListener {
 			suppressNextEnter = false;
 			return;
 		}
-		if (modifier) { return; }
+		if (modifier) return;
 
 		setMousePosition(x, y);
-		if (button > 0) { return; }
+		if (button > 0) return;
 		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) { return; }
+		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
 		lastEnterTime = System.currentTimeMillis();
 		lastEnterPosition = new Point(x, y);
 		// DEBUG.LOG("Mouse entering " + e);
@@ -194,12 +171,10 @@ public class LayeredDisplayMultiListener {
 	 */
 	public void mouseExit(final int x, final int y, final boolean modifier, final int button) {
 		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) { return; }
+		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
 		setMousePosition(-1, -1);
-		if (button > 0) {
-			return;
-			// DEBUG.LOG("Mouse exiting " + e);
-		}
+		if (button > 0) return;
+		// DEBUG.LOG("Mouse exiting " + e);
 
 		surface.dispatchMouseEvent(SWT.MouseExit, x, y);
 		if (!view.isFullScreen() && WorkaroundForIssue1353.isInstalled()) {
@@ -217,7 +192,7 @@ public class LayeredDisplayMultiListener {
 	 *            the button
 	 */
 	public void mouseHover(final int x, final int y, final int button) {
-		if (button > 0) { return; }
+		if (button > 0) return;
 		// DEBUG.LOG("Mouse hovering on " + view.getPartName());
 		surface.dispatchMouseEvent(SWT.MouseHover, x, y);
 	}
@@ -234,7 +209,7 @@ public class LayeredDisplayMultiListener {
 	 */
 	public void mouseMove(final int x, final int y, final boolean modifier) {
 		WorkbenchHelper.asyncRun(view.displayOverlay);
-		if (modifier) { return; }
+		if (modifier) return;
 		// DEBUG.LOG("Mouse moving on " + view.view.getPartName() + " at (" + x + "," + y + ")");
 		if (mouseIsDown) {
 			// Depending on the plateform or display, this case is never called,
@@ -278,13 +253,11 @@ public class LayeredDisplayMultiListener {
 			inMenu = false;
 			return;
 		}
-		if (modifier || PlatformHelper.isWindows() && button == 3) { // see Issue #2756: Windows emits the
-																		// mouseDown(...)
+		if (modifier || PlatformHelper.isWindows() && button == 3) // mouseDown(...)
 			// event
 			// *before* the menuDetected(..) one.
 			// No need to patch mouseUp(...) right now
 			return;
-		}
 		mouseIsDown = true;
 		surface.dispatchMouseEvent(SWT.MouseDown, x, y);
 	}
@@ -304,9 +277,9 @@ public class LayeredDisplayMultiListener {
 	public void mouseUp(final int x, final int y, final int button, final boolean modifier) {
 		// DEBUG.LOG("Mouse up at " + x + ", " + y + " on " + view.getPartName());
 		// In case the mouse has moved (for example on a menu)
-		if (!mouseIsDown) { return; }
+		if (!mouseIsDown) return;
 		setMousePosition(x, y);
-		if (modifier) { return; }
+		if (modifier) return;
 		mouseIsDown = false;
 		if (!view.isFullScreen() && WorkaroundForIssue1353.isInstalled()) { WorkaroundForIssue1353.showShell(); }
 		surface.dispatchMouseEvent(SWT.MouseUp, x, y);
@@ -321,7 +294,7 @@ public class LayeredDisplayMultiListener {
 	 *            the y
 	 */
 	public void menuDetected(final int x, final int y) {
-		if (inMenu) { return; }
+		if (inMenu) return;
 		// DEBUG.LOG("Menu detected on " + view.getPartName());
 		inMenu = surface.canTriggerContextualMenu();
 		setMousePosition(x, y);
