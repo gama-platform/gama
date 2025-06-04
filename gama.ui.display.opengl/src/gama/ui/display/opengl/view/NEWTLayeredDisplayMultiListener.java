@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
  * NEWTLayeredDisplayMultiListener.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.view;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.jogamp.newt.Window;
@@ -36,7 +37,7 @@ import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
 public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListener, WindowListener, IDisposable {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The delegate. */
@@ -47,6 +48,9 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	/** The ok. */
 	final Supplier<Boolean> ok;
+
+	/** The key listener. */
+	final Consumer<Short> keyListenerForWindows;
 
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
@@ -67,13 +71,22 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
 			if (!viewOk) return false;
-			final boolean controlOk = control != null /* && !control.isDisposed() */;
+			final boolean controlOk = control != null;
 			if (!controlOk) return false;
-
-			// if (!Objects.equals(WorkbenchHelper.getActivePart(), deco.view)) {
-			// WorkbenchHelper.getPage().activate(deco.view);
-			// }
 			return surface != null && !surface.isDisposed();
+		};
+
+		keyListenerForWindows = code -> {
+			switch (code) {
+				// "o"
+				case 0x4f:
+					deco.toggleOverlay();
+					break;
+				// "t"
+				case 0x54:
+					deco.toggleToolbar();
+					break;
+			}
 		};
 
 		control.addKeyListener(this);
@@ -95,8 +108,16 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	public void keyPressed(final KeyEvent e) {
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
 		if (!ok.get()) return;
-		if (e.isPrintableKey()) {
-			delegate.keyPressed(e.getKeyChar(), PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown());
+		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
+		boolean isPrintable =
+				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
+		if (isPrintable) {
+			if (isCommand && PlatformHelper.isWindows()) {
+				keyListenerForWindows.accept(e.getKeySymbol());
+			} else {
+				delegate.keyPressed(e.getKeyChar(), isCommand);
+			}
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyPressed(switch (e.getKeyCode()) {
@@ -123,9 +144,11 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		if (e.isAutoRepeat()) return;
 		DEBUG.OUT("Key released in Newt listener: " + e);
 		if (!ok.get()) return;
-		if (e.isPrintableKey()) {
-			delegate.keyReleased(e.getKeyChar(),
-					PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown() /* ?? GamaKeyBindings.ctrl(e) */);
+		boolean isPrintable =
+				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
+		if (isPrintable) {
+			delegate.keyReleased(e.getKeyChar(), isCommand);
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyReleased(switch (e.getKeyCode()) {
