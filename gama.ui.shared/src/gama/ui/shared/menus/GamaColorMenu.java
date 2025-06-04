@@ -219,7 +219,7 @@ public class GamaColorMenu extends GamaMenu {
 	 *            the selector
 	 */
 	public static void addColorSubmenuTo(final Menu menu, final String text, final Consumer<GamaColor> selector) {
-		Menu subMenu = sub(menu, text, text, GamaIcon.named(IGamaIcons.REFERENCE_COLORS).image());
+		Menu subMenu = sub(menu, text, text, (IGamaIcons.REFERENCE_COLORS));
 		final List<String> names = new ArrayList(GamaColor.colors.keySet());
 		Collections.sort(names, colorComp);
 		for (final String current : names) {

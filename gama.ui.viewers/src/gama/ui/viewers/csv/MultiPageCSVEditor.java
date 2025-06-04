@@ -48,7 +48,6 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 
 import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
 import gama.ui.shared.menus.GamaMenu;
-import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
@@ -108,7 +107,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 
 	@Override
 	public Control getSizableFontControl() {
-		if (tableViewer == null) return null;
+		if (tableViewer == null) { return null; }
 		return tableViewer.getTable();
 	}
 
@@ -140,11 +139,11 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 * @return the file for
 	 */
 	private static IFile getFileFor(final IEditorInput input) {
-		if (input instanceof IFileEditorInput) return ((IFileEditorInput) input).getFile();
+		if (input instanceof IFileEditorInput) { return ((IFileEditorInput) input).getFile(); }
 		if (input instanceof IStorageEditorInput) {
 			try {
 				final IStorage storage = ((IStorageEditorInput) input).getStorage();
-				if (storage instanceof IFile) return (IFile) storage;
+				if (storage instanceof IFile) { return (IFile) storage; }
 			} catch (final CoreException ignore) {
 				// intentionally blank
 			}
@@ -278,7 +277,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 		final TableColumn[] tableColumns = tableViewer.getTable().getColumns();
 		for (int i = 0; i < tableColumns.length; i++) {
 			final TableColumn column = tableColumns[i];
-			if (columnName.equalsIgnoreCase(column.getText())) return i;
+			if (columnName.equalsIgnoreCase(column.getText())) { return i; }
 		}
 		return index;
 	}
@@ -528,7 +527,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 				protected void fillMenu() {
 					Menu sub = GamaMenu.sub(mainMenu, "Choose separator",
 							"Determine which character should be used as delimiter of fields",
-							GamaIcon.named(IGamaIcons.SET_DELIMITER).image());
+							(IGamaIcons.SET_DELIMITER));
 					GamaMenu.action(sub, ", (comma)", e1 -> refreshWithDelimiter(Letters.COMMA));
 					GamaMenu.action(sub, "; (semicolon)", e1 -> refreshWithDelimiter(Letters.SEMICOLUMN));
 					GamaMenu.action(sub, "  (space)", e1 -> refreshWithDelimiter(Letters.SPACE));

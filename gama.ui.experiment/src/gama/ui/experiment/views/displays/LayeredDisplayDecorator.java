@@ -205,7 +205,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		public void partHidden(final IWorkbenchPartReference partRef) {
 			// On macOS, this event is wrongly sent when tabs are not displayed for the views and another display is
 			// selected. After tests, the same happens on Linux and Windows -- so the test is generalized.
-			if (/* (PlatformHelper.isMac() || PlatformHelper.isLinux()) && */ !PerspectiveHelper.keepTabs()) return;
+			if (/* (PlatformHelper.isMac() || PlatformHelper.isLinux()) && */ !PerspectiveHelper.keepTabs()) { return; }
 			if (ok(partRef)) {
 				WorkbenchHelper.runInUI("Hide " + partRef.getTitle(), 0, m -> {
 					// DEBUG.OUT("Part hidden:" + partRef.getTitle());
@@ -266,7 +266,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			DEBUG.OUT("Is not full screen: entering");
 			ViewsHelper.activate(view);
 			fullScreenShell = createFullScreenShell();
-			if (fullScreenShell == null) return;
+			if (fullScreenShell == null) { return; }
 			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 			toggleFullScreen = exitFullScreen;
@@ -455,7 +455,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Destroy full screen shell.
 	 */
 	private void destroyFullScreenShell() {
-		if (fullScreenShell == null) return;
+		if (fullScreenShell == null) { return; }
 		DEBUG.OUT("Destroying full screen shell");
 		fullScreenShell.close();
 		fullScreenShell.dispose();
@@ -483,7 +483,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	/** The display overlay. */
 	protected Runnable displayOverlay = () -> {
-		if (overlay == null) return;
+		if (overlay == null) { return; }
 		updateOverlay();
 	};
 
@@ -491,7 +491,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Update overlay.
 	 */
 	protected void updateOverlay() {
-		if (overlay == null) return;
+		if (overlay == null) { return; }
 		if (view.forceOverlayVisibility()) {
 			if (!overlay.isVisible()) {
 				isOverlayTemporaryVisible = true;
@@ -520,10 +520,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private Function<Menu, Menu> presentationMenu() {
 
 		return parentMenu -> {
-			Menu sub =
-					GamaMenu.sub(parentMenu, "Presentation", "", GamaIcon.named(IGamaIcons.PRESENTATION_MENU).image());
+			Menu sub = GamaMenu.sub(parentMenu, "Presentation", "", (IGamaIcons.PRESENTATION_MENU));
 			if (!isFullScreen() && WorkbenchHelper.getNumberOfMonitors() > 1) {
-				Menu mon = GamaMenu.sub(sub, "Enter fullscreen", "", GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
+				Menu mon = GamaMenu.sub(sub, "Enter fullscreen", "", (DISPLAY_FULLSCREEN_ENTER));
 				Monitor[] mm = WorkbenchHelper.getMonitors();
 				for (int i = 0; i < mm.length; i++) {
 					Monitor monitor = mm[i];
@@ -542,8 +541,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			GamaMenu.action(sub,
 					STRINGS.PAD("Toggle toolbar ", 25) + GamaKeyBindings.format(GamaKeyBindings.COMMAND, 'T'),
 					t -> toggleToolbar(),
-					GamaIcon.named(this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular")
-							.image());
+					(this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular"));
 			GamaColorMenu.addColorSubmenuTo(sub, STRINGS.PAD("Background", 25), c -> {
 				view.getDisplaySurface().getData().setBackgroundColor(c);
 				view.getDisplaySurface().updateDisplay(true);
@@ -661,7 +659,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	@Override
 	public void updateStateTo(final IExperimentPlan experiment, final State state) {
-		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
+		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) { return; }
 
 		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {
 			WorkbenchHelper.asyncRun(() -> {

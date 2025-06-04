@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * DisplaySurfaceMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DisplaySurfaceMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -173,7 +173,7 @@ public class DisplaySurfaceMenu {
 	 *            the displays
 	 */
 	public void buildMenu(final int mousex, final int mousey, final int x, final int y, final List<ILayer> displays) {
-		if (displays.isEmpty()) return;
+		if (displays.isEmpty()) { return; }
 		final Set<IAgent> all = new LinkedHashSet<>();
 		for (final ILayer display : displays) {
 			if (display.getData().isSelectable()) {
@@ -272,7 +272,7 @@ public class DisplaySurfaceMenu {
 	 *            the retries remaining
 	 */
 	private void retryVisible(final Menu menu, final int retriesRemaining) {
-		if (!PlatformHelper.isLinux()) return;
+		if (!PlatformHelper.isLinux()) { return; }
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
 				menu.setVisible(false);
@@ -314,7 +314,7 @@ public class DisplaySurfaceMenu {
 			final Collection<IAgent> filteredList, final MenuAction... actions) {
 		if (withWorld) {
 			AgentsMenu.cascadingAgentMenuItem(menu, surface.getScope().getSimulation(), "World", actions);
-			if (filteredList == null || filteredList.isEmpty()) return;
+			if (filteredList == null || filteredList.isEmpty()) { return; }
 			GamaMenu.separate(menu);
 			if (byLayer) { GamaMenu.separate(menu, "Layers"); }
 		}
@@ -322,8 +322,9 @@ public class DisplaySurfaceMenu {
 			// If the list is null or empty, no need to display anything more
 			// If only the world is selected, no need to display anything more
 			if (filteredList == null || filteredList.isEmpty()
-					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation()))
+					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation())) {
 				return;
+			}
 			final FocusOnSelection adapter = new FocusOnSelection(surface);
 			final MenuAction focus =
 					new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(), "Focus on this display");
@@ -353,14 +354,12 @@ public class DisplaySurfaceMenu {
 				GamaMenu.action(submenu, visible ? "Hide" : "Show", t -> {
 					layer.getData().setVisible(!visible);
 					surface.updateDisplay(true);
-				}, GamaIcon.named(IGamaIcons.MENU_INSPECT).image());
+				}, (IGamaIcons.MENU_INSPECT));
 				if (!pop.isEmpty()) {
 					GamaMenu.action(submenu, select ? "Forbid selection" : "Allow selection",
-							t -> layer.getData().setSelectable(!select),
-							GamaIcon.named(IGamaIcons.LAYER_SELECTION).image());
+							t -> layer.getData().setSelectable(!select), (IGamaIcons.LAYER_SELECTION));
 				}
-				Menu transparency = GamaMenu.sub(submenu, "Transparency", "",
-						GamaIcon.named(IGamaIcons.LAYER_TRANSPARENCY).image());
+				Menu transparency = GamaMenu.sub(submenu, "Transparency", "", (IGamaIcons.LAYER_TRANSPARENCY));
 				transparency.setEnabled(layer.getData().isDynamic());
 				Double td = layer.getData().getTransparency(GAMA.getRuntimeScope());
 				int ti = (int) (td == null ? 0 : Math.round(td * 10) * 10);
@@ -372,8 +371,7 @@ public class DisplaySurfaceMenu {
 					}, null);
 				}
 				if (definition instanceof SpeciesLayerStatement spec) {
-					Menu aspectMenu =
-							GamaMenu.sub(submenu, "Aspect", "", GamaIcon.named(IGamaIcons.MENU_AGENT).image());
+					Menu aspectMenu = GamaMenu.sub(submenu, "Aspect", "", IGamaIcons.MENU_AGENT);
 					aspectMenu.setEnabled(layer.getData().isDynamic());
 					String current = spec.getAspectName();
 					for (String aspect : spec.getAspects()) {
@@ -392,25 +390,23 @@ public class DisplaySurfaceMenu {
 								((ChartLayerStatement) definition).getChart(), p);
 						editor.open();
 						surface.updateDisplay(true);
-					}, GamaIcon.named(IGamaIcons.CHART_PARAMETERS).image());
+					}, (IGamaIcons.CHART_PARAMETERS));
 					if (chart.keepsHistory()) {
-						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(),
-								GamaIcon.named(IGamaIcons.MENU_BROWSE).image());
+						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(), (IGamaIcons.MENU_BROWSE));
 					}
 				} else if (definition instanceof GridLayerStatement grid) {
 					boolean lines = ((IGridLayer) layer).getData().drawLines();
 					GamaMenu.action(submenu, lines ? "Hide lines" : "Draw lines", t -> {
 						((IGridLayer) layer).getData().setDrawLines(!lines);
 						surface.updateDisplay(true);
-					}, GamaIcon.named(IGamaIcons.MENU_BROWSE).image());
+					}, (IGamaIcons.MENU_BROWSE));
 				}
 				if (select) {
 					final FocusOnSelection adapter = new FocusOnSelection(surface);
 					final MenuAction focus = new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(),
 							"Focus on this display");
 					final MenuAction[] actions2 = { focus };
-					Menu agentsMenu =
-							GamaMenu.sub(submenu, "Agents", "", GamaIcon.named(IGamaIcons.MENU_POPULATION).image());
+					Menu agentsMenu = GamaMenu.sub(submenu, "Agents", "", (IGamaIcons.MENU_POPULATION));
 					AgentsMenu.fillPopulationSubMenu(agentsMenu, pop, actions2);
 				}
 			}

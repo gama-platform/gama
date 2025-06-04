@@ -13,7 +13,6 @@ package gama.ui.shared.menus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -143,7 +142,7 @@ public abstract class GamaMenu {
 	 *            the image
 	 * @return the menu item
 	 */
-	protected final MenuItem action(final String s, final SelectionListener listener, final Image image) {
+	protected final MenuItem action(final String s, final SelectionListener listener, final String image) {
 		return action(mainMenu, s, listener, image);
 	}
 
@@ -174,7 +173,7 @@ public abstract class GamaMenu {
 	 * @return the menu item
 	 */
 	public static final MenuItem action(final Menu m, final String s, final Selector listener) {
-		return action(m, s, listener, (Image) null);
+		return action(m, s, listener, (String) null);
 	}
 
 	/**
@@ -190,11 +189,12 @@ public abstract class GamaMenu {
 	 *            the image
 	 * @return the menu item
 	 */
-	public static MenuItem action(final Menu m, final String s, final SelectionListener listener, final Image image) {
+	public static MenuItem action(final Menu m, final String s, final SelectionListener listener, final String image) {
 		final MenuItem action = createItem(m, SWT.PUSH);
 		action.setText(s);
+		action.setData("image", image);
 		action.addSelectionListener(listener);
-		if (image != null) { action.setImage(image); }
+		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 		return action;
 	}
 
@@ -210,32 +210,14 @@ public abstract class GamaMenu {
 	 * @param image
 	 *            the image
 	 * @return the menu item
-	 */
-	public static MenuItem action(final Menu m, final String s, final Selector listener, final Image image) {
-		final MenuItem action = createItem(m, SWT.PUSH);
-		action.setText(s);
-		action.addSelectionListener(listener);
-		if (image != null) { action.setImage(image); }
-		return action;
-	}
-
-	/**
-	 * Action.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param m
-	 *            the m
-	 * @param s
-	 *            the s
-	 * @param listener
-	 *            the listener
-	 * @param image
-	 *            the image
-	 * @return the menu item
-	 * @date 18 août 2023
 	 */
 	public static MenuItem action(final Menu m, final String s, final Selector listener, final String image) {
-		return action(m, s, listener, GamaIcon.named(image).image());
+		final MenuItem action = createItem(m, SWT.PUSH);
+		action.setText(s);
+		action.setData("image", image);
+		action.addSelectionListener(listener);
+		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
+		return action;
 	}
 
 	/**
@@ -272,12 +254,13 @@ public abstract class GamaMenu {
 	 * @return the menu item
 	 */
 	public static final MenuItem check(final Menu m, final String s, final boolean select,
-			final SelectionListener listener, final Image image) {
+			final SelectionListener listener, final String image) {
 		final MenuItem action = createItem(m, SWT.CHECK);
 		action.setText(s);
+		action.setData("image", image);
 		action.setSelection(select);
 		action.addSelectionListener(listener);
-		if (image != null) { action.setImage(image); }
+		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 		return action;
 	}
 
@@ -297,12 +280,13 @@ public abstract class GamaMenu {
 	 * @return the menu item
 	 */
 	public static final MenuItem check(final Menu m, final String s, final boolean select, final Selector listener,
-			final Image image) {
+			final String image) {
 		final MenuItem action = createItem(m, SWT.CHECK);
 		action.setText(s);
+		action.setData("image", image);
 		action.setSelection(select);
 		action.addSelectionListener(listener);
-		if (image != null) { action.setImage(image); }
+		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 		return action;
 	}
 
@@ -363,10 +347,11 @@ public abstract class GamaMenu {
 	 *            the image
 	 * @return the menu
 	 */
-	public static Menu sub(final Menu parent, final String s, final String t, final Image image) {
+	public static Menu sub(final Menu parent, final String s, final String t, final String image) {
 		final MenuItem item = createItem(parent, SWT.CASCADE);
 		item.setText(s);
-		item.setImage(image);
+		item.setData("image", image);
+		item.setImage(GamaIcon.named(image).image());
 		if (t != null) { item.setToolTipText(t); }
 		final Menu m = new Menu(item);
 		item.setMenu(m);
