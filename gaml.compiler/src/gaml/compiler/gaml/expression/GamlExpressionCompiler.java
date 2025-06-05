@@ -440,7 +440,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 					}
 				}
 			}
-			iteratorContexts.push(new EachExpression(argName, left.getGamlType().getContentType()));
+			IType leftType = left.getGamlType();
+			IType eachType = leftType.isContainer() ? leftType.getContentType() : leftType;
+			iteratorContexts.push(new EachExpression(argName, eachType));
 		}
 		// If the right-hand expression is a list of expression, then we have a
 		// n-ary operator
