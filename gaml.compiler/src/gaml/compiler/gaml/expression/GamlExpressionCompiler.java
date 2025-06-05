@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlExpressionCompiler.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlExpressionCompiler.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -48,7 +48,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
 import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.runtime.GAMA;
@@ -426,8 +425,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// if the operator is an iterator, we must initialize the context
 		// sensitive "each" variable
 		final boolean isIterator = GAML.ITERATORS.contains(op);
+		String argName = IKeyword.EACH;
 		if (isIterator) {
-			String argName = IKeyword.EACH;
 			// Finding the name of 'each' if redefined
 			if (rightMember instanceof ExpressionList params) {
 				final List<Expression> exprs = EGaml.getInstance().getExprsOf(params);
@@ -460,7 +459,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IExpression right = compile(rightMember);
 		// We make sure to remove any mention of the each expression after the
 		// right member has been compiled
-		if (isIterator) { iteratorContexts.pop(); }
+		if (isIterator) {
+			iteratorContexts.pop();
+			IExpression eachName = getFactory().createConst(argName, Types.STRING);
+			return getFactory().createOperator(op, getContext(), originalExpression.eContainer(), eachName, left,
+					right);
+		}
 		// and we return the operator expression
 		return getFactory().createOperator(op, getContext(), originalExpression.eContainer(), left, right);
 
