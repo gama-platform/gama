@@ -900,7 +900,7 @@ public class Stats {
 			value = { "frequency_of" },
 			can_be_const = true,
 			iterator = true,
-			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 3,
 			content_type = IType.INT,
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
@@ -2043,7 +2043,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "product_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2963,7 +2963,6 @@ public class Stats {
 	 */
 	@operator (
 			value = { "variance_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2977,7 +2976,7 @@ public class Stats {
 					returnType = "float") })
 
 	@test ("[1,2,3,4,5,6] variance_of each with_precision 2 = 2.92")
-	public static Object opVarianceOf(final IScope scope, final String eachName, final IContainer container,
+	public static Double opVarianceOf(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
 		return opVariance(scope, collect(scope, eachName, container, filter));
 	}
@@ -3030,7 +3029,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "mean_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2 + ITypeProvider.FLOAT_IN_CASE_OF_INT,
+			type = ITypeProvider.TYPE_AT_INDEX + 3 + ITypeProvider.FLOAT_IN_CASE_OF_INT,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -3067,7 +3066,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "min_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -3115,7 +3114,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "max_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })

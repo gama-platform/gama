@@ -1699,9 +1699,9 @@ public class Containers {
 	@operator (
 			value = { "group_by" },
 			iterator = true,
-			index_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			content_type = IType.LIST,
-			content_type_content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type_content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			concept = { IConcept.CONTAINER, IConcept.MAP })
 	@doc (
 			value = "Returns a map, where the keys take the possible values of the right-hand operand and the map values are the list of elements "
@@ -1746,7 +1746,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "last_with" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
@@ -1798,7 +1798,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "first_with" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
@@ -1956,7 +1956,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "sum_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			expected_content_type = { IType.FLOAT, IType.POINT, IType.COLOR, IType.INT, IType.STRING },
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
@@ -2066,10 +2066,10 @@ public class Containers {
 
 		@Override
 		public boolean validate(final IDescription context, final EObject emfContext, final IExpression... arguments) {
-			final IExpression filter = arguments[1];
+			final IExpression filter = arguments[2];
 			if (!filter.getGamlType().isComparable()) {
 				context.error(
-						"The comparison function should return values that are comparable with each other (e.g. int, float, string, point, color, etc.)",
+						"Comparisons should operate on values that are comparable with each other (e.g. int, float, string, point, color, etc.)",
 						IGamlIssue.UNMATCHED_TYPES, emfContext);
 				return false;
 			}
@@ -2091,7 +2091,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "sort_by", "sort" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2137,9 +2137,9 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
@@ -2186,9 +2186,9 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
@@ -2236,9 +2236,9 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
@@ -2261,7 +2261,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "with_max_of" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2308,7 +2308,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "with_min_of" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2355,7 +2355,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "accumulate" },
-			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
+			content_type = ITypeProvider.THIRD_CONTENT_TYPE_OR_TYPE,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2401,7 +2401,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "collect" },
-			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2625,8 +2625,8 @@ public class Containers {
 	@operator (
 			value = { "index_by" },
 			iterator = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-			index_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
 	@doc (
@@ -2660,8 +2660,8 @@ public class Containers {
 	@operator (
 			value = { "as_map" },
 			iterator = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 3,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 3,
 			expected_content_type = IType.PAIR,
 			category = IOperatorCategory.MAP,
 			concept = { IConcept.CONTAINER, IConcept.MAP })
