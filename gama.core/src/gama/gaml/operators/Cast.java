@@ -28,6 +28,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaListFactory;
+import gama.core.util.GamaMapFactory;
 import gama.core.util.GamaPair;
 import gama.core.util.IList;
 import gama.core.util.IMap;
@@ -542,52 +543,24 @@ public class Cast {
 		return GamaListType.staticCast(scope, val, null, true);
 	}
 
-	/**
-	 * List with.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param size
-	 *            the size
-	 * @param init
-	 *            the init
-	 * @return the i list
-	 */
-	@operator (
-			value = "list_with",
-			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
-			can_be_const = false,
-			concept = { IConcept.CAST, IConcept.CONTAINER })
-	@doc (
-			value = "creates a list with a size provided by the first operand, and filled with the second operand",
-			comment = "Note that the first operand  should be positive, and that the second one is evaluated for each position  in the list.",
-			see = { "list" },
-			examples = { @example (
-					value = "list_with(5,2)",
-					equals = "[2,2,2,2,2]") })
-	@test ("list_with(5,2) = [2,2,2,2,2]")
-	public static IList list_with(final IScope scope, final Integer size, final IExpression init) {
-		return Cast.list_with(scope, size, init, false);// parallel = false by default (see #3572)
-	}
 
 	@operator (
-			value = "list_with",
+			value = "parallel_list_with",
 			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
 			can_be_const = false,
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "creates a list with a size provided by the first operand, and filled with the second operand, the last parameter is used to set whether to fill the list in parallel or not.",
-			comment = "Note that the first operand  should be positive, and that the second one is evaluated for each position  in the list.\\nIf run in parallel, some exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
+			value = "Creates a list with a size provided by the first operand, and filled with the second operand, the list is filled in parallel.",
+			comment = "Note that the first operand  should be positive, and that the second one is evaluated for each position  in the list.\\nSome exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
 			see = { "list" },
 			examples = { @example (
-					value = "list_with(5,2)",
+					value = "parallel_list_with(5,2)",
 					equals = "[2,2,2,2,2]") })
-	@test ("list_with(5,2, true) = [2,2,2,2,2]")
-	public static IList list_with(final IScope scope, final Integer size, final IExpression init, final boolean parallel) {
-		return GamaListFactory.create(scope, init, size, parallel); 
+	@test ("parallel_list_with(5,2) = [2,2,2,2,2]")
+	public static IList parallel_list_with(final IScope scope, final Integer size, final IExpression init) {
+		return GamaListFactory.create(scope, init, size, true); 
 	}
 	
-
 	
 	/**
 	 * As matrix.
@@ -605,46 +578,21 @@ public class Cast {
 	}
 	
 	@operator (
-			value = "matrix_with",
+			value = "parallel_matrix_with",
 			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
 			can_be_const = true,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "creates a matrix with a size provided by the first operand, and filled with the second operand, the last parameter is used to set whether to fill the matrix in parallel or not. The given expression, unless constant, is evaluated for each cell ",
+			value = "Creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell and is done in parallel.",
 			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.\nIf run in parallel, some exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
 			see = { IKeyword.MATRIX, "as_matrix" })
-	@test ("{2,2} matrix_with (1, true) = matrix([1,1],[1,1])")
-	public static IMatrix matrix_with(final IScope scope, final GamaPoint size, final IExpression init, final boolean parallel) {
+	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
+	public static IMatrix parallel_matrix_with(final IScope scope, final GamaPoint size, final IExpression init) {
 		if (size == null) throw GamaRuntimeException.error("A nil size is not allowed for matrices", scope);
-		return GamaMatrixType.with(scope, init, size, parallel);
+		return GamaMatrixType.with(scope, init, size, true);
 	}
 	
-	/**
-	 * Matrix with.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param size
-	 *            the size
-	 * @param init
-	 *            the init
-	 * @return the i matrix
-	 */
-	@operator (
-			value = "matrix_with",
-			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
-			can_be_const = true,
-			category = { IOperatorCategory.CASTING },
-			concept = { IConcept.CAST, IConcept.CONTAINER })
-	@doc (
-			value = "creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell ",
-			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.",
-			see = { IKeyword.MATRIX, "as_matrix" })
-	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
-	public static IMatrix matrix_with(final IScope scope, final GamaPoint size, final IExpression init) {
-		return Cast.matrix_with(scope, size, init, false); // parallel = false by default (see #3572)
-	}
 
 
 	
