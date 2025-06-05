@@ -2442,7 +2442,7 @@ public class Containers {
 	@test ("[1,2,4] collect (each *2) = [2,4,8]")
 	@test ("[1,2,4] collect ([2,4]) = [[2,4],[2,4],[2,4]]")
 	@test ("[1,2,3] collect (i: i+1) = [2,3,4]")
-	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j)) = [[2,3,4],[3,4,5]]")
+	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j))) = [[2,3,4],[3,4,5]]")
 	public static IList collect(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return (IList) stream(scope, c).map(with(scope, eachName, filter)).toCollection(listOf(filter.getGamlType()));
