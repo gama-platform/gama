@@ -165,7 +165,7 @@ public class Containers {
 	public static <T> Predicate<T> by(final IScope scope, final String eachName, final IExpression filter) {
 		return (final T t) -> {
 			scope.setEach(eachName, t);
-			return (Boolean) filter.value(scope);
+			return Cast.asBool(scope, filter.value(scope));
 		};
 	}
 
@@ -2174,7 +2174,7 @@ public class Containers {
 	}
 
 	/**
-	 * Where.
+	 * Where. Optimization for a very common case (IList)
 	 *
 	 * @param scope
 	 *            the scope
@@ -2194,14 +2194,6 @@ public class Containers {
 	@doc (
 			value = "Returns a list contaning only the elements that make the predicate return true")
 	@test ("[1,2,3,4,5,6,7,8] where (each != 2) = [1, 3, 4, 5, 6, 7, 8] ")
-	/**
-	 * Optimization for a very common case (Ilist)
-	 *
-	 * @param scope
-	 * @param c
-	 * @param filter
-	 * @return
-	 */
 	public static IList where(final IScope scope, final String eachName, final IList c, final IExpression filter) {
 		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), eachName, filter);
 	}
@@ -2224,14 +2216,15 @@ public class Containers {
 		final IList result = GamaListFactory.create(contentType);
 		for (final Object o : c) {
 			scope.setEach(eachName, o);
-			if ((Boolean) filter.value(scope)) { result.add(o); }
+			if (Cast.asBool(scope, filter.value(scope))) { result.add(o); }
 		}
 		scope.setEach(eachName, null);
 		return result;
 	}
 
 	/**
-	 * Where.
+	 * Where.Optimization for a very common case (ISpecies)
+	 *
 	 *
 	 * @param scope
 	 *            the scope
@@ -2251,14 +2244,6 @@ public class Containers {
 	@doc (
 			value = "Returns a list containing only the agents of this species that make the predicate return true")
 	@no_test
-	/**
-	 * Optimization for a very common case (ISpecies)
-	 *
-	 * @param scope
-	 * @param c
-	 * @param filter
-	 * @return
-	 */
 	public static IList where(final IScope scope, final String eachName, final ISpecies c, final IExpression filter) {
 		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), eachName, filter);
 	}
