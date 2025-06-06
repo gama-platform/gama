@@ -63,6 +63,9 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
+import gama.core.util.matrix.GamaFloatMatrix;
+import gama.core.util.matrix.GamaIntMatrix;
+import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IOperatorValidator;
@@ -2393,6 +2396,48 @@ public class Containers {
 	 *
 	 * @param scope
 	 *            the scope
+	 * @param c
+	 *            the c
+	 * @param filter
+	 *            the filter
+	 * @return the i list
+	 */
+	@operator (
+			value = { "collect" },
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "When applied to a matrix, collect returns a matrix of the same size, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
+	@test ("matrix([1,2,4],[1,3,4]) collect (x: x *2) = matrix([2,4,8],[2,6,8])")
+	public static IMatrix collect(final IScope scope, final String eachName, final IMatrix c,
+			final IExpression filter) {
+		int cols = c.getCols(scope);
+		int rows = c.getRows(scope);
+		int type = filter.getGamlType().id();
+		IMatrix result = switch (type) {
+			case IType.FLOAT -> new GamaFloatMatrix(cols, rows);
+			case IType.INT -> new GamaIntMatrix(cols, rows);
+			default -> new GamaObjectMatrix(cols, rows, filter.getGamlType());
+		};
+
+		for (int x = 0; x < cols; x++) {
+			for (int y = 0; y < rows; y++) {
+				scope.setEach(eachName, c.get(scope, x, y));
+				result.set(scope, x, y, filter.value(scope));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Collect.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param eachName
+	 *            the each name
 	 * @param c
 	 *            the c
 	 * @param filter

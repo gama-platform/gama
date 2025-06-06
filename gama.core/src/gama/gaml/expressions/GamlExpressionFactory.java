@@ -275,18 +275,18 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			int distance = Integer.MAX_VALUE;
 			// We browse all the entries of the operators with this name
 			for (Map.Entry<Signature, OperatorProto> entry : ops.entrySet()) {
-				Signature s = entry.getKey();
+				Signature formalParametersSignature = entry.getKey();
 
-				if (originalUserSignature.matchesDesiredSignature(s)) {
-					final int dist = s.distanceTo(originalUserSignature);
+				if (originalUserSignature.matchesDesiredSignature(formalParametersSignature)) {
+					final int dist = Signature.distanceBetween(formalParametersSignature, originalUserSignature);
 					if (dist == 0) {
 						distance = 0;
-						userSignature = s;
+						userSignature = formalParametersSignature;
 						break;
 					}
 					if (dist < distance) {
 						distance = dist;
-						userSignature = s;
+						userSignature = formalParametersSignature;
 					}
 				}
 			}

@@ -632,7 +632,7 @@ public class Cast {
 	@operator (
 			value = "matrix_with",
 			iterator = true,
-			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
+			content_type = ITypeProvider.THIRD_CONTENT_TYPE_OR_TYPE,
 			can_be_const = true,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.CONTAINER })
@@ -710,7 +710,7 @@ public class Cast {
 					equals = "[2,2,2,2,2]") })
 	@test ("list_with(5,2) = [2,2,2,2,2]")
 	@test ("5 list_with(i: i+1) = [1,2,3,4,5]")
-	@test ("5 list_with string(each / 2) = ['0.5','1.0','1.5','2.0','2.5']")
+	@test ("5 list_with string(each / 2) = ['0.0','0.5','1.0','1.5','2.0']")
 	public static IList list_with(final IScope scope, final String eachName, final Integer size,
 			final IExpression fillExpr) {
 		if (fillExpr == null || size <= 0) return GamaListFactory.create(Types.NO_TYPE);
