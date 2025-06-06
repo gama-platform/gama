@@ -209,7 +209,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	}
 
 	@Override
-	public void updateItemValues(final boolean synchronously) {
+	public void updateItemValues(final boolean synchronously, final boolean retrieveValues) {
 		this.getViewer().updateItemNames();
 	}
 

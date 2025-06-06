@@ -707,7 +707,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 */
 	private void createOutput(final BatchOutput output) throws GamaRuntimeException {
 		// TODO revoir tout ceci. Devrait plut�t �tre une commande
-		if (output == null) { return; }
+		if (output == null) return;
 		IExpression data = output.getFacet(IKeyword.DATA);
 		if (data == null) { data = exploration.getOutputs(); }
 		if (data == null) {} else {
@@ -750,7 +750,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 * Prepare gui.
 	 */
 	void prepareGui() {
-		if (isTest()) { return; }
+		if (isTest()) return;
 		final ExperimentOutputManager manager = (ExperimentOutputManager) agent.getOutputManager();
 		Symbol layout = manager.getLayout() == null ? manager : manager.getLayout();
 		final Boolean keepTabs = layout.getFacetValue(myScope, "tabs", true);
@@ -883,7 +883,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 */
 	public IParameter.Batch getParameterByTitle(final String title) {
 		for (final IParameter p : parameters.values()) {
-			if (p.getTitle().equals(title) && p instanceof IParameter.Batch) { return (IParameter.Batch) p; }
+			if (p.getTitle().equals(title) && p instanceof IParameter.Batch) return (IParameter.Batch) p;
 		}
 		return null;
 	}
@@ -897,7 +897,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 */
 	public IParameter.Batch getParameter(final String parameterName) {
 		final IParameter p = parameters.get(parameterName);
-		if (p instanceof IParameter.Batch) { return (IParameter.Batch) p; }
+		if (p instanceof IParameter.Batch) return (IParameter.Batch) p;
 		return null;
 	}
 
@@ -926,10 +926,8 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 */
 	protected IParameter.Batch checkGetParameterByTitle(final String parameterName) throws GamaRuntimeException {
 		final IParameter.Batch v = getParameterByTitle(parameterName);
-		if (v == null) {
-			throw GamaRuntimeException.error("No parameter named " + parameterName + " in experiment " + getName(),
-					getExperimentScope());
-		}
+		if (v == null) throw GamaRuntimeException
+				.error("No parameter named " + parameterName + " in experiment " + getName(), getExperimentScope());
 		return v;
 	}
 
@@ -944,10 +942,8 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 */
 	protected IParameter.Batch checkGetParameter(final String parameterName) throws GamaRuntimeException {
 		final IParameter.Batch v = getParameter(parameterName);
-		if (v == null) {
-			throw GamaRuntimeException.error("No parameter named " + parameterName + " in experiment " + getName(),
-					getExperimentScope());
-		}
+		if (v == null) throw GamaRuntimeException
+				.error("No parameter named " + parameterName + " in experiment " + getName(), getExperimentScope());
 		return v;
 	}
 
@@ -959,7 +955,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 	@Override
 	public SimulationAgent getCurrentSimulation() {
-		if (agent == null) { return null; }
+		if (agent == null) return null;
 		return agent.getSimulation();
 	}
 
@@ -1011,7 +1007,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		 */
 		@Override
 		public Object getGlobalVarValue(final String varName) throws GamaRuntimeException {
-			if (hasParameter(varName)) { return getParameterValue(varName); }
+			if (hasParameter(varName)) return getParameterValue(varName);
 			// final SimulationAgent a = getCurrentSimulation();
 			// if (a != null) return a.getDirectVarValue(this, varName);
 			return null;
@@ -1124,7 +1120,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 	@Override
 	public Iterable<IOutputManager> getActiveOutputManagers() {
-		if (agent == null) { return Collections.EMPTY_LIST; }
+		if (agent == null) return Collections.EMPTY_LIST;
 		return Iterables.concat(agent.getAllSimulationOutputs(), Collections.singletonList(experimentOutputs));
 
 	}
@@ -1182,6 +1178,11 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 			}
 		}
+	}
+
+	@Override
+	public void refreshAllParameters() {
+		GAMA.getGui().updateParameters(true);
 	}
 
 }

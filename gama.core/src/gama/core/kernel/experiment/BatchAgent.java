@@ -416,7 +416,7 @@ public class BatchAgent extends ExperimentAgent {
 		}
 
 		// At last, we update the parameters (last fitness and best fitness)
-		getScope().getGui().updateParameters();
+		getScope().getGui().updateParameters(false);
 		return res;
 
 	}
@@ -448,7 +448,7 @@ public class BatchAgent extends ExperimentAgent {
 		}
 
 		// We update the parameters (parameter to explore)
-		getScope().getGui().updateParameters();
+		getScope().getGui().updateParameters(false);
 
 		// We then create a number of simulations with the same solution
 
@@ -529,7 +529,7 @@ public class BatchAgent extends ExperimentAgent {
 		}
 
 		// At last, we update the parameters (last fitness and best fitness)
-		getScope().getGui().updateParameters();
+		getScope().getGui().updateParameters(false);
 
 		return outputs;
 
