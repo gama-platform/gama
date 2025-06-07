@@ -15,7 +15,12 @@ Require-Bundle: gama.core,
  org.apache.commons.logging;visibility:=reexport,
  gama.dependencies,
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0";resolution:=optional,
- org.eclipse.xtext.xtext.generator;resolution:=optional
+ org.eclipse.xtext.xtext.generator;resolution:=optional,
+ org.eclipse.emf.mwe2.launch;bundle-version="2.21.0",
+ org.eclipse.emf.mwe2.language.ide;bundle-version="2.21.0",
+ org.eclipse.emf.mwe2.language.ui;bundle-version="2.21.0",
+ org.eclipse.emf.mwe2.launch.ui;bundle-version="2.21.0",
+ org.eclipse.emf.mwe2.lib;bundle-version="2.21.0"
 Export-Package: gaml.compiler.gaml,
  gaml.compiler.gaml.documentation,
  gaml.compiler.gaml.expression,

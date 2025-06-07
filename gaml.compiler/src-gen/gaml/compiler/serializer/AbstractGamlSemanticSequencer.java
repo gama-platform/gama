@@ -403,7 +403,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Access.Access_1_0 returns Access
 	 *
 	 * Constraint:
-	 *     (left=Access_Access_1_0 ((op='[' right=ExpressionList?) | (op='.' (right=AbstractRef | right=StringLiteral))))
+	 *     (left=Access_Access_1_0 ((op='[' right=ExpressionList?) | (op='.' right=Primary)))
 	 * </pre>
 	 */
 	protected void sequence_Access(ISerializationContext context, Access semanticObject) {
@@ -2018,7 +2018,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns Unary
 	 *
 	 * Constraint:
-	 *     (((op='°' | op='#') right=UnitRef) | ((op='-' | op='!' | op='my' | op='the' | op='not') right=Unary))
+	 *     ((op='#' right=UnitRef) | ((op='-' | op='!' | op='not') right=Unary))
 	 * </pre>
 	 */
 	protected void sequence_Unary(ISerializationContext context, Unary semanticObject) {
@@ -2095,11 +2095,23 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unit returns Unit
 	 *
 	 * Constraint:
-	 *     (left=Unit_Unit_1_0_0 (op='°' | op='#') right=UnitRef)
+	 *     (left=Unit_Unit_1_0_0 op='#' right=UnitRef)
 	 * </pre>
 	 */
 	protected void sequence_Unit(ISerializationContext context, Unit semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__LEFT));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__OP) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__OP));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__RIGHT));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getUnitAccess().getUnitLeftAction_1_0_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_0_1_0(), semanticObject.getOp());
+		feeder.accept(grammarAccess.getUnitAccess().getRightUnitRefParserRuleCall_1_1_0(), semanticObject.getRight());
+		feeder.finish();
 	}
 	
 	

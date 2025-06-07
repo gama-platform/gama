@@ -53,7 +53,7 @@ S_Experiment:
  * Statements
  */
 Statement:
-	(=> S_Declaration |
+	(=> S_Declaration | 
 	((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
 	| S_Display;
 
@@ -308,15 +308,15 @@ Binary returns Expression:
 
 Unit returns Expression:
 	Unary
-	(({Unit.left=current} op=('°' | "#")) right=UnitRef)?;
+	(({Unit.left=current} op=("#")) right=UnitRef)?;
 
 Unary returns Expression:
 	Access |
-	{Unary} ((op=('°' | '#') right=UnitRef) | (op=('-' | '!' | 'my' | 'the' | 'not')
+	{Unary} ((op=('#') right=UnitRef) | (op=('-' | '!' | 'not')
 	right=Unary));
 
 Access returns Expression:
-	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(AbstractRef | StringLiteral))))*
+	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
 ;
 
 Primary returns Expression:

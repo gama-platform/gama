@@ -663,7 +663,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			final OperatorProto proto = type.getGetter(var);
 			if (proto == null) {
 				// Special case for matrices
-				if (type.id() == IType.MATRIX) return binary(".", owner, fieldExpr);
+				if (type.id() == IType.MATRIX)
+
+					return binary(".", owner, fieldExpr);
+
 				getContext().error("Unknown field '" + var + "' for type " + type, IGamlIssue.UNKNOWN_FIELD, leftExpr,
 						var, type.toString());
 				return null;

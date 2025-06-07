@@ -85,13 +85,10 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getComparisonAccess().getOpAlternatives_1_0_1_0(), "rule__Comparison__OpAlternatives_1_0_1_0");
 			builder.put(grammarAccess.getAdditionAccess().getOpAlternatives_1_0_1_0(), "rule__Addition__OpAlternatives_1_0_1_0");
 			builder.put(grammarAccess.getMultiplicationAccess().getOpAlternatives_1_0_1_0(), "rule__Multiplication__OpAlternatives_1_0_1_0");
-			builder.put(grammarAccess.getUnitAccess().getOpAlternatives_1_0_1_0(), "rule__Unit__OpAlternatives_1_0_1_0");
 			builder.put(grammarAccess.getUnaryAccess().getAlternatives(), "rule__Unary__Alternatives");
 			builder.put(grammarAccess.getUnaryAccess().getAlternatives_1_1(), "rule__Unary__Alternatives_1_1");
-			builder.put(grammarAccess.getUnaryAccess().getOpAlternatives_1_1_0_0_0(), "rule__Unary__OpAlternatives_1_1_0_0_0");
 			builder.put(grammarAccess.getUnaryAccess().getOpAlternatives_1_1_1_0_0(), "rule__Unary__OpAlternatives_1_1_1_0_0");
 			builder.put(grammarAccess.getAccessAccess().getAlternatives_1_1(), "rule__Access__Alternatives_1_1");
-			builder.put(grammarAccess.getAccessAccess().getRightAlternatives_1_1_1_1_0(), "rule__Access__RightAlternatives_1_1_1_1_0");
 			builder.put(grammarAccess.getPrimaryAccess().getAlternatives(), "rule__Primary__Alternatives");
 			builder.put(grammarAccess.getAbstractRefAccess().getAlternatives(), "rule__AbstractRef__Alternatives");
 			builder.put(grammarAccess.getExpressionListAccess().getAlternatives(), "rule__ExpressionList__Alternatives");

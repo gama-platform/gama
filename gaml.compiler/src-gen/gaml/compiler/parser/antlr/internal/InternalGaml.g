@@ -6300,29 +6300,16 @@ ruleUnit returns [EObject current=null]
 				)
 				(
 					(
-						(
-							lv_op_2_1='\u00B0'
-							{
-								newLeafNode(lv_op_2_1, grammarAccess.getUnitAccess().getOpDegreeSignKeyword_1_0_1_0_0());
+						lv_op_2_0='#'
+						{
+							newLeafNode(lv_op_2_0, grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_0_1_0());
+						}
+						{
+							if ($current==null) {
+								$current = createModelElement(grammarAccess.getUnitRule());
 							}
-							{
-								if ($current==null) {
-									$current = createModelElement(grammarAccess.getUnitRule());
-								}
-								setWithLastConsumed($current, "op", lv_op_2_1, null);
-							}
-							    |
-							lv_op_2_2='#'
-							{
-								newLeafNode(lv_op_2_2, grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_0_1_0_1());
-							}
-							{
-								if ($current==null) {
-									$current = createModelElement(grammarAccess.getUnitRule());
-								}
-								setWithLastConsumed($current, "op", lv_op_2_2, null);
-							}
-						)
+							setWithLastConsumed($current, "op", lv_op_2_0, "#");
+						}
 					)
 				)
 			)
@@ -6386,29 +6373,16 @@ ruleUnary returns [EObject current=null]
 				(
 					(
 						(
-							(
-								lv_op_2_1='\u00B0'
-								{
-									newLeafNode(lv_op_2_1, grammarAccess.getUnaryAccess().getOpDegreeSignKeyword_1_1_0_0_0_0());
+							lv_op_2_0='#'
+							{
+								newLeafNode(lv_op_2_0, grammarAccess.getUnaryAccess().getOpNumberSignKeyword_1_1_0_0_0());
+							}
+							{
+								if ($current==null) {
+									$current = createModelElement(grammarAccess.getUnaryRule());
 								}
-								{
-									if ($current==null) {
-										$current = createModelElement(grammarAccess.getUnaryRule());
-									}
-									setWithLastConsumed($current, "op", lv_op_2_1, null);
-								}
-								    |
-								lv_op_2_2='#'
-								{
-									newLeafNode(lv_op_2_2, grammarAccess.getUnaryAccess().getOpNumberSignKeyword_1_1_0_0_0_1());
-								}
-								{
-									if ($current==null) {
-										$current = createModelElement(grammarAccess.getUnaryRule());
-									}
-									setWithLastConsumed($current, "op", lv_op_2_2, null);
-								}
-							)
+								setWithLastConsumed($current, "op", lv_op_2_0, "#");
+							}
 						)
 					)
 					(
@@ -6458,37 +6432,15 @@ ruleUnary returns [EObject current=null]
 									setWithLastConsumed($current, "op", lv_op_4_2, null);
 								}
 								    |
-								lv_op_4_3='my'
+								lv_op_4_3='not'
 								{
-									newLeafNode(lv_op_4_3, grammarAccess.getUnaryAccess().getOpMyKeyword_1_1_1_0_0_2());
+									newLeafNode(lv_op_4_3, grammarAccess.getUnaryAccess().getOpNotKeyword_1_1_1_0_0_2());
 								}
 								{
 									if ($current==null) {
 										$current = createModelElement(grammarAccess.getUnaryRule());
 									}
 									setWithLastConsumed($current, "op", lv_op_4_3, null);
-								}
-								    |
-								lv_op_4_4='the'
-								{
-									newLeafNode(lv_op_4_4, grammarAccess.getUnaryAccess().getOpTheKeyword_1_1_1_0_0_3());
-								}
-								{
-									if ($current==null) {
-										$current = createModelElement(grammarAccess.getUnaryRule());
-									}
-									setWithLastConsumed($current, "op", lv_op_4_4, null);
-								}
-								    |
-								lv_op_4_5='not'
-								{
-									newLeafNode(lv_op_4_5, grammarAccess.getUnaryAccess().getOpNotKeyword_1_1_1_0_0_4());
-								}
-								{
-									if ($current==null) {
-										$current = createModelElement(grammarAccess.getUnaryRule());
-									}
-									setWithLastConsumed($current, "op", lv_op_4_5, null);
 								}
 							)
 						)
@@ -6608,39 +6560,21 @@ ruleAccess returns [EObject current=null]
 					)
 					(
 						(
-							(
-								{
-									newCompositeNode(grammarAccess.getAccessAccess().getRightAbstractRefParserRuleCall_1_1_1_1_0_0());
+							{
+								newCompositeNode(grammarAccess.getAccessAccess().getRightPrimaryParserRuleCall_1_1_1_1_0());
+							}
+							lv_right_6_0=rulePrimary
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getAccessRule());
 								}
-								lv_right_6_1=ruleAbstractRef
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getAccessRule());
-									}
-									set(
-										$current,
-										"right",
-										lv_right_6_1,
-										"gaml.compiler.Gaml.AbstractRef");
-									afterParserOrEnumRuleCall();
-								}
-								    |
-								{
-									newCompositeNode(grammarAccess.getAccessAccess().getRightStringLiteralParserRuleCall_1_1_1_1_0_1());
-								}
-								lv_right_6_2=ruleStringLiteral
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getAccessRule());
-									}
-									set(
-										$current,
-										"right",
-										lv_right_6_2,
-										"gaml.compiler.Gaml.StringLiteral");
-									afterParserOrEnumRuleCall();
-								}
-							)
+								set(
+									$current,
+									"right",
+									lv_right_6_0,
+									"gaml.compiler.Gaml.Primary");
+								afterParserOrEnumRuleCall();
+							}
 						)
 					)
 				)
