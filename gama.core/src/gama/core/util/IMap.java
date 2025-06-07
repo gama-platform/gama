@@ -685,4 +685,17 @@ public interface IMap<K, V>
 		return result;
 	}
 
+	/**
+	 * Compute runtime type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		return Types.MAP.of(getKeys().computeRuntimeType(scope).getContentType(),
+				getValues().computeRuntimeType(scope).getContentType());
+	}
+
 }

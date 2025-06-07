@@ -38,7 +38,6 @@ import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -656,12 +655,6 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			if (hasHeader != null && hasHeader) { userSize.y++; }
 		}
 
-	}
-
-	@Override
-	public IContainerType getGamlType() {
-		final IType ct = getBuffer() == null ? Types.NO_TYPE : getBuffer().getGamlType().getContentType();
-		return Types.FILE.of(ct);
 	}
 
 	/**

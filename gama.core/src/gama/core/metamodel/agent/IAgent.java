@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -86,9 +86,10 @@ import gama.gaml.variables.IVariable;
 				name = IKeyword.SHAPE,
 				type = IType.GEOMETRY,
 				doc = { @doc ("Returns the shape of the receiver agent") }) })
-@doc ("The species hierarchy derives from a single built-in species, which is 'agent'. All its components (attributes, actions) will then be inherited by all direct "
-		+ "or indirect children species (including 'model' and 'experiment' except species that explicitly set 'use_minimal_agents' facet to 'true', which inherit from"
-		+ " a stripped-down version of 'agent'. ")
+@doc ("""
+		The species hierarchy derives from a single built-in species, which is 'agent'. All its components (attributes, actions) will then be inherited by all direct \
+		or indirect children species (including 'model' and 'experiment' except species that explicitly set 'use_minimal_agents' facet to 'true', which inherit from\
+		 a stripped-down version of 'agent'.\s""")
 public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>, IStepable,
 		IContainer.Addressable<String, Object>, IVarAndActionSupport, IScoped {
 
@@ -711,6 +712,16 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 		AgentReference ar = AgentReference.of(this);
 		json.addRef(ar.toString(), () -> SerialisedAgent.of(this, false));
 		return json.valueOf(ar);
+	}
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		return scope.getType(getSpeciesName());
 	}
 
 }

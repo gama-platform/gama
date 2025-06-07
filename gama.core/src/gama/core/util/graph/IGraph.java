@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,11 +14,11 @@ import java.util.Map;
 
 import org.jgrapht.Graph;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaPair;
 import gama.core.util.IAddressableContainer;
@@ -29,6 +29,7 @@ import gama.core.util.path.IPath;
 import gama.gaml.operators.Graphs;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 24 nov. 2011
@@ -302,5 +303,16 @@ public interface IGraph<Node, Edge>
 	 * @date 31 oct. 2023
 	 */
 	PathComputer getPathComputer();
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		return Types.GRAPH.of(getVertices().computeRuntimeType(scope).getContentType(),
+				getEdges().computeRuntimeType(scope).getContentType());
+	}
 
 }

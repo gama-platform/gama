@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaFolderFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaFolderFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -23,7 +23,6 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.gaml.operators.Files;
 import gama.gaml.statements.Facets;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.Types;
 
 /**
@@ -34,9 +33,12 @@ public class GamaFolderFile extends GamaFile<IList<String>, String> {
 	/**
 	 * Instantiates a new gama folder file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public GamaFolderFile(final IScope scope, final String pathName) throws GamaRuntimeException {
 		super(scope, pathName);
@@ -49,10 +51,14 @@ public class GamaFolderFile extends GamaFile<IList<String>, String> {
 	/**
 	 * Instantiates a new gama folder file.
 	 *
-	 * @param scope the scope
-	 * @param pn the pn
-	 * @param forReading the for reading
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pn
+	 *            the pn
+	 * @param forReading
+	 *            the for reading
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public GamaFolderFile(final IScope scope, final String pn, final boolean forReading) throws GamaRuntimeException {
 		super(scope, pn, forReading);
@@ -71,11 +77,6 @@ public class GamaFolderFile extends GamaFile<IList<String>, String> {
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return IKeyword.FOLDER + "('" + /* StringUtils.toGamlString(getPath()) */getPath(null) + "')";
-	}
-
-	@Override
-	public IContainerType<?> getGamlType() {
-		return Types.FILE.of(Types.INT, Types.STRING);
 	}
 
 	@Override

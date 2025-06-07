@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaPropertyFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaPropertyFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -15,10 +15,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -27,7 +27,6 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.statements.Facets;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -47,9 +46,12 @@ public class GamaPropertyFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Instantiates a new gama property file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a property file (.properties)",
@@ -63,10 +65,14 @@ public class GamaPropertyFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Instantiates a new gama property file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param buffer the buffer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param buffer
+	 *            the buffer
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to store a map in a property file (it does not save it - just store it in memory)",
@@ -98,11 +104,6 @@ public class GamaPropertyFile extends GamaFile<IMap<String, String>, String> {
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() {
-		return Types.FILE.of(Types.STRING, Types.STRING);
-	}
-
-	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// TODO return the keys of the map as "attributes"
 		return GamaListFactory.EMPTY_LIST;
@@ -111,11 +112,7 @@ public class GamaPropertyFile extends GamaFile<IMap<String, String>, String> {
 	@Override
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
 		final Properties p = new Properties();
-		if (getBuffer() != null && !getBuffer().isEmpty()) {
-			getBuffer().forEach((a, b) -> {
-				p.setProperty(a, b);
-			});
-		}
+		if (getBuffer() != null && !getBuffer().isEmpty()) { getBuffer().forEach((a, b) -> { p.setProperty(a, b); }); }
 		try (FileWriter fw = new FileWriter(getFile(scope))) {
 			p.store(fw, null);
 		} catch (final IOException e) {}
