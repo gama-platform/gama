@@ -53,6 +53,7 @@ import gama.core.outputs.layers.charts.ChartLayerStatement;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.core.util.IList;
+import gama.dev.DEBUG;
 import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.menus.GamaMenu;
@@ -65,6 +66,10 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * The Class DisplaySurfaceMenu.
  */
 public class DisplaySurfaceMenu {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The layer images. */
 	public static final Map<Class<? extends ILayer>, Image> layer_images = new LinkedHashMap<>();
@@ -149,9 +154,9 @@ public class DisplaySurfaceMenu {
 	 *            the with presentation
 	 */
 	public void prepareNewMenu(final Control c, final int x, final int y, final boolean withPresentation) {
+		// DEBUG.OUT("Disposing the old menu");
 		disposeMenu();
 		menu = new Menu(c);
-		// menu.setLocation(scaleDownIfWin(c.toDisplay(x, y)));
 		if (withPresentation) {
 			presentationMenu.apply(menu);
 			GamaMenu.separate(menu);
@@ -201,8 +206,7 @@ public class DisplaySurfaceMenu {
 	 */
 	public void buildMenu(final int mousex, final int mousey, final IAgent agent, final Runnable cleanup,
 			final MenuAction... actions) {
-		// cleanup is an optional runnable to do whatever is necessary after the
-		// menu has disappeared
+		// cleanup is an optional runnable to do whatever is necessary after the menu has disappeared
 		buildMenu(false, mousex, mousey, agent == null ? Collections.EMPTY_LIST : Collections.singleton(agent), cleanup,
 				actions);
 	}
@@ -226,21 +230,36 @@ public class DisplaySurfaceMenu {
 	private void buildMenu(final boolean byLayer, final int mousex, final int mousey, final Collection<IAgent> agents,
 			final Runnable cleanup, final MenuAction... actions) {
 		WorkbenchHelper.asyncRun(() -> {
+			// DEBUG.OUT("Preparing the menu");
 			prepareNewMenu(swtControl, mousex, mousey, true);
-			fill(menu, -1, true, byLayer, agents, actions);
-			menu.setVisible(true);
-			// AD 3/10/13: Fix for Issue 669 on Linux GTK setup. See :
-			// http://www.eclipse.org/forums/index.php/t/208284/
-			retryVisible(menu, MAX_RETRIES);
 			if (cleanup != null) {
 				menu.addMenuListener(new MenuAdapter() {
 
 					@Override
 					public void menuHidden(final MenuEvent e) {
+						// DEBUG.OUT("Menu hidden");
 						menu.removeMenuListener(this);
 						cleanup.run();
 					}
+
 				});
+			}
+			fill(menu, -1, true, byLayer, agents, actions);
+			// DEBUG.OUT("Making the menu visible");
+			menu.setVisible(true);
+
+			// AD 3/10/13: Fix for Issue #669 in Linux GTK. See :
+			// http://www.eclipse.org/forums/index.php/t/208284/
+			retryVisible(menu, MAX_RETRIES);
+		});
+		// See Issue #10 (github.com/gama-platform/gama/issues/10)
+		// If the menu is not visible after some time, we cleanup the selection. May result in some
+		// flickering or missed clicks, but better than an invisible menu !
+		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, (e) -> {
+			// DEBUG.OUT("Testing if the menu is visible");
+			if (!menu.isVisible()) {
+				// DEBUG.OUT("Cleaning up because the menu is not visible");
+				cleanup.run();
 			}
 		});
 	}
@@ -272,21 +291,18 @@ public class DisplaySurfaceMenu {
 	 *            the retries remaining
 	 */
 	private void retryVisible(final Menu menu, final int retriesRemaining) {
+
 		if (!PlatformHelper.isLinux()) { return; }
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
 				menu.setVisible(false);
-				{
-					final Shell shell =
-							new Shell(WorkbenchHelper.getDisplay(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
-					shell.setSize(10, 10); // big enough to avoid errors
-											// from the gtk layer
-					shell.setLocation(menu.getShell().getLocation());
-					shell.setText("Not visible");
-					shell.setVisible(false);
-					shell.open();
-					shell.dispose();
-				}
+				final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+				shell.setSize(10, 10); // big enough to avoid errors from the gtk layer
+				shell.setLocation(menu.getShell().getLocation());
+				shell.setText("Not visible");
+				shell.setVisible(false);
+				shell.open();
+				shell.dispose();
 				menu.getShell().forceActive();
 				menu.setVisible(true);
 				retryVisible(menu, retriesRemaining - 1);

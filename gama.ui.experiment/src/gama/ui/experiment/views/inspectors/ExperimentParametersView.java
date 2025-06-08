@@ -264,14 +264,14 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				saveParameterValuesForCurrentAgent();
 				agent = newSimulation;
 				getEditorsList().setItemValues(newSimulation.getExternalInits());
-				getEditorsList().updateItemValues(false);
+				getEditorsList().updateItemValues(false, false);
 				updateToolbar();
 				return;
 			}
 			if (agent.isExperiment()) {
 				// Experiment ==> Simulation
 				agent = newSimulation;
-				getEditorsList().updateItemValues(false);
+				getEditorsList().updateItemValues(false, false);
 				if (getEditorsList().hasMonitors()) { createMonitorSectionIfNeeded(false); }
 				updateToolbar();
 				return;
@@ -289,7 +289,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				// Simulation ==> Experiment
 				saveParameterValuesForCurrentAgent();
 				agent = newExperiment;
-				getEditorsList().updateItemValues(false);
+				getEditorsList().updateItemValues(false, false);
 				updateToolbar();
 				return;
 			}

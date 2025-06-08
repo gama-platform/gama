@@ -32,7 +32,7 @@ import gama.ui.display.opengl.scene.ModelScene;
 public class SceneHelper extends AbstractRendererHelper {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The back scene. */
@@ -89,9 +89,10 @@ public class SceneHelper extends AbstractRendererHelper {
 		// }
 		// If we are not synchronized (or if the wait is over), we verify that
 		// backScene is null and create a new one
-		if (backScene != null) // We should also prevent the draw to happen by skipping everything
+		if (backScene != null) { // We should also prevent the draw to happen by skipping everything
 			// if it the case ?
 			return false;
+		}
 		backScene = createSceneFrom(staticScene);
 		// We prepare it for drawing
 		backScene.beginDrawingLayers();
@@ -104,7 +105,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * @return true, if is not ready to update
 	 */
 	public boolean isNotReadyToUpdate() {
-		if (frontScene != null && !frontScene.rendered()) return true;
+		if (frontScene != null && !frontScene.rendered()) { return true; }
 		return false;
 	}
 
@@ -115,7 +116,7 @@ public class SceneHelper extends AbstractRendererHelper {
 		// If there is no scene to update, it means it has been cancelled by
 		// another thread (hiding/showing layers, most probably) so we just skip
 		// this step
-		if (backScene == null) return;
+		if (backScene == null) { return; }
 		// We ask the backScene to stop updating
 		backScene.endDrawingLayers();
 		// We create the static scene from it if it does not exist yet or if it
@@ -191,7 +192,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void garbageCollect(final OpenGL gl) {
 		int size = garbage.size();
-		if (size == 0) return;
+		if (size == 0) { return; }
 		final ModelScene[] scenes = garbage.toArray(new ModelScene[size]);
 		garbage.clear();
 		for (final ModelScene scene : scenes) {
@@ -247,6 +248,7 @@ public class SceneHelper extends AbstractRendererHelper {
 		// if picking, we draw a first pass to pick the color
 		final PickingHelper picking = getRenderer().getPickingHelper();
 		if (picking.isBeginningPicking()) {
+			// DEBUG.OUT("In SceneHelper.draw, beginning picking");
 			picking.beginPicking();
 			getSceneToRender().draw(gl);
 			picking.endPicking();

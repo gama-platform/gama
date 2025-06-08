@@ -703,7 +703,7 @@ public interface IGui {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 17 août 2023
 	 */
-	default void updateParameters() {}
+	default void updateParameters(final boolean refreshValues) {}
 
 	/**
 	 * Gets the server commands.

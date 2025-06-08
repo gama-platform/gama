@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGamaView.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * IGamaView.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -314,9 +314,9 @@ public interface IGamaView {
 	public interface Parameters extends ITopLevelAgentChangeListener {
 
 		/**
-		 * Update item values.
+		 * Update item values. If retrieveValues is true, tries to retrieve the updated values from the variables
 		 */
-		void updateItemValues(boolean synchronously);
+		void updateItemValues(boolean synchronously, boolean retrieveValues);
 	}
 
 	/**

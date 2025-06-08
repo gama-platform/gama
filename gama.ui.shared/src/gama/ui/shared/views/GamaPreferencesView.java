@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -235,7 +236,7 @@ public class GamaPreferencesView {
 	 *            the value
 	 */
 	void checkRefreshables(final Pref e) {
-		if (!WorkbenchHelper.isDisplayThread()) return;
+		if (!WorkbenchHelper.isDisplayThread()) { return; }
 		for (final String activable : e.getRefreshment()) {
 			final var ed = editors.get(activable);
 			if (ed != null && WorkbenchHelper.isDisplayThread()) { ed.updateWithValueOfParameter(false, false); }
@@ -369,7 +370,7 @@ public class GamaPreferencesView {
 			final var fd = new FileDialog(shell, SWT.OPEN);
 			fd.setFilterExtensions(new String[] { "*.prefs" });
 			final var path = fd.open();
-			if (path == null) return;
+			if (path == null) { return; }
 			GamaPreferences.applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		});
@@ -382,7 +383,7 @@ public class GamaPreferencesView {
 			fd.setFilterExtensions(new String[] { "*.gaml" });
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) return;
+			if (path == null) { return; }
 			GamaPreferences.savePreferencesToGAML(path);
 		});
 
@@ -395,7 +396,7 @@ public class GamaPreferencesView {
 			fd.setFilterExtensions(new String[] { "*.prefs" });
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) return;
+			if (path == null) { return; }
 			GamaPreferences.savePreferencesToProperties(path);
 		});
 
@@ -440,8 +441,9 @@ public class GamaPreferencesView {
 
 		buttonRevert.setSelectionListener(e -> {
 			if (!Messages.question("Revert to default",
-					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
+					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately")) {
 				return;
+			}
 			GamaPreferences.revertToDefaultValues(modelValues);
 			PlatformUI.getWorkbench().restart(true);
 		});
@@ -494,7 +496,7 @@ public class GamaPreferencesView {
 	 * Save dialog properties.
 	 */
 	private void saveDialogProperties() {
-		if (shell.isDisposed()) return;
+		if (shell.isDisposed()) { return; }
 		saveLocation();
 		saveSize();
 		saveTab();
@@ -515,13 +517,16 @@ public class GamaPreferencesView {
 		var y = (int) loc.y;
 		var width = (int) size.x;
 		var height = (int) size.y;
-		if (loc.x == -1 || loc.y == -1 || size.x == -1 || size.y == -1) {
+		Rectangle savedBounds = new Rectangle(x, y, width, height);
+		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
+		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
+		if (!(savedBounds.intersects(monitorBounds))) {
 			final var p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-			final var bounds = WorkbenchHelper.getDisplay().getBounds();
-			width = Math.min(p.x, bounds.width - 200);
-			height = Math.min(p.y, bounds.height - 200);
-			x = (bounds.width - width) / 2;
-			y = (bounds.height - height) / 2;
+			x = shellBounds.x + 100;
+			y = shellBounds.y + 100;
+			width = shellBounds.width - 200;
+			height = shellBounds.height - 200;
+
 		}
 
 		tabFolder.setSelection(tab);

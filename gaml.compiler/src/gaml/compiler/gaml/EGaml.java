@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * EGaml.java, in gaml.compiler, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * EGaml.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.gaml;
 
@@ -213,6 +212,10 @@ public class EGaml implements IGamlEcoreUtils {
 			return ((HeadlessExperimentImpl) object).eIsSet(GamlPackage.HEADLESS_EXPERIMENT__BLOCK)
 			// && object.getBlock().getFunction() == null
 			;
+		}
+
+		public Boolean caseExperimentFileStructure(final ExperimentFileStructure object) {
+			return true;
 		}
 
 		@Override

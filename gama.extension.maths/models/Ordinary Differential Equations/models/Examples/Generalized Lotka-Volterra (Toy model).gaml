@@ -32,7 +32,6 @@ global {
 	float chartPixelValue <- 1.0;
 	int matrixFontSize -> round(10 * 1.75/interactionMatrixcPixelValue);
 	int questionMarkFontSize -> round(40 * 1.75/interactionMatrixcPixelValue);//floor(40 * fontScale);
-//	int overlayFontSize -> floor(20 * 1.75/interactionMatrixcPixelValue);
 	int overlayFontSize <- 15;
 	int interactionGraphFontSize -> floor(10 * 3.53/interactionGraphPixelValue); // floor(10 * fontScale);
 	int edgeFontSize -> floor(8 * 3.53/interactionGraphPixelValue); // floor(8 * fontScale);
@@ -98,27 +97,6 @@ global {
 	
 	init{
 		
-//		write normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0});
-//		write gaml_type(rotation_composition(90::{1,0,0},90::{1,0,0})) = gaml_type(1.0::{0,0,0});
-////		write is(gaml_type(rotation_composition(90::{1,0,0},90::{1,0,0})),list<float>);
-//		write gaml_type([1,2,3]);
-//		
-//		
-////		write is([1,2,3],list<int>);
-////		
-////		write is([1,2,3],list<int>);
-//		
-//		
-//		
-//		write gaml_type(inverse_rotation(38.0::{1,1,1})) = gaml_type(1.0::{0,0,0});
-//		write gaml_type(normalized_rotation(-38.0::{1,1,1}));
-//		write gaml_type(rotated_by(rectangle(5,10),90, {0,0,1})) = geometry;
-//		write rectangle(10,5) - rotated_by(rectangle(5,10),90, {0,0,1}) = nil and rotated_by(rectangle(5,10),90, {0,0,1}) - rectangle(10,5) = nil;
-//			
-//			
-//		
-
-	
 		// create the colors for the different animal species
 		if (maxSpecies > 8){
 			color_list <- list_with(maxSpecies, rgb(0,0,0));
@@ -204,7 +182,6 @@ global {
 	}
 }
 
-// definition of species
 
 species animal{
 	float t;
@@ -283,7 +260,7 @@ species solver_and_scheduler{
 	
 	
 	// Master equation. 
-	// Do nothing, but needed in order to make the scheduler able to solve the
+	// Does nothing, but needed in order to make the scheduler able to solve the
 	// equation system.
 	equation dynamics simultaneously: [animal]{ 
 		diff(dummy,t) = 0;		
@@ -469,16 +446,10 @@ experiment Simulation type: gui autorun: true  {
 	// limit the speed of the simulation
 	float minimum_cycle_duration <- 0.1;
 	
-	// Help section.
-//	text "Bonjour le monde";
-//	text "Sacrament, <li> y va-tu continuer </li><li>longtemps</li> ?";
-//	category "Experiment" expanded: true;
-	
- 	text "Create your own ecosystem of animal species and visualize the effects of interactions on the population dynamics."
- 		+"<p>Click on a '?' to add a new animal species, then click on grey squares to switch from no interaction to:</p>"
-		+"<li>'+': the upper species has a positive impact on the left species (e.g. the upper species is a prey of the other one);</li>"
-		+"<li>'-': negative impact (e.g. the upper species is a prey of the other one);</li>"
-		//+ '<a href="https://www.google.com">link</a>'
+ 	text "<i>Create your own ecosystem of animal species and visualize the effects of interactions on the population dynamics.</i><br/>"
+ 		+"Click on a <b>'?'</b> to add a new animal species, then click on grey squares to switch from no interaction to:<br/>"
+		+" 1. <b>'+'</b>: the upper species has a positive impact on the left species (e.g. the upper species is a prey of the other one);<br/>"
+		+" 2. <b>'-'</b>: negative impact (e.g. the upper species is a prey of the other one)."
 		category: "Guidelines";
 		
 	text "https://en.wikipedia.org/wiki/Generalized_Lotka-Volterra_equation" category: "Guidelines" color: rgb(241, 196, 15);
@@ -499,13 +470,12 @@ experiment Simulation type: gui autorun: true  {
  	// output definition
  			
 	output { 
-		// set the window layout
+		
 		layout value: horizontal([0::50,vertical([1::50,2::50])::50]) tabs:false;
 		
 		// left display: interaction matrix
 		display action_button name:"Species interactions" toolbar: false type:3d axes: false{
 			camera 'default' location: {500.0,500.0231,1273.0} target: {500.0,500.0,0.0} locked: true;
-//			camera name: 'myCamera' locked: true;
 			light #default intensity: 120;
 			species button aspect: modern;
 			
@@ -613,16 +583,6 @@ experiment Simulation type: gui autorun: true  {
 						draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 color: myColor;
 					}
 				}
-				
-//				loop edge over: the_graph.edges {
-//					// mandatory cast
-//					pair<animal,animal> myEdge <- edge;
-//					float angle <- first(myEdge) towards last(myEdge);
-//					point centre <- centroid(polyline([first(myEdge).location,last(myEdge).location]));
-//					rgb myColor <- edge_type[myEdge] = "negative"?#red:rgb(53,174,36);
-//					draw geometry(edge) + 3 at: centre + {sin(angle),-cos(angle),0}*edgeSpacing color: myColor;
-//					draw triangle(20) rotate: angle + 90 at: centre + {cos(angle),sin(angle),0}*12 + {sin(angle),-cos(angle),0}*edgeSpacing color: myColor;
-//				}
  			}
  			species animal aspect: interactionGraphAspect;
  			

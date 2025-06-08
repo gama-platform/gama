@@ -96,7 +96,7 @@ public interface ItemList<T> {
 	/**
 	 * Update item values.
 	 */
-	default void updateItemValues(final boolean synchronously) {}
+	default void updateItemValues(final boolean synchronously, final boolean retrieveValues) {}
 
 	/**
 	 * Checks if is item visible.
