@@ -2124,7 +2124,14 @@ public class Containers {
 	@test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]")
 	@validator (ComparableValidator.class)
 	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).sortedBy(with(scope, eachName, filter)).toCollection(listLike(c));
+		try {
+			return (IList) stream(scope, c).sortedBy(with(scope, eachName, filter)).toCollection(listLike(c));
+		} catch (IllegalArgumentException e) {
+			// AD added here to avoid reporting concurrent modifications to the container while sorting it (can happen
+			// when relaunching simulations, see #693, with this exception in java.util.TimSort). Instead we return the
+			// sort on a copy of the container
+			return sort(scope, eachName, c.listValue(scope, c.getGamlType().getContentType(), true), filter);
+		}
 	}
 
 	/**
