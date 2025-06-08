@@ -289,10 +289,11 @@ experiment Run type: gui {
       }
       display chart_display refresh: every(24#cycles)  type: 2d  { 
          chart "Pressure on Dykes" type: series legend_font: font("Helvetica", 18)  label_font: font("Helvetica", 20, #bold)  title_font: font("Helvetica", 24, #bold){
+         	int nbDykes <-  max(1, length(dyke));
             data "Mean pressure on dykes " value: mean(dyke collect (each.water_pressure)) style: line color: #magenta  ;
-            data "Rate of dykes with max pressure" value: (dyke count (each.water_pressure = 1.0))/ length(dyke) style: line color: #red ;
-            data "Rate of dykes with high pressure" value: (dyke count (each.water_pressure > 0.5))/ length(dyke) style: line color: #orange ;
-            data "Rate of dykes with low pressure" value: (dyke count (each.water_pressure < 0.25))/ length(dyke) style: line color: #green ;
+            data "Rate of dykes with max pressure" value: (dyke count (each.water_pressure = 1.0))/ nbDykes style: line color: #red ;
+            data "Rate of dykes with high pressure" value: (dyke count (each.water_pressure > 0.5))/ nbDykes style: line color: #orange ;
+            data "Rate of dykes with low pressure" value: (dyke count (each.water_pressure < 0.25))/ nbDykes style: line color: #green ;
          }
       }
    }
