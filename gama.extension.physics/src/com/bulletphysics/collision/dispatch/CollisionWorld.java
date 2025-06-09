@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * CollisionWorld.java, in gaml.extensions.physics, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * CollisionWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -60,13 +60,13 @@ public class CollisionWorld {
 
 	/** The collision objects. */
 	protected List<CollisionObject> collisionObjects = new ArrayList<>();
-	
+
 	/** The dispatcher 1. */
 	protected Dispatcher dispatcher1;
-	
+
 	/** The dispatch info. */
 	protected DispatcherInfo dispatchInfo = new DispatcherInfo();
-	
+
 	/** The broadphase pair cache. */
 	protected BroadphaseInterface broadphasePairCache;
 
@@ -99,7 +99,8 @@ public class CollisionWorld {
 	/**
 	 * Adds the collision object.
 	 *
-	 * @param collisionObject the collision object
+	 * @param collisionObject
+	 *            the collision object
 	 */
 	public void addCollisionObject(final CollisionObject collisionObject) {
 		addCollisionObject(collisionObject, CollisionFilterGroups.DEFAULT_FILTER, CollisionFilterGroups.ALL_FILTER);
@@ -108,9 +109,12 @@ public class CollisionWorld {
 	/**
 	 * Adds the collision object.
 	 *
-	 * @param collisionObject the collision object
-	 * @param collisionFilterGroup the collision filter group
-	 * @param collisionFilterMask the collision filter mask
+	 * @param collisionObject
+	 *            the collision object
+	 * @param collisionFilterGroup
+	 *            the collision filter group
+	 * @param collisionFilterMask
+	 *            the collision filter mask
 	 */
 	public void addCollisionObject(final CollisionObject collisionObject, final short collisionFilterGroup,
 			final short collisionFilterMask) {
@@ -171,7 +175,8 @@ public class CollisionWorld {
 	/**
 	 * Removes the collision object.
 	 *
-	 * @param collisionObject the collision object
+	 * @param collisionObject
+	 *            the collision object
 	 */
 	public void removeCollisionObject(final CollisionObject collisionObject) {
 		// bool removeFromBroadphase = false;
@@ -195,47 +200,38 @@ public class CollisionWorld {
 	/**
 	 * Sets the broadphase.
 	 *
-	 * @param pairCache the new broadphase
+	 * @param pairCache
+	 *            the new broadphase
 	 */
-	public void setBroadphase(final BroadphaseInterface pairCache) {
-		broadphasePairCache = pairCache;
-	}
+	public void setBroadphase(final BroadphaseInterface pairCache) { broadphasePairCache = pairCache; }
 
 	/**
 	 * Gets the broadphase.
 	 *
 	 * @return the broadphase
 	 */
-	public BroadphaseInterface getBroadphase() {
-		return broadphasePairCache;
-	}
+	public BroadphaseInterface getBroadphase() { return broadphasePairCache; }
 
 	/**
 	 * Gets the pair cache.
 	 *
 	 * @return the pair cache
 	 */
-	public OverlappingPairCache getPairCache() {
-		return broadphasePairCache.getOverlappingPairCache();
-	}
+	public OverlappingPairCache getPairCache() { return broadphasePairCache.getOverlappingPairCache(); }
 
 	/**
 	 * Gets the dispatcher.
 	 *
 	 * @return the dispatcher
 	 */
-	public Dispatcher getDispatcher() {
-		return dispatcher1;
-	}
+	public Dispatcher getDispatcher() { return dispatcher1; }
 
 	/**
 	 * Gets the dispatch info.
 	 *
 	 * @return the dispatch info
 	 */
-	public DispatcherInfo getDispatchInfo() {
-		return dispatchInfo;
-	}
+	public DispatcherInfo getDispatchInfo() { return dispatchInfo; }
 
 	/** The update aabbs report me. */
 	private static boolean updateAabbs_reportMe = true;
@@ -243,7 +239,8 @@ public class CollisionWorld {
 	/**
 	 * Update single aabb.
 	 *
-	 * @param colObj the col obj
+	 * @param colObj
+	 *            the col obj
 	 */
 	// JAVA NOTE: ported from 2.74, missing contact threshold stuff
 	public void updateSingleAabb(final CollisionObject colObj) {
@@ -295,19 +292,23 @@ public class CollisionWorld {
 	 *
 	 * @return the num collision objects
 	 */
-	public int getNumCollisionObjects() {
-		return collisionObjects.size();
-	}
+	public int getNumCollisionObjects() { return collisionObjects.size(); }
 
 	/**
 	 * Ray test single.
 	 *
-	 * @param rayFromTrans the ray from trans
-	 * @param rayToTrans the ray to trans
-	 * @param collisionObject the collision object
-	 * @param collisionShape the collision shape
-	 * @param colObjWorldTransform the col obj world transform
-	 * @param resultCallback the result callback
+	 * @param rayFromTrans
+	 *            the ray from trans
+	 * @param rayToTrans
+	 *            the ray to trans
+	 * @param collisionObject
+	 *            the collision object
+	 * @param collisionShape
+	 *            the collision shape
+	 * @param colObjWorldTransform
+	 *            the col obj world transform
+	 * @param resultCallback
+	 *            the result callback
 	 */
 	// TODO
 	public static void rayTestSingle(final Transform rayFromTrans, final Transform rayToTrans,
@@ -424,13 +425,13 @@ public class CollisionWorld {
 	 * The Class BridgeTriangleConvexcastCallback.
 	 */
 	private static class BridgeTriangleConvexcastCallback extends TriangleConvexcastCallback {
-		
+
 		/** The result callback. */
 		public ConvexResultCallback resultCallback;
-		
+
 		/** The collision object. */
 		public CollisionObject collisionObject;
-		
+
 		/** The normal in world space. */
 		// public ConcaveShape triangleMesh;
 		public boolean normalInWorldSpace;
@@ -438,13 +439,20 @@ public class CollisionWorld {
 		/**
 		 * Instantiates a new bridge triangle convexcast callback.
 		 *
-		 * @param castShape the cast shape
-		 * @param from the from
-		 * @param to the to
-		 * @param resultCallback the result callback
-		 * @param collisionObject the collision object
-		 * @param triangleMesh the triangle mesh
-		 * @param triangleToWorld the triangle to world
+		 * @param castShape
+		 *            the cast shape
+		 * @param from
+		 *            the from
+		 * @param to
+		 *            the to
+		 * @param resultCallback
+		 *            the result callback
+		 * @param collisionObject
+		 *            the collision object
+		 * @param triangleMesh
+		 *            the triangle mesh
+		 * @param triangleToWorld
+		 *            the triangle to world
 		 */
 		public BridgeTriangleConvexcastCallback(final ConvexShape castShape, final Transform from, final Transform to,
 				final ConvexResultCallback resultCallback, final CollisionObject collisionObject,
@@ -711,9 +719,7 @@ public class CollisionWorld {
 	 *
 	 * @return the collision object array
 	 */
-	public List<CollisionObject> getCollisionObjectArray() {
-		return collisionObjects;
-	}
+	public List<CollisionObject> getCollisionObjectArray() { return collisionObjects; }
 
 	////////////////////////////////////////////////////////////////////////////
 
@@ -722,10 +728,10 @@ public class CollisionWorld {
 	 * it just contains triangleIndex and subpart.
 	 */
 	public static class LocalShapeInfo {
-		
+
 		/** The shape part. */
 		public int shapePart;
-		
+
 		/** The triangle index. */
 		public int triangleIndex;
 		// const btCollisionShape* m_shapeTemp;
@@ -736,26 +742,30 @@ public class CollisionWorld {
 	 * The Class LocalRayResult.
 	 */
 	public static class LocalRayResult {
-		
+
 		/** The collision object. */
 		public CollisionObject collisionObject;
-		
+
 		/** The local shape info. */
 		public LocalShapeInfo localShapeInfo;
-		
+
 		/** The hit normal local. */
 		public final Vector3f hitNormalLocal = new Vector3f();
-		
+
 		/** The hit fraction. */
 		public float hitFraction;
 
 		/**
 		 * Instantiates a new local ray result.
 		 *
-		 * @param collisionObject the collision object
-		 * @param localShapeInfo the local shape info
-		 * @param hitNormalLocal the hit normal local
-		 * @param hitFraction the hit fraction
+		 * @param collisionObject
+		 *            the collision object
+		 * @param localShapeInfo
+		 *            the local shape info
+		 * @param hitNormalLocal
+		 *            the hit normal local
+		 * @param hitFraction
+		 *            the hit fraction
 		 */
 		public LocalRayResult(final CollisionObject collisionObject, final LocalShapeInfo localShapeInfo,
 				final Vector3f hitNormalLocal, final float hitFraction) {
@@ -770,16 +780,16 @@ public class CollisionWorld {
 	 * RayResultCallback is used to report new raycast results.
 	 */
 	public static abstract class RayResultCallback {
-		
+
 		/** The closest hit fraction. */
 		public float closestHitFraction = 1f;
-		
+
 		/** The collision object. */
 		public CollisionObject collisionObject;
-		
+
 		/** The collision filter group. */
 		public short collisionFilterGroup = CollisionFilterGroups.DEFAULT_FILTER;
-		
+
 		/** The collision filter mask. */
 		public short collisionFilterMask = CollisionFilterGroups.ALL_FILTER;
 
@@ -795,7 +805,8 @@ public class CollisionWorld {
 		/**
 		 * Needs collision.
 		 *
-		 * @param proxy0 the proxy 0
+		 * @param proxy0
+		 *            the proxy 0
 		 * @return true, if successful
 		 */
 		public boolean needsCollision(final BroadphaseProxy proxy0) {
@@ -807,8 +818,10 @@ public class CollisionWorld {
 		/**
 		 * Adds the single result.
 		 *
-		 * @param rayResult the ray result
-		 * @param normalInWorldSpace the normal in world space
+		 * @param rayResult
+		 *            the ray result
+		 * @param normalInWorldSpace
+		 *            the normal in world space
 		 * @return the float
 		 */
 		public abstract float addSingleResult(LocalRayResult rayResult, boolean normalInWorldSpace);
@@ -818,24 +831,26 @@ public class CollisionWorld {
 	 * The Class ClosestRayResultCallback.
 	 */
 	public static class ClosestRayResultCallback extends RayResultCallback {
-		
+
 		/** The ray from world. */
 		public final Vector3f rayFromWorld = new Vector3f(); // used to calculate hitPointWorld from hitFraction
-		
+
 		/** The ray to world. */
 		public final Vector3f rayToWorld = new Vector3f();
 
 		/** The hit normal world. */
 		public final Vector3f hitNormalWorld = new Vector3f();
-		
+
 		/** The hit point world. */
 		public final Vector3f hitPointWorld = new Vector3f();
 
 		/**
 		 * Instantiates a new closest ray result callback.
 		 *
-		 * @param rayFromWorld the ray from world
-		 * @param rayToWorld the ray to world
+		 * @param rayFromWorld
+		 *            the ray from world
+		 * @param rayToWorld
+		 *            the ray to world
 		 */
 		public ClosestRayResultCallback(final Vector3f rayFromWorld, final Vector3f rayToWorld) {
 			this.rayFromWorld.set(rayFromWorld);
@@ -868,30 +883,35 @@ public class CollisionWorld {
 	 * The Class LocalConvexResult.
 	 */
 	public static class LocalConvexResult {
-		
+
 		/** The hit collision object. */
 		public CollisionObject hitCollisionObject;
-		
+
 		/** The local shape info. */
 		public LocalShapeInfo localShapeInfo;
-		
+
 		/** The hit normal local. */
 		public final Vector3f hitNormalLocal = new Vector3f();
-		
+
 		/** The hit point local. */
 		public final Vector3f hitPointLocal = new Vector3f();
-		
+
 		/** The hit fraction. */
 		public float hitFraction;
 
 		/**
 		 * Instantiates a new local convex result.
 		 *
-		 * @param hitCollisionObject the hit collision object
-		 * @param localShapeInfo the local shape info
-		 * @param hitNormalLocal the hit normal local
-		 * @param hitPointLocal the hit point local
-		 * @param hitFraction the hit fraction
+		 * @param hitCollisionObject
+		 *            the hit collision object
+		 * @param localShapeInfo
+		 *            the local shape info
+		 * @param hitNormalLocal
+		 *            the hit normal local
+		 * @param hitPointLocal
+		 *            the hit point local
+		 * @param hitFraction
+		 *            the hit fraction
 		 */
 		public LocalConvexResult(final CollisionObject hitCollisionObject, final LocalShapeInfo localShapeInfo,
 				final Vector3f hitNormalLocal, final Vector3f hitPointLocal, final float hitFraction) {
@@ -907,13 +927,13 @@ public class CollisionWorld {
 	 * The Class ConvexResultCallback.
 	 */
 	public static abstract class ConvexResultCallback {
-		
+
 		/** The closest hit fraction. */
 		public float closestHitFraction = 1f;
-		
+
 		/** The collision filter group. */
 		public short collisionFilterGroup = CollisionFilterGroups.DEFAULT_FILTER;
-		
+
 		/** The collision filter mask. */
 		public short collisionFilterMask = CollisionFilterGroups.ALL_FILTER;
 
@@ -929,7 +949,8 @@ public class CollisionWorld {
 		/**
 		 * Needs collision.
 		 *
-		 * @param proxy0 the proxy 0
+		 * @param proxy0
+		 *            the proxy 0
 		 * @return true, if successful
 		 */
 		public boolean needsCollision(final BroadphaseProxy proxy0) {
@@ -941,8 +962,10 @@ public class CollisionWorld {
 		/**
 		 * Adds the single result.
 		 *
-		 * @param convexResult the convex result
-		 * @param normalInWorldSpace the normal in world space
+		 * @param convexResult
+		 *            the convex result
+		 * @param normalInWorldSpace
+		 *            the normal in world space
 		 * @return the float
 		 */
 		public abstract float addSingleResult(LocalConvexResult convexResult, boolean normalInWorldSpace);
@@ -952,27 +975,29 @@ public class CollisionWorld {
 	 * The Class ClosestConvexResultCallback.
 	 */
 	public static class ClosestConvexResultCallback extends ConvexResultCallback {
-		
+
 		/** The convex from world. */
 		public final Vector3f convexFromWorld = new Vector3f(); // used to calculate hitPointWorld from hitFraction
-		
+
 		/** The convex to world. */
 		public final Vector3f convexToWorld = new Vector3f();
-		
+
 		/** The hit normal world. */
 		public final Vector3f hitNormalWorld = new Vector3f();
-		
+
 		/** The hit point world. */
 		public final Vector3f hitPointWorld = new Vector3f();
-		
+
 		/** The hit collision object. */
 		public CollisionObject hitCollisionObject;
 
 		/**
 		 * Instantiates a new closest convex result callback.
 		 *
-		 * @param convexFromWorld the convex from world
-		 * @param convexToWorld the convex to world
+		 * @param convexFromWorld
+		 *            the convex from world
+		 * @param convexToWorld
+		 *            the convex to world
 		 */
 		public ClosestConvexResultCallback(final Vector3f convexFromWorld, final Vector3f convexToWorld) {
 			this.convexFromWorld.set(convexFromWorld);
@@ -989,18 +1014,12 @@ public class CollisionWorld {
 			hitCollisionObject = convexResult.hitCollisionObject;
 			if (normalInWorldSpace) {
 				hitNormalWorld.set(convexResult.hitNormalLocal);
-				if (hitNormalWorld.length() > 2) {
-					System.out.println("CollisionWorld.addSingleResult world " + hitNormalWorld);
-				}
 			} else {
 				// need to transform normal into worldspace
 				hitNormalWorld.set(convexResult.hitNormalLocal);
 				Transform tmp = hitCollisionObject.getWorldTransform(TRANSFORMS.get());
 				tmp.basis.transform(hitNormalWorld);
 				TRANSFORMS.release(tmp);
-				if (hitNormalWorld.length() > 2) {
-					System.out.println("CollisionWorld.addSingleResult world " + hitNormalWorld);
-				}
 			}
 
 			hitPointWorld.set(convexResult.hitPointLocal);
@@ -1012,10 +1031,10 @@ public class CollisionWorld {
 	 * The Class BridgeTriangleRaycastCallback.
 	 */
 	private static class BridgeTriangleRaycastCallback extends TriangleRaycastCallback {
-		
+
 		/** The result callback. */
 		public RayResultCallback resultCallback;
-		
+
 		/** The collision object. */
 		public CollisionObject collisionObject;
 		// public ConcaveShape triangleMesh;
@@ -1023,11 +1042,16 @@ public class CollisionWorld {
 		/**
 		 * Instantiates a new bridge triangle raycast callback.
 		 *
-		 * @param from the from
-		 * @param to the to
-		 * @param resultCallback the result callback
-		 * @param collisionObject the collision object
-		 * @param triangleMesh the triangle mesh
+		 * @param from
+		 *            the from
+		 * @param to
+		 *            the to
+		 * @param resultCallback
+		 *            the result callback
+		 * @param collisionObject
+		 *            the collision object
+		 * @param triangleMesh
+		 *            the triangle mesh
 		 */
 		public BridgeTriangleRaycastCallback(final Vector3f from, final Vector3f to,
 				final RayResultCallback resultCallback, final CollisionObject collisionObject,

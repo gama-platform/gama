@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * HatchBoundaryLoop.java, in gama.dependencies, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * HatchBoundaryLoop.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -22,10 +22,10 @@ import gama.dependencies.kabeja.dxf.DXFEntity;
  *
  */
 public class HatchBoundaryLoop {
-	
+
 	/** The edges. */
 	private final List<DXFEntity> edges = new ArrayList<>();
-	
+
 	/** The outermost. */
 	private boolean outermost = true;
 
@@ -50,7 +50,8 @@ public class HatchBoundaryLoop {
 	/**
 	 * Adds the boundary edge.
 	 *
-	 * @param edge the edge
+	 * @param edge
+	 *            the edge
 	 */
 	public void addBoundaryEdge(final DXFEntity edge) {
 		edges.add(edge);
@@ -64,7 +65,6 @@ public class HatchBoundaryLoop {
 	public Bounds getBounds() {
 		Bounds bounds = new Bounds();
 
-		// System.out.println("edges="+edges.size());
 		if (edges.size() <= 0) {
 			bounds.setValid(false);
 

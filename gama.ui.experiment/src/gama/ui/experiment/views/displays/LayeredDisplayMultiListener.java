@@ -1,18 +1,17 @@
 /*******************************************************************************************************
  *
- * LayeredDisplayMultiListener.java, in gama.ui.shared.experiment, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * LayeredDisplayMultiListener.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -35,7 +34,7 @@ import gama.ui.shared.views.WorkaroundForIssue1353;
 public class LayeredDisplayMultiListener {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The view. */
@@ -59,9 +58,6 @@ public class LayeredDisplayMultiListener {
 	/** The suppress next enter. */
 	volatile boolean suppressNextEnter;
 
-	/** The key listener. */
-	final Consumer<Character> keyListener;
-
 	/** The pressed characters. */
 	final Set<Character> pressedCharacters = new HashSet<>();
 
@@ -80,17 +76,6 @@ public class LayeredDisplayMultiListener {
 		this.view = deco;
 		this.surface = surface;
 
-		keyListener = keyCode -> {
-			switch (keyCode) {
-				case 'o':
-				case 'O':
-					deco.toggleOverlay();
-					break;
-				case 't':
-				case 'T':
-					deco.toggleToolbar();
-			}
-		};
 	}
 
 	/**
@@ -100,12 +85,8 @@ public class LayeredDisplayMultiListener {
 	 *            the e
 	 * @param isCommand
 	 */
-	public void keyPressed(final char e, final boolean isCommand) {
+	public void keyPressed(final char e) {
 		DEBUG.OUT("Key pressed: " + e);
-		if (isCommand) {
-			keyListener.accept(e);
-			return;
-		}
 		pressedCharacters.add(e);
 		for (Character c : pressedCharacters) { surface.dispatchKeyEvent(c); }
 		WorkbenchHelper.asyncRun(view.displayOverlay);
@@ -131,9 +112,9 @@ public class LayeredDisplayMultiListener {
 	 * @param command
 	 *            the command
 	 */
-	public void keyReleased(final char e, final boolean command) {
+	public void keyReleased(final char e) {
 		DEBUG.OUT("Key released: " + e);
-		if (!command) { pressedCharacters.remove(e); }
+		pressedCharacters.remove(e);
 	}
 
 	/**
@@ -272,8 +253,8 @@ public class LayeredDisplayMultiListener {
 			inMenu = false;
 			return;
 		}
-		if (modifier || PlatformHelper.isWindows() && button == 3) // see Issue #2756: Windows emits the mouseDown(...)
-																	// event
+		if (modifier || PlatformHelper.isWindows() && button == 3) // mouseDown(...)
+			// event
 			// *before* the menuDetected(..) one.
 			// No need to patch mouseUp(...) right now
 			return;

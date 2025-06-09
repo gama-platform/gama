@@ -476,7 +476,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		if (showParameters != null && !showParameters) {
 			scope.getGui().hideParameters();
 		} else {
-			scope.getGui().updateParameters();
+			scope.getGui().updateParameters(false);
 		}
 	}
 
@@ -774,6 +774,21 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		} else {
 			getSpecies().refreshAllOutputs();
 		}
+		return this;
+	}
+
+	/**
+	 * Update parameters.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
+	@action (
+			name = "update_parameters",
+			doc = { @doc ("Forces the parameters view, in GUI, to refresh, picking up any updated value of the parameters") })
+	public Object updateParameters(final IScope scope) {
+		getSpecies().refreshAllParameters();
 		return this;
 	}
 

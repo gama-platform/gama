@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * XmlToTestGAML.java, in gama.documentation, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * XmlToTestGAML.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -27,6 +26,7 @@ import org.xml.sax.SAXException;
 import gama.annotations.precompiler.doc.utils.Constants;
 import gama.annotations.precompiler.doc.utils.XMLElements;
 import gama.annotations.precompiler.doc.utils.XMLUtils;
+import gama.dev.DEBUG;
 import gama.documentation.util.PrepareEnv;
 
 /**
@@ -40,11 +40,16 @@ public class XmlToTestGAML {
 	/**
 	 * Creates the each test.
 	 *
-	 * @param docFile the doc file
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws TransformerException the transformer exception
+	 * @param docFile
+	 *            the doc file
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws TransformerException
+	 *             the transformer exception
 	 */
 	public static void createEachTest(final File docFile)
 			throws ParserConfigurationException, SAXException, IOException, TransformerException {
@@ -53,7 +58,7 @@ public class XmlToTestGAML {
 		Document document = XMLUtils.createDoc(docFile.getAbsolutePath());
 		document = cleanDocumentTest(document);
 
-		System.out.println("Beginning of the transformation for: " + docFile.getAbsolutePath());
+		DEBUG.LOG("Beginning of the transformation for: " + docFile.getAbsolutePath());
 		PrepareEnv.prepareUnitTestGenerator(pluginFolder);
 
 		//////////////////////////////////////////////////////////////////////////////////
@@ -67,24 +72,28 @@ public class XmlToTestGAML {
 		createOperatorsTests(document,
 				Constants.XSL_XML2TEST_FOLDER + File.separator + "testGaml-Operators-xml2test.xsl",
 				dirOperators.getCanonicalPath());
-		System.out.println("Done");
+		DEBUG.LOG("Done");
 
 	}
 
 	/**
 	 * Creates the all tests.
 	 *
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws TransformerException the transformer exception
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws TransformerException
+	 *             the transformer exception
 	 */
 	public static void createAllTests()
 			throws ParserConfigurationException, SAXException, IOException, TransformerException {
 		Document document = XMLUtils.createDoc(Constants.DOCGAMA_GLOBAL_FILE);
 		document = cleanDocumentTest(document);
 
-		System.out.println("Beginning of the transformation");
+		DEBUG.LOG("Beginning of the transformation");
 
 		//////////////////////////////////////////////////////////////////////////////////
 		System.out.print("Creation of the test models for Operators.....");
@@ -94,7 +103,7 @@ public class XmlToTestGAML {
 		createOperatorsTests(document,
 				Constants.XSL_XML2TEST_FOLDER + File.separator + "testGaml-Operators-xml2test.xsl",
 				dirOperators.getCanonicalPath());
-		System.out.println("Done");
+		DEBUG.LOG("Done");
 
 		//////////////////////////////////////////////////////////////////////////////////
 		System.out.print("Creation of the test models for Statements.....");
@@ -103,27 +112,34 @@ public class XmlToTestGAML {
 
 		createMasterTest(document, Constants.XSL_XML2TEST_FOLDER + File.separator + "testGaml-Statements-xml2test.xsl",
 				dirStatements.getCanonicalPath(), "StatementsTest.gaml");
-		System.out.println("Done");
+		DEBUG.LOG("Done");
 
 		//////////////////////////////////////////////////////////////////////////////////
 		System.out.print("Creation of the master test model.....");
 		createMasterTest(document, Constants.XSL_XML2TEST_FOLDER + File.separator + "testGaml-Master-xml2test.xsl",
 				Constants.TEST_FOLDER, "masterTest.gaml");
-		System.out.println("Done");
+		DEBUG.LOG("Done");
 		//
-		System.out.println("End of the transformation");
+		DEBUG.LOG("End of the transformation");
 	}
 
 	/**
 	 * Creates the master test.
 	 *
-	 * @param document the document
-	 * @param xsl the xsl
-	 * @param targetFolder the target folder
-	 * @param targetFile the target file
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @param document
+	 *            the document
+	 * @param xsl
+	 *            the xsl
+	 * @param targetFolder
+	 *            the target folder
+	 * @param targetFile
+	 *            the target file
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	private static void createMasterTest(final Document document, final String xsl, final String targetFolder,
 			final String targetFile) throws ParserConfigurationException, SAXException, IOException {
@@ -133,13 +149,20 @@ public class XmlToTestGAML {
 	/**
 	 * Creates the operators tests.
 	 *
-	 * @param document the document
-	 * @param xsl the xsl
-	 * @param targetFolder the target folder
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws TransformerException the transformer exception
+	 * @param document
+	 *            the document
+	 * @param xsl
+	 *            the xsl
+	 * @param targetFolder
+	 *            the target folder
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws TransformerException
+	 *             the transformer exception
 	 */
 	private static void createOperatorsTests(final Document document, final String xsl, final String targetFolder)
 			throws ParserConfigurationException, SAXException, IOException, TransformerException {
@@ -197,7 +220,8 @@ public class XmlToTestGAML {
 	/**
 	 * Clean document test.
 	 *
-	 * @param doc the doc
+	 * @param doc
+	 *            the doc
 	 * @return the document
 	 */
 	// - Operators and statements: addition of an index to have different variables
@@ -256,7 +280,7 @@ public class XmlToTestGAML {
 	 * The Class NameOperatorConverter.
 	 */
 	static class NameOperatorConverter {
-		
+
 		/** The proper name operator map. */
 		HashMap<String, String> properNameOperatorMap;
 
@@ -298,7 +322,8 @@ public class XmlToTestGAML {
 		/**
 		 * Gets the proper operator name.
 		 *
-		 * @param opName the op name
+		 * @param opName
+		 *            the op name
 		 * @return the proper operator name
 		 */
 		public String getProperOperatorName(final String opName) {

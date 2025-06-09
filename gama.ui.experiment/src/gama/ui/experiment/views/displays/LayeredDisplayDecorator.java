@@ -443,7 +443,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
 			shell.setBounds(bounds);
-			// For DEBUG purposes:
+			// For DEBUG purposes only:
 			// fullScreenShell.setBounds(new Rectangle(0, 0, bounds.width / 2, bounds.height / 2));
 			shell.setLayout(shellLayout());
 			return shell;
@@ -455,8 +455,13 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Destroy full screen shell.
 	 */
 	private void destroyFullScreenShell() {
-		if (fullScreenShell == null) return;
+		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
+		// Solves an issue in macOS where the development version of GAMA would not close the fullScreenShell.
+		if (PlatformHelper.isMac()) {
+			fullScreenShell.setSize(1, 1);
+			fullScreenShell.setVisible(false);
+		}
 		fullScreenShell.close();
 		fullScreenShell.dispose();
 		fullScreenShell = null;
@@ -520,10 +525,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private Function<Menu, Menu> presentationMenu() {
 
 		return parentMenu -> {
-			Menu sub =
-					GamaMenu.sub(parentMenu, "Presentation", "", GamaIcon.named(IGamaIcons.PRESENTATION_MENU).image());
+			Menu sub = GamaMenu.sub(parentMenu, "Presentation", "", IGamaIcons.PRESENTATION_MENU);
 			if (!isFullScreen() && WorkbenchHelper.getNumberOfMonitors() > 1) {
-				Menu mon = GamaMenu.sub(sub, "Enter fullscreen", "", GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
+				Menu mon = GamaMenu.sub(sub, "Enter fullscreen", "", DISPLAY_FULLSCREEN_ENTER);
 				Monitor[] mm = WorkbenchHelper.getMonitors();
 				for (int i = 0; i < mm.length; i++) {
 					Monitor monitor = mm[i];
@@ -542,8 +546,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			GamaMenu.action(sub,
 					STRINGS.PAD("Toggle toolbar ", 25) + GamaKeyBindings.format(GamaKeyBindings.COMMAND, 'T'),
 					t -> toggleToolbar(),
-					GamaIcon.named(this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular")
-							.image());
+					this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular");
 			GamaColorMenu.addColorSubmenuTo(sub, STRINGS.PAD("Background", 25), c -> {
 				view.getDisplaySurface().getData().setBackgroundColor(c);
 				view.getDisplaySurface().updateDisplay(true);
@@ -567,7 +570,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		ToolItem item = tb.check(antiAlias, SWT.RIGHT);
 		tb.setSelection(item, view.getOutput().getData().isAntialias());
 		if (!isFullScreen() && WorkbenchHelper.getNumberOfMonitors() > 1) {
-			fs = tb.menu(DISPLAY_FULLSCREEN_ENTER, "", "Enter fullscreen", e -> {
+			fs = tb.menuItem(DISPLAY_FULLSCREEN_ENTER, "", "Enter fullscreen", e -> {
 				final GamaMenu menu = new GamaMenu() {
 
 					@Override
@@ -594,7 +597,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			fs = tb.button(toggleFullScreen, SWT.RIGHT);
 		}
 		tb.sep(GamaToolbarFactory.TOOLBAR_SEP, SWT.RIGHT);
-		tb.menu(IGamaIcons.LAYERS_MENU, "Browse displayed agents by layers", "Properties and contents of layers",
+		tb.menuItem(IGamaIcons.LAYERS_MENU, "Browse displayed agents by layers", "Properties and contents of layers",
 				trigger -> menuManager.buildToolbarMenu(trigger, (ToolItem) trigger.widget), SWT.RIGHT);
 
 	}

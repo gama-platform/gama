@@ -58,6 +58,7 @@ import org.nustaq.serialization.util.FSTInt2ObjectMapFactory;
 import org.nustaq.serialization.util.FSTUtil;
 
 import gama.core.util.ByteArrayZipper;
+import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaClassLoader;
 
 /**
@@ -134,12 +135,12 @@ public class FSTConfiguration {
 
 		@Override
 		public boolean equals(final Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) { return true; }
+			if (o == null || getClass() != o.getClass()) { return false; }
 
 			FieldKey fieldKey = (FieldKey) o;
 
-			if (!clazz.equals(fieldKey.clazz)) return false;
+			if (!clazz.equals(fieldKey.clazz)) { return false; }
 			return fieldName.equals(fieldKey.fieldName);
 
 		}
@@ -297,12 +298,12 @@ public class FSTConfiguration {
 				// empty
 			}
 			List<SoftReference> li = cachedObjects.get(cl);
-			if (li == null) return null;
+			if (li == null) { return null; }
 			for (int i = li.size() - 1; i >= 0; i--) {
 				SoftReference<?> softReference = li.get(i);
 				Object res = softReference.get();
 				li.remove(i);
-				if (res != null) return res;
+				if (res != null) { return res; }
 			}
 		} finally {
 			cacheLock.set(false);
@@ -666,7 +667,7 @@ public class FSTConfiguration {
 			final byte[] input = ByteArrayZipper.unzip(b);
 			return getObjectInput(input).readObject();
 		} catch (Exception e) {
-			System.out.println("unable to decode:" + new String(b, 0, 0, Math.min(b.length, 100)));
+			DEBUG.LOG("unable to decode:" + new String(b, 0, 0, Math.min(b.length, 100)));
 			FSTUtil.<RuntimeException> rethrow(e);
 		}
 		return null;

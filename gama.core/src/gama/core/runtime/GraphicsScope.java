@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GraphicsScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,6 +11,7 @@
 package gama.core.runtime;
 
 import gama.core.common.interfaces.IGraphics;
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
 import gama.core.runtime.IScope.IGraphicsScope;
 
@@ -21,9 +22,6 @@ public class GraphicsScope extends ExecutionScope implements IGraphicsScope {
 
 	/** The graphics. */
 	private IGraphics graphics;
-
-	/** The horizontal pixel context. */
-	// private boolean horizontalPixelContext;
 
 	/**
 	 * Instantiates a new graphics scope.
@@ -57,35 +55,14 @@ public class GraphicsScope extends ExecutionScope implements IGraphicsScope {
 	@Override
 	public IGraphics getGraphics() { return graphics; }
 
-	/**
-	 * Sets the horizontal pixel context.
-	 */
-	// @Override
-	// public void setHorizontalPixelContext() {
-	// horizontalPixelContext = true;
-	//
-	// }
-
-	/**
-	 * Sets the vertical pixel context.
-	 */
-	// @Override
-	// public void setVerticalPixelContext() {
-	// horizontalPixelContext = false;
-	//
-	// }
-
-	/**
-	 * Checks if is horizontal pixel context.
-	 *
-	 * @return true, if is horizontal pixel context //
-	 */
-	// @Override
-	// public boolean isHorizontalPixelContext() { return horizontalPixelContext; }
-
 	@Override
 	public IGraphicsScope copy(final String additionalName) {
 		return super.copyForGraphics(additionalName);
+	}
+
+	@Override
+	public boolean reportErrors() {
+		return super.reportErrors() && GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue();
 	}
 
 }

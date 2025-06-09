@@ -413,7 +413,7 @@ public class SwtGui implements IGui {
 	 * @date 17 août 2023
 	 */
 	@Override
-	public void updateParameters() {
+	public void updateParameters(final boolean retrieveValues) {
 
 		WorkbenchHelper.run(() -> {
 			boolean showIt = GAMA.getExperiment().hasParametersOrUserCommands()
@@ -426,7 +426,7 @@ public class SwtGui implements IGui {
 			}
 			if (parametersView[0] != null) {
 				parametersView[0].topLevelAgentChanged(GAMA.getCurrentTopLevelAgent());
-				parametersView[0].updateItemValues(false);
+				parametersView[0].updateItemValues(false, retrieveValues);
 			}
 		});
 	}

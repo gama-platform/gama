@@ -18,12 +18,13 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Widget;
 
 import com.google.common.base.Objects;
 
@@ -34,10 +35,10 @@ import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
- * Instances of this class support the layout of selectable expand bar items.
- * <p>
- * The item children that may be added to instances of this class must be of type <code>ExpandItem</code>.
+ * Instances of this class support the layout of selectable expand bar items. The item children that may be added to
+ * instances of this class must be of type <code>ParameterExpandItem</code>.
  */
+
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class ParameterExpandBar extends Composite {
 
@@ -61,49 +62,30 @@ public class ParameterExpandBar extends Composite {
 	private ParameterExpandItem[] items;
 
 	/** The hover item. */
-	private ParameterExpandItem focusItem, hoverItem;
+	private int hoverItem, spacing, yCurrentScroll, itemCount;
 
-	/** The item count. */
-	private int spacing, yCurrentScroll, itemCount;
+	/** The band height. */
+	int bandHeight = ParameterExpandItem.HEADER_HEIGHT;
+
+	static int SCROLL_INCREMENT = ParameterExpandItem.HEADER_HEIGHT / 2;
 
 	/** The listener. */
 	private final Listener listener;
 
-	/** The in dispose. */
-	private boolean inDispose;
-
-	/** The has closable toggle. */
-	final boolean hasClosableToggle;
-
-	/** The has pausable toggle. */
-	final boolean hasPausableToggle;
+	/** States */
+	boolean hasClosableToggle, hasPausableToggle, ignoreMouseUp, inDispose;
 
 	/** The underlying objects. */
 	private final ItemList underlyingObjects;
 
-	/** The band height. */
-	int bandHeight = ParameterExpandItem.CHEVRON_SIZE;
-
-	/** The ignore mouse up. */
-	private boolean ignoreMouseUp;
-
 	/**
-	 * @param underlyingObjects
+	 * Instantiates a new parameter expand bar.
 	 *
 	 * @param parent
-	 *            a composite control which will be the parent of the new instance (cannot be null)
+	 *            the parent
 	 * @param style
-	 *            the style of control to construct
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-	 *                </ul>
-	 * @see SWT#V_SCROLL
-	 * @see Widget#checkSubclass
-	 * @see Widget#getStyle
+	 *            the style
 	 */
-
 	public ParameterExpandBar(final Composite parent, final int style) {
 		this(parent, style, false, false, null);
 	}
@@ -157,10 +139,6 @@ public class ParameterExpandBar extends Composite {
 				case SWT.Resize:
 					onResize();
 					break;
-				case SWT.FocusIn:
-				case SWT.FocusOut:
-					onFocus();
-					break;
 			}
 		};
 		addListener(SWT.Dispose, listener);
@@ -169,8 +147,6 @@ public class ParameterExpandBar extends Composite {
 		addListener(SWT.Paint, listener);
 		addListener(SWT.Resize, listener);
 		addListener(SWT.MenuDetect, listener);
-		addListener(SWT.FocusIn, listener);
-		addListener(SWT.FocusOut, listener);
 		addMouseTrackListener(new MouseTrackAdapter() {
 
 			@Override
@@ -186,35 +162,34 @@ public class ParameterExpandBar extends Composite {
 
 	@Override
 	protected void checkSubclass() {}
-	//
-	// @Override
-	// public Point computeSize(final int wHint, final int hHint, final boolean changed) {
-	// checkWidget();
-	// // Necessary to force SWT to "skin" the widget and determine the color of the viewer
-	// super.computeSize(wHint, hHint, changed);
-	// int height = 0, width = 0;
-	// if ((wHint == SWT.DEFAULT || hHint == SWT.DEFAULT) && itemCount > 0) {
-	// height += spacing;
-	// final var gc = new GC(this);
-	// for (var i = 0; i < itemCount; i++) {
-	// final var item = items[i];
-	// height += item.getHeaderHeight();
-	// if (item.expanded) { height += item.height + 2; }
-	// height += spacing;
-	// width = Math.max(width, item.getPreferredWidth(gc));
-	// }
-	// gc.dispose();
-	// height += ParameterExpandItem.BORDER;
-	// }
-	// if (width == 0) { width = 64; }
-	// if (height == 0) { height = 64; }
-	// if (wHint != SWT.DEFAULT) { width = wHint; }
-	// if (hHint != SWT.DEFAULT) { height = hHint; }
-	//
-	// final var trim = computeTrim(0, 0, width, height);
-	// trim.height += 30;
-	// return new Point(trim.width, trim.height);
-	// }
+
+	@Override
+	public Point computeSize(final int wHint, final int hHint, final boolean changed) {
+		// Necessary to force SWT to "skin" the widget and determine the color of the viewer
+		super.computeSize(wHint, hHint, changed);
+		int height = 0, width = 0;
+		if ((wHint == SWT.DEFAULT || hHint == SWT.DEFAULT) && itemCount > 0) {
+			height += spacing;
+			GC gc = new GC(this);
+			for (var i = 0; i < itemCount; i++) {
+				final var item = items[i];
+				height += item.getHeaderHeight();
+				if (item.expanded) { height += item.height + 2; }
+				height += spacing;
+				width = Math.max(width, item.getPreferredWidth(gc));
+			}
+			gc.dispose();
+			height += ParameterExpandItem.BORDER;
+		}
+		if (width == 0) { width = 64; }
+		if (height == 0) { height = 64; }
+		if (wHint != SWT.DEFAULT) { width = wHint; }
+		if (hHint != SWT.DEFAULT) { height = hHint; }
+
+		final var trim = computeTrim(0, 0, width, height);
+		trim.height += 30; // Look into the reason why we need to add 30
+		return new Point(trim.width, trim.height);
+	}
 
 	/**
 	 * Creates the item.
@@ -229,14 +204,13 @@ public class ParameterExpandBar extends Composite {
 	void createItem(final ParameterExpandItem item, final int style, final int index) {
 		if (0 > index || index > itemCount) { SWT.error(SWT.ERROR_INVALID_RANGE); }
 		if (itemCount == items.length) {
-			final var newItems = new ParameterExpandItem[itemCount + 4];
+			ParameterExpandItem[] newItems = new ParameterExpandItem[itemCount + 4];
 			System.arraycopy(items, 0, newItems, 0, items.length);
 			items = newItems;
 		}
 		System.arraycopy(items, index, items, index + 1, itemCount - index);
 		items[index] = item;
 		itemCount++;
-		if (getFocusItem() == null) { setFocusItem(item); }
 		item.width = Math.max(0, getClientArea().width - spacing * 2);
 		layoutItems(index, true);
 	}
@@ -248,42 +222,29 @@ public class ParameterExpandBar extends Composite {
 	 *            the item
 	 */
 	public void destroyItem(final ParameterExpandItem item) {
-
-		if (inDispose) return;
+		if (inDispose) { return; }
 		var index = 0;
 		while (index < itemCount) {
 			if (items[index] == item) { break; }
 			index++;
 		}
-		if (index == itemCount) return;
-		if (item == getFocusItem()) {
-			final var focusIndex = index > 0 ? index - 1 : 1;
-			if (focusIndex < itemCount) {
-				setFocusItem(items[focusIndex]);
-				getFocusItem().redraw();
-			} else {
-				setFocusItem(null);
-			}
-		}
+		if (index == itemCount) { return; }
 		System.arraycopy(items, index + 1, items, index, --itemCount - index);
 		items[itemCount] = null;
-		// item.redraw();
+		item.redraw();
 		if (underlyingObjects != null) { underlyingObjects.removeItem(item.getData()); }
 		layoutItems(index, true);
-		if (this.isDisposed()) return;
-		this.redraw();
-		this.update();
 	}
 
 	/**
 	 * Compute band height.
 	 */
 	void computeBandHeight() {
-		if (getFont() == null) return;
+		if (getFont() == null) { return; }
 		final var gc = new GC(this);
 		final var metrics = gc.getFontMetrics();
 		gc.dispose();
-		bandHeight = Math.max(ParameterExpandItem.CHEVRON_SIZE, metrics.getHeight());
+		bandHeight = Math.max(ParameterExpandItem.HEADER_HEIGHT, metrics.getHeight());
 	}
 
 	/**
@@ -295,7 +256,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 	public ParameterExpandItem getItem(final Object data) {
 		for (final ParameterExpandItem item : items) {
-			if (item != null && Objects.equal(item.getData(), data)) return item;
+			if (item != null && Objects.equal(item.getData(), data)) { return item; }
 		}
 		return null;
 	}
@@ -355,7 +316,7 @@ public class ParameterExpandBar extends Composite {
 	 */
 	public int indexOf(final ParameterExpandItem item) {
 		if (item == null) { SWT.error(SWT.ERROR_NULL_ARGUMENT); }
-		for (var i = 0; i < itemCount; i++) { if (items[i] == item) return i; }
+		for (var i = 0; i < itemCount; i++) { if (items[i] == item) { return i; } }
 		return -1;
 	}
 
@@ -371,14 +332,14 @@ public class ParameterExpandBar extends Composite {
 		if (index < itemCount) {
 			var y = spacing - yCurrentScroll;
 			for (var i = 0; i < index; i++) {
-				final var item = items[i];
-				if (item.expanded) { y += item.height + 2; }
+				final ParameterExpandItem item = items[i];
+				if (item.expanded) { y += item.height; } // why was + 2 ?
 				y += item.getHeaderHeight() + spacing;
 			}
 			for (var i = index; i < itemCount; i++) {
-				final var item = items[i];
+				final ParameterExpandItem item = items[i];
 				item.setBounds(spacing, y, 0, 0, true, false);
-				if (item.expanded) { y += item.height + 2; }
+				if (item.expanded) { y += item.height; } // why was + 2 ?
 				y += item.getHeaderHeight() + spacing;
 			}
 		}
@@ -389,7 +350,7 @@ public class ParameterExpandBar extends Composite {
 	 * Update item names.
 	 */
 	public void updateItemNames() {
-		if (underlyingObjects == null) return;
+		if (underlyingObjects == null) { return; }
 		for (var i = 0; i < itemCount; i++) {
 			items[i].setText(underlyingObjects.getItemDisplayName(items[i].getData(), items[i].getText()));
 		}
@@ -399,7 +360,7 @@ public class ParameterExpandBar extends Composite {
 	 * Update item colors.
 	 */
 	public void updateItemColors() {
-		if (underlyingObjects == null) return;
+		if (underlyingObjects == null) { return; }
 		for (var i = 0; i < itemCount; i++) {
 			items[i].setColor(underlyingObjects.getItemDisplayColor(items[i].getData()));
 		}
@@ -417,9 +378,9 @@ public class ParameterExpandBar extends Composite {
 	 * Sets the scrollbar.
 	 */
 	void setScrollbar() {
-		if (itemCount == 0) return;
+		if (itemCount == 0) { return; }
 		final var verticalBar = getVerticalBar();
-		if (verticalBar == null) return;
+		if (verticalBar == null) { return; }
 		final var height = getClientArea().height;
 		final var item = items[itemCount - 1];
 		var maxHeight = item.y + bandHeight + spacing;
@@ -431,9 +392,8 @@ public class ParameterExpandBar extends Composite {
 			layoutItems(0, false);
 		}
 		maxHeight += yCurrentScroll;
-
 		final var selection = Math.min(yCurrentScroll, maxHeight);
-		final var increment = verticalBar.getIncrement();
+		final var increment = SCROLL_INCREMENT;
 		final var pageIncrement = verticalBar.getPageIncrement();
 		verticalBar.setValues(selection, 0, maxHeight, height, increment, pageIncrement);
 		verticalBar.setVisible(maxHeight > height);
@@ -447,7 +407,7 @@ public class ParameterExpandBar extends Composite {
 	 *
 	 */
 	public void setSpacing(final int spacing) {
-		if (spacing < 0 || spacing == this.spacing) return;
+		if (spacing < 0 || spacing == this.spacing) { return; }
 		this.spacing = spacing;
 		final var width = Math.max(0, getClientArea().width - spacing * 2);
 		for (var i = 0; i < itemCount; i++) {
@@ -474,9 +434,6 @@ public class ParameterExpandBar extends Composite {
 		item.redraw();
 		final var index = indexOf(item);
 		layoutItems(index + 1, true);
-		final var ev = new Event();
-		ev.item = this;
-		notifyListeners(SWT.Resize, ev);
 	}
 
 	/**
@@ -499,16 +456,7 @@ public class ParameterExpandBar extends Composite {
 		for (var i = 0; i < itemCount; i++) { items[i].dispose(); }
 		items = null;
 		// foreground = null;
-		setFocusItem(null);
-		// hoverItem = null;
-		// popup = null;
-	}
-
-	/**
-	 * On focus.
-	 */
-	void onFocus() {
-		if (getFocusItem() != null) { getFocusItem().redraw(); }
+		hoverItem = -1;
 	}
 
 	/**
@@ -539,10 +487,11 @@ public class ParameterExpandBar extends Composite {
 	 *            the item
 	 */
 	void changeHoverTo(final ParameterExpandItem item) {
-		if (hoverItem == item) return;
+		int i = indexOf(item);
+		if (hoverItem == i) { return; }
 		final var oldHoverItem = hoverItem;
-		hoverItem = item;
-		if (oldHoverItem != null) { oldHoverItem.redraw(); }
+		hoverItem = i;
+		if (oldHoverItem != -1) { items[oldHoverItem].redraw(); }
 		if (item != null) { item.redraw(); }
 	}
 
@@ -563,7 +512,7 @@ public class ParameterExpandBar extends Composite {
 				ignoreMouseUp = true;
 				final var p = toDisplay(x, y);
 				final Map<String, Runnable> menuContents = underlyingObjects.handleMenu(item.getData(), p.x, p.y);
-				if (menuContents == null) return;
+				if (menuContents == null) { return; }
 				final var menu = new Menu(getShell(), SWT.POP_UP);
 
 				for (final Map.Entry<String, Runnable> entry : menuContents.entrySet()) {
@@ -588,7 +537,7 @@ public class ParameterExpandBar extends Composite {
 	 *            the event
 	 */
 	void onMouseDown(final Event event) {
-		if (event.button != 1) return;
+		if (event.button != 1) { return; }
 		final var x = event.x;
 		final var y = event.y;
 		for (var i = 0; i < itemCount; i++) {
@@ -613,13 +562,6 @@ public class ParameterExpandBar extends Composite {
 				item.dispose();
 				return;
 			}
-			if (item != getFocusItem()) {
-				if (getFocusItem() != null) { getFocusItem().redraw(); }
-				setFocusItem(item);
-				getFocusItem().redraw();
-				forceFocus();
-				break;
-			}
 		}
 	}
 
@@ -634,20 +576,9 @@ public class ParameterExpandBar extends Composite {
 			ignoreMouseUp = false;
 			return;
 		}
-		if (event.button != 1 || getFocusItem() == null) return;
-		final var x = event.x;
-		final var y = event.y;
-		final var hover = getFocusItem().x <= x && x < getFocusItem().x + getFocusItem().width && getFocusItem().y <= y
-				&& y < getFocusItem().y + bandHeight;
-		if (hover) {
-			final var ev = new Event();
-			ev.item = getFocusItem();
-			final var wasExpanded = getFocusItem().expanded;
-			getFocusItem().setExpanded(!getFocusItem().expanded);
-			notifyListeners(wasExpanded ? SWT.Collapse : SWT.Expand, ev);
-			showItem(getFocusItem());
-			WorkbenchHelper.copy(getFocusItem().getText());
-		}
+		if (event.button != 1 || hoverItem == -1) { return; }
+		ParameterExpandItem item = items[hoverItem];
+		item.setExpanded(!item.expanded);
 	}
 
 	/**
@@ -660,7 +591,7 @@ public class ParameterExpandBar extends Composite {
 		for (var i = 0; i < itemCount; i++) {
 			final var item = items[i];
 			event.gc.setAlpha(255);
-			item.drawItem(event.gc, item == hoverItem);
+			item.drawItem(event.gc, i == hoverItem);
 		}
 	}
 
@@ -668,17 +599,17 @@ public class ParameterExpandBar extends Composite {
 	 * On resize.
 	 */
 	void onResize() {
-		WorkbenchHelper.asyncRun(() -> {
-			if (this.isDisposed()) return;
-			final var rect = getClientArea();
-			final var width = Math.max(0, rect.width - spacing * 2);
-			for (var i = 0; i < itemCount; i++) {
-				final var item = items[i];
-				if (item.getControl() != null) { item.setHeight(item.getControl().computeSize(width, SWT.DEFAULT).y); }
+		if (this.isDisposed()) { return; }
+		final Rectangle rect = getClientArea();
+		final int width = Math.max(0, rect.width - spacing * 2);
+		for (int i = 0; i < itemCount; i++) {
+			final var item = items[i];
+			if (item.getControl() != null) {
+				item.setHeight(item.getControl().computeSize(width, SWT.DEFAULT, true).y);
 				item.setBounds(0, 0, width, item.height, false, true);
 			}
-			setScrollbar();
-		});
+		}
+		setScrollbar();
 
 	}
 
@@ -697,48 +628,19 @@ public class ParameterExpandBar extends Composite {
 	}
 
 	/**
-	 * Sets the focus item.
-	 *
-	 * @param focusItem
-	 *            the new focus item
-	 */
-	void setFocusItem(final ParameterExpandItem focusItem) {
-		this.focusItem = focusItem;
-		if (focusItem != null && underlyingObjects != null) { underlyingObjects.focusItem(focusItem.getData()); }
-	}
-
-	/**
-	 * Gets the focus item.
-	 *
-	 * @return the focus item
-	 */
-	ParameterExpandItem getFocusItem() { return focusItem; }
-
-	/**
 	 * Collapse item with data.
 	 *
 	 * @param data
 	 *            the data
 	 */
 	public void collapseItemWithData(final Object data) {
-		if (data == null) return;
+		if (data == null) { return; }
 		for (final ParameterExpandItem i : items) {
 			if (data.equals(i.getData())) {
 				i.setExpanded(false);
 				return;
 			}
 		}
-	}
-
-	/**
-	 * Checks if is visible.
-	 *
-	 * @param item
-	 *            the item
-	 * @return true, if is visible
-	 */
-	public boolean isVisible(final ParameterExpandItem item) {
-		return underlyingObjects == null ? true : underlyingObjects.isItemVisible(item.getData());
 	}
 
 }

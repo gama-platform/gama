@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
  * NEWTLayeredDisplayMultiListener.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.view;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.jogamp.newt.Window;
@@ -48,6 +49,12 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	/** The ok. */
 	final Supplier<Boolean> ok;
 
+	/** The key listener. */
+	final Consumer<Short> keyListenerForWindows;
+
+	/** The key listener for mac and linux. */
+	final Consumer<Character> keyListenerForMacAndLinux;
+
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
 	 *
@@ -66,14 +73,35 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
-			if (!viewOk) return false;
-			final boolean controlOk = control != null /* && !control.isDisposed() */;
-			if (!controlOk) return false;
-
-			// if (!Objects.equals(WorkbenchHelper.getActivePart(), deco.view)) {
-			// WorkbenchHelper.getPage().activate(deco.view);
-			// }
+			if (!viewOk) { return false; }
+			final boolean controlOk = control != null;
+			if (!controlOk) { return false; }
 			return surface != null && !surface.isDisposed();
+		};
+
+		keyListenerForMacAndLinux = keyCode -> {
+			switch (keyCode) {
+				case 'o':
+				case 'O':
+					deco.toggleOverlay();
+					break;
+				case 't':
+				case 'T':
+					deco.toggleToolbar();
+			}
+		};
+
+		keyListenerForWindows = code -> {
+			switch (code) {
+				// "o"
+				case 0x4f:
+					deco.toggleOverlay();
+					break;
+				// "t"
+				case 0x54:
+					deco.toggleToolbar();
+					break;
+			}
 		};
 
 		control.addKeyListener(this);
@@ -94,9 +122,21 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void keyPressed(final KeyEvent e) {
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
-		if (!ok.get()) return;
-		if (e.isPrintableKey()) {
-			delegate.keyPressed(e.getKeyChar(), PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown());
+		if (!ok.get()) { return; }
+		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
+		boolean isPrintable =
+				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
+		if (isPrintable) {
+			if (isCommand) {
+				if (PlatformHelper.isWindows()) {
+					keyListenerForWindows.accept(e.getKeySymbol());
+				} else {
+					keyListenerForMacAndLinux.accept(e.getKeyChar());
+				}
+			} else {
+				delegate.keyPressed(e.getKeyChar());
+			}
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyPressed(switch (e.getKeyCode()) {
@@ -120,12 +160,14 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
-		if (e.isAutoRepeat()) return;
+		if (e.isAutoRepeat()) { return; }
 		DEBUG.OUT("Key released in Newt listener: " + e);
-		if (!ok.get()) return;
-		if (e.isPrintableKey()) {
-			delegate.keyReleased(e.getKeyChar(),
-					PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown() /* ?? GamaKeyBindings.ctrl(e) */);
+		if (!ok.get()) { return; }
+		boolean isPrintable =
+				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
+		if (isPrintable && !isCommand) {
+			delegate.keyReleased(e.getKeyChar());
 		} else if (e.getModifiers() == 0
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyReleased(switch (e.getKeyCode()) {
@@ -156,25 +198,25 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void mouseEntered(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseEnter(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseExited(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseExit(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseMoved(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
 	}
 
 	@Override
 	public void mousePressed(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		// DEBUG.OUT("Mouse pressed with button " + e.getButton() + " modifiers " + e.getModifiersString(null));
 		if (e.getButton() == 3 || e.isControlDown()) {
 			delegate.menuDetected(e.getX(), e.getY());
@@ -185,13 +227,13 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void mouseReleased(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
 	}
 
 	@Override
 	public void mouseDragged(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.dragDetected(e.getX(), e.getY());
 	}
 
@@ -209,13 +251,13 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void windowGainedFocus(final WindowEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.focusGained();
 	}
 
 	@Override
 	public void windowLostFocus(final WindowEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		delegate.focusLost();
 
 	}

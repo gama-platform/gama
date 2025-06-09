@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * KinematicCharacterController.java, in gaml.extensions.physics, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * KinematicCharacterController.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
+ * simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -60,28 +60,28 @@ public class KinematicCharacterController extends ActionInterface {
 
 	/** The vertical velocity. */
 	protected float verticalVelocity;
-	
+
 	/** The vertical offset. */
 	protected float verticalOffset;
 
 	/** The fall speed. */
 	protected float fallSpeed;
-	
+
 	/** The jump speed. */
 	protected float jumpSpeed;
-	
+
 	/** The max jump height. */
 	protected float maxJumpHeight;
 
 	/** The max slope radians. */
 	protected float maxSlopeRadians; // Slope angle that is set (used for returning the exact value)
-	
+
 	/** The max slope cosine. */
 	protected float maxSlopeCosine; // Cosine equivalent of m_maxSlopeRadians (calculated once when set, for
 									// optimization)
 
 	/** The gravity. */
-									protected float gravity;
+	protected float gravity;
 
 	/** The turn angle. */
 	protected float turnAngle;
@@ -95,17 +95,17 @@ public class KinematicCharacterController extends ActionInterface {
 	/** The walk direction. */
 	// this is the desired walk direction, set by the user
 	protected Vector3f walkDirection = new Vector3f();
-	
+
 	/** The normalized direction. */
 	protected Vector3f normalizedDirection = new Vector3f();
 
 	/** The current position. */
 	// some internal variables
 	protected Vector3f currentPosition = new Vector3f();
-	
+
 	/** The current step offset. */
 	protected float currentStepOffset;
-	
+
 	/** The target position. */
 	protected Vector3f targetPosition = new Vector3f();
 
@@ -115,25 +115,25 @@ public class KinematicCharacterController extends ActionInterface {
 
 	/** The touching contact. */
 	protected boolean touchingContact;
-	
+
 	/** The touching normal. */
 	protected Vector3f touchingNormal = new Vector3f();
 
 	/** The was on ground. */
 	protected boolean wasOnGround;
-	
+
 	/** The was jumping. */
 	protected boolean wasJumping;
 
 	/** The use ghost object sweep test. */
 	protected boolean useGhostObjectSweepTest;
-	
+
 	/** The use walk direction. */
 	protected boolean useWalkDirection;
-	
+
 	/** The velocity time interval. */
 	protected float velocityTimeInterval;
-	
+
 	/** The up axis. */
 	protected int upAxis;
 
@@ -143,9 +143,12 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Instantiates a new kinematic character controller.
 	 *
-	 * @param ghostObject the ghost object
-	 * @param convexShape the convex shape
-	 * @param stepHeight the step height
+	 * @param ghostObject
+	 *            the ghost object
+	 * @param convexShape
+	 *            the convex shape
+	 * @param stepHeight
+	 *            the step height
 	 */
 	public KinematicCharacterController(final PairCachingGhostObject ghostObject, final ConvexShape convexShape,
 			final float stepHeight) {
@@ -155,10 +158,14 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Instantiates a new kinematic character controller.
 	 *
-	 * @param ghostObject the ghost object
-	 * @param convexShape the convex shape
-	 * @param stepHeight the step height
-	 * @param upAxis the up axis
+	 * @param ghostObject
+	 *            the ghost object
+	 * @param convexShape
+	 *            the convex shape
+	 * @param stepHeight
+	 *            the step height
+	 * @param upAxis
+	 *            the up axis
 	 */
 	public KinematicCharacterController(final PairCachingGhostObject ghostObject, final ConvexShape convexShape,
 			final float stepHeight, final int upAxis) {
@@ -187,9 +194,7 @@ public class KinematicCharacterController extends ActionInterface {
 	 *
 	 * @return the ghost object
 	 */
-	private PairCachingGhostObject getGhostObject() {
-		return ghostObject;
-	}
+	private PairCachingGhostObject getGhostObject() { return ghostObject; }
 
 	// ActionInterface interface
 	@Override
@@ -205,7 +210,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Sets the up axis.
 	 *
-	 * @param axis the new up axis
+	 * @param axis
+	 *            the new up axis
 	 */
 	public void setUpAxis(int axis) {
 		if (axis < 0) { axis = 0; }
@@ -246,7 +252,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Warp.
 	 *
-	 * @param origin the origin
+	 * @param origin
+	 *            the origin
 	 */
 	public void warp(final Vector3f origin) {
 		Transform xform = TRANSFORMS.get();
@@ -259,7 +266,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Pre step.
 	 *
-	 * @param collisionWorld the collision world
+	 * @param collisionWorld
+	 *            the collision world
 	 */
 	public void preStep(final CollisionWorld collisionWorld) {
 		int numPenetrationLoops = 0;
@@ -283,16 +291,17 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Player step.
 	 *
-	 * @param collisionWorld the collision world
-	 * @param dt the dt
+	 * @param collisionWorld
+	 *            the collision world
+	 * @param dt
+	 *            the dt
 	 */
 	public void playerStep(final CollisionWorld collisionWorld, final float dt) {
-		// printf("playerStep(): ");
-		// printf(" dt = %f", dt);
 
 		// quick check...
-		if (!useWalkDirection && velocityTimeInterval <= 0.0f) // printf("\n");
+		if (!useWalkDirection && velocityTimeInterval <= 0.0f) { // printf("\n");
 			return; // no motion
+		}
 
 		wasOnGround = onGround();
 
@@ -306,16 +315,10 @@ public class KinematicCharacterController extends ActionInterface {
 
 		Transform xform = ghostObject.getWorldTransform(TRANSFORMS.get());
 
-		// printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
-		// printf("walkSpeed=%f\n",walkSpeed);
-
 		stepUp(collisionWorld);
 		if (useWalkDirection) {
-			// System.out.println("playerStep 3");
 			stepForwardAndStrafe(collisionWorld, walkDirection);
 		} else {
-			System.out.println("playerStep 4");
-			// printf(" time: %f", m_velocityTimeInterval);
 
 			// still have some time left for moving!
 			float dtMoving = dt < velocityTimeInterval ? dt : velocityTimeInterval;
@@ -325,14 +328,10 @@ public class KinematicCharacterController extends ActionInterface {
 			Vector3f move = VECTORS.get();
 			move.scale(dtMoving, walkDirection);
 
-			// printf(" dtMoving: %f", dtMoving);
-
 			// okay, step
 			stepForwardAndStrafe(collisionWorld, move);
 		}
 		stepDown(collisionWorld, dt);
-
-		// printf("\n");
 
 		xform.origin.set(currentPosition);
 		ghostObject.setWorldTransform(xform);
@@ -342,29 +341,26 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Sets the fall speed.
 	 *
-	 * @param fallSpeed the new fall speed
+	 * @param fallSpeed
+	 *            the new fall speed
 	 */
-	public void setFallSpeed(final float fallSpeed) {
-		this.fallSpeed = fallSpeed;
-	}
+	public void setFallSpeed(final float fallSpeed) { this.fallSpeed = fallSpeed; }
 
 	/**
 	 * Sets the jump speed.
 	 *
-	 * @param jumpSpeed the new jump speed
+	 * @param jumpSpeed
+	 *            the new jump speed
 	 */
-	public void setJumpSpeed(final float jumpSpeed) {
-		this.jumpSpeed = jumpSpeed;
-	}
+	public void setJumpSpeed(final float jumpSpeed) { this.jumpSpeed = jumpSpeed; }
 
 	/**
 	 * Sets the max jump height.
 	 *
-	 * @param maxJumpHeight the new max jump height
+	 * @param maxJumpHeight
+	 *            the new max jump height
 	 */
-	public void setMaxJumpHeight(final float maxJumpHeight) {
-		this.maxJumpHeight = maxJumpHeight;
-	}
+	public void setMaxJumpHeight(final float maxJumpHeight) { this.maxJumpHeight = maxJumpHeight; }
 
 	/**
 	 * Can jump.
@@ -379,7 +375,7 @@ public class KinematicCharacterController extends ActionInterface {
 	 * Jump.
 	 */
 	public void jump() {
-		if (!canJump()) return;
+		if (!canJump()) { return; }
 
 		verticalVelocity = jumpSpeed;
 		wasJumping = true;
@@ -398,25 +394,23 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Sets the gravity.
 	 *
-	 * @param gravity the new gravity
+	 * @param gravity
+	 *            the new gravity
 	 */
-	public void setGravity(final float gravity) {
-		this.gravity = gravity;
-	}
+	public void setGravity(final float gravity) { this.gravity = gravity; }
 
 	/**
 	 * Gets the gravity.
 	 *
 	 * @return the gravity
 	 */
-	public float getGravity() {
-		return gravity;
-	}
+	public float getGravity() { return gravity; }
 
 	/**
 	 * Sets the max slope.
 	 *
-	 * @param slopeRadians the new max slope
+	 * @param slopeRadians
+	 *            the new max slope
 	 */
 	public void setMaxSlope(final float slopeRadians) {
 		maxSlopeRadians = slopeRadians;
@@ -428,9 +422,7 @@ public class KinematicCharacterController extends ActionInterface {
 	 *
 	 * @return the max slope
 	 */
-	public float getMaxSlope() {
-		return maxSlopeRadians;
-	}
+	public float getMaxSlope() { return maxSlopeRadians; }
 
 	/**
 	 * On ground.
@@ -444,8 +436,10 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Gets the normalized vector.
 	 *
-	 * @param v the v
-	 * @param out the out
+	 * @param v
+	 *            the v
+	 * @param out
+	 *            the out
 	 * @return the normalized vector
 	 */
 	// static helper method
@@ -495,7 +489,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Recover from penetration.
 	 *
-	 * @param collisionWorld the collision world
+	 * @param collisionWorld
+	 *            the collision world
 	 * @return true, if successful
 	 */
 	protected boolean recoverFromPenetration(final CollisionWorld collisionWorld) {
@@ -546,9 +541,6 @@ public class KinematicCharacterController extends ActionInterface {
 		Transform newTrans = ghostObject.getWorldTransform(TRANSFORMS.get());
 		newTrans.origin.set(currentPosition);
 		ghostObject.setWorldTransform(newTrans);
-		// printf("m_touchingNormal = %f,%f,%f\n",m_touchingNormal[0],m_touchingNormal[1],m_touchingNormal[2]);
-
-		// System.out.println("recoverFromPenetration "+penetration+" "+touchingNormal);
 		TRANSFORMS.release(xform, newTrans);
 		return penetration;
 	}
@@ -556,7 +548,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Step up.
 	 *
-	 * @param world the world
+	 * @param world
+	 *            the world
 	 */
 	protected void stepUp(final CollisionWorld world) {
 		// phase 1: up
@@ -607,7 +600,8 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Update target position based on collision.
 	 *
-	 * @param hitNormal the hit normal
+	 * @param hitNormal
+	 *            the hit normal
 	 */
 	protected void updateTargetPositionBasedOnCollision(final Vector3f hitNormal) {
 		updateTargetPositionBasedOnCollision(hitNormal, 0f, 1f);
@@ -616,9 +610,12 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Update target position based on collision.
 	 *
-	 * @param hitNormal the hit normal
-	 * @param tangentMag the tangent mag
-	 * @param normalMag the normal mag
+	 * @param hitNormal
+	 *            the hit normal
+	 * @param tangentMag
+	 *            the tangent mag
+	 * @param normalMag
+	 *            the normal mag
 	 */
 	protected void updateTargetPositionBasedOnCollision(final Vector3f hitNormal, final float tangentMag,
 			final float normalMag) {
@@ -660,8 +657,10 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Step forward and strafe.
 	 *
-	 * @param world the world
-	 * @param walkMove the walk move
+	 * @param world
+	 *            the world
+	 * @param walkMove
+	 *            the walk move
 	 */
 	protected void stepForwardAndStrafe(final CollisionWorld world, final Vector3f walkMove) {
 		// printf("m_normalizedDirection=%f,%f,%f\n",
@@ -754,8 +753,10 @@ public class KinematicCharacterController extends ActionInterface {
 	/**
 	 * Step down.
 	 *
-	 * @param collisionWorld the collision world
-	 * @param dt the dt
+	 * @param collisionWorld
+	 *            the collision world
+	 * @param dt
+	 *            the dt
 	 */
 	protected void stepDown(final CollisionWorld collisionWorld, final float dt) {
 		Transform start = TRANSFORMS.get();
@@ -835,22 +836,25 @@ public class KinematicCharacterController extends ActionInterface {
 	 * The Class KinematicClosestNotMeConvexResultCallback.
 	 */
 	private static class KinematicClosestNotMeConvexResultCallback extends CollisionWorld.ClosestConvexResultCallback {
-		
+
 		/** The me. */
 		protected CollisionObject me;
-		
+
 		/** The up. */
 		protected final Vector3f up;
-		
+
 		/** The min slope dot. */
 		protected float minSlopeDot;
 
 		/**
 		 * Instantiates a new kinematic closest not me convex result callback.
 		 *
-		 * @param me the me
-		 * @param up the up
-		 * @param minSlopeDot the min slope dot
+		 * @param me
+		 *            the me
+		 * @param up
+		 *            the up
+		 * @param minSlopeDot
+		 *            the min slope dot
 		 */
 		public KinematicClosestNotMeConvexResultCallback(final CollisionObject me, final Vector3f up,
 				final float minSlopeDot) {
@@ -864,8 +868,8 @@ public class KinematicCharacterController extends ActionInterface {
 		public float addSingleResult(final CollisionWorld.LocalConvexResult convexResult,
 				final boolean normalInWorldSpace) {
 			// XXX: no contact response
-			if (!convexResult.hitCollisionObject.hasContactResponse()) return 1.0f;
-			if (convexResult.hitCollisionObject == me) return 1.0f;
+			if (!convexResult.hitCollisionObject.hasContactResponse()) { return 1.0f; }
+			if (convexResult.hitCollisionObject == me) { return 1.0f; }
 
 			float dotUp;
 			if (normalInWorldSpace) {
@@ -881,7 +885,7 @@ public class KinematicCharacterController extends ActionInterface {
 				TRANSFORMS.release(tmp);
 			}
 
-			if (dotUp < minSlopeDot) return 1.0f;
+			if (dotUp < minSlopeDot) { return 1.0f; }
 
 			return super.addSingleResult(convexResult, normalInWorldSpace);
 		}

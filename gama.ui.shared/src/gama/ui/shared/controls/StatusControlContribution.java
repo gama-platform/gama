@@ -72,7 +72,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	private volatile Double taskCompletion;
 
 	/** The Constant WIDTH. */
-	private final static int WIDTH = 400;
+	private final static int WIDTH = 300;
 
 	/** The instance. */
 	static StatusControlContribution INSTANCE;
@@ -138,9 +138,9 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		inactiveColor = ThemeHelper.isDark() ? GamaColors.get(GamaColors.get(parent.getBackground()).lighter())
 				: GamaColors.get(GamaColors.get(parent.getBackground()).darker());
 		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
-		label = FlatButton.label(compo, inactiveColor, "", WIDTH).withMinimalHeight(24).addMenuSign();
-		label.setEnabled(false);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
+		label = FlatButton.label(compo, inactiveColor, "", WIDTH).addMenuSign().withHeight(25);
+		label.setEnabled(true);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(WIDTH, 25).applyTo(label);
 		historyPopup = new StatusHistoryPopUpMenu(this);
 
 		label.addMouseListener(new MouseAdapter() {
@@ -170,7 +170,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
 				String name = job.getName() == null ? "" : job.getName().strip();
 				if (uselessJobs.contains(name)) return;
-				// DEBUG.OUT("Name " + job.getName() + " - Group " + job.getJobGroup() + " - Rule " + job.getRule()
+				// DEBUG.OUT("Name " + job.getName() + " - Group " +
+				// job.getJobGroup() + " - Rule " + job.getRule()
 				// + " - Priority " + jobPriority(job.getPriority()));
 				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
 				if (IStatusMessage.INTERNAL_STATUS_REFRESH_JOB.equals(jobProperty)) return;
@@ -188,16 +189,21 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 			@Override
 			public void done(final IJobChangeEvent event) {
-				// if (WorkbenchHelper.getWorkbench().isClosing() || event.getJob() instanceof StatusRefresher) return;
+				// if (WorkbenchHelper.getWorkbench().isClosing() ||
+				// event.getJob() instanceof StatusRefresher) return;
 				// String message = event.getJob().getName();
 				// if (intersect(label.getText(), message)) {
-				// WorkbenchHelper.asyncRun(() -> updateWith(StatusMessage.IDLE()));
+				// WorkbenchHelper.asyncRun(() ->
+				// updateWith(StatusMessage.IDLE()));
 				// }
 				// else {
 				// WorkbenchHelper
-				// .asyncRun(() -> updateWith(StatusMessage.END(event.getJob().getName() + " (ended)")));
+				// .asyncRun(() ->
+				// updateWith(StatusMessage.END(event.getJob().getName() + "
+				// (ended)")));
 				// }
-				// DEBUG.OUT("Job finished : " + event.getJob().toString() + " with priority "
+				// DEBUG.OUT("Job finished : " + event.getJob().toString() + "
+				// with priority "
 				// + jobPriority(event.getJob().getPriority()));
 			}
 
@@ -231,7 +237,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		// if (historyPopup.isVisible()) {
 		// historyPopup.hide();
 		// } else {
-		// WorkbenchHelper.asyncRun(() -> historyPopup.display(currentException));
+		// WorkbenchHelper.asyncRun(() ->
+		// historyPopup.display(currentException));
 		// }
 		// }
 		//
@@ -260,7 +267,11 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	 * @return the absolute origin
 	 * @date 26 août 2023
 	 */
-	public Point getLocation() { return label.toDisplay(label.getLocation()); }
+	public Point getLocation() {
+		Point p = label.toDisplay(label.getLocation());
+		p.y += getHeight() - 4;
+		return p;
+	}
 
 	/**
 	 * Gets the popup width.

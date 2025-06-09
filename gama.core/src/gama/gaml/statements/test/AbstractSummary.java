@@ -16,6 +16,7 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.interfaces.IColored;
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.dev.COUNTER;
@@ -159,14 +160,18 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	@Override
 	public final String toString() {
 		final TestState state = getState();
-		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && state != TestState.FAILED && state != TestState.ABORTED)
+		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && state != TestState.FAILED && state != TestState.ABORTED) {
 			return "";
+		}
 		final StringBuilder sb = new StringBuilder();
 		printHeader(sb);
 		sb.append(state).append(": ").append(getTitle()).append(" ");
 		if (error != null) { sb.append('[').append(error).append(']'); }
 		printFooter(sb);
 		for (final AbstractSummary<?> summary : getSummaries().values()) {
+			// Prevent being too flooded with tests results
+			// Related https://github.com/gama-platform/new.gama/issues/703
+			if (GAMA.isInHeadLessMode() && summary.getState() == TestState.PASSED) { continue; }
 			final String child = summary.toString();
 			if (child.isEmpty()) { continue; }
 			sb.append(child);
@@ -201,7 +206,9 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 		// if (this.uri != null) {
 		// DEBUG.OUT("Comparing " + this.uri + " to " + uri);
 		// }
-		if (uri.equals(this.uri)) return this;
+		if (uri.equals(this.uri)) {
+			return this;
+		}
 		return StreamEx.ofValues(getSummaries()).findFirst(s -> s.getSummaryOf(uri) != null).orElse(null);
 	}
 

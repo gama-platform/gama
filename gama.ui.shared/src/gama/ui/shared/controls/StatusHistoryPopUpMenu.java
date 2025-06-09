@@ -345,8 +345,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	 */
 	@Override
 	protected Point getDefaultLocation(final Point initialSize) {
-		Point p = status.getLocation();
-		return new Point(p.x, p.y + status.getHeight() - 4);
+		return status.getLocation();
 	}
 
 	@Override

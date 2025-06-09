@@ -31,6 +31,7 @@ import javax.management.ReflectionException;
 import org.apache.commons.lang3.SystemUtils;
 
 import gama.core.runtime.GAMA;
+import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 
 /**
@@ -78,13 +79,13 @@ public class SystemInfo {
 	 * @return Rounded string representation of the byte size.
 	 */
 	public static String formatBytes(final long bytes) {
-		if (bytes == 1L) return String.format(Locale.ROOT, "%d byte", bytes);
-		if (bytes < KIBI) return String.format(Locale.ROOT, "%d bytes", bytes);
-		if (bytes < MEBI) return formatUnits(bytes, KIBI, "KB");
-		if (bytes < GIBI) return formatUnits(bytes, MEBI, "MB");
-		if (bytes < TEBI) return formatUnits(bytes, GIBI, "GB");
-		if (bytes < PEBI) return formatUnits(bytes, TEBI, "TB");
-		if (bytes < EXBI) return formatUnits(bytes, PEBI, "PB");
+		if (bytes == 1L) { return String.format(Locale.ROOT, "%d byte", bytes); }
+		if (bytes < KIBI) { return String.format(Locale.ROOT, "%d bytes", bytes); }
+		if (bytes < MEBI) { return formatUnits(bytes, KIBI, "KB"); }
+		if (bytes < GIBI) { return formatUnits(bytes, MEBI, "MB"); }
+		if (bytes < TEBI) { return formatUnits(bytes, GIBI, "GB"); }
+		if (bytes < PEBI) { return formatUnits(bytes, TEBI, "TB"); }
+		if (bytes < EXBI) { return formatUnits(bytes, PEBI, "PB"); }
 		return formatUnits(bytes, EXBI, "EiB");
 	}
 
@@ -100,7 +101,7 @@ public class SystemInfo {
 	 * @return A string with the value
 	 */
 	private static String formatUnits(final long value, final long prefix, final String unit) {
-		if (value % prefix == 0) return String.format(Locale.ROOT, "%d %s", value / prefix, unit);
+		if (value % prefix == 0) { return String.format(Locale.ROOT, "%d %s", value / prefix, unit); }
 		return String.format(Locale.ROOT, "%.1f %s", (double) value / prefix, unit);
 	}
 
@@ -179,7 +180,7 @@ public class SystemInfo {
 	 *            the arguments (unused)
 	 */
 	public static void main(final String[] args) {
-		System.out.println(getSystemInfo());
+		DEBUG.LOG(getSystemInfo());
 	}
 
 }

@@ -11,6 +11,7 @@ on:
 jobs:
 
   compiling-gama-base:
+    if: '! github.event.pull_request.draft'
     name: Compiling GAMA from base branch
     uses: ./.github/workflows/travis-build.yaml
     with:
@@ -21,6 +22,7 @@ jobs:
       CHECKOUT_BRANCH: "2024-06"
 
   compiling-gama-pr:
+    if: '! github.event.pull_request.draft'
     name: Compiling GAMA from PR branch
     uses: ./.github/workflows/travis-build.yaml
     with:

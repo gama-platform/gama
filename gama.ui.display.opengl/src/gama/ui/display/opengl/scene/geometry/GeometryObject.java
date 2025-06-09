@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GeometryObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GeometryObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -51,7 +51,6 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	public void getTranslationForRotationInto(final GamaPoint p) {
 		final GamaPoint explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
-			// System.out.println(GeometryUtils.getContourCoordinates(getObject()).getEnvelope());
 			GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
 			Double depth = getAttributes().getDepth();
 			if (depth != null) {

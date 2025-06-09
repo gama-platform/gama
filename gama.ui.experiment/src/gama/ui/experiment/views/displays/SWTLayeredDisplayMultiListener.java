@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
- * SWTLayeredDisplayMultiListener.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling
- * and simulation platform (v.2.0.0).
+ * SWTLayeredDisplayMultiListener.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
- * Visit https://github.com/gama-platform/gama2 for license information and contacts.
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.eclipse.swt.SWT;
@@ -50,20 +51,17 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 	/** The delegate. */
 	final LayeredDisplayMultiListener delegate;
 
+	/** The key listener for mac and linux. */
+	final Consumer<Character> keyListener;
+
 	/** The control. */
 	Control control;
 
 	/** The ok. */
 	final Supplier<Boolean> ok;
 
-	/** See issue #3308 */
-	// final boolean isJava2DOnWindows;
-
-	/** The UI zoom level. */
-	// final double UIZoomLevel;
-
-	/** The zoom levels with issues. */
-	// final Set<Integer> zoomLevelsWithIssues = Set.of(175, 225, 250);
+	/** The last event. */
+	KeyEvent lastEvent;
 
 	/**
 	 * Instantiates a new SWT layered display multi listener.
@@ -81,7 +79,17 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 		delegate = new LayeredDisplayMultiListener(surface, deco);
 		control = deco.view.getInteractionControl();
-
+		keyListener = keyCode -> {
+			switch (keyCode) {
+				case 'o':
+				case 'O':
+					deco.toggleOverlay();
+					break;
+				case 't':
+				case 'T':
+					deco.toggleToolbar();
+			}
+		};
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
 			if (!viewOk) return false;
@@ -122,8 +130,9 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void keyPressed(final KeyEvent e) {
-		if (!ok.get() || e.stateMask != 0) return;
-		// DEBUG.OUT("Key pressed " + e);
+		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
+		lastEvent = e;
+		DEBUG.OUT("Key pressed " + e);
 		switch (e.keyCode) {
 			case SWT.ARROW_DOWN:
 				delegate.specialKeyPressed(IEventLayerListener.ARROW_DOWN);
@@ -163,14 +172,19 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				return;
 			case SWT.CTRL:
 				delegate.specialKeyPressed(IEventLayerListener.KEY_CTRL);
-				return;
 		}
-		delegate.keyPressed(e.character, GamaKeyBindings.ctrl(e));
+		// if (GamaKeyBindings.ctrl(e)) {
+		// keyListener.accept((char) e.keyCode);
+		// } else {
+		// delegate.keyPressed((char) e.keyCode);
+		// }
 	}
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
+		lastEvent = e;
+		DEBUG.OUT("Key released " + e);
 		switch (e.keyCode) {
 			case SWT.ARROW_DOWN:
 				delegate.specialKeyReleased(IEventLayerListener.ARROW_DOWN);
@@ -213,8 +227,11 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				return;
 
 		}
-		// DEBUG.OUT("Key released " + e);
-		delegate.keyReleased(e.character, GamaKeyBindings.ctrl(e));
+		if (GamaKeyBindings.ctrl(e)) {
+			keyListener.accept((char) e.keyCode);
+		} else {
+			delegate.keyReleased((char) e.keyCode);
+		}
 	}
 
 	/**
@@ -335,7 +352,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				previous = e.getWhen();
 				DEBUG.LOG("Key received by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
 				if (!e.isActionKey()) {
-					delegate.keyPressed(e.getKeyChar(), e.isControlDown());
+					delegate.keyPressed(e.getKeyChar());
 				} else if (e.getModifiersEx() == 0) {
 					delegate.specialKeyPressed(switch (e.getKeyCode()) {
 						case java.awt.event.KeyEvent.VK_UP, java.awt.event.KeyEvent.VK_KP_UP -> IEventLayerListener.ARROW_UP;
@@ -360,7 +377,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 			public void keyReleased(final java.awt.event.KeyEvent e) {
 				DEBUG.LOG("Key released by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
 				if (!e.isActionKey()) {
-					delegate.keyReleased(e.getKeyChar(), e.isControlDown());
+					delegate.keyReleased(e.getKeyChar());
 				} else if (e.getModifiersEx() == 0) {
 					delegate.specialKeyReleased(switch (e.getKeyCode()) {
 						case java.awt.event.KeyEvent.VK_UP, java.awt.event.KeyEvent.VK_KP_UP -> IEventLayerListener.ARROW_UP;

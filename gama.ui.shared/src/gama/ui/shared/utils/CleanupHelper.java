@@ -18,8 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolBar;
+import org.eclipse.e4.ui.workbench.IPresentationEngine;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -54,7 +59,7 @@ import gama.ui.shared.resources.IGamaIcons;
 public class CleanupHelper {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -66,6 +71,11 @@ public class CleanupHelper {
 		RearrangeMenus.run();
 		ForceMaximizeRestoration.run();
 		RemoveActivities.run();
+		LockToolbars.run();
+		// MonitorChange.run();
+
+		// return null;
+		// }
 		// Job prefs = new Job("Preloading preferences") {
 		//
 		// @Override
@@ -78,6 +88,71 @@ public class CleanupHelper {
 		// prefs.setPriority(Job.DECORATE);
 		// prefs.schedule();
 
+	}
+
+	// static class MonitorChange {
+	//
+	// /**
+	// *
+	// */
+	// public static void run() {
+	// if (PlatformHelper.isWindows()) {
+	// DPIZoomChangeRegistry.registerHandler(new DPIZoomChangeHandler() {
+	//
+	// @Override
+	// public void handleDPIChange(Widget widget, int newZoom, float scalingFactor) {
+	// if (widget instanceof MenuItem mi) {
+	//
+	// String image = (String) mi.getData("image");
+	// DEBUG.OUT("Scaling of " + mi.getText() + " with new zoom =" + newZoom + " scaling by "
+	// + scalingFactor + (image == null ? " -- no image" : " -- image found " + image));
+	// if (image != null) { mi.setImage(GamaIcon.named(image).image()); }
+	// }
+	// }
+	// }, MenuItem.class);
+	// }
+	//
+	// }
+	// }
+
+	/**
+	 * The Class LockToolbars.
+	 */
+	static class LockToolbars {
+
+		/**
+		 * Run.
+		 */
+		static void run() {
+			WorkbenchHelper.runInUI("Locking Toolbars", 0, e -> {
+				WorkbenchWindow window = WorkbenchHelper.getWindow();
+				MTrimmedWindow winModel = window.getService(MTrimmedWindow.class);
+				EModelService modelService = window.getService(EModelService.class);
+
+				ICoolBarManager coolBarManager = window.getCoolBarManager2();
+				if (coolBarManager != null) {
+					// lock is the opposite of the original value before toggle
+					final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
+					for (MToolBar el : children) {
+						// if (!el.getTags().contains("toolbarSeparator")) {
+						// locks the toolbars
+						if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
+							el.getTags().add(IPresentationEngine.NO_MOVE);
+						}
+						if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
+							el.getTags().remove(IPresentationEngine.DRAGGABLE);
+						}
+						// }
+						// Force the render, and then the call of
+						// frameMeIfPossible.
+						el.setToBeRendered(false);
+						el.setToBeRendered(true);
+					}
+					coolBarManager.setContextMenuManager(null);
+				}
+
+			});
+		}
 	}
 
 	/**
@@ -190,10 +265,10 @@ public class CleanupHelper {
 			// DEBUG.OUT("Perspective " + perspective.getId() + " activated");
 			// }
 			final WorkbenchWindow w = (WorkbenchWindow) page.getWorkbenchWindow();
-			if (w.isClosing()) return;
+			if (w.isClosing()) { return; }
 			WorkbenchHelper.runInUI("Cleaning menus", 0, e -> {
 				try {
-					if (w.isClosing()) return;
+					if (w.isClosing()) { return; }
 					final CoolBarToTrimManager cm = (CoolBarToTrimManager) w.getCoolBarManager2();
 					final IContributionItem[] items = cm.getItems();
 					// We remove all contributions to the toolbar that do not
@@ -405,7 +480,7 @@ public class CleanupHelper {
 		 *            the id
 		 */
 		public static void changeIcon(final IMenuManager menu, final IContributionItem item, final String id) {
-			if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) return;
+			if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) { return; }
 			String imageName = MENU_IMAGES.get(id);
 			if (imageName != null) { changeIcon(menu, item, GamaIcon.named(imageName).descriptor()); }
 		}

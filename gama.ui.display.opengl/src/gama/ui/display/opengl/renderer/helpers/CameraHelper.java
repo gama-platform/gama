@@ -493,7 +493,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		setCtrlPressed(isCtrl);
 		setShiftPressed(isShift);
 
-		if (!buttonPressed || button != 1) return;
+		if (!buttonPressed || button != 1) { return; }
 		final GamaPoint newPoint = new GamaPoint(x, y);
 
 		if (!data.isCameraLocked() && isCtrl) {
@@ -584,7 +584,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
-		DEBUG.OUT("Mouse pressed from NEWT");
+		// DEBUG.OUT("Mouse pressed from NEWT");
 		invokeOnGLThread(drawable -> {
 			final int x = e.getX();
 			final int y = e.getY();
@@ -641,7 +641,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	final void internalMouseDown(final int x, final int y, final int button, final boolean isCtrl,
 			final boolean isShift) {
-
 		if (firsttimeMouseDown) {
 			firstMousePressedPosition.setLocation(x, y, 0);
 			firsttimeMouseDown = false;
@@ -661,6 +660,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			if (mouseInROI(lastMousePressedPosition)) {
 				renderer.getSurface().selectionIn(getROIEnvelope());
 			} else if (renderer.getSurface().canTriggerContextualMenu()) {
+				// DEBUG.OUT("Triggering the opening of the menu from the Camera");
 				renderer.getPickingHelper().setPicking(true);
 			}
 		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
@@ -758,7 +758,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public GamaPoint getWorldPositionFrom(final GamaPoint mouse, final GamaPoint result) {
 		final GamaPoint camLoc = getPosition();
 		OpenGL gl = renderer.getOpenGLHelper();
-		if (gl == null) return new GamaPoint();
+		if (gl == null) { return new GamaPoint(); }
 		final double[] wcoord = new double[4];
 		final double x = (int) mouse.x, y = gl.viewport[3] - (int) mouse.y;
 		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
@@ -1090,7 +1090,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the in
 	 */
 	public void zoom(final boolean in) {
-		if (keystoneMode) return;
+		if (keystoneMode) { return; }
 		Double distance = data.getCameraDistance();
 		final double step = distance != 0d ? distance / 10d * GamaPreferences.Displays.OPENGL_ZOOM.getValue() : 0.1d;
 		data.setCameraDistance(distance + (in ? -step : step));
@@ -1206,7 +1206,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * Cancel ROI.
 	 */
 	public void cancelROI() {
-		if (isROISticky) return;
+		if (isROISticky) { return; }
 		roiEnvelope = null;
 	}
 
@@ -1234,7 +1234,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	public boolean mouseInROI(final GamaPoint mousePosition) {
 		final Envelope3D env = getROIEnvelope();
-		if (env == null) return false;
+		if (env == null) { return false; }
 		final GamaPoint p = getWorldPositionFrom(mousePosition, new GamaPoint());
 		return env.contains(p);
 	}

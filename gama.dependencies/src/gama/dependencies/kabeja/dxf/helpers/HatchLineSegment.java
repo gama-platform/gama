@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * HatchLineSegment.java, in gama.dependencies, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * HatchLineSegment.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -15,34 +15,34 @@ package gama.dependencies.kabeja.dxf.helpers;
  *
  */
 public class HatchLineSegment {
-	
+
 	/** The start point. */
 	protected Point startPoint;
-	
+
 	/** The direction. */
 	protected Vector direction;
-	
+
 	/** The angle. */
 	protected double angle;
-	
+
 	/** The total length. */
 	protected double totalLength;
-	
+
 	/** The length. */
 	protected double length;
-	
+
 	/** The current length. */
 	protected double currentLength;
-	
+
 	/** The pattern. */
 	protected double[] pattern;
-	
+
 	/** The l. */
 	protected double l;
-	
+
 	/** The index. */
 	protected int index;
-	
+
 	/** The line. */
 	protected ParametricLine line;
 
@@ -61,9 +61,12 @@ public class HatchLineSegment {
 	/**
 	 * Instantiates a new hatch line segment.
 	 *
-	 * @param startPoint the start point
-	 * @param direction the direction
-	 * @param length the length
+	 * @param startPoint
+	 *            the start point
+	 * @param direction
+	 *            the direction
+	 * @param length
+	 *            the length
 	 */
 	public HatchLineSegment(final Point startPoint, final Vector direction, final double length) {
 		this.startPoint = startPoint;
@@ -74,10 +77,14 @@ public class HatchLineSegment {
 	/**
 	 * Instantiates a new hatch line segment.
 	 *
-	 * @param line the line
-	 * @param length the length
-	 * @param startLength the start length
-	 * @param pattern the pattern
+	 * @param line
+	 *            the line
+	 * @param length
+	 *            the length
+	 * @param startLength
+	 *            the start length
+	 * @param pattern
+	 *            the pattern
 	 */
 	public HatchLineSegment(final ParametricLine line, final double length, final double startLength,
 			final double[] pattern) {
@@ -107,7 +114,8 @@ public class HatchLineSegment {
 	/**
 	 * Gets the point.
 	 *
-	 * @param offset the offset
+	 * @param offset
+	 *            the offset
 	 * @return the point
 	 */
 	public Point getPoint(final double offset) {
@@ -121,7 +129,8 @@ public class HatchLineSegment {
 	/**
 	 * Gets the point at.
 	 *
-	 * @param para the para
+	 * @param para
+	 *            the para
 	 * @return the point at
 	 */
 	public Point getPointAt(final double para) {
@@ -157,24 +166,18 @@ public class HatchLineSegment {
 	/**
 	 * Initialize.
 	 *
-	 * @param startLength the start length
+	 * @param startLength
+	 *            the start length
 	 */
 	protected void initialize(final double startLength) {
 		double l = 0;
 
 		for (int i = 0; i < pattern.length; i++) {
 			l += Math.abs(pattern[i]);
-
-			// System.out.println("test Pattern part:"+pattern[i]+" startLength="+startLength+" currentLength:"+l);
 			if (l > startLength) {
 				this.currentLength = l - startLength;
 
-				if (pattern[i] < 0) {
-					// System.out.println("is empty");
-					this.currentLength *= -1;
-				}
-
-				// System.out.println("pattern startet bei="+i+" mit length="+this.currentLength);
+				if (pattern[i] < 0) { this.currentLength *= -1; }
 				this.index = i + 1;
 
 				return;

@@ -29,6 +29,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.TestAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -138,9 +139,10 @@ public class GAMA {
 	 * @param model
 	 */
 	public static void runGuiExperiment(final String id, final IModel model) {
-		// DEBUG.OUT("Launching experiment " + id + " of model " + model.getFilePath());
+		// DEBUG.OUT("Launching experiment " + id + " of model " +
+		// model.getFilePath());
 		final IExperimentPlan newExperiment = model.getExperiment(id);
-		if (newExperiment == null) // DEBUG.OUT("No experiment " + id + " in model " + model.getFilePath());
+		if (newExperiment == null) // model " + model.getFilePath());
 			return;
 		IExperimentController controller = getFrontmostController();
 		if (controller != null) {
@@ -153,7 +155,13 @@ public class GAMA {
 		controller = newExperiment.getController();
 		if (!controllers.isEmpty()) { closeAllExperiments(false, false); }
 
-		if (getGui().openSimulationPerspective(model, id)) {
+		if (newExperiment.isTest()) {
+			controllers.add(controller);
+			newExperiment.open();
+			final TestAgent agent = (TestAgent) newExperiment.getAgent();
+			agent.step(agent.getScope());
+			GAMA.closeExperiment(newExperiment);
+		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
 			startBenchmark(newExperiment);
 			controller.processOpen(false);
@@ -335,11 +343,13 @@ public class GAMA {
 	 */
 	public static void reportAndThrowIfNeeded(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
-		// See #3641 -- move this sentence to reportError(): if (g.isReported()) return;
+		// See #3641 -- move this sentence to reportError(): if (g.isReported())
+		// return;
 
 		if (scope == null
 				|| getExperiment() == null && !(g instanceof GamaRuntimeFileException) && !scope.reportErrors()) {
 			// AD: we still throw exceptions related to files (Issue #1281)
+			// AD: also takes into account errors reported to GraphicsScope
 			g.printStackTrace();
 			return;
 		}

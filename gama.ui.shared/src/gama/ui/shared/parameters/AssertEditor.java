@@ -27,73 +27,76 @@ import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
-import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class AssertEditor.
  */
 public class AssertEditor extends AbstractStatementEditor<AbstractSummary<?>> {
 
-	/**
-	 * Instantiates a new assert editor.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param command
-	 *            the command
-	 */
-	public AssertEditor(final IScope scope, final AbstractSummary<?> command) {
-		super(scope, command, (EditorListener<Object>) null);
-		isSubParameter = command instanceof AssertionSummary;
-		name = command.getTitle();
-	}
+    /**
+     * Instantiates a new assert editor.
+     *
+     * @param scope
+     *            the scope
+     * @param command
+     *            the command
+     */
+    public AssertEditor(final IScope scope, final AbstractSummary<?> command) {
+	super(scope, command, (EditorListener<Object>) null);
+	isSubParameter = command instanceof AssertionSummary;
+	name = command.getTitle();
+    }
 
-	@Override
-	protected int[] getToolItems() { return new int[] { VALUE }; }
+    @Override
+    protected int[] getToolItems() {
+	return new int[] { VALUE };
+    }
 
-	@Override
-	EditorToolbar createEditorToolbar() {
-		editorToolbar = super.createEditorToolbar();
-		if (isSubParameter) {
-			editorToolbar.setHorizontalAlignment(SWT.LEAD);
-			Label l = editorToolbar.getItem(VALUE);
-			if (l != null && !l.isDisposed()) {
-				l.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT));
-				l.setText(name);
-				l.setAlignment(SWT.LEAD);
-			}
-		}
-		return editorToolbar;
+    @Override
+    EditorToolbar createEditorToolbar() {
+	editorToolbar = super.createEditorToolbar();
+	if (isSubParameter) {
+	    editorToolbar.setHorizontalAlignment(SWT.LEAD);
+	    Label l = editorToolbar.getItem(VALUE);
+	    if (l != null && !l.isDisposed()) {
+		l.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT));
+		l.setText(name);
+		l.setAlignment(SWT.LEAD);
+	    }
 	}
+	return editorToolbar;
+    }
 
-	@Override
-	EditorLabel createEditorLabel() {
-		editorLabel = new EditorLabel(this, parent, isSubParameter ? " " : name, isSubParameter);
-		editorLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
-		return editorLabel;
-	}
+    @Override
+    EditorLabel createEditorLabel() {
+	editorLabel = new EditorLabel(this, parent, isSubParameter ? " " : name, isSubParameter);
+	editorLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+	return editorLabel;
+    }
 
-	@Override
-	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
-		final AbstractSummary<?> summary = getStatement();
-		String text = summary instanceof AssertionSummary && getStatement().getState() == TestState.ABORTED
-				? getStatement().getState().toString() + ": " + ((AssertionSummary) getStatement()).getError()
-				: getStatement().getState().toString();
-		textBox = FlatButton.button(composite, null, text);
-		textBox.addSelectionListener((Selector) e -> GAMA.getGui().editModel(getStatement().getURI()));
-		return textBox;
-	}
+    @Override
+    protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+	final AbstractSummary<?> summary = getStatement();
+	String text = summary instanceof AssertionSummary && getStatement().getState() == TestState.ABORTED
+		? getStatement().getState().toString() + ": " + ((AssertionSummary) getStatement()).getError()
+		: getStatement().getState().toString();
+	textBox = FlatButton.button(composite, null, text);
+	textBox.setSelectionListener(e -> GAMA.getGui().editModel(getStatement().getURI()));
+	return textBox;
+    }
 
-	/**
-	 * Gets the color.
-	 *
-	 * @return the color
-	 */
-	@Override
-	Color getEditorControlBackground() {
-		GamaUIColor color = GamaColors.get(getStatement().getColor(getScope()));
-		if (color == null) { color = IGamaColors.NEUTRAL; }
-		return color.color();
+    /**
+     * Gets the color.
+     *
+     * @return the color
+     */
+    @Override
+    Color getEditorControlBackground() {
+	GamaUIColor color = GamaColors.get(getStatement().getColor(getScope()));
+	if (color == null) {
+	    color = IGamaColors.NEUTRAL;
 	}
+	return color.color();
+    }
 
 }

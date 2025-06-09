@@ -90,11 +90,11 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	}
 
 	@Override
-	public void updateItemValues(final boolean synchronously) {
+	public void updateItemValues(final boolean synchronously, final boolean retrieveValues) {
 		for (final Map.Entry<IAgent, Map<String, IParameterEditor<?>>> entry : sections.entrySet()) {
 			if (!entry.getKey().dead()) {
 				for (final IParameterEditor<?> gp : entry.getValue().values()) {
-					gp.updateWithValueOfParameter(synchronously, false);
+					gp.updateWithValueOfParameter(synchronously, retrieveValues);
 				}
 
 			}

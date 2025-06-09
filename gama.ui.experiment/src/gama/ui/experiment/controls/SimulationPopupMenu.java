@@ -316,8 +316,7 @@ public class SimulationPopupMenu extends PopupDialog {
 	 */
 	@Override
 	protected Point getDefaultLocation(final Point initialSize) {
-		Point p = status.getLocation();
-		return new Point(p.x, p.y + status.getHeight() - 4);
+		return status.getLocation();
 	}
 
 	@Override
@@ -354,7 +353,7 @@ public class SimulationPopupMenu extends PopupDialog {
 	 */
 	public void hide() {
 		final Shell shell = getShell();
-		if (shell != null && !shell.isDisposed()) { shell.setVisible(false); }
+		if (shell != null && !shell.isDisposed() && shell.isVisible()) { shell.setVisible(false); }
 	}
 
 	/**

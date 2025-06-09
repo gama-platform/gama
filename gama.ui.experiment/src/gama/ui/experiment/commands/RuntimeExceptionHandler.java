@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * RuntimeExceptionHandler.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,7 @@ import gama.dev.THREADS;
 public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHandler {
 
 	static {
-		// DEBUG.OFF();
+		DEBUG.OFF();
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 	@Override
 	public void offer(final GamaRuntimeException ex) {
 		if (ex == null) return;
-		DEBUG.LOG("Adding exception to error collector" + ex.getAllText());
+		// DEBUG.OUT("Adding exception to error collector -- " + ex.getAllText());
 		remainingTime = 5000;
 		incomingExceptions.offer(ex);
 	}

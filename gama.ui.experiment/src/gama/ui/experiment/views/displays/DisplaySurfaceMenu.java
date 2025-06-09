@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * DisplaySurfaceMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DisplaySurfaceMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -53,6 +53,7 @@ import gama.core.outputs.layers.charts.ChartLayerStatement;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.core.util.IList;
+import gama.dev.DEBUG;
 import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.menus.GamaMenu;
@@ -65,6 +66,10 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * The Class DisplaySurfaceMenu.
  */
 public class DisplaySurfaceMenu {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The layer images. */
 	public static final Map<Class<? extends ILayer>, Image> layer_images = new LinkedHashMap<>();
@@ -149,9 +154,9 @@ public class DisplaySurfaceMenu {
 	 *            the with presentation
 	 */
 	public void prepareNewMenu(final Control c, final int x, final int y, final boolean withPresentation) {
+		// DEBUG.OUT("Disposing the old menu");
 		disposeMenu();
 		menu = new Menu(c);
-		// menu.setLocation(scaleDownIfWin(c.toDisplay(x, y)));
 		if (withPresentation) {
 			presentationMenu.apply(menu);
 			GamaMenu.separate(menu);
@@ -173,7 +178,7 @@ public class DisplaySurfaceMenu {
 	 *            the displays
 	 */
 	public void buildMenu(final int mousex, final int mousey, final int x, final int y, final List<ILayer> displays) {
-		if (displays.isEmpty()) return;
+		if (displays.isEmpty()) { return; }
 		final Set<IAgent> all = new LinkedHashSet<>();
 		for (final ILayer display : displays) {
 			if (display.getData().isSelectable()) {
@@ -183,6 +188,21 @@ public class DisplaySurfaceMenu {
 			}
 		}
 		buildMenu(false, mousex, mousey, all, null);
+	}
+
+	/**
+	 * Builds the toolbar menu.
+	 *
+	 * @param trigger
+	 *            the trigger
+	 * @param t
+	 *            the t
+	 */
+	public void buildToolbarMenu(final SelectionEvent trigger, final ToolItem t) {
+		prepareNewMenu(t.getParent(), t.getBounds().x + t.getBounds().width, t.getBounds().y + t.getBounds().height,
+				false);
+		fill(menu, -1, false, true, null);
+		menu.setVisible(true);
 	}
 
 	/**
@@ -201,8 +221,7 @@ public class DisplaySurfaceMenu {
 	 */
 	public void buildMenu(final int mousex, final int mousey, final IAgent agent, final Runnable cleanup,
 			final MenuAction... actions) {
-		// cleanup is an optional runnable to do whatever is necessary after the
-		// menu has disappeared
+		// cleanup is an optional runnable to do whatever is necessary after the menu has disappeared
 		buildMenu(false, mousex, mousey, agent == null ? Collections.EMPTY_LIST : Collections.singleton(agent), cleanup,
 				actions);
 	}
@@ -226,70 +245,72 @@ public class DisplaySurfaceMenu {
 	private void buildMenu(final boolean byLayer, final int mousex, final int mousey, final Collection<IAgent> agents,
 			final Runnable cleanup, final MenuAction... actions) {
 		WorkbenchHelper.asyncRun(() -> {
+			// DEBUG.OUT("Preparing the menu");
 			prepareNewMenu(swtControl, mousex, mousey, true);
-			fill(menu, -1, true, byLayer, agents, actions);
-			menu.setVisible(true);
-			// AD 3/10/13: Fix for Issue 669 on Linux GTK setup. See :
-			// http://www.eclipse.org/forums/index.php/t/208284/
-			retryVisible(menu, MAX_RETRIES);
 			if (cleanup != null) {
 				menu.addMenuListener(new MenuAdapter() {
 
 					@Override
 					public void menuHidden(final MenuEvent e) {
+						// DEBUG.OUT("Menu hidden");
 						menu.removeMenuListener(this);
 						cleanup.run();
 					}
+
 				});
+			}
+			fill(menu, -1, true, byLayer, agents, actions);
+			// DEBUG.OUT("Making the menu visible");
+			menu.setVisible(true);
+			fixForLinux(menu, 10);
+		});
+		fixForWindows(cleanup);
+	}
+
+	/**
+	 * Fix for Windows menu disappearing with Radeon graphic cards. AD 06/0/25. See Issue #10
+	 * (https://github.com/gama-platform/gama/issues/10). If the menu is not visible after some time, we cleanup the
+	 * selection. May result in some flickering or missed clicks, but better than an invisible menu !
+	 * 
+	 * @param cleanup
+	 *            the actions to do after a "normal" selection
+	 */
+	private void fixForWindows(final Runnable cleanup) {
+		if (!PlatformHelper.isWindows()) { return; }
+		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, (e) -> {
+			// DEBUG.OUT("Testing if the menu is visible");
+			if (!menu.isVisible()) {
+				// DEBUG.OUT("Cleaning up because the menu is not visible");
+				cleanup.run();
 			}
 		});
 	}
 
 	/**
-	 * Builds the toolbar menu.
-	 *
-	 * @param trigger
-	 *            the trigger
-	 * @param t
-	 *            the t
-	 */
-	public void buildToolbarMenu(final SelectionEvent trigger, final ToolItem t) {
-		prepareNewMenu(t.getParent(), t.getBounds().x + t.getBounds().width, t.getBounds().y + t.getBounds().height,
-				false);
-		fill(menu, -1, false, true, null);
-		menu.setVisible(true);
-	}
-
-	/** The max retries. */
-	static int MAX_RETRIES = 10;
-
-	/**
-	 * Retry visible.
+	 * Fix for Linux menu not appearing. AD 3/10/13: Fix for Issue #669 in Linux GTK. See:
+	 * http://www.eclipse.org/forums/index.php/t/208284/. If the menu shell is not visible, we force the creation of an
+	 * empty shell, close it, and try to reactivate the opening of the menu repeatedly (10 times seems sufficient)
 	 *
 	 * @param menu
 	 *            the menu
 	 * @param retriesRemaining
 	 *            the retries remaining
 	 */
-	private void retryVisible(final Menu menu, final int retriesRemaining) {
-		if (!PlatformHelper.isLinux()) return;
+	private void fixForLinux(final Menu menu, final int retriesRemaining) {
+		if (!PlatformHelper.isLinux()) { return; }
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
 				menu.setVisible(false);
-				{
-					final Shell shell =
-							new Shell(WorkbenchHelper.getDisplay(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
-					shell.setSize(10, 10); // big enough to avoid errors
-											// from the gtk layer
-					shell.setLocation(menu.getShell().getLocation());
-					shell.setText("Not visible");
-					shell.setVisible(false);
-					shell.open();
-					shell.dispose();
-				}
+				final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+				shell.setSize(10, 10); // big enough to avoid errors from the gtk layer
+				shell.setLocation(menu.getShell().getLocation());
+				shell.setText("Not visible");
+				shell.setVisible(false);
+				shell.open();
+				shell.dispose();
 				menu.getShell().forceActive();
 				menu.setVisible(true);
-				retryVisible(menu, retriesRemaining - 1);
+				fixForLinux(menu, retriesRemaining - 1);
 			}
 		});
 	}
@@ -314,7 +335,7 @@ public class DisplaySurfaceMenu {
 			final Collection<IAgent> filteredList, final MenuAction... actions) {
 		if (withWorld) {
 			AgentsMenu.cascadingAgentMenuItem(menu, surface.getScope().getSimulation(), "World", actions);
-			if (filteredList == null || filteredList.isEmpty()) return;
+			if (filteredList == null || filteredList.isEmpty()) { return; }
 			GamaMenu.separate(menu);
 			if (byLayer) { GamaMenu.separate(menu, "Layers"); }
 		}
@@ -322,8 +343,9 @@ public class DisplaySurfaceMenu {
 			// If the list is null or empty, no need to display anything more
 			// If only the world is selected, no need to display anything more
 			if (filteredList == null || filteredList.isEmpty()
-					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation()))
+					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation())) {
 				return;
+			}
 			final FocusOnSelection adapter = new FocusOnSelection(surface);
 			final MenuAction focus =
 					new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(), "Focus on this display");
@@ -353,14 +375,12 @@ public class DisplaySurfaceMenu {
 				GamaMenu.action(submenu, visible ? "Hide" : "Show", t -> {
 					layer.getData().setVisible(!visible);
 					surface.updateDisplay(true);
-				}, GamaIcon.named(IGamaIcons.MENU_INSPECT).image());
+				}, (IGamaIcons.MENU_INSPECT));
 				if (!pop.isEmpty()) {
 					GamaMenu.action(submenu, select ? "Forbid selection" : "Allow selection",
-							t -> layer.getData().setSelectable(!select),
-							GamaIcon.named(IGamaIcons.LAYER_SELECTION).image());
+							t -> layer.getData().setSelectable(!select), (IGamaIcons.LAYER_SELECTION));
 				}
-				Menu transparency = GamaMenu.sub(submenu, "Transparency", "",
-						GamaIcon.named(IGamaIcons.LAYER_TRANSPARENCY).image());
+				Menu transparency = GamaMenu.sub(submenu, "Transparency", "", (IGamaIcons.LAYER_TRANSPARENCY));
 				transparency.setEnabled(layer.getData().isDynamic());
 				Double td = layer.getData().getTransparency(GAMA.getRuntimeScope());
 				int ti = (int) (td == null ? 0 : Math.round(td * 10) * 10);
@@ -372,8 +392,7 @@ public class DisplaySurfaceMenu {
 					}, null);
 				}
 				if (definition instanceof SpeciesLayerStatement spec) {
-					Menu aspectMenu =
-							GamaMenu.sub(submenu, "Aspect", "", GamaIcon.named(IGamaIcons.MENU_AGENT).image());
+					Menu aspectMenu = GamaMenu.sub(submenu, "Aspect", "", IGamaIcons.MENU_AGENT);
 					aspectMenu.setEnabled(layer.getData().isDynamic());
 					String current = spec.getAspectName();
 					for (String aspect : spec.getAspects()) {
@@ -392,25 +411,23 @@ public class DisplaySurfaceMenu {
 								((ChartLayerStatement) definition).getChart(), p);
 						editor.open();
 						surface.updateDisplay(true);
-					}, GamaIcon.named(IGamaIcons.CHART_PARAMETERS).image());
+					}, (IGamaIcons.CHART_PARAMETERS));
 					if (chart.keepsHistory()) {
-						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(),
-								GamaIcon.named(IGamaIcons.MENU_BROWSE).image());
+						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(), (IGamaIcons.MENU_BROWSE));
 					}
 				} else if (definition instanceof GridLayerStatement grid) {
 					boolean lines = ((IGridLayer) layer).getData().drawLines();
 					GamaMenu.action(submenu, lines ? "Hide lines" : "Draw lines", t -> {
 						((IGridLayer) layer).getData().setDrawLines(!lines);
 						surface.updateDisplay(true);
-					}, GamaIcon.named(IGamaIcons.MENU_BROWSE).image());
+					}, (IGamaIcons.MENU_BROWSE));
 				}
 				if (select) {
 					final FocusOnSelection adapter = new FocusOnSelection(surface);
 					final MenuAction focus = new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(),
 							"Focus on this display");
 					final MenuAction[] actions2 = { focus };
-					Menu agentsMenu =
-							GamaMenu.sub(submenu, "Agents", "", GamaIcon.named(IGamaIcons.MENU_POPULATION).image());
+					Menu agentsMenu = GamaMenu.sub(submenu, "Agents", "", (IGamaIcons.MENU_POPULATION));
 					AgentsMenu.fillPopulationSubMenu(agentsMenu, pop, actions2);
 				}
 			}

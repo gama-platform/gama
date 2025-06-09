@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * RigidBody.java, in gaml.extensions.physics, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * RigidBody.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -13,6 +12,8 @@ package com.bulletphysics.dynamics;
 
 import static com.bulletphysics.Pools.MATRICES;
 import static com.bulletphysics.Pools.VECTORS;
+
+import java.util.ArrayList;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
@@ -30,7 +31,6 @@ import com.bulletphysics.linearmath.MiscUtil;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
-import java.util.ArrayList;
 
 /**
  * RigidBody is the main class for rigid body objects. It is derived from {@link CollisionObject}, so it keeps reference
@@ -63,55 +63,55 @@ public class RigidBody extends CollisionObject {
 
 	/** The inv inertia tensor world. */
 	protected final Matrix3f invInertiaTensorWorld = new Matrix3f();
-	
+
 	/** The linear velocity. */
 	protected final Vector3f linearVelocity = new Vector3f();
-	
+
 	/** The angular velocity. */
 	protected final Vector3f angularVelocity = new Vector3f();
-	
+
 	/** The inverse mass. */
 	protected float inverseMass;
-	
+
 	/** The angular factor. */
 	protected float angularFactor;
 
 	/** The gravity. */
 	protected final Vector3f gravity = new Vector3f();
-	
+
 	/** The inv inertia local. */
 	protected final Vector3f invInertiaLocal = new Vector3f();
-	
+
 	/** The total force. */
 	protected final Vector3f totalForce = new Vector3f();
-	
+
 	/** The total torque. */
 	protected final Vector3f totalTorque = new Vector3f();
 
 	/** The linear damping. */
 	protected float linearDamping;
-	
+
 	/** The angular damping. */
 	protected float angularDamping;
 
 	/** The additional damping. */
 	protected boolean additionalDamping;
-	
+
 	/** The additional damping factor. */
 	protected float additionalDampingFactor;
-	
+
 	/** The additional linear damping threshold sqr. */
 	protected float additionalLinearDampingThresholdSqr;
-	
+
 	/** The additional angular damping threshold sqr. */
 	protected float additionalAngularDampingThresholdSqr;
-	
+
 	/** The additional angular damping factor. */
 	protected float additionalAngularDampingFactor;
 
 	/** The linear sleeping threshold. */
 	protected float linearSleepingThreshold;
-	
+
 	/** The angular sleeping threshold. */
 	protected float angularSleepingThreshold;
 
@@ -126,20 +126,21 @@ public class RigidBody extends CollisionObject {
 	/** The contact solver type. */
 	// for experimental overriding of friction/contact solver func
 	public int contactSolverType;
-	
+
 	/** The friction solver type. */
 	public int frictionSolverType;
 
 	/** The unique id. */
 	protected static int uniqueId = 0;
-	
+
 	/** The debug body id. */
 	public int debugBodyId;
 
 	/**
 	 * Instantiates a new rigid body.
 	 *
-	 * @param constructionInfo the construction info
+	 * @param constructionInfo
+	 *            the construction info
 	 */
 	public RigidBody(final RigidBodyConstructionInfo constructionInfo) {
 		setupRigidBody(constructionInfo);
@@ -148,9 +149,12 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Instantiates a new rigid body.
 	 *
-	 * @param mass the mass
-	 * @param motionState the motion state
-	 * @param collisionShape the collision shape
+	 * @param mass
+	 *            the mass
+	 * @param motionState
+	 *            the motion state
+	 * @param collisionShape
+	 *            the collision shape
 	 */
 	public RigidBody(final float mass, final MotionState motionState, final CollisionShape collisionShape) {
 		this(mass, motionState, collisionShape, new Vector3f(0f, 0f, 0f));
@@ -159,10 +163,14 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Instantiates a new rigid body.
 	 *
-	 * @param mass the mass
-	 * @param motionState the motion state
-	 * @param collisionShape the collision shape
-	 * @param localInertia the local inertia
+	 * @param mass
+	 *            the mass
+	 * @param motionState
+	 *            the motion state
+	 * @param collisionShape
+	 *            the collision shape
+	 * @param localInertia
+	 *            the local inertia
 	 */
 	public RigidBody(final float mass, final MotionState motionState, final CollisionShape collisionShape,
 			final Vector3f localInertia) {
@@ -174,7 +182,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the up rigid body.
 	 *
-	 * @param constructionInfo the new up rigid body
+	 * @param constructionInfo
+	 *            the new up rigid body
 	 */
 	protected void setupRigidBody(final RigidBodyConstructionInfo constructionInfo) {
 		internalType = CollisionObjectType.RIGID_BODY;
@@ -232,7 +241,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Proceed to transform.
 	 *
-	 * @param newTrans the new trans
+	 * @param newTrans
+	 *            the new trans
 	 */
 	public void proceedToTransform(final Transform newTrans) {
 		setCenterOfMassTransform(newTrans);
@@ -243,7 +253,7 @@ public class RigidBody extends CollisionObject {
 	 * from CollisionObject, so we can safely perform an upcast.
 	 */
 	public static RigidBody upcast(final CollisionObject colObj) {
-		if (colObj.getInternalType() == CollisionObjectType.RIGID_BODY) return (RigidBody) colObj;
+		if (colObj.getInternalType() == CollisionObjectType.RIGID_BODY) { return (RigidBody) colObj; }
 		return null;
 	}
 
@@ -257,7 +267,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Save kinematic state.
 	 *
-	 * @param timeStep the time step
+	 * @param timeStep
+	 *            the time step
 	 */
 	public void saveKinematicState(final float timeStep) {
 		// todo: clamp to some (user definable) safe minimum timestep, to limit maximum angular/linear velocities
@@ -280,7 +291,7 @@ public class RigidBody extends CollisionObject {
 	 * Apply gravity.
 	 */
 	public void applyGravity() {
-		if (isStaticOrKinematicObject()) return;
+		if (isStaticOrKinematicObject()) { return; }
 
 		applyCentralForce(gravity);
 	}
@@ -288,7 +299,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the gravity.
 	 *
-	 * @param acceleration the new gravity
+	 * @param acceleration
+	 *            the new gravity
 	 */
 	public void setGravity(final Vector3f acceleration) {
 		if (inverseMass != 0f) { gravity.scale(1f / inverseMass, acceleration); }
@@ -297,7 +309,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the gravity.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the gravity
 	 */
 	public Vector3f getGravity(final Vector3f out) {
@@ -308,8 +321,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the damping.
 	 *
-	 * @param lin_damping the lin damping
-	 * @param ang_damping the ang damping
+	 * @param lin_damping
+	 *            the lin damping
+	 * @param ang_damping
+	 *            the ang damping
 	 */
 	public void setDamping(final float lin_damping, final float ang_damping) {
 		linearDamping = MiscUtil.GEN_clamped(lin_damping, 0f, 1f);
@@ -321,36 +336,28 @@ public class RigidBody extends CollisionObject {
 	 *
 	 * @return the linear damping
 	 */
-	public float getLinearDamping() {
-		return linearDamping;
-	}
+	public float getLinearDamping() { return linearDamping; }
 
 	/**
 	 * Gets the angular damping.
 	 *
 	 * @return the angular damping
 	 */
-	public float getAngularDamping() {
-		return angularDamping;
-	}
+	public float getAngularDamping() { return angularDamping; }
 
 	/**
 	 * Gets the linear sleeping threshold.
 	 *
 	 * @return the linear sleeping threshold
 	 */
-	public float getLinearSleepingThreshold() {
-		return linearSleepingThreshold;
-	}
+	public float getLinearSleepingThreshold() { return linearSleepingThreshold; }
 
 	/**
 	 * Gets the angular sleeping threshold.
 	 *
 	 * @return the angular sleeping threshold
 	 */
-	public float getAngularSleepingThreshold() {
-		return angularSleepingThreshold;
-	}
+	public float getAngularSleepingThreshold() { return angularSleepingThreshold; }
 
 	/**
 	 * Damps the velocity, using the given linearDamping and angularDamping.
@@ -411,8 +418,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the mass props.
 	 *
-	 * @param mass the mass
-	 * @param inertia the inertia
+	 * @param mass
+	 *            the mass
+	 * @param inertia
+	 *            the inertia
 	 */
 	public void setMassProps(final float mass, final Vector3f inertia) {
 		if (mass == 0f) {
@@ -432,14 +441,13 @@ public class RigidBody extends CollisionObject {
 	 *
 	 * @return the inv mass
 	 */
-	public float getInvMass() {
-		return inverseMass;
-	}
+	public float getInvMass() { return inverseMass; }
 
 	/**
 	 * Gets the inv inertia tensor world.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the inv inertia tensor world
 	 */
 	public Matrix3f getInvInertiaTensorWorld(final Matrix3f out) {
@@ -450,10 +458,11 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Integrate velocities.
 	 *
-	 * @param step the step
+	 * @param step
+	 *            the step
 	 */
 	public void integrateVelocities(final float step) {
-		if (isStaticOrKinematicObject()) return;
+		if (isStaticOrKinematicObject()) { return; }
 
 		linearVelocity.scaleAdd(inverseMass * step, totalForce, linearVelocity);
 		Vector3f tmp = VECTORS.get(totalTorque);
@@ -468,7 +477,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the center of mass transform.
 	 *
-	 * @param xform the new center of mass transform
+	 * @param xform
+	 *            the new center of mass transform
 	 */
 	public void setCenterOfMassTransform(final Transform xform) {
 		if (isStaticOrKinematicObject()) {
@@ -485,7 +495,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply central force.
 	 *
-	 * @param force the force
+	 * @param force
+	 *            the force
 	 */
 	public void applyCentralForce(final Vector3f force) {
 		totalForce.add(force);
@@ -494,7 +505,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the inv inertia diag local.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the inv inertia diag local
 	 */
 	public Vector3f getInvInertiaDiagLocal(final Vector3f out) {
@@ -505,7 +517,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the inv inertia diag local.
 	 *
-	 * @param diagInvInertia the new inv inertia diag local
+	 * @param diagInvInertia
+	 *            the new inv inertia diag local
 	 */
 	public void setInvInertiaDiagLocal(final Vector3f diagInvInertia) {
 		invInertiaLocal.set(diagInvInertia);
@@ -514,8 +527,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the sleeping thresholds.
 	 *
-	 * @param linear the linear
-	 * @param angular the angular
+	 * @param linear
+	 *            the linear
+	 * @param angular
+	 *            the angular
 	 */
 	public void setSleepingThresholds(final float linear, final float angular) {
 		linearSleepingThreshold = linear;
@@ -525,7 +540,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply torque.
 	 *
-	 * @param torque the torque
+	 * @param torque
+	 *            the torque
 	 */
 	public void applyTorque(final Vector3f torque) {
 		totalTorque.add(torque);
@@ -534,8 +550,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply force.
 	 *
-	 * @param force the force
-	 * @param rel_pos the rel pos
+	 * @param force
+	 *            the force
+	 * @param rel_pos
+	 *            the rel pos
 	 */
 	public void applyForce(final Vector3f force, final Vector3f rel_pos) {
 		applyCentralForce(force);
@@ -550,10 +568,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply central impulse.
 	 *
-	 * @param impulse the impulse
+	 * @param impulse
+	 *            the impulse
 	 */
 	public void applyCentralImpulse(final Vector3f impulse) {
-		System.out.println("Ask to apply impulse : " + impulse);
 		Vector3f result = new Vector3f();
 		result.add(linearVelocity);
 		Vector3f scaledImpulse =
@@ -567,7 +585,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply torque impulse.
 	 *
-	 * @param torque the torque
+	 * @param torque
+	 *            the torque
 	 */
 	public void applyTorqueImpulse(final Vector3f torque) {
 		Vector3f tmp = VECTORS.get(torque);
@@ -579,8 +598,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Apply impulse.
 	 *
-	 * @param impulse the impulse
-	 * @param rel_pos the rel pos
+	 * @param impulse
+	 *            the impulse
+	 * @param rel_pos
+	 *            the rel pos
 	 */
 	public void applyImpulse(final Vector3f impulse, final Vector3f rel_pos) {
 		if (inverseMass != 0f) {
@@ -634,7 +655,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the center of mass position.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the center of mass position
 	 */
 	public Vector3f getCenterOfMassPosition(final Vector3f out) {
@@ -645,7 +667,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the orientation.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the orientation
 	 */
 	public Quat4f getOrientation(final Quat4f out) {
@@ -656,7 +679,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the center of mass transform.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the center of mass transform
 	 */
 	public Transform getCenterOfMassTransform(final Transform out) {
@@ -667,7 +691,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the linear velocity.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the linear velocity
 	 */
 	public Vector3f getLinearVelocity(final Vector3f out) {
@@ -678,7 +703,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the angular velocity.
 	 *
-	 * @param out the out
+	 * @param out
+	 *            the out
 	 * @return the angular velocity
 	 */
 	public Vector3f getAngularVelocity(final Vector3f out) {
@@ -689,7 +715,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the linear velocity.
 	 *
-	 * @param lin_vel the new linear velocity
+	 * @param lin_vel
+	 *            the new linear velocity
 	 */
 	public void setLinearVelocity(final Vector3f lin_vel) {
 		assert collisionFlags != CollisionFlags.STATIC_OBJECT;
@@ -699,7 +726,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the angular velocity.
 	 *
-	 * @param ang_vel the new angular velocity
+	 * @param ang_vel
+	 *            the new angular velocity
 	 */
 	public void setAngularVelocity(final Vector3f ang_vel) {
 		assert collisionFlags != CollisionFlags.STATIC_OBJECT;
@@ -709,8 +737,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the velocity in local point.
 	 *
-	 * @param rel_pos the rel pos
-	 * @param out the out
+	 * @param rel_pos
+	 *            the rel pos
+	 * @param out
+	 *            the out
 	 * @return the velocity in local point
 	 */
 	public Vector3f getVelocityInLocalPoint(final Vector3f rel_pos, final Vector3f out) {
@@ -727,7 +757,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Translate.
 	 *
-	 * @param v the v
+	 * @param v
+	 *            the v
 	 */
 	public void translate(final Vector3f v) {
 		worldTransform.origin.add(v);
@@ -736,8 +767,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the aabb.
 	 *
-	 * @param aabbMin the aabb min
-	 * @param aabbMax the aabb max
+	 * @param aabbMin
+	 *            the aabb min
+	 * @param aabbMax
+	 *            the aabb max
 	 * @return the aabb
 	 */
 	public void getAabb(final Vector3f aabbMin, final Vector3f aabbMax) {
@@ -747,8 +780,10 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Compute impulse denominator.
 	 *
-	 * @param pos the pos
-	 * @param normal the normal
+	 * @param pos
+	 *            the pos
+	 * @param normal
+	 *            the normal
 	 * @return the float
 	 */
 	public float computeImpulseDenominator(final Vector3f pos, final Vector3f normal) {
@@ -774,7 +809,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Compute angular impulse denominator.
 	 *
-	 * @param axis the axis
+	 * @param axis
+	 *            the axis
 	 * @return the float
 	 */
 	public float computeAngularImpulseDenominator(final Vector3f axis) {
@@ -790,10 +826,11 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Update deactivation.
 	 *
-	 * @param timeStep the time step
+	 * @param timeStep
+	 *            the time step
 	 */
 	public void updateDeactivation(final float timeStep) {
-		if (getActivationState() == ISLAND_SLEEPING || getActivationState() == DISABLE_DEACTIVATION) return;
+		if (getActivationState() == ISLAND_SLEEPING || getActivationState() == DISABLE_DEACTIVATION) { return; }
 		Vector3f lin = getLinearVelocity(VECTORS.get());
 		Vector3f ang = getAngularVelocity(VECTORS.get());
 		if (lin.lengthSquared() < linearSleepingThreshold * linearSleepingThreshold
@@ -812,14 +849,14 @@ public class RigidBody extends CollisionObject {
 	 * @return true, if successful
 	 */
 	public boolean wantsSleeping() {
-		if (getActivationState() == DISABLE_DEACTIVATION) return false;
+		if (getActivationState() == DISABLE_DEACTIVATION) { return false; }
 
 		// disable deactivation
-		if (BulletGlobals.isDeactivationDisabled() || BulletGlobals.getDeactivationTime() == 0f) return false;
+		if (BulletGlobals.isDeactivationDisabled() || BulletGlobals.getDeactivationTime() == 0f) { return false; }
 
-		if (getActivationState() == ISLAND_SLEEPING || getActivationState() == WANTS_DEACTIVATION) return true;
+		if (getActivationState() == ISLAND_SLEEPING || getActivationState() == WANTS_DEACTIVATION) { return true; }
 
-		if (deactivationTime > BulletGlobals.getDeactivationTime()) return true;
+		if (deactivationTime > BulletGlobals.getDeactivationTime()) { return true; }
 		return false;
 	}
 
@@ -828,14 +865,13 @@ public class RigidBody extends CollisionObject {
 	 *
 	 * @return the broadphase proxy
 	 */
-	public BroadphaseProxy getBroadphaseProxy() {
-		return broadphaseHandle;
-	}
+	public BroadphaseProxy getBroadphaseProxy() { return broadphaseHandle; }
 
 	/**
 	 * Sets the new broadphase proxy.
 	 *
-	 * @param broadphaseProxy the new new broadphase proxy
+	 * @param broadphaseProxy
+	 *            the new new broadphase proxy
 	 */
 	public void setNewBroadphaseProxy(final BroadphaseProxy broadphaseProxy) {
 		this.broadphaseHandle = broadphaseProxy;
@@ -846,14 +882,13 @@ public class RigidBody extends CollisionObject {
 	 *
 	 * @return the motion state
 	 */
-	public MotionState getMotionState() {
-		return optionalMotionState;
-	}
+	public MotionState getMotionState() { return optionalMotionState; }
 
 	/**
 	 * Sets the motion state.
 	 *
-	 * @param motionState the new motion state
+	 * @param motionState
+	 *            the new motion state
 	 */
 	public void setMotionState(final MotionState motionState) {
 		this.optionalMotionState = motionState;
@@ -863,37 +898,32 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Sets the angular factor.
 	 *
-	 * @param angFac the new angular factor
+	 * @param angFac
+	 *            the new angular factor
 	 */
-	public void setAngularFactor(final float angFac) {
-		angularFactor = angFac;
-	}
+	public void setAngularFactor(final float angFac) { angularFactor = angFac; }
 
 	/**
 	 * Gets the angular factor.
 	 *
 	 * @return the angular factor
 	 */
-	public float getAngularFactor() {
-		return angularFactor;
-	}
+	public float getAngularFactor() { return angularFactor; }
 
 	/**
 	 * Is this rigidbody added to a CollisionWorld/DynamicsWorld/Broadphase?
 	 */
-	public boolean isInWorld() {
-		return getBroadphaseProxy() != null;
-	}
+	public boolean isInWorld() { return getBroadphaseProxy() != null; }
 
 	@Override
 	public boolean checkCollideWithOverride(final CollisionObject co) {
 		// TODO: change to cast
 		RigidBody otherRb = RigidBody.upcast(co);
-		if (otherRb == null) return true;
+		if (otherRb == null) { return true; }
 
 		for (int i = 0; i < constraintRefs.size(); ++i) {
 			TypedConstraint c = constraintRefs.get(i);
-			if (c.getRigidBodyA() == otherRb || c.getRigidBodyB() == otherRb) return false;
+			if (c.getRigidBodyA() == otherRb || c.getRigidBodyB() == otherRb) { return false; }
 		}
 
 		return true;
@@ -902,7 +932,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Adds the constraint ref.
 	 *
-	 * @param c the c
+	 * @param c
+	 *            the c
 	 */
 	public void addConstraintRef(final TypedConstraint c) {
 		int index = constraintRefs.indexOf(c);
@@ -914,7 +945,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Removes the constraint ref.
 	 *
-	 * @param c the c
+	 * @param c
+	 *            the c
 	 */
 	public void removeConstraintRef(final TypedConstraint c) {
 		constraintRefs.remove(c);
@@ -924,7 +956,8 @@ public class RigidBody extends CollisionObject {
 	/**
 	 * Gets the constraint ref.
 	 *
-	 * @param index the index
+	 * @param index
+	 *            the index
 	 * @return the constraint ref
 	 */
 	public TypedConstraint getConstraintRef(final int index) {
@@ -936,8 +969,6 @@ public class RigidBody extends CollisionObject {
 	 *
 	 * @return the num constraint refs
 	 */
-	public int getNumConstraintRefs() {
-		return constraintRefs.size();
-	}
+	public int getNumConstraintRefs() { return constraintRefs.size(); }
 
 }
