@@ -2172,7 +2172,7 @@ public class Containers {
 									equals = "[4, 5, 3, 6]") 
 					}),
 					@usage (
-							value = "if the right-operand not a bool, it will be casted into a bool. For numbers, 0 will be interpreted as false and the rest as true.",
+							value = "if the right-operand is not a bool, it will be casted into a bool. For numbers, 0 will be interpreted as false and the rest as true.",
 							examples = { @example (
 									value = "[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each",
 									equals = "[-2.000001,-2,-1,1,2,3,4,5,6.5]") 
