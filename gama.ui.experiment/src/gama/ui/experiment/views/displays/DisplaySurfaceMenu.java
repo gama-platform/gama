@@ -191,6 +191,21 @@ public class DisplaySurfaceMenu {
 	}
 
 	/**
+	 * Builds the toolbar menu.
+	 *
+	 * @param trigger
+	 *            the trigger
+	 * @param t
+	 *            the t
+	 */
+	public void buildToolbarMenu(final SelectionEvent trigger, final ToolItem t) {
+		prepareNewMenu(t.getParent(), t.getBounds().x + t.getBounds().width, t.getBounds().y + t.getBounds().height,
+				false);
+		fill(menu, -1, false, true, null);
+		menu.setVisible(true);
+	}
+
+	/**
 	 * Builds the menu.
 	 *
 	 * @param mousex
@@ -247,14 +262,21 @@ public class DisplaySurfaceMenu {
 			fill(menu, -1, true, byLayer, agents, actions);
 			// DEBUG.OUT("Making the menu visible");
 			menu.setVisible(true);
-
-			// AD 3/10/13: Fix for Issue #669 in Linux GTK. See :
-			// http://www.eclipse.org/forums/index.php/t/208284/
-			retryVisible(menu, MAX_RETRIES);
+			fixForLinux(menu, 10);
 		});
-		// See Issue #10 (github.com/gama-platform/gama/issues/10)
-		// If the menu is not visible after some time, we cleanup the selection. May result in some
-		// flickering or missed clicks, but better than an invisible menu !
+		fixForWindows(cleanup);
+	}
+
+	/**
+	 * Fix for Windows menu disappearing with Radeon graphic cards. AD 06/0/25. See Issue #10
+	 * (https://github.com/gama-platform/gama/issues/10). If the menu is not visible after some time, we cleanup the
+	 * selection. May result in some flickering or missed clicks, but better than an invisible menu !
+	 * 
+	 * @param cleanup
+	 *            the actions to do after a "normal" selection
+	 */
+	private void fixForWindows(final Runnable cleanup) {
+		if (!PlatformHelper.isWindows()) { return; }
 		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, (e) -> {
 			// DEBUG.OUT("Testing if the menu is visible");
 			if (!menu.isVisible()) {
@@ -265,33 +287,16 @@ public class DisplaySurfaceMenu {
 	}
 
 	/**
-	 * Builds the toolbar menu.
-	 *
-	 * @param trigger
-	 *            the trigger
-	 * @param t
-	 *            the t
-	 */
-	public void buildToolbarMenu(final SelectionEvent trigger, final ToolItem t) {
-		prepareNewMenu(t.getParent(), t.getBounds().x + t.getBounds().width, t.getBounds().y + t.getBounds().height,
-				false);
-		fill(menu, -1, false, true, null);
-		menu.setVisible(true);
-	}
-
-	/** The max retries. */
-	static int MAX_RETRIES = 10;
-
-	/**
-	 * Retry visible.
+	 * Fix for Linux menu not appearing. AD 3/10/13: Fix for Issue #669 in Linux GTK. See:
+	 * http://www.eclipse.org/forums/index.php/t/208284/. If the menu shell is not visible, we force the creation of an
+	 * empty shell, close it, and try to reactivate the opening of the menu repeatedly (10 times seems sufficient)
 	 *
 	 * @param menu
 	 *            the menu
 	 * @param retriesRemaining
 	 *            the retries remaining
 	 */
-	private void retryVisible(final Menu menu, final int retriesRemaining) {
-
+	private void fixForLinux(final Menu menu, final int retriesRemaining) {
 		if (!PlatformHelper.isLinux()) { return; }
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
@@ -305,7 +310,7 @@ public class DisplaySurfaceMenu {
 				shell.dispose();
 				menu.getShell().forceActive();
 				menu.setVisible(true);
-				retryVisible(menu, retriesRemaining - 1);
+				fixForLinux(menu, retriesRemaining - 1);
 			}
 		});
 	}
