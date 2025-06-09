@@ -277,6 +277,7 @@ public class Containers {
 				masterDoc = true,
 				special_cases = "Passing 0 will return a singleton list with 0.")
 		@test ("range(2) = [0,1,2]")
+		@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]")
 		public static IList range(final IScope scope, final Integer end) {
 			if (end == 0) return GamaListFactory.wrap(Types.INT, 0);
 			return range(scope, 0, end);
@@ -2162,7 +2163,21 @@ public class Containers {
 							value = "if the left-operand is a map, the keyword each will contain each value",
 							examples = { @example (
 									value = "[1::2, 3::4, 5::6] where (each >= 4)",
-									equals = "[4, 6]") }) },
+									equals = "[4, 6]") 
+							}),
+					@usage (
+							value = "if the left-operand is a matrix, the elements will be traversed and filtered row by row.",
+							examples = { @example (
+									value = "matrix([1, 2, 3], [4, 5, 6]) where (each > 2)",
+									equals = "[4, 5, 3, 6]") 
+					}),
+					@usage (
+							value = "if the right-operand not a bool, it will be casted into a bool. For numbers, 0 will be interpreted as false and the rest as true.",
+							examples = { @example (
+									value = "[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each",
+									equals = "[-2.000001,-2,-1,1,2,3,4,5,6.5]") 
+					})
+			},
 			examples = { @example (
 					value = "[1,2,3,4,5,6,7,8] where (each > 3)",
 					equals = "[4, 5, 6, 7, 8] "),
@@ -2179,6 +2194,8 @@ public class Containers {
 							isExecutable = false) },
 			see = { "first_with", "last_with" })
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
+	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
+	@test ("[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each = [-2.000001,-2,-1,1,2,3,4,5,6.5]")
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		return (IList) stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
 	}
