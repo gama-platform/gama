@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * StatementFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +14,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.gaml.descriptions.ActionDescription;
+import gama.gaml.descriptions.DoDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.PrimitiveDescription;
 import gama.gaml.descriptions.StatementDescription;
@@ -35,6 +36,8 @@ public class StatementFactory extends SymbolFactory implements IKeyword {
 			final Iterable<IDescription> children, final IDescription enclosing, final SymbolProto proto) {
 		if (proto.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
 		if (ACTION.equals(keyword)) return new ActionDescription(keyword, enclosing, children, element, facets);
+		if (DO.equals(keyword))
+			return new DoDescription(keyword, enclosing, children, proto.hasArgs(), element, facets, null);
 		if (proto.hasSequence() && children != null) {
 			if (proto.isRemoteContext()) return new StatementRemoteWithChildrenDescription(keyword, enclosing, children,
 					proto.hasArgs(), element, facets, null);

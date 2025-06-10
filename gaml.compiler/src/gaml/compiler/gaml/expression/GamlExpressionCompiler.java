@@ -60,6 +60,7 @@ import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.descriptions.ActionDescription;
+import gama.gaml.descriptions.DoDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
@@ -68,7 +69,6 @@ import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.PlatformSpeciesDescription;
 import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.StringBasedExpressionDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.descriptions.ValidationContext;
@@ -1135,7 +1135,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private IExpression tryActionCall(final String op, final Function object) {
 		SpeciesDescription species = getContext().getSpeciesContext();
 		if (species == null) return null;
-		final boolean isSuper = getContext() instanceof StatementDescription st && st.isSuperInvocation();
+		final boolean isSuper = getContext() instanceof DoDescription st && st.isSuperInvocation();
 		ActionDescription action = isSuper ? species.getParent().getAction(op) : species.getAction(op);
 		if (action == null) {
 			// Not found: see #3530
