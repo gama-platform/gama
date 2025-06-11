@@ -26,7 +26,6 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.runtime.HeadlessApplication;
-
 import gaml.compiler.gaml.validation.GamlModelBuilder; 
 
 /**
@@ -41,7 +40,7 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library validator.
 	 */
 	private ModelLibraryValidator() {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	@Override
@@ -124,7 +123,7 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
 			// log("Error in " + e.getURI().lastSegment() + ": " + e);
-			DEBUG.OUT("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
+			DEBUG.ERR("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
 			returnCode[0]++;
 		});
 	}
