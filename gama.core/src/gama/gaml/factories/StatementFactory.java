@@ -36,7 +36,7 @@ public class StatementFactory extends SymbolFactory implements IKeyword {
 			final Iterable<IDescription> children, final IDescription enclosing, final SymbolProto proto) {
 		if (proto.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
 		if (ACTION.equals(keyword)) return new ActionDescription(keyword, enclosing, children, element, facets);
-		if (DO.equals(keyword))
+		if (DO.equals(keyword) || INVOKE.equals(keyword))
 			return new DoDescription(keyword, enclosing, children, proto.hasArgs(), element, facets, null);
 		if (proto.hasSequence() && children != null) {
 			if (proto.isRemoteContext()) return new StatementRemoteWithChildrenDescription(keyword, enclosing, children,
