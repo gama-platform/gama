@@ -1,17 +1,15 @@
 /*******************************************************************************************************
  *
  * MeshLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -19,6 +17,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.IScope;
@@ -128,14 +128,15 @@ import gama.gaml.types.IType;
 						doc = @doc ("if true, paints each cell with a value of grey depending on its value. Supersedes 'color' if it is defined (it is actually equivalent to passing '#gray' to `color:`). False by default")),
 				@facet (
 						name = IKeyword.COLOR,
-						type = { IType.COLOR, IType.LIST, IType.MAP },
+						type = { IType.COLOR, IType.CONTAINER, IType.MAP },
 						optional = true,
-						doc = @doc ("displays the field using the given color or colors. "
-								+ "When a simple color is provided, paints each cell with this color, with a brightness depending on the value of the cell."
-								+ "When a list of colors is provided, they are used in a cyclic manner to color each cell, independently from their value. "
-								+ "When this list is casted to a `palette` (using the corresponding operator), it is used to color each cell based on its value (with interpolation between the colors). "
-								+ "When a `gradient` (see the corresponding operator) is passed, the interpolation between the two extreme colors is computed by GAMA."
-								+ "When a `scale` (see the corresponding operator) is passed, cells are colored depending on where their value fits in the scale, with no interpolation")),
+						doc = @doc ("""
+								displays the field using the given color or colors. \
+								When a simple color is provided, paints each cell with this color, with a brightness depending on the value of the cell.\
+								When a list of colors is provided, they are used in a cyclic manner to color each cell, independently from their value. \
+								When this list is casted to a `palette` (using the corresponding operator), it is used to color each cell based on its value (with interpolation between the colors). \
+								When a `gradient` (see the corresponding operator) is passed, the interpolation between the two extreme colors is computed by GAMA.\
+								When a `scale` (see the corresponding operator) is passed, cells are colored depending on where their value fits in the scale, with no interpolation""")),
 				@facet (
 						name = IKeyword.TRIANGULATION,
 						type = IType.BOOL,

@@ -1,23 +1,26 @@
 /*******************************************************************************************************
  *
- * Cast.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Cast.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.IModel;
 import gama.core.metamodel.agent.IAgent;
@@ -25,13 +28,18 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
+import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaListFactory;
+import gama.core.util.GamaMapFactory;
 import gama.core.util.GamaPair;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
+import gama.core.util.matrix.GamaFloatMatrix;
+import gama.core.util.matrix.GamaIntMatrix;
+import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.species.ISpecies;
@@ -543,7 +551,7 @@ public class Cast {
 	}
 
 	/**
-	 * List with.
+	 * Parallel list with.
 	 *
 	 * @param scope
 	 *            the scope
@@ -554,20 +562,20 @@ public class Cast {
 	 * @return the i list
 	 */
 	@operator (
-			value = "list_with",
+			value = "parallel_list_with",
 			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
 			can_be_const = false,
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "creates a list with a size provided by the first operand, and filled with the second operand",
-			comment = "Note that the first operand  should be positive, and that the second one is evaluated for each position  in the list.",
+			value = "Creates a list with a size provided by the first operand, and filled with the second operand, the list is filled in parallel.",
+			comment = "Note that the first operand  should be positive, and that the second one is evaluated for each position  in the list.\\nSome exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
 			see = { "list" },
 			examples = { @example (
-					value = "list_with(5,2)",
+					value = "parallel_list_with(5,2)",
 					equals = "[2,2,2,2,2]") })
-	@test ("list_with(5,2) = [2,2,2,2,2]")
-	public static IList list_with(final IScope scope, final Integer size, final IExpression init) {
-		return GamaListFactory.create(scope, init, size, false); // parallel = false by default (see #3572)
+	@test ("parallel_list_with(5,2) = [2,2,2,2,2]")
+	public static IList parallel_list_with(final IScope scope, final Integer size, final IExpression init) {
+		return GamaListFactory.create(scope, init, size, true);
 	}
 
 	/**
@@ -586,7 +594,7 @@ public class Cast {
 	}
 
 	/**
-	 * Matrix with.
+	 * Parallel matrix with.
 	 *
 	 * @param scope
 	 *            the scope
@@ -597,19 +605,169 @@ public class Cast {
 	 * @return the i matrix
 	 */
 	@operator (
-			value = "matrix_with",
+			value = "parallel_matrix_with",
 			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
 			can_be_const = true,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell ",
+			value = "Creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell and is done in parallel.",
+			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.\nIf run in parallel, some exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
+			see = { IKeyword.MATRIX, "as_matrix" })
+	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
+	public static IMatrix parallel_matrix_with(final IScope scope, final GamaPoint size, final IExpression init) {
+		if (size == null) throw GamaRuntimeException.error("A nil size is not allowed for matrices", scope);
+		return GamaMatrixType.with(scope, init, size, true);
+	}
+
+	/**
+	 * Matrix with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param size
+	 *
+	 *            @@ -598,18 +664,55 @@ public class Cast {
+	 */
+	@operator (
+			value = "matrix_with",
+			iterator = true,
+			content_type = ITypeProvider.THIRD_CONTENT_TYPE_OR_TYPE,
+			can_be_const = true,
+			category = { IOperatorCategory.CASTING },
+			concept = { IConcept.CAST, IConcept.CONTAINER })
+	@doc (
+			value = "creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell. As in any iterator, the value of 'each' represents the index of the current cell (a point (col, row)) and can be retrieved using 'each' or explicitly using the '(:x...' syntax ",
 			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.",
 			see = { IKeyword.MATRIX, "as_matrix" })
 	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
-	public static IMatrix matrix_with(final IScope scope, final GamaPoint size, final IExpression init) {
-		if (size == null) throw GamaRuntimeException.error("A nil size is not allowed for matrices", scope);
-		return GamaMatrixType.with(scope, init, size, false); // parallel = false by default (see #3572)
+	@test ("{2,2} matrix_with (p: p.x + p.y) = matrix([0.0, 1.0],[1.0,2.0])")
+	public static IMatrix matrix_with(final IScope scope, final String eachName, final GamaPoint size,
+			final IExpression init) {
+		if (init == null || size == null || size.x <= 0 || size.y <= 0)
+			return new GamaObjectMatrix(0, 0, Types.NO_TYPE);
+		final int cols = (int) size.x;
+		final int rows = (int) size.y;
+		int type = init.getGamlType().id();
+		IMatrix result = switch (type) {
+			case IType.FLOAT -> new GamaFloatMatrix(cols, rows);
+			case IType.INT -> new GamaIntMatrix(cols, rows);
+			default -> new GamaObjectMatrix(cols, rows, init.getGamlType());
+		};
+		if (init.isConst()) return switch (type) {
+			case IType.FLOAT -> {
+				final double[] dd = ((GamaFloatMatrix) result).getMatrix();
+				Arrays.fill(dd, Cast.asFloat(scope, init.value(scope)));
+				yield result;
+			}
+			case IType.INT -> {
+				final int[] ii = ((GamaIntMatrix) result).getMatrix();
+				Arrays.fill(ii, Cast.asInt(scope, init.value(scope)));
+				yield result;
+			}
+			default -> {
+				final Object[] contents = ((GamaObjectMatrix) result).getMatrix();
+				Arrays.fill(contents, init.value(scope));
+				yield result;
+			}
+		};
+		GamaPoint each = new GamaPoint();
+		scope.setEach(eachName, each);
+		for (int x = 0; x < cols; x++) {
+			for (int y = 0; y < rows; y++) {
+				each.setLocation(x, y, 0);
+				result.set(scope, x, y, init.value(scope));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * List with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param eachName
+	 *            the each name
+	 * @param size
+	 *            the size
+	 * @param fillExpr
+	 *            the fill expr
+	 * @return the i list
+	 */
+	@operator (
+			value = "list_with",
+			iterator = true,
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			can_be_const = false,
+			concept = { IConcept.CAST, IConcept.CONTAINER })
+	@doc (
+			value = "creates a list with a size provided by the first operand, and filled with the evaluation of the second operand. As with any iterator, the value of the current index can be retrieved with `each` or explicitly set using the `(x: ...` syntax",
+			comment = "Note that the first operand  should be positive, otherwise an empty list is returned, and that the second one is evaluated for each position in the list.",
+			see = { "list" },
+			examples = { @example (
+					value = "list_with(5,2)",
+					equals = "[2,2,2,2,2]") })
+	@test ("list_with(5,2) = [2,2,2,2,2]")
+	@test ("5 list_with(i: i+1) = [1,2,3,4,5]")
+	@test ("5 list_with string(each / 2) = ['0.0','0.5','1.0','1.5','2.0']")
+	public static IList list_with(final IScope scope, final String eachName, final Integer size,
+			final IExpression fillExpr) {
+		if (fillExpr == null || size <= 0) return GamaListFactory.create(Types.NO_TYPE);
+		final Object[] contents = new Object[size];
+		final IType contentType = fillExpr.getGamlType();
+		// 10/01/14. Cannot use Arrays.fill() everywhere: see Issue 778.
+		if (fillExpr.isConst()) {
+			final Object o = fillExpr.value(scope);
+			GamaExecutorService.executeThreaded(() -> IntStream.range(0, contents.length).parallel().forEach(i -> {
+				contents[i] = o;
+			}));
+		} else {
+			for (int i = 0; i < contents.length; i++) {
+				scope.setEach(eachName, i);
+				contents[i] = fillExpr.value(scope);
+			}
+		}
+		return GamaListFactory.create(scope, contentType, contents);
+
+	}
+
+	/**
+	 * List with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param size
+	 *            the size
+	 * @param init
+	 *            the init
+	 * @return the i list
+	 */
+	@operator (
+			value = "map_with",
+			iterator = true,
+			expected_content_type = IType.PAIR,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 3,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 3,
+			can_be_const = false,
+			concept = { IConcept.CAST, IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "creates a map with a size provided by the first operand, and filled with the keys and values computed by the second pair operand. As any iterator, the second operand can make use of the index (obtained with each or explicitly set using the `(x: ...`  syntax)",
+			comment = "Note that the first operand should be positive, otherwise an empty map is returned, and that the second is reevaluated for each new pair in the map.",
+			see = { "map" })
+	@test ("5 map_with(i: i::i+1) = [0::1,1::2,2::3,3::4,4::5]")
+	@test ("5 map_with(i: i::i+1) = range(4) as_map (each::each+1)")
+	public static IMap map_with(final IScope scope, final String eachName, final Integer size,
+			final IExpression pairs) {
+		if (pairs == null || size <= 0) return GamaMapFactory.create();
+		IMap<?, Object> result =
+				GamaMapFactory.create(pairs.getGamlType().getKeyType(), pairs.getGamlType().getContentType(), true);
+		for (int i = 0; i < size; i++) {
+			scope.setEach(eachName, i);
+			result.addValue(scope, pairs.value(scope));
+		}
+		return result;
+
 	}
 
 	/**
@@ -633,10 +791,11 @@ public class Cast {
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
 			value = "casts the left operand into a matrix with right operand as preferred size",
-			comment = "This operator is very useful to cast a file containing raster data into a matrix."
-					+ "Note that both components of the right operand point should be positive, otherwise an exception is raised."
-					+ "The operator as_matrix creates a matrix of preferred size. It fills in it with elements of the left operand until the matrix is full "
-					+ "If the size is to short, some elements will be omitted. Matrix remaining elements will be filled in by nil.",
+			comment = """
+					This operator is very useful to cast a file containing raster data into a matrix.\
+					Note that both components of the right operand point should be positive, otherwise an exception is raised.\
+					The operator as_matrix creates a matrix of preferred size. It fills in it with elements of the left operand until the matrix is full \
+					If the size is to short, some elements will be omitted. Matrix remaining elements will be filled in by nil.""",
 			usages = { @usage ("if the right operand is nil, as_matrix is equivalent to the matrix operator") },
 			see = { IKeyword.MATRIX })
 	@test ("as_matrix('a', {2,3}) = matrix(['a','a','a'],['a','a','a'])")

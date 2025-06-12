@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaSavedAgentFile.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaSavedAgentFile.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISerialisationConstants;
@@ -25,7 +25,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.core.util.file.GamaFile;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -58,9 +57,6 @@ public class GamaSavedAgentFile extends GamaFile<IList<String>, String> implemen
 	public GamaSavedAgentFile(final IScope scope, final String pathName) throws GamaRuntimeException {
 		super(scope, pathName, true);
 	}
-
-	@Override
-	public IContainerType<?> getGamlType() { return Types.FILE.of(Types.INT, Types.STRING); }
 
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

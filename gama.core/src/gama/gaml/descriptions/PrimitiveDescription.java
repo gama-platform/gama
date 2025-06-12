@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PrimitiveDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,6 +25,8 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.Facets;
+import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * The Class PrimitiveDescription. Singleton throughout the simulation
@@ -201,6 +203,17 @@ public class PrimitiveDescription extends ActionDescription {
 	public void setHelper(final IGamaHelper helper, final AccessibleObject method) {
 		this.helper = helper;
 		this.method = method;
+	}
+
+	@Override
+	public IType<?> computeType() {
+		if ("goto".equals(name)) {
+
+			DEBUG.OUT("");
+		}
+
+		Integer t = Integer.valueOf(getLitteral(TYPE));
+		return Types.get(t);
 	}
 
 	@Override

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,6 +16,7 @@ import java.util.Map;
 import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IGui;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
@@ -68,23 +69,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 		 */
 		@Override
 		IGraphicsScope copy(String additionalName);
-
-		/**
-		 * Sets the horizontal pixel context.
-		 */
-		// void setHorizontalPixelContext();
-
-		/**
-		 * Sets the vertical pixel context.
-		 */
-		// void setVerticalPixelContext();
-
-		/**
-		 * Checks if is horizontal pixel context.
-		 *
-		 * @return true, if is horizontal pixel context
-		 */
-		// boolean isHorizontalPixelContext();
 
 		/**
 		 * Sets the graphics.
@@ -221,11 +205,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	boolean interrupted();
 
 	/**
-	 * Sets the interrupted.
-	 */
-	// void setInterrupted();
-
-	/**
 	 * Keeping track of symbols.
 	 *
 	 * setCurrentSymbol() indicates which symbol (statement, variable, output, ..) is currently executing. push() does
@@ -290,20 +269,45 @@ public interface IScope extends Closeable, IBenchmarkable {
 	/**
 	 * Access to various agents and objects
 	 *
-	 * setEach() allows to fix temporarily the value of the 'each' pseudo-variable, getEach() to retrieve it.
+	 * setEach() allows to fix temporarily the value of the 'each' pseudo-variable, getEach() to retrieve it. Note that
+	 * this form is deprecated in favor of the one that passes the name of the argument to set
 	 *
 	 * @param value
 	 *            the new each
 	 */
-
-	void setEach(Object value);
+	@Deprecated
+	default void setEach(final Object value) {
+		setEach(IKeyword.EACH, value);
+	}
 
 	/**
-	 * Gets the each.
+	 * Sets the value of the temp variable (named 'each' by default) used inside iterators to represent each element of
+	 * a container
+	 *
+	 * @param name
+	 *            the name
+	 * @param value
+	 *            the value
+	 */
+	void setEach(String name, Object value);
+
+	/**
+	 * Gets the value of 'each' when inside an iterator. Note that this form is deprecated, in favor of the form that
+	 * passes the name of the temp argument
 	 *
 	 * @return the each
 	 */
-	Object getEach();
+	@Deprecated
+	default Object getEach() { return getEach(IKeyword.EACH); }
+
+	/**
+	 * Gets the value of the temp variable (named 'each' by default) used inside iterators to represent each element of
+	 * a container
+	 *
+	 * @param each
+	 * @return
+	 */
+	Object getEach(String each);
 
 	/**
 	 * Gets the root.
@@ -569,7 +573,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 */
 	void addVarWithValue(String varName, Object val);
 
-
 	/**
 	 * Gets the arg with a cast
 	 *
@@ -583,58 +586,70 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 */
 	Object getArg(String string, int type) throws GamaRuntimeException;
 
-	
 	/**
-	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method, else returns null
+	 * Check if the arg is present or not, if so returns it using the getArg(String string, int type) method, else
+	 * returns null
+	 *
 	 * @param string
 	 * @return
 	 */
-	default Object getArgIfExists(final String string, int type) {
-		if (hasArg(string)) {
-			return getArg(string, type);
-		}
+	default Object getArgIfExists(final String string, final int type) {
+		if (hasArg(string)) return getArg(string, type);
 		return null;
 	}
-	
+
 	/**
 	 * get the argument of an action and casts it into the asked type
-	 * @param <T> the type to cast the arg to
-	 * @param string the arg to get
-	 * @param type the type to use in getArg
+	 *
+	 * @param <T>
+	 *            the type to cast the arg to
+	 * @param string
+	 *            the arg to get
+	 * @param type
+	 *            the type to use in getArg
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	default <T> T getTypedArg(final String string, int type) {
+	@SuppressWarnings ("unchecked")
+	default <T> T getTypedArg(final String string, final int type) {
 		return (T) getArg(string, type);
 	}
-	
+
 	/**
-	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns null
-	 * @param <T> the return type
-	 * @param string the argument to check for
-	 * @param type the type_id to use in the getArg function
+	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type)
+	 * method and cast it, else returns null
+	 *
+	 * @param <T>
+	 *            the return type
+	 * @param string
+	 *            the argument to check for
+	 * @param type
+	 *            the type_id to use in the getArg function
 	 * @return
 	 */
-	default <T> T getTypedArgIfExists(final String string, int type) {
+	default <T> T getTypedArgIfExists(final String string, final int type) {
 		return getTypedArgIfExists(string, type, null);
 	}
-	
+
 	/**
-	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type) method and cast it, else returns the default value given
-	 * @param <T> the return type
-	 * @param string the argument to check
-	 * @param type the type_id to use in the getArg function
-	 * @param defaultValue the value to return in case the string is not found
+	 * Check if the argument of an action is present or not, if so returns it using the getArg(String string, int type)
+	 * method and cast it, else returns the default value given
+	 *
+	 * @param <T>
+	 *            the return type
+	 * @param string
+	 *            the argument to check
+	 * @param type
+	 *            the type_id to use in the getArg function
+	 * @param defaultValue
+	 *            the value to return in case the string is not found
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	default <T> T getTypedArgIfExists(final String string, int type, T defaultValue) {
-		if (hasArg(string)) {
-			return (T) getArg(string, type);
-		}
+	@SuppressWarnings ("unchecked")
+	default <T> T getTypedArgIfExists(final String string, final int type, final T defaultValue) {
+		if (hasArg(string)) return (T) getArg(string, type);
 		return defaultValue;
 	}
-	
+
 	/**
 	 * Gets the int arg.
 	 *
@@ -692,16 +707,16 @@ public interface IScope extends Closeable, IBenchmarkable {
 
 	/**
 	 * Returns the argument using getBoolArg if it exists, else returns ifNotExist value
+	 *
 	 * @param string
 	 * @param ifNotExist
 	 * @return
 	 */
-	default boolean getBoolArgIfExists(String string, boolean ifNotExist) {
-		if (hasArg(string)) {
-			return getBoolArg(string);
-		}
+	default boolean getBoolArgIfExists(final String string, final boolean ifNotExist) {
+		if (hasArg(string)) return getBoolArg(string);
 		return ifNotExist;
 	}
+
 	/**
 	 * Checks for arg.
 	 *
@@ -728,37 +743,12 @@ public interface IScope extends Closeable, IBenchmarkable {
 	IModel getModel();
 
 	/**
-	 * Indicates that a loop is finishing : should clear any _loop_halted status present.
-	 */
-	// void popLoop();
-
-	/**
-	 * Indicates that an action is finishing : should clear any _action_halted status present.
-	 */
-	// void popAction();
-
-	/**
-	 * Should set the _action_halted flag to true.
-	 */
-	// void interruptAction();
-
-	/**
-	 * Should set the _agent_halted flag to true.
-	 */
-	// void interruptAgent();
-
-	/**
-	 * Should set the _loop_halted flag to true.
-	 */
-	// void interruptLoop();
-	void setFlowStatus(FlowStatus status);
-
-	/**
-	 * Gets the flow status.
+	 * Sets the flow status.
 	 *
-	 * @return the flow status
+	 * @param status
+	 *            the new flow status
 	 */
-	// FlowStatus getAndClearFlowStatus();
+	void setFlowStatus(FlowStatus status);
 
 	/**
 	 * Inits the.

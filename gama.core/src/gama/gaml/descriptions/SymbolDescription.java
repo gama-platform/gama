@@ -1225,7 +1225,7 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	private final boolean validateFacets() {
 		// Special case for "do", which can accept (at parsing time) any facet
-		final boolean isDo = isSet(Flag.IsInvocation);
+		final boolean isDo = isInvocation();
 		final boolean isBuiltIn = isBuiltIn();
 		List<String> mandatory = proto.getMandatoryFacets();
 		if (mandatory != null) {
@@ -1586,7 +1586,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return true, if is invocation
 	 */
 	@Override
-	public boolean isInvocation() { return isSet(Flag.IsInvocation); }
+	public boolean isInvocation() { return false; }
 
 	/**
 	 * Checks if is creates the.

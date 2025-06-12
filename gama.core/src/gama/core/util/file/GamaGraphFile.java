@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaGraphFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaGraphFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -22,26 +22,27 @@ import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph.IGraph;
 import gama.core.util.graph.loader.GraphImporters;
 import gama.gaml.species.ISpecies;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaGraphFile.
  */
 public abstract class GamaGraphFile extends GamaFile<IGraph<?, ?>, Object> {
-	
+
 	/** The node S. */
 	ISpecies nodeS = null;
-	
+
 	/** The edge S. */
 	ISpecies edgeS = null;
 
 	/**
 	 * Instantiates a new gama graph file.
 	 *
-	 * @param scope the scope
-	 * @param pn the pn
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pn
+	 *            the pn
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public GamaGraphFile(final IScope scope, final String pn) throws GamaRuntimeException {
 		super(scope, pn);
@@ -50,9 +51,12 @@ public abstract class GamaGraphFile extends GamaFile<IGraph<?, ?>, Object> {
 	/**
 	 * Instantiates a new gama graph file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param nodeSpecies the node species
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param nodeSpecies
+	 *            the node species
 	 */
 	public GamaGraphFile(final IScope scope, final String pathName, final ISpecies nodeSpecies) {
 		super(scope, pathName);
@@ -62,10 +66,14 @@ public abstract class GamaGraphFile extends GamaFile<IGraph<?, ?>, Object> {
 	/**
 	 * Instantiates a new gama graph file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param nodeSpecies the node species
-	 * @param edgeSpecies the edge species
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param nodeSpecies
+	 *            the node species
+	 * @param edgeSpecies
+	 *            the edge species
 	 */
 	public GamaGraphFile(final IScope scope, final String pathName, final ISpecies nodeSpecies,
 			final ISpecies edgeSpecies) {
@@ -96,8 +104,5 @@ public abstract class GamaGraphFile extends GamaFile<IGraph<?, ?>, Object> {
 	 * @return the file type
 	 */
 	abstract protected String getFileType();
-
-	@Override
-	public IContainerType<?> getGamlType() { return Types.GRAPH; }
 
 }

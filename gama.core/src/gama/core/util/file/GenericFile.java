@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GenericFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GenericFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +24,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.gaml.statements.Facets;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.Types;
 
 /**
@@ -72,9 +70,6 @@ public class GenericFile extends GamaFile<IList<String>, String> {
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() { return Types.FILE; }
-
-	@Override
 	public Envelope3D computeEnvelope(final IScope scope) {
 		return Envelope3D.EMPTY;
 	}
@@ -92,8 +87,7 @@ public class GenericFile extends GamaFile<IList<String>, String> {
 			} else {
 				try (final BufferedReader in = new BufferedReader(new FileReader(getFile(scope)))) {
 					final IList<String> allLines = GamaListFactory.create(Types.STRING);
-					String str;
-					str = in.readLine();
+					String str = in.readLine();
 					while (str != null) {
 						allLines.add(str);
 						str = in.readLine();

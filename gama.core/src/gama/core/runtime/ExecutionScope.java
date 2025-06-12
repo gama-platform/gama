@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * ExecutionScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ExecutionScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -90,7 +91,7 @@ public class ExecutionScope implements IScope {
 		Map<String, Object> data;
 
 		/** The each. */
-		Object each;
+		Map<String, Object> each;
 
 		/** The topology. */
 		public ITopology topology;
@@ -163,6 +164,30 @@ public class ExecutionScope implements IScope {
 			}
 			if (data == null) { data = new HashMap<>(); }
 			data.put(key, value);
+		}
+
+		/**
+		 * Gets the each.
+		 *
+		 * @param name
+		 *            the name
+		 * @return the each
+		 */
+		Object getEach(final String name) {
+			return each == null ? null : each.get(name);
+		}
+
+		/**
+		 * Sets the each.
+		 *
+		 * @param key
+		 *            the key
+		 * @param value
+		 *            the value
+		 */
+		void setEach(final String key, final Object value) {
+			if (each == null) { each = new HashMap<>(); }
+			each.put(key, value);
 		}
 
 	}
@@ -707,9 +732,8 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#setEach(java.lang.Object)
 	 */
 	@Override
-	public void setEach(final Object value) {
-		additionalContext.each = value;
-
+	public void setEach(final String name, final Object value) {
+		additionalContext.setEach(name, value);
 	}
 
 	/**
@@ -718,7 +742,9 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#getEach()
 	 */
 	@Override
-	public Object getEach() { return additionalContext.each; }
+	public Object getEach(final String name) {
+		return additionalContext.getEach(name);
+	}
 
 	/**
 	 * Method getArg()
@@ -1117,6 +1143,12 @@ public class ExecutionScope implements IScope {
 		additionalContext.setData(key, value);
 	}
 
+	/**
+	 * Sets the execution context.
+	 *
+	 * @param executionContext
+	 *            the new execution context
+	 */
 	protected void setExecutionContext(final IExecutionContext executionContext) {
 		this.executionContext = executionContext;
 	}

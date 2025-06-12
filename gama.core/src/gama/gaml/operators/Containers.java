@@ -63,6 +63,9 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
+import gama.core.util.matrix.GamaFloatMatrix;
+import gama.core.util.matrix.GamaIntMatrix;
+import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IOperatorValidator;
@@ -144,9 +147,9 @@ public class Containers {
 	 *            the filter
 	 * @return the function
 	 */
-	public static <T> Function<Object, T> with(final IScope scope, final IExpression filter) {
+	public static <T> Function<Object, T> with(final IScope scope, final String eachName, final IExpression filter) {
 		return t -> {
-			scope.setEach(t);
+			scope.setEach(eachName, t);
 			return (T) filter.value(scope);
 		};
 	}
@@ -162,10 +165,10 @@ public class Containers {
 	 *            the filter
 	 * @return the predicate
 	 */
-	public static <T> Predicate<T> by(final IScope scope, final IExpression filter) {
+	public static <T> Predicate<T> by(final IScope scope, final String eachName, final IExpression filter) {
 		return (final T t) -> {
-			scope.setEach(t);
-			return (Boolean) filter.value(scope);
+			scope.setEach(eachName, t);
+			return Cast.asBool(scope, filter.value(scope));
 		};
 	}
 
@@ -274,6 +277,7 @@ public class Containers {
 				masterDoc = true,
 				special_cases = "Passing 0 will return a singleton list with 0.")
 		@test ("range(2) = [0,1,2]")
+		@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]")
 		public static IList range(final IScope scope, final Integer end) {
 			if (end == 0) return GamaListFactory.wrap(Types.INT, 0);
 			return range(scope, 0, end);
@@ -1699,9 +1703,9 @@ public class Containers {
 	@operator (
 			value = { "group_by" },
 			iterator = true,
-			index_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			content_type = IType.LIST,
-			content_type_content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type_content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			concept = { IConcept.CONTAINER, IConcept.MAP })
 	@doc (
 			value = "Returns a map, where the keys take the possible values of the right-hand operand and the map values are the list of elements "
@@ -1727,9 +1731,9 @@ public class Containers {
 			see = { "first_with", "last_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] group_by (each > 3) = [false::[1, 2, 3], true::[4, 5, 6, 7, 8]]")
 	@test ("[1::2, 3::4, 5::6] group_by (each > 4) = [false::[2, 4], true::[6]]")
-	public static IMap group_by(final IScope scope, final IContainer c, final IExpression e) {
+	public static IMap group_by(final IScope scope, final String eachName, final IContainer c, final IExpression e) {
 		final IType ct = notNull(scope, c).getGamlType().getContentType();
-		return (IMap) stream(scope, c).groupingTo(with(scope, e), asMapOf(e.getGamlType(), Types.LIST.of(ct)),
+		return (IMap) stream(scope, c).groupingTo(with(scope, eachName, e), asMapOf(e.getGamlType(), Types.LIST.of(ct)),
 				listOf(ct));
 	}
 
@@ -1746,7 +1750,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "last_with" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
@@ -1780,8 +1784,9 @@ public class Containers {
 							isExecutable = false) },
 			see = { "group_by", "first_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] last_with (each > 3) = 8")
-	public static Object last_with(final IScope scope, final IContainer c, final IExpression filter) {
-		return stream(scope, c).filter(by(scope, filter)).reduce((a, b) -> b).orElse(null);
+	public static Object last_with(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return stream(scope, c).filter(by(scope, eachName, filter)).reduce((a, b) -> b).orElse(null);
 	}
 
 	/**
@@ -1797,7 +1802,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "first_with" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
@@ -1833,8 +1838,9 @@ public class Containers {
 							isExecutable = false) },
 			see = { "group_by", "last_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] first_with (each > 3) = 4")
-	public static Object first_with(final IScope scope, final IContainer c, final IExpression filter) {
-		return stream(scope, c).findFirst(by(scope, filter)).orElse(null);
+	public static Object first_with(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return stream(scope, c).findFirst(by(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -1886,7 +1892,7 @@ public class Containers {
 	@test ("sum([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}]) = {20.0,17.0}")
 	@test ("sum ([12,10,3]) = 25")
 	public static Object sum(final IScope scope, final IContainer l) {
-		return sum_of(scope, l, null);
+		return sum_of(scope, IKeyword.EACH, l, null);
 	}
 
 	/**
@@ -1954,7 +1960,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "sum_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			expected_content_type = { IType.FLOAT, IType.POINT, IType.COLOR, IType.INT, IType.STRING },
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
@@ -1972,11 +1978,12 @@ public class Containers {
 					equals = "300") },
 			see = { "min_of", "max_of", "product_of", "mean_of" })
 	@test ("[1,2] sum_of (each * 100 ) = 300")
-	public static Object sum_of(final IScope scope, final IContainer container, final IExpression filter) {
+	public static Object sum_of(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter) {
 		Stream s = stream(scope, container);
 		IType t;
 		if (filter != null) {
-			s = s.map(with(scope, filter));
+			s = s.map(with(scope, eachName, filter));
 			t = filter.getGamlType();
 		} else {
 			t = container.getGamlType().getContentType();
@@ -2063,10 +2070,10 @@ public class Containers {
 
 		@Override
 		public boolean validate(final IDescription context, final EObject emfContext, final IExpression... arguments) {
-			final IExpression filter = arguments[1];
+			final IExpression filter = arguments[2];
 			if (!filter.getGamlType().isComparable()) {
 				context.error(
-						"The comparison function should return values that are comparable with each other (e.g. int, float, string, point, color, etc.)",
+						"Comparisons should operate on values that are comparable with each other (e.g. int, float, string, point, color, etc.)",
 						IGamlIssue.UNMATCHED_TYPES, emfContext);
 				return false;
 			}
@@ -2088,7 +2095,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "sort_by", "sort" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2117,8 +2124,15 @@ public class Containers {
 			see = { "group_by" })
 	@test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]")
 	@validator (ComparableValidator.class)
-	public static IList sort(final IScope scope, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).sortedBy(with(scope, filter)).toCollection(listLike(c));
+	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
+		try {
+			return (IList) stream(scope, c).sortedBy(with(scope, eachName, filter)).toCollection(listLike(c));
+		} catch (IllegalArgumentException e) {
+			// AD added here to avoid reporting concurrent modifications to the container while sorting it (can happen
+			// when relaunching simulations, see #693, with this exception in java.util.TimSort). Instead we return the
+			// sort on a copy of the container
+			return sort(scope, eachName, c.listValue(scope, c.getGamlType().getContentType(), true), filter);
+		}
 	}
 
 	/**
@@ -2134,9 +2148,9 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
@@ -2149,7 +2163,21 @@ public class Containers {
 							value = "if the left-operand is a map, the keyword each will contain each value",
 							examples = { @example (
 									value = "[1::2, 3::4, 5::6] where (each >= 4)",
-									equals = "[4, 6]") }) },
+									equals = "[4, 6]") 
+							}),
+					@usage (
+							value = "if the left-operand is a matrix, the elements will be traversed and filtered row by row.",
+							examples = { @example (
+									value = "matrix([1, 2, 3], [4, 5, 6]) where (each > 2)",
+									equals = "[4, 5, 3, 6]") 
+					}),
+					@usage (
+							value = "if the right-operand is not a bool, it will be casted into a bool. For numbers, 0 will be interpreted as false and the rest as true.",
+							examples = { @example (
+									value = "[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each",
+									equals = "[-2.000001,-2,-1,1,2,3,4,5,6.5]") 
+					})
+			},
 			examples = { @example (
 					value = "[1,2,3,4,5,6,7,8] where (each > 3)",
 					equals = "[4, 5, 6, 7, 8] "),
@@ -2166,12 +2194,14 @@ public class Containers {
 							isExecutable = false) },
 			see = { "first_with", "last_with" })
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
-	public static IList where(final IScope scope, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).filter(by(scope, filter)).toCollection(listLike(c));
+	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
+	@test ("[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each = [-2.000001,-2,-1,1,2,3,4,5,6.5]")
+	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
+		return (IList) stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
 	}
 
 	/**
-	 * Where.
+	 * Where. Optimization for a very common case (IList)
 	 *
 	 * @param scope
 	 *            the scope
@@ -2183,24 +2213,16 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
 			value = "Returns a list contaning only the elements that make the predicate return true")
 	@test ("[1,2,3,4,5,6,7,8] where (each != 2) = [1, 3, 4, 5, 6, 7, 8] ")
-	/**
-	 * Optimization for a very common case (Ilist)
-	 *
-	 * @param scope
-	 * @param c
-	 * @param filter
-	 * @return
-	 */
-	public static IList where(final IScope scope, final IList c, final IExpression filter) {
-		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), filter);
+	public static IList where(final IScope scope, final String eachName, final IList c, final IExpression filter) {
+		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), eachName, filter);
 	}
 
 	/**
@@ -2216,19 +2238,20 @@ public class Containers {
 	 *            the filter
 	 * @return the i list
 	 */
-	private static IList where(final IScope scope, final Iterable c, final IType contentType,
+	private static IList where(final IScope scope, final Iterable c, final IType contentType, final String eachName,
 			final IExpression filter) {
 		final IList result = GamaListFactory.create(contentType);
 		for (final Object o : c) {
-			scope.setEach(o);
-			if ((Boolean) filter.value(scope)) { result.add(o); }
+			scope.setEach(eachName, o);
+			if (Cast.asBool(scope, filter.value(scope))) { result.add(o); }
 		}
-		scope.setEach(null);
+		scope.setEach(eachName, null);
 		return result;
 	}
 
 	/**
-	 * Where.
+	 * Where.Optimization for a very common case (ISpecies)
+	 *
 	 *
 	 * @param scope
 	 *            the scope
@@ -2240,24 +2263,16 @@ public class Containers {
 	 */
 	@operator (
 			value = { "where", "select" },
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
-			// expected_content_type = IType.BOOL,
+			expected_content_type = IType.BOOL,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
 	@doc (
 			value = "Returns a list containing only the agents of this species that make the predicate return true")
 	@no_test
-	/**
-	 * Optimization for a very common case (ISpecies)
-	 *
-	 * @param scope
-	 * @param c
-	 * @param filter
-	 * @return
-	 */
-	public static IList where(final IScope scope, final ISpecies c, final IExpression filter) {
-		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), filter);
+	public static IList where(final IScope scope, final String eachName, final ISpecies c, final IExpression filter) {
+		return where(scope, c.iterable(scope), c.getGamlType().getContentType(), eachName, filter);
 	}
 
 	/**
@@ -2273,7 +2288,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "with_max_of" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2302,8 +2317,9 @@ public class Containers {
 			see = { "where", "with_min_of" })
 	@test ("[1,2,3,4,5,6,7,8] with_max_of (each ) = 8")
 	@validator (ComparableValidator.class)
-	public static Object with_max_of(final IScope scope, final IContainer c, final IExpression filter) {
-		return stream(scope, c).maxBy(with(scope, filter)).orElse(null);
+	public static Object with_max_of(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return stream(scope, c).maxBy(with(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -2319,7 +2335,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "with_min_of" },
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2348,8 +2364,9 @@ public class Containers {
 			see = { "where", "with_max_of" })
 	@test ("[1,2,3,4,5,6,7,8] with_min_of (each )  = 1")
 	@validator (ComparableValidator.class)
-	public static Object with_min_of(final IScope scope, final IContainer c, final IExpression filter) {
-		return stream(scope, c).minBy(with(scope, filter)).orElse(null);
+	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return stream(scope, c).minBy(with(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -2365,7 +2382,7 @@ public class Containers {
 	 */
 	@operator (
 			value = { "accumulate" },
-			content_type = ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE,
+			content_type = ITypeProvider.THIRD_CONTENT_TYPE_OR_TYPE,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2387,12 +2404,13 @@ public class Containers {
 							equals = "[2,4,8]") },
 			see = { "collect" })
 	@test ("[1,2,4] accumulate ([2,4]) = [2,4,2,4,2,4]")
-	public static IList accumulate(final IScope scope, final IContainer c, final IExpression filter) {
+	public static IList accumulate(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
 		// WARNING TODO The resulting type is not computed
 		final IType type = filter.getGamlType();
 		IType resultingContentsType = type;
 		if (resultingContentsType.isContainer()) { resultingContentsType = resultingContentsType.getContentType(); }
-		return (IList) stream(scope, c).flatCollection(with(scope, filter).andThen(toLists))
+		return (IList) stream(scope, c).flatCollection(with(scope, eachName, filter).andThen(toLists))
 				.toCollection(listOf(resultingContentsType));
 
 	}
@@ -2410,7 +2428,49 @@ public class Containers {
 	 */
 	@operator (
 			value = { "collect" },
-			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "When applied to a matrix, collect returns a matrix of the same size, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
+	@test ("matrix([1,2,4],[1,3,4]) collect (x: x *2) = matrix([2,4,8],[2,6,8])")
+	public static IMatrix collect(final IScope scope, final String eachName, final IMatrix c,
+			final IExpression filter) {
+		int cols = c.getCols(scope);
+		int rows = c.getRows(scope);
+		int type = filter.getGamlType().id();
+		IMatrix result = switch (type) {
+			case IType.FLOAT -> new GamaFloatMatrix(cols, rows);
+			case IType.INT -> new GamaIntMatrix(cols, rows);
+			default -> new GamaObjectMatrix(cols, rows, filter.getGamlType());
+		};
+
+		for (int x = 0; x < cols; x++) {
+			for (int y = 0; y < rows; y++) {
+				scope.setEach(eachName, c.get(scope, x, y));
+				result.set(scope, x, y, filter.value(scope));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Collect.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param eachName
+	 *            the each name
+	 * @param c
+	 *            the c
+	 * @param filter
+	 *            the filter
+	 * @return the i list
+	 */
+	@operator (
+			value = { "collect" },
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
@@ -2435,8 +2495,11 @@ public class Containers {
 			see = { "accumulate" })
 	@test ("[1,2,4] collect (each *2) = [2,4,8]")
 	@test ("[1,2,4] collect ([2,4]) = [[2,4],[2,4],[2,4]]")
-	public static IList collect(final IScope scope, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).map(with(scope, filter)).toCollection(listOf(filter.getGamlType()));
+	@test ("[1,2,3] collect (i: i+1) = [2,3,4]")
+	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j))) = [[2,3,4],[3,4,5]]")
+	public static IList collect(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return (IList) stream(scope, c).map(with(scope, eachName, filter)).toCollection(listOf(filter.getGamlType()));
 	}
 
 	/**
@@ -2511,8 +2574,9 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] count (each > 4)",
 							equals = "1") },
 			see = { "group_by" })
-	public static Integer count(final IScope scope, final IContainer original, final IExpression filter) {
-		return (int) notNull(scope, original).stream(scope).filter(by(scope, filter)).count();
+	public static Integer count(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) {
+		return (int) notNull(scope, original).stream(scope).filter(by(scope, eachName, filter)).count();
 	}
 
 	/**
@@ -2543,8 +2607,9 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] one_matches (each > 4)",
 							equals = "true") },
 			see = { "none_matches", "all_match", "count" })
-	public static Boolean one_matches(final IScope scope, final IContainer original, final IExpression filter) {
-		return notNull(scope, original).stream(scope).anyMatch(by(scope, filter));
+	public static Boolean one_matches(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) {
+		return notNull(scope, original).stream(scope).anyMatch(by(scope, eachName, filter));
 	}
 
 	/**
@@ -2576,8 +2641,9 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] none_matches (each > 4)",
 							equals = "false") },
 			see = { "one_matches", "all_match", "count" })
-	public static Boolean none_matches(final IScope scope, final IContainer original, final IExpression filter) {
-		return notNull(scope, original).stream(scope).noneMatch(by(scope, filter));
+	public static Boolean none_matches(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) {
+		return notNull(scope, original).stream(scope).noneMatch(by(scope, eachName, filter));
 	}
 
 	/**
@@ -2609,8 +2675,9 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] all_match (each > 4)",
 							equals = "false") },
 			see = { "none_matches", "one_matches", "count" })
-	public static Boolean all_match(final IScope scope, final IContainer original, final IExpression filter) {
-		return notNull(scope, original).stream(scope).allMatch(by(scope, filter));
+	public static Boolean all_match(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) {
+		return notNull(scope, original).stream(scope).allMatch(by(scope, eachName, filter));
 	}
 
 	/**
@@ -2627,8 +2694,8 @@ public class Containers {
 	@operator (
 			value = { "index_by" },
 			iterator = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-			index_type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
 	@doc (
@@ -2639,11 +2706,12 @@ public class Containers {
 					value = "[1,2,3,4,5,6,7,8] index_by (each - 1)",
 					equals = "[0::1, 1::2, 2::3, 3::4, 4::5, 5::6, 6::7, 7::8]") },
 			see = {})
-	public static IMap index_by(final IScope scope, final IContainer original, final IExpression keyProvider) {
+	public static IMap index_by(final IScope scope, final String eachName, final IContainer original,
+			final IExpression keyProvider) {
 
 		final StreamEx s = original.stream(scope);
 		final IType contentsType = original.getGamlType().getContentType();
-		return (IMap) s.collect(Collectors.toMap(with(scope, keyProvider), a -> a, (a, b) -> a,
+		return (IMap) s.collect(Collectors.toMap(with(scope, eachName, keyProvider), a -> a, (a, b) -> a,
 				asMapOf(keyProvider.getGamlType(), contentsType)));
 	}
 
@@ -2661,8 +2729,8 @@ public class Containers {
 	@operator (
 			value = { "as_map" },
 			iterator = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 3,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 3,
 			expected_content_type = IType.PAIR,
 			category = IOperatorCategory.MAP,
 			concept = { IConcept.CONTAINER, IConcept.MAP })
@@ -2679,13 +2747,14 @@ public class Containers {
 							returnType = "map<int,int>",
 							equals = "[2::4, 4::8, 6::12] ") },
 			see = {})
-	public static IMap as_map(final IScope scope, final IContainer original, final IExpression filter) {
+	public static IMap as_map(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) {
 		if (!(filter instanceof BinaryOperator pair) || !"::".equals(pair.getName()))
 			throw GamaRuntimeException.error("'as_map' expects a pair as second argument", scope);
 		final IExpression key = pair.arg(0);
 		final IExpression value = pair.arg(1);
-		return (IMap) stream(scope, original).collect(Collectors.toMap(with(scope, key), with(scope, value),
-				(a, b) -> a, asMapOf(key.getGamlType(), value.getGamlType())));
+		return (IMap) stream(scope, original).collect(Collectors.toMap(with(scope, eachName, key),
+				with(scope, eachName, value), (a, b) -> a, asMapOf(key.getGamlType(), value.getGamlType())));
 	}
 
 	/**
@@ -2701,7 +2770,6 @@ public class Containers {
 	 */
 	@operator (
 			value = { "create_map" },
-			iterator = true,
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = IOperatorCategory.MAP,

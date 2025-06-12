@@ -158,7 +158,7 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 
 					return BinaryOperator.create(this, context, exprs);
 				default:
-					return NAryOperator.create(this, exprs);
+					return NAryOperator.create(this, context, exprs);
 			}
 		} catch (final GamaRuntimeException e) {
 			// this can happen when optimizing the code

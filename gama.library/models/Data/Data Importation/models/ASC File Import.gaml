@@ -9,10 +9,16 @@ model ascimport
 
 global {
 	//definiton of the file to import
-	file grid_data <- file('../includes/hab10.asc') ;
+	grid_file grid_data <- file('../includes/hab10.asc') ;
 	
 	//computation of the environment size from the geotiff file
 	geometry shape <- envelope(grid_data);	
+	
+	
+	init {
+		write actual_type_of(grid_data);
+		write actual_type_of(grid_data.contents);
+	}
 }
 
 
