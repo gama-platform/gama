@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * MeshLayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,6 +20,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.matrix.IField;
+import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaFieldType;
 import gama.gaml.types.Types;
@@ -109,7 +110,10 @@ public class MeshLayerData extends LayerData {
 		grayscale = create(IKeyword.GRAYSCALE, Types.BOOL, false);
 		wireframe = create(IKeyword.WIREFRAME, Types.BOOL, false);
 		text = create(IKeyword.TEXT, Types.BOOL, false);
-		color = create(IKeyword.COLOR, Types.NO_TYPE, null);
+		color = create(IKeyword.COLOR, (scope, exp) -> {
+			final Object result = exp.value(scope);
+			return result instanceof IMatrix mat ? mat.listValue(scope, Types.NO_TYPE, false) : result;
+		}, Types.NO_TYPE, null);
 		scale = create(IKeyword.SCALE, Types.FLOAT, null);
 		noData = create("no_data", Types.FLOAT, IField.NO_NO_DATA);
 		above = create("above", Types.FLOAT, ABOVE);

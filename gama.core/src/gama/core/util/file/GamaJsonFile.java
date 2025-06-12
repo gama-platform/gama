@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaJsonFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaJsonFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,9 +33,7 @@ import gama.core.util.file.json.Json;
 import gama.core.util.file.json.ParseException;
 import gama.core.util.file.json.WriterConfig;
 import gama.gaml.statements.Facets;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaJsonFile.
@@ -97,9 +94,6 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 	public Envelope3D computeEnvelope(final IScope scope) {
 		return null;
 	}
-
-	@Override
-	public IContainerType getGamlType() { return Types.MAP.of(Types.STRING, Types.NO_TYPE); }
 
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

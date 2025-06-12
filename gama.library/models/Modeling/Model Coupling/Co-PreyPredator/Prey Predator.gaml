@@ -141,7 +141,7 @@ species predator parent: generic_species
 	aspect default
 	{
 		draw circle(perceipt_radius) color: # pink wireframe: true;
-		draw shape color: color rotate: 90 + my heading;
+		draw shape color: color rotate: 90 + heading;
 	}
 
 }

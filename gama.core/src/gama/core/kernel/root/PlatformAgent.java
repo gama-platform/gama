@@ -551,4 +551,9 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 		}
 	}
 
+	@Override
+	public IType<?> computeRuntimeType(final IScope scope) {
+		return super.computeRuntimeType(scope);
+	}
+
 }
