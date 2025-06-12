@@ -10,6 +10,7 @@ on:
         default: 2025.03.0
       IS_STABLE_RELEASE:
         required: true
+        default: false
         type: string
     secrets:
       BOT_TOKEN:
@@ -116,7 +117,7 @@ jobs:
               issue_number: ${{ steps.get-pr.outputs.number }},
               owner: "microsoft",
               repo: "winget-pkgs",
-              body: 'Poke :point_right: @${{ github.triggering_actor }} @WoodenMaiden @lesquoyb'
+              body: 'Poke :point_right: @${{ github.triggering_actor }} @lesquoyb @RoiArthurB'
             })
 
             core.summary.
