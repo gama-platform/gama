@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.outputs.layers.IEventLayerListener;
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 
@@ -45,7 +46,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		MouseTrackListener, MouseWheelListener, KeyListener, DragDetectListener, FocusListener, IDisposable {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The delegate. */
@@ -173,18 +174,18 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 			case SWT.CTRL:
 				delegate.specialKeyPressed(IEventLayerListener.KEY_CTRL);
 		}
-		// if (GamaKeyBindings.ctrl(e)) {
-		// keyListener.accept((char) e.keyCode);
-		// } else {
-		// delegate.keyPressed((char) e.keyCode);
-		// }
+		if (PlatformHelper.isMac()) if (GamaKeyBindings.ctrl(e)) {
+			keyListener.accept((char) e.keyCode);
+		} else {
+			delegate.keyPressed((char) e.keyCode);
+		}
 	}
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
 		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
 		lastEvent = e;
-		DEBUG.OUT("Key released " + e);
+		DEBUG.OUT("Key released by the SWT listener" + e);
 		switch (e.keyCode) {
 			case SWT.ARROW_DOWN:
 				delegate.specialKeyReleased(IEventLayerListener.ARROW_DOWN);

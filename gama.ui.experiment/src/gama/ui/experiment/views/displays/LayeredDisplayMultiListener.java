@@ -113,7 +113,7 @@ public class LayeredDisplayMultiListener {
 	 *            the command
 	 */
 	public void keyReleased(final char e) {
-		DEBUG.OUT("Key released: " + e);
+		DEBUG.OUT("Key released in LayeredDisplayMultiListener: " + e);
 		pressedCharacters.remove(e);
 	}
 
