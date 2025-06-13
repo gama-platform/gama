@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.outputs.layers.IEventLayerListener;
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 
@@ -174,7 +175,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				delegate.specialKeyPressed(IEventLayerListener.KEY_CTRL);
 		}
 		if (GamaKeyBindings.ctrl(e)) {
-			keyListener.accept((char) e.keyCode);
+			if (PlatformHelper.isMac()) { keyListener.accept((char) e.keyCode); }
 		} else {
 			delegate.keyPressed((char) e.keyCode);
 		}
@@ -351,7 +352,9 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				if (e.getWhen() == previous) { return; }
 				previous = e.getWhen();
 				DEBUG.LOG("Key received by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
-				if (!e.isActionKey()) {
+				if (e.isControlDown()) {
+					keyListener.accept(e.getKeyChar());
+				} else if (!e.isActionKey()) {
 					delegate.keyPressed(e.getKeyChar());
 				} else if (e.getModifiersEx() == 0) {
 					delegate.specialKeyPressed(switch (e.getKeyCode()) {
