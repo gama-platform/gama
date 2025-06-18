@@ -201,7 +201,7 @@ public class DefaultServerCommands {
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(GamaServerError, e, map, false);
+				return new CommandResponse(MessageType.RuntimeError, e, map, false);
 			}
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);

@@ -25,6 +25,7 @@ import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
+import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.IList;
 import gama.core.util.IMap;
@@ -255,7 +256,8 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		try {
 			_job.doStep();
 		} catch (RuntimeException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			serverConfiguration.socket().send(Json.getNew().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
 		}finally {
 			previouslock.release();
 		}

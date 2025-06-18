@@ -121,13 +121,16 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 16 oct. 2023
 	 */
 	private void configureErrorStream() {
+		// error handling should not rely on this as we don't know when the error starts and ends, 
+		// making it hard to handle on the client side. This is a last resort option
 		PrintStream errorStream = new PrintStream(System.err) {
-
+			
+			//This is actually probably never called, because printErrorStack uses print(String)
 			@Override
 			public void println(final String x) {
 				super.println(x);
 				broadcast(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, x)).toString());
-			}
+			}			
 		};
 		System.setErr(errorStream);
 	}
