@@ -336,7 +336,7 @@ public class DefaultServerCommands {
 		}
 		if (res == null || res.length() == 0 || res.startsWith("> Error: "))
 			return new CommandResponse(UnableToExecuteRequest, res, map, false);
-		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, true);
 	}
 
 	/**
