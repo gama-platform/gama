@@ -360,6 +360,9 @@ public class DefaultServerCommands {
 		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
+		if (entered.isBlank()) {
+			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
+		}
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
 		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
