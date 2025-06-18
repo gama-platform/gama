@@ -262,8 +262,8 @@ public abstract class AbstractAgent implements IAgent {
 
 	/**
 	 * This method contains everything to do *during* during the step of an agent. The basis consists in asking the
-	 * architecture to execute on this and, if successfull, to step its sub-populations (if any). Only called if the
-	 * preStep() method has been sucessfull
+	 * architecture to execute on this and, if successful, to step its sub-populations (if any). Only called if the
+	 * preStep() method has been successful
 	 *
 	 * @param scope
 	 *            the scope in which the agent is asked to do the step
