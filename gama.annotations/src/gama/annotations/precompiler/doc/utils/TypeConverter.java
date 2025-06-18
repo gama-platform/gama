@@ -136,7 +136,7 @@ public class TypeConverter {
 		hm.put("?", "unknown");
 		hm.put("gama.core.util.tree.GamaNode", "unknown");
 		hm.put("? extends java.lang.Comparable", "unknown");
-		hm.put("gama.gaml.types.IType", "any GAML type");
+		hm.put("gama.gaml.types.IType", "gaml_type");
 		hm.put("gama.gaml.expressions.IExpression", "any expression");
 
 		hm.put("gama.core.metamodel.agent.IAgent", "agent");
