@@ -31,7 +31,14 @@ public interface IGamlTextValidator {
 	 * @date 11 janv. 2024
 	 */
 	default void validateExpression(final String expr, final List<GamlCompilationError> errors, boolean syntaxOnly) {
-		validateStatements("unknow result <- " + expr + ";}", errors, syntaxOnly);
+		String fixed_exp = expr;
+		if (! expr.endsWith("}") && !expr.endsWith(";")) {
+			fixed_exp += ";";
+		}
+		if (!expr.contains("<-")) {
+			fixed_exp = "unknow result <- " + fixed_exp;
+		}
+		validateStatements(fixed_exp, errors, syntaxOnly);
 	}
 
 	/**
