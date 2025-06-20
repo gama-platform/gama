@@ -193,6 +193,7 @@ public class JsonParser {
 			case '7':
 			case '8':
 			case '9':
+			case 'I':
 				readNumber();
 				break;
 			default:
@@ -459,12 +460,18 @@ public class JsonParser {
 		handler.startNumber();
 		startCapture();
 		readChar('-');
-		int firstDigit = current;
-		if (!readDigit()) throw expected("digit");
-		if (firstDigit != '0') { while (readDigit()) {} }
-		boolean isFloat = readFraction();
-		readExponent();
-		handler.endNumber(endCapture(), isFloat);
+		int firstChar = current;
+		boolean isFloat = false;
+		if (firstChar == 'I') {
+			readInfinity();
+		}
+		else {
+			if (!readDigit()) throw expected("digit");
+			if (firstChar != '0') { while (readDigit()) {} }
+			isFloat = readFraction();
+			readExponent();
+		}
+		handler.endNumber(endCapture(), isFloat);			
 	}
 
 	/**
@@ -529,6 +536,15 @@ public class JsonParser {
 	private boolean readDigit() throws IOException {
 		if (!isDigit()) return false;
 		read();
+		return true;
+	}
+
+	private boolean readInfinity() throws IOException {
+		char[] infinity = new char[]{'I','n','f','i','n','i','t','y'};
+		for (char c : infinity) {
+			if (current != c) return false;
+			read();
+		}
 		return true;
 	}
 

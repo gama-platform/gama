@@ -63,6 +63,9 @@ class JsonFloat extends JsonValue {
 	 * @date 4 nov. 2023
 	 */
 	public static String formatOrdinate(double x, final int numberOfDigits) {
+		if (Double.isInfinite(x)) {
+			return (x > 0 ? "" : "-") + "Infinity";
+		}
 		double scale = Math.pow(10, numberOfDigits);
 		if (Math.abs(x) >= Math.pow(10, -3) && x < Math.pow(10, 7)) { x = Math.floor(x * scale + 0.5) / scale; }
 		return Double.toString(x);
@@ -151,6 +154,9 @@ class JsonFloat extends JsonValue {
 	 */
 	@Override
 	public double asDouble() {
+		if(string != null && string.contains("Infinity")) {
+			return string.startsWith("-") ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		}
 		return Cast.asFloat(null, string);
 	}
 
