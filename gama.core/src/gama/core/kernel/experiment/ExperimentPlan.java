@@ -728,7 +728,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		// We add the agent as soon as possible so as to make it possible to
 		// evaluate variables in the opening of the
 		// experiment
-		// Make sure that the attributes in experiment are inited (see #3842)
+		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
 		prepareGui();
@@ -741,7 +741,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 			myScope.getGui().getStatus().informStatus(" Batch ready. Click run to begin.",
 					IStatusMessage.SIMULATION_ICON);
 			GAMA.updateExperimentState(this);
-
 		}
 
 	}
@@ -791,6 +790,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 			reloading = true;
 			agent.dispose();
+			agent = null;
 		} finally {
 			reloading = false;
 		}
