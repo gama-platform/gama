@@ -1152,7 +1152,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	}
 
 	/**
-	 * Sets the parameter values.
+	 * Sets the parameter values. If other parameters outside of that list exist, they won't be reinitialized.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param p
@@ -1162,6 +1162,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	@Override
 	public void setParameterValues(final IList p) {
 		if (p != null) {
+			var scope = getExperimentScope();
 			for (var param : p.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") IMap<String, Object> m = (IMap<String, Object>) param;
 				String type = m.get("type") != null ? m.get("type").toString() : "";
@@ -1171,15 +1172,15 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 				final IParameter.Batch b = getParameterByTitle(m.get("name").toString());
 				if (b != null) {
-					setParameterValueByTitle(getExperimentScope(), m.get("name").toString(), v);
+					setParameterValueByTitle(scope, m.get("name").toString(), v);
 				} else if (getParameter(m.get("name").toString()) != null) {
-					setParameterValue(getExperimentScope(), m.get("name").toString(), v);
+					setParameterValue(scope, m.get("name").toString(), v);
 				}
-
 			}
 		}
 	}
-
+	
+	
 	@Override
 	public void refreshAllParameters() {
 		GAMA.getGui().updateParameters(true);

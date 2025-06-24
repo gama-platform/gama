@@ -46,7 +46,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	final String stopCondition;
 
 	/** The execution thread. */
-	public MyRunnable executionThread;
+	public ExecutionRunnable executionThread;
 
 	/** The job. */
 	private final GamaServerExperimentJob _job;
@@ -54,7 +54,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	/**
 	 * The Class OwnRunnable.
 	 */
-	public class MyRunnable implements Runnable {
+	public class ExecutionRunnable implements Runnable {
 
 		/** The sim. */
 		final GamaServerExperimentJob mexp;
@@ -65,7 +65,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		 * @param s
 		 *            the s
 		 */
-		MyRunnable(final GamaServerExperimentJob s) {
+		ExecutionRunnable(final GamaServerExperimentJob s) {
 			mexp = s;
 		}
 
@@ -114,7 +114,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		serverConfiguration = new GamaServerExperimentConfiguration(sock, "Unknown", console, status, dialog, runtime);
 		this.parameters = parameters;
 		this.stopCondition = stopCondition;
-		executionThread = new MyRunnable(j);
+		executionThread = new ExecutionRunnable(j);
 
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		lock.acquire();
@@ -133,7 +133,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			case _OPEN:
 				try {
 					_job.loadAndBuildWithJson(parameters, stopCondition);
-				} catch (IOException | GamaCompilationFailedException e) {
+				} catch (Exception e) {
 					DEBUG.OUT(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 					return false;
