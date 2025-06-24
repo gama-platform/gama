@@ -610,7 +610,11 @@ public class GamaPreferences {
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
-
+		
+		public static final Pref<Boolean> CORE_SERVER_NO_DELAY =
+				create("pref_server_no_delay", "Sets the TCP_NODELAY option to true for gama server", false, IType.BOOL, true)
+				.in(Network.NAME, Network.SERVER);
+		
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)

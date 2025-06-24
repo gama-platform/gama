@@ -875,7 +875,8 @@ public class GAMA {
 	private static void createGuiServer() {
 		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
 		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
-		setServer(GamaGuiWebSocketServer.startForGUI(port, ping));
+		final boolean noDelay = GamaPreferences.Runtime.CORE_SERVER_NO_DELAY.getValue();
+		setServer(GamaGuiWebSocketServer.startForGUI(port, ping, noDelay));
 	}
 
 	/**

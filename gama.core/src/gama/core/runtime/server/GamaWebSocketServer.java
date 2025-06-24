@@ -83,10 +83,11 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 *            the interval
 	 * @date 16 oct. 2023
 	 */
-	protected GamaWebSocketServer(final int port, final int interval) {
+	protected GamaWebSocketServer(final int port, final int interval, final boolean noDelay) {
 		super(new InetSocketAddress(port));
 		// Should solve the problem with the address being still used after relaunching
 		this.setReuseAddr(true);
+		this.setTcpNoDelay(noDelay);
 		canPing = interval >= 0;
 		pingInterval = interval;
 		configureErrorStream();

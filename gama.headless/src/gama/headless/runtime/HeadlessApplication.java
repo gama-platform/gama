@@ -130,6 +130,9 @@ public class HeadlessApplication implements IApplication {
 	final public static String PING_INTERVAL = "-ping_interval";
 
 	/** The Constant SOCKET_PARAMETER. */
+	final public static String NO_DELAY_PARAMETER = "-no-delay";
+
+	/** The Constant SOCKET_PARAMETER. */
 	final public static String SOCKET_PARAMETER = "-socket";
 
 	/** The Constant SECURE_SSL_SOCKET_PARAMETER. */
@@ -403,6 +406,7 @@ public class HeadlessApplication implements IApplication {
 		DEBUG.OFF();
 
 		// Debug runner
+		boolean noDelay = args.contains(NO_DELAY_PARAMETER);
 		if (args.contains(VALIDATE_LIBRARY_PARAMETER)) return ModelLibraryValidator.getInstance().start();
 		if (args.contains(TEST_LIBRARY_PARAMETER)) return ModelLibraryTester.getInstance().start();
 		if (args.contains(RUN_LIBRARY_PARAMETER)) return ModelLibraryRunner.getInstance().start();
@@ -415,12 +419,12 @@ public class HeadlessApplication implements IApplication {
 		} else if (args.contains(BUILD_XML_PARAMETER)) {
 			buildXML(args);
 		} else if (args.contains(SOCKET_PARAMETER)) {
-			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping);
+			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping, noDelay);
 		} else if (args.contains(SSOCKET_PARAMETER)) {
 			final String jks = args.contains(SSOCKET_PARAMETER_JKSPATH) ? after(args, SSOCKET_PARAMETER_JKSPATH) : "";
 			final String spwd = args.contains(SSOCKET_PARAMETER_SPWD) ? after(args, SSOCKET_PARAMETER_SPWD) : "";
 			final String kpwd = args.contains(SSOCKET_PARAMETER_KPWD) ? after(args, SSOCKET_PARAMETER_KPWD) : "";
-			GAMA.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping));
+			GAMA.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping, noDelay));
 		} else {
 			runSimulation(args);
 		}
