@@ -9,9 +9,8 @@ on:
   workflow_dispatch: # For manual trigger
 
 jobs:
-
   compiling-gama-base:
-    if: '! github.event.pull_request.draft'
+    if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
     name: Compiling GAMA from base branch
     uses: ./.github/workflows/travis-build.yaml
     with:
@@ -22,7 +21,7 @@ jobs:
       CHECKOUT_BRANCH: "2024-06"
 
   compiling-gama-pr:
-    if: '! github.event.pull_request.draft'
+    if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
     name: Compiling GAMA from PR branch
     uses: ./.github/workflows/travis-build.yaml
     with:
@@ -36,14 +35,14 @@ jobs:
     needs: compiling-gama-pr
     uses: ./.github/workflows/travis-build-test.yaml
 
-  spotbugs-result: 
+  spotbugs-result:
     name: Display Spotbugs results
     runs-on: ubuntu-latest
     needs: [compiling-gama-base, compiling-gama-pr]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Spotbugs result from base branch 
+      - name: Get Spotbugs result from base branch
         uses: actions/download-artifact@v4
         with:
           name: result-spotbugs-base
