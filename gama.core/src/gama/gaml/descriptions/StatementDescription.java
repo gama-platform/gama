@@ -14,7 +14,6 @@ import static gama.gaml.interfaces.IGamlIssue.GENERAL;
 import static gama.gaml.interfaces.IGamlIssue.MISSING_NAME;
 import static gama.gaml.interfaces.IGamlIssue.SHOULD_CAST;
 import static gama.gaml.interfaces.IGamlIssue.UNKNOWN_ARGUMENT;
-import static gama.gaml.statements.DoStatement.DO_FACETS;
 import static gama.gaml.types.Types.NO_TYPE;
 import static java.util.Collections.EMPTY_LIST;
 
@@ -69,10 +68,7 @@ public class StatementDescription extends SymbolDescription {
 	public StatementDescription(final String keyword, final IDescription superDesc, final boolean hasArgs,
 			final EObject source, final Facets facets, final Arguments alreadyComputedArgs) {
 		super(keyword, superDesc, source, /* children, */ facets);
-		boolean isInvoke = INVOKE.equals(keyword);
-		setIf(Flag.IsInvocation, DO.equals(keyword) || isInvoke);
 		setIf(Flag.IsCreate, CREATE.equals(keyword) || RESTORE.equals(keyword));
-		setIf(Flag.IsSuperInvocation, isInvoke);
 		passedArgs = alreadyComputedArgs != null ? alreadyComputedArgs : hasArgs ? createArgs() : null;
 	}
 
@@ -93,45 +89,15 @@ public class StatementDescription extends SymbolDescription {
 	 *
 	 * @return the arguments
 	 */
-	private Arguments createArgs() {
-		if (!hasFacets()) return null;
+	protected Arguments createArgs() {
 		if (hasFacet(WITH)) {
 			try {
-				return GAML.getExpressionFactory().createArgumentMap(getAction(), getFacet(WITH), this);
+				return GAML.getExpressionFactory().createArgumentMap(null, getFacet(WITH), this);
 			} finally {
 				removeFacets(WITH);
 			}
 		}
-		if (!isInvocation() || !hasFacetsNotIn(DO_FACETS)) return null;
-		final Arguments args = new Arguments();
-		visitFacets((facet, b) -> {
-			if (!DO_FACETS.contains(facet)) { args.put(facet, b); }
-			return true;
-		});
-		return args;
-
-	}
-
-	/**
-	 * Checks if is super invocation.
-	 *
-	 * @return true, if is super invocation
-	 */
-	public boolean isSuperInvocation() { return isSet(Flag.IsSuperInvocation); }
-
-	/**
-	 * Gets the action.
-	 *
-	 * @return the action
-	 */
-	private ActionDescription getAction() {
-		final String actionName = getLitteral(ACTION);
-		if (actionName == null) return null;
-		final TypeDescription declPlace =
-				(TypeDescription) getDescriptionDeclaringAction(actionName, isSuperInvocation());
-		ActionDescription executer = null;
-		if (declPlace != null) { executer = declPlace.getAction(actionName); }
-		return executer;
+		return null;
 	}
 
 	@Override
@@ -156,19 +122,6 @@ public class StatementDescription extends SymbolDescription {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Verify args.
-	 *
-	 * @param args
-	 *            the args
-	 * @return true, if successful
-	 */
-	public boolean verifyArgs(final Arguments args) {
-		final ActionDescription executer = getAction();
-		if (executer == null) return false;
-		return executer.verifyArgs(this, args);
 	}
 
 	/**
@@ -246,7 +199,7 @@ public class StatementDescription extends SymbolDescription {
 	 *
 	 * @return the arguments
 	 */
-	private Arguments validatePassedArgs() {
+	protected Arguments validatePassedArgs() {
 		final IDescription superDesc = getEnclosingDescription();
 		if (passedArgs != null) {
 			passedArgs.forEachFacet((nm, exp) -> {
@@ -254,9 +207,7 @@ public class StatementDescription extends SymbolDescription {
 				return true;
 			});
 		}
-		if (isInvocation()) {
-			verifyArgs(passedArgs);
-		} else if (isCreate()) { verifyInits(passedArgs); }
+		if (isCreate()) { verifyInits(passedArgs); }
 		return passedArgs;
 	}
 
@@ -310,7 +261,7 @@ public class StatementDescription extends SymbolDescription {
 	@Override
 	protected IExpression createVarWithTypes(final String tag) {
 		compileTypeProviderFacets();
-		IType t = super.getGamlType();
+		IType t = getGamlType();
 		final String kw = getKeyword();
 		IType ct = t.getContentType();
 		if (isCreate() || CAPTURE.equals(kw) || RELEASE.equals(kw)) {
@@ -377,7 +328,7 @@ public class StatementDescription extends SymbolDescription {
 			error("Impossible to return " + varName, GENERAL);
 			return null;
 		}
-		return (IVarExpression) sc.addTemp(this, varName, type);
+		return (IVarExpression) sc.addTemp(this, facetName, varName, type);
 	}
 
 	@Override

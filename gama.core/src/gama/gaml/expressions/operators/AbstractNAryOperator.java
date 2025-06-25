@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractNAryOperator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import static gama.annotations.precompiler.ITypeProvider.INDEXED_TYPES;
 import static gama.annotations.precompiler.ITypeProvider.KEY_TYPE_AT_INDEX;
 import static gama.annotations.precompiler.ITypeProvider.SECOND_CONTENT_TYPE_OR_TYPE;
 import static gama.annotations.precompiler.ITypeProvider.SECOND_DENOTED_TYPE;
+import static gama.annotations.precompiler.ITypeProvider.THIRD_CONTENT_TYPE_OR_TYPE;
 import static gama.annotations.precompiler.ITypeProvider.TYPE_AT_INDEX;
 import static gama.annotations.precompiler.ITypeProvider.WRAPPED;
 
@@ -135,13 +136,16 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 					result = GamaType.findCommonType(exprs, kind);
 					break;
 				case FIRST_CONTENT_TYPE_OR_TYPE:
-					result = processFirstContentTypeOrType();
+					result = processContentTypeOrType(0);
 					break;
 				case SECOND_DENOTED_TYPE:
 					result = exprs[1].getDenotedType();
 					break;
 				case SECOND_CONTENT_TYPE_OR_TYPE:
-					result = processSecondContentTypeOrType();
+					result = processContentTypeOrType(1);
+					break;
+				case THIRD_CONTENT_TYPE_OR_TYPE:
+					result = processContentTypeOrType(2);
 					break;
 				default:
 					if (typeProvider < INDEXED_TYPES) { result = processIndexedTypeProvider(result, typeProvider); }
@@ -212,33 +216,9 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	 *
 	 * @return the i type
 	 */
-	private IType processSecondContentTypeOrType() {
-		IType result;
-		final IType rightType = exprs[1].getGamlType();
-		final IType t3 = rightType.getContentType();
-		if (t3 == Types.NO_TYPE) {
-			result = rightType;
-		} else {
-			result = t3;
-		}
-		return result;
-	}
-
-	/**
-	 * Process first content type or type.
-	 *
-	 * @return the i type
-	 */
-	private IType processFirstContentTypeOrType() {
-		IType result;
-		final IType leftType = exprs[0].getGamlType();
-		final IType t2 = leftType.getContentType();
-		if (t2 == Types.NO_TYPE) {
-			result = leftType;
-		} else {
-			result = t2;
-		}
-		return result;
+	private IType processContentTypeOrType(final int index) {
+		final IType rightType = exprs[index].getGamlType();
+		return rightType.isContainer() ? rightType.getContentType() : rightType;
 	}
 
 	/**

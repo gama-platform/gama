@@ -113,7 +113,7 @@ experiment Displays type: gui
 	output synchronized:true
 	{    
 		layout horizontal([0::5000,1::5000]) tabs:true editors: false;
-		display View_change_color
+		display View_change_color type: 2d
 		{
 			species cell;
 			species dummy transparency:0.9 aspect: aspect4ViewChangeColor;

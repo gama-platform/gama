@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Stats.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -690,10 +690,11 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CLUSTERING })
 	@doc (
-			value = "returns the list of clusters (list of instance indices) computed with the dbscan"
-					+ " (density-based spatial clustering of applications with noise) algorithm from the "
-					+ "first operand data according to the maximum radius of the neighborhood to be considered (eps) "
-					+ "and the minimum number of points needed for a cluster (minPts). Usage: dbscan(data,eps,minPoints)",
+			value = """
+					returns the list of clusters (list of instance indices) computed with the dbscan\
+					 (density-based spatial clustering of applications with noise) algorithm from the \
+					first operand data according to the maximum radius of the neighborhood to be considered (eps) \
+					and the minimum number of points needed for a cluster (minPts). Usage: dbscan(data,eps,minPoints)""",
 			special_cases = "if the lengths of two vectors in the right-hand aren't equal, returns 0",
 			examples = { @example (
 					value = "dbscan ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],10,2)",
@@ -899,7 +900,7 @@ public class Stats {
 			value = { "frequency_of" },
 			can_be_const = true,
 			iterator = true,
-			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 3,
 			content_type = IType.INT,
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
@@ -911,12 +912,12 @@ public class Stats {
 					value = "[1, 2, 3, 3, 4, 4, 5, 3, 3, 4] frequency_of each",
 					equals = "map([1::1,2::1,3::4,4::3,5::1])") })
 
-	public static IMap opFrequencyOf(final IScope scope, final IContainer original, final IExpression filter)
-			throws GamaRuntimeException {
+	public static IMap opFrequencyOf(final IScope scope, final String eachName, final IContainer original,
+			final IExpression filter) throws GamaRuntimeException {
 		if (original == null) return GamaMapFactory.create(Types.NO_TYPE, Types.INT);
 		final IMap<Object, Integer> result = GamaMapFactory.create(original.getGamlType().getContentType(), Types.INT);
 		for (final Object each : original.iterable(scope)) {
-			scope.setEach(each);
+			scope.setEach(eachName, each);
 			final Object key = filter.value(scope);
 			if (!result.containsKey(key)) {
 				result.put(key, 1);
@@ -1371,9 +1372,10 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CLUSTERING })
 	@doc (
-			value = "returns the list of clusters (list of instance indices) computed with the kmeans++ "
-					+ "algorithm from the first operand data according to the number of clusters to split"
-					+ " the data into (k). Usage: kmeans(data,k)",
+			value = """
+					returns the list of clusters (list of instance indices) computed with the kmeans++ \
+					algorithm from the first operand data according to the number of clusters to split\
+					 the data into (k). Usage: kmeans(data,k)""",
 			// special_cases = "if the lengths of two vectors in the right-hand aren't equal, returns 0",
 			usages = { @usage (
 					value = "The maximum number of (third operand) can be omitted.",
@@ -1407,10 +1409,11 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CLUSTERING })
 	@doc (
-			value = "returns the list of clusters (list of instance indices) computed with the kmeans++ "
-					+ "algorithm from the first operand data according to the number of clusters to split"
-					+ " the data into (k) and the maximum number of iterations to run the algorithm."
-					+ "(If negative, no maximum will be used) (maxIt). Usage: kmeans(data,k,maxit)",
+			value = """
+					returns the list of clusters (list of instance indices) computed with the kmeans++ \
+					algorithm from the first operand data according to the number of clusters to split\
+					 the data into (k) and the maximum number of iterations to run the algorithm.\
+					(If negative, no maximum will be used) (maxIt). Usage: kmeans(data,k,maxit)""",
 			// special_cases = "if the lengths of two vectors in the right-hand aren't equal, returns 0",
 			masterDoc = true,
 			examples = { @example (
@@ -1589,10 +1592,11 @@ public class Stats {
 									value = "max ([100, 23.2, 34.5])",
 									equals = "100.0") }),
 					@usage (
-							value = "if it is a list of points: max returns the maximum of all points as a point "
-									+ "(i.e. the point with the greatest coordinate on the x-axis, in case of equality "
-									+ "the point with the greatest coordinate on the y-axis is chosen. "
-									+ "If all the points are equal, the first one is returned. )",
+							value = """
+									if it is a list of points: max returns the maximum of all points as a point \
+									(i.e. the point with the greatest coordinate on the x-axis, in case of equality \
+									the point with the greatest coordinate on the y-axis is chosen. \
+									If all the points are equal, the first one is returned. )""",
 							examples = { @example (
 									value = "max([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}])",
 									equals = "{9.0,1.0}") }),
@@ -1751,10 +1755,11 @@ public class Stats {
 							value = "min ([100, 23.2, 34.5])",
 							equals = "23.2") }),
 					@usage (
-							value = "if it is a list of points: min returns the minimum of all points as a point "
-									+ "(i.e. the point with the smallest coordinate on the x-axis, in case of "
-									+ "equality the point with the smallest coordinate on the y-axis is chosen."
-									+ " If all the points are equal, the first one is returned. )"),
+							value = """
+									if it is a list of points: min returns the minimum of all points as a point \
+									(i.e. the point with the smallest coordinate on the x-axis, in case of \
+									equality the point with the smallest coordinate on the y-axis is chosen.\
+									 If all the points are equal, the first one is returned. )"""),
 					@usage (
 							value = "if it is a population of a list of other types: min transforms all elements "
 									+ "into integer and returns the minimum of them"),
@@ -2038,7 +2043,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "product_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2055,8 +2060,9 @@ public class Stats {
 					equals = "200") },
 			see = { "min_of", "max_of", "sum_of", "mean_of" })
 	@test ("[3,4] product_of (each *2) = 48")
-	public static Object opProductOf(final IScope scope, final IContainer container, final IExpression filter) {
-		return opProduct(scope, collect(scope, container, filter));
+	public static Object opProductOf(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter) {
+		return opProduct(scope, collect(scope, eachName, container, filter));
 	}
 
 	/**
@@ -2235,9 +2241,10 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = {})
 	@doc (
-			value = "returns the regression build from the matrix data (a row = an instance, "
-					+ "the first value of each line is the y value) while using the given ordinary "
-					+ "least squares method. Usage: build(data)",
+			value = """
+					returns the regression build from the matrix data (a row = an instance, \
+					the first value of each line is the y value) while using the given ordinary \
+					least squares method. Usage: build(data)""",
 			examples = { @example (
 					value = "build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
@@ -2400,10 +2407,11 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Returns the RMS (Root-Mean-Square) of a data sequence. "
-					+ "The RMS of data sequence is the square-root of the mean of the squares "
-					+ "of the elements in the data sequence. It is a measure of the average size of "
-					+ "the elements of a data sequence.",
+			value = """
+					Returns the RMS (Root-Mean-Square) of a data sequence. \
+					The RMS of data sequence is the square-root of the mean of the squares \
+					of the elements in the data sequence. It is a measure of the average size of \
+					the elements of a data sequence.""",
 			comment = "",
 			examples = { @example (" list<float> data_sequence <- [6.0, 7.0, 8.0, 9.0]; "),
 					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
@@ -2566,9 +2574,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			see = { "split", "split_using" },
-			value = "Splits a list of numbers into n bins defined by n-1 bounds between the minimum "
-					+ "and maximum values found in the first argument. The splitting is strict "
-					+ "(i.e. elements are in the ith bin if they are strictly smaller than the ith bound)",
+			value = """
+					Splits a list of numbers into n bins defined by n-1 bounds between the minimum \
+					and maximum values found in the first argument. The splitting is strict \
+					(i.e. elements are in the ith bin if they are strictly smaller than the ith bound)""",
 			examples = { @example ("list<float> li <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_in(li,3)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
@@ -2601,9 +2610,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			see = { "split", "split_using" },
-			value = "Splits a list of numbers into n bins defined by n-1 bounds between the minimum and maximum values"
-					+ " found in the first argument. The boolean argument controls whether or not the splitting is "
-					+ " strict (if true, elements are in the ith bin if they are strictly smaller than the ith bound)",
+			value = """
+					Splits a list of numbers into n bins defined by n-1 bounds between the minimum and maximum values\
+					 found in the first argument. The boolean argument controls whether or not the splitting is \
+					 strict (if true, elements are in the ith bin if they are strictly smaller than the ith bound)""",
 			examples = { @example ("list<float> l <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_in(l,3, true)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
@@ -2642,9 +2652,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			see = { "split", "split_in" },
-			value = "Splits a list of numbers into n+1 bins using a set of n bounds passed as the second argument. "
-					+ "The splitting is strict (i.e. elements are in the ith bin if they are strictly smaller "
-					+ "than the ith bound), when no boolean attribute is specified.",
+			value = """
+					Splits a list of numbers into n+1 bins using a set of n bounds passed as the second argument. \
+					The splitting is strict (i.e. elements are in the ith bin if they are strictly smaller \
+					than the ith bound), when no boolean attribute is specified.""",
 			masterDoc = true,
 			examples = { @example ("list<float> li <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_using(li,[1.0,3.0,4.2])",
@@ -2678,9 +2689,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			see = { "split", "split_in" },
-			value = "Splits a list of numbers into n+1 bins using a set of n bounds passed as the second argument."
-					+ " The boolean argument controls whether or not the splitting is strict "
-					+ "(if true, elements are in the ith bin if they are strictly smaller than the ith bound",
+			value = """
+					Splits a list of numbers into n+1 bins using a set of n bounds passed as the second argument.\
+					 The boolean argument controls whether or not the splitting is strict \
+					(if true, elements are in the ith bin if they are strictly smaller than the ith bound""",
 			examples = { @example ("list<float> l <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_using(l,[1.0,3.0,4.2], true)",
 					equals = "[[],[1.0],[3.1],[5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0]]") })
@@ -2726,9 +2738,10 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "the standard deviation on the elements of the operand. "
-					+ "See <a href=\"http://en.wikipedia.org/wiki/Standard_deviation\">Standard_deviation</a> "
-					+ "for more details.",
+			value = """
+					the standard deviation on the elements of the operand. \
+					See <a href="http://en.wikipedia.org/wiki/Standard_deviation">Standard_deviation</a> \
+					for more details.""",
 			comment = "The operator casts all the numerical element of the list into float. "
 					+ "The elements that are not numerical are discarded.",
 			special_cases = { "" },
@@ -2827,9 +2840,10 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Returns the observed significance level, or p-value, associated with a two-sample, "
-					+ "two-tailed t-test comparing the means of the two input lists."
-					+ "The number returned is the smallest significance level at which one can reject the null hypothesis",
+			value = """
+					Returns the observed significance level, or p-value, associated with a two-sample, \
+					two-tailed t-test comparing the means of the two input lists.\
+					The number returned is the smallest significance level at which one can reject the null hypothesis""",
 			examples = { @example (
 					value = "t_test([10.0,5.0,1.0, 3.0],[1.0,10.0,5.0,1.0])",
 					equals = "0.01") })
@@ -2949,7 +2963,6 @@ public class Stats {
 	 */
 	@operator (
 			value = { "variance_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -2963,8 +2976,9 @@ public class Stats {
 					returnType = "float") })
 
 	@test ("[1,2,3,4,5,6] variance_of each with_precision 2 = 2.92")
-	public static Object opVarianceOf(final IScope scope, final IContainer container, final IExpression filter) {
-		return opVariance(scope, collect(scope, container, filter));
+	public static Double opVarianceOf(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter) {
+		return opVariance(scope, collect(scope, eachName, container, filter));
 	}
 
 	/**
@@ -3015,7 +3029,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "mean_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2 + ITypeProvider.FLOAT_IN_CASE_OF_INT,
+			type = ITypeProvider.TYPE_AT_INDEX + 3 + ITypeProvider.FLOAT_IN_CASE_OF_INT,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -3034,8 +3048,9 @@ public class Stats {
 	@test ("[1,2] mean_of (each * 10 ) = 15")
 	@test ("[1,2] mean_of (each * 10 ) = 15")
 	@test ("[1,2] mean_of (each * 10 ) = 15")
-	public static Object opMeanOf(final IScope scope, final IContainer container, final IExpression filter) {
-		return Containers.opMean(scope, collect(scope, container, filter));
+	public static Object opMeanOf(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter) {
+		return Containers.opMean(scope, collect(scope, eachName, container, filter));
 	}
 
 	/**
@@ -3051,7 +3066,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "min_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -3080,8 +3095,10 @@ public class Stats {
 			see = { "max_of" })
 	@test ("[1,2,4,3,5,7,6,8] min_of (each * 100 ) = 100")
 	@validator (ComparableValidator.class)
-	public static Object opMinOf(final IScope scope, final IContainer c, final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, filter)).minBy(Function.identity()).orElse(null);
+	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).minBy(Function.identity())
+				.orElse(null);
 	}
 
 	/**
@@ -3097,7 +3114,7 @@ public class Stats {
 	 */
 	@operator (
 			value = { "max_of" },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER, IConcept.FILTER })
@@ -3127,8 +3144,10 @@ public class Stats {
 			see = { "min_of" })
 	@test ("[1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800")
 	@validator (ComparableValidator.class)
-	public static Object opMaxOf(final IScope scope, final IContainer c, final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, filter)).maxBy(Function.identity()).orElse(null);
+	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
+			final IExpression filter) {
+		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).maxBy(Function.identity())
+				.orElse(null);
 	}
 
 }

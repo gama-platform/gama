@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * GamaXMLFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaXMLFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -22,10 +21,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
@@ -34,7 +33,6 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -71,7 +69,8 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Gets the root tag.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the root tag
 	 */
 	public String getRootTag(final IScope scope) {
@@ -85,11 +84,6 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 			e1.printStackTrace();
 		}
 		return null;
-	}
-
-	@Override
-	public IContainerType<?> getGamlType() {
-		return Types.FILE.of(Types.INT, Types.NO_TYPE);
 	}
 
 	@Override
@@ -115,11 +109,10 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
-		if (getBuffer() != null) { return; }
+		if (getBuffer() != null) return;
 		try (final BufferedReader in = new BufferedReader(new FileReader(getFile(scope)))) {
 			final IMap<String, String> allLines = GamaMapFactory.create(Types.STRING, Types.STRING);
-			String str;
-			str = in.readLine();
+			String str = in.readLine();
 			while (str != null) {
 				allLines.put(str, str + "\n");
 				str = in.readLine();

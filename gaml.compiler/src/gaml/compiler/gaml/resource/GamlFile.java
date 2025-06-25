@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamlFile.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlFile.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,13 +13,13 @@ import java.io.File;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.IScope;
@@ -30,7 +29,6 @@ import gama.core.util.IList;
 import gama.core.util.file.GamaFile;
 import gama.core.util.file.GamlFileInfo;
 import gama.gaml.compilation.GAML;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -101,9 +99,6 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 		aliasName = "";
 
 	}
-
-	@Override
-	public IContainerType getGamlType() { return Types.FILE.of(Types.INT, Types.SPECIES); }
 
 	@Override
 	public IList<String> getAttributes(final IScope scope) {

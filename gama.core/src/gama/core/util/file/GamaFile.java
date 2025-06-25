@@ -15,7 +15,9 @@ import java.net.URL;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.StatusMessage;
+import gama.annotations.precompiler.GamlAnnotations.file;
+import gama.core.common.IStatusMessage;
+import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.metamodel.shape.GamaPoint;
@@ -36,7 +38,10 @@ import gama.dependencies.webb.WebbException;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.Facets;
+import gama.gaml.types.GamaType;
+import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
 
 /**
@@ -45,6 +50,42 @@ import one.util.streamex.StreamEx;
  * @todo Description
  *
  */
+
+/**
+ * The Class GamaFile.
+ *
+ * @param <Container>
+ *            the generic type
+ * @param <Contents>
+ *            the generic type
+ */
+
+/**
+ * The Class GamaFile.
+ *
+ * @param <Container>
+ *            the generic type
+ * @param <Contents>
+ *            the generic type
+ */
+
+/**
+ * The Class GamaFile.
+ *
+ * @param <Container>
+ *            the generic type
+ * @param <Contents>
+ *            the generic type
+ */
+
+/**
+ * The Class GamaFile.
+ *
+ * @param <Container>
+ *            the generic type
+ * @param <Contents>
+ *            the generic type
+ */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public abstract class GamaFile<Container extends IAddressableContainer & IModifiableContainer, Contents>
 		implements IGamaFile<Container, Contents> {
@@ -52,11 +93,24 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	/** The file. */
 	private File file;
 
+	/** The buffer type. */
+	private IType<?> bufferType;
+
 	/** The local path. */
 	protected final String localPath;
 
 	/** The original path. */
 	protected final String originalPath;
+
+	@Override
+	public Envelope3D computeEnvelope(final IScope scope) {
+		return null;
+	}
+
+	@Override
+	public final IContainerType getGamlType() {
+		return GamaType.from(Types.FILE, getBufferType().getKeyType(), getBufferType().getContentType());
+	}
 
 	/** The url. */
 	protected final URL url;
@@ -95,7 +149,6 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	 */
 	protected GamaFile(final IScope scope, final String pn, boolean forReading) throws GamaRuntimeException {
 		// See #3684 -- we temporarily consider files as output files if we are invoked by 'save'
-
 		if (forReading) { forReading = scope != null && scope.getData(IGamaFile.KEY_TEMPORARY_OUTPUT) == null; }
 		originalPath = pn;
 		String tempPath = originalPath;
@@ -123,6 +176,24 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 
 		localPath = tempPath;
 		checkValidity(scope);
+	}
+
+	/**
+	 * Gets the buffer type.
+	 *
+	 * @return the buffer type
+	 */
+	public IType<?> getBufferType() {
+		if (bufferType == null) {
+			file annot = getClass().getAnnotation(file.class);
+			if (annot == null) {
+				bufferType = Types.NO_TYPE;
+			} else {
+				bufferType = GamaType.from(Types.get(annot.buffer_type()), Types.get(annot.buffer_index()),
+						Types.get(annot.buffer_content()));
+			}
+		}
+		return bufferType;
 	}
 
 	/**
@@ -187,7 +258,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	protected void sendToURL(final IScope scope) throws GamaRuntimeException {
 		final String urlPath = url.toExternalForm();
 		final String status = "Uploading file to " + urlPath;
-		scope.getGui().getStatus().beginTask(status, StatusMessage.DOWNLOAD_ICON);
+		scope.getGui().getStatus().beginTask(status, IStatusMessage.DOWNLOAD_ICON);
 		final Webb web = Webb.create();
 		try {
 			web.post(urlPath).ensureSuccess().connectTimeout(20000).retry(1, false)
@@ -195,7 +266,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 		} catch (final WebbException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
-			scope.getGui().getStatus().endTask(status, StatusMessage.DOWNLOAD_ICON);
+			scope.getGui().getStatus().endTask(status, IStatusMessage.DOWNLOAD_ICON);
 		}
 	}
 

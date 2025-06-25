@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * StatementWithChildrenDescription.java, in gama.core, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * StatementWithChildrenDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -145,13 +145,12 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	 *            the type
 	 * @return the i expression
 	 */
-	public IExpression addTemp(final IDescription declaration, final String name, final IType<?> type) {
-		// TODO Should separate validation from creation, here.
+	public IExpression addTemp(final IDescription declaration, final String facet, final String name,
+			final IType<?> type) {
 		IDescription enclosing = getEnclosingDescription();
 		if (!getMeta().hasScope()) return enclosing instanceof StatementWithChildrenDescription sc
-				? sc.addTemp(declaration, name, type) : null;
-		final String kw = getKeyword();
-		final String facet = LET.equals(kw) || LOOP.equals(kw) ? NAME : RETURNS;
+				? sc.addTemp(declaration, null, name, type) : null;
+		// final String kw = getKeyword();
 		if (temps == null) { temps = new LinkedHashMap<>(); }
 		boolean isMyself = MYSELF.equals(name);
 		if (!isMyself) {
@@ -225,9 +224,8 @@ public class StatementWithChildrenDescription extends StatementDescription {
 
 	@Override
 	public IVarExpression addNewTempIfNecessary(final String facetName, final IType type) {
-		if (LOOP.equals(getKeyword()) && NAME.equals(facetName)) // Case of loops: the variable is inside the loop (not
-																	// outside)
-			return (IVarExpression) addTemp(this, getLitteral(facetName), type);
+		if (LOOP.equals(getKeyword()) && NAME.equals(facetName)) // Case of loops: the variable is inside the loop
+			return (IVarExpression) addTemp(this, facetName, getLitteral(facetName), type);
 		return super.addNewTempIfNecessary(facetName, type);
 	}
 

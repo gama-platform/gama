@@ -21,10 +21,10 @@ global {
 			
 			ask sign{
 				icon <- play;
+				// we use a boolean to let sign stop the simulation in its own cycle, so its aspect has the time to refresh before pausing the whole simulation
+				must_stop <- true; 
 			}
-			do pause;
 		}
-
 	}
 
 	init {
@@ -37,17 +37,27 @@ species sign skills: [moving] {
 
 	point location <- centroid(world);
 	image_file icon <- play;
+	bool must_stop <- false;
 
 	aspect default {
 		draw icon size: {100, 100};
 	}
 
+	reflex check_if_must_stop{
+		if must_stop {
+			must_stop <- false;
+			ask world { do pause; }
+		}
+	}
+
 	reflex wander {
-		do wander(speed: 0.3);
-	} }
+		do wander(speed: 2.0);
+	} 
+	
+}
 
 experiment 'Try Me !' {
-	output {
+	output synchronized:true{
 		display Interaction {
 			species sign;
 			event #mouse_down {

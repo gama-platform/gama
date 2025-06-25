@@ -53,7 +53,7 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	final Consumer<Short> keyListenerForWindows;
 
 	/** The key listener for mac and linux. */
-	final Consumer<Character> keyListenerForMacAndLinux;
+	final Consumer<Character> keyListenerForMac;
 
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
@@ -79,7 +79,7 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 			return surface != null && !surface.isDisposed();
 		};
 
-		keyListenerForMacAndLinux = keyCode -> {
+		keyListenerForMac = keyCode -> {
 			switch (keyCode) {
 				case 'o':
 				case 'O':
@@ -124,15 +124,15 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
 		if (!ok.get()) { return; }
 		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
-		boolean isPrintable =
-				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isPrintable = PlatformHelper.isWindows() || PlatformHelper.isLinux()
+				? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
 		if (isPrintable) {
 			if (isCommand) {
-				if (PlatformHelper.isWindows()) {
+				if (PlatformHelper.isWindows() || PlatformHelper.isLinux()) {
 					keyListenerForWindows.accept(e.getKeySymbol());
 				} else {
-					keyListenerForMacAndLinux.accept(e.getKeyChar());
+					keyListenerForMac.accept(e.getKeyChar());
 				}
 			} else {
 				delegate.keyPressed(e.getKeyChar());
@@ -163,8 +163,8 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		if (e.isAutoRepeat()) { return; }
 		DEBUG.OUT("Key released in Newt listener: " + e);
 		if (!ok.get()) { return; }
-		boolean isPrintable =
-				PlatformHelper.isWindows() ? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
+		boolean isPrintable = PlatformHelper.isWindows() || PlatformHelper.isLinux()
+				? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
 		boolean isCommand = PlatformHelper.isMac() ? e.isMetaDown() : e.isControlDown();
 		if (isPrintable && !isCommand) {
 			delegate.keyReleased(e.getKeyChar());

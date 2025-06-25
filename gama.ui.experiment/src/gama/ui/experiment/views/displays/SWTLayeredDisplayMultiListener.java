@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.outputs.layers.IEventLayerListener;
+import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 
@@ -45,7 +46,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		MouseTrackListener, MouseWheelListener, KeyListener, DragDetectListener, FocusListener, IDisposable {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The delegate. */
@@ -92,9 +93,9 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		};
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
-			if (!viewOk) return false;
+			if (!viewOk) { return false; }
 			final boolean controlOk = control != null && !control.isDisposed();
-			if (!controlOk) return false;
+			if (!controlOk) { return false; }
 			// Removed to prevent views from stealing the focus w/o control
 			// if (!control.isFocusControl()) { control.forceFocus(); }
 			// if (!Objects.equals(WorkbenchHelper.getActivePart(), deco.view)) {
@@ -118,7 +119,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 	 */
 	@Override
 	public void dispose() {
-		if (control == null || control.isDisposed()) return;
+		if (control == null || control.isDisposed()) { return; }
 		control.removeKeyListener(this);
 		control.removeMouseListener(this);
 		control.removeMenuDetectListener(this);
@@ -130,7 +131,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void keyPressed(final KeyEvent e) {
-		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
+		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) { return; }
 		lastEvent = e;
 		DEBUG.OUT("Key pressed " + e);
 		switch (e.keyCode) {
@@ -173,18 +174,18 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 			case SWT.CTRL:
 				delegate.specialKeyPressed(IEventLayerListener.KEY_CTRL);
 		}
-		// if (GamaKeyBindings.ctrl(e)) {
-		// keyListener.accept((char) e.keyCode);
-		// } else {
-		// delegate.keyPressed((char) e.keyCode);
-		// }
+		if (GamaKeyBindings.ctrl(e)) {
+			if (PlatformHelper.isMac()) { keyListener.accept((char) e.keyCode); }
+		} else {
+			delegate.keyPressed((char) e.keyCode);
+		}
 	}
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
-		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
+		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) { return; }
 		lastEvent = e;
-		DEBUG.OUT("Key released " + e);
+		DEBUG.OUT("Key released by the SWT listener" + e);
 		switch (e.keyCode) {
 			case SWT.ARROW_DOWN:
 				delegate.specialKeyReleased(IEventLayerListener.ARROW_DOWN);
@@ -255,28 +256,28 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void mouseEnter(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		delegate.mouseEnter(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0, e.button);
 	}
 
 	@Override
 	public void mouseExit(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		delegate.mouseExit(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0, e.button);
 	}
 
 	@Override
 	public void mouseHover(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		delegate.mouseHover(e.x, e.y, e.button);
 	}
 
 	@Override
 	public void mouseMove(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		// DEBUG.OUT("Mouse move " + e);
 		delegate.mouseMove(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0);
@@ -290,7 +291,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void mouseDown(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		DEBUG.OUT("Mouse down " + e);
 		delegate.mouseDown(e.x, e.y, e.button, (e.stateMask & SWT.MODIFIER_MASK) != 0);
@@ -298,7 +299,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void mouseUp(final MouseEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		DEBUG.OUT("Mouse up " + e);
 		delegate.mouseUp(e.x, e.y, e.button, (e.stateMask & SWT.MODIFIER_MASK) != 0);
@@ -306,7 +307,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void menuDetected(final MenuDetectEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		// Verify if the same "filter" is not needed here too.
 		DEBUG.LOG("Menu detected ");
 		final Point p = control.toControl(e.x, e.y);
@@ -315,7 +316,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void dragDetected(final DragDetectEvent e) {
-		if (!ok.get()) return;
+		if (!ok.get()) { return; }
 		filter(e);
 		delegate.dragDetected(e.x, e.y);
 	}
@@ -348,10 +349,12 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 			@Override
 			public void keyPressed(final java.awt.event.KeyEvent e) {
 				// Necessary to filter by the time to avoid repetitions
-				if (e.getWhen() == previous) return;
+				if (e.getWhen() == previous) { return; }
 				previous = e.getWhen();
 				DEBUG.LOG("Key received by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
-				if (!e.isActionKey()) {
+				if (e.isControlDown()) {
+					keyListener.accept(e.getKeyChar());
+				} else if (!e.isActionKey()) {
 					delegate.keyPressed(e.getKeyChar());
 				} else if (e.getModifiersEx() == 0) {
 					delegate.specialKeyPressed(switch (e.getKeyCode()) {

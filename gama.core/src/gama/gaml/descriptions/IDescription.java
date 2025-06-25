@@ -68,9 +68,6 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 		/** The Can use minimal agents. */
 		CanUseMinimalAgents,
 
-		/** The Is invocation. */
-		IsInvocation,
-
 		/** The Is super invocation. */
 		IsSuperInvocation,
 

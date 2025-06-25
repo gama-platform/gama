@@ -32,7 +32,6 @@ import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.core.Experiment;
 import gama.headless.runtime.HeadlessApplication;
-
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
@@ -47,7 +46,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library runner.
 	 */
 	private ModelLibraryRunner() {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	@Override
@@ -111,7 +110,9 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	private void validateAndRun(final GamlModelBuilder builder, final Map<String, Exception> executionErrors,
 			final int[] countOfModelsValidated, final int[] returnCode, final URL pathToModel, final boolean expGUIOnly,
 			final int nbCycles) {
-		if (pathToModel.toString().contains("Database")) return;
+		if (pathToModel.toString().contains("Database")) {
+			return;
+		}
 		STRINGS.PAD("", 80, '=');
 
 		final List<GamlCompilationError> errors = new ArrayList<>();

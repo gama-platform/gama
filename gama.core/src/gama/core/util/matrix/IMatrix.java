@@ -1,17 +1,17 @@
 /*******************************************************************************************************
  *
- * IMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
+import static gama.gaml.types.GamaType.actualTypeOf;
+import static gama.gaml.types.GamaType.findCommonType;
+
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -19,6 +19,9 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
@@ -31,6 +34,7 @@ import gama.core.util.file.IFieldMatrixProvider;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
 
 /**
@@ -562,6 +566,18 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 		return json.typedObject(getGamlType(), "cols", this.getCols(null), "rows", this.getRows(null), "contents",
 				this.listValue(null, this.getGamlType().getContentType(), false));
 
+	}
+
+	/**
+	 * Compute runtime type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		return Types.MATRIX.of(findCommonType(stream(scope).map(e -> actualTypeOf(scope, e)).toArray(IType.class)));
 	}
 
 }

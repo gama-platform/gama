@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * EachExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,7 @@ public class EachExpression extends VariableExpression {
 		// see Issue #return scope.getVarValue(getName());
 		// Issue #2521. Extra step to coerce the type of 'each' to what's expected by the expression (problem with ints
 		// and floats)
-		return type.cast(scope, scope.getEach(), null, false);
+		return type.cast(scope, scope.getEach(getName()), null, false);
 	}
 
 	@Override

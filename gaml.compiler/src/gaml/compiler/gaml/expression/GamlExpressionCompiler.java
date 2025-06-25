@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlExpressionCompiler.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlExpressionCompiler.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -48,7 +48,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
 import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.runtime.GAMA;
@@ -61,6 +60,7 @@ import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.descriptions.ActionDescription;
+import gama.gaml.descriptions.DoDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
@@ -69,7 +69,6 @@ import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.PlatformSpeciesDescription;
 import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.StringBasedExpressionDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.descriptions.ValidationContext;
@@ -426,8 +425,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// if the operator is an iterator, we must initialize the context
 		// sensitive "each" variable
 		final boolean isIterator = GAML.ITERATORS.contains(op);
+		String argName = IKeyword.EACH;
 		if (isIterator) {
-			String argName = IKeyword.EACH;
 			// Finding the name of 'each' if redefined
 			if (rightMember instanceof ExpressionList params) {
 				final List<Expression> exprs = EGaml.getInstance().getExprsOf(params);
@@ -441,7 +440,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 					}
 				}
 			}
-			iteratorContexts.push(new EachExpression(argName, left.getGamlType().getContentType()));
+			IType leftType = left.getGamlType();
+			IType eachType = leftType.isContainer() ? leftType.getContentType() : leftType;
+			iteratorContexts.push(new EachExpression(argName, eachType));
 		}
 		// If the right-hand expression is a list of expression, then we have a
 		// n-ary operator
@@ -460,7 +461,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IExpression right = compile(rightMember);
 		// We make sure to remove any mention of the each expression after the
 		// right member has been compiled
-		if (isIterator) { iteratorContexts.pop(); }
+		if (isIterator) {
+			iteratorContexts.pop();
+			IExpression eachName = getFactory().createConst(argName, Types.STRING);
+			return getFactory().createOperator(op, getContext(), originalExpression.eContainer(), eachName, left,
+					right);
+		}
 		// and we return the operator expression
 		return getFactory().createOperator(op, getContext(), originalExpression.eContainer(), left, right);
 
@@ -657,7 +663,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			final OperatorProto proto = type.getGetter(var);
 			if (proto == null) {
 				// Special case for matrices
-				if (type.id() == IType.MATRIX) return binary(".", owner, fieldExpr);
+				if (type.id() == IType.MATRIX)
+
+					return binary(".", owner, fieldExpr);
+
 				getContext().error("Unknown field '" + var + "' for type " + type, IGamlIssue.UNKNOWN_FIELD, leftExpr,
 						var, type.toString());
 				return null;
@@ -1126,7 +1135,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private IExpression tryActionCall(final String op, final Function object) {
 		SpeciesDescription species = getContext().getSpeciesContext();
 		if (species == null) return null;
-		final boolean isSuper = getContext() instanceof StatementDescription st && st.isSuperInvocation();
+		final boolean isSuper = getContext() instanceof DoDescription st && st.isSuperInvocation();
 		ActionDescription action = isSuper ? species.getParent().getAction(op) : species.getAction(op);
 		if (action == null) {
 			// Not found: see #3530

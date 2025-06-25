@@ -194,27 +194,6 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Distance to.
-	 *
-	 * @param types
-	 *            the types
-	 * @return the int
-	 */
-	public int distanceTo(final IType... types) {
-		if (types.length != list.length) return Integer.MAX_VALUE;
-		int max = 0;
-		int min = Integer.MAX_VALUE;
-		// We now take into account the min and the max (see #2266 and the case where [unknown, geometry, geometry] was
-		// preffered to [topology, geometry, geometry] for an input of [topology, a_species, a_species])
-		for (int i = 0; i < list.length; i++) {
-			final int d = types[i].distanceTo(list[i]);
-			if (max < d) { max = d; }
-			if (min > d) { min = d; }
-		}
-		return min + max;
-	}
-
-	/**
 	 * Matches desired signature.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -244,8 +223,18 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	 *            the types
 	 * @return the int
 	 */
-	public int distanceTo(final Signature types) {
-		return distanceTo(types.list);
+	public static int distanceBetween(final Signature formalSignature, final Signature passedSignature) {
+		IType[] formalTypes = formalSignature.list;
+		IType[] passedTypes = passedSignature.list;
+		if (passedTypes.length != formalTypes.length) return Integer.MAX_VALUE;
+		// We now take into account the min and the max (see #2266 and the case where [unknown, geometry, geometry] was
+		// preffered to [topology, geometry, geometry] for an input of [topology, a_species, a_species])
+		// Modified again for the case where [string, matrix, unknown] and [string, container, unknown] return both 1
+		// for an
+		// input of [string,matrix, int] ...Now we sum the distances between types and return this.
+		int totalDistance = 0;
+		for (int i = 0; i < formalTypes.length; i++) { totalDistance += formalTypes[i].distanceTo(passedTypes[i]); }
+		return totalDistance;
 	}
 
 	/**

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaImageFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaImageFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -56,7 +56,6 @@ import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.spatial.SpatialProjections;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -208,9 +207,6 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		// No attributes
 		return GamaListFactory.EMPTY_LIST;
 	}
-
-	@Override
-	public IContainerType getGamlType() { return Types.FILE.of(Types.POINT, Types.INT); }
 
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
@@ -405,15 +401,22 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		final String extension = getExtension(scope);
 		String val = null;
 		String geodataFile = getPath(scope).replaceAll(extension, "");
-		if ("jpg".equals(extension)) {
-			geodataFile = geodataFile + "jgw";
-		} else if ("png".equals(extension)) {
-			geodataFile = geodataFile + "pgw";
-		} else if ("tiff".equals(extension) || "tif".equals(extension)) {
-			geodataFile = geodataFile + "tfw";
-			val = "";
-		} else
-			return null;
+		switch (extension) {
+			case "jpg":
+				geodataFile = geodataFile + "jgw";
+				break;
+			case "png":
+				geodataFile = geodataFile + "pgw";
+				break;
+			case "tiff":
+			case "tif":
+				geodataFile = geodataFile + "tfw";
+				val = "";
+				break;
+			case null:
+			default:
+				return null;
+		}
 		final File infodata = new File(geodataFile);
 		if (infodata.exists()) return geodataFile;
 		return val;
@@ -430,7 +433,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		boolean yNeg = false;
 		final String extension = getExtension(scope);
 		if (geodataFile != null && !"".equals(geodataFile)) {
-			try (	final InputStream ips = java.nio.file.Files.newInputStream(new File(geodataFile).toPath());
+			try (final InputStream ips = java.nio.file.Files.newInputStream(new File(geodataFile).toPath());
 					final InputStreamReader ipsr = new InputStreamReader(ips);
 					final BufferedReader in = new BufferedReader(ipsr);) {
 				String line = in.readLine();
