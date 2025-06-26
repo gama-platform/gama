@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * JsonParser.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * JsonParser.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,6 +26,12 @@ public class JsonParser {
 
 	/** The Constant DEFAULT_BUFFER_SIZE. */
 	private static final int DEFAULT_BUFFER_SIZE = 1024;
+
+	/** The infinity. */
+	private static char[] infinity = { 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y' };
+
+	/** The nan. */
+	private static char[] nan = { 'N', 'a', 'N' };
 
 	/** The handler. */
 	private final JsonHandler<Object, Object> handler;
@@ -194,6 +200,7 @@ public class JsonParser {
 			case '8':
 			case '9':
 			case 'I':
+			case 'N':
 				readNumber();
 				break;
 			default:
@@ -464,14 +471,15 @@ public class JsonParser {
 		boolean isFloat = false;
 		if (firstChar == 'I') {
 			readInfinity();
-		}
-		else {
+		} else if (firstChar == 'N') {
+			readNaN();
+		} else {
 			if (!readDigit()) throw expected("digit");
 			if (firstChar != '0') { while (readDigit()) {} }
 			isFloat = readFraction();
 			readExponent();
 		}
-		handler.endNumber(endCapture(), isFloat);			
+		handler.endNumber(endCapture(), isFloat);
 	}
 
 	/**
@@ -539,9 +547,30 @@ public class JsonParser {
 		return true;
 	}
 
+	/**
+	 * Read infinity.
+	 *
+	 * @return true, if successful
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private boolean readInfinity() throws IOException {
-		char[] infinity = new char[]{'I','n','f','i','n','i','t','y'};
 		for (char c : infinity) {
+			if (current != c) return false;
+			read();
+		}
+		return true;
+	}
+
+	/**
+	 * Read na N.
+	 *
+	 * @return true, if successful
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
+	private boolean readNaN() throws IOException {
+		for (char c : nan) {
 			if (current != c) return false;
 			read();
 		}
