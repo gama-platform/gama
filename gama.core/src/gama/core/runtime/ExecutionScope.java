@@ -129,7 +129,10 @@ public class ExecutionScope implements IScope {
 		 */
 		public void copyFrom(final SpecialContext specialContext) {
 			if (specialContext == null) return;
-			each = specialContext.each;
+			// Addresses #725 by avoiding the pollution of a scope by another
+			// each = specialContext.each;
+			each = null;
+
 			data = specialContext.data;
 			topology = specialContext.topology;
 			rootAgent = specialContext.rootAgent;
