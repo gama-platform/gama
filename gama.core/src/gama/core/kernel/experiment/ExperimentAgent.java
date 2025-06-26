@@ -27,7 +27,6 @@ import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
@@ -1215,16 +1214,16 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			return super.getAgentVarValue(a, varName);
 		}
 
-		/**
-		 * Gets the gui.
-		 *
-		 * @return the gui
-		 */
-		@Override
-		public IGui getGui() {
-			if (getSpecies().isHeadless()) return GAMA.getHeadlessGui();
-			return GAMA.getRegularGui();
-		}
+		// /**
+		// * Gets the gui.
+		// *
+		// * @return the gui
+		// */
+		// @Override
+		// public IGui getGui() {
+		// if (getSpecies().isHeadless()) return GAMA.getHeadlessGui();
+		// return GAMA.getRegularGui();
+		// }
 
 	}
 

@@ -460,7 +460,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		scope.push(this);
 		try {
 			// We set it explicitly to the newly created scope
-			if (varName != null) { scope.setVarValue(varName, currentValue, true); }
+			if (varName != null) { scope.addVarWithValue(varName, currentValue); }
 			result[0] = super.privateExecuteIn(scope);
 		} finally {
 			scope.pop(this);

@@ -149,7 +149,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	 */
 	protected GamaFile(final IScope scope, final String pn, boolean forReading) throws GamaRuntimeException {
 		// See #3684 -- we temporarily consider files as output files if we are invoked by 'save'
-		if (forReading) { forReading = scope != null && scope.getData(IGamaFile.KEY_TEMPORARY_OUTPUT) == null; }
+		if (forReading) { forReading = scope != null && scope.getVarValue(IScope.KEY_TEMPORARY_OUTPUT) == null; }
 		originalPath = pn;
 		String tempPath = originalPath;
 		if (originalPath == null)

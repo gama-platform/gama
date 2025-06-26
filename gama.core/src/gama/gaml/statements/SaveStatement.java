@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SaveStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -113,19 +113,25 @@ import gama.gaml.types.Types;
 						remote_context = true,
 						optional = true,
 						doc = @doc (
-								value = "Allows to specify the attributes of a shape file or GeoJson file where agents are saved. Can be expressed as a list of string or as a literal map. When expressed as a list, each value should represent the name of an attribute of the shape or agent. The keys of the map are the names of the attributes that will be present in the file, the values are whatever expressions neeeded to define their value. ")), 
+								value = "Allows to specify the attributes of a shape file or GeoJson file where agents are saved. Can be expressed as a list of string or as a literal map. When expressed as a list, each value should represent the name of an attribute of the shape or agent. The keys of the map are the names of the attributes that will be present in the file, the values are whatever expressions neeeded to define their value. ")),
 				@facet (
 						name = IKeyword.BUFFERING,
-						type = { IType.STRING},
+						type = { IType.STRING },
 						optional = true,
 						doc = @doc (
-								value = "Allows to specify a buffering strategy to write the file. Accepted values are `" + BufferingController.PER_CYCLE_BUFFERING +"` and `" + BufferingController.PER_SIMULATION_BUFFERING + "`, `" + BufferingController.NO_BUFFERING + "`. "
-										+ "In the case of `"+ BufferingController.PER_CYCLE_BUFFERING +"` or `"+ BufferingController.PER_SIMULATION_BUFFERING +"`, all the write operations in the simulation which used these values would be "
-										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '" + BufferingController.PER_AGENT
+								value = "Allows to specify a buffering strategy to write the file. Accepted values are `"
+										+ BufferingController.PER_CYCLE_BUFFERING + "` and `"
+										+ BufferingController.PER_SIMULATION_BUFFERING + "`, `"
+										+ BufferingController.NO_BUFFERING + "`. " + "In the case of `"
+										+ BufferingController.PER_CYCLE_BUFFERING + "` or `"
+										+ BufferingController.PER_SIMULATION_BUFFERING
+										+ "`, all the write operations in the simulation which used these values would be "
+										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '"
+										+ BufferingController.PER_AGENT
 										+ "' all operations will be released when the agent is killed (or the simulation ends). Those strategies can be used to optimise a "
 										+ "simulation's execution time on models that extensively write in files. "
-										+ "The `" + BufferingController.NO_BUFFERING + "` (which is the system's default) will directly write into the file.")),
-		},
+										+ "The `" + BufferingController.NO_BUFFERING
+										+ "` (which is the system's default) will directly write into the file.")), },
 		omissible = IKeyword.DATA)
 @doc (
 		value = "Allows to save data in a file.",
@@ -166,8 +172,8 @@ import gama.gaml.types.Types;
 						value = "The save statement can be use in an init block, a reflex, an action or in a user command. Do not use it in experiments.") })
 @validator (SaveValidator.class)
 @SuppressWarnings ({ "rawtypes" })
-public class SaveStatement extends AbstractStatementSequence{
-	
+public class SaveStatement extends AbstractStatementSequence {
+
 	/** The Constant NON_SAVEABLE_ATTRIBUTE_NAMES. */
 	public static final Set<String> NON_SAVEABLE_ATTRIBUTE_NAMES =
 			Set.of(IKeyword.PEERS, IKeyword.LOCATION, IKeyword.HOST, IKeyword.AGENTS, IKeyword.MEMBERS, IKeyword.SHAPE);
@@ -180,7 +186,6 @@ public class SaveStatement extends AbstractStatementSequence{
 
 	/** The Constant SYNONYMS. */
 	private static final SetMultimap<String, String> SYNONYMS = TreeMultimap.create();
-	
 
 	/**
 	 * @param createExecutableExtension
@@ -209,7 +214,6 @@ public class SaveStatement extends AbstractStatementSequence{
 
 	}
 
-	
 	/**
 	 * The Class SaveValidator.
 	 */
@@ -227,7 +231,7 @@ public class SaveStatement extends AbstractStatementSequence{
 			final IExpression att = desc.getFacetExpr(ATTRIBUTES);
 			final IExpressionDescription type = desc.getFacet(FORMAT);
 			final IExpression bufferingStrategy = desc.getFacetExpr(IKeyword.BUFFERING);
-			
+
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
 
@@ -286,14 +290,18 @@ public class SaveStatement extends AbstractStatementSequence{
 
 			}
 
-			if (bufferingStrategy != null && ! BufferingController.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
-				desc.error("The value for buffering must be '" + BufferingController.NO_BUFFERING +"', '" + BufferingController.PER_CYCLE_BUFFERING + "', '" + BufferingController.PER_AGENT + "'" + "' or '" + BufferingController.PER_SIMULATION_BUFFERING +"'.", 
+			if (bufferingStrategy != null
+					&& !BufferingController.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
+				desc.error(
+						"The value for buffering must be '" + BufferingController.NO_BUFFERING + "', '"
+								+ BufferingController.PER_CYCLE_BUFFERING + "', '" + BufferingController.PER_AGENT + "'"
+								+ "' or '" + BufferingController.PER_SIMULATION_BUFFERING + "'.",
 						IGamlIssue.WRONG_TYPE);
 			}
-			
+
 			// Starting from here we validate the attributes, other validations must be done before
 			if (att == null) return;
-			
+
 			final boolean isMap = att instanceof MapExpression;
 			if (!isMap && !att.getGamlType().isTranslatableInto(Types.LIST.of(Types.STRING))) {
 				desc.error("attributes must be expressed as a map<string, unknown> or as a list<string>",
@@ -310,8 +318,9 @@ public class SaveStatement extends AbstractStatementSequence{
 				}
 			}
 
-			if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext) || format != null
-					&& !"shp".equals(format.literalValue()) && !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
+			if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext)
+					|| format != null && !"shp".equals(format.literalValue())
+							&& !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
 				desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
 						ATTRIBUTES);
 			}
@@ -322,17 +331,14 @@ public class SaveStatement extends AbstractStatementSequence{
 			/** The species. */
 			final SpeciesDescription species = t.getSpecies();
 
+			if (species == null && isMap) {
+				desc.error("Attributes of geometries can only be specified with a list of attribute names",
+						IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
+			}
+			// Error deactivated for fixing #2982.
+			// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
+			// att == null ? WITH : ATTRIBUTES);
 
-			if (species == null) {
-				if (isMap) {
-					desc.error("Attributes of geometries can only be specified with a list of attribute names",
-							IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
-				}
-				// Error deactivated for fixing #2982.
-				// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
-				// att == null ? WITH : ATTRIBUTES);
-			} 
-			
 		}
 
 		/**
@@ -366,7 +372,8 @@ public class SaveStatement extends AbstractStatementSequence{
 
 	/** The rewrite expr. */
 	private final IExpression rewriteExpr;
-	
+
+	/** The buffering strategy. */
 	private final IExpression bufferingStrategy;
 
 	/**
@@ -396,13 +403,14 @@ public class SaveStatement extends AbstractStatementSequence{
 		if (rewriteExpr == null) return true;
 		return Cast.asBool(scope, rewriteExpr.value(scope));
 	}
-	
+
 	/**
 	 * In case the save statement is called with a file object, calls the save method from this object
+	 *
 	 * @param scope
 	 * @return
 	 */
-	protected Object saveFile(IScope scope) {
+	protected Object saveFile(final IScope scope) {
 		if (!Types.FILE.isAssignableFrom(item.getGamlType())) return null;
 		final IGamaFile theFile = (IGamaFile) item.value(scope);
 		if (theFile != null) {
@@ -417,12 +425,10 @@ public class SaveStatement extends AbstractStatementSequence{
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		// if item is null, there's nothing to write
 		if (item == null) return null;
-		
+
 		// First case: we have no destination file, so it means the item is a file;
-		if (file == null) {
-			return saveFile(scope);
-		}
-		
+		if (file == null) return saveFile(scope);
+
 		final String fileName = Cast.asString(scope, file.value(scope));
 		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
 		if (filePath == null || "".equals(filePath)) return null;
@@ -437,7 +443,7 @@ public class SaveStatement extends AbstractStatementSequence{
 					// We set a temporary flag to the scope, which should be readable by the GamaFile and indicate that
 					// the file is created "for saving" (and not reading). Otherwise it might create an exception if the
 					// file does not exist already (see #3684)
-					scope.setData(IGamaFile.KEY_TEMPORARY_OUTPUT, true);
+					scope.setVarValue(IScope.KEY_TEMPORARY_OUTPUT, true);
 					final IGamaFile f = GamaFileType.createFile(scope, fileName, false, mc);
 					f.save(scope, description.getFacets());
 					return f;
@@ -447,7 +453,7 @@ public class SaveStatement extends AbstractStatementSequence{
 					DEBUG.OUT(e.getMessage());
 				} finally {
 					// We remove the temporary flag
-					scope.setData(IGamaFile.KEY_TEMPORARY_OUTPUT, null);
+					scope.setVarValue(IScope.KEY_TEMPORARY_OUTPUT, null);
 				}
 			}
 			typeExp = com.google.common.io.Files.getFileExtension(fileName);
@@ -459,13 +465,14 @@ public class SaveStatement extends AbstractStatementSequence{
 			typeExp = Cast.asString(scope, format.value(scope));
 			if (!DELEGATES.containsKey(typeExp)) { typeExp = null; }
 		}
-		
+
 		// get the buffering strategy
-		BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_SAVE_BUFFERING_STRATEGY).value(scope));
+		BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope,
+				(String) GamaPreferences.get(GamaPreferences.PREF_SAVE_BUFFERING_STRATEGY).value(scope));
 		if (bufferingStrategy != null) {
-			strategy = BufferingController.stringToBufferingStrategies(scope, (String)bufferingStrategy.value(scope));
+			strategy = BufferingController.stringToBufferingStrategies(scope, (String) bufferingStrategy.value(scope));
 		}
-		
+
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
 			boolean exists = fileToSave.exists() || GAMA.getBufferingController().isFileWaitingToBeWritten(fileToSave);

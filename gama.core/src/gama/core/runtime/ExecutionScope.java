@@ -15,15 +15,12 @@ import static gama.core.runtime.ExecutionResult.PASSED;
 import static gama.core.runtime.ExecutionResult.withValue;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentController;
-import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -35,10 +32,10 @@ import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.IList;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.Arguments;
@@ -58,8 +55,9 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class ExecutionScope implements IScope {
 
-	/** The Constant ATTRIBUTES. */
-	private static final String ATTRIBUTES = "%_attributes_%";
+	static {
+		DEBUG.OFF();
+	}
 
 	/** The scope name. */
 	private final String scopeName;
@@ -70,127 +68,23 @@ public class ExecutionScope implements IScope {
 	/** The agent context. */
 	protected AgentExecutionContext agentContext;
 
-	/** The additional context. */
-	protected final SpecialContext additionalContext = new SpecialContext();
-
 	/** The errors disabled. */
 	private volatile boolean _trace, _in_try_mode, _errors_disabled;
 
 	/** The flow status. */
-	private volatile FlowStatus flowStatus = FlowStatus.NORMAL;
+	protected volatile AtomicReference<FlowStatus> flowStatus = new AtomicReference(FlowStatus.NORMAL);
 
-	/** The current symbol. */
-	// private ISymbol currentSymbol;
+	/** The root agent. */
+	private ITopLevelAgent rootAgent;
 
-	/**
-	 * The Class SpecialContext.
-	 */
-	static class SpecialContext {
+	/** The topology. */
+	private ITopology topology;
 
-		/** The data map. A structure that can store arbitrary data */
-		Map<String, Object> data;
+	/** The types. */
+	private ITypesManager types;
 
-		/** The each. */
-		Map<String, Object> each;
-
-		/** The topology. */
-		public ITopology topology;
-
-		/** The root agent. */
-		ITopLevelAgent rootAgent;
-
-		/** The gui. */
-		IGui gui;
-
-		/** The types. */
-		ITypesManager types;
-
-		/** The current error. */
-		GamaRuntimeException currentError;
-
-		/**
-		 * Clear.
-		 */
-		void clear() {
-			each = null;
-			data = null;
-			topology = null;
-			rootAgent = null;
-			gui = null;
-			types = null;
-			currentError = null;
-		}
-
-		/**
-		 * Copy from.
-		 *
-		 * @param specialContext
-		 *            the special context
-		 */
-		public void copyFrom(final SpecialContext specialContext) {
-			if (specialContext == null) return;
-			each = specialContext.each;
-			data = specialContext.data;
-			topology = specialContext.topology;
-			rootAgent = specialContext.rootAgent;
-			gui = specialContext.gui;
-			types = specialContext.types;
-			currentError = specialContext.currentError;
-		}
-
-		/**
-		 * Gets the data.
-		 *
-		 * @param key
-		 *            the key
-		 * @return the data
-		 */
-		Object getData(final String key) {
-			return data == null ? null : data.get(key);
-		}
-
-		/**
-		 * Sets the data.
-		 *
-		 * @param key
-		 *            the key
-		 * @param value
-		 *            the value
-		 */
-		void setData(final String key, final Object value) {
-			if (value == null) {
-				if (data == null) return;
-				data.remove(key);
-			}
-			if (data == null) { data = new HashMap<>(); }
-			data.put(key, value);
-		}
-
-		/**
-		 * Gets the each.
-		 *
-		 * @param name
-		 *            the name
-		 * @return the each
-		 */
-		Object getEach(final String name) {
-			return each == null ? null : each.get(name);
-		}
-
-		/**
-		 * Sets the each.
-		 *
-		 * @param key
-		 *            the key
-		 * @param value
-		 *            the value
-		 */
-		void setEach(final String key, final Object value) {
-			if (each == null) { each = new HashMap<>(); }
-			each.put(key, value);
-		}
-
-	}
+	/** The lock. */
+	private final Object lock = new Object();
 
 	/**
 	 * Instantiates a new execution scope.
@@ -209,32 +103,6 @@ public class ExecutionScope implements IScope {
 	 *            the root
 	 * @param otherName
 	 *            the other name
-	 */
-	public ExecutionScope(final ITopLevelAgent root, final String otherName) {
-		this(root, otherName, null);
-	}
-
-	/**
-	 * Instantiates a new execution scope.
-	 *
-	 * @param root
-	 *            the root
-	 * @param otherName
-	 *            the other name
-	 * @param context
-	 *            the context
-	 */
-	public ExecutionScope(final ITopLevelAgent root, final String otherName, final IExecutionContext context) {
-		this(root, otherName, context, null, null);
-	}
-
-	/**
-	 * Instantiates a new execution scope.
-	 *
-	 * @param root
-	 *            the root
-	 * @param otherName
-	 *            the other name
 	 * @param context
 	 *            the context
 	 * @param agentContext
@@ -242,16 +110,14 @@ public class ExecutionScope implements IScope {
 	 * @param specialContext
 	 *            the special context
 	 */
-	public ExecutionScope(final ITopLevelAgent root, final String otherName, final IExecutionContext context,
-			final AgentExecutionContext agentContext, final SpecialContext specialContext) {
+	public ExecutionScope(final ITopLevelAgent root, final String otherName) {
 		StringBuilder name = new StringBuilder("Scope #").append(COUNTER.COUNT());
 		setRoot(root);
 		if (root != null) { name.append(" of ").append(root.stringValue(root.getScope())); }
 		name.append(otherName == null || otherName.isEmpty() ? "" : " (" + otherName + ")");
 		this.scopeName = name.toString();
-		this.setExecutionContext(context == null ? ExecutionContext.create(this, null) : context.createCopy(null));
-		this.agentContext = agentContext == null ? AgentExecutionContext.create(root, null) : agentContext;
-		this.additionalContext.copyFrom(specialContext);
+		this.setExecutionContext(ExecutionContext.create(this, null));
+		this.agentContext = AgentExecutionContext.create(root, null);
 	}
 
 	/**
@@ -276,8 +142,6 @@ public class ExecutionScope implements IScope {
 		setExecutionContext(null);
 		if (agentContext != null) { agentContext.dispose(); }
 		agentContext = null;
-		additionalContext.clear();
-		// currentSymbol = null;
 		setFlowStatus(FlowStatus.DISPOSE);
 	}
 
@@ -316,6 +180,27 @@ public class ExecutionScope implements IScope {
 	public void setTrace(final boolean t) { _trace = t; }
 
 	/**
+	 * Gets the topology.
+	 *
+	 * @return the topology
+	 */
+	@Override
+	public ITopology getTopology() {
+		if (topology != null) return topology;
+		final IAgent a = getAgent();
+		return a == null ? null : a.getTopology();
+	}
+
+	/**
+	 * Sets the topology.
+	 *
+	 * @param topo
+	 *            the new topology
+	 */
+	@Override
+	public void setTopology(final ITopology topo) { topology = topo; }
+
+	/**
 	 *
 	 * Method interrupted(). Returns true if the scope is currently marked as interrupted.
 	 *
@@ -323,33 +208,11 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public final boolean interrupted() {
-		return INTERRUPTING_STATUSES.contains(flowStatus);
-
-		/*
-		 * _root_interrupted() ||
-		 */
-		/* _action_halted || _loop_halted || _agent_halted */
-		// flowStatus == FlowStatus.RETURN || flowStatus == FlowStatus.BREAK || flowStatus == FlowStatus.CONTINUE
-		// || flowStatus == FlowStatus.DEATH;
+		return INTERRUPTING_STATUSES.contains(flowStatus.get());
 	}
 
 	@Override
-	public final boolean isClosed() { return flowStatus == FlowStatus.DISPOSE; }
-
-	// @Override
-	// public void setInterrupted() {
-	// this._interrupted = true;
-	// }
-
-	/**
-	 * @return true if the root agent of the scope is marked as interrupted (i.e. dead)
-	 */
-
-	// public boolean _root_interrupted() {
-	// // return ROOT_INTERRUPTING
-	//
-	// return /* _interrupted */ flowStatus == FlowStatus.CLOSE /* || getRoot() == null || getRoot().dead(); */;
-	// }
+	public final boolean isClosed() { return flowStatus.get() == FlowStatus.DISPOSE; }
 
 	@Override
 	public boolean isOnUserHold() {
@@ -364,33 +227,6 @@ public class ExecutionScope implements IScope {
 		if (root == null) return;
 		root.setOnUserHold(state);
 	}
-
-	// @Override
-	// public final void interruptAction() {
-	// _action_halted = true;
-	// }
-
-	/**
-	 * Interrupt loop.
-	 */
-	// @Override
-	// public final void interruptLoop() {
-	// _loop_halted = true;
-	// }
-	//
-	// @Override
-	// public final void interruptAgent() {
-	// _agent_halted = true;
-	// }
-
-	/**
-	 * Method push()
-	 *
-	 * @see gama.core.runtime.IScope#push(gama.core.metamodel.agent.IAgent)
-	 */
-	// @Override
-
-	private final Object lock = new Object();
 
 	@Override
 	public boolean push(final IAgent agent) {
@@ -415,26 +251,22 @@ public class ExecutionScope implements IScope {
 	 * @param agent
 	 *            the new root
 	 */
-	protected void setRoot(final ITopLevelAgent agent) { additionalContext.rootAgent = agent; }
+	protected void setRoot(final ITopLevelAgent agent) { rootAgent = agent; }
 
 	/**
 	 * Method pop()
 	 *
 	 * @see gama.core.runtime.IScope#pop(gama.core.metamodel.agent.IAgent)
 	 */
-	// @Override
 	@Override
 	public synchronized void pop(final IAgent agent) {
 		synchronized (lock) {
-			if (agentContext == null) {
-				DEBUG.OUT("Agents stack is empty");
+			if (agentContext == null) // DEBUG.OUT("Agents stack is empty");
 				return;
-			}
 			final AgentExecutionContext previous = agentContext;
 			agentContext = agentContext.getOuterContext();
 			previous.dispose();
 			getAndClearDeathStatus();
-			// _agent_halted = false;
 		}
 	}
 
@@ -468,19 +300,6 @@ public class ExecutionScope implements IScope {
 		sb.append(getCurrentSymbol().getTrace(this));
 		this.getGui().getConsole().informConsole(sb.toString(), getRoot());
 	}
-
-	/**
-	 * Pop loop.
-	 */
-	// @Override
-	// public void popLoop() {
-	// // _loop_halted = false;
-	// }
-
-	// @Override
-	// public void popAction() {
-	// _action_halted = false;
-	// }
 
 	/**
 	 * Method pop()
@@ -665,35 +484,19 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#getVarValue(java.lang.String)
 	 */
 	@Override
-	public Object getVarValue(final String varName) {
+	public final Object getVarValue(final String varName) {
 		if (executionContext != null) return executionContext.getTempVar(varName);
 		return null;
 	}
 
 	/**
-	 * Method setVarValue()
+	 * Method setVarValue(). Sets the value of varName in either the current context or its outer context
 	 *
 	 * @see gama.core.runtime.IScope#setVarValue(java.lang.String, java.lang.Object)
 	 */
 	@Override
-	public void setVarValue(final String varName, final Object val) {
+	public final void setVarValue(final String varName, final Object val) {
 		if (executionContext != null) { executionContext.setTempVar(varName, val); }
-	}
-
-	/**
-	 * Method setVarValue()
-	 *
-	 * @see gama.core.runtime.IScope#setVarValue(java.lang.String, java.lang.Object)
-	 */
-	@Override
-	public void setVarValue(final String varName, final Object val, final boolean localScopeOnly) {
-		if (executionContext != null) {
-			if (localScopeOnly) {
-				executionContext.putLocalVar(varName, val);
-			} else {
-				executionContext.setTempVar(varName, val);
-			}
-		}
 	}
 
 	/**
@@ -707,43 +510,13 @@ public class ExecutionScope implements IScope {
 	}
 
 	/**
-	 * Method removeAllVars()
-	 *
-	 * @see gama.core.runtime.IScope#removeAllVars()
-	 */
-	@Override
-	public void removeAllVars() {
-		if (executionContext != null) { executionContext.clearLocalVars(); }
-	}
-
-	/**
-	 * Method addVarWithValue()
+	 * Method addVarWithValue(). Adds a local var to the current scope
 	 *
 	 * @see gama.core.runtime.IScope#addVarWithValue(java.lang.String, java.lang.Object)
 	 */
 	@Override
 	public void addVarWithValue(final String varName, final Object val) {
 		if (executionContext != null) { executionContext.putLocalVar(varName, val); }
-	}
-
-	/**
-	 * Method setEach()
-	 *
-	 * @see gama.core.runtime.IScope#setEach(java.lang.Object)
-	 */
-	@Override
-	public void setEach(final String name, final Object value) {
-		additionalContext.setEach(name, value);
-	}
-
-	/**
-	 * Method getEach()
-	 *
-	 * @see gama.core.runtime.IScope#getEach()
-	 */
-	@Override
-	public Object getEach(final String name) {
-		return additionalContext.getEach(name);
 	}
 
 	/**
@@ -756,31 +529,6 @@ public class ExecutionScope implements IScope {
 		if (executionContext != null)
 			return Types.get(type).cast(this, executionContext.getLocalVar(string), null, false);
 		return null;
-	}
-
-	@Override
-	public final Integer getIntArg(final String name) throws GamaRuntimeException {
-		return (Integer) getArg(name, IType.INT);
-	}
-
-	@Override
-	public final Double getFloatArg(final String name) throws GamaRuntimeException {
-		return (Double) getArg(name, IType.FLOAT);
-	}
-
-	@Override
-	public final IList getListArg(final String name) throws GamaRuntimeException {
-		return (IList) getArg(name, IType.LIST);
-	}
-
-	@Override
-	public final Boolean getBoolArg(final String name) throws GamaRuntimeException {
-		return (Boolean) getArg(name, IType.BOOL);
-	}
-
-	@Override
-	public final String getStringArg(final String name) throws GamaRuntimeException {
-		return (String) getArg(name, IType.STRING);
 	}
 
 	/**
@@ -888,31 +636,6 @@ public class ExecutionScope implements IScope {
 	}
 
 	/**
-	 * Method getTopology()
-	 *
-	 * @see gama.core.runtime.IScope#getTopology()
-	 */
-	@Override
-	public ITopology getTopology() {
-		final ITopology topology = additionalContext.topology;
-		if (topology != null) return topology;
-		final IAgent a = getAgent();
-		return a == null ? null : a.getTopology();
-	}
-
-	/**
-	 * Method setTopology()
-	 *
-	 * @see gama.core.runtime.IScope#setTopology(gama.core.metamodel.topology.ITopology)
-	 */
-	@Override
-	public ITopology setTopology(final ITopology topo) {
-		final ITopology previous = getTopology();
-		additionalContext.topology = topo;
-		return previous;
-	}
-
-	/**
 	 * Method getAgentScope()
 	 *
 	 * @see gama.core.runtime.IScope#getAgent()
@@ -964,10 +687,16 @@ public class ExecutionScope implements IScope {
 
 	@Override
 	public IType getType(final String name) {
-		if (additionalContext.types == null) {
-			additionalContext.types = getExperiment().getSpecies().getModel().getDescription().getTypesManager();
+		if (types == null) {
+			IModel model = getModel();
+			if (model == null) {
+				types = Types.builtInTypes;
+			} else {
+				ModelDescription desc = model.getDescription();
+				types = desc.getTypesManager();
+			}
 		}
-		return additionalContext.types.get(name);
+		return types.get(name);
 	}
 
 	/**
@@ -996,16 +725,6 @@ public class ExecutionScope implements IScope {
 	}
 
 	/**
-	 * Method pushReadAttributes()
-	 *
-	 * @see gama.core.runtime.IScope#pushReadAttributes(java.util.Map)
-	 */
-	@Override
-	public void pushReadAttributes(final Map values) {
-		addVarWithValue(ATTRIBUTES, values);
-	}
-
-	/**
 	 * Method popReadAttributes()
 	 *
 	 * @see gama.core.runtime.IScope#popReadAttributes()
@@ -1013,47 +732,32 @@ public class ExecutionScope implements IScope {
 	@Override
 	public Map popReadAttributes() {
 		if (executionContext != null) {
-			final Map value = (Map) this.getVarValue(ATTRIBUTES);
-			executionContext.removeLocalVar(ATTRIBUTES);
+			final Map value = (Map) this.getVarValue(KEY_ATTRIBUTES);
+			executionContext.removeLocalVar(KEY_ATTRIBUTES);
 			return value;
 		}
 		return Collections.EMPTY_MAP;
 	}
+	//
+	// @Override
+	// public IGui getGui() {
+	// if (gui != null) return gui;
+	// final IExperimentAgent experiment = getExperiment();
+	// if (experiment == null) {
+	// gui = GAMA.getGui();
+	// } else if (experiment.getSpecies().isHeadless()) {
+	// gui = GAMA.getHeadlessGui();
+	// } else {
+	// gui = GAMA.getRegularGui();
+	// }
+	// return gui;
+	// }
 
 	@Override
-	public Map peekReadAttributes() {
-		return (Map) this.getVarValue(ATTRIBUTES);
-	}
+	public ITopLevelAgent getRoot() { return rootAgent; }
 
 	@Override
-	public IGui getGui() {
-		if (additionalContext.gui != null) return additionalContext.gui;
-		final IExperimentAgent experiment = getExperiment();
-		if (experiment == null) {
-			additionalContext.gui = GAMA.getGui();
-		} else if (experiment.getSpecies().isHeadless()) {
-			additionalContext.gui = GAMA.getHeadlessGui();
-		} else {
-			additionalContext.gui = GAMA.getRegularGui();
-		}
-		return additionalContext.gui;
-	}
-
-	@Override
-	public ITopLevelAgent getRoot() { return additionalContext.rootAgent; }
-
-	@Override
-	public boolean isPaused() {
-		final IExperimentAgent exp = getExperiment();
-		if (exp != null) {
-			final IExperimentPlan plan = exp.getSpecies();
-			if (plan != null) {
-				final IExperimentController controller = plan.getController();
-				if (controller != null) return controller.isPaused() || isOnUserHold();
-			}
-		}
-		return isOnUserHold();
-	}
+	public boolean isPaused() { return GAMA.isPaused() || isOnUserHold(); }
 
 	/**
 	 * Method getRandom()
@@ -1069,11 +773,7 @@ public class ExecutionScope implements IScope {
 
 	@Override
 	public IScope copy(final String additionalName) {
-		final ExecutionScope scope = new ExecutionScope(getRoot(), additionalName);
-		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
-		scope.agentContext = agentContext == null ? null : agentContext.createCopy();
-		scope.additionalContext.copyFrom(additionalContext);
-		return scope;
+		return duplicateInto(new ExecutionScope(getRoot(), additionalName));
 	}
 
 	/**
@@ -1085,10 +785,23 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public IGraphicsScope copyForGraphics(final String additionalName) {
-		final GraphicsScope scope = new GraphicsScope(this, additionalName);
+		return (IGraphicsScope) duplicateInto(new GraphicsScope(this, additionalName));
+	}
+
+	/**
+	 * Duplicate into.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i scope
+	 */
+	private IScope duplicateInto(final ExecutionScope scope) {
+		scope.setFlowStatus(flowStatus.get());
 		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
 		scope.agentContext = agentContext == null ? null : agentContext.createCopy();
-		scope.additionalContext.copyFrom(additionalContext);
+		// Fix for Issue #725. Different scopes sharing the same "each map" would pollute each other
+		// each = specialContext.each == null ? null : new HashMap<>(specialContext.each);
+		// data = scope.data;
 		return scope;
 	}
 
@@ -1096,13 +809,9 @@ public class ExecutionScope implements IScope {
 	public IExecutionContext getExecutionContext() { return executionContext; }
 
 	@Override
-	public void setCurrentError(final GamaRuntimeException g) { additionalContext.currentError = g; }
-
-	@Override
-	public GamaRuntimeException getCurrentError() { return additionalContext.currentError; }
-
-	@Override
-	public void setFlowStatus(final FlowStatus status) { flowStatus = status; }
+	public void setFlowStatus(final FlowStatus status) {
+		flowStatus.set(status);
+	}
 
 	/**
 	 * Gets the and clear flow status.
@@ -1110,37 +819,12 @@ public class ExecutionScope implements IScope {
 	 * @return the and clear flow status
 	 */
 	@Override
-	public FlowStatus getAndClearFlowStatus(final FlowStatus comparison) {
+	public FlowStatus getAndClearFlowStatus(final FlowStatus expectedValue) {
 		try {
-			return flowStatus;
+			return flowStatus.get();
 		} finally {
-			if (flowStatus == comparison) { flowStatus = FlowStatus.NORMAL; }
+			flowStatus.compareAndSet(expectedValue, FlowStatus.NORMAL);
 		}
-	}
-
-	/**
-	 * Gets the data.
-	 *
-	 * @param key
-	 *            the key
-	 * @return the data
-	 */
-	@Override
-	public Object getData(final String key) {
-		return additionalContext.getData(key);
-	}
-
-	/**
-	 * Sets the data.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	@Override
-	public void setData(final String key, final Object value) {
-		additionalContext.setData(key, value);
 	}
 
 	/**

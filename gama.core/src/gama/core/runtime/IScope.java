@@ -52,6 +52,18 @@ import gama.gaml.types.Types;
 @SuppressWarnings ({ "rawtypes" })
 public interface IScope extends Closeable, IBenchmarkable {
 
+	/** The Constant ATTRIBUTES. */
+	String KEY_ATTRIBUTES = "%_key_attributes_%";
+
+	/**
+	 * The "temporary output" key. Used to indicate in the scope (see {@link IScope#setData(String, Object)} that the
+	 * current file is created for serving as an output file, for saving data
+	 */
+	String KEY_TEMPORARY_OUTPUT = "%_key_temporary_output_%";
+
+	/** The key current error. */
+	String KEY_CURRENT_ERROR = "%_key_current_error_%";
+
 	/** The interrupting statuses. */
 	EnumSet<FlowStatus> INTERRUPTING_STATUSES =
 			EnumSet.of(FlowStatus.BREAK, FlowStatus.RETURN, FlowStatus.CONTINUE, FlowStatus.DIE, FlowStatus.DISPOSE);
@@ -250,7 +262,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param values
 	 *            the values
 	 */
-	void pushReadAttributes(Map values);
+	default void pushReadAttributes(final Map values) {
+		addVarWithValue(KEY_ATTRIBUTES, values);
+	}
 
 	/**
 	 * Pop read attributes.
@@ -264,7 +278,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return the map
 	 */
-	Map peekReadAttributes();
+	default Map peekReadAttributes() {
+		return (Map) this.getVarValue(KEY_ATTRIBUTES);
+	}
 
 	/**
 	 * Access to various agents and objects
@@ -289,7 +305,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param value
 	 *            the value
 	 */
-	void setEach(String name, Object value);
+	default void setEach(final String name, final Object value) {
+		addVarWithValue(name, value);
+	}
 
 	/**
 	 * Gets the value of 'each' when inside an iterator. Note that this form is deprecated, in favor of the form that
@@ -307,7 +325,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param each
 	 * @return
 	 */
-	Object getEach(String each);
+	default Object getEach(final String each) {
+		return getVarValue(each);
+	}
 
 	/**
 	 * Gets the root.
@@ -382,7 +402,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return the gui
 	 */
-	IGui getGui();
+	default IGui getGui() { return GAMA.getGui(); }
 
 	/**
 	 * Gets the clock.
@@ -401,11 +421,10 @@ public interface IScope extends Closeable, IBenchmarkable {
 	/**
 	 * Sets the topology.
 	 *
-	 * @param topology
-	 *            the topology
-	 * @return the i topology
+	 * @param topo
+	 *            the new topology
 	 */
-	ITopology setTopology(ITopology topology);
+	void setTopology(final ITopology topo);
 
 	/**
 	 * Execute.
@@ -536,19 +555,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param val
 	 *            the val
 	 */
-	default void setVarValue(final String varName, final Object val) {
-		setVarValue(varName, val, false);
-	}
-
-	/**
-	 * Sets the var value, and states whether the var should be written in an outer scope (if it is defined there) or
-	 * kept in this scope (like for instance the variable defined in a loop (see Issue #3085)
-	 *
-	 * @param varName
-	 * @param val
-	 * @param localScopeOnly
-	 */
-	void setVarValue(String varName, Object val, boolean localScopeOnly);
+	void setVarValue(final String varName, final Object val);
 
 	/**
 	 * Save all var values in.
@@ -557,11 +564,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            the vars to save
 	 */
 	void saveAllVarValuesIn(Map<String, Object> varsToSave);
-
-	/**
-	 * Removes the all vars.
-	 */
-	void removeAllVars();
 
 	/**
 	 * Adds the var with value.
@@ -659,7 +661,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	Integer getIntArg(String string) throws GamaRuntimeException;
+	default Integer getIntArg(final String string) throws GamaRuntimeException {
+		return (Integer) getArg(string, IType.INT);
+	}
 
 	/**
 	 * Gets the float arg.
@@ -670,7 +674,9 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	Double getFloatArg(String string) throws GamaRuntimeException;
+	default Double getFloatArg(final String string) throws GamaRuntimeException {
+		return (Double) getArg(string, IType.FLOAT);
+	}
 
 	/**
 	 * Gets the list arg.
@@ -681,7 +687,10 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	<T> IList<T> getListArg(String string) throws GamaRuntimeException;
+	@SuppressWarnings ("unchecked")
+	default <T> IList<T> getListArg(final String string) throws GamaRuntimeException {
+		return (IList<T>) getArg(string, IType.LIST);
+	}
 
 	/**
 	 * Gets the string arg.
@@ -692,7 +701,10 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	String getStringArg(String string) throws GamaRuntimeException;
+	default String getStringArg(final String string) throws GamaRuntimeException {
+		return (String) getArg(string, IType.STRING);
+
+	}
 
 	/**
 	 * Gets the bool arg.
@@ -703,7 +715,10 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	Boolean getBoolArg(String string) throws GamaRuntimeException;
+	default Boolean getBoolArg(final String string) throws GamaRuntimeException {
+		return (Boolean) getArg(string, IType.BOOL);
+
+	}
 
 	/**
 	 * Returns the argument using getBoolArg if it exists, else returns ifNotExist value
@@ -831,14 +846,16 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return the current statement or null if none
 	 */
 
-	void setCurrentError(GamaRuntimeException g);
+	default void setCurrentError(final GamaRuntimeException g) {
+		setVarValue(KEY_CURRENT_ERROR, g);
+	}
 
 	/**
 	 * Gets the current error.
 	 *
 	 * @return the current error
 	 */
-	GamaRuntimeException getCurrentError();
+	default GamaRuntimeException getCurrentError() { return (GamaRuntimeException) getVarValue(KEY_CURRENT_ERROR); }
 
 	/**
 	 * Checks if is graphics.
@@ -933,27 +950,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return true, if is closed
 	 */
 	boolean isClosed();
-
-	/**
-	 * Gets the data.
-	 *
-	 * @param key
-	 *            the key
-	 * @return the data
-	 */
-	default Object getData(final String key) {
-		return null;
-	}
-
-	/**
-	 * Sets the data.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	default void setData(final String key, final Object value) {}
 
 	/**
 	 * Gets the population factory.
