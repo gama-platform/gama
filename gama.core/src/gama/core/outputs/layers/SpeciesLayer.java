@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * SpeciesLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SpeciesLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,6 +25,7 @@ import gama.gaml.species.ISpecies;
 import gama.gaml.statements.AspectStatement;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.Types;
+import one.util.streamex.StreamEx;
 
 /**
  * Written by drogoul Modified on 23 août 2008
@@ -94,8 +94,9 @@ public class SpeciesLayer extends AgentLayer {
 
 		// draw the population. A copy of the population is made to avoid
 		// concurrent modification exceptions
-		for (final IAgent a : population.toArray()) {
-			if (a == null || a.dead()) { continue; }
+		StreamEx<? extends IAgent> stream = population.stream(scope);
+		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
+		stream.nonNull().filter(a -> !a.dead()).forEach(a -> {
 			ExecutionResult result = null;
 			if (a == scope.getGui().getHighlightedAgent()) {
 				IExecutable hAspect = population.getSpecies().getAspect("highlighted");
@@ -104,27 +105,28 @@ public class SpeciesLayer extends AgentLayer {
 			} else {
 				result = scope.execute(aspect, a, null);
 			}
-			if (result == ExecutionResult.FAILED) { break; }
-			if (result != null && result.getValue() instanceof Rectangle2D) {
-				final Rectangle2D r = (Rectangle2D) result.getValue();
-				shapes.put(a, r);
-			}
-			if (!(a instanceof IMacroAgent)) { continue; }
-			IPopulation<? extends IAgent> microPop;
-			// then recursively draw the micro-populations
-
-			if (hasMicroSpeciesLayers) {
-				for (final SpeciesLayerStatement ml : getDefinition().getMicroSpeciesLayers()) {
-					if (a.dead()) { continue; }
-					microPop = ((IMacroAgent) a).getMicroPopulation(ml.getSpecies());
-					if (microPop != null && microPop.size() > 0) {
-						IExecutable microAspect = ml.getAspect();
-						if (microAspect == null) { microAspect = AspectStatement.DEFAULT_ASPECT; }
-						drawPopulation(scope, g, microAspect, microPop);
+			if (result != ExecutionResult.FAILED) {
+				if (result != null && result.getValue() instanceof Rectangle2D) {
+					final Rectangle2D r = (Rectangle2D) result.getValue();
+					shapes.put(a, r);
+				}
+				if (a instanceof IMacroAgent) {
+					IPopulation<? extends IAgent> microPop;
+					// then recursively draw the micro-populations
+					if (hasMicroSpeciesLayers) {
+						for (final SpeciesLayerStatement ml : getDefinition().getMicroSpeciesLayers()) {
+							if (a.dead()) { continue; }
+							microPop = ((IMacroAgent) a).getMicroPopulation(ml.getSpecies());
+							if (microPop != null && microPop.size() > 0) {
+								IExecutable microAspect = ml.getAspect();
+								if (microAspect == null) { microAspect = AspectStatement.DEFAULT_ASPECT; }
+								drawPopulation(scope, g, microAspect, microPop);
+							}
+						}
 					}
 				}
 			}
-		}
+		});
 
 	}
 

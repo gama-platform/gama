@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * AgentLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * AgentLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,7 +10,6 @@
 package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
-import java.util.Collections;
 import java.util.Set;
 
 import gama.core.common.interfaces.IDisplaySurface;
@@ -24,12 +23,14 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
+import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.AspectStatement;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.Types;
+import one.util.streamex.StreamEx;
 
 /**
  * Written by drogoul Modified on 23 août 2008
@@ -55,47 +56,30 @@ public class AgentLayer extends AbstractLayer {
 	/** The Constant DUMMY_RECT. */
 	protected static final Rectangle2D DUMMY_RECT = new Rectangle2D.Double();
 
-	/**
-	 * Fill shapes.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
-	@SuppressWarnings ("unchecked")
-	protected void fillShapes(final IScope scope) {
-		shapes.clear();
-		final Object o = ((AgentLayerStatement) definition).getAgentsExpr().value(scope);
-		Iterable<? extends IAgent> agents = Collections.EMPTY_LIST;
-		if (o instanceof ISpecies) {
-			agents = ((ISpecies) o).iterable(scope);
-		} else if (o instanceof IList) { agents = (IList) o; }
-		for (final IAgent a : agents) { shapes.put(a, DUMMY_RECT); }
-	}
-
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics g) throws GamaRuntimeException {
 		if (scope == null || scope.interrupted()) return;
-		fillShapes(scope);
-		final String aspectName = ((AgentLayerStatement) definition).getAspectName();
-
-		shapes.entrySet().forEach(entry -> {
-			final IAgent a = entry.getKey();
+		shapes.clear();
+		AgentLayerStatement def = (AgentLayerStatement) definition;
+		final Object o = def.getAgentsExpr().value(scope);
+		IContainer<?, ? extends IAgent> agents = o instanceof ISpecies is ? is : o instanceof IList il ? il : null;
+		if (agents == null) return;
+		final String aspectName = def.getAspectName();
+		StreamEx<? extends IAgent> stream = agents.stream(scope);
+		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
+		stream.nonNull().forEach(a -> {
 			IExecutable aspect = null;
-			if (a != null) {
-				if (a == scope.getGui().getHighlightedAgent()) {
-					aspect = a.getSpecies().getAspect("highlighted");
-				} else {
-					aspect = ((AgentLayerStatement) definition).getAspect();
-					if (aspect == null) { aspect = a.getSpecies().getAspect(aspectName); }
-				}
-				if (aspect == null) { aspect = AspectStatement.DEFAULT_ASPECT; }
-
-				final ExecutionResult result = scope.execute(aspect, a, null);
-				final Object r = result.getValue();
-				if (r instanceof Rectangle2D) { entry.setValue((Rectangle2D) r); }
+			if (a == scope.getGui().getHighlightedAgent()) {
+				aspect = a.getSpecies().getAspect("highlighted");
+			} else {
+				aspect = def.getAspect();
+				if (aspect == null) { aspect = a.getSpecies().getAspect(aspectName); }
 			}
+			if (aspect == null) { aspect = AspectStatement.DEFAULT_ASPECT; }
+			final ExecutionResult result = scope.execute(aspect, a, null);
+			final Object r = result.getValue();
+			if (r instanceof Rectangle2D r2d) { shapes.put(a, r2d); }
 		});
-
 	}
 
 	@Override

@@ -39,7 +39,7 @@ import gama.core.common.interfaces.ILayer.IGridLayer;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.GraphicLayer;
-import gama.core.outputs.layers.GridAgentLayer;
+import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
 import gama.core.outputs.layers.GridLayerStatement;
 import gama.core.outputs.layers.ILayerStatement;
@@ -76,7 +76,7 @@ public class DisplaySurfaceMenu {
 
 	static {
 		layer_images.put(GridLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRID).image());
-		layer_images.put(GridAgentLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRID).image());
+		layer_images.put(HexagonalGridLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRID).image());
 		layer_images.put(MeshLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRID).image());
 		layer_images.put(AgentLayer.class, GamaIcon.named(IGamaIcons.LAYER_AGENTS).image());
 		layer_images.put(ImageLayer.class, GamaIcon.named(IGamaIcons.LAYER_IMAGE).image());

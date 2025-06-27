@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GridAgentLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * HexagonalGridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,9 +27,9 @@ import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 
 /**
- * The Class GridAgentLayer.
+ * The Class HexagonalGridLayer.
  */
-public class GridAgentLayer extends AgentLayer implements IGridLayer {
+public class HexagonalGridLayer extends AgentLayer implements IGridLayer {
 
 	/**
 	 * Instantiates a new grid agent layer.
@@ -37,7 +37,7 @@ public class GridAgentLayer extends AgentLayer implements IGridLayer {
 	 * @param layer
 	 *            the layer
 	 */
-	public GridAgentLayer(final ILayerStatement layer) {
+	public HexagonalGridLayer(final ILayerStatement layer) {
 		super(layer);
 	}
 
@@ -72,17 +72,16 @@ public class GridAgentLayer extends AgentLayer implements IGridLayer {
 			return null;
 		};
 
-		/*20/2/2014 - PT: change getData().getAgentsToDisplay() by getData().getGrid().getAgents()
-		+           as getData().getAgentsToDisplay() returns a list of null elements for hexagonal grid (casting issue)
-		+           It can be optimized.
-		*/
-		for (final IAgent a : getData().getGrid().getAgents()){
-			if (a != null) {
-				final ExecutionResult result = s.execute(aspect, a, null);
-				final Object r = result.getValue();
-				if (r instanceof Rectangle2D) { shapes.put(a, (Rectangle2D) r); }
-			}
-		}
+		/*
+		 * 20/2/2014 - PT: change getData().getAgentsToDisplay() by getData().getGrid().getAgents() + as
+		 * getData().getAgentsToDisplay() returns a list of null elements for hexagonal grid (casting issue) + It can be
+		 * optimized.
+		 */
+		getData().getGrid().stream(s).nonNull().forEach(a -> {
+			final ExecutionResult result = s.execute(aspect, (IAgent) a, null);
+			final Object r = result.getValue();
+			if (r instanceof Rectangle2D r2d) { shapes.put((IAgent) a, r2d); }
+		});
 
 	}
 
