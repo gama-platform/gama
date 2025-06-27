@@ -13,6 +13,7 @@ package gama.core.runtime;
 import static gama.core.runtime.ExecutionResult.FAILED;
 import static gama.core.runtime.ExecutionResult.PASSED;
 import static gama.core.runtime.ExecutionResult.withValue;
+import static gama.core.runtime.exceptions.GamaRuntimeException.create;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -535,8 +536,8 @@ public class ExecutionScope implements IScope {
 			// We push the caller to the remote sequence (will be cleaned when the remote
 			// sequence leaves its scope)
 			return withValue(statement.executeOn(useTargetScopeForExecution ? target.getScope() : ExecutionScope.this));
-		} catch (final GamaRuntimeException g) {
-			GAMA.reportAndThrowIfNeeded(this, g, true);
+		} catch (final Exception g) {
+			GAMA.reportAndThrowIfNeeded(this, g instanceof GamaRuntimeException e ? e : create(g, this), true);
 			return ExecutionResult.FAILED;
 		} finally {
 			// We clean the caller that may have been set previously so as to keep the
