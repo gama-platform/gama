@@ -120,6 +120,12 @@ experiment SerializationTest type:test {
 		gama.pref_json_infinity_as_string <- false;
 		assert from_json('{"x":Infinity}') = map(['x'::#infinity]);
 	}
+		
+	test infinity_from_string_with_literal_option {
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('{"x":"Infinity"}') = map(['x'::"Infinity"]);	
+	}
+	
 	test infinity_to_literal {
 		gama.pref_json_infinity_as_string <- false;
 		assert to_json(#infinity) = "Infinity";
@@ -163,9 +169,88 @@ experiment SerializationTest type:test {
 		gama.pref_json_nan_as_string <- true;
 		assert from_json('"NaN"') = #nan;
 	}
+	test nan_from_string_with_literal_option {
+		gama.pref_json_nan_as_string <- false;
+		assert from_json('{"x":"NaN"}') = map(['x'::"NaN"]);	
+	}
 	test nan_to_string {
 		gama.pref_json_nan_as_string <- true;
 		assert to_json( map("x"::#nan)) = '{"x":"NaN"}';
 	}
 
+
+	// errors
+	test from_infinity_literal_with_string_option {
+		gama.pref_json_infinity_as_string <- true;
+		bool exception <- false;
+		try{
+			map m <- from_json('{"x":Infinity}');	
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	test from_nan_literal_with_string_option {
+		gama.pref_json_nan_as_string <- true;
+		bool exception <- false;
+		try{
+			map m <- from_json('{"x":NaN}');	
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+	test from_unknown_literal {
+		bool exception <- false;
+		try{
+			let l <- from_json('{"x": UnknownLiteral}');
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+	test from_unclosed_json {
+		bool exception <- false;
+		try{
+			let l <- from_json('{"x": 123');
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+		
+	test from_forgotten_comma {
+		bool exception <- false;
+		try{
+			let l <- from_json('{"x": 123 "y":123}');
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+			
+	test from_trailing_comma {
+		bool exception <- false;
+		try{
+			let l <- from_json('{"x": 123, "y":123 , }');
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+
+	test from_simple_quotes{
+		bool exception <- false;
+		try{
+			let l <- from_json("{'x': 123, 'y':123 }");
+		}catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
 }
