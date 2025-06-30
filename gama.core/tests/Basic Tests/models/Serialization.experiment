@@ -105,7 +105,7 @@ experiment SerializationTest type:test {
 	}
 	
 	//parameters: int overflow
-	test int_overflow_to_float{
+	test int_overflow_to_float {
 		gama.pref_json_int_overflow_as_double <- true;
 		assert actual_type_of(from_json("123456789123456789123456789")) = type_of(1.0);
 	}
