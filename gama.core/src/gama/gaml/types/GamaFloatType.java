@@ -77,7 +77,12 @@ public class GamaFloatType extends GamaType<Double> {
 	 */
 	private static Double castFromString(final String s) {
 		try {
-			return Double.parseDouble(s);
+			//Remove surrounding double quotes for "Infinity" and "NaN" cases
+			String cleaned = s;
+			if (s.startsWith("\"") && s.endsWith("\"")) {
+				cleaned = s.substring(1, s.length()-1);
+			}
+			return Double.parseDouble(cleaned);
 		} catch (final NumberFormatException e) {
 			return 0d;
 		}

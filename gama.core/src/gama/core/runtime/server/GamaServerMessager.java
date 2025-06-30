@@ -62,6 +62,10 @@ public abstract class GamaServerMessager {
 				DEBUG.OUT("No socket found, maybe the client is already disconnected. Unable to send message: " + m);
 				return;
 			}
+			else if (socket.isClosed() || socket.isClosing() || !socket.isOpen()) {
+				DEBUG.OUT("Socket is closed or not open, maybe the client is already disconnected. Unable to send message: " + m);
+				return;
+			}
 			socket.send(
 					json.valueOf(new GamaServerMessage(type, m, scope.getServerConfiguration().expId())).toString());
 

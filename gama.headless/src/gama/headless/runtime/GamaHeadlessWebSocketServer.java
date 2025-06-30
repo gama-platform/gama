@@ -78,9 +78,9 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 16 oct. 2023
 	 */
 	public static IGamaServer startForSecureHeadless(final int port, final ThreadPoolExecutor runner, final boolean ssl,
-			final String jksPath, final String spwd, final String kpwd, final int pingInterval) {
+			final String jksPath, final String spwd, final String kpwd, final int pingInterval, final boolean noDelay) {
 		GamaHeadlessWebSocketServer server =
-				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval);
+				new GamaHeadlessWebSocketServer(port, runner, ssl, jksPath, spwd, kpwd, pingInterval, noDelay);
 		try {
 			server.setReuseAddr(true);
 			server.start();
@@ -104,9 +104,9 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 16 oct. 2023
 	 */
 	public static GamaHeadlessWebSocketServer startForHeadless(final int port, final ThreadPoolExecutor runner,
-			final int pingInterval) {
+			final int pingInterval, final boolean noDelay) {
 		GamaHeadlessWebSocketServer server =
-				new GamaHeadlessWebSocketServer(port, runner, false, "", "", "", pingInterval);
+				new GamaHeadlessWebSocketServer(port, runner, false, "", "", "", pingInterval, noDelay);
 
 		try {
 
@@ -140,8 +140,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 16 oct. 2023
 	 */
 	private GamaHeadlessWebSocketServer(final int port, final ThreadPoolExecutor runner, final boolean ssl,
-			final String jksPath, final String spwd, final String kpwd, final int interval) {
-		super(port, interval);
+			final String jksPath, final String spwd, final String kpwd, final int interval, final boolean noDelay) {
+		super(port, interval, noDelay);
 		executor = runner;
 		if (ssl) { configureWebSocketFactoryWithSSL(jksPath, spwd, kpwd); }
 	}

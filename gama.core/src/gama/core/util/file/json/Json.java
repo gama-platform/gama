@@ -130,7 +130,7 @@ public final class Json implements IJsonConstants {
 	 * @return a JSON value that represents the given value
 	 */
 	public JsonValue valueOf(final float value) {
-		if (Float.isInfinite(value) || Float.isNaN(value)) return NULL;
+		// if (Float.isNaN(value)) return NULL;
 		return new JsonFloat(value);
 	}
 
@@ -142,7 +142,7 @@ public final class Json implements IJsonConstants {
 	 * @return a JSON value that represents the given value
 	 */
 	public JsonValue valueOf(final double value) {
-		if (Double.isInfinite(value) || Double.isNaN(value)) return NULL;
+		// if (Double.isNaN(value)) return NULL;
 		return new JsonFloat(value);
 	}
 

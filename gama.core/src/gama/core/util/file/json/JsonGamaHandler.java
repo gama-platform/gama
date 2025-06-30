@@ -1,16 +1,20 @@
 /*******************************************************************************************************
  *
  * JsonGamaHandler.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.file.json;
 
+import static gama.core.common.preferences.GamaPreferences.External.JSON_INFINITY;
+import static gama.core.common.preferences.GamaPreferences.External.JSON_NAN;
+
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.preferences.GamaPreferences;
 import gama.gaml.types.Types;
 
 /**
@@ -61,21 +65,32 @@ class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJso
 
 	@Override
 	public void endString(final String string) {
-		value = new JsonString(string);
+		value = switch (string) {
+			case "Infinity" -> JSON_INFINITY.getValue() ? POSITIVE_INFINITY : new JsonString(string);
+			case "-Infinity" -> JSON_INFINITY.getValue() ? NEGATIVE_INFINITY : new JsonString(string);
+			case "NaN" -> JSON_NAN.getValue() ? IJsonConstants.NAN : new JsonString(string);
+			default -> new JsonString(string);
+		};
+
 	}
 
 	@Override
 	public void endNumber(final String string, final boolean isStructurallyFloat) {
 		boolean isFloat = isStructurallyFloat;
+		boolean isString = false;
 		if (!isFloat) {
 			try {
 				Integer.parseInt(string);
 			} catch (NumberFormatException e) {
-				isFloat = true;
-				// see issue #3945
+				// see issues #3945 and #16
+				if (GamaPreferences.External.JSON_INT_OVERFLOW.getValue()) {
+					isFloat = true;
+				} else {
+					isString = true;
+				}
 			}
 		}
-		value = isFloat ? new JsonFloat(string) : new JsonInt(string);
+		value = isFloat ? new JsonFloat(string) : isString ? new JsonString(string) : new JsonInt(string);
 	}
 
 	@Override

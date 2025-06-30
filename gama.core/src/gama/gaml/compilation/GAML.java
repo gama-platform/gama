@@ -551,7 +551,7 @@ public class GAML {
 	 * @return the list
 	 * @date 11 janv. 2024
 	 */
-	public static List<String> validate(final String entered, final boolean syntaxOnly) {
+	public static List<GamlCompilationError> validate(final String entered, final boolean syntaxOnly) {
 		List<GamlCompilationError> errors = new ArrayList<>();
 		if (entered.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
@@ -562,7 +562,7 @@ public class GAML {
 		} else {
 			gamlTextValidator.validateExpression(entered, errors, syntaxOnly);
 		}
-		return errors.stream().map(e -> e.message).toList();
+		return errors;
 	}
 
 }

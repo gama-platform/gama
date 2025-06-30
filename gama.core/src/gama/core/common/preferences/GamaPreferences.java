@@ -12,6 +12,7 @@ package gama.core.common.preferences;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -611,6 +612,11 @@ public class GamaPreferences {
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
+		/** The Constant CORE_SERVER_NO_DELAY. */
+		public static final Pref<Boolean> CORE_SERVER_NO_DELAY =
+				create("pref_server_no_delay", "Sets the TCP_NODELAY option to true for gama server", false, IType.BOOL,
+						true).in(Network.NAME, Network.SERVER);
+
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
@@ -930,10 +936,29 @@ public class GamaPreferences {
 						.in(NAME, "CSV Files");
 
 		/** The Constant CSV_SEPARATOR. */
-		public static final Pref<String> CSV_SEPARATOR = GamaPreferences
-				.create("pref_csv_separator", "Default separator for fields",
-						String.valueOf(AbstractCSVManipulator.Letters.COMMA), IType.STRING, true)
-				.in(GamaPreferences.External.NAME, "CSV Files");
+		public static final Pref<String> CSV_SEPARATOR = create("pref_csv_separator", "Default separator for fields",
+				String.valueOf(AbstractCSVManipulator.Letters.COMMA), IType.STRING, true)
+						.in(GamaPreferences.External.NAME, "CSV Files");
+
+		/** The Constant JSON_INFINITY. */
+		public static final Pref<Boolean> JSON_INFINITY =
+				create("pref_json_infinity_as_string", "Write and parse #infinity as", true, IType.BOOL, true)
+						.withLabels("string \"Infinity\"", "literal Infinity")
+						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
+						.in(NAME, "JSON Format");
+
+		/** The Constant JSON_NAN. */
+		public static final Pref<Boolean> JSON_NAN =
+				create("pref_json_nan_as_string", "Write and parse #nan as", true, IType.BOOL, true)
+						.withLabels("string \"NaN\"", "literal NaN")
+						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
+						.in(NAME, "JSON Format");
+
+		/** The Constant JSON_NAN. */
+		public static final Pref<Boolean> JSON_INT_OVERFLOW = create("pref_json_int_overflow_as_double",
+				"In case of an int overflow, parse the item as a", true, IType.BOOL, true).withLabels("float", "string")
+						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
+						.in(NAME, "JSON Format");
 	}
 
 	/**
