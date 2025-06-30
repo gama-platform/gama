@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import gama.core.common.preferences.GamaPreferences;
+
 /**
  * A streaming parser for JSON text. The parser reports all events to a given handler.
  */
@@ -463,7 +465,7 @@ public class JsonParser {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 oct. 2023
 	 */
-	private void readNumber() throws IOException {
+	private void readNumber() throws IOException, ParseException {
 		handler.startNumber();
 		startCapture();
 		readChar('-');
@@ -554,7 +556,10 @@ public class JsonParser {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private boolean readInfinity() throws IOException {
+	private boolean readInfinity() throws IOException, ParseException {
+		if (GamaPreferences.External.JSON_INFINITY.getValue()) {
+			throw expected("Cannot parse Infinity literal with json infinity parsing set to string mode");
+		}
 		for (char c : infinity) {
 			if (current != c) return false;
 			read();
@@ -570,6 +575,9 @@ public class JsonParser {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	private boolean readNaN() throws IOException {
+		if (GamaPreferences.External.JSON_NAN.getValue()) {
+			throw expected("Cannot parse NaN literal with json infinity parsing set to string mode");
+		}
 		for (char c : nan) {
 			if (current != c) return false;
 			read();
