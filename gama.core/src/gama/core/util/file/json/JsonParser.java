@@ -470,7 +470,7 @@ public class JsonParser {
 		startCapture();
 		readChar('-');
 		int firstChar = current;
-		boolean isFloat = false;
+		boolean isFloat = true;
 		if (firstChar == 'I') {
 			readInfinity();
 		} else if (firstChar == 'N') {
