@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * TypesManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * TypesManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,9 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
+import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 
 /**
@@ -137,6 +139,8 @@ public class TypesManager implements ITypesManager {
 		types.put(name, t);
 		// Hack to allow types to be declared with their id as string
 		types.put(String.valueOf(i), t);
+		GAML.VARTYPE2KEYWORDS.put(t.getVarKind(), name);
+		DescriptionFactory.addNewTypeName(name, t.getVarKind());
 		return t;
 	}
 
