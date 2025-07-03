@@ -33,7 +33,7 @@ cd $path/gama.parent && mvn clean -B
 
 echo "Update .qualifier"
 newVersion=$versionToTag
-if [ $isSnapshot ]; then
+if [ $isSnapshot = "true" ]; then
 	newVersion="$versionToTag.qualifier"
 fi
 find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
@@ -43,7 +43,7 @@ find $path -type f -name "MANIFEST.MF" -exec sed -i "s/$oldVersion.qualifier/$ne
 
 echo "Update -SNAPSHOT"
 newVersion=$versionToTag
-if [ $isSnapshot ]; then
+if [ $isSnapshot = "true" ]; then
 	newVersion="$versionToTag-SNAPSHOT"
 fi
 find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
@@ -76,7 +76,7 @@ echo "Update installer files"
 sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.product/extraresources/installer/windows/windows_installer_script.iss
 # Linux
 sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/gama-platform.desktop
-sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/DEBIAN/control.desktop
+sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/installer/unix/DEBIAN/control
 # MacOS
 sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plist
 
@@ -101,3 +101,10 @@ sed -i "s/gama.commit\" value=\"SNAPSHOT/gama.commit\" value=\"$(git rev-parse H
 sed -i "s/gama.branch\" value=\"SNAPSHOT/gama.branch\" value=\"$(git rev-parse --abbrev-ref HEAD)/g" $path/gama.product/gama.product
 sed -i "s/gama.date\" value=\"SNAPSHOT/gama.date\" value=\"$(date)/g" $path/gama.product/gama.product
 sed -i "s/gama.jdk\" value=\"SNAPSHOT/gama.jdk\" value=\"$JDK_EMBEDDED_VERSION/g" $path/gama.product/gama.product
+
+if [ $isSnapshot = "false" ]; then
+	echo "Update p2 repositories to gama stable"
+	sed -i "s/\/SNAPSHOT/\/$versionToTag/g" $path/gama.product/gama.product
+
+	sed -i s/\/gama_updates\/0.0.0/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
+fi
