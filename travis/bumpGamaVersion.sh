@@ -106,5 +106,5 @@ if [ $isSnapshot = "false" ]; then
 	echo "Update p2 repositories to gama stable"
 	sed -i "s/\/SNAPSHOT/\/$versionToTag/g" $path/gama.product/gama.product
 
-	sed -i s/\/gama_updates\/0.0.0/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
+	sed -i "s/\/gama_updates\/0.0.0/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
 fi
