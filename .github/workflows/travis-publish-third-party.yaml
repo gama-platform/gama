@@ -133,10 +133,11 @@ jobs:
   docker:
     needs: get-tag-info
     runs-on: ubuntu-latest
+    if: "${{ !inputs.IS_STABLE_RELEASE }}"
     name: Publish pre-release as container 🐳
 
     steps:
-      - name: Publish Gama to Github Packages 🚀
+      - name: Generate new alpha container 👷
         run: |
           curl --request POST \
             -H "Accept: application/vnd.github+json" \
@@ -165,7 +166,106 @@ jobs:
   #   runs-on: ubuntu-latest
   #   name: Publish to AUR 🐧 🔷
 
-  # macos:
-  #   needs: get-tag-info
-  #   runs-on: ubuntu-latest
-  #   name: Publish to macos 🍎
+  macos:
+    needs: get-tag-info
+    if: "${{ inputs.IS_STABLE_RELEASE }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sufix: ["", "_withJDK"]
+    name: Publish to Homebrew macos 🍎
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+
+      #
+      # Get dmgs and sha256
+      #
+      # Get Mac dmg signed archives
+      - uses: actions/download-artifact@v4
+        with:
+          #name: gama-mac-signed
+          path: ${{ github.workspace }}
+          pattern: gama-mac-signed-*
+          merge-multiple: true
+
+      - name: Install locally official's tap cask
+        run: brew tap -f homebrew/homebrew-cask
+
+      - name: Get cask name
+        id: getCask
+        run: |
+          if [ ${{ matrix.sufix }} ]; then
+            echo "name=gama-jdk" >> $GITHUB_OUTPUT
+          else
+            echo "name=gama-platform" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump GAMA w/ JDK
+        env: 
+          working_directory: /home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-cask
+        run: |
+          # Update cask file with both SHA256 values
+          MAC_INTEL=$(shasum -a 256 gama-*.aarch64${{ matrix.sufix }}.dmg |  cut -d ' ' -f 1)
+          MAC_ARM=$(shasum -a 256 gama-*.x86_64${{ matrix.sufix }}.dmg |  cut -d ' ' -f 1)
+
+          sed -i -e "/arm:/s/\"[0-9a-f]\{64\}\"/\"$MAC_ARM\"/" -e "/intel:/s/\"[0-9a-f]\{64\}\"/\"$MAC_INTEL\"/" Casks/g/${{ steps.getCask.outputs.name }}.rb
+          sed -i "s/version \"[0-9.]*\"/version \"${{ inputs.tag }}\"/" Casks/g/${{ steps.getCask.outputs.name }}.rb
+
+      - name: Brew verification
+        run: |
+          brew audit --cask ${{ steps.getCask.outputs.name }}
+          brew style --fix ${{ steps.getCask.outputs.name }}
+
+      - name: Create Homebrew PR 
+        env: 
+          working_directory: /home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-cask
+        run: |
+          # Configure git
+          git config user.name ${{ secrets.BOT_GH_NAME }}
+          git config user.email ${{ secrets.BOT_GH_EMAIL }}
+
+          # Create branch
+          git checkout -b "${{ steps.getCask.outputs.name }}-${{ inputs.tag }}"
+
+          # Commit and create PR
+          git add Casks/g/${{ steps.getCask.outputs.name }}.rb
+          git commit -m "${{ steps.getCask.outputs.name }}: update to ${{ inputs.tag }}"
+
+          # Fork and push
+          gh repo fork --clone=false
+          git push -u origin "${{ steps.getCask.outputs.name }}-${{ inputs.tag }}"
+
+          # Create PR
+          gh pr create \
+          --repo Homebrew/homebrew-cask \
+          --title "${{ steps.getCask.outputs.name }}: update to ${{ inputs.tag }}" \
+          --body "**Important:** *Do not tick a checkbox if you haven't performed its action.* Honesty is indispensable for a smooth review process.
+_In the following questions \`<cask>\` is the token of the cask you're submitting._
+
+After making any changes to a cask, existing or new, verify:
+
+- [x] The submission is for [a stable version](https://docs.brew.sh/Acceptable-Casks#stable-versions) or [documented exception](https://docs.brew.sh/Acceptable-Casks#but-there-is-no-stable-version).
+- [x] \`brew audit --cask --online <cask>\` is error-free.
+- [x] \`brew style --fix <cask>\` reports no offenses.
+
+Additionally, **if adding a new cask**:
+
+- [ ] Named the cask according to the [token reference](https://docs.brew.sh/Cask-Cookbook#token-reference).
+- [ ] Checked the cask was not [already refused](https://github.com/search?q=repo%3AHomebrew%2Fhomebrew-cask+is%3Aclosed+is%3Aunmerged+&type=pullrequests) (add your cask's name to the end of the search field).
+- [ ] \`brew audit --cask --new <cask>\` worked successfully.
+- [ ] \`HOMEBREW_NO_INSTALL_FROM_API=1 brew install --cask <cask>\` worked successfully.
+- [ ] \`brew uninstall --cask <cask>\` worked successfully.
+
+---
+
+Generated automatically from Github actions
+- Release author: @${{ github.triggering_actor }} 
+- Poke :point_right: @RoiArthurB @lesquoyb"
