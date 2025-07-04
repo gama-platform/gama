@@ -29,7 +29,6 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.batch.BatchOutput;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.ExperimentPlan.BatchValidator;
@@ -628,7 +627,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		super.setChildren(children);
 
-		BatchOutput fileOutputDescription = null;
 		LayoutStatement layout = null;
 		for (final ISymbol s : children) {
 			switch (s) {
@@ -645,9 +643,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 					break;
 				case IExploration ie:
 					exploration = ie;
-					break;
-				case BatchOutput bo:
-					fileOutputDescription = bo;
 					break;
 				case SimulationOutputManager som: {
 					if (originalSimulationOutputs != null) {
@@ -693,27 +688,9 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 				experimentOutputs.setLayout(originalSimulationOutputs.getLayout());
 			}
 		}
-		if (fileOutputDescription != null) { createOutput(fileOutputDescription); }
 		displayables.addAll(getUserCommands());
 	}
 
-	/**
-	 * Creates the output.
-	 *
-	 * @param output
-	 *            the output
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	private void createOutput(final BatchOutput output) throws GamaRuntimeException {
-		// TODO revoir tout ceci. Devrait plut�t �tre une commande
-		if (output == null) return;
-		IExpression data = output.getFacet(IKeyword.DATA);
-		if (data == null) { data = exploration.getOutputs(); }
-		if (data == null) {} else {
-			data.serializeToGaml(false);
-		}
-	}
 
 	/**
 	 * Open.
