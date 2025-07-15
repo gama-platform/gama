@@ -38,6 +38,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Data;
 import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_DirectAssignment;
@@ -175,6 +176,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_SpeciesEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_DataEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1023,6 +1031,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Species()
   {
     return s_SpeciesEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Data()
+  {
+    return s_DataEClass;
   }
 
   /**
@@ -2334,6 +2353,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_SpeciesEClass = createEClass(SSPECIES);
 
+    s_DataEClass = createEClass(SDATA);
+
     s_ExperimentEClass = createEClass(SEXPERIMENT);
 
     s_DoEClass = createEClass(SDO);
@@ -2545,6 +2566,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_SpeciesEClass.getESuperTypes().add(this.getStatement());
     s_SpeciesEClass.getESuperTypes().add(this.getS_Declaration());
     s_SpeciesEClass.getESuperTypes().add(this.getTypeDefinition());
+    s_DataEClass.getESuperTypes().add(this.getStatement());
+    s_DataEClass.getESuperTypes().add(this.getGamlDefinition());
     s_ExperimentEClass.getESuperTypes().add(this.getStatement());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
@@ -2652,6 +2675,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_GlobalEClass, S_Global.class, "S_Global", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_SpeciesEClass, S_Species.class, "S_Species", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_DataEClass, S_Data.class, "S_Data", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ExperimentEClass, S_Experiment.class, "S_Experiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

@@ -136,6 +136,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_SpeciesAdapter();
       }
       @Override
+      public Adapter caseS_Data(S_Data object)
+      {
+        return createS_DataAdapter();
+      }
+      @Override
       public Adapter caseS_Experiment(S_Experiment object)
       {
         return createS_ExperimentAdapter();
@@ -628,6 +633,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_SpeciesAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Data <em>SData</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Data
+   * @generated
+   */
+  public Adapter createS_DataAdapter()
   {
     return null;
   }

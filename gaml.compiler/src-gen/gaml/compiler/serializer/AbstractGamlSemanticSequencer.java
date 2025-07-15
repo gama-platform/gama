@@ -32,6 +32,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Data;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
@@ -169,6 +170,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 					sequence_Block(context, (Block) semanticObject); 
 					return; 
 				}
+				else if (rule == grammarAccess.getDataBlockRule()) {
+					sequence_DataBlock(context, (Block) semanticObject); 
+					return; 
+				}
 				else if (rule == grammarAccess.getModelBlockRule()) {
 					sequence_ModelBlock(context, (Block) semanticObject); 
 					return; 
@@ -263,6 +268,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.SASSIGNMENT:
 				sequence_S_Equation(context, (S_Assignment) semanticObject); 
+				return; 
+			case GamlPackage.SDATA:
+				sequence_S_Data(context, (S_Data) semanticObject); 
 				return; 
 			case GamlPackage.SDEFINITION:
 				sequence_S_Definition(context, (S_Definition) semanticObject); 
@@ -829,6 +837,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     DataBlock returns Block
+	 *
+	 * Constraint:
+	 *     statements+=Statement*
+	 * </pre>
+	 */
+	protected void sequence_DataBlock(ISerializationContext context, Block semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     DefinitionFacet returns Facet
 	 *     GamlDefinition returns Facet
 	 *     VarDefinition returns Facet
@@ -1264,6 +1286,22 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_S_Action(ISerializationContext context, S_Action semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Section returns S_Data
+	 *     S_Data returns S_Data
+	 *     GamlDefinition returns S_Data
+	 *
+	 * Constraint:
+	 *     (key=_DataKey firstFacet='name:'? name=ID facets+=Facet* block=DataBlock?)
+	 * </pre>
+	 */
+	protected void sequence_S_Data(ISerializationContext context, S_Data semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

@@ -38,13 +38,15 @@ HeadlessExperiment:
  * Global statements
  */
 S_Section returns Statement:
-	S_Global | S_Species | S_Experiment;
+	S_Global | S_Species | S_Data | S_Experiment;
 
 S_Global:
 	key="global" (facets+=Facet)* (block=Block | ';');
 
 S_Species:
 	key=_SpeciesKey (firstFacet='name:')? name=ID (facets+=Facet)* (block=Block | ';');
+S_Data:
+	key=_DataKey (firstFacet='name:')? name=ID (facets+=Facet)* (block=DataBlock | ';');
 
 S_Experiment:
 	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* (block=Block | ';');
@@ -148,6 +150,8 @@ _SolveKey:
 
 _SpeciesKey:
 	"species" | "grid";
+_DataKey:
+	"data_type";
 	
 _ImageLayerKey: "image";
 
@@ -238,6 +242,10 @@ VarFacet returns Facet:
  */
 Block:
 	{Block} '{' ((statements+=Statement)* '}');
+DataBlock returns Block:
+	{Block} '{' ((statements+=Statement)* '}');
+//	{Block} '{' ((declarations+=S_Var)* '}')
+//;
 
 /**
  * Expressions
@@ -363,13 +371,13 @@ EquationRef returns Expression:
 	{EquationRef} ref=[EquationDefinition|Valid_ID];
 
 GamlDefinition:
-	TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition;
+	TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition | S_Data;
 
 EquationDefinition:
 	S_Equations | EquationFakeDefinition;
 
 TypeDefinition:
-	S_Species | TypeFakeDefinition;
+	S_Species | TypeFakeDefinition ;
 
 VarDefinition:
 	=>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);

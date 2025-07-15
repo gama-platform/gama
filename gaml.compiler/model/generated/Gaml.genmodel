@@ -49,6 +49,7 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Global"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Species"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_Data"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Experiment"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Do"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Loop"/>

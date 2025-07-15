@@ -132,6 +132,15 @@ public interface GamlFactory extends EFactory
   S_Species createS_Species();
 
   /**
+   * Returns a new object of class '<em>SData</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SData</em>'.
+   * @generated
+   */
+  S_Data createS_Data();
+
+  /**
    * Returns a new object of class '<em>SExperiment</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
