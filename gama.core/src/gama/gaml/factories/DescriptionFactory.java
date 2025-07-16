@@ -19,6 +19,7 @@ import static gama.annotations.precompiler.ISymbolKind.MODEL;
 import static gama.annotations.precompiler.ISymbolKind.OUTPUT;
 import static gama.annotations.precompiler.ISymbolKind.PARAMETER;
 import static gama.annotations.precompiler.ISymbolKind.PLATFORM;
+import static gama.annotations.precompiler.ISymbolKind.DATA;
 import static gama.annotations.precompiler.ISymbolKind.SEQUENCE_STATEMENT;
 import static gama.annotations.precompiler.ISymbolKind.SINGLE_STATEMENT;
 import static gama.annotations.precompiler.ISymbolKind.SPECIES;
@@ -45,8 +46,9 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.gaml.compilation.ast.SyntacticFactory;
+import gama.gaml.descriptions.DataDescription;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -97,6 +99,7 @@ public class DescriptionFactory {
 	 */
 	public static void initialize() {
 		add(new ExperimentFactory(), EXPERIMENT);
+		add(new DataFactory(), DATA);
 		add(new ModelFactory(), MODEL);
 		add(new PlatformFactory(), PLATFORM);
 		add(new SpeciesFactory(), SPECIES);
@@ -433,6 +436,10 @@ public class DescriptionFactory {
 				helper, skills, null, plugin);
 	}
 
+	public static DataDescription createBuiltInDataDescription(final String name, final Class clazz,
+			final DataDescription superDesc, final DataDescription parent, final String plugin) {
+		return ((DataFactory) getFactory(DATA)).createBuiltInDataDescription(name, clazz, superDesc, parent);
+	}
 	/**
 	 * Creates a new Description object.
 	 *

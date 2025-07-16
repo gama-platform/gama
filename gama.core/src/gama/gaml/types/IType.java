@@ -143,6 +143,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** The field. */
 	int FIELD = 31;
 
+	/** For data_type support */
+	int COMPOSED = 32;
+	
 	/** The available types. */
 	int AVAILABLE_TYPES = 50;
 

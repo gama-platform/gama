@@ -68,7 +68,7 @@ public class Types {
 	public final static IType NO_TYPE = new GamaNoType();
 
 	/** The type. */
-	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE;
+	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE, COMPOSED_DATA;
 
 	/** The int. */
 	public static GamaIntegerType INT;
@@ -243,6 +243,8 @@ public class Types {
 				return ACTION;
 			case IType.TYPE:
 				return TYPE;
+			case IType.COMPOSED:
+				return COMPOSED_DATA;
 		}
 		return builtInTypes.get(String.valueOf(type));
 	}

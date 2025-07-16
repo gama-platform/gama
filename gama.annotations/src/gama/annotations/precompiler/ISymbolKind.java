@@ -102,16 +102,18 @@ public interface ISymbolKind {
 
 	/** The platform. */
 	int PLATFORM = 16;
+	
+	int DATA = 17;
 
 	/** The number. */
 	// Update this variable when adding a kind of symbol
-	int __NUMBER__ = 17;
+	int __NUMBER__ = 18;
 
 	/** The template menu. */
 	String[] TEMPLATE_MENU = { "Species", "Model", "Statement", "Behavior", "Parameter", "Output", "Layer", "Skill",
 			"Batch", "Batch", "", "Statement", "Statement", "Experiment", "", "Operator", "" };
 
 	/** The Constant STATEMENTS_WITH_ATTRIBUTES. */
-	Set<Integer> STATEMENTS_CONTAINING_ATTRIBUTES = new HashSet<>(Arrays.asList(SPECIES, EXPERIMENT, OUTPUT, MODEL));
+	Set<Integer> STATEMENTS_CONTAINING_ATTRIBUTES = new HashSet<>(Arrays.asList(SPECIES, EXPERIMENT, OUTPUT, MODEL, DATA));
 
 }
