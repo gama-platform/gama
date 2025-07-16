@@ -49,7 +49,9 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Global"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Species"/>
-    <genClasses ecoreClass="Gaml.ecore#//S_Data"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_Data">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//S_Data/name"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Experiment"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Do"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Loop"/>
@@ -108,17 +110,27 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeInfo/first"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeInfo/second"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//GamlDefinition">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//GamlDefinition/name"/>
+    <genClasses ecoreClass="Gaml.ecore#//GamlDefinition"/>
+    <genClasses ecoreClass="Gaml.ecore#//EquationDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//EquationDefinition/name"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//EquationDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//TypeDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//VarDefinition"/>
+    <genClasses ecoreClass="Gaml.ecore#//VarDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//VarDefinition/name"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//ActionDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//UnitFakeDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//TypeFakeDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//ActionFakeDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//SkillFakeDefinition"/>
+    <genClasses ecoreClass="Gaml.ecore#//UnitFakeDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//UnitFakeDefinition/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//TypeFakeDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//TypeFakeDefinition/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//ActionFakeDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//ActionFakeDefinition/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//SkillFakeDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//SkillFakeDefinition/name"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//VarFakeDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//EquationFakeDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//TerminalExpression">

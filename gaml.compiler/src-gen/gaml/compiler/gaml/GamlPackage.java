@@ -235,22 +235,13 @@ public interface GamlPackage extends EPackage
   int GAML_DEFINITION = 39;
 
   /**
-   * The feature id for the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int GAML_DEFINITION__NAME = 0;
-
-  /**
    * The number of structural features of the '<em>Definition</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int GAML_DEFINITION_FEATURE_COUNT = 1;
+  int GAML_DEFINITION_FEATURE_COUNT = 0;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.VarDefinitionImpl <em>Var Definition</em>}' class.
@@ -269,7 +260,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int VAR_DEFINITION__NAME = GAML_DEFINITION__NAME;
+  int VAR_DEFINITION__NAME = GAML_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Var Definition</em>' class.
@@ -278,7 +269,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int VAR_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 0;
+  int VAR_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.ImportImpl <em>Import</em>}' class.
@@ -2311,7 +2302,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EQUATION_DEFINITION__NAME = GAML_DEFINITION__NAME;
+  int EQUATION_DEFINITION__NAME = GAML_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Equation Definition</em>' class.
@@ -2320,7 +2311,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EQUATION_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 0;
+  int EQUATION_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.TypeDefinitionImpl <em>Type Definition</em>}' class.
@@ -2331,15 +2322,6 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   int TYPE_DEFINITION = 41;
-
-  /**
-   * The feature id for the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int TYPE_DEFINITION__NAME = GAML_DEFINITION__NAME;
 
   /**
    * The number of structural features of the '<em>Type Definition</em>' class.
@@ -2359,15 +2341,6 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   int ACTION_DEFINITION = 43;
-
-  /**
-   * The feature id for the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ACTION_DEFINITION__NAME = GAML_DEFINITION__NAME;
 
   /**
    * The number of structural features of the '<em>Action Definition</em>' class.
@@ -2395,7 +2368,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int UNIT_FAKE_DEFINITION__NAME = GAML_DEFINITION__NAME;
+  int UNIT_FAKE_DEFINITION__NAME = GAML_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Unit Fake Definition</em>' class.
@@ -2404,7 +2377,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int UNIT_FAKE_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 0;
+  int UNIT_FAKE_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.TypeFakeDefinitionImpl <em>Type Fake Definition</em>}' class.
@@ -2423,7 +2396,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TYPE_FAKE_DEFINITION__NAME = TYPE_DEFINITION__NAME;
+  int TYPE_FAKE_DEFINITION__NAME = TYPE_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Type Fake Definition</em>' class.
@@ -2432,7 +2405,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TYPE_FAKE_DEFINITION_FEATURE_COUNT = TYPE_DEFINITION_FEATURE_COUNT + 0;
+  int TYPE_FAKE_DEFINITION_FEATURE_COUNT = TYPE_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.ActionFakeDefinitionImpl <em>Action Fake Definition</em>}' class.
@@ -2451,7 +2424,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACTION_FAKE_DEFINITION__NAME = ACTION_DEFINITION__NAME;
+  int ACTION_FAKE_DEFINITION__NAME = ACTION_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Action Fake Definition</em>' class.
@@ -2460,7 +2433,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACTION_FAKE_DEFINITION_FEATURE_COUNT = ACTION_DEFINITION_FEATURE_COUNT + 0;
+  int ACTION_FAKE_DEFINITION_FEATURE_COUNT = ACTION_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.SkillFakeDefinitionImpl <em>Skill Fake Definition</em>}' class.
@@ -2479,7 +2452,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SKILL_FAKE_DEFINITION__NAME = GAML_DEFINITION__NAME;
+  int SKILL_FAKE_DEFINITION__NAME = GAML_DEFINITION_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Skill Fake Definition</em>' class.
@@ -2488,7 +2461,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SKILL_FAKE_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 0;
+  int SKILL_FAKE_DEFINITION_FEATURE_COUNT = GAML_DEFINITION_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.VarFakeDefinitionImpl <em>Var Fake Definition</em>}' class.
@@ -3824,6 +3797,17 @@ public interface GamlPackage extends EPackage
   EClass getS_Data();
 
   /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.S_Data#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.S_Data#getName()
+   * @see #getS_Data()
+   * @generated
+   */
+  EAttribute getS_Data_Name();
+
+  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.S_Experiment <em>SExperiment</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4303,17 +4287,6 @@ public interface GamlPackage extends EPackage
   EClass getGamlDefinition();
 
   /**
-   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.GamlDefinition#getName <em>Name</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Name</em>'.
-   * @see gaml.compiler.gaml.GamlDefinition#getName()
-   * @see #getGamlDefinition()
-   * @generated
-   */
-  EAttribute getGamlDefinition_Name();
-
-  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.EquationDefinition <em>Equation Definition</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4322,6 +4295,17 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getEquationDefinition();
+
+  /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.EquationDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.EquationDefinition#getName()
+   * @see #getEquationDefinition()
+   * @generated
+   */
+  EAttribute getEquationDefinition_Name();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.TypeDefinition <em>Type Definition</em>}'.
@@ -4344,6 +4328,17 @@ public interface GamlPackage extends EPackage
   EClass getVarDefinition();
 
   /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.VarDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.VarDefinition#getName()
+   * @see #getVarDefinition()
+   * @generated
+   */
+  EAttribute getVarDefinition_Name();
+
+  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.ActionDefinition <em>Action Definition</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4364,6 +4359,17 @@ public interface GamlPackage extends EPackage
   EClass getUnitFakeDefinition();
 
   /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.UnitFakeDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.UnitFakeDefinition#getName()
+   * @see #getUnitFakeDefinition()
+   * @generated
+   */
+  EAttribute getUnitFakeDefinition_Name();
+
+  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.TypeFakeDefinition <em>Type Fake Definition</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4372,6 +4378,17 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getTypeFakeDefinition();
+
+  /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.TypeFakeDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.TypeFakeDefinition#getName()
+   * @see #getTypeFakeDefinition()
+   * @generated
+   */
+  EAttribute getTypeFakeDefinition_Name();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.ActionFakeDefinition <em>Action Fake Definition</em>}'.
@@ -4384,6 +4401,17 @@ public interface GamlPackage extends EPackage
   EClass getActionFakeDefinition();
 
   /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.ActionFakeDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.ActionFakeDefinition#getName()
+   * @see #getActionFakeDefinition()
+   * @generated
+   */
+  EAttribute getActionFakeDefinition_Name();
+
+  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.SkillFakeDefinition <em>Skill Fake Definition</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4392,6 +4420,17 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getSkillFakeDefinition();
+
+  /**
+   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.SkillFakeDefinition#getName <em>Name</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Name</em>'.
+   * @see gaml.compiler.gaml.SkillFakeDefinition#getName()
+   * @see #getSkillFakeDefinition()
+   * @generated
+   */
+  EAttribute getSkillFakeDefinition_Name();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.VarFakeDefinition <em>Var Fake Definition</em>}'.
@@ -5326,6 +5365,14 @@ public interface GamlPackage extends EPackage
     EClass SDATA = eINSTANCE.getS_Data();
 
     /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SDATA__NAME = eINSTANCE.getS_Data_Name();
+
+    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_ExperimentImpl <em>SExperiment</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5748,14 +5795,6 @@ public interface GamlPackage extends EPackage
     EClass GAML_DEFINITION = eINSTANCE.getGamlDefinition();
 
     /**
-     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute GAML_DEFINITION__NAME = eINSTANCE.getGamlDefinition_Name();
-
-    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.EquationDefinitionImpl <em>Equation Definition</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5764,6 +5803,14 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass EQUATION_DEFINITION = eINSTANCE.getEquationDefinition();
+
+    /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute EQUATION_DEFINITION__NAME = eINSTANCE.getEquationDefinition_Name();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.TypeDefinitionImpl <em>Type Definition</em>}' class.
@@ -5786,6 +5833,14 @@ public interface GamlPackage extends EPackage
     EClass VAR_DEFINITION = eINSTANCE.getVarDefinition();
 
     /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute VAR_DEFINITION__NAME = eINSTANCE.getVarDefinition_Name();
+
+    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.ActionDefinitionImpl <em>Action Definition</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5806,6 +5861,14 @@ public interface GamlPackage extends EPackage
     EClass UNIT_FAKE_DEFINITION = eINSTANCE.getUnitFakeDefinition();
 
     /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute UNIT_FAKE_DEFINITION__NAME = eINSTANCE.getUnitFakeDefinition_Name();
+
+    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.TypeFakeDefinitionImpl <em>Type Fake Definition</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5814,6 +5877,14 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass TYPE_FAKE_DEFINITION = eINSTANCE.getTypeFakeDefinition();
+
+    /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute TYPE_FAKE_DEFINITION__NAME = eINSTANCE.getTypeFakeDefinition_Name();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.ActionFakeDefinitionImpl <em>Action Fake Definition</em>}' class.
@@ -5826,6 +5897,14 @@ public interface GamlPackage extends EPackage
     EClass ACTION_FAKE_DEFINITION = eINSTANCE.getActionFakeDefinition();
 
     /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute ACTION_FAKE_DEFINITION__NAME = eINSTANCE.getActionFakeDefinition_Name();
+
+    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.SkillFakeDefinitionImpl <em>Skill Fake Definition</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5834,6 +5913,14 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass SKILL_FAKE_DEFINITION = eINSTANCE.getSkillFakeDefinition();
+
+    /**
+     * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SKILL_FAKE_DEFINITION__NAME = eINSTANCE.getSkillFakeDefinition_Name();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.VarFakeDefinitionImpl <em>Var Fake Definition</em>}' class.

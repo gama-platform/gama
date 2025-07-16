@@ -1050,6 +1050,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EAttribute getS_Data_Name()
+  {
+    return (EAttribute)s_DataEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getS_Experiment()
   {
     return s_ExperimentEClass;
@@ -1556,9 +1567,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getGamlDefinition_Name()
+  public EClass getEquationDefinition()
   {
-    return (EAttribute)gamlDefinitionEClass.getEStructuralFeatures().get(0);
+    return equationDefinitionEClass;
   }
 
   /**
@@ -1567,9 +1578,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getEquationDefinition()
+  public EAttribute getEquationDefinition_Name()
   {
-    return equationDefinitionEClass;
+    return (EAttribute)equationDefinitionEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1600,6 +1611,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EAttribute getVarDefinition_Name()
+  {
+    return (EAttribute)varDefinitionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getActionDefinition()
   {
     return actionDefinitionEClass;
@@ -1622,9 +1644,31 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EAttribute getUnitFakeDefinition_Name()
+  {
+    return (EAttribute)unitFakeDefinitionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getTypeFakeDefinition()
   {
     return typeFakeDefinitionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getTypeFakeDefinition_Name()
+  {
+    return (EAttribute)typeFakeDefinitionEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1644,9 +1688,31 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EAttribute getActionFakeDefinition_Name()
+  {
+    return (EAttribute)actionFakeDefinitionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getSkillFakeDefinition()
   {
     return skillFakeDefinitionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSkillFakeDefinition_Name()
+  {
+    return (EAttribute)skillFakeDefinitionEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -2354,6 +2420,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_SpeciesEClass = createEClass(SSPECIES);
 
     s_DataEClass = createEClass(SDATA);
+    createEAttribute(s_DataEClass, SDATA__NAME);
 
     s_ExperimentEClass = createEClass(SEXPERIMENT);
 
@@ -2427,23 +2494,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(typeInfoEClass, TYPE_INFO__SECOND);
 
     gamlDefinitionEClass = createEClass(GAML_DEFINITION);
-    createEAttribute(gamlDefinitionEClass, GAML_DEFINITION__NAME);
 
     equationDefinitionEClass = createEClass(EQUATION_DEFINITION);
+    createEAttribute(equationDefinitionEClass, EQUATION_DEFINITION__NAME);
 
     typeDefinitionEClass = createEClass(TYPE_DEFINITION);
 
     varDefinitionEClass = createEClass(VAR_DEFINITION);
+    createEAttribute(varDefinitionEClass, VAR_DEFINITION__NAME);
 
     actionDefinitionEClass = createEClass(ACTION_DEFINITION);
 
     unitFakeDefinitionEClass = createEClass(UNIT_FAKE_DEFINITION);
+    createEAttribute(unitFakeDefinitionEClass, UNIT_FAKE_DEFINITION__NAME);
 
     typeFakeDefinitionEClass = createEClass(TYPE_FAKE_DEFINITION);
+    createEAttribute(typeFakeDefinitionEClass, TYPE_FAKE_DEFINITION__NAME);
 
     actionFakeDefinitionEClass = createEClass(ACTION_FAKE_DEFINITION);
+    createEAttribute(actionFakeDefinitionEClass, ACTION_FAKE_DEFINITION__NAME);
 
     skillFakeDefinitionEClass = createEClass(SKILL_FAKE_DEFINITION);
+    createEAttribute(skillFakeDefinitionEClass, SKILL_FAKE_DEFINITION__NAME);
 
     varFakeDefinitionEClass = createEClass(VAR_FAKE_DEFINITION);
 
@@ -2567,7 +2639,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_SpeciesEClass.getESuperTypes().add(this.getS_Declaration());
     s_SpeciesEClass.getESuperTypes().add(this.getTypeDefinition());
     s_DataEClass.getESuperTypes().add(this.getStatement());
-    s_DataEClass.getESuperTypes().add(this.getGamlDefinition());
+    s_DataEClass.getESuperTypes().add(this.getTypeDefinition());
     s_ExperimentEClass.getESuperTypes().add(this.getStatement());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
@@ -2677,6 +2749,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_SpeciesEClass, S_Species.class, "S_Species", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_DataEClass, S_Data.class, "S_Data", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getS_Data_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Data.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_ExperimentEClass, S_Experiment.class, "S_Experiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -2750,23 +2823,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getTypeInfo_Second(), this.getExpression(), null, "second", null, 0, 1, TypeInfo.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(gamlDefinitionEClass, GamlDefinition.class, "GamlDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getGamlDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, GamlDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(equationDefinitionEClass, EquationDefinition.class, "EquationDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getEquationDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, EquationDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(typeDefinitionEClass, TypeDefinition.class, "TypeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(varDefinitionEClass, VarDefinition.class, "VarDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getVarDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, VarDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(actionDefinitionEClass, ActionDefinition.class, "ActionDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(unitFakeDefinitionEClass, UnitFakeDefinition.class, "UnitFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getUnitFakeDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, UnitFakeDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(typeFakeDefinitionEClass, TypeFakeDefinition.class, "TypeFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getTypeFakeDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, TypeFakeDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(actionFakeDefinitionEClass, ActionFakeDefinition.class, "ActionFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getActionFakeDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, ActionFakeDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(skillFakeDefinitionEClass, SkillFakeDefinition.class, "SkillFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSkillFakeDefinition_Name(), ecorePackage.getEString(), "name", null, 0, 1, SkillFakeDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(varFakeDefinitionEClass, VarFakeDefinition.class, "VarFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

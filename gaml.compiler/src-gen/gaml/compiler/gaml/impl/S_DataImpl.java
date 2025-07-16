@@ -3,7 +3,6 @@
  */
 package gaml.compiler.gaml.impl;
 
-import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Data;
 
@@ -158,44 +157,6 @@ public class S_DataImpl extends StatementImpl implements S_Data
         return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
     }
     return super.eIsSet(featureID);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public int eBaseStructuralFeatureID(int derivedFeatureID, Class<?> baseClass)
-  {
-    if (baseClass == GamlDefinition.class)
-    {
-      switch (derivedFeatureID)
-      {
-        case GamlPackage.SDATA__NAME: return GamlPackage.GAML_DEFINITION__NAME;
-        default: return -1;
-      }
-    }
-    return super.eBaseStructuralFeatureID(derivedFeatureID, baseClass);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public int eDerivedStructuralFeatureID(int baseFeatureID, Class<?> baseClass)
-  {
-    if (baseClass == GamlDefinition.class)
-    {
-      switch (baseFeatureID)
-      {
-        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.SDATA__NAME;
-        default: return -1;
-      }
-    }
-    return super.eDerivedStructuralFeatureID(baseFeatureID, baseClass);
   }
 
   /**

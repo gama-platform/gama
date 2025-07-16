@@ -4736,6 +4736,12 @@ rule__TypeDefinition__Alternatives
 		ruleTypeFakeDefinition
 		{ after(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1()); }
 	)
+	|
+	(
+		{ before(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); }
+		ruleS_Data
+		{ after(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); }
+	)
 ;
 finally {
 	restoreStackSize(stackSize);

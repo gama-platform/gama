@@ -7790,6 +7790,15 @@ ruleTypeDefinition returns [EObject current=null]
 			$current = $this_TypeFakeDefinition_1.current;
 			afterParserOrEnumRuleCall();
 		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2());
+		}
+		this_S_Data_2=ruleS_Data
+		{
+			$current = $this_S_Data_2.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 

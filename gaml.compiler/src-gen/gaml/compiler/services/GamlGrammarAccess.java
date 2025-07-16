@@ -4471,13 +4471,12 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cSkillFakeDefinitionParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		private final RuleCall cActionDefinitionParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall cEquationDefinitionParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cS_DataParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		
 		//GamlDefinition:
-		//    TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition | S_Data;
+		//    TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition | S_Data
+		//TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//TypeDefinition
@@ -4497,9 +4496,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//EquationDefinition
 		public RuleCall getEquationDefinitionParserRuleCall_5() { return cEquationDefinitionParserRuleCall_5; }
-		
-		//S_Data
-		public RuleCall getS_DataParserRuleCall_6() { return cS_DataParserRuleCall_6; }
 	}
 	public class EquationDefinitionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.EquationDefinition");
@@ -4525,12 +4521,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cS_SpeciesParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cTypeFakeDefinitionParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cS_DataParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
 		//TypeDefinition:
-		//    S_Species | TypeFakeDefinition ;
+		//    S_Species | TypeFakeDefinition | S_Data;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//S_Species | TypeFakeDefinition
+		//S_Species | TypeFakeDefinition | S_Data
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//S_Species
@@ -4538,6 +4535,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//TypeFakeDefinition
 		public RuleCall getTypeFakeDefinitionParserRuleCall_1() { return cTypeFakeDefinitionParserRuleCall_1; }
+		
+		//S_Data
+		public RuleCall getS_DataParserRuleCall_2() { return cS_DataParserRuleCall_2; }
 	}
 	public class VarDefinitionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.VarDefinition");
@@ -6219,7 +6219,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//GamlDefinition:
-	//    TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition | S_Data;
+	//    TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition;
 	public GamlDefinitionElements getGamlDefinitionAccess() {
 		return pGamlDefinition;
 	}
@@ -6239,7 +6239,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//TypeDefinition:
-	//    S_Species | TypeFakeDefinition ;
+	//    S_Species | TypeFakeDefinition | S_Data;
 	public TypeDefinitionElements getTypeDefinitionAccess() {
 		return pTypeDefinition;
 	}

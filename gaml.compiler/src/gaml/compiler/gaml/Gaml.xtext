@@ -371,13 +371,13 @@ EquationRef returns Expression:
 	{EquationRef} ref=[EquationDefinition|Valid_ID];
 
 GamlDefinition:
-	TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition | S_Data;
+	TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition;
 
 EquationDefinition:
 	S_Equations | EquationFakeDefinition;
 
 TypeDefinition:
-	S_Species | TypeFakeDefinition ;
+	S_Species | TypeFakeDefinition | S_Data;
 
 VarDefinition:
 	=>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);

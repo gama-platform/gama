@@ -177,6 +177,8 @@ public class GamlSwitch<T> extends Switch<T>
         S_Data s_Data = (S_Data)theEObject;
         T result = caseS_Data(s_Data);
         if (result == null) result = caseStatement(s_Data);
+        if (result == null) result = caseTypeDefinition(s_Data);
+        if (result == null) result = caseActionDefinition(s_Data);
         if (result == null) result = caseGamlDefinition(s_Data);
         if (result == null) result = defaultCase(theEObject);
         return result;
