@@ -2,15 +2,12 @@ package gama.gaml.factories;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.annotations.precompiler.GamlAnnotations.factory;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.gaml.descriptions.DataDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
 
-@factory(handles = { ISymbolKind.DATA })
 public class DataFactory extends SymbolFactory {
 
 	@Override
