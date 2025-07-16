@@ -29,6 +29,7 @@ import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.descriptions.ValidationContext;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlDefinition;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
@@ -95,8 +96,8 @@ public class ErrorToDiagnoticTranslator {
 		EStructuralFeature feature = null;
 		final EObject object = e.getStatement();
 		String[] data = e.getData();
-		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
-			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
+		if (object instanceof GamlDefinition gd && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
+			GamlDefinitionUtils.getDefinitionNameAttribute(gd);
 		} else if (object instanceof Statement) {
 			final StatementImpl s = (StatementImpl) object;
 			if (s.eIsSet(GamlPackage.Literals.STATEMENT__KEY)) {
@@ -104,7 +105,7 @@ public class ErrorToDiagnoticTranslator {
 			} else if (s.eIsSet(GamlPackage.Literals.SDEFINITION__TKEY)) {
 				feature = GamlPackage.Literals.SDEFINITION__TKEY;
 			}
-		} else if (object instanceof Model) { feature = GamlPackage.Literals.GAML_DEFINITION__NAME; }
+		} else if (object instanceof Model) { feature = GamlPackage.eINSTANCE.getGamlDefinition().getEStructuralFeature(0); }
 		if (!Arrays.contains(e.getData(), null)) {
 			final int index = ValidationMessageAcceptor.INSIGNIFICANT_INDEX;
 			return createDiagnostic(mode, toDiagnosticSeverity(e), e.toString(), object, feature, index, e.getCode(),

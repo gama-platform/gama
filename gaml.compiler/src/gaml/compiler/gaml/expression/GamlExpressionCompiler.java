@@ -102,6 +102,7 @@ import gaml.compiler.gaml.EquationRef;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Function;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.If;
 import gaml.compiler.gaml.IntLiteral;
 import gaml.compiler.gaml.Parameter;
@@ -343,7 +344,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (object == null) return null;
 		String primary = EGaml.getInstance().getKeyOf(object);
 		if (primary == null) {
-			primary = object.getRef().getName();
+			primary = GamlDefinitionUtils.getName(object.getRef());
 		} else if (SyntacticFactory.SPECIES_VAR.equals(primary)) { primary = SPECIES; }
 
 		final IType t = currentTypesManager.get(primary);
@@ -910,7 +911,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 	@Override
 	public IExpression caseTypeDefinition(final TypeDefinition object) {
-		return caseVar(object.getName(), object);
+		return caseVar(GamlDefinitionUtils.getName(object), object);
 	}
 
 	@Override

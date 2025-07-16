@@ -49,6 +49,7 @@ import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.GamlDefinition;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Parameter;
@@ -202,9 +203,9 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	 * @return the string
 	 */
 	private String findNameOf(final EObject o) {
-		if (o instanceof GamlDefinition) return ((GamlDefinition) o).getName();
-		if (o instanceof S_Display) return ((S_Display) o).getName();
-		if (o instanceof HeadlessExperiment) return ((HeadlessExperiment) o).getName();
+		if (o instanceof GamlDefinition gd) return GamlDefinitionUtils.getName(gd);
+		if (o instanceof S_Display sd) return sd.getName();
+		if (o instanceof HeadlessExperiment he) return he.getName();
 
 		return null;
 	}

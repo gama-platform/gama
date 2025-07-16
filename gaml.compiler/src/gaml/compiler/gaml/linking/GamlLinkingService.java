@@ -30,9 +30,10 @@ import com.google.inject.Inject;
 
 import gama.core.runtime.IExecutionContext;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.GamlDefinition;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.resource.GamlResource;
 
 /**
  * The class GamlLinkingService.
@@ -104,7 +105,7 @@ public class GamlLinkingService extends DefaultLinkingService {
 	 */
 	public EObject create(final String name, final EClass clazz) {
 		final GamlDefinition stub = (GamlDefinition) EGaml.getInstance().getFactory().create(clazz);
-		stub.setName(name);
+		GamlDefinitionUtils.setName(stub, name);
 		return stub;
 	}
 
