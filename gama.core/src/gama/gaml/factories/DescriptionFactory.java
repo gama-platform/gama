@@ -148,16 +148,27 @@ public class DescriptionFactory {
 	 */
 	public final static SymbolProto getVarProto(final String keyword, final IDescription superDesc) {
 		final SymbolProto p = VAR_KEYWORDS_PROTOS.get(keyword);
-		if (p == null) {
-			// If not a var declaration, we try to find if it is not a species
-			// name (in which case, it is an "agent"
-			// declaration prototype)
-			if (superDesc == null) return null;
-			final ModelDescription md = superDesc.getModelDescription();
-			if (md == null) return null;
-			final IType t = md.getTypesManager().get(keyword);
-			if (t.isAgentType()) return getVarProto(AGENT, null);
+		if (p != null) {
+			return p;
 		}
+		
+		// Not a var declaration, we try to find if it is a user defined type (data_type or species).
+		// We need the model description to find those.
+		if (superDesc == null || superDesc.getModelDescription() == null) {
+			return null;
+		}
+
+		// If it's a species, it is an "agent" declaration prototype.
+		final ModelDescription md = superDesc.getModelDescription();
+		final IType t = md.getTypesManager().get(keyword);
+		if (t.isAgentType()) return getVarProto(AGENT, null);
+		else if (t.isDataType()) {
+			// If it is a data type, we return the data prototype
+			final SymbolProto dataProto = KINDS_PROTOS.get(ISymbolKind.DATA);
+			if (dataProto != null) return dataProto;
+		}
+		
+		
 		return p;
 	}
 
@@ -550,6 +561,7 @@ public class DescriptionFactory {
 			source.visitGrids(visitor);
 			source.visitSpecies(visitor);
 			source.visitExperiments(visitor);
+			source.visitData(visitor);
 			children = childrenList.items();
 		}
 		final Facets facets = source.copyFacets(md);

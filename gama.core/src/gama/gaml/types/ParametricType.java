@@ -27,6 +27,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
+import gama.gaml.descriptions.DataDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -224,6 +225,9 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 */
 	@Override
 	public boolean isSkillType() { return false; }
+	
+	@Override
+	public boolean isDataType() { return false; }
 
 	/**
 	 * Method defaultContentType()
@@ -261,6 +265,17 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 		return type.getSpecies();
 		// return contentsType.getSpecies();
 	}
+	
+	@Override
+	public String getDataName() {
+		return type.getDataName();
+	}
+
+	@Override
+	public DataDescription getData() {
+		return type.getData();
+	}
+	
 
 	@Override
 	public SpeciesDescription getDenotedSpecies() {
@@ -551,5 +566,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 
 	@Override
 	public IExpression getExpression() { return expression; }
+
+
 
 }

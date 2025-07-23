@@ -28,6 +28,7 @@ import gama.core.util.ICollector;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
+import gama.gaml.descriptions.DataDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -63,6 +64,9 @@ public class Types {
 
 	/** The built in species map. */
 	private static volatile Map<String, SpeciesDescription> builtInSpeciesMap;
+	
+	/** The built in data map. */
+	private static volatile Map<String, DataDescription> builtInDataMap;
 
 	/** The Constant NO_TYPE. */
 	public final static IType NO_TYPE = new GamaNoType();
@@ -361,6 +365,17 @@ public class Types {
 		root.getAllSpecies(result);
 		builtInSpeciesMap = StreamEx.of(result).toMap(SpeciesDescription::getName, sd -> sd);
 		return builtInSpeciesMap;
+	}
+	
+	public static Map<String, ? extends DataDescription> getBuiltInData() {
+		
+		if (builtInDataMap != null) return builtInDataMap;
+		
+		final ModelDescription root = ModelDescription.ROOT;
+		List<DataDescription> result = new ArrayList();
+		root.getAllData(result);
+		builtInDataMap = StreamEx.of(result).toMap(DataDescription::getName, dd -> dd);
+		return builtInDataMap;
 	}
 
 	/**

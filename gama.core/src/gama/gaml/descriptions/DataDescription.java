@@ -2,9 +2,7 @@ package gama.gaml.descriptions;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.core.util.GamaData;
 import gama.gaml.statements.Facets;
 
 
@@ -25,12 +23,15 @@ public class DataDescription extends TypeDescription {
 	public String getTitle() {
 		return "data_type " + getName();
 	}
-
+	
+	@Override
+	public DataDescription getParent() {
+		return (DataDescription) super.getParent();
+	}
 
 	@Override
-	public Class<? extends IExperimentAgent> getJavaBase() {
-		String type = getLitteral(IKeyword.TYPE);
-		return GamaMetaModel.INSTANCE.getJavaBaseFor(type); 
-		//TODO: maybe have to add declared variables inside?
+	public Class getJavaBase() {
+		return GamaData.class; 
+//		throw new NotImplementedException("DataDescription.getJavaBase() has not been implemented yet.");
 	}
 }

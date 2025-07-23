@@ -58,6 +58,8 @@ public abstract class TypeDescription extends SymbolDescription {
 	/** The attributes. */
 	protected IMap<String, VariableDescription> attributes;
 
+	protected IMap<String, DataDescription> dataTypes;
+
 	/** The parent. */
 	protected TypeDescription parent;
 
@@ -127,6 +129,30 @@ public abstract class TypeDescription extends SymbolDescription {
 		for (final ActionDescription f : getActions()) {
 			result.set("Actions:", f.getName(), f.getShortDocumentation(true));
 		}
+	}
+	
+	@Override
+	public IDescription addChild(final IDescription child) {
+		var c = super.addChild(child);
+		if (c instanceof DataDescription data ) { addDataType(data);}
+		return c;
+	}
+	
+	protected void addDataType(final DataDescription data) {
+		
+		final String dataName = data.getName();
+		if (dataTypes == null) {
+			dataTypes = GamaMapFactory.create();
+		}
+		else {
+			if (dataTypes.get(dataName) != null) {
+				data.error("Data type " + dataName + " already declared. Data type names must be unique",
+						IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), dataName);
+				return;
+			}
+		}
+		
+		dataTypes.put(data.getName(), data);
 	}
 
 	@Override
@@ -375,7 +401,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 *            the vd
 	 */
 	public void addInheritedAttribute(final VariableDescription vd) {
-		// We dont inherit from previously added variables, as a child and its
+		// We don't inherit from previously added variables, as a child and its
 		// parent should share the same javaBase
 
 		final String inheritedVarName = vd.getName();
@@ -804,6 +830,34 @@ public abstract class TypeDescription extends SymbolDescription {
 		if (attributes == null) return true;
 		return attributes.forEachValue(visitor);
 	}
+	/**
+	 * Visit all data types.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 * @return true, if successful
+	 */
+	public boolean visitAllDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+		if (parent != null && parent != this && !parent.visitAllDataTypes(visitor)) return false;
+		return visitOwnDataTypes(visitor);
+	}
+	
+	/**
+	 * Visit own data types.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 * @return true, if successful
+	 */
+	public boolean visitOwnDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+		if (dataTypes == null) return true;
+		return dataTypes.forEachValue(each -> {
+			if (!visitor.process(each)) return false;
+			return true;
+		});
+	}
+	
+
 
 	/**
 	 * Visit own actions.

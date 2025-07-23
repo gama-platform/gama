@@ -58,6 +58,7 @@ public class ModelDescription extends SpeciesDescription {
 
 	/** The experiments. */
 	private IMap<String, ExperimentDescription> experiments;
+	
 
 	/** The types. */
 	final ITypesManager types;
@@ -387,6 +388,11 @@ public class ModelDescription extends SpeciesDescription {
 		if (hasMicroSpecies()) return getMicroSpecies().get(spec);
 		return null;
 	}
+	
+	public DataDescription getDataDescription(final String data) {
+		if (getTypesManager() != null) return getTypesManager().get(data).getData();
+		return null;
+	}
 
 	@Override
 	public IType getTypeNamed(final String s) {
@@ -450,6 +456,7 @@ public class ModelDescription extends SpeciesDescription {
 		}
 		return desc;
 	}
+	
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
@@ -535,6 +542,8 @@ public class ModelDescription extends SpeciesDescription {
 		})) return;
 		if (experiments != null) { experiments.forEachValue(visitor); }
 	}
+	
+
 
 	/**
 	 * Gets the all species.
@@ -549,6 +558,30 @@ public class ModelDescription extends SpeciesDescription {
 			return true;
 		};
 		visitAllSpecies(visitor);
+	}
+	
+	public void getAllData(final List<DataDescription> accumulator) {
+		final DescriptionVisitor<DataDescription> visitor = desc -> {
+			accumulator.add((DataDescription) desc);
+			return true;
+		};
+		
+		visitAllDataTypes(visitor);
+		
+	}
+	
+	@Override
+	public boolean visitAllDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+		if (visitor == null || dataTypes == null) return true;
+		
+		for (var dataType : dataTypes.values()) {
+			if (!visitor.process(dataType)) return false;
+		}
+		if (experiments != null) { experiments.forEachValue(e -> e.visitAllDataTypes(visitor)); }
+		if (microModels != null) {
+			microModels.forEachValue(md -> md.visitAllDataTypes(visitor));
+		}
+		return true;
 	}
 
 	@Override

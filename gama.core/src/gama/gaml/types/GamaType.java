@@ -27,6 +27,7 @@ import gama.core.util.ICollector;
 import gama.core.util.IContainer;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
+import gama.gaml.descriptions.DataDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -263,6 +264,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	@Override
 	public boolean isSkillType() { return false; }
+	
+	@Override
+	public boolean isDataType() { return false; }
 
 	@Override
 	public IType<?> getContentType() { return Types.NO_TYPE; }
@@ -275,7 +279,13 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	@Override
 	public SpeciesDescription getSpecies() { return null; }
-
+	
+	@Override
+	public String getDataName() { return null; }
+	
+	@Override
+	public DataDescription getData() { return null; }
+	
 	@Override
 	public SpeciesDescription getDenotedSpecies() { return getSpecies(); }
 
