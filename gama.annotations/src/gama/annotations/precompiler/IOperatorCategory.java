@@ -134,4 +134,7 @@ public interface IOperatorCategory {
 	
 	/** The Constant GENSTAR. */
 	public static final String GENSTAR 			= "Genstar operators";
+	
+	public static final String SPARQL 			= "SPARQL operators";
+	
 }
