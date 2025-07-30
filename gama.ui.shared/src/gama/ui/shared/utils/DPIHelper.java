@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.DPIUtil;
@@ -20,6 +21,8 @@ import org.eclipse.swt.widgets.Monitor;
  */
 public class DPIHelper {
 
+	
+	public static final boolean USE_CAIRO_AUTO_SCALE = SWT.getPlatform().equals("gtk");
 	/**
 	 * Checks if is hi DPI.
 	 *
@@ -51,7 +54,7 @@ public class DPIHelper {
 		// Temp !
 		// if (true) return v;
 		final int deviceZoom = monitor == null ? DPIUtil.getDeviceZoom() : monitor.getZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || USE_CAIRO_AUTO_SCALE) return v;
 		final float scaleFactor = deviceZoom / 100f;
 		return Math.round(v * scaleFactor);
 	}
@@ -67,7 +70,7 @@ public class DPIHelper {
 	 */
 	public static double autoScaleUp(final Monitor monitor, final double v) {
 		final int deviceZoom = monitor == null ? DPIUtil.getDeviceZoom() : monitor.getZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || USE_CAIRO_AUTO_SCALE) return v;
 		final double scaleFactor = deviceZoom / 100d;
 		return v * scaleFactor;
 	}
@@ -82,7 +85,7 @@ public class DPIHelper {
 		// Temp !
 		// if (true) return v;
 		final int deviceZoom = monitor == null ? DPIUtil.getDeviceZoom() : monitor.getZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || USE_CAIRO_AUTO_SCALE) return v;
 		final float scaleFactor = deviceZoom / 100f;
 		return Math.round(v / scaleFactor);
 	}
@@ -131,7 +134,7 @@ public class DPIHelper {
 		// Temp !
 		// if (true) return v;
 		final int deviceZoom = monitor == null ? DPIUtil.getDeviceZoom() : monitor.getZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || USE_CAIRO_AUTO_SCALE) return v;
 		final double scaleFactor = deviceZoom / 100d;
 		return v / scaleFactor;
 	}

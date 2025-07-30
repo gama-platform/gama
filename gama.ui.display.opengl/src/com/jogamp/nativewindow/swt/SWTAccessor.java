@@ -39,6 +39,7 @@ import com.jogamp.nativewindow.macosx.MacOSXGraphicsDevice;
 import com.jogamp.nativewindow.windows.WindowsGraphicsDevice;
 import com.jogamp.nativewindow.x11.X11GraphicsDevice;
 
+import gama.ui.shared.utils.DPIHelper;
 import jogamp.nativewindow.Debug;
 import jogamp.nativewindow.macosx.OSXUtil;
 import jogamp.nativewindow.x11.X11Lib;
@@ -617,7 +618,7 @@ public class SWTAccessor {
 				+ getDeviceZoomScalingFactor());
 		out.println("SWT: Display.DPI " + d.getDPI() + "; DPIUtil: autoScalingFactor " + getAutoScalingFactor()
 				+ " (use-swt " + (null != swt_dpiutil_getScalingFactor) + "), useCairoAutoScale "
-				+ DPIUtil.useCairoAutoScale());
+				+ DPIHelper.USE_CAIRO_AUTO_SCALE);
 	}
 
 	//
@@ -639,7 +640,7 @@ public class SWTAccessor {
 		}
 		// Mimick original code ..
 		final int deviceZoom = DPIUtil.getDeviceZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return 1f;
+		if (100 == deviceZoom || DPIHelper.USE_CAIRO_AUTO_SCALE) return 1f;
 		return deviceZoom / 100f;
 	}
 
@@ -651,7 +652,7 @@ public class SWTAccessor {
 	 */
 	public static int autoScaleUp(final int v) {
 		final int deviceZoom = DPIUtil.getDeviceZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || DPIHelper.USE_CAIRO_AUTO_SCALE) return v;
 		final float scaleFactor = deviceZoom / 100f;
 		return Math.round(v * scaleFactor);
 	}
@@ -664,7 +665,7 @@ public class SWTAccessor {
 	 */
 	public static int autoScaleDown(final int v) {
 		final int deviceZoom = DPIUtil.getDeviceZoom();
-		if (100 == deviceZoom || DPIUtil.useCairoAutoScale()) return v;
+		if (100 == deviceZoom || DPIHelper.USE_CAIRO_AUTO_SCALE) return v;
 		final float scaleFactor = deviceZoom / 100f;
 		return Math.round(v / scaleFactor);
 	}

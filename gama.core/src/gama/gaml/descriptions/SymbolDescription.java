@@ -1246,7 +1246,7 @@ public abstract class SymbolDescription implements IDescription {
 			if (fp.values != null) {
 				if (!processMultiValuedFacet(facet, expr, fp)) return false;
 			} else {
-				// Some expresssions might not be compiled
+				// Some expressions might not be compiled
 				IExpression exp = compileExpression(facet, expr, fp);
 				if (exp != null && !isBuiltIn) {
 					final IType<?> actualType = exp.getGamlType();
