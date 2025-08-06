@@ -947,9 +947,6 @@ public interface IKeyword {
 	/** The save. */
 	String SAVE = "save";
 
-	/** The save batch. */
-	String SAVE_BATCH = "save_batch";
-
 	/** The scale. */
 	String SCALE = "scale";
 
