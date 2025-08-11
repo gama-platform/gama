@@ -70,11 +70,6 @@ import gama.gaml.types.IType;
 				internal = true,
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
-						name = Exploration.SAMPLE_SIZE,
-						type = IType.ID,
-						optional = false,
-						doc = @doc ("The size of the sample for Morris samples")),
-				@facet (
 						name = MorrisExploration.NB_LEVELS,
 						type = IType.ID,
 						optional = false,
@@ -106,7 +101,7 @@ import gama.gaml.types.IType;
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (
-						value = "method morris sample_size:100 nb_levels:4 outputs:['my_var'] report:'../path/to/report.txt;",
+						value = "method morris nb_levels:4 outputs:['my_var'] report:'../path/to/report.txt;",
 						isExecutable = false) }) })
 
 public class MorrisExploration extends AExplorationAlgorithm {
@@ -239,20 +234,10 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
-		int s = Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
-		int l = Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
-
 		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
 			@Override
 			public Object value() {
-				return l;
-			}
-		});
-
-		exp.add(new ParameterAdapter("Morris sample", IKeyword.MORRIS, IType.STRING) {
-			@Override
-			public Object value() {
-				return solutions == null ? s * l : solutions.size() == 0 ? sample : solutions.size();
+				return Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
 			}
 		});
 

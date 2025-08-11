@@ -121,7 +121,7 @@ experiment Sobol parent: batch_abstract type: batch until:( time > end_cycle ) {
 // to screen and rank parameters based on elementary effect (changes on outputs due to a small modification of 
 // one paameter value)
 experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method morris outputs:["nb_preys","nb_predators"] sample:10 levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
+	method morris outputs:["nb_preys","nb_predators"] levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
 }
 
 // This experiment computed beta d kuiper statistics to estimate the impact of parameters

@@ -31,6 +31,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.IExploration;
+import gama.core.kernel.batch.exploration.betadistribution.BetaExploration;
 import gama.core.kernel.batch.exploration.morris.Morris;
 import gama.core.kernel.batch.exploration.morris.MorrisExploration;
 import gama.core.kernel.batch.exploration.sampling.LatinhypercubeSampling;
@@ -40,6 +41,7 @@ import gama.core.kernel.batch.exploration.sampling.RandomSampling;
 import gama.core.kernel.batch.exploration.sampling.SaltelliSampling;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.ExperimentAgent;
+import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
@@ -112,6 +114,71 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			}
 
 		});
+
+		exp.add(new ParameterAdapter("Sampling method", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
+			@Override
+			public Object value() {
+				if (hasFacet(IKeyword.FROM)) return Exploration.FROM_FILE;
+				if (hasFacet(IKeyword.WITH)) return Exploration.FROM_LIST;
+				final String methodName = IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+				if (!hasFacet(Exploration.METHODS)) {
+					if (methodName==IKeyword.MORRIS) { return IKeyword.MORRIS; }
+					if (methodName==IKeyword.SOBOL) {return IKeyword.SALTELLI; }
+					return Exploration.DEFAULT_SAMPLING;
+				}
+				return hasFacet(Exploration.METHODS)
+						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : 
+							Exploration.DEFAULT_SAMPLING;
+			}
+		});
+		
+		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
+			@Override
+			public Object value() {
+				String method = Exploration.DEFAULT_SAMPLING; 
+				if (hasFacet(Exploration.METHODS)) {
+					method = Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()));
+				} else {
+					String xpm =IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+					if (hasFacet(IKeyword.FROM)) method = Exploration.FROM_FILE;
+					else if (hasFacet(IKeyword.WITH)) method = Exploration.FROM_LIST;
+					else if (xpm == IKeyword.MORRIS) method = IKeyword.MORRIS;
+					else if (xpm == IKeyword.SOBOL) method = IKeyword.SALTELLI;
+				}
+				int K = agent.getParametersToExplore().size();
+				int N = hasFacet(Exploration.SAMPLE_SIZE) ? Cast.asInt(agent.getScope(), 
+						getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope())) : sample_size;
+				int res = switch (method) {
+					case IKeyword.MORRIS:
+						yield (K+1) * (hasFacet(MorrisExploration.NB_LEVELS) ? 
+								Cast.asInt(agent.getScope(), getFacet(MorrisExploration.NB_LEVELS).value(agent.getScope())) : 
+									Morris.DEFAULT_LEVELS);
+					case IKeyword.SALTELLI:
+						yield N * (2*K + 2);
+					case IKeyword.LHS, IKeyword.ORTHOGONAL, IKeyword.UNIFORM:
+						yield N;
+					case Exploration.FROM_LIST:
+						yield buildParameterFromMap(agent.getScope()).size();
+					case Exploration.FROM_FILE:
+						yield buildParametersFromCSV(agent.getScope(), 
+								Cast.asString(agent.getScope(), getFacet(IKeyword.FROM).value(agent.getScope()))).size();
+					default:
+						yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
+								IntStreamEx.of(getFactorial(agent.getScope(), agent.getParametersToExplore()))
+									.reduce(1, (a,b) -> a*b) 
+									: (hasFacet(Exploration.SAMPLE_SIZE) ? N 
+											: IntStreamEx.of(agent.getParametersToExplore().stream().mapToInt(
+													b -> getParameterSwip(agent.getScope(), b).size())).reduce(1, (a,b) -> a*b)); 
+					
+				};
+				if (IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())]==IKeyword.BETAD 
+						&& hasFacet(BetaExploration.BOOTSTRAP)) { res = N + N * 
+											Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope()))
+											* K;}
+				return res;
+			}
+		});
+		
 		if (getOutputs() != null) {
 			exp.add(new ParameterAdapter("Outputs of interest", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 				@Override

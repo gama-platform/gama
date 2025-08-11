@@ -31,7 +31,6 @@ import gama.core.common.util.FileUtils;
 import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -135,7 +134,6 @@ public class SobolExploration extends AExplorationAlgorithm {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {}
 
-	@SuppressWarnings ("unchecked")
 	@Override
 	public void explore(final IScope scope) {
 		List<ParametersSet> solutions =
@@ -165,7 +163,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		sobol_analysis.saveResult(f);
 	}
 
-	@SuppressWarnings ("unchecked")
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
 		int sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
@@ -257,14 +255,6 @@ public class SobolExploration extends AExplorationAlgorithm {
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-
-		exp.add(new ParameterAdapter("Saltelli sample", IKeyword.SOBOL, IType.STRING) {
-			@Override
-			public Object value() {
-				return _sample;
-			}
-		});
-
 	}
 
 	/**

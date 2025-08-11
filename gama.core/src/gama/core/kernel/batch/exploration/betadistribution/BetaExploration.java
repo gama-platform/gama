@@ -33,7 +33,6 @@ import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -191,35 +190,6 @@ public class BetaExploration extends AExplorationAlgorithm {
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-		
-		exp.add(new ParameterAdapter("Sampled points", IKeyword.BETAD, IType.STRING) {
-				@Override public Object value() {
-					if (hasFacet(BOOTSTRAP)) {
-						return Cast.asInt(agent.getScope(), 
-								getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()))
-								+ Cast.asInt(agent.getScope(), 
-										getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()))
-								* Cast.asInt(agent.getScope(), getFacet(BOOTSTRAP).value(agent.getScope())) 
-								* getParams(agent).size();
-					}
-					if (hasFacet(Exploration.SAMPLE_SIZE)) {
-						return Cast.asInt(agent.getScope(), 
-							getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
-					} 
-					
-					return sample_size;
-				}
-		});
-
-		exp.add(new ParameterAdapter("Sampling method", IKeyword.BETAD, IType.STRING) {
-			@Override
-			public Object value() {
-				return hasFacet(Exploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
-						: Exploration.DEFAULT_SAMPLING;
-			}
-		});
-
 	}
 	
 	// ================================== //

@@ -33,7 +33,6 @@ import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -189,23 +188,6 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-
-		exp.add(new ParameterAdapter("Sampling method", IKeyword.STO, IType.STRING) {
-			@Override
-			public Object value() {
-				return hasFacet(Exploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
-						: Exploration.DEFAULT_SAMPLING;
-			}
-		});
-
-		exp.add(new ParameterAdapter("Sample size", IKeyword.STO, IType.STRING) {
-			@Override
-			public Object value() {
-				return sample_size;
-			}
-		});
-
 	}
 
 }
