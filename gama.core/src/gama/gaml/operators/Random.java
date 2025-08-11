@@ -21,6 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -433,8 +434,23 @@ public class Random {
 			see = { "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; binomial(15,0.6) = 9")
+	@test ("binomial(15,0) = 0")
+	@test ("binomial(15,1) = 15")
+	@test ("binomial(0,1) = 0")
+	@test ("binomial(0,0.9) = 0")
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
+		
+		// to avoid infinite loops
+		if (value == 1.0) return n; 
+		
+		if (value < 0.0 || value > 1.0) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the probability p must be in the range [0,1] but is " + value, scope), true);
+		}
+		if (n < 0) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the number of trials n must be a positive integer but is " + n, scope), true);
+		}
+		
 		final StringBuilder bits = new StringBuilder(64);
 		double bitValue = 0.5d;
 		while (value > 0) {
