@@ -46,6 +46,7 @@ import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
+import gaml.compiler.gaml.S_Skill;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Try;
@@ -310,6 +311,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.SSET:
 				sequence_S_Set(context, (S_Set) semanticObject); 
+				return; 
+			case GamlPackage.SSKILL:
+				sequence_S_Skill(context, (S_Skill) semanticObject); 
 				return; 
 			case GamlPackage.SSOLVE:
 				sequence_S_Solve(context, (S_Solve) semanticObject); 
@@ -1560,6 +1564,24 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 		feeder.accept(grammarAccess.getS_SetAccess().getExprExpressionParserRuleCall_1_0(), semanticObject.getExpr());
 		feeder.accept(grammarAccess.getS_SetAccess().getValueExpressionParserRuleCall_3_0(), semanticObject.getValue());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Section returns S_Skill
+	 *     S_Skill returns S_Skill
+	 *     GamlDefinition returns S_Skill
+	 *     TypeDefinition returns S_Skill
+	 *     ActionDefinition returns S_Skill
+	 *
+	 * Constraint:
+	 *     (key=_SkillKey firstFacet='name:'? name=ID facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_S_Skill(ISerializationContext context, S_Skill semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

@@ -53,6 +53,7 @@ import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
+import gaml.compiler.gaml.S_Skill;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Try;
@@ -190,6 +191,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ExperimentEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_SkillEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1064,6 +1072,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Experiment()
   {
     return s_ExperimentEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Skill()
+  {
+    return s_SkillEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getS_Skill_Name()
+  {
+    return (EAttribute)s_SkillEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -2424,6 +2454,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_ExperimentEClass = createEClass(SEXPERIMENT);
 
+    s_SkillEClass = createEClass(SSKILL);
+    createEAttribute(s_SkillEClass, SSKILL__NAME);
+
     s_DoEClass = createEClass(SDO);
 
     s_LoopEClass = createEClass(SLOOP);
@@ -2642,6 +2675,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_DataEClass.getESuperTypes().add(this.getTypeDefinition());
     s_ExperimentEClass.getESuperTypes().add(this.getStatement());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
+    s_SkillEClass.getESuperTypes().add(this.getStatement());
+    s_SkillEClass.getESuperTypes().add(this.getTypeDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
     s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
     s_IfEClass.getESuperTypes().add(this.getStatement());
@@ -2752,6 +2787,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEAttribute(getS_Data_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Data.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_ExperimentEClass, S_Experiment.class, "S_Experiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_SkillEClass, S_Skill.class, "S_Skill", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getS_Skill_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Skill.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_DoEClass, S_Do.class, "S_Do", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

@@ -38,7 +38,7 @@ HeadlessExperiment:
  * Global statements
  */
 S_Section returns Statement:
-	S_Global | S_Species | S_Data | S_Experiment;
+	S_Global | S_Species | S_Data | S_Experiment | S_Skill;
 
 S_Global:
 	key="global" (facets+=Facet)* (block=Block | ';');
@@ -50,6 +50,9 @@ S_Data:
 
 S_Experiment:
 	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* (block=Block | ';');
+	
+S_Skill:
+	key=_SkillKey (firstFacet="name:")? name=ID (facets+=Facet)* (block=Block | ';');
 
 /**
  * Statements
@@ -157,6 +160,8 @@ _ImageLayerKey: "image";
 
 _ExperimentKey:
 	"experiment";
+
+_SkillKey:"skill";
 
 _1Expr_Facets_BlockOrEnd_Key:
 	_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
@@ -377,7 +382,7 @@ EquationDefinition:
 	S_Equations | EquationFakeDefinition;
 
 TypeDefinition:
-	S_Species | S_Data | TypeFakeDefinition ;
+	S_Species | S_Data | S_Skill | TypeFakeDefinition;
 
 VarDefinition:
 	=>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);

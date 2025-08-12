@@ -744,6 +744,15 @@ ruleS_Section returns [EObject current=null]
 			$current = $this_S_Experiment_3.current;
 			afterParserOrEnumRuleCall();
 		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getS_SectionAccess().getS_SkillParserRuleCall_4());
+		}
+		this_S_Skill_4=ruleS_Skill
+		{
+			$current = $this_S_Skill_4.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 
@@ -1183,6 +1192,121 @@ ruleS_Experiment returns [EObject current=null]
 			otherlv_5=';'
 			{
 				newLeafNode(otherlv_5, grammarAccess.getS_ExperimentAccess().getSemicolonKeyword_4_1());
+			}
+		)
+	)
+;
+
+// Entry rule entryRuleS_Skill
+entryRuleS_Skill returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_SkillRule()); }
+	iv_ruleS_Skill=ruleS_Skill
+	{ $current=$iv_ruleS_Skill.current; }
+	EOF;
+
+// Rule S_Skill
+ruleS_Skill returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_SkillAccess().getKey_SkillKeyParserRuleCall_0_0());
+				}
+				lv_key_0_0=rule_SkillKey
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_SkillRule());
+					}
+					set(
+						$current,
+						"key",
+						lv_key_0_0,
+						"gaml.compiler.Gaml._SkillKey");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		(
+			(
+				lv_firstFacet_1_0='name:'
+				{
+					newLeafNode(lv_firstFacet_1_0, grammarAccess.getS_SkillAccess().getFirstFacetNameKeyword_1_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getS_SkillRule());
+					}
+					setWithLastConsumed($current, "firstFacet", lv_firstFacet_1_0, "name:");
+				}
+			)
+		)?
+		(
+			(
+				lv_name_2_0=RULE_ID
+				{
+					newLeafNode(lv_name_2_0, grammarAccess.getS_SkillAccess().getNameIDTerminalRuleCall_2_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getS_SkillRule());
+					}
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_2_0,
+						"gaml.compiler.Gaml.ID");
+				}
+			)
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_SkillAccess().getFacetsFacetParserRuleCall_3_0());
+				}
+				lv_facets_3_0=ruleFacet
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_SkillRule());
+					}
+					add(
+						$current,
+						"facets",
+						lv_facets_3_0,
+						"gaml.compiler.Gaml.Facet");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)*
+		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getS_SkillAccess().getBlockBlockParserRuleCall_4_0_0());
+					}
+					lv_block_4_0=ruleBlock
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getS_SkillRule());
+						}
+						set(
+							$current,
+							"block",
+							lv_block_4_0,
+							"gaml.compiler.Gaml.Block");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			    |
+			otherlv_5=';'
+			{
+				newLeafNode(otherlv_5, grammarAccess.getS_SkillAccess().getSemicolonKeyword_4_1());
 			}
 		)
 	)
@@ -3702,6 +3826,28 @@ rule_ExperimentKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRule
 	{
 		$current.merge(kw);
 		newLeafNode(kw, grammarAccess.get_ExperimentKeyAccess().getExperimentKeyword());
+	}
+;
+
+// Entry rule entryRule_SkillKey
+entryRule_SkillKey returns [String current=null]:
+	{ newCompositeNode(grammarAccess.get_SkillKeyRule()); }
+	iv_rule_SkillKey=rule_SkillKey
+	{ $current=$iv_rule_SkillKey.current.getText(); }
+	EOF;
+
+// Rule _SkillKey
+rule_SkillKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	kw='skill'
+	{
+		$current.merge(kw);
+		newLeafNode(kw, grammarAccess.get_SkillKeyAccess().getSkillKeyword());
 	}
 ;
 
@@ -7792,11 +7938,20 @@ ruleTypeDefinition returns [EObject current=null]
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2());
+			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_SkillParserRuleCall_2());
 		}
-		this_TypeFakeDefinition_2=ruleTypeFakeDefinition
+		this_S_Skill_2=ruleS_Skill
 		{
-			$current = $this_TypeFakeDefinition_2.current;
+			$current = $this_S_Skill_2.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_3());
+		}
+		this_TypeFakeDefinition_3=ruleTypeFakeDefinition
+		{
+			$current = $this_TypeFakeDefinition_3.current;
 			afterParserOrEnumRuleCall();
 		}
 	)

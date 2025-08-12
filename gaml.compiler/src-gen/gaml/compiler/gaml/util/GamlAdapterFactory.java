@@ -146,6 +146,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_ExperimentAdapter();
       }
       @Override
+      public Adapter caseS_Skill(S_Skill object)
+      {
+        return createS_SkillAdapter();
+      }
+      @Override
       public Adapter caseS_Do(S_Do object)
       {
         return createS_DoAdapter();
@@ -663,6 +668,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_ExperimentAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Skill <em>SSkill</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Skill
+   * @generated
+   */
+  public Adapter createS_SkillAdapter()
   {
     return null;
   }

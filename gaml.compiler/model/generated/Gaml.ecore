@@ -61,6 +61,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Experiment" eSuperTypes="#//Statement #//VarDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Skill" eSuperTypes="#//Statement #//TypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Loop" eSuperTypes="#//S_Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_If" eSuperTypes="#//Statement">

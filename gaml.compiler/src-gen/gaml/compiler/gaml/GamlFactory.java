@@ -150,6 +150,15 @@ public interface GamlFactory extends EFactory
   S_Experiment createS_Experiment();
 
   /**
+   * Returns a new object of class '<em>SSkill</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SSkill</em>'.
+   * @generated
+   */
+  S_Skill createS_Skill();
+
+  /**
    * Returns a new object of class '<em>SDo</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

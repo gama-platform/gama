@@ -53,6 +53,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//S_Data/name"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Experiment"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_Skill">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//S_Skill/name"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Do"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Loop"/>
     <genClasses ecoreClass="Gaml.ecore#//S_If">
