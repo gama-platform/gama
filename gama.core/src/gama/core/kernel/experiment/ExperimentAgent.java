@@ -727,7 +727,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @return the parameters
 	 */
 	@getter (IKeyword.PARAMETERS)
-	@doc ("retuns the map of parameters defined in this experiment")
+	@doc ("returns the map of parameters defined in this experiment")
 	public GamaMap<String, Object> getParameters(final IScope scope) {
 		return getParameterValues();
 	}
