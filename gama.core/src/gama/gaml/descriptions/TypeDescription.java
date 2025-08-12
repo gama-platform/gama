@@ -132,13 +132,6 @@ public abstract class TypeDescription extends SymbolDescription {
 		}
 	}
 
-	@Override
-	public IDescription addChild(final IDescription child) {
-		var c = super.addChild(child);
-		if (c instanceof DataTypeDescription data) { addDataType(data); }
-		return c;
-	}
-
 	/**
 	 * Adds the data type.
 	 *

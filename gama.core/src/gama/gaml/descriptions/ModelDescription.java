@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -58,7 +58,6 @@ public class ModelDescription extends SpeciesDescription {
 
 	/** The experiments. */
 	private IMap<String, ExperimentDescription> experiments;
-	
 
 	/** The types. */
 	final ITypesManager types;
@@ -329,7 +328,9 @@ public class ModelDescription extends SpeciesDescription {
 	@Override
 	public IDescription addChild(final IDescription child) {
 		if (child == null) return null;
-		if (child instanceof ModelDescription md) {
+		if (child instanceof DataTypeDescription data) {
+			addDataType(data);
+		} else if (child instanceof ModelDescription md) {
 			md.getTypesManager().setParent(getTypesManager());
 			if (microModels == null) { microModels = GamaMapFactory.create(); }
 			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
@@ -388,7 +389,14 @@ public class ModelDescription extends SpeciesDescription {
 		if (hasMicroSpecies()) return getMicroSpecies().get(spec);
 		return null;
 	}
-	
+
+	/**
+	 * Gets the data description.
+	 *
+	 * @param data
+	 *            the data
+	 * @return the data description
+	 */
 	public DataTypeDescription getDataDescription(final String data) {
 		if (getTypesManager() != null) return getTypesManager().get(data).getData();
 		return null;
@@ -456,7 +464,6 @@ public class ModelDescription extends SpeciesDescription {
 		}
 		return desc;
 	}
-	
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
@@ -542,8 +549,6 @@ public class ModelDescription extends SpeciesDescription {
 		})) return;
 		if (experiments != null) { experiments.forEachValue(visitor); }
 	}
-	
-
 
 	/**
 	 * Gets the all species.
@@ -559,28 +564,31 @@ public class ModelDescription extends SpeciesDescription {
 		};
 		visitAllSpecies(visitor);
 	}
-	
+
+	/**
+	 * Gets the all data.
+	 *
+	 * @param accumulator
+	 *            the accumulator
+	 * @return the all data
+	 */
 	public void getAllData(final List<DataTypeDescription> accumulator) {
 		final DescriptionVisitor<DataTypeDescription> visitor = desc -> {
-			accumulator.add((DataTypeDescription) desc);
+			accumulator.add(desc);
 			return true;
 		};
-		
+
 		visitAllDataTypes(visitor);
-		
+
 	}
-	
+
 	@Override
 	public boolean visitAllDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
 		if (visitor == null || dataTypes == null) return true;
-		
-		for (var dataType : dataTypes.values()) {
-			if (!visitor.process(dataType)) return false;
-		}
+
+		for (var dataType : dataTypes.values()) { if (!visitor.process(dataType)) return false; }
 		if (experiments != null) { experiments.forEachValue(e -> e.visitAllDataTypes(visitor)); }
-		if (microModels != null) {
-			microModels.forEachValue(md -> md.visitAllDataTypes(visitor));
-		}
+		if (microModels != null) { microModels.forEachValue(md -> md.visitAllDataTypes(visitor)); }
 		return true;
 	}
 
