@@ -242,7 +242,8 @@ public class ModelFactory extends SymbolFactory {
 		experimentNodes.forEach((s, experimentNode) -> {
 			complementSpecies(model.getExperiment(experimentNode.getName()), experimentNode);
 		});
-		dataNodes.forEach((s, dataNode) -> { complementData(model.getDataDescription(dataNode.getName()), dataNode); });
+		// dataNodes.forEach((s, dataNode) -> { complementData(model.getDataDescription(dataNode.getName()), dataNode);
+		// });
 	}
 
 	/**
@@ -541,7 +542,7 @@ public class ModelFactory extends SymbolFactory {
 	void addData(final String origin, final ModelDescription model, final ISyntacticElement data,
 			final Map<String, DataTypeDescription> cache) {
 		// Create the data description
-		final IDescription desc = DescriptionFactory.create(data, model, Collections.EMPTY_LIST);
+		final IDescription desc = DescriptionFactory.create(data, model, null);
 		// if (desc == null) return;
 		final DataTypeDescription dDesc = (DataTypeDescription) desc;
 		cache.put(dDesc.getName(), dDesc);
