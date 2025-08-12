@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * TypeDescription.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * TypeDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
@@ -58,6 +58,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	/** The attributes. */
 	protected IMap<String, VariableDescription> attributes;
 
+	/** The data types. */
 	protected IMap<String, DataDescription> dataTypes;
 
 	/** The parent. */
@@ -130,28 +131,31 @@ public abstract class TypeDescription extends SymbolDescription {
 			result.set("Actions:", f.getName(), f.getShortDocumentation(true));
 		}
 	}
-	
+
 	@Override
 	public IDescription addChild(final IDescription child) {
 		var c = super.addChild(child);
-		if (c instanceof DataDescription data ) { addDataType(data);}
+		if (c instanceof DataDescription data) { addDataType(data); }
 		return c;
 	}
-	
+
+	/**
+	 * Adds the data type.
+	 *
+	 * @param data
+	 *            the data
+	 */
 	protected void addDataType(final DataDescription data) {
-		
+
 		final String dataName = data.getName();
 		if (dataTypes == null) {
 			dataTypes = GamaMapFactory.create();
+		} else if (dataTypes.get(dataName) != null) {
+			data.error("Data type " + dataName + " already declared. Data type names must be unique",
+					IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), dataName);
+			return;
 		}
-		else {
-			if (dataTypes.get(dataName) != null) {
-				data.error("Data type " + dataName + " already declared. Data type names must be unique",
-						IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), dataName);
-				return;
-			}
-		}
-		
+
 		dataTypes.put(data.getName(), data);
 	}
 
@@ -830,6 +834,7 @@ public abstract class TypeDescription extends SymbolDescription {
 		if (attributes == null) return true;
 		return attributes.forEachValue(visitor);
 	}
+
 	/**
 	 * Visit all data types.
 	 *
@@ -841,7 +846,7 @@ public abstract class TypeDescription extends SymbolDescription {
 		if (parent != null && parent != this && !parent.visitAllDataTypes(visitor)) return false;
 		return visitOwnDataTypes(visitor);
 	}
-	
+
 	/**
 	 * Visit own data types.
 	 *
@@ -856,8 +861,6 @@ public abstract class TypeDescription extends SymbolDescription {
 			return true;
 		});
 	}
-	
-
 
 	/**
 	 * Visit own actions.

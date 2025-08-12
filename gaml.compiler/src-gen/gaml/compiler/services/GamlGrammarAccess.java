@@ -4520,24 +4520,24 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.TypeDefinition");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cS_SpeciesParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cTypeFakeDefinitionParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cS_DataParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cS_DataParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cTypeFakeDefinitionParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
 		//TypeDefinition:
-		//    S_Species | TypeFakeDefinition | S_Data;
+		//    S_Species | S_Data | TypeFakeDefinition ;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//S_Species | TypeFakeDefinition | S_Data
+		//S_Species | S_Data | TypeFakeDefinition
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//S_Species
 		public RuleCall getS_SpeciesParserRuleCall_0() { return cS_SpeciesParserRuleCall_0; }
 		
-		//TypeFakeDefinition
-		public RuleCall getTypeFakeDefinitionParserRuleCall_1() { return cTypeFakeDefinitionParserRuleCall_1; }
-		
 		//S_Data
-		public RuleCall getS_DataParserRuleCall_2() { return cS_DataParserRuleCall_2; }
+		public RuleCall getS_DataParserRuleCall_1() { return cS_DataParserRuleCall_1; }
+		
+		//TypeFakeDefinition
+		public RuleCall getTypeFakeDefinitionParserRuleCall_2() { return cTypeFakeDefinitionParserRuleCall_2; }
 	}
 	public class VarDefinitionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.VarDefinition");
@@ -6239,7 +6239,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//TypeDefinition:
-	//    S_Species | TypeFakeDefinition | S_Data;
+	//    S_Species | S_Data | TypeFakeDefinition ;
 	public TypeDefinitionElements getTypeDefinitionAccess() {
 		return pTypeDefinition;
 	}
