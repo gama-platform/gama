@@ -161,7 +161,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 		currentExperiment.setKeepSimulations(false);
 		res_outputs = currentExperiment.runSimulationsAndReturnResults(sets);
 
-		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		outputs = getLitteralOutputs();
 
 		Map<String, Map<Batch, Double>> res = new HashMap<>();
 		for (String out : outputs) {

@@ -72,14 +72,19 @@ import gama.gaml.types.IType;
 				@facet (
 						name = MorrisExploration.NB_LEVELS,
 						type = IType.ID,
-						optional = false,
-						doc = @doc ("Number of level for the Morris method, can't be 1")),
+						optional = true,
+						doc = @doc ("Number of level each trajectories is made of, can't be 1 / should be even - 4 by default")),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
 						of = IType.STRING,
 						optional = false,
 						doc = @doc ("The list of output variables to analyze through morris method")),
+				@facet (
+						name = Exploration.SAMPLE_SIZE,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of trajectories , 10 by default - usually between 5 and 15 but should be relative (positive correlation) to the number of parameters")),
 				@facet (
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
@@ -158,8 +163,9 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void explore(final IScope scope) {
-		this.sample = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
-		this.nb_levels = Cast.asInt(scope, getFacet(NB_LEVELS).value(scope));
+		this.sample =  hasFacet(Exploration.SAMPLE_SIZE) ? 
+				Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
+		this.nb_levels = hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
 			String path =
@@ -217,7 +223,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		List<String> names = new ArrayList<>();
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
-		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		outputs = getLitteralOutputs();
 
 		// Puck Fython
 		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);

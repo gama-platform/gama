@@ -1,6 +1,5 @@
 /*******************************************************************************************************
  *
- * ExperimentPlan.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -219,6 +218,11 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 			if (desc.getChildWithKeyword(EXPLORATION) != null) {
 
 				IDescription tmpDesc = desc.getChildWithKeyword(EXPLORATION);
+				if (tmpDesc.hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) {
+					IExpression xp = tmpDesc.getFacet(IKeyword.BATCH_VAR_OUTPUTS).getExpression();
+					if (xp.getGamlType().isAssignableFrom(Types.LIST))
+						desc.error( "Using " + IKeyword.BATCH_VAR_OUTPUTS + " requires to input a list: got "+xp.getDenotedType());
+				}
 				if (tmpDesc.hasFacet(Exploration.METHODS)) {
 
 					switch (tmpDesc.getLitteral(Exploration.METHODS)) {

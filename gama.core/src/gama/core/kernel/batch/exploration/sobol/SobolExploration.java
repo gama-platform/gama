@@ -210,7 +210,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		}
 
 		// Get the output variables of the sobol batch experiment
-		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		outputs = getLitteralOutputs();
 
 		// Build a sobol object
 		sobol_analysis = new Sobol(problem, outputs, sample, scope);

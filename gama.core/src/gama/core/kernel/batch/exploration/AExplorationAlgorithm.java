@@ -41,7 +41,6 @@ import gama.core.kernel.batch.exploration.sampling.RandomSampling;
 import gama.core.kernel.batch.exploration.sampling.SaltelliSampling;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.experiment.ParameterAdapter;
@@ -56,7 +55,10 @@ import gama.core.util.IMap;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.expressions.data.ListExpression;
+import gama.gaml.expressions.data.MapExpression;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.Containers;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaDateType;
 import gama.gaml.types.GamaFloatType;
@@ -64,6 +66,7 @@ import gama.gaml.types.GamaPointType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import one.util.streamex.IntStreamEx;
+import one.util.streamex.StreamEx;
 
 /**
  * The Class AExplorationAlgorithm.
@@ -134,49 +137,22 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		
 		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 			@Override
+			public Object value() { return estimateSamples(agent); }
+		});
+		
+		exp.add(new ParameterAdapter("Simulation runs", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
+			@Override
 			public Object value() {
-				String method = Exploration.DEFAULT_SAMPLING; 
-				if (hasFacet(Exploration.METHODS)) {
-					method = Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()));
-				} else {
-					String xpm =IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
-					if (hasFacet(IKeyword.FROM)) method = Exploration.FROM_FILE;
-					else if (hasFacet(IKeyword.WITH)) method = Exploration.FROM_LIST;
-					else if (xpm == IKeyword.MORRIS) method = IKeyword.MORRIS;
-					else if (xpm == IKeyword.SOBOL) method = IKeyword.SALTELLI;
+				int res = estimateSamples(agent);
+				final String methodName = IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+				if (Arrays.asList(IKeyword.SOBOL,IKeyword.MORRIS,IKeyword.BETAD).contains(methodName)) {
+					return res;
 				}
-				int K = agent.getParametersToExplore().size();
-				int N = hasFacet(Exploration.SAMPLE_SIZE) ? Cast.asInt(agent.getScope(), 
-						getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope())) : sample_size;
-				int res = switch (method) {
-					case IKeyword.MORRIS:
-						yield (K+1) * (hasFacet(MorrisExploration.NB_LEVELS) ? 
-								Cast.asInt(agent.getScope(), getFacet(MorrisExploration.NB_LEVELS).value(agent.getScope())) : 
-									Morris.DEFAULT_LEVELS);
-					case IKeyword.SALTELLI:
-						yield N * (2*K + 2);
-					case IKeyword.LHS, IKeyword.ORTHOGONAL, IKeyword.UNIFORM:
-						yield N;
-					case Exploration.FROM_LIST:
-						yield buildParameterFromMap(agent.getScope()).size();
-					case Exploration.FROM_FILE:
-						yield buildParametersFromCSV(agent.getScope(), 
-								Cast.asString(agent.getScope(), getFacet(IKeyword.FROM).value(agent.getScope()))).size();
-					default:
-						yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
-								IntStreamEx.of(getFactorial(agent.getScope(), agent.getParametersToExplore()))
-									.reduce(1, (a,b) -> a*b) 
-									: (hasFacet(Exploration.SAMPLE_SIZE) ? N 
-											: IntStreamEx.of(agent.getParametersToExplore().stream().mapToInt(
-													b -> getParameterSwip(agent.getScope(), b).size())).reduce(1, (a,b) -> a*b)); 
-					
-				};
-				if (IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())]==IKeyword.BETAD 
-						&& hasFacet(BetaExploration.BOOTSTRAP)) { res = N + N * 
-											Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope()))
-											* K;}
-				return res;
-			}
+				return res * 
+					(agent.getSpecies().hasFacet(IKeyword.REPEAT) ? 
+						Cast.asInt(agent.getScope(), 
+								agent.getSpecies().getFacet(IKeyword.REPEAT).value(agent.getScope())) 
+						: 1); }
 		});
 		
 		if (getOutputs() != null) {
@@ -223,6 +199,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	@Override
 	public IExpression getOutputs() { return outputsExpression; }
+	
+	/**
+	 * Return the name of variables / or string representation entered in BATCH_OUTPUT_VAR facet
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public IList<String> getLitteralOutputs() {;
+		return StreamEx.of(((ListExpression) outputsExpression)
+					.getElements()).map(IExpression::getName).toCollection(
+							Containers.listOf(Types.STRING));
+	}
 
 	/**
 	 * Construct the experimental plan based on the given the proper modeler input: from sampling methods, from a file
@@ -362,14 +349,19 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param scope
 	 * @return
 	 */
-	@SuppressWarnings ("unchecked")
 	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
 		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) throw GamaRuntimeException.error(
 				"You cannot use " + IKeyword.WITH + " facet without input a list of maps: got "+psexp.getDenotedType(), scope);
-		List<Map<String, Object>> parameterSets = Cast.asList(scope, psexp.value(scope));
-
-		return buildParametersSetList(scope, parameterSets);
+		List<IMap<IExpression, IExpression>> parameterSets = StreamEx.of( ((ListExpression) psexp).getElements() )
+				.map(e -> ((MapExpression) e).getElements()).toList();
+		List<Map<String, Object>> paramSets = new ArrayList<>();
+		for (IMap<IExpression, IExpression> ps : parameterSets) {
+			Map<String,Object> lt = new HashMap<>();
+			for (IExpression e : ps.keySet()) { lt.put(e.getName(), ps.get(e)); }
+			paramSets.add(lt);
+		}
+		return buildParametersSetList(scope, paramSets);
 	}
 
 	private List<ParametersSet> buildParametersSetList(final IScope scope,
@@ -433,8 +425,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			final IScope scope) {
 		StringBuilder sb = new StringBuilder();
 
-		@SuppressWarnings ("unchecked") List<String> outputs =
-				Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		List<String> outputs = getLitteralOutputs();
 		List<String> inputs = results.getKeys().anyValue(scope).getKeys();
 		// Write the header
 		sb.append(String.join(CSV_SEP, inputs));
@@ -463,6 +454,50 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		}
 
 		return sb.toString();
+	}
+	
+	// ##################### Estimate sample size based on method facets
+	
+	private int estimateSamples(final BatchAgent agent) {
+		String method = Exploration.DEFAULT_SAMPLING; 
+		if (hasFacet(Exploration.METHODS)) {
+			method = Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()));
+		} else {
+			String xpm =IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+			if (hasFacet(IKeyword.FROM)) method = Exploration.FROM_FILE;
+			else if (hasFacet(IKeyword.WITH)) method = Exploration.FROM_LIST;
+			else if (xpm == IKeyword.MORRIS) method = IKeyword.MORRIS;
+			else if (xpm == IKeyword.SOBOL) method = IKeyword.SALTELLI;
+		}
+		int K = agent.getParametersToExplore().size();
+		int N = hasFacet(Exploration.SAMPLE_SIZE) ? Cast.asInt(agent.getScope(), 
+					getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope())) : sample_size;
+		int res = switch (method) {
+			case IKeyword.MORRIS:
+				yield N * (K+1);
+			case IKeyword.SALTELLI:
+				yield N * (2*K + 2);
+			case IKeyword.LHS, IKeyword.ORTHOGONAL, IKeyword.UNIFORM:
+				yield N;
+			case Exploration.FROM_LIST:
+				yield buildParameterFromMap(agent.getScope()).size();
+			case Exploration.FROM_FILE:
+				yield buildParametersFromCSV(agent.getScope(), 
+						Cast.asString(agent.getScope(), getFacet(IKeyword.FROM).value(agent.getScope()))).size();
+			default:
+				yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
+						IntStreamEx.of(getFactorial(agent.getScope(), agent.getParametersToExplore()))
+							.reduce(1, (a,b) -> a*b) 
+							: (hasFacet(Exploration.SAMPLE_SIZE) ? N 
+									: IntStreamEx.of(agent.getParametersToExplore().stream().mapToInt(
+											b -> getParameterSwip(agent.getScope(), b).size())).reduce(1, (a,b) -> a*b)); 
+			
+		};
+		if (IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())]==IKeyword.BETAD 
+				&& hasFacet(BetaExploration.BOOTSTRAP)) { res = N + N * 
+									Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope()))
+									* K;}
+		return res;
 	}
 
 	// ##################### Methods to determine possible values based on exhaustive ######################

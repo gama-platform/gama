@@ -29,7 +29,7 @@ import gama.gaml.types.IType;
 public abstract class SamplingUtils {
 
 	public SamplingUtils() {}
-
+	
 	/**
 	 * This scale the sampling value for discrete values
 	 * 
