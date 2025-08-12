@@ -22757,25 +22757,25 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleTypeDefinition"
-    // InternalGaml.g:7768:1: ruleTypeDefinition returns [EObject current=null] : (this_S_Species_0= ruleS_Species | this_TypeFakeDefinition_1= ruleTypeFakeDefinition | this_S_Data_2= ruleS_Data ) ;
+    // InternalGaml.g:7768:1: ruleTypeDefinition returns [EObject current=null] : (this_S_Species_0= ruleS_Species | this_S_Data_1= ruleS_Data | this_TypeFakeDefinition_2= ruleTypeFakeDefinition ) ;
     public final EObject ruleTypeDefinition() throws RecognitionException {
         EObject current = null;
 
         EObject this_S_Species_0 = null;
 
-        EObject this_TypeFakeDefinition_1 = null;
+        EObject this_S_Data_1 = null;
 
-        EObject this_S_Data_2 = null;
+        EObject this_TypeFakeDefinition_2 = null;
 
 
 
         	enterRule();
 
         try {
-            // InternalGaml.g:7774:2: ( (this_S_Species_0= ruleS_Species | this_TypeFakeDefinition_1= ruleTypeFakeDefinition | this_S_Data_2= ruleS_Data ) )
-            // InternalGaml.g:7775:2: (this_S_Species_0= ruleS_Species | this_TypeFakeDefinition_1= ruleTypeFakeDefinition | this_S_Data_2= ruleS_Data )
+            // InternalGaml.g:7774:2: ( (this_S_Species_0= ruleS_Species | this_S_Data_1= ruleS_Data | this_TypeFakeDefinition_2= ruleTypeFakeDefinition ) )
+            // InternalGaml.g:7775:2: (this_S_Species_0= ruleS_Species | this_S_Data_1= ruleS_Data | this_TypeFakeDefinition_2= ruleTypeFakeDefinition )
             {
-            // InternalGaml.g:7775:2: (this_S_Species_0= ruleS_Species | this_TypeFakeDefinition_1= ruleTypeFakeDefinition | this_S_Data_2= ruleS_Data )
+            // InternalGaml.g:7775:2: (this_S_Species_0= ruleS_Species | this_S_Data_1= ruleS_Data | this_TypeFakeDefinition_2= ruleTypeFakeDefinition )
             int alt141=3;
             switch ( input.LA(1) ) {
             case 48:
@@ -22784,12 +22784,12 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                 alt141=1;
                 }
                 break;
-            case 153:
+            case 50:
                 {
                 alt141=2;
                 }
                 break;
-            case 50:
+            case 153:
                 {
                 alt141=3;
                 }
@@ -22826,21 +22826,21 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:7785:3: this_TypeFakeDefinition_1= ruleTypeFakeDefinition
+                    // InternalGaml.g:7785:3: this_S_Data_1= ruleS_Data
                     {
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1());
+                      			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1());
                       		
                     }
                     pushFollow(FOLLOW_2);
-                    this_TypeFakeDefinition_1=ruleTypeFakeDefinition();
+                    this_S_Data_1=ruleS_Data();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_TypeFakeDefinition_1;
+                      			current = this_S_Data_1;
                       			afterParserOrEnumRuleCall();
                       		
                     }
@@ -22848,21 +22848,21 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 3 :
-                    // InternalGaml.g:7794:3: this_S_Data_2= ruleS_Data
+                    // InternalGaml.g:7794:3: this_TypeFakeDefinition_2= ruleTypeFakeDefinition
                     {
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2());
+                      			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2());
                       		
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_Data_2=ruleS_Data();
+                    this_TypeFakeDefinition_2=ruleTypeFakeDefinition();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_S_Data_2;
+                      			current = this_TypeFakeDefinition_2;
                       			afterParserOrEnumRuleCall();
                       		
                     }

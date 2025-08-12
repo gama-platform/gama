@@ -4732,15 +4732,15 @@ rule__TypeDefinition__Alternatives
 	)
 	|
 	(
-		{ before(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1()); }
-		ruleTypeFakeDefinition
-		{ after(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1()); }
+		{ before(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1()); }
+		ruleS_Data
+		{ after(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1()); }
 	)
 	|
 	(
-		{ before(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); }
-		ruleS_Data
-		{ after(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); }
+		{ before(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2()); }
+		ruleTypeFakeDefinition
+		{ after(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2()); }
 	)
 ;
 finally {

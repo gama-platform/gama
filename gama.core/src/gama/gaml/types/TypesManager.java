@@ -93,9 +93,9 @@ public class TypesManager implements ITypesManager {
 				species.getJavaBase());
 
 	}
-	
+
 	@Override
-	public IType<GamaData> addDataType(DataDescription data) {
+	public IType<GamaData> addDataType(final DataDescription data) {
 		final String name = data.getName();
 		if (containsType(name)) {
 			data.error("Data type " + name + " already declared. Data type names must be unique",
@@ -136,7 +136,16 @@ public class TypesManager implements ITypesManager {
 		// }
 		return t;
 	}
-	
+
+	/**
+	 * Adds the data type.
+	 *
+	 * @param t
+	 *            the t
+	 * @param clazz
+	 *            the clazz
+	 * @return the i type
+	 */
 	private IType<GamaData> addDataType(final IType<GamaData> t, final Class<GamaData> clazz) {
 		final int i = t.id();
 		final String name = t.toString();
@@ -144,8 +153,8 @@ public class TypesManager implements ITypesManager {
 		// Hack to allow types to be declared with their id as string
 		types.put(String.valueOf(i), t);
 		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
-//		GAML.VARTYPE2KEYWORDS.put(t.getVarKind(), name);
-//		DescriptionFactory.addNewTypeName(name, t.getVarKind());
+		// GAML.VARTYPE2KEYWORDS.put(t.getVarKind(), name);
+		// DescriptionFactory.addNewTypeName(name, t.getVarKind());
 		return t;
 	}
 
@@ -191,7 +200,7 @@ public class TypesManager implements ITypesManager {
 			}
 			return true;
 		});
-		
+
 		// We add the user-defined data types
 		model.visitAllDataTypes(entry -> {
 			addDataType(entry);
@@ -203,7 +212,7 @@ public class TypesManager implements ITypesManager {
 			if (type != null) {
 				final DataDescription parent = entry.getParent();
 				// Takes care of invalid data types
-				type.setParent(parent == null || parent == entry ? get(IKeyword.DATA) : get(parent.getName()));
+				type.setParent(parent == null || parent == entry ? get(IKeyword.DATA_TYPE) : get(parent.getName()));
 			}
 			return true;
 		});

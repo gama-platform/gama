@@ -65,7 +65,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	protected Class<Support> support;
 
 	/** The getters. */
-	Map<String, OperatorProto> getters;
+	protected Map<String, OperatorProto> getters;
 
 	/** The parent. */
 	protected IType<? super Support> parent;
@@ -264,7 +264,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	@Override
 	public boolean isSkillType() { return false; }
-	
+
 	@Override
 	public boolean isDataType() { return false; }
 
@@ -279,13 +279,13 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	@Override
 	public SpeciesDescription getSpecies() { return null; }
-	
+
 	@Override
 	public String getDataName() { return null; }
-	
+
 	@Override
 	public DataDescription getData() { return null; }
-	
+
 	@Override
 	public SpeciesDescription getDenotedSpecies() { return getSpecies(); }
 

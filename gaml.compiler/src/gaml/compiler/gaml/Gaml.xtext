@@ -377,7 +377,7 @@ EquationDefinition:
 	S_Equations | EquationFakeDefinition;
 
 TypeDefinition:
-	S_Species | TypeFakeDefinition | S_Data;
+	S_Species | S_Data | TypeFakeDefinition ;
 
 VarDefinition:
 	=>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);

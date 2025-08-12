@@ -17837,13 +17837,13 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__TypeDefinition__Alternatives"
-    // InternalGaml.g:4723:1: rule__TypeDefinition__Alternatives : ( ( ruleS_Species ) | ( ruleTypeFakeDefinition ) | ( ruleS_Data ) );
+    // InternalGaml.g:4723:1: rule__TypeDefinition__Alternatives : ( ( ruleS_Species ) | ( ruleS_Data ) | ( ruleTypeFakeDefinition ) );
     public final void rule__TypeDefinition__Alternatives() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:4727:1: ( ( ruleS_Species ) | ( ruleTypeFakeDefinition ) | ( ruleS_Data ) )
+            // InternalGaml.g:4727:1: ( ( ruleS_Species ) | ( ruleS_Data ) | ( ruleTypeFakeDefinition ) )
             int alt66=3;
             switch ( input.LA(1) ) {
             case 23:
@@ -17852,12 +17852,12 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                 alt66=1;
                 }
                 break;
-            case 136:
+            case 16:
                 {
                 alt66=2;
                 }
                 break;
-            case 16:
+            case 136:
                 {
                 alt66=3;
                 }
@@ -17895,21 +17895,21 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:4734:2: ( ruleTypeFakeDefinition )
+                    // InternalGaml.g:4734:2: ( ruleS_Data )
                     {
-                    // InternalGaml.g:4734:2: ( ruleTypeFakeDefinition )
-                    // InternalGaml.g:4735:3: ruleTypeFakeDefinition
+                    // InternalGaml.g:4734:2: ( ruleS_Data )
+                    // InternalGaml.g:4735:3: ruleS_Data
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1()); 
+                       before(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1()); 
                     }
                     pushFollow(FOLLOW_2);
-                    ruleTypeFakeDefinition();
+                    ruleS_Data();
 
                     state._fsp--;
                     if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1()); 
+                       after(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1()); 
                     }
 
                     }
@@ -17918,21 +17918,21 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     }
                     break;
                 case 3 :
-                    // InternalGaml.g:4740:2: ( ruleS_Data )
+                    // InternalGaml.g:4740:2: ( ruleTypeFakeDefinition )
                     {
-                    // InternalGaml.g:4740:2: ( ruleS_Data )
-                    // InternalGaml.g:4741:3: ruleS_Data
+                    // InternalGaml.g:4740:2: ( ruleTypeFakeDefinition )
+                    // InternalGaml.g:4741:3: ruleTypeFakeDefinition
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); 
+                       before(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2()); 
                     }
                     pushFollow(FOLLOW_2);
-                    ruleS_Data();
+                    ruleTypeFakeDefinition();
 
                     state._fsp--;
                     if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2()); 
+                       after(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2()); 
                     }
 
                     }

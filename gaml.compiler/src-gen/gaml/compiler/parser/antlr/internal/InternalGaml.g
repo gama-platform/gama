@@ -7783,20 +7783,20 @@ ruleTypeDefinition returns [EObject current=null]
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_1());
+			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_1());
 		}
-		this_TypeFakeDefinition_1=ruleTypeFakeDefinition
+		this_S_Data_1=ruleS_Data
 		{
-			$current = $this_TypeFakeDefinition_1.current;
+			$current = $this_S_Data_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getS_DataParserRuleCall_2());
+			newCompositeNode(grammarAccess.getTypeDefinitionAccess().getTypeFakeDefinitionParserRuleCall_2());
 		}
-		this_S_Data_2=ruleS_Data
+		this_TypeFakeDefinition_2=ruleTypeFakeDefinition
 		{
-			$current = $this_S_Data_2.current;
+			$current = $this_TypeFakeDefinition_2.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
