@@ -47,7 +47,7 @@ import gama.gaml.compilation.ast.SyntacticModelElement;
 import gama.gaml.compilation.ast.SyntacticSpeciesElement;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.ConstantExpressionDescription;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IDescription.DescriptionVisitor;
@@ -149,7 +149,7 @@ public class ModelFactory extends SymbolFactory {
 		/** The temp species cache. */
 		final LinkedHashMap<String, SpeciesDescription> tempSpeciesCache = new LinkedHashMap<>();
 
-		final LinkedHashMap<String, DataDescription> tempDataCache = new LinkedHashMap<>();
+		final LinkedHashMap<String, DataTypeDescription> tempDataCache = new LinkedHashMap<>();
 
 		final ISyntacticElement source = get(models, 0);
 
@@ -262,7 +262,7 @@ public class ModelFactory extends SymbolFactory {
 	private void addSpeciesExperimentsAndData(final ModelDescription model,
 			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
 			final Map<String, ISyntacticElement> dataNodes, final Map<String, SpeciesDescription> tempSpeciesCache,
-			final Map<String, DataDescription> tempDataCache) {
+			final Map<String, DataTypeDescription> tempDataCache) {
 		speciesNodes.forEach((s, speciesNode) -> { addMicroSpecies(model, speciesNode, tempSpeciesCache); });
 		experimentNodes.forEach((e, experimentNode) -> { addExperiment(e, model, experimentNode, tempSpeciesCache); });
 		dataNodes.forEach((d, dataNode) -> { addData(d, model, dataNode, tempDataCache); });
@@ -285,7 +285,7 @@ public class ModelFactory extends SymbolFactory {
 	private void parentSpeciesExperimentsAndData(final ModelDescription model,
 			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
 			final Map<String, ISyntacticElement> dataNodes, final Map<String, SpeciesDescription> tempSpeciesCache,
-			final Map<String, DataDescription> tempDataCache) {
+			final Map<String, DataTypeDescription> tempDataCache) {
 		speciesNodes.forEach((s, speciesNode) -> { parentSpecies(model, speciesNode, model, tempSpeciesCache); });
 		experimentNodes.forEach((e, experimentNode) -> { parentExperiment(model, experimentNode); });
 		dataNodes.forEach((d, dataNode) -> {
@@ -539,11 +539,11 @@ public class ModelFactory extends SymbolFactory {
 	 *            the cache
 	 */
 	void addData(final String origin, final ModelDescription model, final ISyntacticElement data,
-			final Map<String, DataDescription> cache) {
+			final Map<String, DataTypeDescription> cache) {
 		// Create the data description
 		final IDescription desc = DescriptionFactory.create(data, model, Collections.EMPTY_LIST);
 		// if (desc == null) return;
-		final DataDescription dDesc = (DataDescription) desc;
+		final DataTypeDescription dDesc = (DataTypeDescription) desc;
 		cache.put(dDesc.getName(), dDesc);
 		dDesc.resetOriginName();
 		dDesc.setOriginName(buildModelName(origin));
@@ -702,7 +702,7 @@ public class ModelFactory extends SymbolFactory {
 	 * @param node
 	 *            the node
 	 */
-	void complementData(final DataDescription data, final ISyntacticElement node) {
+	void complementData(final DataTypeDescription data, final ISyntacticElement node) {
 		if (data == null) return;
 		node.visitChildren(element -> {
 			final IDescription childDesc = DescriptionFactory.create(element, data, null);
@@ -770,15 +770,15 @@ public class ModelFactory extends SymbolFactory {
 	 *             the exception
 	 */
 	void parentData(final ModelDescription macro, final ISyntacticElement micro,
-			final Map<String, DataDescription> cache) throws Exception {
+			final Map<String, DataTypeDescription> cache) throws Exception {
 		// Gather the previously created data
-		final DataDescription mDesc = cache.get(micro.getName());
+		final DataTypeDescription mDesc = cache.get(micro.getName());
 		if (mDesc == null) throw new Exception("Data " + micro.getName() + " not found in cache"); // should not happen
 		String p = mDesc.getLitteral(IKeyword.PARENT);
 
 		if (p == null) return; // no parent defined, nothing to do
 
-		DataDescription parent = lookupData(p, cache);
+		DataTypeDescription parent = lookupData(p, cache);
 		if (parent != null) throw new Exception("Data " + p + " cannot be found in the model " + macro.getName());
 		parent = macro.getDataDescription(p);
 		mDesc.setParent(parent);
@@ -801,8 +801,8 @@ public class ModelFactory extends SymbolFactory {
 	 *            the cache
 	 * @return the data description
 	 */
-	DataDescription lookupData(final String name, final Map<String, DataDescription> cache) {
-		DataDescription result = cache.get(name);
+	DataTypeDescription lookupData(final String name, final Map<String, DataTypeDescription> cache) {
+		DataTypeDescription result = cache.get(name);
 		if (result == null) { result = Types.getBuiltInData().get(name); }
 		return result;
 	}

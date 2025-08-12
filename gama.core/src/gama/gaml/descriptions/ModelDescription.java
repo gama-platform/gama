@@ -389,7 +389,7 @@ public class ModelDescription extends SpeciesDescription {
 		return null;
 	}
 	
-	public DataDescription getDataDescription(final String data) {
+	public DataTypeDescription getDataDescription(final String data) {
 		if (getTypesManager() != null) return getTypesManager().get(data).getData();
 		return null;
 	}
@@ -560,9 +560,9 @@ public class ModelDescription extends SpeciesDescription {
 		visitAllSpecies(visitor);
 	}
 	
-	public void getAllData(final List<DataDescription> accumulator) {
-		final DescriptionVisitor<DataDescription> visitor = desc -> {
-			accumulator.add((DataDescription) desc);
+	public void getAllData(final List<DataTypeDescription> accumulator) {
+		final DescriptionVisitor<DataTypeDescription> visitor = desc -> {
+			accumulator.add((DataTypeDescription) desc);
 			return true;
 		};
 		
@@ -571,7 +571,7 @@ public class ModelDescription extends SpeciesDescription {
 	}
 	
 	@Override
-	public boolean visitAllDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+	public boolean visitAllDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
 		if (visitor == null || dataTypes == null) return true;
 		
 		for (var dataType : dataTypes.values()) {

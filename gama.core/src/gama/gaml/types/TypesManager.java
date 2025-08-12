@@ -21,7 +21,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaData;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
@@ -95,7 +95,7 @@ public class TypesManager implements ITypesManager {
 	}
 
 	@Override
-	public IType<GamaData> addDataType(final DataDescription data) {
+	public IType<GamaData> addDataType(final DataTypeDescription data) {
 		final String name = data.getName();
 		if (containsType(name)) {
 			data.error("Data type " + name + " already declared. Data type names must be unique",
@@ -210,7 +210,7 @@ public class TypesManager implements ITypesManager {
 		model.visitAllDataTypes(entry -> {
 			final IType type = get(entry.getName());
 			if (type != null) {
-				final DataDescription parent = entry.getParent();
+				final DataTypeDescription parent = entry.getParent();
 				// Takes care of invalid data types
 				type.setParent(parent == null || parent == entry ? get(IKeyword.DATA_TYPE) : get(parent.getName()));
 			}

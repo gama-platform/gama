@@ -6,10 +6,10 @@ import gama.core.util.GamaData;
 import gama.gaml.statements.Facets;
 
 
-public class DataDescription extends TypeDescription {
+public class DataTypeDescription extends TypeDescription {
 
 	
-	public DataDescription(String keyword, Class clazz, IDescription macroDesc, TypeDescription parent,
+	public DataTypeDescription(String keyword, Class clazz, IDescription macroDesc, TypeDescription parent,
 			Iterable<? extends IDescription> cp, EObject source, Facets facets, final String plugin) {
 		super(keyword, clazz, macroDesc, parent, cp, source, facets, plugin);
 	}
@@ -25,8 +25,8 @@ public class DataDescription extends TypeDescription {
 	}
 	
 	@Override
-	public DataDescription getParent() {
-		return (DataDescription) super.getParent();
+	public DataTypeDescription getParent() {
+		return (DataTypeDescription) super.getParent();
 	}
 
 	@Override

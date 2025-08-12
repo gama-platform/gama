@@ -27,7 +27,7 @@ import gama.core.util.ICollector;
 import gama.core.util.IContainer;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -284,7 +284,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public String getDataName() { return null; }
 
 	@Override
-	public DataDescription getData() { return null; }
+	public DataTypeDescription getData() { return null; }
 
 	@Override
 	public SpeciesDescription getDenotedSpecies() { return getSpecies(); }

@@ -48,7 +48,7 @@ import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -99,7 +99,7 @@ public class DescriptionFactory {
 	 */
 	public static void initialize() {
 		add(new ExperimentFactory(), EXPERIMENT);
-		add(new DataFactory(), DATA);
+		add(new DataTypeFactory(), DATA);
 		add(new ModelFactory(), MODEL);
 		add(new PlatformFactory(), PLATFORM);
 		add(new SpeciesFactory(), SPECIES);
@@ -447,9 +447,9 @@ public class DescriptionFactory {
 				helper, skills, null, plugin);
 	}
 
-	public static DataDescription createBuiltInDataDescription(final String name, final Class clazz,
-			final DataDescription superDesc, final DataDescription parent, final String plugin) {
-		return ((DataFactory) getFactory(DATA)).createBuiltInDataDescription(name, clazz, superDesc, parent);
+	public static DataTypeDescription createBuiltInDataDescription(final String name, final Class clazz,
+			final DataTypeDescription superDesc, final DataTypeDescription parent, final String plugin) {
+		return ((DataTypeFactory) getFactory(DATA)).createBuiltInDataDescription(name, clazz, superDesc, parent);
 	}
 	/**
 	 * Creates a new Description object.

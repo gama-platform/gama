@@ -16,7 +16,7 @@ import gama.core.runtime.IScope;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -295,7 +295,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return the data 
 	 */
-	DataDescription getData();
+	DataTypeDescription getData();
 	
 	/**
 	 * Checks if is assignable from.

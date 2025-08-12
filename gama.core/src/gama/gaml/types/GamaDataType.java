@@ -17,7 +17,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaData;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.OperatorProto;
 
 // @type(
@@ -34,7 +34,7 @@ import gama.gaml.descriptions.OperatorProto;
 public class GamaDataType extends GamaType<GamaData> {
 
 	/** The data. */
-	private final DataDescription data;
+	private final DataTypeDescription data;
 
 	/**
 	 * Instantiates a new gama data type.
@@ -55,7 +55,7 @@ public class GamaDataType extends GamaType<GamaData> {
 	 * @param base
 	 *            the base
 	 */
-	public GamaDataType(final DataDescription data, final String name, final int dataId, final Class<GamaData> base) {
+	public GamaDataType(final DataTypeDescription data, final String name, final int dataId, final Class<GamaData> base) {
 		this.data = data;
 		this.name = name;
 		id = dataId;
@@ -79,7 +79,7 @@ public class GamaDataType extends GamaType<GamaData> {
 	}
 
 	@Override
-	public DataDescription getData() { return data; }
+	public DataTypeDescription getData() { return data; }
 
 	@Override
 	public String getDataName() { return name; }

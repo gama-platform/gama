@@ -27,7 +27,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gama.gaml.descriptions.DataDescription;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -272,7 +272,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	}
 
 	@Override
-	public DataDescription getData() {
+	public DataTypeDescription getData() {
 		return type.getData();
 	}
 	

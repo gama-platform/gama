@@ -59,7 +59,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	protected IMap<String, VariableDescription> attributes;
 
 	/** The data types. */
-	protected IMap<String, DataDescription> dataTypes;
+	protected IMap<String, DataTypeDescription> dataTypes;
 
 	/** The parent. */
 	protected TypeDescription parent;
@@ -135,7 +135,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	@Override
 	public IDescription addChild(final IDescription child) {
 		var c = super.addChild(child);
-		if (c instanceof DataDescription data) { addDataType(data); }
+		if (c instanceof DataTypeDescription data) { addDataType(data); }
 		return c;
 	}
 
@@ -145,7 +145,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 * @param data
 	 *            the data
 	 */
-	protected void addDataType(final DataDescription data) {
+	protected void addDataType(final DataTypeDescription data) {
 
 		final String dataName = data.getName();
 		if (dataTypes == null) {
@@ -842,7 +842,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 *            the visitor
 	 * @return true, if successful
 	 */
-	public boolean visitAllDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+	public boolean visitAllDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
 		if (parent != null && parent != this && !parent.visitAllDataTypes(visitor)) return false;
 		return visitOwnDataTypes(visitor);
 	}
@@ -854,7 +854,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 *            the visitor
 	 * @return true, if successful
 	 */
-	public boolean visitOwnDataTypes(final DescriptionVisitor<DataDescription> visitor) {
+	public boolean visitOwnDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
 		if (dataTypes == null) return true;
 		return dataTypes.forEachValue(each -> {
 			if (!visitor.process(each)) return false;

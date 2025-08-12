@@ -35,7 +35,7 @@ import gama.gaml.types.IType;
 				optional = false,
 				doc = @doc ("the identifier of the species")) },
 		omissible = "name")
-public class DataSymbol extends Symbol {
+public class DataTypeSymbol extends Symbol {
 
 	/**
 	 * Instantiates a new data symbol.
@@ -43,7 +43,7 @@ public class DataSymbol extends Symbol {
 	 * @param desc
 	 *            the desc
 	 */
-	public DataSymbol(final IDescription desc) {
+	public DataTypeSymbol(final IDescription desc) {
 		super(desc);
 		setName(description.getName());
 	}
