@@ -32,6 +32,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Data;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
@@ -45,6 +46,7 @@ import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
+import gaml.compiler.gaml.S_Skill;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Try;
@@ -169,6 +171,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 					sequence_Block(context, (Block) semanticObject); 
 					return; 
 				}
+				else if (rule == grammarAccess.getDataBlockRule()) {
+					sequence_DataBlock(context, (Block) semanticObject); 
+					return; 
+				}
 				else if (rule == grammarAccess.getModelBlockRule()) {
 					sequence_ModelBlock(context, (Block) semanticObject); 
 					return; 
@@ -264,6 +270,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 			case GamlPackage.SASSIGNMENT:
 				sequence_S_Equation(context, (S_Assignment) semanticObject); 
 				return; 
+			case GamlPackage.SDATA:
+				sequence_S_Data(context, (S_Data) semanticObject); 
+				return; 
 			case GamlPackage.SDEFINITION:
 				sequence_S_Definition(context, (S_Definition) semanticObject); 
 				return; 
@@ -302,6 +311,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.SSET:
 				sequence_S_Set(context, (S_Set) semanticObject); 
+				return; 
+			case GamlPackage.SSKILL:
+				sequence_S_Skill(context, (S_Skill) semanticObject); 
 				return; 
 			case GamlPackage.SSOLVE:
 				sequence_S_Solve(context, (S_Solve) semanticObject); 
@@ -473,8 +485,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_ActionFakeDefinition(ISerializationContext context, ActionFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.ACTION_FAKE_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.ACTION_FAKE_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getActionFakeDefinitionAccess().getNameValid_IDParserRuleCall_1_0(), semanticObject.getName());
@@ -829,6 +841,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     DataBlock returns Block
+	 *
+	 * Constraint:
+	 *     statements+=Statement*
+	 * </pre>
+	 */
+	protected void sequence_DataBlock(ISerializationContext context, Block semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     DefinitionFacet returns Facet
 	 *     GamlDefinition returns Facet
 	 *     VarDefinition returns Facet
@@ -855,8 +881,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_EquationFakeDefinition(ISerializationContext context, EquationFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.EQUATION_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.EQUATION_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getEquationFakeDefinitionAccess().getNameValid_IDParserRuleCall_1_0(), semanticObject.getName());
@@ -1271,6 +1297,24 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Section returns S_Data
+	 *     S_Data returns S_Data
+	 *     GamlDefinition returns S_Data
+	 *     TypeDefinition returns S_Data
+	 *     ActionDefinition returns S_Data
+	 *
+	 * Constraint:
+	 *     (key=_DataKey firstFacet='name:'? name=ID facets+=Facet* block=DataBlock?)
+	 * </pre>
+	 */
+	protected void sequence_S_Data(ISerializationContext context, S_Data semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Definition
 	 *     S_Declaration returns S_Definition
 	 *     S_Definition returns S_Definition
@@ -1526,6 +1570,24 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Section returns S_Skill
+	 *     S_Skill returns S_Skill
+	 *     GamlDefinition returns S_Skill
+	 *     TypeDefinition returns S_Skill
+	 *     ActionDefinition returns S_Skill
+	 *
+	 * Constraint:
+	 *     (key=_SkillKey firstFacet='name:'? name=ID facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_S_Skill(ISerializationContext context, S_Skill semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Solve
 	 *     S_Solve returns S_Solve
 	 *     displayStatement returns S_Solve
@@ -1608,8 +1670,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_SkillFakeDefinition(ISerializationContext context, SkillFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.SKILL_FAKE_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.SKILL_FAKE_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getSkillFakeDefinitionAccess().getNameIDTerminalRuleCall_1_0(), semanticObject.getName());
@@ -1951,8 +2013,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_TypeFakeDefinition(ISerializationContext context, TypeFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.TYPE_FAKE_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.TYPE_FAKE_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getTypeFakeDefinitionAccess().getNameIDTerminalRuleCall_1_0(), semanticObject.getName());
@@ -2038,8 +2100,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_UnitFakeDefinition(ISerializationContext context, UnitFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT_FAKE_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT_FAKE_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getUnitFakeDefinitionAccess().getNameIDTerminalRuleCall_1_0(), semanticObject.getName());
@@ -2151,8 +2213,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_VarFakeDefinition(ISerializationContext context, VarFakeDefinition semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.GAML_DEFINITION__NAME));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.VAR_DEFINITION__NAME) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.VAR_DEFINITION__NAME));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getVarFakeDefinitionAccess().getNameValid_IDParserRuleCall_1_0(), semanticObject.getName());

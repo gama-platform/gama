@@ -173,7 +173,6 @@ public class S_DeclarationImpl extends StatementImpl implements S_Declaration
     {
       switch (derivedFeatureID)
       {
-        case GamlPackage.SDECLARATION__NAME: return GamlPackage.GAML_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -181,6 +180,7 @@ public class S_DeclarationImpl extends StatementImpl implements S_Declaration
     {
       switch (derivedFeatureID)
       {
+        case GamlPackage.SDECLARATION__NAME: return GamlPackage.VAR_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -199,7 +199,6 @@ public class S_DeclarationImpl extends StatementImpl implements S_Declaration
     {
       switch (baseFeatureID)
       {
-        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.SDECLARATION__NAME;
         default: return -1;
       }
     }
@@ -207,6 +206,7 @@ public class S_DeclarationImpl extends StatementImpl implements S_Declaration
     {
       switch (baseFeatureID)
       {
+        case GamlPackage.VAR_DEFINITION__NAME: return GamlPackage.SDECLARATION__NAME;
         default: return -1;
       }
     }

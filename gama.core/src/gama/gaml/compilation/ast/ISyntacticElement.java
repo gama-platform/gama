@@ -67,11 +67,19 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * The Constant EXPERIMENT_FILTER.
 	 */
 	Predicate<ISyntacticElement> EXPERIMENT_FILTER = ISyntacticElement::isExperiment;
+	
+	/**
+	 * The Constant DATA_FILTER.
+	 */
+	Predicate<ISyntacticElement> DATA_FILTER = ISyntacticElement::isData;
+	
+	Predicate<ISyntacticElement> SKILL_FILTER = ISyntacticElement::isSkill; 
 
 	/**
 	 * The Constant OTHER_FILTER.
 	 */
-	Predicate<ISyntacticElement> OTHER_FILTER = each -> !each.isExperiment() && !each.isSpecies();
+	Predicate<ISyntacticElement> OTHER_FILTER = each -> !each.isExperiment() && !each.isSpecies() 
+														&& !each.isData() && !each.isSkill();
 
 	/**
 	 * Sets the keyword of the element.
@@ -170,6 +178,15 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @return true if the element is an experiment, false otherwise
 	 */
 	boolean isExperiment();
+	
+	/**
+	 * Returns whether this element represents data.
+	 *
+	 * @return true if the element is data, false otherwise
+	 */
+	boolean isData();
+	
+	boolean isSkill();
 
 	/**
 	 * Whether this elements has any facets.
@@ -217,6 +234,22 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 *            the visitor, not null
 	 */
 	void visitExperiments(final SyntacticVisitor visitor);
+	
+	/**
+	 * Allows a visitor to visit only the elements that are data (either this element or its children).
+	 *
+	 * @param visitor
+	 *            the visitor, not null
+	 */
+	void visitData(final SyntacticVisitor visitor);
+	
+	/**
+	 * Allows a visitor to visit only the elements that are skills (either this element or its children).
+	 *
+	 * @param visitor
+	 *            the visitor, not null
+	 */
+	void visitSkills(final SyntacticVisitor visitor);
 
 	/**
 	 * Allows a visitor to visit only the elements that are grids (either this element or its children).

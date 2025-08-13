@@ -61,9 +61,9 @@ public class EGaml implements IGamlEcoreUtils {
 			String s = ((S_Reflex) o).getName();
 			if (s == null) return IKeyword.INTERNAL + getKeyOf(o) + COUNTER.COUNT();
 		}
-		if (o instanceof GamlDefinition) return ((GamlDefinition) o).getName();
-		if (o instanceof S_Display) return ((S_Display) o).getName();
-		if (o instanceof HeadlessExperiment) return ((HeadlessExperiment) o).getName();
+		if (o instanceof GamlDefinition gd) return GamlDefinitionUtils.getName(gd);
+		if (o instanceof S_Display sd) return sd.getName();
+		if (o instanceof HeadlessExperiment he) return he.getName();
 
 		return null;
 	}
@@ -439,7 +439,7 @@ public class EGaml implements IGamlEcoreUtils {
 			}
 			case GamlPackage.ACTION_REF: {
 				ActionDefinition ref = ((ActionRef) o).getRef();
-				if (ref != null) { result = ref.getName(); }
+				if (ref != null) { result = GamlDefinitionUtils.getName(ref); }
 				break;
 			}
 			case GamlPackage.SKILL_REF: {
@@ -454,7 +454,7 @@ public class EGaml implements IGamlEcoreUtils {
 			}
 			case GamlPackage.TYPE_REF: {
 				TypeDefinition ref = ((TypeRef) o).getRef();
-				if (ref != null) { result = ref.getName(); }
+				if (ref != null) { result = GamlDefinitionUtils.getName(ref); }
 				break;
 			}
 		}
@@ -684,7 +684,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 */
 	public GamlDefinition createGamlDefinition(final String t, final EClass eClass) {
 		GamlDefinition stub = (GamlDefinition) getFactory().create(eClass);
-		stub.setName(t);
+		GamlDefinitionUtils.setName(stub, t);
 		return stub;
 	}
 

@@ -236,6 +236,8 @@ public interface IKeyword {
 
 	/** The data. */
 	String DATA = "data";
+	
+	String DATA_TYPE = "data_type";
 
 	/** The default. */
 	String DEFAULT = "default";

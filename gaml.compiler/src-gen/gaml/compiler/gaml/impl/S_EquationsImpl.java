@@ -237,7 +237,6 @@ public class S_EquationsImpl extends StatementImpl implements S_Equations
     {
       switch (derivedFeatureID)
       {
-        case GamlPackage.SEQUATIONS__NAME: return GamlPackage.GAML_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -245,6 +244,7 @@ public class S_EquationsImpl extends StatementImpl implements S_Equations
     {
       switch (derivedFeatureID)
       {
+        case GamlPackage.SEQUATIONS__NAME: return GamlPackage.EQUATION_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -263,7 +263,6 @@ public class S_EquationsImpl extends StatementImpl implements S_Equations
     {
       switch (baseFeatureID)
       {
-        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.SEQUATIONS__NAME;
         default: return -1;
       }
     }
@@ -271,6 +270,7 @@ public class S_EquationsImpl extends StatementImpl implements S_Equations
     {
       switch (baseFeatureID)
       {
+        case GamlPackage.EQUATION_DEFINITION__NAME: return GamlPackage.SEQUATIONS__NAME;
         default: return -1;
       }
     }
