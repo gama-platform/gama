@@ -58,9 +58,6 @@ public abstract class TypeDescription extends SymbolDescription {
 	/** The attributes. */
 	protected IMap<String, VariableDescription> attributes;
 
-	/** The data types. */
-	protected IMap<String, DataTypeDescription> dataTypes;
-
 	/** The parent. */
 	protected TypeDescription parent;
 
@@ -132,25 +129,6 @@ public abstract class TypeDescription extends SymbolDescription {
 		}
 	}
 
-	/**
-	 * Adds the data type.
-	 *
-	 * @param data
-	 *            the data
-	 */
-	protected void addDataType(final DataTypeDescription data) {
-
-		final String dataName = data.getName();
-		if (dataTypes == null) {
-			dataTypes = GamaMapFactory.create();
-		} else if (dataTypes.get(dataName) != null) {
-			data.error("Data type " + dataName + " already declared. Data type names must be unique",
-					IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), dataName);
-			return;
-		}
-
-		dataTypes.put(data.getName(), data);
-	}
 
 	@Override
 	public String getDefiningPlugin() {
@@ -828,32 +806,6 @@ public abstract class TypeDescription extends SymbolDescription {
 		return attributes.forEachValue(visitor);
 	}
 
-	/**
-	 * Visit all data types.
-	 *
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
-	 */
-	public boolean visitAllDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
-		if (parent != null && parent != this && !parent.visitAllDataTypes(visitor)) return false;
-		return visitOwnDataTypes(visitor);
-	}
-
-	/**
-	 * Visit own data types.
-	 *
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
-	 */
-	public boolean visitOwnDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
-		if (dataTypes == null) return true;
-		return dataTypes.forEachValue(each -> {
-			if (!visitor.process(each)) return false;
-			return true;
-		});
-	}
 
 	/**
 	 * Visit own actions.

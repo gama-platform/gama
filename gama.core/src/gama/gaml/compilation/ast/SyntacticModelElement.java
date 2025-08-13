@@ -122,6 +122,12 @@ public class SyntacticModelElement extends SyntacticTopLevelElement {
 		visitAllChildren(visitor, DATA_FILTER);
 	}
 	
+	@Override
+	public void visitSkills(final SyntacticVisitor visitor) {
+		visitAllChildren(visitor, SKILL_FILTER);
+	}
+	
+	
 	/**
 	 * The compacter.
 	 */

@@ -211,6 +211,9 @@ public abstract class AbstractSyntacticElement implements ISyntacticElement {
 	@Override
 	public boolean isData() { return false; }
 	
+	@Override
+	public boolean isSkill() { return false; }
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -295,6 +298,10 @@ public abstract class AbstractSyntacticElement implements ISyntacticElement {
 	
 	@Override
 	public void visitData(final SyntacticVisitor visitor) {}
+	
+	@Override
+	public void visitSkills(final SyntacticVisitor visitor) {}
+	
 
 	/*
 	 * (non-Javadoc)

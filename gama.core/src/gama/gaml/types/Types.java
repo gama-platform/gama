@@ -31,6 +31,7 @@ import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
+import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.data.ListExpression;
@@ -68,6 +69,8 @@ public class Types {
 	/** The built in data map. */
 	private static volatile Map<String, DataTypeDescription> builtInDataMap;
 
+	private static volatile Map<String, SkillDescription> builtInSkillsMap;
+	
 	/** The Constant NO_TYPE. */
 	public final static IType NO_TYPE = new GamaNoType();
 
@@ -353,6 +356,10 @@ public class Types {
 		}
 	}
 
+	//TODO: those three functions are a bit suspicious: this one includes at least the current model
+	// which may not be a built-in model, and there's a type provider for the skills that already only contains
+	// built-in ones, and the same should exist for data types.
+	// 
 	/**
 	 * Gets the built in species.
 	 *
@@ -378,6 +385,15 @@ public class Types {
 		return builtInDataMap;
 	}
 
+	public static Map<String, ? extends SkillDescription> getBuiltInSkills() {
+		if (builtInSkillsMap != null) return builtInSkillsMap;
+		final ModelDescription root = ModelDescription.ROOT;
+		List<SkillDescription> result = new ArrayList();
+		root.getAllSkills(result);
+		builtInSkillsMap = StreamEx.of(result).toMap(SkillDescription::getName, sd -> sd);
+		return builtInSkillsMap;
+	}
+	
 	/**
 	 * @param matchType
 	 * @param switchType

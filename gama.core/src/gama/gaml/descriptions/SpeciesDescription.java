@@ -165,7 +165,7 @@ public class SpeciesDescription extends TypeDescription {
 	 * @param sk
 	 *            the sk
 	 */
-	protected void addSkill(final SkillDescription sk) {
+	protected void attachSkill(final SkillDescription sk) {
 		if (sk == null) return;
 		if (skills == null) { skills = new LinkedHashSet(); }
 		skills.add(sk);
@@ -217,19 +217,19 @@ public class SpeciesDescription extends TypeDescription {
 
 		/* We add the keyword as a possible skill (used for 'grid' species) */
 		final SkillDescription skill = GamaSkillRegistry.INSTANCE.get(getKeyword());
-		addSkill(skill);
+		attachSkill(skill);
 		/*
 		 * We add the user defined skills (i.e. as in 'species a skills: [s1, s2...]')
 		 */
 		if (userDefinedSkills != null) {
 			final IExpression expr = userDefinedSkills.compile(this);
-			if (expr instanceof ListExpression list) { addSkills(list); }
+			if (expr instanceof ListExpression list) { attachSkills(list); }
 		}
 		/*
 		 * We add the skills that are defined in Java, either using @species(value='a', skills= {s1,s2}),
 		 * or @skill(value="s1", attach_to="a")
 		 */
-		for (final String s : builtInSkills) { addSkill(GamaSkillRegistry.INSTANCE.get(s)); }
+		for (final String s : builtInSkills) { attachSkill(GamaSkillRegistry.INSTANCE.get(s)); }
 
 	}
 
@@ -239,7 +239,7 @@ public class SpeciesDescription extends TypeDescription {
 	 * @param list
 	 *            the list
 	 */
-	private void addSkills(final ListExpression list) {
+	private void attachSkills(final ListExpression list) {
 		for (final IExpression exp : list.getElements()) {
 			if (exp instanceof SkillConstantExpression) {
 				final SkillDescription sk = ((ISkill) exp.getConstValue()).getDescription();
@@ -247,7 +247,7 @@ public class SpeciesDescription extends TypeDescription {
 				if (dep != null) {
 					warning("Skill " + sk.getName() + " is deprecated: " + dep, IGamlIssue.DEPRECATED, SKILLS);
 				}
-				addSkill(sk);
+				attachSkill(sk);
 			}
 		}
 	}
@@ -917,7 +917,7 @@ public class SpeciesDescription extends TypeDescription {
 		Class<? extends ISkill> clazz = control.getJavaBase().getSuperclass();
 		while (clazz != AbstractArchitecture.class) {
 			final SkillDescription sk = GamaSkillRegistry.INSTANCE.get(clazz);
-			if (sk != null) { addSkill(sk); }
+			if (sk != null) { attachSkill(sk); }
 			clazz = (Class<? extends ISkill>) clazz.getSuperclass();
 
 		}

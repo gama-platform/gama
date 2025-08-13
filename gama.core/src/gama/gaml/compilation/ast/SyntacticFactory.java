@@ -10,11 +10,12 @@
  ********************************************************************************************************/
 package gama.gaml.compilation.ast;
 
+import static gama.core.common.interfaces.IKeyword.DATA_TYPE;
 import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
 import static gama.core.common.interfaces.IKeyword.GRID;
 import static gama.core.common.interfaces.IKeyword.MODEL;
 import static gama.core.common.interfaces.IKeyword.SPECIES;
-import static gama.core.common.interfaces.IKeyword.DATA_TYPE;
+import static gama.core.common.interfaces.IKeyword.SKILL;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -138,6 +139,7 @@ public class SyntacticFactory {
 			return new SyntacticSpeciesElement(keyword, facets, statement);
 		else if (EXPERIMENT.equals(keyword)) return new SyntacticExperimentElement(keyword, facets, statement);
 		else if (DATA_TYPE.equals(keyword)) return new SyntacticDataTypeElement(keyword, facets, statement);
+		else if (SKILL.equals(keyword)) return new SyntacticSkillElement(keyword, facets, statement);
 		if (!withChildren) return new SyntacticSingleElement(keyword, facets, statement);
 		return new SyntacticComposedElement(keyword, facets, statement);
 	}

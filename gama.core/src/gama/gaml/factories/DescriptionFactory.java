@@ -13,15 +13,16 @@ package gama.gaml.factories;
 import static gama.annotations.precompiler.ISymbolKind.ACTION;
 import static gama.annotations.precompiler.ISymbolKind.BATCH_METHOD;
 import static gama.annotations.precompiler.ISymbolKind.BEHAVIOR;
+import static gama.annotations.precompiler.ISymbolKind.DATA;
 import static gama.annotations.precompiler.ISymbolKind.EXPERIMENT;
 import static gama.annotations.precompiler.ISymbolKind.LAYER;
 import static gama.annotations.precompiler.ISymbolKind.MODEL;
 import static gama.annotations.precompiler.ISymbolKind.OUTPUT;
 import static gama.annotations.precompiler.ISymbolKind.PARAMETER;
 import static gama.annotations.precompiler.ISymbolKind.PLATFORM;
-import static gama.annotations.precompiler.ISymbolKind.DATA;
 import static gama.annotations.precompiler.ISymbolKind.SEQUENCE_STATEMENT;
 import static gama.annotations.precompiler.ISymbolKind.SINGLE_STATEMENT;
+import static gama.annotations.precompiler.ISymbolKind.SKILL;
 import static gama.annotations.precompiler.ISymbolKind.SPECIES;
 import static gama.annotations.precompiler.ISymbolKind.Variable.CONTAINER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.NUMBER;
@@ -106,6 +107,7 @@ public class DescriptionFactory {
 		add(new StatementFactory(), SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD,
 				OUTPUT);
 		add(new VariableFactory(), CONTAINER, NUMBER, REGULAR, PARAMETER);
+		add(new SkillFactory(), SKILL);
 	}
 
 	/**
@@ -562,6 +564,7 @@ public class DescriptionFactory {
 			source.visitSpecies(visitor);
 			source.visitExperiments(visitor);
 			source.visitData(visitor);
+			source.visitSkills(visitor);
 			children = childrenList.items();
 		}
 		final Facets facets = source.copyFacets(md);
