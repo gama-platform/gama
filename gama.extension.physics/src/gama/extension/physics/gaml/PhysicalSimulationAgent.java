@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PhysicalSimulationAgent.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * PhysicalSimulationAgent.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,6 +16,7 @@ import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
+import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
@@ -27,11 +28,12 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.IList;
 import gama.core.util.Collector.AsOrderedSet;
+import gama.core.util.IList;
 import gama.core.util.matrix.IField;
 import gama.extension.physics.NativeLoader;
 import gama.extension.physics.box2d_version.Box2DPhysicalWorld;
+import gama.extension.physics.common.IJointDefinition;
 import gama.extension.physics.common.IPhysicalConstants;
 import gama.extension.physics.common.IPhysicalWorld;
 import gama.extension.physics.java_version.BulletPhysicalWorld;
@@ -40,16 +42,55 @@ import gama.gaml.species.ISpecies;
 import gama.gaml.types.IType;
 
 /**
- * A simulation agent that provides physical capabilities to simulations, in particular the possiblity to register and
- * manage agents that implement the 'static_body' / 'dynamic_body' skill/ This class is a gateway to a
- * JBullet/Bullet/Box2D dynamics "world" that combines collision detection and physics either in 3D (for the Bullet
- * libraries) or in 2D (Box2D). Serves as the entry point of physical simulations in GAMA and conveys to the agents the
- * events that occur in the physical world (contacts, mainly). Three libraries are provided. Two in Java (JBullet &
- * Box2D) in 3D and 2D, a bit outdated and one native (LibBulletJME) always up to date. The modeler can choose which one
- * to use by setting the value of 'use_native_library' to true or false
+ * The PhysicalSimulationAgent class serves as the main entry point for managing physical simulations in the GAMA
+ * platform. It provides capabilities to register and manage agents with physical properties, such as static or dynamic
+ * bodies, and integrates with various physics engines (e.g., Box2D, jBullet, Native Bullet).
  *
- * @author Alexis Drogoul 2021 (remotely based on the work of Javier Gil-Quijano - Arnaud Grignard - (2012 Gama Winter
- *         School))
+ * <p>
+ * Key Features:
+ * </p>
+ * <ul>
+ * <li>Supports 2D and 3D physics simulations using different libraries.</li>
+ * <li>Allows registration and management of agents with physical properties.</li>
+ * <li>Provides actions and operators to create and manipulate physical joints (e.g., hinge, slider, distance).</li>
+ * <li>Enables customization of simulation parameters such as gravity, collision detection, and substeps.</li>
+ * </ul>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ *
+ * <pre>
+ * // Example: Registering agents in the physical world
+ * do register([agent1, agent2]);
+ *
+ * // Example: Creating a hinge joint
+ * GamaJoint hinge = create_hinge_joint(bodyA, bodyB, anchor, lowerLimit, upperLimit, motorSpeed, maxMotorForce);
+ * </pre>
+ *
+ * <p>
+ * Attributes:
+ * </p>
+ * <ul>
+ * <li><b>gravity</b>: Defines the gravity vector applied to the physical world.</li>
+ * <li><b>automated_registration</b>: Determines whether agents are automatically registered.</li>
+ * <li><b>max_substeps</b>: Specifies the maximum number of substeps for the simulation engine.</li>
+ * <li><b>use_native</b>: Indicates whether the native Bullet library is used.</li>
+ * <li><b>library_name</b>: Specifies the physics library to use (e.g., Bullet, Box2D).</li>
+ * </ul>
+ *
+ * <p>
+ * Supported Joints:
+ * </p>
+ * <ul>
+ * <li><b>Hinge Joint</b>: Rotational joint with optional limits and motor.</li>
+ * <li><b>Slider Joint</b>: Linear joint with optional limits.</li>
+ * <li><b>Distance Joint</b>: Maintains a fixed distance between two bodies.</li>
+ * </ul>
+ *
+ * @see IPhysicalWorld
+ * @see GamaJoint
+ * @see IJointDefinition
  */
 @species (
 		name = IPhysicalConstants.PHYSICAL_WORLD,
@@ -384,6 +425,88 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 		this.gravity.setLocation(g);
 		// Dont provoke the instantiation of the gateway yet if it is null
 		if (gateway != null) { gateway.setGravity(g); }
+	}
+
+	/**
+	 * Creates the hinge joint.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param bodyA
+	 *            the body A
+	 * @param bodyB
+	 *            the body B
+	 * @param anchor
+	 *            the anchor
+	 * @param lowerLimit
+	 *            the lower limit
+	 * @param upperLimit
+	 *            the upper limit
+	 * @param motorSpeed
+	 *            the motor speed
+	 * @param maxMotorForce
+	 *            the max motor force
+	 * @return the gama joint
+	 */
+	@operator (
+			doc = @doc ("Creates a hinge joint in the physical world."),
+			value = "create_hinge_joint")
+	public GamaJoint createHingeJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final GamaPoint anchor, final Double lowerLimit, final Double upperLimit, final Double motorSpeed,
+			final Double maxMotorForce) {
+		IJointDefinition.JointType type = IJointDefinition.JointType.HINGE;
+		return new GamaJoint(null, type, bodyA, bodyB, anchor, lowerLimit != null ? lowerLimit : 0.0,
+				upperLimit != null ? upperLimit : 0.0, motorSpeed != null ? motorSpeed : 0.0,
+				maxMotorForce != null ? maxMotorForce : 0.0);
+	}
+
+	/**
+	 * Creates the slider joint.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param bodyA
+	 *            the body A
+	 * @param bodyB
+	 *            the body B
+	 * @param anchor
+	 *            the anchor
+	 * @param lowerLimit
+	 *            the lower limit
+	 * @param upperLimit
+	 *            the upper limit
+	 * @return the gama joint
+	 */
+	@operator (
+			doc = @doc ("Creates a slider joint in the physical world."),
+			value = "create_slider_joint")
+	public GamaJoint createSliderJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final GamaPoint anchor, final Double lowerLimit, final Double upperLimit) {
+		IJointDefinition.JointType type = IJointDefinition.JointType.SLIDER;
+		return new GamaJoint(null, type, bodyA, bodyB, anchor, lowerLimit != null ? lowerLimit : 0.0,
+				upperLimit != null ? upperLimit : 0.0, 0.0, 0.0);
+	}
+
+	/**
+	 * Creates the distance joint.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param bodyA
+	 *            the body A
+	 * @param bodyB
+	 *            the body B
+	 * @param anchor
+	 *            the anchor
+	 * @return the gama joint
+	 */
+	@operator (
+			doc = @doc ("Creates a distance joint in the physical world."),
+			value = "create_distance_joint")
+	public GamaJoint createDistanceJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final GamaPoint anchor) {
+		IJointDefinition.JointType type = IJointDefinition.JointType.DISTANCE;
+		return new GamaJoint(null, type, bodyA, bodyB, anchor, 0.0, 0.0, 0.0, 0.0);
 	}
 
 	@Override
