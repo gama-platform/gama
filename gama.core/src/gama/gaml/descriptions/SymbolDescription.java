@@ -40,10 +40,15 @@ import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
 /**
- * Written by drogoul Modified on 16 mars 2010
- *
- * @todo Description
- *
+ * Abstract base class for all GAML symbol descriptions. Provides the core functionality for describing, validating, and
+ * compiling GAML symbols (statements, variables, species, etc.) during the model parsing phase.
+ * <p>
+ * SymbolDescription serves as an intermediary representation between the raw text/AST of a GAML model and the
+ * runtime objects that execute during simulation. It handles validation of syntax, type checking, and compilation
+ * of symbols into executable elements.
+ * 
+ * @author Alexis Drogoul
+ * @since 16 Mar 2010
  */
 public abstract class SymbolDescription implements IDescription {
 
@@ -51,51 +56,50 @@ public abstract class SymbolDescription implements IDescription {
 		DEBUG.OFF();
 	}
 
-	/** The type provider facets. */
+	/** Set of facet names that can provide type information for the symbol. */
 	protected static final Set<String> typeProviderFacets = Collections.unmodifiableSet(new HashSet<>(
 			Arrays.asList(VALUE, TYPE, AS, SPECIES, OF, OVER, FROM, INDEX, FUNCTION, UPDATE, INIT, DEFAULT)));
 
-	/** The state. */
+	/** 
+	 * Stores the state flags of this description.
+	 * Flags represent boolean attributes like BuiltIn, Validated, etc.
+	 */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
-	/** The facets. */
+	/** The facets associated with this symbol. */
 	private Facets facets;
 
-	/** The element. */
+	/** The underlying EMF object from the parser. */
 	protected final EObject element;
 
-	/** The enclosing. */
+	/** The enclosing description that contains this description. */
 	private IDescription enclosingDescription;
 
-	/** The model description. */
+	/** The model description this symbol belongs to. */
 	private ModelDescription modelDescription;
 
-	/** The origin name. */
+	/** The name of the symbol that originated this description. */
 	protected String originName;
 
-	/** The name. */
+	/** The name of this symbol. */
 	protected String name;
 
-	/** The keyword. */
+	/** The keyword that defines this symbol type. */
 	protected final String keyword;
 
-	/** The type. */
+	/** The GAML type of this symbol. */
 	private IType<?> type;
 
-	/** The proto. */
+	/** The prototype information for this symbol type. */
 	final SymbolProto proto;
 
 	/**
-	 * Instantiates a new symbol description.
+	 * Creates a new symbol description.
 	 *
-	 * @param keyword
-	 *            the keyword
-	 * @param superDesc
-	 *            the super desc
-	 * @param source
-	 *            the source
-	 * @param facets
-	 *            the facets
+	 * @param keyword the GAML keyword for this symbol (e.g., "species", "action", "var")
+	 * @param superDesc the parent description containing this symbol
+	 * @param source the EMF AST node representing this symbol
+	 * @param facets the facets defined for this symbol
 	 */
 	public SymbolDescription(final String keyword, final IDescription superDesc, final EObject source,
 			final Facets facets) {
@@ -121,22 +125,19 @@ public abstract class SymbolDescription implements IDescription {
 	// ---- State management
 
 	/**
-	 * Sets the.
+	 * Sets a state flag for this description.
 	 *
-	 * @param flag
-	 *            the flag
+	 * @param flag the flag to set
 	 */
 	protected void set(final Flag flag) {
 		state.add(flag);
 	}
 
 	/**
-	 * Sets the if.
+	 * Sets a state flag conditionally based on the given condition.
 	 *
-	 * @param flag
-	 *            the flag
-	 * @param condition
-	 *            the condition
+	 * @param flag the flag to set
+	 * @param condition if true, the flag is set; otherwise, it is unset
 	 */
 	protected void setIf(final Flag flag, final boolean condition) {
 		if (condition) {
@@ -147,51 +148,38 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Un set.
+	 * Removes a state flag from this description.
 	 *
-	 * @param flag
-	 *            the flag
+	 * @param flag the flag to unset
 	 */
 	protected void unSet(final Flag flag) {
 		state.remove(flag);
 	}
 
 	/**
-	 * Checks if is sets the.
+	 * Checks if a specific flag is set for this description.
 	 *
-	 * @param flag
-	 *            the flag
-	 * @return true, if is sets the
+	 * @param flag the flag to check
+	 * @return true if the flag is set, false otherwise
 	 */
 	protected boolean isSet(final Flag flag) {
 		return state.contains(flag);
 	}
 
 	/**
-	 * Gets the order.
+	 * Checks if this description has any facets.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the order
-	 * @date 28 déc. 2023
-	 */
-	// @Override
-	// public int getOrder() { return order; }
-
-	/**
-	 * Checks for facets.
-	 *
-	 * @return true, if successful
+	 * @return true if the description has facets, false otherwise
 	 */
 	protected boolean hasFacets() {
 		return facets != null;
 	}
 
 	/**
-	 * Checks for facets not in.
+	 * Checks if this description has facets that are not in the given set.
 	 *
-	 * @param others
-	 *            the others
-	 * @return true, if successful
+	 * @param others a set of facet names
+	 * @return true if the description has facets not included in the set, false otherwise
 	 */
 	protected boolean hasFacetsNotIn(final Set<String> others) {
 		if (facets == null) return false;
@@ -199,9 +187,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the serializer.
+	 * Gets the serializer for this symbol description.
+	 * Creates one if it doesn't already exist.
 	 *
-	 * @return the serializer
+	 * @return the symbol serializer
 	 */
 	@Override
 	public final SymbolSerializer<? extends SymbolDescription> getSerializer() {
@@ -215,11 +204,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the facet.
+	 * Gets the expression description for the specified facet.
 	 *
-	 * @param string
-	 *            the string
-	 * @return the facet
+	 * @param string the facet name
+	 * @return the expression description, or null if the facet doesn't exist
 	 */
 	@Override
 	public IExpressionDescription getFacet(final String string) {
@@ -227,11 +215,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the facet expr.
+	 * Gets the compiled expression for the first matching facet name.
 	 *
-	 * @param strings
-	 *            the strings
-	 * @return the facet expr
+	 * @param strings one or more facet names to check
+	 * @return the first found expression, or null if none are found
 	 */
 	@Override
 	public IExpression getFacetExpr(final String... strings) {
@@ -239,11 +226,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the facet.
+	 * Gets the expression description for the first matching facet name.
 	 *
-	 * @param strings
-	 *            the strings
-	 * @return the facet
+	 * @param strings one or more facet names to check
+	 * @return the first found expression description, or null if none are found
 	 */
 	@Override
 	public IExpressionDescription getFacet(final String... strings) {
@@ -251,11 +237,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks for facet.
+	 * Checks if a specific facet exists in this description.
 	 *
-	 * @param string
-	 *            the string
-	 * @return true, if successful
+	 * @param string the facet name to check
+	 * @return true if the facet exists, false otherwise
 	 */
 	@Override
 	public boolean hasFacet(final String string) {
@@ -263,11 +248,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the litteral.
+	 * Gets the literal value of a facet.
 	 *
-	 * @param string
-	 *            the string
-	 * @return the litteral
+	 * @param string the facet name
+	 * @return the literal value as a string, or null if the facet doesn't exist
 	 */
 	@Override
 	public String getLitteral(final String string) {
@@ -275,12 +259,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Sets the facet expr description.
+	 * Sets a facet with the given expression description.
 	 *
-	 * @param name
-	 *            the name
-	 * @param desc
-	 *            the desc
+	 * @param name the facet name
+	 * @param desc the expression description
 	 */
 	@Override
 	public void setFacetExprDescription(final String name, final IExpressionDescription desc) {
@@ -289,12 +271,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Sets the facet.
+	 * Sets a facet with a pre-compiled expression.
 	 *
-	 * @param string
-	 *            the string
-	 * @param exp
-	 *            the exp
+	 * @param string the facet name
+	 * @param exp the compiled expression
 	 */
 	@Override
 	public void setFacet(final String string, final IExpression exp) {
@@ -303,10 +283,9 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Removes the facets.
+	 * Removes the specified facets from this description.
 	 *
-	 * @param strings
-	 *            the strings
+	 * @param strings the facet names to remove
 	 */
 	@Override
 	public void removeFacets(final String... strings) {
@@ -316,13 +295,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Visit facets.
+	 * Visits the facets in the specified set, applying the visitor to each.
 	 *
-	 * @param names
-	 *            the names
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 * @param names the set of facet names to visit
+	 * @param visitor the visitor to apply
+	 * @return true if all visits succeeded, false if any visit returned false
 	 */
 	@Override
 	public final boolean visitFacets(final Set<String> names, final IFacetVisitor visitor) {
@@ -331,11 +308,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Visit facets.
+	 * Visits all facets in this description, applying the visitor to each.
 	 *
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 * @param visitor the visitor to apply
+	 * @return true if all visits succeeded, false if any visit returned false
 	 */
 	@Override
 	public final boolean visitFacets(final IFacetVisitor visitor) {
@@ -344,11 +320,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the type denoted by facet.
+	 * Gets the type denoted by the first matching facet name.
 	 *
-	 * @param s
-	 *            the s
-	 * @return the type denoted by facet
+	 * @param s one or more facet names to check
+	 * @return the type denoted by the first matching facet, or NO_TYPE if none match
 	 */
 	public IType<?> getTypeDenotedByFacet(final String... s) {
 		if (!hasFacets()) return Types.NO_TYPE;
@@ -356,11 +331,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * First facet found among.
+	 * Returns the first facet name found among the specified names.
 	 *
-	 * @param strings
-	 *            the strings
-	 * @return the string
+	 * @param strings the facet names to check
+	 * @return the first matching facet name, or null if none match
 	 */
 	@Override
 	public String firstFacetFoundAmong(final String... strings) {
@@ -369,13 +343,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the type denoted by facet.
+	 * Gets the type denoted by a specific facet, with a default type if not found.
 	 *
-	 * @param s
-	 *            the s
-	 * @param defaultType
-	 *            the default type
-	 * @return the type denoted by facet
+	 * @param s the facet name
+	 * @param defaultType the default type to return if the facet doesn't exist
+	 * @return the type denoted by the facet, or the default type
 	 */
 	public IType<?> getTypeDenotedByFacet(final String s, final IType<?> defaultType) {
 		if (!hasFacets()) return defaultType;
@@ -383,25 +355,28 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the facets copy.
+	 * Creates a clean copy of the facets.
 	 *
-	 * @return the facets copy
+	 * @return a copy of the facets, or null if there are no facets
 	 */
-	public Facets getFacetsCopy() { return !hasFacets() ? null : facets.cleanCopy(); }
+	public Facets getFacetsCopy() { 
+		return !hasFacets() ? null : facets.cleanCopy(); 
+	}
 
 	/**
-	 * @return
+	 * Creates a serializer for this symbol description.
+	 *
+	 * @return a new serializer
 	 */
 	protected SymbolSerializer<? extends SymbolDescription> createSerializer() {
 		return SYMBOL_SERIALIZER;
 	}
 
 	/**
-	 * Serialize to gaml.
+	 * Serializes this description to GAML code.
 	 *
-	 * @param includingBuiltIn
-	 *            the including built in
-	 * @return the string
+	 * @param includingBuiltIn whether to include built-in elements in the serialization
+	 * @return the GAML code representation of this symbol
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
@@ -409,10 +384,9 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Collect meta information.
+	 * Collects metadata information about this symbol.
 	 *
-	 * @param meta
-	 *            the meta
+	 * @param meta the properties object to populate with metadata
 	 */
 	@Override
 	public void collectMetaInformation(final GamlProperties meta) {
@@ -420,64 +394,62 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the kind.
+	 * Gets the kind of this symbol.
 	 *
-	 * @return the kind
+	 * @return the symbol kind as defined in its prototype
 	 */
 	@Override
-	public int getKind() { return getMeta().getKind(); }
-
-	/**
-	 * Compile type provider facets.
-	 */
-	protected void compileTypeProviderFacets() {
-		visitFacets((facetName, exp) -> {
-			if (typeProviderFacets.contains(facetName)) { exp.compile(SymbolDescription.this); }
-			return true;
-		});
-
+	public int getKind() { 
+		return getMeta().getKind(); 
 	}
 
 	/**
-	 * Compile type provider facets.
+	 * Compiles all facets that can provide type information.
+	 * This ensures type provider facets are compiled before they are needed.
+	 */
+	protected void compileTypeProviderFacets() {
+		visitFacets((facetName, exp) -> {
+			if (typeProviderFacets.contains(facetName)) { 
+				exp.compile(SymbolDescription.this); 
+			}
+			return true;
+		});
+	}
+
+	/**
+	 * Compiles specific facets that may provide type information.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param names
-	 *            the names
-	 * @date 3 oct. 2023
+	 * @param names the names of the facets to compile
 	 */
 	protected void compileTypeProviderFacets(final String... names) {
 		for (String s : names) {
 			IExpressionDescription exp = getFacet(s);
-			if (exp != null) { exp.compile(this); }
+			if (exp != null) { 
+				exp.compile(this); 
+			}
 		}
 	}
 
 	/**
-	 * Gets the meta.
+	 * Gets the metadata prototype for this symbol.
 	 *
-	 * @return the meta
+	 * @return the symbol prototype
 	 */
 	@Override
-	public final SymbolProto getMeta() { return proto; }
+	public final SymbolProto getMeta() { 
+		return proto; 
+	}
 
 	/**
-	 * Flag error.
+	 * Internal method to handle error, warning, and info flags during validation.
+	 * Determines the proper reporting method based on the error type and context.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param warning
-	 *            the warning
-	 * @param info
-	 *            the info
-	 * @param source
-	 *            the source
-	 * @param data
-	 *            the data
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 * @param s the message text
+	 * @param code the issue code
+	 * @param type the error type (Error, Warning, or Info)
+	 * @param source the source object where the issue occurred
+	 * @param data additional data for the issue
+	 * @throws GamaRuntimeException if there's no way to report the error in compile time
 	 */
 	protected void flagError(final String s, final String code, final GamlCompilationErrorType type,
 			final EObject source, final String... data) throws GamaRuntimeException {
@@ -493,9 +465,7 @@ public abstract class SymbolDescription implements IDescription {
 			desc = desc.getEnclosingDescription();
 			if (desc != null) { e = desc.getUnderlyingElement(); }
 		}
-		// throws a runtime exception if there is no way to signal the error in
-
-		// the source
+		// throws a runtime exception if there is no way to signal the error in the source
 		// (i.e. we are probably in a runtime scenario)
 		if (e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX)) {
 			if (type == GamlCompilationErrorType.Error)
@@ -512,46 +482,47 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks if is synthetic.
+	 * Checks if the given EMF object is synthetic (not from an actual source file).
 	 *
-	 * @param e
-	 *            the e
-	 * @return true, if is synthetic
+	 * @param e the EMF object to check
+	 * @return true if the object is synthetic, false otherwise
 	 */
 	private boolean isSynthetic(final EObject e) {
 		return e == null || e.eResource() == null || e.eResource().getURI().path().contains(SYNTHETIC_RESOURCES_PREFIX);
 	}
 
 	/**
-	 * Documents an expression within this context
+	 * Associates documentation with an EMF object in the current context.
+	 *
+	 * @param e the EMF object to document
+	 * @param desc the documentation to associate with the object
 	 */
 	@Override
 	public void document(final EObject e, final IGamlDescription desc) {
 		final ValidationContext c = getValidationContext();
-		if (c != null) { c.setGamlDocumentation(e, desc); }
+		if (c != null) { 
+			c.setGamlDocumentation(e, desc); 
+		}
 	}
 
 	/**
-	 * Error.
+	 * Reports a general error with this description.
 	 *
-	 * @param message
-	 *            the message
+	 * @param message the error message
 	 */
 	@Override
 	public void error(final String message) {
 		error(message, IGamlIssue.GENERAL);
 	}
 
-	/** The Constant EMPTY_DATA. */
+	/** Constant for empty data arrays. */
 	final static String[] EMPTY_DATA = {};
 
 	/**
-	 * Error.
+	 * Reports an error with a specific issue code.
 	 *
-	 * @param message
-	 *            the message
-	 * @param code
-	 *            the code
+	 * @param message the error message
+	 * @param code the issue code
 	 */
 	@Override
 	public void error(final String message, final String code) {
@@ -559,16 +530,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Error.
+	 * Reports an error related to a specific EMF object.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param facet
-	 *            the facet
-	 * @param data
-	 *            the data
+	 * @param s the error message
+	 * @param code the issue code
+	 * @param facet the EMF object associated with the error
+	 * @param data additional data for the error
 	 */
 	@Override
 	public void error(final String s, final String code, final EObject facet, final String... data) {
@@ -576,16 +543,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Error.
+	 * Reports an error related to a specific facet.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param facet
-	 *            the facet
-	 * @param data
-	 *            the data
+	 * @param s the error message
+	 * @param code the issue code
+	 * @param facet the name of the facet with the error
+	 * @param data additional data for the error
 	 */
 	@Override
 	public void error(final String s, final String code, final String facet, final String... data) {
@@ -595,12 +558,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Info.
+	 * Reports an informational message with a specific issue code.
 	 *
-	 * @param message
-	 *            the message
-	 * @param code
-	 *            the code
+	 * @param message the info message
+	 * @param code the issue code
 	 */
 	@Override
 	public void info(final String message, final String code) {
@@ -608,16 +569,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Info.
+	 * Reports an informational message related to a specific EMF object.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param facet
-	 *            the facet
-	 * @param data
-	 *            the data
+	 * @param s the info message
+	 * @param code the issue code
+	 * @param facet the EMF object associated with the info
+	 * @param data additional data for the info
 	 */
 	@Override
 	public void info(final String s, final String code, final EObject facet, final String... data) {
@@ -625,16 +582,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Info.
+	 * Reports an informational message related to a specific facet.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param facet
-	 *            the facet
-	 * @param data
-	 *            the data
+	 * @param s the info message
+	 * @param code the issue code
+	 * @param facet the name of the facet
+	 * @param data additional data for the info
 	 */
 	@Override
 	public void info(final String s, final String code, final String facet, final String... data) {
@@ -643,12 +596,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Warning.
+	 * Reports a warning with a specific issue code.
 	 *
-	 * @param message
-	 *            the message
-	 * @param code
-	 *            the code
+	 * @param message the warning message
+	 * @param code the issue code
 	 */
 	@Override
 	public void warning(final String message, final String code) {
@@ -656,16 +607,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Warning.
+	 * Reports a warning related to a specific EMF object.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param object
-	 *            the object
-	 * @param data
-	 *            the data
+	 * @param s the warning message
+	 * @param code the issue code
+	 * @param object the EMF object associated with the warning
+	 * @param data additional data for the warning
 	 */
 	@Override
 	public void warning(final String s, final String code, final EObject object, final String... data) {
@@ -673,16 +620,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Warning.
+	 * Reports a warning related to a specific facet.
 	 *
-	 * @param s
-	 *            the s
-	 * @param code
-	 *            the code
-	 * @param facet
-	 *            the facet
-	 * @param data
-	 *            the data
+	 * @param s the warning message
+	 * @param code the issue code
+	 * @param facet the name of the facet
+	 * @param data additional data for the warning
 	 */
 	@Override
 	public void warning(final String s, final String code, final String facet, final String... data) {
@@ -692,29 +635,33 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the keyword.
+	 * Gets the keyword that defines this symbol.
 	 *
-	 * @return the keyword
+	 * @return the keyword string
 	 */
 	@Override
-	public String getKeyword() { return keyword; }
+	public String getKeyword() { 
+		return keyword; 
+	}
 
 	/**
-	 * Gets the name.
+	 * Gets the name of this symbol.
+	 * If the name is not set, attempts to get it from the NAME facet.
 	 *
-	 * @return the name
+	 * @return the symbol name
 	 */
 	@Override
 	public String getName() {
-		if (name == null) { name = getLitteral(NAME); }
+		if (name == null) { 
+			name = getLitteral(NAME); 
+		}
 		return name;
 	}
 
 	/**
-	 * Sets the name.
+	 * Sets the name of this symbol and updates the NAME facet if available.
 	 *
-	 * @param name
-	 *            the new name
+	 * @param name the new name for the symbol
 	 */
 	@Override
 	public void setName(final String name) {
@@ -725,14 +672,17 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Dispose.
+	 * Cleans up resources used by this description.
+	 * Recursively disposes of children first.
 	 */
 	@Override
 	public void dispose() {
 		// DEBUG.LOG("Disposing " + getKeyword() + " " + getName());
 		if (isBuiltIn()) return;
 		visitOwnChildren(DISPOSING_VISITOR);
-		if (hasFacets()) { facets.dispose(); }
+		if (hasFacets()) { 
+			facets.dispose(); 
+		}
 		facets = null;
 		enclosingDescription = null;
 		modelDescription = null;
@@ -740,32 +690,33 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the model description.
+	 * Gets the model description this symbol belongs to.
 	 *
 	 * @return the model description
 	 */
 	@Override
-	public ModelDescription getModelDescription() { return modelDescription; }
+	public ModelDescription getModelDescription() { 
+		return modelDescription; 
+	}
 
-	// To add children from outside
 	/**
-	 * Adds the children.
+	 * Adds multiple child descriptions to this description.
 	 *
-	 * @param originalChildren
-	 *            the original children
+	 * @param originalChildren the children to add
 	 */
 	// @Override
 	public final void addChildren(final Iterable<? extends IDescription> originalChildren) {
 		if (originalChildren == null) return;
-		for (final IDescription c : originalChildren) { addChild(c); }
+		for (final IDescription c : originalChildren) { 
+			addChild(c); 
+		}
 	}
 
 	/**
-	 * Adds the child.
+	 * Adds a single child description to this description.
 	 *
-	 * @param child
-	 *            the child
-	 * @return the i description
+	 * @param child the child to add
+	 * @return the added child description
 	 */
 	// @Override
 	public IDescription addChild(final IDescription child) {
@@ -775,27 +726,26 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Sets the enclosing.
+	 * Sets the enclosing description and updates the model description accordingly.
 	 *
-	 * @param desc
-	 *            the new enclosing
+	 * @param desc the new enclosing description
 	 */
 	@Override
 	public void setEnclosingDescription(final IDescription desc) {
 		enclosingDescription = desc;
 		if (enclosingDescription == null) return;
 		modelDescription = enclosingDescription.getModelDescription();
-		if (modelDescription != null && modelDescription.isBuiltIn() && !this.isBuiltIn()) { modelDescription = null; }
+		if (modelDescription != null && modelDescription.isBuiltIn() && !this.isBuiltIn()) { 
+			modelDescription = null; 
+		}
 	}
 
 	/**
-	 * Gets the underlying element.
+	 * Gets the underlying EMF element for a facet or the entire description.
 	 *
-	 * @param facet
-	 *            the facet
-	 * @param returnFacet
-	 *            the return facet
-	 * @return the underlying element
+	 * @param facet the facet to find, or null for the main element
+	 * @param returnFacet whether to return the facet element itself or its expression
+	 * @return the EMF element
 	 */
 	@Override
 	public EObject getUnderlyingElement(final Object facet, final boolean returnFacet) {
@@ -829,11 +779,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Copy.
+	 * Creates a copy of this description.
+	 * Default implementation just returns this; subclasses may override.
 	 *
-	 * @param into
-	 *            the into
-	 * @return the i description
+	 * @param into the target description to copy into
+	 * @return the copied description
 	 */
 	@Override
 	public IDescription copy(final IDescription into) {
@@ -841,11 +791,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Visit own children recursively.
+	 * Visits all children recursively with the given visitor.
+	 * Default implementation returns true; subclasses may override.
 	 *
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 * @param visitor the visitor to apply to each child
+	 * @return true if all visits succeeded, false if any visit returned false
 	 */
 	@Override
 	public boolean visitOwnChildrenRecursively(final DescriptionVisitor<IDescription> visitor) {
@@ -853,19 +803,21 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the enclosing.
+	 * Gets the enclosing description that contains this description.
 	 *
-	 * @return the enclosing
+	 * @return the enclosing description
 	 */
 	@Override
-	public IDescription getEnclosingDescription() { return enclosingDescription; }
+	public IDescription getEnclosingDescription() { 
+		return enclosingDescription; 
+	}
 
 	/**
-	 * Checks for attribute.
+	 * Checks if this description has an attribute with the given name.
+	 * Default implementation returns false; subclasses may override.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @return true, if successful
+	 * @param aName the attribute name to check
+	 * @return true if the attribute exists, false otherwise
 	 */
 	@Override
 	public boolean hasAttribute(final String aName) {
@@ -873,11 +825,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Manipulates var.
+	 * Checks if this description manipulates a variable with the given name.
+	 * Default implementation returns false; subclasses may override.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @return true, if successful
+	 * @param aName the variable name to check
+	 * @return true if the variable is manipulated, false otherwise
 	 */
 	@Override
 	public boolean manipulatesVar(final String aName) {
@@ -885,24 +837,23 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks for action.
+	 * Checks if this description has an action with the given name.
+	 * Default implementation returns false; subclasses may override.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @param superInvocation
-	 *            the super invocation
-	 * @return true, if successful
+	 * @param aName the action name to check
+	 * @param superInvocation whether to check super types
+	 * @return true if the action exists, false otherwise
 	 */
 	protected boolean hasAction(final String aName, final boolean superInvocation) {
 		return false;
 	}
 
 	/**
-	 * Gets the description declaring var.
+	 * Gets the description that declares a variable with the given name.
+	 * Searches up the enclosing description hierarchy.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @return the description declaring var
+	 * @param aName the variable name to find
+	 * @return the description that declares the variable, or null if not found
 	 */
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String aName) {
@@ -911,13 +862,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the description declaring action.
+	 * Gets the description that declares an action with the given name.
+	 * Searches up the enclosing description hierarchy.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @param superInvocation
-	 *            the super invocation
-	 * @return the description declaring action
+	 * @param aName the action name to find
+	 * @param superInvocation whether to check super types
+	 * @return the description that declares the action, or null if not found
 	 */
 	@Override
 	public IDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
@@ -926,13 +876,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the var expr.
+	 * Gets the expression for a variable with the given name.
+	 * Default implementation returns null; subclasses may override.
 	 *
-	 * @param aName
-	 *            the a name
-	 * @param asField
-	 *            the as field
-	 * @return the var expr
+	 * @param aName the variable name
+	 * @param asField whether to treat it as a field access
+	 * @return the variable expression, or null if not found
 	 */
 	@Override
 	public IExpression getVarExpr(final String aName, final boolean asField) {
@@ -940,11 +889,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the type named.
+	 * Gets a type by name from the model context.
 	 *
-	 * @param s
-	 *            the s
-	 * @return the type named
+	 * @param s the type name
+	 * @return the type, or a default type if not found
 	 */
 	@Override
 	public IType<?> getTypeNamed(final String s) {
@@ -954,41 +902,43 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the gaml type.
+	 * Gets the GAML type of this symbol.
+	 * Computes it if not already set.
 	 *
-	 * @return the gaml type
+	 * @return the GAML type
 	 */
 	@Override
 	public IType<?> getGamlType() {
-		if (type == null) { setType(computeType()); }
+		if (type == null) { 
+			setType(computeType()); 
+		}
 		return type;
 	}
 
-	/** The Constant staticTypeProviders. */
-	// 13/02/20: Addition of VALUE (see #2932)
+	/** Facets that can provide static type information. */
 	static final String[] staticTypeProviders = { DATA, TYPE, SPECIES, AS, TARGET /* , ON */ };
 
-	/** The Constant dynamicTypeProviders. */
+	/** Facets that can provide dynamic type information. */
 	static final String[] dynamicTypeProviders = { INIT, VALUE, UPDATE, FUNCTION, DEFAULT };
 
 	/**
-	 * Compute type. Returns the type of the symbol. If the type is not defined, it will try by default to infer it from
-	 * the facets, unlese the flag NoTypeInference is set. See #385
+	 * Computes the type of this symbol. If the type is not defined, it will try by default to infer it from
+	 * the facets, unless the flag NoTypeInference is set.
 	 *
-	 * @return the type of the symbol
+	 * @return the computed type
 	 */
 	protected IType<?> computeType() {
 		return computeType(!isSet(Flag.NoTypeInference));
 	}
 
 	/**
-	 * Compute the type of the symbol. If the type is not defined, it will try by default to infer it from the facets,
-	 * unless the parameter doTypeInference is set to false. See #385
+	 * Computes the type of this symbol with control over type inference.
 	 *
-	 * @return the i type
+	 * @param doTypeInference whether to attempt type inference from facets
+	 * @return the computed type
 	 */
 	protected IType<?> computeType(final boolean doTypeInference) {
-		// Adapter ca pour prendre en compte les ITypeProvider
+		// Get type information from facets
 		IType<?> tt = getTypeDenotedByFacet(staticTypeProviders);
 		IType<?> kt = getTypeDenotedByFacet(INDEX, tt.getKeyType());
 		IType<?> ct = getTypeDenotedByFacet(OF, tt.getContentType());
@@ -996,20 +946,20 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * This method is used to infer the types of a symbol from the types of its facets. It is used when the type,
-	 * keyType, and contentType are not defined in the declaration.
+	 * Infers types from facets when they are not explicitly defined.
+	 * This method attempts to determine the type, key type, and content type
+	 * by examining expressions in the facets.
 	 *
-	 * @param tt
-	 *            the initial type
-	 * @param kt
-	 *            the key type
-	 * @param ct
-	 *            the content type
+	 * @param tt the initial type
+	 * @param kt the initial key type
+	 * @param ct the initial content type
 	 * @return the inferred type
 	 */
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
 		// If the initial type is NO_TYPE, try to find it in dynamic type providers
-		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
+		if (tt == Types.NO_TYPE) { 
+			tt = findInDynamicTypeProviders(tt); 
+		}
 		// If the type is not a container, return it as is
 		if (!tt.isContainer()) return tt;
 		// If the content type or key type is NO_TYPE, try to infer them
@@ -1023,8 +973,12 @@ public abstract class SymbolDescription implements IDescription {
 					tt = exprType;
 				} else {
 					// Otherwise, infer the key type and content type from the expression type
-					if (kt == Types.NO_TYPE) { kt = exprType.getKeyType(); }
-					if (ct == Types.NO_TYPE) { ct = exprType.getContentType(); }
+					if (kt == Types.NO_TYPE) { 
+						kt = exprType.getKeyType(); 
+					}
+					if (ct == Types.NO_TYPE) { 
+						ct = exprType.getContentType(); 
+					}
 				}
 			}
 		}
@@ -1033,11 +987,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Find in dynamic type providers.
+	 * Attempts to find a type from dynamic type provider facets.
 	 *
-	 * @param tt
-	 *            the tt
-	 * @return the i type
+	 * @param tt the default type to return if no type is found
+	 * @return the found type, or the default if none is found
 	 */
 	private IType<?> findInDynamicTypeProviders(final IType<?> tt) {
 		IExpressionDescription ed = getFacet(dynamicTypeProviders);
@@ -1049,9 +1002,9 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the species context.
+	 * Gets the species context for this description.
 	 *
-	 * @return the species context
+	 * @return the species context, or null if none exists
 	 */
 	@Override
 	public SpeciesDescription getSpeciesContext() {
@@ -1061,7 +1014,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * @see gama.core.common.interfaces.IDescription#getSpeciesDescription(java.lang.String)
+	 * Gets a species description by name from the model.
+	 *
+	 * @param actualSpecies the species name
+	 * @return the species description, or null if not found
 	 */
 	@Override
 	public SpeciesDescription getSpeciesDescription(final String actualSpecies) {
@@ -1071,7 +1027,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * @see gama.core.common.interfaces.IDescription#getAction(java.lang.String)
+	 * Gets an action description by name.
+	 * Default implementation returns null; subclasses may override.
+	 *
+	 * @param aName the action name
+	 * @return the action description, or null if not found
 	 */
 	@Override
 	public ActionDescription getAction(final String aName) {
@@ -1079,34 +1039,40 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the title.
+	 * Gets a title for this description, used in UI elements.
 	 *
-	 * @return the title
+	 * @return a title string
 	 */
 	@Override
-	public String getTitle() { return "Statement " + getKeyword(); }
+	public String getTitle() { 
+		return "Statement " + getKeyword(); 
+	}
 
 	/**
-	 * Gets the documentation.
+	 * Gets the documentation for this symbol.
 	 *
-	 * @return the documentation
+	 * @return the documentation object
 	 */
 	@Override
-	public Doc getDocumentation() { return getMeta().getDocumentation(); }
+	public Doc getDocumentation() { 
+		return getMeta().getDocumentation(); 
+	}
 
 	/**
-	 * Gets the defining plugin.
+	 * Gets the plugin that defined this symbol.
 	 *
-	 * @return the defining plugin
+	 * @return the plugin ID
 	 */
 	@Override
-	public String getDefiningPlugin() { return getMeta().getDefiningPlugin(); }
+	public String getDefiningPlugin() { 
+		return getMeta().getDefiningPlugin(); 
+	}
 
 	/**
-	 * Sets the defining plugin.
+	 * Sets the defining plugin for this symbol.
+	 * Default implementation does nothing; subclasses may override.
 	 *
-	 * @param plugin
-	 *            the new defining plugin
+	 * @param plugin the plugin ID
 	 */
 	@Override
 	public void setDefiningPlugin(final String plugin) {
@@ -1114,9 +1080,9 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the validation context.
+	 * Gets the validation context for this description.
 	 *
-	 * @return the validation context
+	 * @return the validation context, or null if no model is available
 	 */
 	@Override
 	public ValidationContext getValidationContext() {
@@ -1126,41 +1092,48 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks if is built in.
+	 * Checks if this description is for a built-in symbol.
 	 *
-	 * @return true, if is built in
+	 * @return true if this is a built-in symbol, false otherwise
 	 */
 	@Override
-	public boolean isBuiltIn() { return state.contains(Flag.BuiltIn); }
+	public boolean isBuiltIn() { 
+		return state.contains(Flag.BuiltIn); 
+	}
 
 	/**
-	 * Checks if is synthetic.
+	 * Checks if this description is synthetic (generated programmatically).
 	 *
-	 * @return true, if is synthetic
+	 * @return true if this is a synthetic description, false otherwise
 	 */
-	protected boolean isSynthetic() { return state.contains(Flag.Synthetic); }
+	protected boolean isSynthetic() { 
+		return state.contains(Flag.Synthetic); 
+	}
 
 	/**
-	 * Gets the origin name.
+	 * Gets the origin name of this symbol.
 	 *
 	 * @return the origin name
 	 */
 	@Override
-	public String getOriginName() { return originName; }
-
-	/**
-	 * Sets the origin name.
-	 *
-	 * @param name
-	 *            the new origin name
-	 */
-	@Override
-	public void setOriginName(final String name) {
-		if (originName == null) { originName = name; }
+	public String getOriginName() { 
+		return originName; 
 	}
 
 	/**
-	 * Reset origin name.
+	 * Sets the origin name if not already set.
+	 *
+	 * @param name the new origin name
+	 */
+	@Override
+	public void setOriginName(final String name) {
+		if (originName == null) { 
+			originName = name; 
+		}
+	}
+
+	/**
+	 * Resets the origin name to null.
 	 */
 	@Override
 	public void resetOriginName() {
@@ -1168,9 +1141,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Validate.
+	 * Validates this description, checking that it is correctly defined
+	 * within its context and that its facets are valid.
 	 *
-	 * @return the i description
+	 * @return this description if validation passed, null if it failed
 	 */
 	@Override
 	public IDescription validate() {
@@ -1219,9 +1193,10 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Validate facets.
+	 * Validates the facets of this description, checking for missing required facets,
+	 * deprecated facets, type compatibility, etc.
 	 *
-	 * @return true, if successful
+	 * @return true if all facets are valid, false otherwise
 	 */
 	private final boolean validateFacets() {
 		// Special case for "do", which can accept (at parsing time) any facet
@@ -1273,15 +1248,12 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Compile expression.
+	 * Compiles an expression for a facet, handling various special cases.
 	 *
-	 * @param facet
-	 *            the facet
-	 * @param expr
-	 *            the expr
-	 * @param fp
-	 *            the fp
-	 * @return the i expression
+	 * @param facet the facet name
+	 * @param expr the expression description
+	 * @param fp the facet prototype
+	 * @return the compiled expression
 	 */
 	private IExpression compileExpression(final String facet, final IExpressionDescription expr, final FacetProto fp) {
 		IExpression exp;
@@ -1304,25 +1276,22 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Emit facet types incompatibility warning.
+	 * Emits a warning when a facet's type is incompatible with its expected type.
 	 *
-	 * @param facet
-	 *            the facet
-	 * @param fp
-	 *            the fp
-	 * @param actualType
-	 *            the actual type
-	 * @param contentType
-	 *            the content type
-	 * @param keyType
-	 *            the key type
+	 * @param facet the facet name
+	 * @param fp the facet prototype
+	 * @param actualType the actual type of the expression
+	 * @param contentType the expected content type
+	 * @param keyType the expected key type
 	 */
 	private void emitFacetTypesIncompatibilityWarning(final String facet, final FacetProto fp,
 			final IType<?> actualType, final IType<?> contentType, final IType<?> keyType) {
 		final String[] strings = new String[fp.types.length];
 		for (int i = 0; i < fp.types.length; i++) {
 			IType<?> requestedType2 = fp.types[i];
-			if (requestedType2.isContainer()) { requestedType2 = GamaType.from(requestedType2, keyType, contentType); }
+			if (requestedType2.isContainer()) { 
+				requestedType2 = GamaType.from(requestedType2, keyType, contentType); 
+			}
 			strings[i] = requestedType2.toString();
 		}
 
@@ -1331,21 +1300,14 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Verify facet types compatibility.
+	 * Verifies that a facet's expression type is compatible with its expected types.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param fp
-	 *            the fp
-	 * @param exp
-	 *            the exp
-	 * @param actualType
-	 *            the actual type
-	 * @param contentType
-	 *            the content type
-	 * @param keyType
-	 *            the key type
-	 * @return true, if successful
-	 * @date 10 janv. 2024
+	 * @param fp the facet prototype
+	 * @param exp the compiled expression
+	 * @param actualType the actual type of the expression
+	 * @param contentType the expected content type
+	 * @param keyType the expected key type
+	 * @return true if the types are compatible, false otherwise
 	 */
 	private boolean verifyFacetTypesCompatibility(final FacetProto fp, final IExpression exp, final IType<?> actualType,
 			final IType<?> contentType, final IType<?> keyType) {
@@ -1362,25 +1324,23 @@ public abstract class SymbolDescription implements IDescription {
 								&& actualType.getContentType().isTranslatableInto(contentType);
 			} else {
 				compatible = actualType.equals(definedType) || !isNone && actualType.isTranslatableInto(definedType);
-
 			}
 			compatible |= Types.isEmptyContainerCase(definedType, exp);
-			if (compatible) { break; }
+			if (compatible) { 
+				break; 
+			}
 		}
 
 		return compatible;
 	}
 
 	/**
-	 * Process multi valued facet.
+	 * Processes a multi-valued facet, checking that its value is among the accepted values.
 	 *
-	 * @param facet
-	 *            the facet
-	 * @param expr
-	 *            the expr
-	 * @param fp
-	 *            the fp
-	 * @return true, if successful
+	 * @param facet the facet name
+	 * @param expr the expression description
+	 * @param fp the facet prototype
+	 * @return true if the value is valid, false otherwise
 	 */
 	private boolean processMultiValuedFacet(final String facet, final IExpressionDescription expr,
 			final FacetProto fp) {
@@ -1394,13 +1354,11 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Process unknow facet.
+	 * Processes an unknown facet, handling special cases and reporting errors.
 	 *
-	 * @param isDo
-	 *            the is do
-	 * @param facet
-	 *            the facet
-	 * @return true, if successful
+	 * @param isDo whether this is a "do" statement, which allows arbitrary facets
+	 * @param facet the facet name
+	 * @return true if the facet can be accepted, false otherwise
 	 */
 	private boolean processUnknowFacet(final boolean isDo, final String facet) {
 		if (facet.contains(IGamlIssue.DOUBLED_CODE)) {
@@ -1418,30 +1376,30 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Creates the var with types.
+	 * Creates a variable expression with types for a facet.
+	 * Default implementation returns null; subclasses may override.
 	 *
-	 * @param tag
-	 *            the tag
-	 * @return the i expression
+	 * @param tag the facet tag
+	 * @return the created expression, or null
 	 */
-	// Nothing to do here
 	protected IExpression createVarWithTypes(final String tag) {
 		return null;
 	}
 
 	/**
-	 * Validate children.
+	 * Validates the children of this description.
 	 *
-	 * @return true, if successful
+	 * @return true if all children are valid, false otherwise
 	 */
 	protected boolean validateChildren() {
 		return visitOwnChildren(VALIDATING_VISITOR);
 	}
 
 	/**
-	 * Compile.
+	 * Compiles this description into a runtime symbol.
+	 * This method validates the description first, then creates and initializes the symbol.
 	 *
-	 * @return the i symbol
+	 * @return the compiled symbol, or null if compilation failed
 	 */
 	@Override
 	public final ISymbol compile() {
@@ -1451,46 +1409,47 @@ public abstract class SymbolDescription implements IDescription {
 		if (proto.hasArgs()) {
 			((IStatement.WithArgs) cs).setFormalArgs(((StatementDescription) this).createCompiledArgs());
 		}
-		if (proto.hasSequence() && !proto.isPrimitive()) { cs.setChildren(compileChildren()); }
+		if (proto.hasSequence() && !proto.isPrimitive()) { 
+			cs.setChildren(compileChildren()); 
+		}
 		return cs;
-
 	}
 
 	/**
-	 * Method compileChildren()
+	 * Compiles the children of this description into runtime symbols.
 	 *
-	 * @see gama.gaml.descriptions.IDescription#compileChildren()
+	 * @return an iterable of compiled symbols
 	 */
 	protected Iterable<? extends ISymbol> compileChildren() {
-
 		final List<ISymbol> lce = new ArrayList<>();
 		visitChildren(desc -> {
 			final ISymbol s = desc.compile();
-			if (s != null) { lce.add(s); }
+			if (s != null) { 
+				lce.add(s); 
+			}
 			return true;
 		});
 		return lce;
 	}
 
 	/**
-	 * Gets the children with keyword.
+	 * Gets all child descriptions with the specified keyword.
 	 *
-	 * @param aKeyword
-	 *            the a keyword
-	 * @return the children with keyword
+	 * @param aKeyword the keyword to filter by
+	 * @return an iterable of matching descriptions
 	 */
 	@Override
 	public Iterable<IDescription> getChildrenWithKeyword(final String aKeyword) {
-		return StreamSupport.stream(getOwnChildren().spliterator(), false).filter(d -> d.getKeyword().equals(aKeyword))
+		return StreamSupport.stream(getOwnChildren().spliterator(), false)
+				.filter(d -> d.getKeyword().equals(aKeyword))
 				.toList();
 	}
 
 	/**
-	 * Gets the child with keyword.
+	 * Gets the first child description with the specified keyword.
 	 *
-	 * @param aKeyword
-	 *            the a keyword
-	 * @return the child with keyword
+	 * @param aKeyword the keyword to search for
+	 * @return the first matching description, or null if none is found
 	 */
 	@Override
 	public IDescription getChildWithKeyword(final String aKeyword) {
@@ -1504,52 +1463,33 @@ public abstract class SymbolDescription implements IDescription {
 		});
 		return result[0];
 	}
-	//
-	// @Override
-	// public void computeStats(final FacetVisitor proc, final int[] facetNumber, final int[] descWithNoFacets,
-	// final int[] descNumber) {
-	// visitFacets(proc);
-	// final int facetSize = facets == null ? 0 : facets.size();
-	// facetNumber[0] += facetSize;
-	// descNumber[0]++;
-	// if (facetSize == 1)
-	// descWithNoFacets[0]++;
-	//
-	// visitChildren(new DescriptionVisitor<IDescription>() {
-	//
-	// @Override
-	// public boolean visit(final IDescription desc) {
-	// desc.computeStats(proc, facetNumber, descWithNoFacets, descNumber);
-	// return true;
-	// }
-	// });
-	//
-	// }
 
 	/**
-	 * Convenience method to access facets from other structures. However, this method should be (when possible)
-	 * replaced by the usage of the visitor pattern through visitFacets()
+	 * Gets all facets for this description.
+	 * Note: When possible, prefer using visitFacets() for better performance.
+	 *
+	 * @return the facets, or NULL if none exist
 	 */
 	@Override
-	public Facets getFacets() { return facets == null ? Facets.NULL : facets; }
+	public Facets getFacets() { 
+		return facets == null ? Facets.NULL : facets; 
+	}
 
 	/**
-	 * Attach alternate var description provider.
+	 * Attaches an alternate variable description provider.
+	 * Default implementation does nothing; subclasses may override.
 	 *
-	 * @param vp
-	 *            the vp
+	 * @param vp the variable description provider
 	 */
 	@Override
 	public void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp) {}
 
 	/**
-	 * Gets the similar child.
+	 * Finds a child description in a container that matches the keyword and name of the given description.
 	 *
-	 * @param container
-	 *            the container
-	 * @param desc
-	 *            the desc
-	 * @return the similar child
+	 * @param container the container to search in
+	 * @param desc the description to match
+	 * @return the matching description, or null if none is found
 	 */
 	public static IDescription getSimilarChild(final IDescription container, final IDescription desc) {
 		final IDescription[] found = new IDescription[1];
@@ -1564,35 +1504,40 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Replace children with.
+	 * Replaces the children of this description with the given descriptions.
+	 * Default implementation does nothing; subclasses may override.
 	 *
-	 * @param array
-	 *            the array
+	 * @param array the new children
 	 */
 	@Override
 	public void replaceChildrenWith(final Iterable<IDescription> array) {}
 
 	/**
-	 * Sets the type.
+	 * Sets the type of this symbol.
 	 *
-	 * @param type
-	 *            the new type
+	 * @param type the new type
 	 */
-	private void setType(final IType<?> type) { this.type = type; }
+	private void setType(final IType<?> type) { 
+		this.type = type; 
+	}
 
 	/**
-	 * Checks if is invocation.
+	 * Checks if this description represents an action invocation (e.g., a "do" statement).
+	 * Default implementation returns false; subclasses may override.
 	 *
-	 * @return true, if is invocation
+	 * @return true if this is an invocation, false otherwise
 	 */
 	@Override
-	public boolean isInvocation() { return false; }
+	public boolean isInvocation() { 
+		return false; 
+	}
 
 	/**
-	 * Checks if is creates the.
+	 * Checks if this description represents a "create" statement.
 	 *
-	 * @return true, if is creates the
+	 * @return true if this is a create statement, false otherwise
 	 */
-	public boolean isCreate() { return isSet(Flag.IsCreate); }
-
+	public boolean isCreate() { 
+		return isSet(Flag.IsCreate); 
+	}
 }
