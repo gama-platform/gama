@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamlSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,8 +11,6 @@ package gama.gaml.species;
 
 import java.util.Collection;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -21,6 +18,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -50,7 +49,7 @@ import one.util.streamex.StreamEx;
  * @author drogoul
  */
 @symbol (
-		name = { IKeyword.SPECIES, IKeyword.GLOBAL, IKeyword.GRID },
+		name = { IKeyword.SPECIES, IKeyword.GLOBAL, IKeyword.GRID, IKeyword.TYPE, IKeyword.SKILL },
 		kind = ISymbolKind.SPECIES,
 		with_sequence = true,
 		concept = { IConcept.SPECIES })
@@ -292,9 +291,7 @@ public class GamlSpecies extends AbstractSpecies {
 		private IExpression processNeighbors(final SpeciesDescription sd) {
 
 			final IExpression neighbours = sd.getFacetExpr(IKeyword.NEIGHBORS);
-			if (neighbours != null) {
-				sd.setFacet(NEIGHBORS, neighbours);
-			}
+			if (neighbours != null) { sd.setFacet(NEIGHBORS, neighbours); }
 			return neighbours;
 		}
 
