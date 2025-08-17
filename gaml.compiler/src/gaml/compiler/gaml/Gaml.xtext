@@ -147,7 +147,7 @@ _SolveKey:
 	"solve";
 
 _SpeciesKey:
-	"species" | "grid";
+	"species" | "grid" | "type" | "skill";
 	
 _ImageLayerKey: "image";
 

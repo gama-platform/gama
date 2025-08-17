@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaServerExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,6 +23,7 @@ import javax.imageio.ImageIO;
 
 import org.java_websocket.WebSocket;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.model.IModel;
@@ -42,7 +43,6 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  * The Class ExperimentJob.
  */
 public class GamaServerExperimentJob extends ExperimentJob {
-
 
 	/** The socket. */
 	public WebSocket socket;
@@ -79,9 +79,9 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 * @param dialog
 	 *            the dialog
 	 */
-	public GamaServerExperimentJob(final String sourcePath, final String exp,
-			final WebSocket sk, final IList p, final String end,
-			final boolean console, final boolean status, final boolean dialog, final boolean runtime) {
+	public GamaServerExperimentJob(final String sourcePath, final String exp, final WebSocket sk, final IList p,
+			final String end, final boolean console, final boolean status, final boolean dialog,
+			final boolean runtime) {
 		// (final String sourcePath, final String exp, final long max, final String untilCond,
 		// final double s)
 		super(sourcePath, exp, 0, "", 0);
@@ -145,17 +145,18 @@ public class GamaServerExperimentJob extends ExperimentJob {
 			final ExperimentPlan curExperiment = (ExperimentPlan) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get("type").toString();
-				Object v = m.get("value");
-				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
-				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }
+				String type = m.get(IKeyword.TYPE).toString();
+				Object v = m.get(IKeyword.VALUE);
+				if (IKeyword.INT.equals(type)) { v = Integer.valueOf("" + m.get(IKeyword.VALUE)); }
+				if (IKeyword.FLOAT.equals(type)) { v = Double.valueOf("" + m.get(IKeyword.VALUE)); }
 
-				final IParameter.Batch b = curExperiment.getParameterByTitle(m.get("name").toString());
+				final IParameter.Batch b = curExperiment.getParameterByTitle(m.get(IKeyword.NAME).toString());
 				if (b != null) {
-					curExperiment.setParameterValueByTitle(curExperiment.getExperimentScope(), m.get("name").toString(),
-							v);
+					curExperiment.setParameterValueByTitle(curExperiment.getExperimentScope(),
+							m.get(IKeyword.NAME).toString(), v);
 				} else {
-					curExperiment.setParameterValue(curExperiment.getExperimentScope(), m.get("name").toString(), v);
+					curExperiment.setParameterValue(curExperiment.getExperimentScope(), m.get(IKeyword.NAME).toString(),
+							v);
 				}
 
 			}

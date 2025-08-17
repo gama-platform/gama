@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * MulticriteriaAnalyzeOperator.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MulticriteriaAnalyzeOperator.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.multi_criteria;
 
@@ -26,6 +26,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -46,11 +47,15 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Weighted means decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteriaMap the criteria map
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteriaMap
+	 *            the criteria map
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "weighted_means_DM",
@@ -65,7 +70,7 @@ public class MulticriteriaAnalyzeOperator {
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
 	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) { return -1; }
+		if (cands == null || cands.isEmpty()) return -1;
 		final List<String> criteriaStr = new LinkedList<>();
 		final Map<String, Double> weight = new HashMap<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
@@ -103,12 +108,18 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Builds the combination.
 	 *
-	 * @param criteria the criteria
-	 * @param currentSol the current sol
-	 * @param combinations the combinations
-	 * @param start the start
-	 * @param end the end
-	 * @param index the index
+	 * @param criteria
+	 *            the criteria
+	 * @param currentSol
+	 *            the current sol
+	 * @param combinations
+	 *            the combinations
+	 * @param start
+	 *            the start
+	 * @param end
+	 *            the end
+	 * @param index
+	 *            the index
 	 */
 	public static void buildCombination(final List<String> criteria, final Set<String> currentSol,
 			final List<Set<String>> combinations, final int start, final int end, final int index) {
@@ -128,12 +139,17 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Fuzzy choquet decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteria the criteria
-	 * @param criteriaWeights the criteria weights
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteria
+	 *            the criteria
+	 * @param criteriaWeights
+	 *            the criteria weights
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "fuzzy_choquet_DM",
@@ -148,30 +164,22 @@ public class MulticriteriaAnalyzeOperator {
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
 	public static Integer fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<String> criteria, final IMap criteriaWeights) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) { return -1; }
+		if (cands == null || cands.isEmpty()) return -1;
 		final Map<String, Double> critWeight = new HashMap<>();
 		final Map<Set<String>, Double> weight = new HashMap<>();
 		for (final Object o : criteriaWeights.keySet()) {
 			final Set<String> key = new LinkedHashSet<>((List) o);
 			final Double val = Cast.asFloat(scope, criteriaWeights.get(o));
-			if (key.size() == 1) {
-				critWeight.put(new ArrayList<>(key).get(0), val);
-			}
+			if (key.size() == 1) { critWeight.put(new ArrayList<>(key).get(0), val); }
 			weight.put(key, val);
 		}
-		for (final String crit : criteria) {
-			if (!critWeight.containsKey(crit)) {
-				critWeight.put(crit, 1.0);
-			}
-		}
+		for (final String crit : criteria) { if (!critWeight.containsKey(crit)) { critWeight.put(crit, 1.0); } }
 		final List<Set<String>> combinations = new ArrayList<>();
 		buildCombination(criteria, new LinkedHashSet<>(), combinations, 0, criteria.size() - 1, 0);
 		for (final Set<String> comb : combinations) {
 			if (!weight.containsKey(comb)) {
 				Double tot = 0.0;
-				for (final String c : comb) {
-					tot += Cast.asFloat(scope, critWeight.get(c));
-				}
+				for (final String c : comb) { tot += Cast.asFloat(scope, critWeight.get(c)); }
 				weight.put(comb, tot);
 			}
 		}
@@ -185,9 +193,7 @@ public class MulticriteriaAnalyzeOperator {
 			Collections.sort(orderedList);
 			for (final Object val : cand) {
 				int index = orderedList.indexOf(val);
-				while (listOfOrder.contains(index)) {
-					index++;
-				}
+				while (listOfOrder.contains(index)) { index++; }
 				// if (listOfOrder.contains(index))
 				// index ++;
 				listOfOrder.add(index);
@@ -197,9 +203,7 @@ public class MulticriteriaAnalyzeOperator {
 			for (int i = 1; i < orderedList.size(); i++) {
 				final double val = Cast.asFloat(scope, orderedList.get(i));
 				final Set<String> comb = new LinkedHashSet<>();
-				for (int j = i; j < listOfOrder.size(); j++) {
-					comb.add(criteria.get(listOfOrder.indexOf(j)));
-				}
+				for (int j = i; j < listOfOrder.size(); j++) { comb.add(criteria.get(listOfOrder.indexOf(j))); }
 				utility += (val - prev) * weight.get(comb);
 				prev = val;
 			}
@@ -218,11 +222,15 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Promethee decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteriaMap the criteria map
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteriaMap
+	 *            the criteria map
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "promethee_DM",
@@ -237,14 +245,14 @@ public class MulticriteriaAnalyzeOperator {
 			see = { "weighted_means_DM", "electre_DM", "evidence_theory_DM" })
 	public static Integer prometheeDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) { return -1; }
+		if (cands == null || cands.isEmpty()) return -1;
 		int cpt = 0;
 		final LinkedList<Candidate> candidates = new LinkedList<>();
 		final List<String> criteriaStr = new LinkedList<>();
 		final Map<String, FonctionPreference> fctPrefCrit = new HashMap<>();
 		final Map<String, Double> weight = new Hashtable<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
-			final String name = (String) critMap.get("name");
+			final String name = (String) critMap.get(IKeyword.NAME);
 			criteriaStr.add(name);
 			final Double w = Cast.asFloat(scope, critMap.get("weight"));
 			if (w != null) {
@@ -253,29 +261,19 @@ public class MulticriteriaAnalyzeOperator {
 				weight.put(name, 1.0);
 			}
 			String typeFct = "type_5";
-			final Object typeObj = critMap.get("type");
-			if (typeObj != null) {
-				typeFct = typeObj.toString();
-			}
+			final Object typeObj = critMap.get(IKeyword.TYPE);
+			if (typeObj != null) { typeFct = typeObj.toString(); }
 			final Object q = critMap.get("q");
 			final Object p = critMap.get("p");
 			final Object s = critMap.get("s");
 			Double pf = 1.0, qf = 0.0, sf = 1.0;
-			if (q != null) {
-				qf = Cast.asFloat(scope, q);
-			}
-			if (p != null) {
-				pf = Cast.asFloat(scope, p);
-			}
-			if (s != null) {
-				sf = Cast.asFloat(scope, s);
-			}
+			if (q != null) { qf = Cast.asFloat(scope, q); }
+			if (p != null) { pf = Cast.asFloat(scope, p); }
+			if (s != null) { sf = Cast.asFloat(scope, s); }
 
 			if ("type_5".equals(typeFct)) {
 				fctPrefCrit.put(name, new PreferenceType5(qf, pf));
-			} else if ("type_6".equals(typeFct)) {
-				fctPrefCrit.put(name, new PreferenceType6(sf));
-			}
+			} else if ("type_6".equals(typeFct)) { fctPrefCrit.put(name, new PreferenceType6(sf)); }
 
 		}
 		final Promethee promethee = new Promethee(criteriaStr);
@@ -293,12 +291,11 @@ public class MulticriteriaAnalyzeOperator {
 			candidates.add(c);
 			cpt++;
 		}
-		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<String, Boolean>());
-		if (candsFilter.isEmpty()) { return scope.getRandom().between(0, candidates.size() - 1); }
-		if (candsFilter.size() == 1) {
+		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<>());
+		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
+		if (candsFilter.size() == 1)
 			return ((Candidate) GamaListFactory.create(scope, Types.NO_TYPE, (Iterable) candsFilter).firstValue(scope))
 					.getIndex();
-		}
 		final Candidate decision = promethee.decision(candsFilter);
 		return decision.getIndex();
 
@@ -307,32 +304,38 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Electre decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteriaMap the criteria map
-	 * @param cut the cut
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteriaMap
+	 *            the criteria map
+	 * @param cut
+	 *            the cut
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "electre_DM",
 			category = { MULTICRITERIA },
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
-			value = "The index of the best candidate according to a method based on the ELECTRE methods. "
-					+ "The principle of the ELECTRE methods is to compare the possible candidates by pair. "
-					+ "These methods analyses the possible outranking relation existing between two candidates. "
-					+ "A candidate outranks another if this one is at least as good as the other one. "
-					+ "The ELECTRE methods are based on two concepts: the concordance and the discordance. "
-					+ "The concordance characterizes the fact that, for an outranking relation to be validated, a sufficient majority of criteria should be in favor of this assertion. "
-					+ "The discordance characterizes the fact that, for an outranking relation to be validated, none of the criteria in the minority should oppose too strongly this assertion. "
-					+ "These two conditions must be true for validating the outranking assertion. More information about the ELECTRE methods can be found in [Figueira,  J., Mousseau, V., Roy, B.: ELECTRE Methods. In: Figueira, J., Greco, S., and Ehrgott, M., (Eds.), Multiple Criteria Decision Analysis: State of the Art Surveys, Springer, New York, 133--162 (2005)](https://link.springer.com/book/10.1007/b100605). "
-					+ "The first operand is the list of candidates (a candidate is a list of criterion values); "
-					+ "the second operand the list of criterion: A criterion is a map that contains fives elements: a name, a weight, a preference value (p), an indifference value (q) and a veto value (v). "
-					+ "The preference value represents the threshold from which the difference between two criterion values allows to prefer one vector of values over another. "
-					+ "The indifference value represents the threshold from which the difference between two criterion values is considered significant. "
-					+ "The veto value represents the threshold from which the difference between two criterion values disqualifies the candidate that obtained the smaller value; "
-					+ "the last operand is the fuzzy cut.",
+			value = """
+					The index of the best candidate according to a method based on the ELECTRE methods. \
+					The principle of the ELECTRE methods is to compare the possible candidates by pair. \
+					These methods analyses the possible outranking relation existing between two candidates. \
+					A candidate outranks another if this one is at least as good as the other one. \
+					The ELECTRE methods are based on two concepts: the concordance and the discordance. \
+					The concordance characterizes the fact that, for an outranking relation to be validated, a sufficient majority of criteria should be in favor of this assertion. \
+					The discordance characterizes the fact that, for an outranking relation to be validated, none of the criteria in the minority should oppose too strongly this assertion. \
+					These two conditions must be true for validating the outranking assertion. More information about the ELECTRE methods can be found in [Figueira,  J., Mousseau, V., Roy, B.: ELECTRE Methods. In: Figueira, J., Greco, S., and Ehrgott, M., (Eds.), Multiple Criteria Decision Analysis: State of the Art Surveys, Springer, New York, 133--162 (2005)](https://link.springer.com/book/10.1007/b100605). \
+					The first operand is the list of candidates (a candidate is a list of criterion values); \
+					the second operand the list of criterion: A criterion is a map that contains fives elements: a name, a weight, a preference value (p), an indifference value (q) and a veto value (v). \
+					The preference value represents the threshold from which the difference between two criterion values allows to prefer one vector of values over another. \
+					The indifference value represents the threshold from which the difference between two criterion values is considered significant. \
+					The veto value represents the threshold from which the difference between two criterion values disqualifies the candidate that obtained the smaller value; \
+					the last operand is the fuzzy cut.""",
 			special_cases = { "returns -1 is the list of candidates is nil or empty" },
 			examples = { @example (
 					value = "electre_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]],0.7)",
@@ -341,10 +344,8 @@ public class MulticriteriaAnalyzeOperator {
 	public static Integer electreDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap, final Double cut) throws GamaRuntimeException {
 		Double fuzzyCut = cut;
-		if (fuzzyCut == null) {
-			fuzzyCut = Double.valueOf(0.7);
-		}
-		if (cands == null || cands.isEmpty()) { return -1; }
+		if (fuzzyCut == null) { fuzzyCut = 0.7; }
+		if (cands == null || cands.isEmpty()) return -1;
 		int cpt = 0;
 		final List<Candidate> candidates = new ArrayList<>();
 		final List<String> criteriaStr = GamaListFactory.create(Types.STRING);
@@ -366,20 +367,14 @@ public class MulticriteriaAnalyzeOperator {
 			final Object v = critMap.get("v");
 			Double pf = 0.5, qf = 0.0, vf = 1.0;
 
-			if (q != null) {
-				qf = Cast.asFloat(scope, q);
-			}
+			if (q != null) { qf = Cast.asFloat(scope, q); }
 
 			indifference.put(name, qf);
 
-			if (p != null) {
-				pf = Cast.asFloat(scope, p);
-			}
+			if (p != null) { pf = Cast.asFloat(scope, p); }
 			preference.put(name, pf);
 
-			if (v != null) {
-				vf = Cast.asFloat(scope, v);
-			}
+			if (v != null) { vf = Cast.asFloat(scope, v); }
 			veto.put(name, vf);
 		}
 		final Electre electre = new Electre(criteriaStr);
@@ -400,8 +395,8 @@ public class MulticriteriaAnalyzeOperator {
 			candidates.add(c);
 			cpt++;
 		}
-		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<String, Boolean>());
-		if (candsFilter.isEmpty()) { return scope.getRandom().between(0, candidates.size() - 1); }
+		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<>());
+		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
 		final Candidate decision = electre.decision(candsFilter);
 		return decision.getIndex();
 
@@ -410,11 +405,15 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Evidence theory decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteriaMap the criteria map
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteriaMap
+	 *            the criteria map
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "evidence_theory_DM",
@@ -435,32 +434,38 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Evidence theory decision making.
 	 *
-	 * @param scope the scope
-	 * @param cands the cands
-	 * @param criteriaMap the criteria map
-	 * @param isSimple the is simple
+	 * @param scope
+	 *            the scope
+	 * @param cands
+	 *            the cands
+	 * @param criteriaMap
+	 *            the criteria map
+	 * @param isSimple
+	 *            the is simple
 	 * @return the integer
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = "evidence_theory_DM",
 			category = { MULTICRITERIA },
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
-			value = "The index of the best candidate according to a method based on the Evidence theory. "
-					+ "This theory, which was proposed by Shafer ([Shafer G (1976) A mathematical theory of evidence, Princeton University Press](http://www.glennshafer.com/books/amte.html)), "
-					+ "is based on the work of Dempster ([Dempster A (1967) Upper and lower probabilities induced by multivalued mapping. Annals of Mathematical Statistics, vol.  38, pp. 325--339](https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-38/issue-2/Upper-and-Lower-Probabilities-Induced-by-a-Multivalued-Mapping/10.1214/aoms/1177698950.full)) on lower and upper probability distributions. "
-					+ "The first operand is the list of candidates (a candidate is a list of criterion values); "
-					+ "the second operand the list of criterion: A criterion is a map that contains seven elements: "
-					+ "a name, "
-					+ "a first threshold s1, "
-					+ "a second threshold s2, "
-					+ "a value for the assertion \"this candidate is the best\" at threshold s1 (v1p), "
-					+ "a value for the assertion \"this candidate is the best\" at threshold s2 (v2p), "
-					+ "a value for the assertion \"this candidate is not the best\" at threshold s1 (v1c), "
-					+ "a value for the assertion \"this candidate is not the best\" at threshold s2 (v2c). "
-					+ "v1p, v2p, v1c and v2c have to been defined in order that: v1p + v1c <= 1.0; v2p + v2c <= 1.0.; "
-					+ "the last operand allows to use a simple version of this multi-criteria decision making method (simple if true)",
+			value = """
+					The index of the best candidate according to a method based on the Evidence theory. \
+					This theory, which was proposed by Shafer ([Shafer G (1976) A mathematical theory of evidence, Princeton University Press](http://www.glennshafer.com/books/amte.html)), \
+					is based on the work of Dempster ([Dempster A (1967) Upper and lower probabilities induced by multivalued mapping. Annals of Mathematical Statistics, vol.  38, pp. 325--339](https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-38/issue-2/Upper-and-Lower-Probabilities-Induced-by-a-Multivalued-Mapping/10.1214/aoms/1177698950.full)) on lower and upper probability distributions. \
+					The first operand is the list of candidates (a candidate is a list of criterion values); \
+					the second operand the list of criterion: A criterion is a map that contains seven elements: \
+					a name, \
+					a first threshold s1, \
+					a second threshold s2, \
+					a value for the assertion "this candidate is the best" at threshold s1 (v1p), \
+					a value for the assertion "this candidate is the best" at threshold s2 (v2p), \
+					a value for the assertion "this candidate is not the best" at threshold s1 (v1c), \
+					a value for the assertion "this candidate is not the best" at threshold s2 (v2c). \
+					v1p, v2p, v1c and v2c have to been defined in order that: v1p + v1c <= 1.0; v2p + v2c <= 1.0.; \
+					the last operand allows to use a simple version of this multi-criteria decision making method (simple if true)""",
 			masterDoc = true,
 			special_cases = { "returns -1 is the list of candidates is nil or empty" },
 			examples = { @example (
@@ -469,7 +474,7 @@ public class MulticriteriaAnalyzeOperator {
 			see = { "weighted_means_DM", "electre_DM", "electre_DM" })
 	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap, final Boolean isSimple) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) { return -1; }
+		if (cands == null || cands.isEmpty()) return -1;
 		int cpt = 0;
 		final boolean simple = isSimple == null ? false : isSimple;
 		final Map<String, Boolean> maximizeCrit = new HashMap<>();
@@ -481,33 +486,19 @@ public class MulticriteriaAnalyzeOperator {
 			criteriaStr.add(name);
 			final Object s1r = critMap.get("s1");
 			Double s1 = 0.0, s2 = 1.0, v1Pour = 0.0, v2Pour = 1.0, v1Contre = 0.0, v2Contre = 0.0;
-			if (s1r != null) {
-				s1 = Cast.asFloat(scope, s1r);
-			}
+			if (s1r != null) { s1 = Cast.asFloat(scope, s1r); }
 			final Object s2r = critMap.get("s2");
-			if (s2r != null) {
-				s2 = Cast.asFloat(scope, s2r);
-			}
+			if (s2r != null) { s2 = Cast.asFloat(scope, s2r); }
 			final Object v1pr = critMap.get("v1p");
-			if (v1pr != null) {
-				v1Pour = Cast.asFloat(scope, v1pr);
-			}
+			if (v1pr != null) { v1Pour = Cast.asFloat(scope, v1pr); }
 			final Object v2pr = critMap.get("v2p");
-			if (v2pr != null) {
-				v2Pour = Cast.asFloat(scope, v2pr);
-			}
+			if (v2pr != null) { v2Pour = Cast.asFloat(scope, v2pr); }
 			final Object v1cr = critMap.get("v1c");
-			if (v1cr != null) {
-				v1Contre = Cast.asFloat(scope, v1cr);
-			}
+			if (v1cr != null) { v1Contre = Cast.asFloat(scope, v1cr); }
 			final Object v2cr = critMap.get("v2c");
-			if (v2cr != null) {
-				v2Contre = Cast.asFloat(scope, v2cr);
-			}
+			if (v2cr != null) { v2Contre = Cast.asFloat(scope, v2cr); }
 			final Object max = critMap.get("maximize");
-			if (max instanceof Boolean) {
-				maximizeCrit.put(name, (Boolean) max);
-			}
+			if (max instanceof Boolean) { maximizeCrit.put(name, (Boolean) max); }
 			final CritereFonctionsCroyances cfc =
 					new CritereFctCroyancesBasique(name, s1, v2Pour, v1Pour, v1Contre, v2Contre, s2);
 			criteresFC.add(cfc);
@@ -527,10 +518,7 @@ public class MulticriteriaAnalyzeOperator {
 		}
 		// DEBUG.LOG("candidates : " + candidates.size());
 		final LinkedList<Candidate> candsFilter = filtering(candidates, maximizeCrit);
-		if (candsFilter.isEmpty()) {
-			return scope.getRandom().between(0, candidates.size() - 1);
-
-		}
+		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
 		// DEBUG.LOG("candfilter : " + candsFilter);
 		final Candidate decision = evt.decision(criteresFC, candsFilter, simple);
 		// DEBUG.LOG("decision : " + decision.getIndex());
@@ -542,8 +530,10 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Filtering.
 	 *
-	 * @param candidates the candidates
-	 * @param maximizeCrit the maximize crit
+	 * @param candidates
+	 *            the candidates
+	 * @param maximizeCrit
+	 *            the maximize crit
 	 * @return the linked list
 	 */
 	private static LinkedList<Candidate> filtering(final Collection<Candidate> candidates,
@@ -553,9 +543,7 @@ public class MulticriteriaAnalyzeOperator {
 		for (final Candidate c1 : candidates) {
 			boolean paretoFront = true;
 			for (final Candidate c2 : candidates) {
-				if (c1 == c2) {
-					continue;
-				}
+				if (c1 == c2) { continue; }
 				if (paretoInf(c1, c2, maximizeCrit)) {
 					paretoFront = false;
 					break;
@@ -572,9 +560,12 @@ public class MulticriteriaAnalyzeOperator {
 	/**
 	 * Pareto inf.
 	 *
-	 * @param c1 the c 1
-	 * @param c2 the c 2
-	 * @param maximizeCrit the maximize crit
+	 * @param c1
+	 *            the c 1
+	 * @param c2
+	 *            the c 2
+	 * @param maximizeCrit
+	 *            the maximize crit
 	 * @return true, if successful
 	 */
 	private static boolean paretoInf(final Candidate c1, final Candidate c2, final Map<String, Boolean> maximizeCrit) {
@@ -584,13 +575,9 @@ public class MulticriteriaAnalyzeOperator {
 			final double v1 = c1.getValCriteria().get(crit);
 			final double v2 = c2.getValCriteria().get(crit);
 			if (maximize) {
-				if (v1 > v2) { return false; }
-			} else {
-				if (v1 < v2) { return false; }
-			}
-			if (v1 == v2) {
-				equals++;
-			}
+				if (v1 > v2) return false;
+			} else if (v1 < v2) return false;
+			if (v1 == v2) { equals++; }
 		}
 		return equals < c1.getValCriteria().size();
 	}

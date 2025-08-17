@@ -201,6 +201,9 @@ public interface IKeyword {
 	/** The const. */
 	String CONST = "const";
 
+	/** The constant attenuation. */
+	String CONSTANT_ATTENUATION = "constant_attenuation";
+
 	/** The container. */
 	String CONTAINER = "container";
 
@@ -462,11 +465,11 @@ public interface IKeyword {
 	/** The gui. */
 	String GUI_ = "gui";
 
-	/** The header. */
-	String HEADER = "header";
-
 	/** The headless ui. */
 	// String HEADLESS_UI = "headless";
+
+	/** The header. */
+	String HEADER = "header";
 
 	/** The heading. */
 	String HEADING = "heading";
@@ -587,9 +590,6 @@ public interface IKeyword {
 
 	/** The linear attenuation. */
 	String LINEAR_ATTENUATION = "linear_attenuation";
-
-	/** The constant attenuation. */
-	String CONSTANT_ATTENUATION = "constant_attenuation";
 
 	/** The lines. */
 	String LINES = "lines";
@@ -722,6 +722,9 @@ public interface IKeyword {
 	/** The neighbors. */
 	String NEIGHBORS = "neighbors";
 
+	/** The no type inference keyword. Used to flag declarations that have a type explicitly set */
+	String NO_TYPE_INFERENCE = "**no_type_inference**";
+
 	/** The node. */
 	String NODE = "node";
 
@@ -749,9 +752,6 @@ public interface IKeyword {
 	/** The origin. */
 	String ORIGIN = "**origin**";
 
-	/** The no type inference keyword. Used to flag declarations that have a type explicitly set */
-	String NO_TYPE_INFERENCE = "**no_type_inference**";
-
 	/** The orthogonal sampling */
 	String ORTHOGONAL = "orthogonal";
 
@@ -763,9 +763,9 @@ public interface IKeyword {
 
 	/** The over. */
 	String OVER = "over";
-
 	/** The overlay. */
 	String OVERLAY = "overlay";
+
 	/** The overwrite. */
 	String OVERWRITE = "overwrite";
 

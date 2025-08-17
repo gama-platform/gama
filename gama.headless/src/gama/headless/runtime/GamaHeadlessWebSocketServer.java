@@ -26,6 +26,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
@@ -334,7 +335,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		final String socket_id = map.get(ISocketCommand.SOCKET_ID) != null
 				? map.get(ISocketCommand.SOCKET_ID).toString() : "" + socket.hashCode();
 		if ("".equals(exp_id)) throw new CommandException(new CommandResponse(MessageType.MalformedRequest,
-				"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
+				"For " + map.get(IKeyword.TYPE) + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
 		IExperimentPlan plan = getExperiment(socket_id, exp_id);
 		if (plan == null || plan.getAgent() == null || plan.getAgent().dead())
 			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,

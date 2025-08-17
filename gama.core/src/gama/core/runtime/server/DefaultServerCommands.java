@@ -90,10 +90,9 @@ public class DefaultServerCommands {
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		if (!GAMA.isInHeadLessMode()
-				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY
-			) {
-				return new CommandResponse(MessageType.UnableToExecuteRequest, "Unable to start new experiment, another one is loading", map, false);
-		}
+				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
+					"Unable to start new experiment, another one is loading", map, false);
 
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
@@ -324,7 +323,9 @@ public class DefaultServerCommands {
 		} else {
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
-				if (expression != null) { res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString(); }
+				if (expression != null) {
+					res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString();
+				}
 			} catch (final Exception e) {
 				// error = true;
 				res = "> Error: " + e.getMessage();
@@ -359,11 +360,10 @@ public class DefaultServerCommands {
 		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
-		if (entered.isBlank()) {
-			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
-		}
+		if (entered.isBlank()) return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, new GamaCompilationFailedException(errors).toJsonString(), map, true);
+		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
+				new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
 		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
 	}
@@ -462,7 +462,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage UPLOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		final String filepath = map.containsKey("file") ? map.get("file").toString() : null;
+		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
 		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
@@ -489,7 +489,7 @@ public class DefaultServerCommands {
 	public static GamaServerMessage DESCRIBE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		// Check the parameters
-		final Object modelPath = map.get("model");
+		final Object modelPath = map.get(IKeyword.MODEL);
 		if (modelPath == null)
 			return new CommandResponse(MalformedRequest, "For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
@@ -525,10 +525,12 @@ public class DefaultServerCommands {
 
 		if (readExperiments) { res.put("experiments", getExperiments(model)); }
 
-		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
+		if (readSpeciesNames) {
+			res.put(IKeyword.SPECIES, readSpecies(model, readSpeciesActions, readspeciesVariables));
+		}
 
-		res.put("name", model.getName());
-		res.put("path", pathToModel);
+		res.put(IKeyword.NAME, model.getName());
+		res.put(IKeyword.PATH, pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 
@@ -543,8 +545,8 @@ public class DefaultServerCommands {
 		List<Map<String, String>> allVariables = new ArrayList<>();
 		for (IVariable variable : species.getVars()) {
 			Map<String, String> resVariable = new HashMap<>();
-			resVariable.put("name", variable.getName());
-			resVariable.put("type", variable.getType().getName());
+			resVariable.put(IKeyword.NAME, variable.getName());
+			resVariable.put(IKeyword.TYPE, variable.getType().getName());
 			allVariables.add(resVariable);
 		}
 		return allVariables;
@@ -561,18 +563,18 @@ public class DefaultServerCommands {
 		List<Map<String, Object>> allActions = new ArrayList<>();
 		for (ActionStatement action : species.getActions()) {
 			Map<String, Object> resAction = new HashMap<>();
-			resAction.put("name", action.getName());
+			resAction.put(IKeyword.NAME, action.getName());
 			List<Map<String, String>> resAllCommands = new ArrayList<>();
 			var actionDescription = action.getDescription();
 			for (var arg : actionDescription.getFormalArgs()) {
 				Map<String, String> command = new HashMap<>();
-				command.put("name", arg.getName());
-				command.put("type", arg.getGamlType().getName());
+				command.put(IKeyword.NAME, arg.getName());
+				command.put(IKeyword.TYPE, arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
 
 			resAction.put("parameters", resAllCommands);
-			resAction.put("type", actionDescription.getGamlType().getName());
+			resAction.put(IKeyword.TYPE, actionDescription.getGamlType().getName());
 			allActions.add(resAction);
 		}
 		return allActions;
@@ -595,7 +597,7 @@ public class DefaultServerCommands {
 		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
 			Map<String, Object> resSpecie = new HashMap<>();
-			resSpecie.put("name", species.getName());
+			resSpecie.put(IKeyword.NAME, species.getName());
 
 			// Variables
 			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
@@ -621,14 +623,14 @@ public class DefaultServerCommands {
 		for (IExperimentPlan ittExp : model.getExperiments()) {
 			// Get the parameters
 			Map<String, Object> resExp = new HashMap<>();
-			resExp.put("name", ittExp.getName());
+			resExp.put(IKeyword.NAME, ittExp.getName());
 			List<Map<String, String>> resAllParams = new ArrayList<>();
 			for (Map.Entry<String, IParameter> paramEntry : ittExp.getParameters().entrySet()) {
 				Map<String, String> resParam = new HashMap<>();
 				IParameter param = paramEntry.getValue();
-				resParam.put("name", param.getName());
+				resParam.put(IKeyword.NAME, param.getName());
 				resParam.put("description", param.getTitle());
-				resParam.put("type", param.getType().toString());
+				resParam.put(IKeyword.TYPE, param.getType().toString());
 				resAllParams.add(resParam);
 			}
 			resExp.put("parameters", resAllParams);

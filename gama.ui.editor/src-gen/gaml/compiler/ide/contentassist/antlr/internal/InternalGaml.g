@@ -3338,6 +3338,18 @@ rule___SpeciesKey__Alternatives
 		'grid'
 		{ after(grammarAccess.get_SpeciesKeyAccess().getGridKeyword_1()); }
 	)
+	|
+	(
+		{ before(grammarAccess.get_SpeciesKeyAccess().getTypeKeyword_2()); }
+		'type'
+		{ after(grammarAccess.get_SpeciesKeyAccess().getTypeKeyword_2()); }
+	)
+	|
+	(
+		{ before(grammarAccess.get_SpeciesKeyAccess().getSkillKeyword_3()); }
+		'skill'
+		{ after(grammarAccess.get_SpeciesKeyAccess().getSkillKeyword_3()); }
+	)
 ;
 finally {
 	restoreStackSize(stackSize);

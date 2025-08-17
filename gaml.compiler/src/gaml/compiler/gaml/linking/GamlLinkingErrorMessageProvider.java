@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlLinkingErrorMessageProvider.java, in gaml.compiler.gaml, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamlLinkingErrorMessageProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.gaml.linking;
 
@@ -18,6 +18,7 @@ import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.linking.impl.IllegalNodeException;
 import org.eclipse.xtext.linking.impl.LinkingDiagnosticMessageProvider;
 
+import gama.core.common.interfaces.IKeyword;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.EquationRef;
 import gaml.compiler.gaml.SkillRef;
@@ -44,7 +45,7 @@ public class GamlLinkingErrorMessageProvider extends LinkingDiagnosticMessagePro
 
 			@Override
 			public String caseTypeRef(final TypeRef v) {
-				return "type";
+				return IKeyword.TYPE;
 			}
 
 			@Override
@@ -54,12 +55,12 @@ public class GamlLinkingErrorMessageProvider extends LinkingDiagnosticMessagePro
 
 			@Override
 			public String caseEquationRef(final EquationRef v) {
-				return "equation";
+				return IKeyword.EQUATION;
 			}
 
 			@Override
 			public String caseSkillRef(final SkillRef v) {
-				return "skill";
+				return IKeyword.SKILL;
 			}
 
 			@Override

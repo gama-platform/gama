@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
  * CommandResponse.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
@@ -53,7 +54,8 @@ public class CommandResponse extends GamaServerMessage {
 	public JsonValue serializeToJson(final Json json) {
 		var params = commandParameters.copy(null);
 		params.remove("server");
-		return json.object("type", type, "content", isJson ? json.parse((String) content) : content, "command", params);
+		return json.object(IKeyword.TYPE, type, "content", isJson ? json.parse((String) content) : content, "command",
+				params);
 	}
 
 }

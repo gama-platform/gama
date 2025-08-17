@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IDescriptionValidator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -254,12 +254,10 @@ public interface IDescriptionValidator<T extends IDescription> extends IValidato
 			}
 			final ModelDescription md = cd.getModelDescription();
 			final ITypesManager manager = md == null ? Types.builtInTypes : md.getTypesManager();
-			if (!manager.containsType(name)) {
-				return true;
-			}
+			if (!manager.containsType(name)) return true;
 			final String type = "It cannot be used as a "
 					+ (cd instanceof VariableDescription ? "variable" : cd.getKeyword()) + " name.";
-			final String species = manager.get(name).isAgentType() ? "species" : "type";
+			final String species = manager.get(name).isAgentType() ? IKeyword.SPECIES : IKeyword.TYPE;
 			cd.error(name + " is a " + species + " name. " + type, IGamlIssue.IS_A_TYPE, NAME, name);
 			return false;
 		}

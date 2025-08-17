@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DescriptionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,8 +45,8 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -248,7 +248,7 @@ public class DescriptionFactory {
 		if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
 		final SymbolProto p = KINDS_PROTOS.get(kind);
 		if (p != null) {
-			if ("species".equals(s)) {
+			if (IKeyword.SPECIES.equals(s)) {
 				VAR_KEYWORDS_PROTOS.put(SyntacticFactory.SPECIES_VAR, p);
 			} else {
 				VAR_KEYWORDS_PROTOS.put(s, p);
