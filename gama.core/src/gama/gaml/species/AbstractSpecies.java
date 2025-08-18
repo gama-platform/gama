@@ -51,7 +51,11 @@ import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
 
 /**
- * Written by drogoul Modified on 29 d�c. 2010
+ * The {@code AbstractSpecies} class represents a species in the GAMA modeling platform.
+ * It extends {@code AbstractClass} and adds species-specific attributes such as micro-species,
+ * parent species, and behaviors.
+ *
+ * <p>Written by drogoul Modified on 29 d�c. 2010
  *
  * @todo Description
  *
@@ -70,10 +74,13 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 		DEBUG.OFF();
 	}
 
-	/** The is graph. */
-	protected final boolean isGrid, isGraph;
+	/** Indicates whether this species is a grid. */
+	protected final boolean isGrid;
 
-	/** The micro species. */
+	/** Indicates whether this species is a graph. */
+	protected final boolean isGraph;
+
+	/** A map of micro-species associated with this species. */
 	protected final Map<String, ISpecies> microSpecies = GamaMapFactory.createOrdered();
 
 	/** The aspects. */
@@ -88,7 +95,7 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 	/** The parent species. */
 	protected ISpecies macroSpecies, parentSpecies;
 
-	/** The control. */
+	/** The control architecture of this species. */
 	final IArchitecture control;
 
 	/**
@@ -125,6 +132,12 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 		getDescription().removeAction(IExpressionFactory.TEMPORARY_ACTION_NAME);
 	}
 
+	/**
+	 * Retrieves the population of agents for this species in the given scope.
+	 *
+	 * @param scope the current simulation scope
+	 * @return the population of agents
+	 */
 	@Override
 	public IPopulation<IAgent> getPopulation(final IScope scope) {
 		final IAgent a = scope.getAgent();
@@ -137,6 +150,11 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 		return result;
 	}
 
+	/**
+	 * Retrieves the list of micro-species associated with this species.
+	 *
+	 * @return a list of micro-species
+	 */
 	@Override
 	public IList<IAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
 			throws GamaRuntimeException {
@@ -254,6 +272,11 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 		return retVal;
 	}
 
+	/**
+	 * Retrieves the parent species of this species.
+	 *
+	 * @return the parent species, or {@code null} if none exists
+	 */
 	@Override
 	public ISpecies getParentSpecies() {
 		if (parentSpecies == null) {
@@ -269,6 +292,12 @@ public abstract class AbstractSpecies extends AbstractClass implements ISpecies 
 		return parentSpecies;
 	}
 
+	/**
+	 * Checks if this species extends another species.
+	 *
+	 * @param s the species to check against
+	 * @return {@code true} if this species extends the given species, {@code false} otherwise
+	 */
 	@Override
 	public boolean extendsSpecies(final IClass s) {
 		final ISpecies parent = getParentSpecies();

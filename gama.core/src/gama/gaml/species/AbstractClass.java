@@ -22,8 +22,8 @@ import gama.gaml.statements.IStatement.WithArgs;
 import gama.gaml.variables.IVariable;
 
 /**
- * AbstractClass serves as a base class for species-related classes, containing shared variables, actions, and a
- * reference to a parent class.
+ * The {@code AbstractClass} serves as a base class for species-related classes in the GAMA platform.
+ * It encapsulates shared variables, actions, and a reference to a parent class.
  */
 public abstract class AbstractClass extends Symbol {
 
@@ -35,19 +35,19 @@ public abstract class AbstractClass extends Symbol {
 		setName(description.getName());
 	}
 
-	/** The variables. */
+	/** A map containing the variables defined in this class. */
 	protected final Map<String, IVariable> variables = GamaMapFactory.createOrdered();
 
-	/** The actions. */
+	/** A map containing the actions defined in this class. */
 	protected final Map<String, ActionStatement> actions = GamaMapFactory.createOrdered();
 
-	/** The parent class. */
+	/** The parent class of this class, if any. */
 	protected AbstractClass parentClass;
 
 	/**
-	 * Gets the parent class.
+	 * Retrieves the parent class of this class.
 	 *
-	 * @return the parent class
+	 * @return the parent class, or {@code null} if none exists
 	 */
 	public AbstractClass getParentClass() { return parentClass; }
 
@@ -66,24 +66,23 @@ public abstract class AbstractClass extends Symbol {
 	}
 
 	/**
-	 * Sets the parent class.
+	 * Sets the parent class of this class.
 	 *
-	 * @param parentClass
-	 *            the parent class to set
+	 * @param parentClass the parent class to set
 	 */
 	public void setParentClass(final AbstractClass parentClass) { this.parentClass = parentClass; }
 
 	/**
-	 * Gets the variables.
+	 * Retrieves the variables defined in this class.
 	 *
-	 * @return the variables
+	 * @return a map of variable names to their definitions
 	 */
 	public Map<String, IVariable> getVariables() { return variables; }
 
 	/**
-	 * Gets the actions.
+	 * Retrieves the actions defined in this class.
 	 *
-	 * @return the actions
+	 * @return a map of action names to their definitions
 	 */
 	public Collection<ActionStatement> getActions() { return actions.values(); }
 
@@ -121,24 +120,20 @@ public abstract class AbstractClass extends Symbol {
 	}
 
 	/**
-	 * Adds a variable.
+	 * Adds a variable to this class.
 	 *
-	 * @param name
-	 *            the name of the variable
-	 * @param variable
-	 *            the variable to add
+	 * @param name the name of the variable
+	 * @param variable the variable to add
 	 */
 	public void addVariable(final String name, final IVariable variable) {
 		variables.put(name, variable);
 	}
 
 	/**
-	 * Adds an action.
+	 * Adds an action to this class.
 	 *
-	 * @param name
-	 *            the name of the action
-	 * @param action
-	 *            the action to add
+	 * @param name the name of the action
+	 * @param action the action to add
 	 */
 	public void addAction(final String name, final ActionStatement action) {
 		actions.put(name, action);

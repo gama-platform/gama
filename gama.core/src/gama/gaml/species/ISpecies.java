@@ -32,6 +32,10 @@ import gama.gaml.statements.UserCommandStatement;
 import gama.gaml.types.IType;
 
 /**
+ * The {@code ISpecies} interface represents a species in the GAMA modeling platform.
+ * It defines the structure and behavior of species, including their aspects, micro-species,
+ * population management, and associated actions.
+ *
  * Written by drogoul Modified on 25 avr. 2010
  *
  * @todo Description

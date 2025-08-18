@@ -34,10 +34,9 @@ import gama.gaml.variables.IVariable;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 25 avr. 2010
- *
- * @todo Description
- *
+ * The {@code IClass} interface represents a class in the GAMA modeling platform.
+ * It defines the structure and behavior of species, including their variables,
+ * actions, parent-child relationships, and population management.
  */
 
 /**
@@ -88,28 +87,27 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	String ACTIONS = "actions";
 
 	/**
-	 * Extends species.
+	 * Checks if this species extends another species.
 	 *
-	 * @param s
-	 *            the s
-	 * @return true, if successful
+	 * @param s the species to check against
+	 * @return {@code true} if this species extends the given species, {@code false} otherwise
 	 */
 	boolean extendsSpecies(final IClass s);
 
 	/**
-	 * Return all the direct subspecies of this species, properly typed for GAMA
+	 * Returns all the direct subspecies of this species, properly typed for GAMA.
 	 *
-	 * @return
+	 * @param scope the current simulation scope
+	 * @return a list of direct subspecies
 	 */
 
 	IList<? extends IClass> getSubSpecies(IScope scope);
 
 	/**
-	 * Gets the sub species names.
+	 * Returns the names of all direct subspecies of this species.
 	 *
-	 * @param scope
-	 *            the scope
-	 * @return the sub species names
+	 * @param scope the current simulation scope
+	 * @return a list of subspecies names
 	 */
 	@SuppressWarnings ("unchecked")
 	@getter (SUBSPECIES)
@@ -119,45 +117,44 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	}
 
 	/**
-	 * Gets the name.
+	 * Gets the name of this species.
 	 *
-	 * @return the name
+	 * @return the name of the species
 	 */
 	@Override
 	@getter (IKeyword.NAME)
 	String getName();
 
 	/**
-	 * Returns the parent species.
+	 * Returns the direct parent of this species.
+	 * Experiments, models, and species with no explicit parents will return {@code null}.
 	 *
-	 * @return
+	 * @return the parent species, or {@code null} if none exists
 	 */
 	@getter (IKeyword.PARENT)
 	@doc ("Returns the direct parent of the species. Experiments, models and species with no explicit parents will return nil")
 	IClass getParentSpecies();
 
 	/**
-	 * Gets the self with parents.
+	 * Returns this species along with all its parent species.
 	 *
-	 * @return the self with parents
+	 * @return a list of this species and its parents
 	 */
 	List<? extends IClass> getSelfWithParents();
 
 	/**
-	 * Gets the action.
+	 * Retrieves an action by its name.
 	 *
-	 * @param name
-	 *            the name
-	 * @return the action
+	 * @param name the name of the action
+	 * @return the action, or {@code null} if not found
 	 */
 	IStatement.WithArgs getAction(final String name);
 
 	/**
-	 * Gets the action names.
+	 * Returns the names of all actions defined in this species, including inherited ones.
 	 *
-	 * @param scope
-	 *            the scope
-	 * @return the action names
+	 * @param scope the current simulation scope
+	 * @return a list of action names
 	 */
 	@getter (ACTIONS)
 	@doc ("retuns the list of actions defined in this species (incl. the ones inherited from its parent)")
@@ -167,40 +164,39 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	}
 
 	/**
-	 * Gets the actions.
+	 * Returns all actions defined in this species.
 	 *
-	 * @return the actions
+	 * @return a collection of actions
 	 */
 	Collection<ActionStatement> getActions();
 
 	/**
-	 * Gets the parent name.
+	 * Gets the name of the parent species.
 	 *
-	 * @return the parent name
+	 * @return the name of the parent species
 	 */
 	String getParentName();
 
 	/**
-	 * Gets the var.
+	 * Retrieves a variable by its name.
 	 *
-	 * @param n
-	 *            the n
-	 * @return the var
+	 * @param n the name of the variable
+	 * @return the variable, or {@code null} if not found
 	 */
 	IVariable getVar(final String n);
 
 	/**
-	 * Gets the var names.
+	 * Returns the names of all variables defined in this species.
 	 *
-	 * @return the var names
+	 * @return a collection of variable names
 	 */
 	Collection<String> getVarNames();
 
 	/**
-	 * Similar to getVarNames(), but returns a correctly initialized IList of attribute names
+	 * Returns a list of all attributes defined in this species, including inherited ones.
 	 *
-	 * @param scope
-	 * @return the list of all the attributes defined in this species
+	 * @param scope the current simulation scope
+	 * @return a list of attribute names
 	 */
 	@getter (IKeyword.ATTRIBUTES)
 	@doc ("retuns the list of attributes defined in this species (incl. the ones inherited from its parent)")
@@ -209,25 +205,24 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	}
 
 	/**
-	 * Gets the vars.
+	 * Returns all variables defined in this species.
 	 *
-	 * @return the vars
+	 * @return a collection of variables
 	 */
 	Collection<IVariable> getVars();
 
 	/**
-	 * Checks for var.
+	 * Checks if a variable with the given name exists in this species.
 	 *
-	 * @param name
-	 *            the name
-	 * @return true, if successful
+	 * @param name the name of the variable
+	 * @return {@code true} if the variable exists, {@code false} otherwise
 	 */
 	boolean hasVar(final String name);
 
 	/**
-	 * Gets the description.
+	 * Returns the description of this species.
 	 *
-	 * @return the description
+	 * @return the type description of the species
 	 */
 
 	/**
