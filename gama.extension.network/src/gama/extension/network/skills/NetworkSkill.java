@@ -29,6 +29,8 @@ import gama.core.messaging.GamaMailbox;
 import gama.core.messaging.GamaMessage;
 import gama.core.messaging.MessagingSkill;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.population.IPopulation;
+import gama.core.metamodel.population.IPopulation.Listener;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -78,6 +80,41 @@ public class NetworkSkill extends MessagingSkill {
 
 	/** The Constant REGISTRED_SERVER. */
 	final static String REGISTERED_SERVER = "registered_servers";
+	
+	
+	class NetworkListener implements Listener {
+
+		@Override
+		public void notifyPopulationCleared(IScope scope, IPopulation<? extends IAgent> pop) {
+			// do nothing
+		}
+		
+		@Override
+		public void notifyAgentsRemoved(IScope sc, IPopulation<? extends IAgent> pop,
+				Collection<? extends IAgent> agents) {
+//			for(IAgent ag : agents) {
+//				disconnect(ag.getScope());						
+//			}
+		}
+		
+		@Override
+		public void notifyAgentsAdded(IScope scope, IPopulation<? extends IAgent> pop,
+				Collection<? extends IAgent> agents) {
+			// do nothing
+		}
+		
+		@Override
+		public void notifyAgentRemoved(IScope sc, IPopulation<? extends IAgent> pop, IAgent agent) {
+			// do nothing
+			disconnect(agent.getScope());
+		}
+		
+		@Override
+		public void notifyAgentAdded(IScope scope, IPopulation<? extends IAgent> pop, IAgent agent) {
+			// do nothing
+			
+		}
+	}
 
 	/**
 	 * System exec.
@@ -203,6 +240,11 @@ public class NetworkSkill extends MessagingSkill {
 
 		// Fix to Issue #2618
 		final String serverKey = createServerKey(serverURL, port);
+		
+		if (scope.getAgent() != null) {
+			scope.getAgent().getPopulation().addListener(new NetworkListener());
+		}
+		
 
 		final Map<String, IConnector> myConnectors = this.getRegisteredServers(scope);
 		IConnector connector = myConnectors.get(serverKey);
@@ -324,21 +366,29 @@ public class NetworkSkill extends MessagingSkill {
 			doc = @doc (
 					value = "Disconnects from all the servers previously connected to. Will return true if everything went well, false in case of an error."))
 	public Boolean disconnect(final IScope scope) {
-		final Map<String, IConnector> connectors = this.getRegisteredServers(scope);
+		final Map<String, IConnector> connectors = getRegisteredServers(scope);
+		final IAgent agent = scope.getAgent();
+		List<String> serverList = (List<String>) agent.getAttribute(INetworkSkill.NET_AGENT_SERVER);
+		
 		boolean no_problem = true;
-		var to_remove = new ArrayList<String>();
-		for (var entry : connectors.entrySet()) {
+		var connector_to_remove = new ArrayList<String>();
+		for (var server : serverList) {
 			try {
-				var connector = entry.getValue();
+				var connector = connectors.get(server);
 				connector.close(scope);
-				connector.leaveTheGroup(scope.getAgent(), REGISTERED_AGENTS);
-				to_remove.add(entry.getKey());
+				connector.leaveTheGroup(agent, REGISTERED_AGENTS);
+				connector_to_remove.add(server);
 			} catch (Exception ex) {
 				no_problem = false;
 			}
 		}
 
-		for (var connector : to_remove) { connectors.remove(connector); }
+		// removes all closed connections from the registered servers and NET_AGENT_SERVER list
+		for (var serverKey : connector_to_remove) { 
+			connectors.remove(serverKey);  
+			serverList.remove(serverKey);
+		}
+		agent.setAttribute(INetworkSkill.NET_AGENT_SERVER, serverList);
 
 		return no_problem;
 
