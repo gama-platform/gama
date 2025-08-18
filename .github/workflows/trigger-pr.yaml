@@ -18,7 +18,7 @@ jobs:
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
-      CHECKOUT_BRANCH: "2024-06"
+      CHECKOUT_BRANCH: "main"
 
   compiling-gama-pr:
     if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
