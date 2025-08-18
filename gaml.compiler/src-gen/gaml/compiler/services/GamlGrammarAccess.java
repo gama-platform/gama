@@ -1852,12 +1852,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cGridKeyword_1 = (Keyword)cAlternatives.eContents().get(1);
 		private final Keyword cTypeKeyword_2 = (Keyword)cAlternatives.eContents().get(2);
 		private final Keyword cSkillKeyword_3 = (Keyword)cAlternatives.eContents().get(3);
+		private final Keyword cClassKeyword_4 = (Keyword)cAlternatives.eContents().get(4);
 		
 		//_SpeciesKey:
-		//    "species" | "grid" | "type" | "skill";
+		//    "species" | "grid" | "type" | "skill" | "class";
 		@Override public ParserRule getRule() { return rule; }
 		
-		//"species" | "grid" | "type" | "skill"
+		//"species" | "grid" | "type" | "skill" | "class"
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//"species"
@@ -1871,6 +1872,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//"skill"
 		public Keyword getSkillKeyword_3() { return cSkillKeyword_3; }
+		
+		//"class"
+		public Keyword getClassKeyword_4() { return cClassKeyword_4; }
 	}
 	public class _ImageLayerKeyElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._ImageLayerKey");
@@ -5480,7 +5484,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//_SpeciesKey:
-	//    "species" | "grid" | "type" | "skill";
+	//    "species" | "grid" | "type" | "skill" | "class";
 	public _SpeciesKeyElements get_SpeciesKeyAccess() {
 		return p_SpeciesKey;
 	}

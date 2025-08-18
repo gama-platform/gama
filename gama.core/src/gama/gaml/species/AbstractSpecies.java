@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,7 +35,6 @@ import gama.core.util.matrix.IMatrix;
 import gama.dev.DEBUG;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -46,7 +45,7 @@ import gama.gaml.statements.AspectStatement;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
-import gama.gaml.statements.IStatement.WithArgs;
+import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
@@ -65,7 +64,7 @@ import gama.gaml.variables.IVariable;
  * @date 3 oct. 2023
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public abstract class AbstractSpecies extends Symbol implements ISpecies {
+public abstract class AbstractSpecies extends AbstractClass implements ISpecies {
 
 	static {
 		DEBUG.OFF();
@@ -77,14 +76,8 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	/** The micro species. */
 	protected final Map<String, ISpecies> microSpecies = GamaMapFactory.createOrdered();
 
-	/** The variables. */
-	private final Map<String, IVariable> variables = GamaMapFactory.createOrdered();
-
 	/** The aspects. */
 	private final Map<String, AspectStatement> aspects = GamaMapFactory.createOrdered();
-
-	/** The actions. */
-	private final Map<String, ActionStatement> actions = GamaMapFactory.createOrdered();
 
 	/** The user commands. */
 	private final Map<String, UserCommandStatement> userCommands = GamaMapFactory.createOrdered();
@@ -106,7 +99,6 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	 */
 	public AbstractSpecies(final IDescription description) {
 		super(description);
-		setName(description.getName());
 		isGrid = IKeyword.GRID.equals(getKeyword());
 		isGraph = AbstractGraphNodeAgent.class.isAssignableFrom(((SpeciesDescription) description).getJavaBase());
 		control = (IArchitecture) getDescription().getControl().createInstance();
@@ -116,9 +108,6 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return getName();
 	}
-
-	@Override
-	public Collection<IStatement> getBehaviors() { return behaviors; }
 
 	@Override
 	public java.lang.Iterable<? extends IAgent> iterable(final IScope scope) {
@@ -281,7 +270,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	}
 
 	@Override
-	public boolean extendsSpecies(final ISpecies s) {
+	public boolean extendsSpecies(final IClass s) {
 		final ISpecies parent = getParentSpecies();
 		if (parent == null) return false;
 		if (parent == s) return true;
@@ -295,16 +284,6 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	public IArchitecture getArchitecture() { return control; }
 
 	@Override
-	public IVariable getVar(final String n) {
-		return variables.get(n);
-	}
-
-	@Override
-	public boolean hasVar(final String name) {
-		return variables.containsKey(name);
-	}
-
-	@Override
 	public Collection<String> getVarNames() { return getDescription().getAttributeNames(); }
 
 	@Override
@@ -314,31 +293,14 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	public Collection<UserCommandStatement> getUserCommands() { return userCommands.values(); }
 
 	@Override
-	public WithArgs getAction(final String name) {
-		return actions.get(name);
-	}
-
-	@Override
-	public Collection<ActionStatement> getActions() { return actions.values(); }
-
-	@Override
-	public boolean hasAspect(final String n) {
-		return aspects.containsKey(n);
-	}
-
-	@Override
-	public IExecutable getAspect(final String n) {
-		return aspects.get(n);
-	}
-
-	@Override
 	public Collection<? extends IExecutable> getAspects() { return aspects.values(); }
 
 	@Override
-	public IList<String> getAspectNames() { return GamaListFactory.wrap(Types.STRING, aspects.keySet()); }
+	public Collection<IStatement> getBehaviors() { return behaviors; }
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
+		super.setChildren(children);
 		// First we verify the control architecture
 		if (control == null)
 			throw GamaRuntimeException.error("The control of species " + description.getName() + " cannot be computed",
@@ -348,14 +310,8 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 			if (s instanceof ISpecies oneMicroSpecies) {
 				oneMicroSpecies.setMacroSpecies(this);
 				microSpecies.put(oneMicroSpecies.getName(), oneMicroSpecies);
-			} else if (s instanceof IVariable) {
-				DEBUG.OUT("Adding " + s.getName() + " to " + this);
-				variables.put(s.getName(), (IVariable) s);
 			} else if (s instanceof AspectStatement) {
 				aspects.put(s.getName(), (AspectStatement) s);
-			} else if (s instanceof ActionStatement) {
-				s.setEnclosing(this);
-				actions.put(s.getName(), (ActionStatement) s);
 			} else if (s instanceof UserCommandStatement) {
 				userCommands.put(s.getName(), (UserCommandStatement) s);
 			} else if (s instanceof IStatement) {
@@ -364,19 +320,14 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 		}
 		control.setChildren(behaviors);
 		behaviors.forEach(b -> b.setEnclosing(this));
-		variables.forEach((n, v) -> v.setEnclosing(this));
 		control.verifyBehaviors(this);
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (final IVariable v : variables.values()) { v.dispose(); }
-		variables.clear();
 		for (final AspectStatement ac : aspects.values()) { ac.dispose(); }
 		aspects.clear();
-		for (final ActionStatement ac : actions.values()) { ac.dispose(); }
-		actions.clear();
 		for (final IStatement c : behaviors) { c.dispose(); }
 		behaviors.clear();
 		macroSpecies = null;
@@ -528,5 +479,23 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 		if (sd.getParent() != null && sd.getParent() != sd) return getSkillInstanceFor(sd.getParent(), skillClass);
 		return null;
 	}
+
+	@Override
+	public IContainerType<?> getGamlType() {
+		return (IContainerType<?>) getDescription().getSpeciesExpr().getGamlType();
+	}
+
+	@Override
+	public boolean hasAspect(final String n) {
+		return aspects.containsKey(n);
+	}
+
+	@Override
+	public IExecutable getAspect(final String n) {
+		return aspects.get(n);
+	}
+
+	@Override
+	public IList<String> getAspectNames() { return GamaListFactory.wrap(Types.STRING, aspects.keySet()); }
 
 }

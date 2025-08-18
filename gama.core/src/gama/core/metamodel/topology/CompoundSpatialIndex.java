@@ -2,9 +2,9 @@
 /*******************************************************************************************************
  *
  * CompoundSpatialIndex.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import java.util.WeakHashMap;
 
 import org.locationtech.jts.geom.Envelope;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
@@ -257,16 +258,16 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	 * @return the iterable
 	 */
 	private Iterable<ISpatialIndex> add(final IScope scope, final IAgentFilter filter) {
-		if (filter instanceof IPopulationSet) return com.google.common.collect.Iterables.transform(
+		if (filter instanceof IPopulationSet) return Iterables.transform(
 				(Collection<IPopulation<? extends IAgent>>) ((IPopulationSet) filter).getPopulations(scope),
 				each -> add(each, true));
 		ISpecies species = filter.getSpecies();
 		if (species == null || IKeyword.AGENT.equals(species.getName())) return spatialIndexes.values();
 		if (!cachedSpeciesIndices.containsKey(species)) {
 			cachedSpeciesIndices.put(species,
-					Lists.newArrayList(com.google.common.collect.Iterables.transform(com.google.common.collect.Iterables
-							.concat(java.util.Collections.singleton(species), species.getSubSpecies(scope)),
-							s -> add(scope, s, true))));
+					Lists.newArrayList(Iterables.transform(
+							Iterables.concat(java.util.Collections.singleton(species), species.getSubSpecies(scope)),
+							s -> add(scope, (ISpecies) s, true))));
 		}
 		return cachedSpeciesIndices.get(species);
 	}

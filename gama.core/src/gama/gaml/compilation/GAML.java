@@ -556,7 +556,7 @@ public class GAML {
 		if (entered.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
 		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)
-				|| entered.startsWith(IKeyword.TYPE) || entered.startsWith(IKeyword.SKILL)) {
+				|| entered.startsWith(IKeyword.CLASS) || entered.startsWith(IKeyword.SKILL)) {
 			gamlTextValidator.validateSpecies(entered, errors, syntaxOnly);
 		} else if (entered.lines().count() > 1) {
 			gamlTextValidator.validateStatements(entered, errors, syntaxOnly);

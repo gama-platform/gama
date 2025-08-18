@@ -3350,6 +3350,12 @@ rule___SpeciesKey__Alternatives
 		'skill'
 		{ after(grammarAccess.get_SpeciesKeyAccess().getSkillKeyword_3()); }
 	)
+	|
+	(
+		{ before(grammarAccess.get_SpeciesKeyAccess().getClassKeyword_4()); }
+		'class'
+		{ after(grammarAccess.get_SpeciesKeyAccess().getClassKeyword_4()); }
+	)
 ;
 finally {
 	restoreStackSize(stackSize);

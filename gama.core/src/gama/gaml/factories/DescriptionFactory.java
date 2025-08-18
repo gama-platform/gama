@@ -237,15 +237,12 @@ public class DescriptionFactory {
 	}
 
 	/**
-	 * Adds a new type name to the variable keywords prototypes.
+	 * Adds the new type name.
 	 *
-	 * If the type name already exists in the variable keywords prototypes, the method does nothing.
-	 * Otherwise, it retrieves the corresponding SymbolProto from the kinds prototypes and adds it to
-	 * the variable keywords prototypes. If the type name is "species", it uses a special constant
-	 * for species variables.
-	 *
-	 * @param s    the name of the type to add
-	 * @param kind the kind of the type, used to retrieve the corresponding SymbolProto
+	 * @param s
+	 *            the s
+	 * @param kind
+	 *            the kind
 	 */
 	public static void addNewTypeName(final String s, final int kind) {
 		if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;

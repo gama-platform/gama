@@ -3524,6 +3524,12 @@ rule_SpeciesKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleTok
 			$current.merge(kw);
 			newLeafNode(kw, grammarAccess.get_SpeciesKeyAccess().getSkillKeyword_3());
 		}
+		    |
+		kw='class'
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.get_SpeciesKeyAccess().getClassKeyword_4());
+		}
 	)
 ;
 

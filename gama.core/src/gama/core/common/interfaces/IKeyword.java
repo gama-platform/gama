@@ -1278,4 +1278,7 @@ public interface IKeyword {
 	String[] METHODS =
 			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
 
+	/** The class. */
+	String CLASS = "clas	s";
+
 }

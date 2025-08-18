@@ -39,7 +39,6 @@ import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.species.GamlSpecies.SpeciesValidator;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import one.util.streamex.StreamEx;
 
@@ -49,7 +48,7 @@ import one.util.streamex.StreamEx;
  * @author drogoul
  */
 @symbol (
-		name = { IKeyword.SPECIES, IKeyword.GLOBAL, IKeyword.GRID, IKeyword.TYPE, IKeyword.SKILL },
+		name = { IKeyword.SPECIES, IKeyword.GLOBAL, IKeyword.GRID },
 		kind = ISymbolKind.SPECIES,
 		with_sequence = true,
 		concept = { IConcept.SPECIES })
@@ -478,16 +477,6 @@ public class GamlSpecies extends AbstractSpecies {
 	}
 
 	/**
-	 * Method getType()
-	 *
-	 * @see gama.core.util.IContainer#getGamlType()
-	 */
-	@Override
-	public IContainerType<?> getGamlType() {
-		return (IContainerType<?>) getDescription().getSpeciesExpr().getGamlType();
-	}
-
-	/**
 	 * Belongs to A micro model.
 	 *
 	 * @return true, if successful
@@ -498,7 +487,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 	@Override
 	public JsonValue serializeToJson(final Json json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 }
