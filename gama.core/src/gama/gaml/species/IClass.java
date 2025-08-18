@@ -16,7 +16,6 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -34,9 +33,8 @@ import gama.gaml.variables.IVariable;
 import one.util.streamex.StreamEx;
 
 /**
- * The {@code IClass} interface represents a class in the GAMA modeling platform.
- * It defines the structure and behavior of species, including their variables,
- * actions, parent-child relationships, and population management.
+ * The {@code IClass} interface represents a class in the GAMA modeling platform. It defines the structure and behavior
+ * of species, including their variables, actions and parent-child relationships.
  */
 
 /**
@@ -69,16 +67,8 @@ import one.util.streamex.StreamEx;
 				name = IClass.SUBSPECIES,
 				type = IType.LIST,
 				of = IType.SPECIES,
-				doc = @doc ("A list of the names of subspecies of this species")),
-		@variable (
-				name = IClass.POPULATION,
-				type = IType.LIST,
-				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
+				doc = @doc ("A list of the names of subspecies of this species")) })
 public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, Integer, IAgent> {
-
-	/** The population. */
-	String POPULATION = "population";
 
 	/** The subspecies. */
 	String SUBSPECIES = "subspecies";
@@ -89,7 +79,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Checks if this species extends another species.
 	 *
-	 * @param s the species to check against
+	 * @param s
+	 *            the species to check against
 	 * @return {@code true} if this species extends the given species, {@code false} otherwise
 	 */
 	boolean extendsSpecies(final IClass s);
@@ -97,7 +88,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Returns all the direct subspecies of this species, properly typed for GAMA.
 	 *
-	 * @param scope the current simulation scope
+	 * @param scope
+	 *            the current simulation scope
 	 * @return a list of direct subspecies
 	 */
 
@@ -106,7 +98,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Returns the names of all direct subspecies of this species.
 	 *
-	 * @param scope the current simulation scope
+	 * @param scope
+	 *            the current simulation scope
 	 * @return a list of subspecies names
 	 */
 	@SuppressWarnings ("unchecked")
@@ -126,8 +119,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	String getName();
 
 	/**
-	 * Returns the direct parent of this species.
-	 * Experiments, models, and species with no explicit parents will return {@code null}.
+	 * Returns the direct parent of this species. Experiments, models, and species with no explicit parents will return
+	 * {@code null}.
 	 *
 	 * @return the parent species, or {@code null} if none exists
 	 */
@@ -145,7 +138,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Retrieves an action by its name.
 	 *
-	 * @param name the name of the action
+	 * @param name
+	 *            the name of the action
 	 * @return the action, or {@code null} if not found
 	 */
 	IStatement.WithArgs getAction(final String name);
@@ -153,7 +147,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Returns the names of all actions defined in this species, including inherited ones.
 	 *
-	 * @param scope the current simulation scope
+	 * @param scope
+	 *            the current simulation scope
 	 * @return a list of action names
 	 */
 	@getter (ACTIONS)
@@ -180,7 +175,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Retrieves a variable by its name.
 	 *
-	 * @param n the name of the variable
+	 * @param n
+	 *            the name of the variable
 	 * @return the variable, or {@code null} if not found
 	 */
 	IVariable getVar(final String n);
@@ -195,7 +191,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Returns a list of all attributes defined in this species, including inherited ones.
 	 *
-	 * @param scope the current simulation scope
+	 * @param scope
+	 *            the current simulation scope
 	 * @return a list of attribute names
 	 */
 	@getter (IKeyword.ATTRIBUTES)
@@ -214,7 +211,8 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	/**
 	 * Checks if a variable with the given name exists in this species.
 	 *
-	 * @param name the name of the variable
+	 * @param name
+	 *            the name of the variable
 	 * @return {@code true} if the variable exists, {@code false} otherwise
 	 */
 	boolean hasVar(final String name);
