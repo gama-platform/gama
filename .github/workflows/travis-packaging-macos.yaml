@@ -102,7 +102,7 @@ jobs:
           bash ${{ github.workspace }}/artifacts/mac-sign.sh
           echo "=== End signing ==="
           echo "=== Entitlements ==="
-          wget https://raw.githubusercontent.com/gama-platform/gama/2024-06/gama.product/extraresources/entitlements.plist && plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
+          wget https://raw.githubusercontent.com/gama-platform/gama/main/gama.product/extraresources/entitlements.plist && plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
           codesign --entitlements "./entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
 
       - name: Get tools to create ✨beautiful✨ DMG
