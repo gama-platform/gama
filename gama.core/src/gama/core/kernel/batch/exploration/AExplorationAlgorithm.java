@@ -358,7 +358,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		List<Map<String, Object>> paramSets = new ArrayList<>();
 		for (IMap<IExpression, IExpression> ps : parameterSets) {
 			Map<String,Object> lt = new HashMap<>();
-			for (IExpression e : ps.keySet()) { lt.put(e.getName(), ps.get(e)); }
+			for (var e : ps.entrySet()) { lt.put(e.getKey().getName(), e.getValue()); }
 			paramSets.add(lt);
 		}
 		return buildParametersSetList(scope, paramSets);
