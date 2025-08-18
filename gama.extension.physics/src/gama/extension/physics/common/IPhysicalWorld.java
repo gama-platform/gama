@@ -96,4 +96,11 @@ public interface IPhysicalWorld<WorldType, ShapeType, VectorType> extends IPhysi
 	 */
 	void updatePositionsAndRotations();
 
+	/**
+	 * Creates a joint in the physical world.
+	 *
+	 * @param jointDefinition the joint definition containing the configuration
+	 * @return the created joint object
+	 */
+	Object createJoint(IJointDefinition jointDefinition);
 }
