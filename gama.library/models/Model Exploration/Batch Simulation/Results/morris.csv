@@ -1,9 +1,0 @@
-output,parameter,µ,µ*,σ
-nb_predators,prey_max_transfer,2.85,4.65,7.431352501395692
-nb_predators,prey_energy_reproduce,0.75,3.45,6.41287766919033
-nb_predators,predator_energy_transfer,-2.25,4.05,7.558108228915487
-nb_predators,predator_energy_reproduce,6.15,6.15,6.980329505116503
-nb_preys,prey_max_transfer,23.7,95.1,125.983729108167
-nb_preys,prey_energy_reproduce,30.6,46.8,76.7697857232909
-nb_preys,predator_energy_transfer,-35.4,121.8,147.94627403216342
-nb_preys,predator_energy_reproduce,52.2,144.0,166.41033621743574

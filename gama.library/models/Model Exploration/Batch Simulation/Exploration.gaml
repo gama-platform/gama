@@ -16,7 +16,7 @@ import "../../Tutorials/Predator Prey/models/Model 13.gaml"
 global {
 	int end_cycle <- 500;
 	reflex save_result when: (nb_preys > 0) and (nb_predators > 0){ } // Overload method so we do not have any saved output
-	bool stop_sim { return (nb_preys = 0) or (nb_predators = 0); } 
+	bool stop_sim { float tmp <- time; return (nb_preys = 0) or (nb_predators = 0); } 
 }
 
 /* 
@@ -106,7 +106,7 @@ experiment exploration_with_factorial  parent: batch_abstract repeat:3 type: bat
 // This experiment iterate over 100 point randomly drawn from the parameter space
 // Then the model global variables "nb_preys" and "nb_predators" are saved un a csv for each simulation run (including potential replicates)
 experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
-	method exploration sampling:"uniform" sample:10 outputs:[nb_preys,nb_predators] results:"Results/exploration.csv";
+	method exploration sampling:"uniform" sample:10 outputs:[nb_preys,nb_predators,time] results:"Results/exploration.csv";
 }
 
 // This experiment samples from the parameter space (Saltelli methods) to establish
