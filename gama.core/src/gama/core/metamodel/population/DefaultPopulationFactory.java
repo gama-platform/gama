@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DefaultPopulationFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * DefaultPopulationFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,6 @@ import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.gaml.species.ISpecies;
 
@@ -32,8 +31,7 @@ public class DefaultPopulationFactory implements IPopulationFactory {
 
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IPopulation<IGridAgent> createGridPopulation(final IScope scope, final IMacroAgent host,
-			final ISpecies species) {
+	public IPopulation createGridPopulation(final IScope scope, final IMacroAgent host, final ISpecies species) {
 		final ITopology t = GridPopulation.buildGridTopology(scope, species, host);
 		final GamaSpatialMatrix m = (GamaSpatialMatrix) t.getPlaces();
 		return new GridPopulation(m, t, host, species);

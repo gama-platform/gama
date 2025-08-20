@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SerialisedAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,7 +26,6 @@ import gama.core.metamodel.population.ISerialisedPopulation;
 import gama.core.metamodel.population.SerialisedGrid;
 import gama.core.metamodel.population.SerialisedPopulation;
 import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
@@ -49,7 +48,8 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 			SimulationAgent.TOTAL_DURATION, IKeyword.INDEX);
 
 	/** All the attributes that are not interesting to serialise for grid agents */
-	public static final Set<String> GRID_NON_SERIALISABLE = Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
+	public static final Set<String> GRID_NON_SERIALISABLE =
+			Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
 
 	/** The Constant KEY. */
 	public static final String HISTORY_KEY = "**history**";
@@ -69,10 +69,11 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 	public static SerialisedAgent of(final IAgent target, final boolean serializePopulations) {
 		int index = target.getIndex();
 		String species = target.getSpeciesName();
-		Map<String, Object> attributes = filterAttributes(target, target instanceof IGridAgent,
-				target.getAttributes(true), serializePopulations);
-		Map<String, ISerialisedPopulation> populations = filterPopulations(target, target instanceof IGridAgent,
-				target.getAttributes(true), serializePopulations);
+		boolean isGrid = target.getPopulation().isGrid();
+		Map<String, Object> attributes =
+				filterAttributes(target, isGrid, target.getAttributes(true), serializePopulations);
+		Map<String, ISerialisedPopulation> populations =
+				filterPopulations(target, isGrid, target.getAttributes(true), serializePopulations);
 		SerialisedAgent result = new SerialisedAgent(index, species, attributes, populations);
 		if (target instanceof SimulationAgent sa && !shouldSerializeHistory(sa)) {
 			result.attributes().remove(HISTORY_KEY);

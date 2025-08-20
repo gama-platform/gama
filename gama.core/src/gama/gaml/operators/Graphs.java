@@ -61,7 +61,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
 import gama.core.metamodel.topology.graph.ISpatialGraph;
-import gama.core.metamodel.topology.grid.IGridAgent;
+import gama.core.metamodel.topology.grid.IGrid;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
@@ -149,8 +149,9 @@ public class Graphs {
 
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			if (!(p1 instanceof IGridAgent)) return false;
-			return ((IGridAgent) p1).getNeighbors(scope).contains(p2);
+			if (!(p1 instanceof IAgent ag)) return false;
+			return ((IGrid) ag.getPopulation().getTopology().getPlaces()).getNeighborhood()
+					.getNeighborsIn(scope, ag.getIndex(), 1).contains(p2);
 		}
 
 		@Override

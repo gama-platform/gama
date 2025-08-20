@@ -29,8 +29,6 @@ import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.agent.MinimalAgent;
-import gama.core.metamodel.topology.grid.GamlGridAgent;
-import gama.core.metamodel.topology.grid.MinimalGridAgent;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
@@ -995,9 +993,9 @@ public class SpeciesDescription extends TypeDescription {
 			if (parent != null && parent != this && !AGENT.equals(getParent().getName())) {
 				javaBase = getParent().getJavaBase();
 			} else if (useMinimalAgents()) {
-				javaBase = isGrid() ? MinimalGridAgent.class : MinimalAgent.class;
+				javaBase = MinimalAgent.class;
 			} else {
-				javaBase = isGrid() ? GamlGridAgent.class : GamlAgent.class;
+				javaBase = GamlAgent.class;
 			}
 		}
 		return javaBase;

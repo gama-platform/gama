@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GridPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,6 +40,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
+import gama.core.metamodel.agent.MinimalAgent;
 import gama.core.metamodel.population.GamaPopulation;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.PopulationNotifier;
@@ -81,7 +82,7 @@ import one.util.streamex.StreamEx;
  *
  */
 @SuppressWarnings ("unchecked")
-public class GridPopulation implements IPopulation<IGridAgent> {
+public class GridPopulation implements IPopulation<IAgent> {
 
 	static {
 		DEBUG.OFF();
@@ -265,7 +266,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public Stream<IGridAgent> stream() {
+	public Stream<IAgent> stream() {
 		Stream s = StreamEx.of(grid.matrix);
 		return s;
 	}
@@ -281,14 +282,14 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public StreamEx<IGridAgent> stream(final IScope scope) {
+	public StreamEx<IAgent> stream(final IScope scope) {
 		StreamEx s = StreamEx.of(grid.matrix);
 		return s;
 	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IList<IGridAgent> createAgents(final IScope scope, final int number,
+	public IList<IAgent> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) throws GamaRuntimeException {
 
@@ -301,20 +302,18 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public IList<IGridAgent> createAgents(final IScope scope, final IContainer<?, ? extends IShape> geometries) {
+	public IList<IAgent> createAgents(final IScope scope, final IContainer<?, ? extends IShape> geometries) {
 		for (int i = 0; i < grid.actualNumberOfCells; i++) {
 			final IShape s = grid.matrix[i];
 			final Class javaBase = species.getDescription().getJavaBase();
-
 			final boolean usesRegularAgents = GamlAgent.class.isAssignableFrom(javaBase);
 			if (s != null) {
-				final IAgent g = usesRegularAgents ? new GamlGridAgent(this, i) : new MinimalGridAgent(this, i);
+				final IAgent g = usesRegularAgents ? new GamlAgent(this, i, s) : new MinimalAgent(this, i, s);
 				grid.matrix[i] = g;
 			}
 		}
 
 		for (final IVariable var : orderedVars) {
-
 			for (int i = 0; i < grid.actualNumberOfCells; i++) {
 				final IAgent a = (IAgent) grid.matrix[i];
 				if (a != null) { var.initializeWith(scope, a, null); }
@@ -402,14 +401,14 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public IGridAgent getAgent(final Integer index) {
+	public IAgent getAgent(final Integer index) {
 		if (index >= size() || index < 0) return null;
 		final IShape s = grid.matrix[index];
-		return (IGridAgent) (s == null ? null : s.getAgent());
+		return s == null ? null : s.getAgent();
 	}
 
 	@Override
-	public IGridAgent getOrCreateAgent(final IScope scope, final Integer index) {
+	public IAgent getOrCreateAgent(final IScope scope, final Integer index) {
 		return getAgent(index);
 	}
 
@@ -425,8 +424,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public IGridAgent getAgent(final IScope scope, final GamaPoint coord) {
-		return (IGridAgent) grid.getAgentAt(coord);
+	public IAgent getAgent(final IScope scope, final GamaPoint coord) {
+		return grid.getAgentAt(coord);
 	}
 
 	@Override
@@ -435,8 +434,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public synchronized IGridAgent[] toArray() {
-		return Arrays.copyOf(grid.matrix, grid.matrix.length, IGridAgent[].class);
+	public synchronized IAgent[] toArray() {
+		return Arrays.copyOf(grid.matrix, grid.matrix.length, IAgent[].class);
 	}
 
 	/**
@@ -482,7 +481,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
+	public IAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null) return null;
 		final int n = indices.length(scope);
 		if (n == 0) return null;
@@ -491,7 +490,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		final int y = Cast.asInt(scope, indices.get(scope, 1));
 		final IShape s = grid.get(scope, x, y);
 		if (s == null) return null;
-		return (IGridAgent) s.getAgent();
+		return s.getAgent();
 	}
 
 	/**
@@ -508,9 +507,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
+	public IAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
 		// WARNING False if the matrix is not dense
-		return (IGridAgent) grid.matrix[index];
+		return (IAgent) grid.matrix[index];
 	}
 
 	/**
@@ -525,8 +524,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent firstValue(final IScope scope) throws GamaRuntimeException {
-		return (IGridAgent) grid._first(scope);
+	public IAgent firstValue(final IScope scope) throws GamaRuntimeException {
+		return (IAgent) grid._first(scope);
 	}
 
 	/**
@@ -541,8 +540,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent lastValue(final IScope scope) throws GamaRuntimeException {
-		return (IGridAgent) grid._last(scope);
+	public IAgent lastValue(final IScope scope) throws GamaRuntimeException {
+		return (IAgent) grid._last(scope);
 	}
 
 	/**
@@ -569,8 +568,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent anyValue(final IScope scope) {
-		return (IGridAgent) grid.anyValue(scope);
+	public IAgent anyValue(final IScope scope) {
+		return (IAgent) grid.anyValue(scope);
 	}
 
 	/**
@@ -582,7 +581,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public Iterator<IGridAgent> iterator() {
+	public Iterator<IAgent> iterator() {
 		Iterator i = Iterators.forArray(grid.getMatrix());
 		return i;
 	}
@@ -615,7 +614,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public java.lang.Iterable<IGridAgent> iterable(final IScope scope) {
+	public java.lang.Iterable<IAgent> iterable(final IScope scope) {
 		return listValue(scope, Types.NO_TYPE, false); // TODO Types.AGENT
 		// ??
 	}
@@ -660,7 +659,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IList<IGridAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
+	public IList<IAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
 			throws GamaRuntimeException {
 		return grid._listValue(scope, contentsType, false);
 	}
@@ -747,7 +746,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public int compareTo(final IPopulation<IGridAgent> o) {
+	public int compareTo(final IPopulation<IAgent> o) {
 		return species == o.getSpecies() ? 0 : 1;
 	}
 
@@ -772,7 +771,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public boolean contains(final Object o) {
-		return o instanceof IGridAgent ga && ga.getPopulation() == this;
+		return o instanceof IAgent ga && ga.getPopulation() == this;
 	}
 
 	/**
@@ -802,7 +801,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean add(final IGridAgent e) {
+	public boolean add(final IAgent e) {
 		return false;
 	}
 
@@ -846,7 +845,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean addAll(final Collection<? extends IGridAgent> c) {
+	public boolean addAll(final Collection<? extends IAgent> c) {
 		return false;
 	}
 
@@ -862,7 +861,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean addAll(final int index, final Collection<? extends IGridAgent> c) {
+	public boolean addAll(final int index, final Collection<? extends IAgent> c) {
 		return false;
 	}
 
@@ -913,8 +912,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent get(final int index) {
-		return (IGridAgent) grid.matrix[index];
+	public IAgent get(final int index) {
+		return (IAgent) grid.matrix[index];
 	}
 
 	/**
@@ -929,7 +928,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent set(final int index, final IGridAgent element) {
+	public IAgent set(final int index, final IAgent element) {
 		grid.matrix[index] = element;
 		return element;
 	}
@@ -945,7 +944,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void add(final int index, final IGridAgent element) {}
+	public void add(final int index, final IAgent element) {}
 
 	/**
 	 * Removes the.
@@ -957,7 +956,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent remove(final int index) {
+	public IAgent remove(final int index) {
 		return null;
 	}
 
@@ -999,9 +998,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public ListIterator<IGridAgent> listIterator() {
-		ListIterator it = Arrays.asList(grid.matrix).listIterator(0);
-		return it;
+	public ListIterator<IAgent> listIterator() {
+		ListIterator li = Arrays.asList(grid.matrix).listIterator(0);
+		return li;
 	}
 
 	/**
@@ -1015,9 +1014,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public ListIterator<IGridAgent> listIterator(final int index) {
-		ListIterator it = Arrays.asList(grid.matrix).listIterator(index);
-		return it;
+	public ListIterator<IAgent> listIterator(final int index) {
+		ListIterator li = Arrays.asList(grid.matrix).listIterator(index);
+		return li;
 	}
 
 	/**
@@ -1033,7 +1032,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public List<IGridAgent> subList(final int fromIndex, final int toIndex) {
+	public List<IAgent> subList(final int fromIndex, final int toIndex) {
 		List l = Arrays.asList(grid.matrix).subList(fromIndex, toIndex);
 		return l;
 	}
@@ -1112,8 +1111,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
-		IContainer c = GamaListFactory.create(scope, getGamlType().getContentType(), grid.matrix);
-		return c;
+		IContainer ic = GamaListFactory.create(scope, getGamlType().getContentType(), grid.matrix);
+		return ic;
 	}
 
 	/**
@@ -1164,8 +1163,18 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		results.removeIf(toRemove);
 	}
 
+	/**
+	 * Creates the variables for.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
-	public void createVariablesFor(final IScope scope, final IGridAgent agent) throws GamaRuntimeException {
+	public void createVariablesFor(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		for (final IVariable var : orderedVars) { var.initializeWith(scope, agent, null); }
 	}
 
@@ -1177,10 +1186,11 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	/** The current agent index. */
 	protected int currentAgentIndex;
 
+	/** The is disposing. */
 	private boolean isDisposing = false;
 
 	@Override
-	public IGridAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,
+	public IAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,
 			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
 
 		final List<Map<String, Object>> mapInitialValues = new ArrayList<>();
@@ -1190,7 +1200,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		final int tempIndexAgt = currentAgentIndex;
 
 		currentAgentIndex = index;
-		final IList<IGridAgent> listAgt = createAgents(s, 1, mapInitialValues, isRestored, toBeScheduled, null);
+		final IList<IAgent> listAgt = createAgents(s, 1, mapInitialValues, isRestored, toBeScheduled, null);
 		currentAgentIndex = tempIndexAgt;
 
 		return listAgt.firstValue(s);
@@ -1339,7 +1349,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void addValueAtIndex(final IScope scope, final Object index, final IGridAgent value) {}
+	public void addValueAtIndex(final IScope scope, final Object index, final IAgent value) {}
 
 	/**
 	 * Adds the value.
@@ -1352,7 +1362,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void addValue(final IScope scope, final IGridAgent value) {}
+	public void addValue(final IScope scope, final IAgent value) {}
 
 	@Override
 	public JsonObject serializeToJson(final Json json) {
@@ -1362,6 +1372,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 
 	@Override
 	public boolean isDisposing() { // TODO Auto-generated method stub
-	return isDisposing; }
+		return isDisposing;
+	}
 
 }

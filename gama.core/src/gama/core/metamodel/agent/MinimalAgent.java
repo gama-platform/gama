@@ -104,7 +104,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 * @param geometry
 	 *            the geometry
 	 */
-	protected MinimalAgent(final IPopulation<? extends IAgent> population, final int index, final IShape geometry) {
+	public MinimalAgent(final IPopulation<? extends IAgent> population, final int index, final IShape geometry) {
 		this(population, index, Objects.hash(population, index), geometry);
 	}
 
