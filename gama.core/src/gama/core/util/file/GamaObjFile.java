@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaObjFile.java, in gama.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaObjFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -126,7 +125,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 */
 	@doc (
 			value = "This file constructor allows to read an obj file and apply an init rotation to it. The rotation"
-					+ "is a pair angle::rotation vector. The associated mlt file have to have the same name as the file to be read.",
+					+ "is a pair angle::rotation vector. The associated mlt file has to have the same name as the file to be read.",
 			examples = { @example (
 					value = "file f <- obj_file(\"file.obj\", 90.0::{-1,0,0});",
 					isExecutable = false) })
@@ -147,7 +146,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 *            the mtl path
 	 */
 	@doc (
-			value = "This file constructor allows to read an obj file, using a specific mlt file",
+			value = "This file constructor allows to read an obj file, using a specific texture file (.mtl)",
 			examples = { @example (
 					value = "file f <- obj_file(\"file.obj\",\"file.mlt\");",
 					isExecutable = false) })
@@ -168,7 +167,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 *            the init rotation
 	 */
 	@doc (
-			value = "This file constructor allows to read an obj file, using a specific mlt file, and apply an init rotation to it. The rotation"
+			value = "This file constructor allows to read an obj file, using a specific material file (.mtl), and apply an init rotation to it. The rotation"
 					+ "is a pair angle::rotation vector",
 			examples = { @example (
 					value = "file f <- obj_file(\"file.obj\",\"file.mlt\", 90.0::{-1,0,0});",
@@ -211,7 +210,6 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 *            the for drawing
 	 */
 	public void loadObject(final IScope scope, final boolean forDrawing) {
-
 		try (BufferedReader br = new BufferedReader(new FileReader(getFile(scope)))) {
 			loadObject(br);
 		} catch (final IOException e) {
@@ -389,6 +387,17 @@ public class GamaObjFile extends Gama3DGeometryFile {
 			DEBUG.ERR("Could not open file: " + refm);
 			materials = null;
 		}
+	}
+
+	/**
+	 * Return the key to use for the cache in OpenGL (see #644). Default is the path.
+	 *
+	 * @param scope
+	 * @return
+	 */
+	@Override
+	public String getKey(final IScope scope) {
+		return super.getKey(scope) + (mtlPath == null ? "" : mtlPath);
 	}
 
 }

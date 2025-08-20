@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * MtlLoader.java, in gama.opengl, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MtlLoader.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.file;
 
@@ -29,31 +28,31 @@ public class MtlLoader {
 	 * The Class Mtl.
 	 */
 	public static class Mtl {
-		
+
 		/** The name. */
 		public String name;
-		
+
 		/** The mtlNum. */
 		public int mtlNum;
-		
+
 		/** The d. */
 		public float d = 1f;
-		
+
 		/** The Ka. */
 		public float[] Ka = new float[3];
-		
+
 		/** The Kd. */
 		public float[] Kd = new float[3];
-		
+
 		/** The Ks. */
 		public float[] Ks = new float[3];
-		
+
 		/** The map kd. */
 		public String map_Kd;
-		
+
 		/** The map ka. */
 		public String map_Ka;
-		
+
 		/** The map d. */
 		public String map_d;
 
@@ -62,11 +61,12 @@ public class MtlLoader {
 	/**
 	 * Instantiates a new mtl loader.
 	 *
-	 * @param ref the ref
-	 * @param pathtoimages the pathtoimages
+	 * @param ref
+	 *            the ref
+	 * @param pathtoimages
+	 *            the pathtoimages
 	 */
 	public MtlLoader(final BufferedReader ref, final String pathtoimages) {
-
 		loadobject(ref, pathtoimages);
 		cleanup();
 	}
@@ -81,24 +81,21 @@ public class MtlLoader {
 	 *
 	 * @return the size
 	 */
-	public int getSize() {
-		return materials.size();
-	}
+	public int getSize() { return materials.size(); }
 
 	/**
 	 * Gets the d.
 	 *
-	 * @param namepass the namepass
+	 * @param namepass
+	 *            the namepass
 	 * @return the d
 	 */
 	public float getd(final String namepass) {
 		final float returnfloat = 1f;
-		for (int i = 0; i < materials.size(); i++) {
-			final Mtl tempmtl = (Mtl) materials.get(i);
-			if (tempmtl.name.matches(namepass)) {
-				// returnfloat = tempmtl.d;
+		for (Object material : materials) {
+			final Mtl tempmtl = (Mtl) material;
+			if (tempmtl.name.matches(namepass)) // returnfloat = tempmtl.d;
 				return tempmtl.d;
-			}
 		}
 		return returnfloat;
 	}
@@ -106,17 +103,16 @@ public class MtlLoader {
 	/**
 	 * Gets the kd.
 	 *
-	 * @param namepass the namepass
+	 * @param namepass
+	 *            the namepass
 	 * @return the kd
 	 */
 	public float[] getKd(final String namepass) {
 		final float[] returnfloat = new float[3];
-		for (int i = 0; i < materials.size(); i++) {
-			final Mtl tempmtl = (Mtl) materials.get(i);
-			if (tempmtl.name.matches(namepass)) {
-				// returnfloat = tempmtl.Kd;
+		for (Object material : materials) {
+			final Mtl tempmtl = (Mtl) material;
+			if (tempmtl.name.matches(namepass)) // returnfloat = tempmtl.Kd;
 				return tempmtl.Kd;
-			}
 		}
 		return returnfloat;
 	}
@@ -124,13 +120,14 @@ public class MtlLoader {
 	/**
 	 * Gets the map ka.
 	 *
-	 * @param namepass the namepass
+	 * @param namepass
+	 *            the namepass
 	 * @return the map ka
 	 */
 	public String getMapKa(final String namepass) {
-		for (int i = 0; i < materials.size(); i++) {
-			final Mtl tempmtl = (Mtl) materials.get(i);
-			if (tempmtl.name.matches(namepass)) { return tempmtl.map_Ka; }
+		for (Object material : materials) {
+			final Mtl tempmtl = (Mtl) material;
+			if (tempmtl.name.matches(namepass)) return tempmtl.map_Ka;
 		}
 		return null;
 	}
@@ -138,13 +135,14 @@ public class MtlLoader {
 	/**
 	 * Gets the map kd.
 	 *
-	 * @param namepass the namepass
+	 * @param namepass
+	 *            the namepass
 	 * @return the map kd
 	 */
 	public String getMapKd(final String namepass) {
-		for (int i = 0; i < materials.size(); i++) {
-			final Mtl tempmtl = (Mtl) materials.get(i);
-			if (tempmtl.name.matches(namepass)) { return tempmtl.map_Kd; }
+		for (Object material : materials) {
+			final Mtl tempmtl = (Mtl) material;
+			if (tempmtl.name.matches(namepass)) return tempmtl.map_Kd;
 		}
 		return null;
 	}
@@ -152,13 +150,14 @@ public class MtlLoader {
 	/**
 	 * Gets the mapd.
 	 *
-	 * @param namepass the namepass
+	 * @param namepass
+	 *            the namepass
 	 * @return the mapd
 	 */
 	public String getMapd(final String namepass) {
-		for (int i = 0; i < materials.size(); i++) {
-			final Mtl tempmtl = (Mtl) materials.get(i);
-			if (tempmtl.name.matches(namepass)) { return tempmtl.map_d; }
+		for (Object material : materials) {
+			final Mtl tempmtl = (Mtl) material;
+			if (tempmtl.name.matches(namepass)) return tempmtl.map_d;
 		}
 		return null;
 	}
@@ -166,8 +165,10 @@ public class MtlLoader {
 	/**
 	 * Loadobject.
 	 *
-	 * @param br the br
-	 * @param pathtoimages the pathtoimages
+	 * @param br
+	 *            the br
+	 * @param pathtoimages
+	 *            the pathtoimages
 	 */
 	private void loadobject(final BufferedReader br, final String pathtoimages) {
 		int linecounter = 0;
@@ -213,21 +214,15 @@ public class MtlLoader {
 						matset.d = Float.parseFloat(coordstext[1]);
 					} else if (newline.contains("map_Ka")) {
 						String texture = newline.replace("map_Ka ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
+						while (texture.startsWith(" ")) { texture = texture.replaceFirst(" ", ""); }
 						matset.map_Ka = texture;
 					} else if (newline.contains("map_Kd")) {
 						String texture = newline.replace("map_Kd ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
+						while (texture.startsWith(" ")) { texture = texture.replaceFirst(" ", ""); }
 						matset.map_Kd = texture;
 					} else if (newline.contains("map_d")) {
 						String texture = newline.replace("map_d ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
+						while (texture.startsWith(" ")) { texture = texture.replaceFirst(" ", ""); }
 						matset.map_d = texture;
 					}
 				}
@@ -237,9 +232,7 @@ public class MtlLoader {
 		} catch (final IOException e) {
 			DEBUG.ERR("Failed to read file: " + br.toString());
 			e.printStackTrace();
-		} catch (final NumberFormatException e) {
-			DEBUG.ERR("Malformed MTL (on line " + linecounter + "): " + br.toString() + "\r \r" + e.getMessage());
-		} catch (final StringIndexOutOfBoundsException e) {
+		} catch (final NumberFormatException | StringIndexOutOfBoundsException e) {
 			DEBUG.ERR("Malformed MTL (on line " + linecounter + "): " + br.toString() + "\r \r" + e.getMessage());
 		}
 	}
