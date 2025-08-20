@@ -21,6 +21,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationSet;
 import gama.core.runtime.IScope;
+import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -32,9 +33,8 @@ import gama.gaml.statements.UserCommandStatement;
 import gama.gaml.types.IType;
 
 /**
- * The {@code ISpecies} interface represents a species in the GAMA modeling platform.
- * It defines the structure and behavior of species, including their aspects, micro-species,
- * population management, and associated actions.
+ * The {@code ISpecies} interface represents a species in the GAMA modeling platform. It defines the structure and
+ * behavior of species, including their aspects, micro-species, population management, and associated actions.
  *
  * Written by drogoul Modified on 25 avr. 2010
  *
@@ -56,7 +56,8 @@ import gama.gaml.types.IType;
 				type = IType.LIST,
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
-public interface ISpecies extends IClass, IPopulationSet<IAgent> {
+public interface ISpecies
+		extends IClass, IPopulationSet<IAgent>, IAddressableContainer<Integer, IAgent, Integer, IAgent> {
 
 	/** The step action name. */
 	String stepActionName = "_step_";

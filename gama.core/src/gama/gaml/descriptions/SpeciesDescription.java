@@ -289,13 +289,6 @@ public class SpeciesDescription extends TypeDescription {
 		return controlName;
 	}
 
-	/**
-	 * Gets the parent name.
-	 *
-	 * @return the parent name
-	 */
-	public String getParentName() { return getLitteral(PARENT); }
-
 	@Override
 	public IExpression getVarExpr(final String n, final boolean asField) {
 		IExpression result = super.getVarExpr(n, asField);
@@ -627,7 +620,7 @@ public class SpeciesDescription extends TypeDescription {
 		// Takes care of invalid species (see Issue 711)
 		// built-in parents are not considered as their actions/variables are
 		// normally already copied as java additions
-		if ((parentSpecies == null) || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
+		if (parentSpecies == null || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
 		tryInheritMicroSpecies(parentSpecies);
 		super.inheritFromParent();
 	}

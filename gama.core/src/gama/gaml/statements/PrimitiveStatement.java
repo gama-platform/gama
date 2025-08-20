@@ -1,34 +1,34 @@
 /*******************************************************************************************************
  *
  * PrimitiveStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.gaml.compilation.IDescriptionValidator.NullValidator;
 import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.IDescriptionValidator.NullValidator;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.PrimitiveDescription;
-import gama.gaml.species.AbstractSpecies;
+import gama.gaml.species.GamlSpecies;
 import gama.gaml.types.IType;
 
 /**
@@ -105,9 +105,7 @@ public class PrimitiveStatement extends ActionStatement {
 
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
-		if (enclosing instanceof AbstractSpecies) {
-			skill = ((AbstractSpecies) enclosing).getSkillInstanceFor(helper.getSkillClass());
-		}
+		if (enclosing instanceof GamlSpecies gs) { skill = gs.getSkillInstanceFor(helper.getSkillClass()); }
 	}
 
 	@Override

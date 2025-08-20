@@ -1279,6 +1279,5 @@ public interface IKeyword {
 			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
 
 	/** The class. */
-	String CLASS = "clas	s";
-
+	String CLASS = "class";
 }

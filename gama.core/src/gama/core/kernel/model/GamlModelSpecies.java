@@ -37,6 +37,7 @@ import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.species.GamlSpecies;
+import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.test.TestStatement;
@@ -124,6 +125,9 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 
 	/** The all species. */
 	protected Map<String, ISpecies> allSpecies;
+
+	/** The classes. */
+	protected final Map<String, IClass> classes = GamaMapFactory.createOrdered();
 
 	/**
 	 * Instantiates a new gaml model species.
@@ -222,6 +226,18 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 		return sp;
 	}
 
+	/**
+	 * Gets the class.
+	 *
+	 * @param className
+	 *            the class name
+	 * @return the class
+	 */
+	public IClass getClass(final String className) {
+		if (className == null) return null;
+		return classes.get(className);
+	}
+
 	@Override
 	public ISpecies getSpecies(final String speciesName, final String origin) {
 		if (speciesName == null) return null;
@@ -276,6 +292,10 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 				it.remove();
 			} else if (s instanceof AbstractOutputManager) {
 				forExperiment.add(s);
+				it.remove();
+			} else if (s instanceof IClass c && !(s instanceof ISpecies)) {
+				classes.put(c.getName(), c);
+				c.setMacroSpecies(this);
 				it.remove();
 			}
 		}

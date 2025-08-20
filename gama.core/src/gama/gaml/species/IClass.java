@@ -17,13 +17,15 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
+import gama.core.common.interfaces.ITyped;
+import gama.core.kernel.model.GamlModelSpecies;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaListFactory;
-import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.TypeDescription;
+import gama.gaml.interfaces.IGamlable;
+import gama.gaml.interfaces.IJsonable;
 import gama.gaml.operators.Containers;
 import gama.gaml.statements.ActionStatement;
 import gama.gaml.statements.IStatement;
@@ -37,13 +39,6 @@ import one.util.streamex.StreamEx;
  * of species, including their variables, actions and parent-child relationships.
  */
 
-/**
- * The Interface IClass.
- */
-
-/**
- * The Interface IClass.
- */
 @vars ({ @variable (
 		name = IClass.ACTIONS,
 		type = IType.LIST,
@@ -68,7 +63,7 @@ import one.util.streamex.StreamEx;
 				type = IType.LIST,
 				of = IType.SPECIES,
 				doc = @doc ("A list of the names of subspecies of this species")) })
-public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, Integer, IAgent> {
+public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 
 	/** The subspecies. */
 	String SUBSPECIES = "subspecies";
@@ -230,5 +225,10 @@ public interface IClass extends ISymbol, IAddressableContainer<Integer, IAgent, 
 	 */
 	@Override
 	TypeDescription getDescription();
+
+	/**
+	 * @param gamlModelSpecies
+	 */
+	void setMacroSpecies(GamlModelSpecies model);
 
 }

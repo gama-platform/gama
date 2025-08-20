@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * TypeDescription.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * TypeDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
@@ -626,6 +626,13 @@ public abstract class TypeDescription extends SymbolDescription {
 	 * @return a TypeDescription or null
 	 */
 	public TypeDescription getParent() { return parent; }
+
+	/**
+	 * Gets the parent name.
+	 *
+	 * @return the parent name
+	 */
+	public String getParentName() { return getLitteral(PARENT); }
 
 	@Override
 	public void dispose() {

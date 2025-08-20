@@ -29,8 +29,8 @@ import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
 import gama.core.kernel.experiment.IParameter.Batch;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.MinimalAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
@@ -217,7 +217,7 @@ public class BatchAgent extends ExperimentAgent {
 			}
 		}
 
-		if (dispose && sim instanceof AbstractAgent agent) { agent.primDie(sim.getScope()); }
+		if (dispose && sim instanceof MinimalAgent agent) { agent.primDie(sim.getScope()); }
 		return out;
 	}
 

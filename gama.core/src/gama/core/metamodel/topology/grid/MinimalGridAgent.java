@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * MinimalGridAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,9 +11,8 @@
 package gama.core.metamodel.topology.grid;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
+import gama.core.metamodel.agent.MinimalAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
@@ -27,40 +26,47 @@ import gama.gaml.types.Types;
 /**
  * The Class MinimalGridAgent.
  */
-public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
-
-	/** The geometry. */
-	private final IShape geometry;
-
-	/** The population. */
-	private final GridPopulation population;
+public class MinimalGridAgent extends MinimalAgent implements IGridAgent {
 
 	/**
 	 * Instantiates a new minimal grid agent.
 	 *
 	 * @param index
 	 *            the index
-	 * @param gridPopulation
+	 * @param pop
 	 *            TODO
 	 */
-	public MinimalGridAgent(final GridPopulation gridPopulation, final int index) {
-		super(index);
-		population = gridPopulation;
-		geometry = population.grid.matrix[index].getGeometry();
+	public MinimalGridAgent(final GridPopulation pop, final int index) {
+		super(pop, index, pop.grid.matrix[index].getGeometry());
 	}
+
+	/**
+	 * Gets the population.
+	 *
+	 * @return the population
+	 */
+	@Override
+	public GridPopulation getPopulation() { return (GridPopulation) super.getPopulation(); }
+
+	/**
+	 * Gets the spatial matrix.
+	 *
+	 * @return the spatial matrix
+	 */
+	public GamaSpatialMatrix getSpatialMatrix() { return getPopulation().grid; }
 
 	@Override
 	public GamaColor getColor() {
-		if (population.grid.isHexagon) return (GamaColor) getAttribute(IKeyword.COLOR);
-		return GamaColor.get(population.grid.supportImagePixels[getIndex()]);
+		if (getSpatialMatrix().isHexagon) return (GamaColor) getAttribute(IKeyword.COLOR);
+		return GamaColor.get(getSpatialMatrix().supportImagePixels[getIndex()]);
 	}
 
 	@Override
 	public void setColor(final GamaColor color) {
-		if (population.grid.isHexagon) {
+		if (getSpatialMatrix().isHexagon) {
 			setAttribute(IKeyword.COLOR, color);
 		} else {
-			population.grid.supportImagePixels[getIndex()] = color.getRGB();
+			getSpatialMatrix().supportImagePixels[getIndex()] = color.getRGB();
 		}
 	}
 
@@ -69,29 +75,26 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 
 	@Override
 	public final int getX() {
-		if (population.grid.isHexagon()) return population.grid.getX(getGeometry());
-		return (int) (getLocation().getX() / population.grid.cellWidth);
+		if (getSpatialMatrix().isHexagon()) return getSpatialMatrix().getX(getGeometry());
+		return (int) (getLocation().getX() / getSpatialMatrix().cellWidth);
 	}
 
 	@Override
 	public final int getY() {
-		if (population.grid.isHexagon()) return population.grid.getY(getGeometry());
-		return (int) (getLocation().getY() / population.grid.cellHeight);
+		if (getSpatialMatrix().isHexagon()) return getSpatialMatrix().getY(getGeometry());
+		return (int) (getLocation().getY() / getSpatialMatrix().cellHeight);
 	}
 
 	@Override
 	public double getValue() {
-		if (population.grid.gridValue != null) return population.grid.gridValue[getIndex()];
+		if (getSpatialMatrix().gridValue != null) return getSpatialMatrix().gridValue[getIndex()];
 		return 0d;
 	}
 
 	@Override
 	public void setValue(final double d) {
-		if (population.grid.gridValue != null) { population.grid.gridValue[getIndex()] = d; }
+		if (getSpatialMatrix().gridValue != null) { getSpatialMatrix().gridValue[getIndex()] = d; }
 	}
-
-	@Override
-	public IPopulation<?> getPopulation() { return population; }
 
 	@Override
 	public IShape getGeometry(final IScope scope) {
@@ -100,7 +103,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 
 	@Override
 	public IList<IAgent> getNeighbors(final IScope scope) {
-		return Cast.asList(scope, population.grid.getNeighborhood().getNeighborsIn(scope, getIndex(), 1));
+		return Cast.asList(scope, getSpatialMatrix().getNeighborhood().getNeighborsIn(scope, getIndex(), 1));
 	}
 
 	/**
@@ -211,12 +214,12 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 
 	@Override
 	public IList<Double> getBands() {
-		if (population.grid.nbBands == 1) {
+		if (getSpatialMatrix().nbBands == 1) {
 			final IList<Double> bd = GamaListFactory.create(null, Types.FLOAT);
 			bd.add(getValue());
 			return bd;
 		}
-		return population.grid.bands.get(getIndex());
+		return getSpatialMatrix().bands.get(getIndex());
 	}
 
 }
