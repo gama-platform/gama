@@ -62,6 +62,7 @@ import gama.gaml.statements.AspectStatement;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
+import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
@@ -906,5 +907,10 @@ public class GamlSpecies extends GamlClass implements ISpecies {
 
 	@Override
 	public IList<String> getAspectNames() { return GamaListFactory.wrap(Types.STRING, aspects.keySet()); }
+
+	@Override
+	public IContainerType<?> getGamlType() {
+		return (IContainerType<?>) getDescription().getSpeciesExpr().getGamlType();
+	}
 
 }

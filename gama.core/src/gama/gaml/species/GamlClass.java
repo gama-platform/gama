@@ -249,7 +249,11 @@ public class GamlClass extends Symbol implements IClass {
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() { return (IContainerType<?>) getDescription().getTypeNamed(getName()); }
+	public IContainerType<?> getGamlType() {
+		// TODO: Difficult to understand if this is correct, but it seems to be the way to get the type of a class
+
+		return (IContainerType<?>) getDescription().getTypeNamed(getName());
+	}
 
 	@Override
 	public Collection<String> getVarNames() { return getDescription().getAttributeNames(); }
