@@ -120,7 +120,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 * @param geometry
 	 *            the geometry
 	 */
-	public MinimalAgent(final IPopulation<? extends IAgent> population, final int index, final int hashcode,
+	private MinimalAgent(final IPopulation<? extends IAgent> population, final int index, final int hashcode,
 			final IShape geometry) {
 		this.index = index;
 		this.population = population;
@@ -138,7 +138,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	@Override
-	public/* synchronized */void setGeometry(final IScope scope, final IShape newGeometry) {
+	public void setGeometry(final IScope scope, final IShape newGeometry) {
 		// Addition to address Issue 817: if the new geometry is exactly the one
 		// possessed by the agent, no need to change anything.
 		if (newGeometry == geometry || newGeometry == null || newGeometry.getInnerGeometry() == null || dead()
@@ -236,7 +236,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	@Override
-	public/* synchronized */GamaPoint getLocation(final IScope scope) {
+	public GamaPoint getLocation(final IScope scope) {
 		if (geometry == null || geometry.getInnerGeometry() == null) {
 			final ITopology t = getTopology();
 			final GamaPoint randomLocation = t == null ? null : t.getRandomLocation(scope);
@@ -249,7 +249,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 
 	@Override
 	public boolean isInstanceOf(final ISpecies s, final boolean direct) {
-		// TODO and direct ?
 		if (IKeyword.AGENT.equals(s.getName())) return true;
 		final ISpecies species = getSpecies();
 		if (species == s) return true;
@@ -333,7 +332,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		for (final Entry<String, Object> attr : mapAttr.entrySet()) {
 			this.setDirectVarValue(scope, attr.getKey(), attr.getValue());
 		}
-
 	}
 
 	/**
@@ -495,7 +493,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 */
 	@Override
 	public IPopulation<? extends IAgent> getPopulationFor(final ISpecies microSpecies) {
-
 		IPopulation<? extends IAgent> pop = getPopulationFor(microSpecies.getName());
 		if (pop == null) {
 			final ModelDescription micro = microSpecies.getDescription().getModelDescription();
@@ -518,9 +515,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		if (a == null) return null;
 		return getHost().getPopulationFor(speciesName);
 	}
-
-	@Override
-	public String getSpeciesName() { return getSpecies().getName(); }
 
 	@Override
 	public ISpecies getSpecies() { return getPopulation().getSpecies(); }
@@ -549,7 +543,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 				if (varOfHost != null) { varOfHost.setVal(scope, host, v); }
 			}
 		}
-		// TODO: else ? launch an error ?
 	}
 
 	@Override
@@ -610,11 +603,6 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 
 	@Override
 	public ITopology getTopology() { return getPopulation().getTopology(); }
-
-	@Override
-	public void setPeers(final IList<IAgent> peers) {
-		// "peers" is read-only attribute
-	}
 
 	@SuppressWarnings ("unchecked")
 	@Override

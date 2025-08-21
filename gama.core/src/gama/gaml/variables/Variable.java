@@ -649,6 +649,18 @@ public class Variable extends Symbol implements IVariable {
 	@Override
 	public IType getType() { return type; }
 
+	/**
+	 * Initialize with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param v
+	 *            the v
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
 	public void initializeWith(final IScope scope, final IAgent a, final Object v) throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
@@ -708,6 +720,18 @@ public class Variable extends Symbol implements IVariable {
 	@Override
 	public void setName(final String name) { this.name = name; }
 
+	/**
+	 * Sets the val.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @param v
+	 *            the v
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
 	public final void setVal(final IScope scope, final IAgent agent, final Object v) throws GamaRuntimeException {
 		if (isNotModifiable) return;
@@ -815,6 +839,17 @@ public class Variable extends Symbol implements IVariable {
 		return value(scope, scope.getAgent());
 	}
 
+	/**
+	 * Value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
 	public Object value(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		// if (isSpeciesConst) { return speciesWideValue; }

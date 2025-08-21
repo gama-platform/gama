@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * IVariable.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.variables;
 
@@ -52,10 +51,14 @@ public interface IVariable extends ISymbol, IParameter {
 	/**
 	 * Initialize with.
 	 *
-	 * @param scope the scope
-	 * @param gamaObject the gama object
-	 * @param object the object
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param gamaObject
+	 *            the gama object
+	 * @param object
+	 *            the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	void initializeWith(IScope scope, IAgent gamaObject, Object object) throws GamaRuntimeException;
 
@@ -84,27 +87,35 @@ public interface IVariable extends ISymbol, IParameter {
 	/**
 	 * Sets the val.
 	 *
-	 * @param scope the scope
-	 * @param agent the agent
-	 * @param v the v
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @param v
+	 *            the v
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	void setVal(IScope scope, IAgent agent, Object v) throws GamaRuntimeException;
 
 	/**
 	 * Value.
 	 *
-	 * @param scope the scope
-	 * @param agent the agent
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
 	 * @return the object
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	Object value(IScope scope, IAgent agent) throws GamaRuntimeException;
 
 	/**
 	 * Gets the updated value.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the updated value
 	 */
 	Object getUpdatedValue(final IScope scope);

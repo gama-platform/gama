@@ -11,8 +11,6 @@ package gama.core.metamodel.agent;
 
 import java.util.List;
 
-import org.locationtech.jts.geom.Geometry;
-
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
@@ -20,27 +18,22 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IScoped;
 import gama.core.common.interfaces.IStepable;
-import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
+import gama.core.metamodel.shape.IDelegatingShape;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
-import gama.gaml.interfaces.IAttributed;
 import gama.gaml.interfaces.INamed;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.IType;
@@ -86,12 +79,8 @@ import gama.gaml.variables.IVariable;
 				name = IKeyword.SHAPE,
 				type = IType.GEOMETRY,
 				doc = { @doc ("Returns the shape of the receiver agent") }) })
-@doc ("""
-		The species hierarchy derives from a single built-in species, which is 'agent'. All its components (attributes, actions) will then be inherited by all direct \
-		or indirect children species (including 'model' and 'experiment' except species that explicitly set 'use_minimal_agents' facet to 'true', which inherit from\
-		 a stripped-down version of 'agent'.\s""")
-public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>, IStepable,
-		IContainer.Addressable<String, Object>, IVarAndActionSupport, IScoped {
+@doc ("The species hierarchy derives from a single built-in species, which is 'agent'. All its components (attributes, actions) will then be inherited by all direct or indirect children species (including 'model' and 'experiment'")
+public interface IAgent extends IObject<ISpecies>, IDelegatingShape, INamed, Comparable<IAgent>, IStepable, IScoped {
 
 	/**
 	 * Returns the topology which manages this agent.
@@ -107,7 +96,9 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 *            the new peers
 	 */
 	@setter (IKeyword.PEERS)
-	void setPeers(IList<IAgent> peers);
+	default void setPeers(final IList<IAgent> peers) {
+		// "peers" is read-only attribute
+	}
 
 	/**
 	 * Returns agents having the same species and sharing the same direct host with this agent.
@@ -271,63 +262,11 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	int getIndex();
 
 	/**
-	 * Gets the species name.
-	 *
-	 * @return the species name
-	 */
-	String getSpeciesName();
-
-	/**
-	 * Gets the species.
-	 *
-	 * @return the species
-	 */
-	ISpecies getSpecies();
-
-	/**
 	 * Gets the population.
 	 *
 	 * @return the population
 	 */
 	IPopulation<? extends IAgent> getPopulation();
-
-	/**
-	 * Checks if is instance of.
-	 *
-	 * @param s
-	 *            the s
-	 * @param direct
-	 *            the direct
-	 * @return true, if is instance of
-	 */
-	boolean isInstanceOf(final ISpecies s, boolean direct);
-
-	/**
-	 * Gets the direct var value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param s
-	 *            the s
-	 * @return the direct var value
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	Object getDirectVarValue(IScope scope, String s) throws GamaRuntimeException;
-
-	/**
-	 * Sets the direct var value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param s
-	 *            the s
-	 * @param v
-	 *            the v
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	void setDirectVarValue(IScope scope, String s, Object v) throws GamaRuntimeException;
 
 	/**
 	 * A utility method to notify any variable listener of a value change
@@ -404,268 +343,6 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 *            the sa
 	 */
 	void updateWith(final IScope s, final ISerialisedAgent sa);
-
-	/***
-	 * All the methods of IShape are delegated by default to getGeometry()
-	 */
-
-	/**
-	 * Method getArea(). Simply delegates to the geometry
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getArea()
-	 */
-	@Override
-	default Double getArea() { return getGeometry().getArea(); }
-
-	/**
-	 * Method getVolume(). Simply delegates to the geometry
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getVolume()
-	 */
-	@Override
-	default Double getVolume() { return getGeometry().getVolume(); }
-
-	/**
-	 * Method getPerimeter()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getPerimeter()
-	 */
-	@Override
-	default double getPerimeter() { return getGeometry().getPerimeter(); }
-
-	/**
-	 * Method getHoles()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getHoles()
-	 */
-	@Override
-	default IList<GamaShape> getHoles() { return getGeometry().getHoles(); }
-
-	/**
-	 * Method getCentroid()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getCentroid()
-	 */
-	@Override
-	default GamaPoint getCentroid() { return getGeometry().getCentroid(); }
-
-	/**
-	 * Method getExteriorRing()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getExteriorRing()
-	 */
-	@Override
-	default GamaShape getExteriorRing(final IScope scope) {
-		return getGeometry().getExteriorRing(scope);
-	}
-
-	/**
-	 * Method getWidth()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getWidth()
-	 */
-	@Override
-	default Double getWidth() { return getGeometry().getWidth(); }
-
-	/**
-	 * Method getHeight()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getDepth()
-	 */
-	@Override
-	default Double getHeight() { return getGeometry().getHeight(); }
-
-	/**
-	 * Method getDepth()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getDepth()
-	 */
-	@Override
-	default Double getDepth() { return getGeometry().getDepth(); }
-
-	/**
-	 * Method getGeometricEnvelope()
-	 *
-	 * @see gama.core.metamodel.shape.IGeometricalShape#getGeometricEnvelope()
-	 */
-	@Override
-	default GamaShape getGeometricEnvelope() { return getGeometry().getGeometricEnvelope(); }
-
-	/**
-	 * Gets the geometries.
-	 *
-	 * @return the geometries
-	 */
-	@Override
-	default IList<? extends IShape> getGeometries() { return getGeometry().getGeometries(); }
-
-	/**
-	 * Method isMultiple()
-	 *
-	 * @see gama.core.metamodel.shape.IShape#isMultiple()
-	 */
-	@Override
-	default boolean isMultiple() { return getGeometry().isMultiple(); }
-
-	/**
-	 * Checks if is point.
-	 *
-	 * @return true, if is point
-	 */
-	@Override
-	default boolean isPoint() { return getGeometry().isPoint(); }
-
-	/**
-	 * Checks if is line.
-	 *
-	 * @return true, if is line
-	 */
-	@Override
-	default boolean isLine() { return getGeometry().isLine(); }
-
-	/**
-	 * Gets the inner geometry.
-	 *
-	 * @return the inner geometry
-	 */
-	@Override
-	default Geometry getInnerGeometry() { return getGeometry().getInnerGeometry(); }
-
-	/**
-	 * Returns the envelope of the geometry of the agent, or null if the geometry has not yet been defined
-	 *
-	 */
-	@Override
-	default Envelope3D getEnvelope() {
-		final IShape g = getGeometry();
-		return g == null ? null : g.getEnvelope();
-	}
-
-	/**
-	 * Covers.
-	 *
-	 * @param g
-	 *            the g
-	 * @return true, if successful
-	 */
-	@Override
-	default boolean covers(final IShape g) {
-		return getGeometry().covers(g);
-	}
-
-	/**
-	 * Euclidian distance to.
-	 *
-	 * @param g
-	 *            the g
-	 * @return the double
-	 */
-	@Override
-	default double euclidianDistanceTo(final IShape g) {
-		return getGeometry().euclidianDistanceTo(g);
-	}
-
-	/**
-	 * Euclidian distance to.
-	 *
-	 * @param g
-	 *            the g
-	 * @return the double
-	 */
-	@Override
-	default double euclidianDistanceTo(final GamaPoint g) {
-		return getGeometry().euclidianDistanceTo(g);
-	}
-
-	/**
-	 * Intersects.
-	 *
-	 * @param g
-	 *            the g
-	 * @return true, if successful
-	 */
-	@Override
-	default boolean intersects(final IShape g) {
-		return getGeometry().intersects(g);
-	}
-
-	/**
-	 * Partially overlaps.
-	 *
-	 * @param g
-	 *            the g
-	 * @return true, if successful
-	 */
-	@Override
-	default boolean partiallyOverlaps(final IShape g) {
-		return getGeometry().partiallyOverlaps(g);
-	}
-
-	/**
-	 * Touches.
-	 *
-	 * @param g
-	 *            the g
-	 * @return true, if successful
-	 */
-	@Override
-	default boolean touches(final IShape g) {
-		return getGeometry().touches(g);
-	}
-
-	/**
-	 * Crosses.
-	 *
-	 * @param g
-	 *            the g
-	 * @return true, if successful
-	 */
-	@Override
-	default boolean crosses(final IShape g) {
-		return getGeometry().crosses(g);
-	}
-
-	/**
-	 * @see gama.core.common.interfaces.IGeometry#setInnerGeometry(org.locationtech.jts.geom.Geometry)
-	 */
-	@Override
-	default void setInnerGeometry(final Geometry geom) {
-		getGeometry().setInnerGeometry(geom);
-	}
-
-	/**
-	 * Method getPoints()
-	 *
-	 * @see gama.core.metamodel.shape.IShape#getPoints()
-	 */
-	@Override
-	default IList<GamaPoint> getPoints() {
-		if (getGeometry() == null) return GamaListFactory.EMPTY_LIST;
-		return getGeometry().getPoints();
-	}
-
-	/**
-	 * Sets the depth.
-	 *
-	 * @param depth
-	 *            the new depth
-	 */
-	@Override
-	default void setDepth(final double depth) {
-		if (getGeometry() == null) return;
-		getGeometry().setDepth(depth);
-	}
-
-	/**
-	 * Sets the geometrical type.
-	 *
-	 * @param t
-	 *            the new geometrical type
-	 */
-	@Override
-	default void setGeometricalType(final Type t) {
-		getGeometry().setGeometricalType(t);
-	}
 
 	/**
 	 * Prim die.
