@@ -53,8 +53,8 @@ S_Experiment:
  * Statements
  */
 Statement:
-	(=> S_Declaration | 
-	((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
+	(=> S_ActionCall | (=> S_Declaration | 
+	((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))))
 	| S_Display;
 
 S_1Expr_Facets_BlockOrEnd returns Statement:
@@ -62,6 +62,11 @@ S_1Expr_Facets_BlockOrEnd returns Statement:
 
 S_Do:
 	key=_DoKey (firstFacet="action:")? expr=AbstractRef (facets+=Facet)* (block=Block | ';');
+	
+		
+S_ActionCall returns S_Do:
+	target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+;
 
 S_Loop:
 	key="loop" (name=ID)? (facets+=Facet)* block=Block;
@@ -319,6 +324,7 @@ Access returns Expression:
 	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
 ;
 
+
 Primary returns Expression:
 	TerminalExpression |
 	AbstractRef |
@@ -337,8 +343,7 @@ ExpressionList:
 
 Parameter returns Expression:
 	{Parameter} ((builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
-	|
-	(left=VariableRef ':')) right=Expression;
+	| (left=VariableRef ':')) right=Expression;
 
 UnitRef returns Expression:
 	{UnitName} ref=[UnitFakeDefinition|ID];

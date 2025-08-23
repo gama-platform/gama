@@ -563,69 +563,78 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Statement");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final Alternatives cAlternatives_0 = (Alternatives)cAlternatives.eContents().get(0);
-		private final RuleCall cS_DeclarationParserRuleCall_0_0 = (RuleCall)cAlternatives_0.eContents().get(0);
+		private final RuleCall cS_ActionCallParserRuleCall_0_0 = (RuleCall)cAlternatives_0.eContents().get(0);
 		private final Alternatives cAlternatives_0_1 = (Alternatives)cAlternatives_0.eContents().get(1);
-		private final RuleCall cS_AssignmentParserRuleCall_0_1_0 = (RuleCall)cAlternatives_0_1.eContents().get(0);
-		private final RuleCall cS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1 = (RuleCall)cAlternatives_0_1.eContents().get(1);
-		private final RuleCall cS_OtherParserRuleCall_0_1_2 = (RuleCall)cAlternatives_0_1.eContents().get(2);
-		private final RuleCall cS_DoParserRuleCall_0_1_3 = (RuleCall)cAlternatives_0_1.eContents().get(3);
-		private final RuleCall cS_ReturnParserRuleCall_0_1_4 = (RuleCall)cAlternatives_0_1.eContents().get(4);
-		private final RuleCall cS_SolveParserRuleCall_0_1_5 = (RuleCall)cAlternatives_0_1.eContents().get(5);
-		private final RuleCall cS_IfParserRuleCall_0_1_6 = (RuleCall)cAlternatives_0_1.eContents().get(6);
-		private final RuleCall cS_TryParserRuleCall_0_1_7 = (RuleCall)cAlternatives_0_1.eContents().get(7);
-		private final RuleCall cS_EquationsParserRuleCall_0_1_8 = (RuleCall)cAlternatives_0_1.eContents().get(8);
+		private final RuleCall cS_DeclarationParserRuleCall_0_1_0 = (RuleCall)cAlternatives_0_1.eContents().get(0);
+		private final Alternatives cAlternatives_0_1_1 = (Alternatives)cAlternatives_0_1.eContents().get(1);
+		private final RuleCall cS_AssignmentParserRuleCall_0_1_1_0 = (RuleCall)cAlternatives_0_1_1.eContents().get(0);
+		private final RuleCall cS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1_1 = (RuleCall)cAlternatives_0_1_1.eContents().get(1);
+		private final RuleCall cS_OtherParserRuleCall_0_1_1_2 = (RuleCall)cAlternatives_0_1_1.eContents().get(2);
+		private final RuleCall cS_DoParserRuleCall_0_1_1_3 = (RuleCall)cAlternatives_0_1_1.eContents().get(3);
+		private final RuleCall cS_ReturnParserRuleCall_0_1_1_4 = (RuleCall)cAlternatives_0_1_1.eContents().get(4);
+		private final RuleCall cS_SolveParserRuleCall_0_1_1_5 = (RuleCall)cAlternatives_0_1_1.eContents().get(5);
+		private final RuleCall cS_IfParserRuleCall_0_1_1_6 = (RuleCall)cAlternatives_0_1_1.eContents().get(6);
+		private final RuleCall cS_TryParserRuleCall_0_1_1_7 = (RuleCall)cAlternatives_0_1_1.eContents().get(7);
+		private final RuleCall cS_EquationsParserRuleCall_0_1_1_8 = (RuleCall)cAlternatives_0_1_1.eContents().get(8);
 		private final RuleCall cS_DisplayParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		
 		///**
 		// * Statements
 		// */
 		//Statement:
-		//    (=> S_Declaration |
-		//    ((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
+		//    (=> S_ActionCall | (=> S_Declaration |
+		//    ((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))))
 		//    | S_Display;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//(=> S_Declaration |
-		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
+		//(=> S_ActionCall | (=> S_Declaration |
+		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))))
 		//| S_Display
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//(=> S_Declaration |
-		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
+		//(=> S_ActionCall | (=> S_Declaration |
+		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))))
 		public Alternatives getAlternatives_0() { return cAlternatives_0; }
 		
-		//=> S_Declaration
-		public RuleCall getS_DeclarationParserRuleCall_0_0() { return cS_DeclarationParserRuleCall_0_0; }
+		//=> S_ActionCall
+		public RuleCall getS_ActionCallParserRuleCall_0_0() { return cS_ActionCallParserRuleCall_0_0; }
 		
-		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))
+		//(=> S_Declaration |
+		//   ((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
 		public Alternatives getAlternatives_0_1() { return cAlternatives_0_1; }
 		
+		//=> S_Declaration
+		public RuleCall getS_DeclarationParserRuleCall_0_1_0() { return cS_DeclarationParserRuleCall_0_1_0; }
+		
+		//((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))
+		public Alternatives getAlternatives_0_1_1() { return cAlternatives_0_1_1; }
+		
 		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_0_1_0() { return cS_AssignmentParserRuleCall_0_1_0; }
+		public RuleCall getS_AssignmentParserRuleCall_0_1_1_0() { return cS_AssignmentParserRuleCall_0_1_1_0; }
 		
 		//S_1Expr_Facets_BlockOrEnd
-		public RuleCall getS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1() { return cS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1; }
+		public RuleCall getS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1_1() { return cS_1Expr_Facets_BlockOrEndParserRuleCall_0_1_1_1; }
 		
 		//S_Other
-		public RuleCall getS_OtherParserRuleCall_0_1_2() { return cS_OtherParserRuleCall_0_1_2; }
+		public RuleCall getS_OtherParserRuleCall_0_1_1_2() { return cS_OtherParserRuleCall_0_1_1_2; }
 		
 		//S_Do
-		public RuleCall getS_DoParserRuleCall_0_1_3() { return cS_DoParserRuleCall_0_1_3; }
+		public RuleCall getS_DoParserRuleCall_0_1_1_3() { return cS_DoParserRuleCall_0_1_1_3; }
 		
 		//S_Return
-		public RuleCall getS_ReturnParserRuleCall_0_1_4() { return cS_ReturnParserRuleCall_0_1_4; }
+		public RuleCall getS_ReturnParserRuleCall_0_1_1_4() { return cS_ReturnParserRuleCall_0_1_1_4; }
 		
 		//S_Solve
-		public RuleCall getS_SolveParserRuleCall_0_1_5() { return cS_SolveParserRuleCall_0_1_5; }
+		public RuleCall getS_SolveParserRuleCall_0_1_1_5() { return cS_SolveParserRuleCall_0_1_1_5; }
 		
 		//S_If
-		public RuleCall getS_IfParserRuleCall_0_1_6() { return cS_IfParserRuleCall_0_1_6; }
+		public RuleCall getS_IfParserRuleCall_0_1_1_6() { return cS_IfParserRuleCall_0_1_1_6; }
 		
 		//S_Try
-		public RuleCall getS_TryParserRuleCall_0_1_7() { return cS_TryParserRuleCall_0_1_7; }
+		public RuleCall getS_TryParserRuleCall_0_1_1_7() { return cS_TryParserRuleCall_0_1_1_7; }
 		
 		//S_Equations
-		public RuleCall getS_EquationsParserRuleCall_0_1_8() { return cS_EquationsParserRuleCall_0_1_8; }
+		public RuleCall getS_EquationsParserRuleCall_0_1_1_8() { return cS_EquationsParserRuleCall_0_1_1_8; }
 		
 		//S_Display
 		public RuleCall getS_DisplayParserRuleCall_1() { return cS_DisplayParserRuleCall_1; }
@@ -747,6 +756,62 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//';'
 		public Keyword getSemicolonKeyword_4_1() { return cSemicolonKeyword_4_1; }
+	}
+	public class S_ActionCallElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ActionCall");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cTargetAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cTargetVariableRefParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
+		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Keyword cKeyFullStopKeyword_1_0 = (Keyword)cKeyAssignment_1.eContents().get(0);
+		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cExprActionRefParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
+		private final Keyword cLeftParenthesisKeyword_3 = (Keyword)cGroup.eContents().get(3);
+		private final Assignment cRightAssignment_4 = (Assignment)cGroup.eContents().get(4);
+		private final RuleCall cRightExpressionListParserRuleCall_4_0 = (RuleCall)cRightAssignment_4.eContents().get(0);
+		private final Keyword cRightParenthesisKeyword_5 = (Keyword)cGroup.eContents().get(5);
+		private final Keyword cSemicolonKeyword_6 = (Keyword)cGroup.eContents().get(6);
+		
+		//S_ActionCall returns S_Do:
+		//    target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+		public Group getGroup() { return cGroup; }
+		
+		//target=VariableRef
+		public Assignment getTargetAssignment_0() { return cTargetAssignment_0; }
+		
+		//VariableRef
+		public RuleCall getTargetVariableRefParserRuleCall_0_0() { return cTargetVariableRefParserRuleCall_0_0; }
+		
+		//key='.'
+		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
+		
+		//'.'
+		public Keyword getKeyFullStopKeyword_1_0() { return cKeyFullStopKeyword_1_0; }
+		
+		//expr=ActionRef
+		public Assignment getExprAssignment_2() { return cExprAssignment_2; }
+		
+		//ActionRef
+		public RuleCall getExprActionRefParserRuleCall_2_0() { return cExprActionRefParserRuleCall_2_0; }
+		
+		//'('
+		public Keyword getLeftParenthesisKeyword_3() { return cLeftParenthesisKeyword_3; }
+		
+		//right=ExpressionList?
+		public Assignment getRightAssignment_4() { return cRightAssignment_4; }
+		
+		//ExpressionList
+		public RuleCall getRightExpressionListParserRuleCall_4_0() { return cRightExpressionListParserRuleCall_4_0; }
+		
+		//')'
+		public Keyword getRightParenthesisKeyword_5() { return cRightParenthesisKeyword_5; }
+		
+		//';'
+		public Keyword getSemicolonKeyword_6() { return cSemicolonKeyword_6; }
 	}
 	public class S_LoopElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Loop");
@@ -4049,21 +4114,18 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//Parameter returns Expression:
 		//    {Parameter} ((builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
-		//    |
-		//    (left=VariableRef ':')) right=Expression;
+		//    | (left=VariableRef ':')) right=Expression;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//{Parameter} ((builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
-		//|
-		//(left=VariableRef ':')) right=Expression
+		//| (left=VariableRef ':')) right=Expression
 		public Group getGroup() { return cGroup; }
 		
 		//{Parameter}
 		public Action getParameterAction_0() { return cParameterAction_0; }
 		
 		//((builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
-		//   |
-		//   (left=VariableRef ':'))
+		//   | (left=VariableRef ':'))
 		public Alternatives getAlternatives_1() { return cAlternatives_1; }
 		
 		//(builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
@@ -4817,6 +4879,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final StatementElements pStatement;
 	private final S_1Expr_Facets_BlockOrEndElements pS_1Expr_Facets_BlockOrEnd;
 	private final S_DoElements pS_Do;
+	private final S_ActionCallElements pS_ActionCall;
 	private final S_LoopElements pS_Loop;
 	private final S_IfElements pS_If;
 	private final S_TryElements pS_Try;
@@ -4940,6 +5003,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pStatement = new StatementElements();
 		this.pS_1Expr_Facets_BlockOrEnd = new S_1Expr_Facets_BlockOrEndElements();
 		this.pS_Do = new S_DoElements();
+		this.pS_ActionCall = new S_ActionCallElements();
 		this.pS_Loop = new S_LoopElements();
 		this.pS_If = new S_IfElements();
 		this.pS_Try = new S_TryElements();
@@ -5208,8 +5272,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * Statements
 	// */
 	//Statement:
-	//    (=> S_Declaration |
-	//    ((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
+	//    (=> S_ActionCall | (=> S_Declaration |
+	//    ((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations))))
 	//    | S_Display;
 	public StatementElements getStatementAccess() {
 		return pStatement;
@@ -5237,6 +5301,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getS_DoRule() {
 		return getS_DoAccess().getRule();
+	}
+	
+	//S_ActionCall returns S_Do:
+	//    target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+	//;
+	public S_ActionCallElements getS_ActionCallAccess() {
+		return pS_ActionCall;
+	}
+	
+	public ParserRule getS_ActionCallRule() {
+		return getS_ActionCallAccess().getRule();
 	}
 	
 	//S_Loop:
@@ -5996,8 +6071,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//Parameter returns Expression:
 	//    {Parameter} ((builtInFacetKey=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey))
-	//    |
-	//    (left=VariableRef ':')) right=Expression;
+	//    | (left=VariableRef ':')) right=Expression;
 	public ParameterElements getParameterAccess() {
 		return pParameter;
 	}

@@ -50,7 +50,10 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Global"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Species"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Experiment"/>
-    <genClasses ecoreClass="Gaml.ecore#//S_Do"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_Do">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Do/target"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Do/right"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Loop"/>
     <genClasses ecoreClass="Gaml.ecore#//S_If">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_If/else"/>

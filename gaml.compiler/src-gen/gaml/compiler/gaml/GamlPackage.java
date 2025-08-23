@@ -785,13 +785,31 @@ public interface GamlPackage extends EPackage
   int SDO__BLOCK = STATEMENT__BLOCK;
 
   /**
+   * The feature id for the '<em><b>Target</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDO__TARGET = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDO__RIGHT = STATEMENT_FEATURE_COUNT + 1;
+
+  /**
    * The number of structural features of the '<em>SDo</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int SDO_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
+  int SDO_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_DeclarationImpl <em>SDeclaration</em>}' class.
@@ -3761,6 +3779,28 @@ public interface GamlPackage extends EPackage
   EClass getS_Do();
 
   /**
+   * Returns the meta object for the containment reference '{@link gaml.compiler.gaml.S_Do#getTarget <em>Target</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Target</em>'.
+   * @see gaml.compiler.gaml.S_Do#getTarget()
+   * @see #getS_Do()
+   * @generated
+   */
+  EReference getS_Do_Target();
+
+  /**
+   * Returns the meta object for the containment reference '{@link gaml.compiler.gaml.S_Do#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see gaml.compiler.gaml.S_Do#getRight()
+   * @see #getS_Do()
+   * @generated
+   */
+  EReference getS_Do_Right();
+
+  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.S_Loop <em>SLoop</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -5251,6 +5291,22 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass SDO = eINSTANCE.getS_Do();
+
+    /**
+     * The meta object literal for the '<em><b>Target</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SDO__TARGET = eINSTANCE.getS_Do_Target();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SDO__RIGHT = eINSTANCE.getS_Do_Right();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_LoopImpl <em>SLoop</em>}' class.

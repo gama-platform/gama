@@ -9,6 +9,13 @@ package gaml.compiler.gaml;
  * A representation of the model object '<em><b>SDo</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <p>
+ * The following features are supported:
+ * </p>
+ * <ul>
+ *   <li>{@link gaml.compiler.gaml.S_Do#getTarget <em>Target</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.S_Do#getRight <em>Right</em>}</li>
+ * </ul>
  *
  * @see gaml.compiler.gaml.GamlPackage#getS_Do()
  * @model
@@ -16,4 +23,48 @@ package gaml.compiler.gaml;
  */
 public interface S_Do extends Statement
 {
+  /**
+   * Returns the value of the '<em><b>Target</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Target</em>' containment reference.
+   * @see #setTarget(VariableRef)
+   * @see gaml.compiler.gaml.GamlPackage#getS_Do_Target()
+   * @model containment="true"
+   * @generated
+   */
+  VariableRef getTarget();
+
+  /**
+   * Sets the value of the '{@link gaml.compiler.gaml.S_Do#getTarget <em>Target</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Target</em>' containment reference.
+   * @see #getTarget()
+   * @generated
+   */
+  void setTarget(VariableRef value);
+
+  /**
+   * Returns the value of the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Right</em>' containment reference.
+   * @see #setRight(ExpressionList)
+   * @see gaml.compiler.gaml.GamlPackage#getS_Do_Right()
+   * @model containment="true"
+   * @generated
+   */
+  ExpressionList getRight();
+
+  /**
+   * Sets the value of the '{@link gaml.compiler.gaml.S_Do#getRight <em>Right</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Right</em>' containment reference.
+   * @see #getRight()
+   * @generated
+   */
+  void setRight(ExpressionList value);
+
 } // S_Do

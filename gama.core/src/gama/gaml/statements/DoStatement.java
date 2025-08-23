@@ -45,7 +45,7 @@ import gama.gaml.types.IType;
  *
  */
 @symbol (
-		name = { IKeyword.DO, IKeyword.INVOKE },
+		name = { IKeyword.DO, IKeyword.INVOKE, "." },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = true,
 		with_scope = false,
@@ -81,7 +81,7 @@ import gama.gaml.types.IType;
 						internal = true), },
 		omissible = IKeyword.ACTION)
 @doc (
-		value = "Allows the agent to execute an action or a primitive.  For a list of primitives available in every species, see this [BuiltIn161 page]; for the list of primitives defined by the different skills, see this [Skills161 page]. Finally, see this [Species161 page] to know how to declare custom actions.",
+		value = "Allows the agent to execute an action or a primitive (built-in actions available through custom species or skills).",
 		usages = { @usage (
 				value = "The simple syntax (when the action does not expect any argument and the result is not to be kept) is:",
 				examples = { @example (

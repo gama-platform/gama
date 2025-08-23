@@ -3,20 +3,55 @@
  */
 package gaml.compiler.gaml.impl;
 
+import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Do;
+import gaml.compiler.gaml.VariableRef;
+
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.NotificationChain;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
+
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>SDo</b></em>'.
  * <!-- end-user-doc -->
+ * <p>
+ * The following features are implemented:
+ * </p>
+ * <ul>
+ *   <li>{@link gaml.compiler.gaml.impl.S_DoImpl#getTarget <em>Target</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.impl.S_DoImpl#getRight <em>Right</em>}</li>
+ * </ul>
  *
  * @generated
  */
 public class S_DoImpl extends StatementImpl implements S_Do
 {
+  /**
+   * The cached value of the '{@link #getTarget() <em>Target</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getTarget()
+   * @generated
+   * @ordered
+   */
+  protected VariableRef target;
+
+  /**
+   * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getRight()
+   * @generated
+   * @ordered
+   */
+  protected ExpressionList right;
+
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -36,6 +71,200 @@ public class S_DoImpl extends StatementImpl implements S_Do
   protected EClass eStaticClass()
   {
     return GamlPackage.Literals.SDO;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public VariableRef getTarget()
+  {
+    return target;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetTarget(VariableRef newTarget, NotificationChain msgs)
+  {
+    VariableRef oldTarget = target;
+    target = newTarget;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__TARGET, oldTarget, newTarget);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setTarget(VariableRef newTarget)
+  {
+    if (newTarget != target)
+    {
+      NotificationChain msgs = null;
+      if (target != null)
+        msgs = ((InternalEObject)target).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__TARGET, null, msgs);
+      if (newTarget != null)
+        msgs = ((InternalEObject)newTarget).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__TARGET, null, msgs);
+      msgs = basicSetTarget(newTarget, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__TARGET, newTarget, newTarget));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public ExpressionList getRight()
+  {
+    return right;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetRight(ExpressionList newRight, NotificationChain msgs)
+  {
+    ExpressionList oldRight = right;
+    right = newRight;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__RIGHT, oldRight, newRight);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setRight(ExpressionList newRight)
+  {
+    if (newRight != right)
+    {
+      NotificationChain msgs = null;
+      if (right != null)
+        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__RIGHT, null, msgs);
+      if (newRight != null)
+        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__RIGHT, null, msgs);
+      msgs = basicSetRight(newRight, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__RIGHT, newRight, newRight));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
+  {
+    switch (featureID)
+    {
+      case GamlPackage.SDO__TARGET:
+        return basicSetTarget(null, msgs);
+      case GamlPackage.SDO__RIGHT:
+        return basicSetRight(null, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public Object eGet(int featureID, boolean resolve, boolean coreType)
+  {
+    switch (featureID)
+    {
+      case GamlPackage.SDO__TARGET:
+        return getTarget();
+      case GamlPackage.SDO__RIGHT:
+        return getRight();
+    }
+    return super.eGet(featureID, resolve, coreType);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void eSet(int featureID, Object newValue)
+  {
+    switch (featureID)
+    {
+      case GamlPackage.SDO__TARGET:
+        setTarget((VariableRef)newValue);
+        return;
+      case GamlPackage.SDO__RIGHT:
+        setRight((ExpressionList)newValue);
+        return;
+    }
+    super.eSet(featureID, newValue);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void eUnset(int featureID)
+  {
+    switch (featureID)
+    {
+      case GamlPackage.SDO__TARGET:
+        setTarget((VariableRef)null);
+        return;
+      case GamlPackage.SDO__RIGHT:
+        setRight((ExpressionList)null);
+        return;
+    }
+    super.eUnset(featureID);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public boolean eIsSet(int featureID)
+  {
+    switch (featureID)
+    {
+      case GamlPackage.SDO__TARGET:
+        return target != null;
+      case GamlPackage.SDO__RIGHT:
+        return right != null;
+    }
+    return super.eIsSet(featureID);
   }
 
 } //S_DoImpl

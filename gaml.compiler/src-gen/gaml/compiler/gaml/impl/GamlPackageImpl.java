@@ -1053,6 +1053,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EReference getS_Do_Target()
+  {
+    return (EReference)s_DoEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getS_Do_Right()
+  {
+    return (EReference)s_DoEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getS_Loop()
   {
     return s_LoopEClass;
@@ -2337,6 +2359,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ExperimentEClass = createEClass(SEXPERIMENT);
 
     s_DoEClass = createEClass(SDO);
+    createEReference(s_DoEClass, SDO__TARGET);
+    createEReference(s_DoEClass, SDO__RIGHT);
 
     s_LoopEClass = createEClass(SLOOP);
 
@@ -2656,6 +2680,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_ExperimentEClass, S_Experiment.class, "S_Experiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_DoEClass, S_Do.class, "S_Do", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getS_Do_Target(), this.getVariableRef(), null, "target", null, 0, 1, S_Do.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getS_Do_Right(), this.getExpressionList(), null, "right", null, 0, 1, S_Do.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_LoopEClass, S_Loop.class, "S_Loop", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
