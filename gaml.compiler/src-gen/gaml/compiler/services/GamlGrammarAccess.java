@@ -761,7 +761,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ActionCall");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cTargetAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cTargetVariableRefParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
+		private final RuleCall cTargetPrimaryParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
 		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final Keyword cKeyFullStopKeyword_1_0 = (Keyword)cKeyAssignment_1.eContents().get(0);
 		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
@@ -773,18 +773,18 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cSemicolonKeyword_6 = (Keyword)cGroup.eContents().get(6);
 		
 		//S_ActionCall returns S_Do:
-		//    target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+		//    target=Primary key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
 		//;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+		//target=Primary key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
 		public Group getGroup() { return cGroup; }
 		
-		//target=VariableRef
+		//target=Primary
 		public Assignment getTargetAssignment_0() { return cTargetAssignment_0; }
 		
-		//VariableRef
-		public RuleCall getTargetVariableRefParserRuleCall_0_0() { return cTargetVariableRefParserRuleCall_0_0; }
+		//Primary
+		public RuleCall getTargetPrimaryParserRuleCall_0_0() { return cTargetPrimaryParserRuleCall_0_0; }
 		
 		//key='.'
 		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
@@ -5304,7 +5304,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_ActionCall returns S_Do:
-	//    target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+	//    target=Primary key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
 	//;
 	public S_ActionCallElements getS_ActionCallAccess() {
 		return pS_ActionCall;

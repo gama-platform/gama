@@ -1461,9 +1461,9 @@ ruleS_ActionCall returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_ActionCallAccess().getTargetVariableRefParserRuleCall_0_0());
+					newCompositeNode(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0());
 				}
-				lv_target_0_0=ruleVariableRef
+				lv_target_0_0=rulePrimary
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getS_ActionCallRule());
@@ -1472,7 +1472,7 @@ ruleS_ActionCall returns [EObject current=null]
 						$current,
 						"target",
 						lv_target_0_0,
-						"gaml.compiler.Gaml.VariableRef");
+						"gaml.compiler.Gaml.Primary");
 					afterParserOrEnumRuleCall();
 				}
 			)

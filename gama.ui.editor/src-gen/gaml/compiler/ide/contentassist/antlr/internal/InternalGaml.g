@@ -15604,9 +15604,9 @@ rule__S_ActionCall__TargetAssignment_0
 	}
 :
 	(
-		{ before(grammarAccess.getS_ActionCallAccess().getTargetVariableRefParserRuleCall_0_0()); }
-		ruleVariableRef
-		{ after(grammarAccess.getS_ActionCallAccess().getTargetVariableRefParserRuleCall_0_0()); }
+		{ before(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0()); }
+		rulePrimary
+		{ after(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0()); }
 	)
 ;
 finally {

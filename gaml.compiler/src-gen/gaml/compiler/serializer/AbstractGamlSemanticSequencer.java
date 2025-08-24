@@ -1259,7 +1259,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_ActionCall returns S_Do
 	 *
 	 * Constraint:
-	 *     (target=VariableRef key='.' expr=ActionRef right=ExpressionList?)
+	 *     (target=Primary key='.' expr=ActionRef right=ExpressionList?)
 	 * </pre>
 	 */
 	protected void sequence_S_ActionCall(ISerializationContext context, S_Do semanticObject) {
@@ -1274,10 +1274,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     displayStatement returns S_Do
 	 *
 	 * Constraint:
-	 *     (
-	 *         (key=_DoKey firstFacet='action:'? expr=AbstractRef facets+=Facet* block=Block?) | 
-	 *         (target=VariableRef key='.' expr=ActionRef right=ExpressionList?)
-	 *     )
+	 *     ((key=_DoKey firstFacet='action:'? expr=AbstractRef facets+=Facet* block=Block?) | (target=Primary key='.' expr=ActionRef right=ExpressionList?))
 	 * </pre>
 	 */
 	protected void sequence_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {

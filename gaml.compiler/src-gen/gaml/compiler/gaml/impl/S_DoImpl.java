@@ -3,10 +3,10 @@
  */
 package gaml.compiler.gaml.impl;
 
+import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Do;
-import gaml.compiler.gaml.VariableRef;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -40,7 +40,7 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * @generated
    * @ordered
    */
-  protected VariableRef target;
+  protected Expression target;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -79,7 +79,7 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * @generated
    */
   @Override
-  public VariableRef getTarget()
+  public Expression getTarget()
   {
     return target;
   }
@@ -89,9 +89,9 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetTarget(VariableRef newTarget, NotificationChain msgs)
+  public NotificationChain basicSetTarget(Expression newTarget, NotificationChain msgs)
   {
-    VariableRef oldTarget = target;
+    Expression oldTarget = target;
     target = newTarget;
     if (eNotificationRequired())
     {
@@ -107,7 +107,7 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * @generated
    */
   @Override
-  public void setTarget(VariableRef newTarget)
+  public void setTarget(Expression newTarget)
   {
     if (newTarget != target)
     {
@@ -220,7 +220,7 @@ public class S_DoImpl extends StatementImpl implements S_Do
     switch (featureID)
     {
       case GamlPackage.SDO__TARGET:
-        setTarget((VariableRef)newValue);
+        setTarget((Expression)newValue);
         return;
       case GamlPackage.SDO__RIGHT:
         setRight((ExpressionList)newValue);
@@ -240,7 +240,7 @@ public class S_DoImpl extends StatementImpl implements S_Do
     switch (featureID)
     {
       case GamlPackage.SDO__TARGET:
-        setTarget((VariableRef)null);
+        setTarget((Expression)null);
         return;
       case GamlPackage.SDO__RIGHT:
         setRight((ExpressionList)null);

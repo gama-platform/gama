@@ -65,7 +65,7 @@ S_Do:
 	
 		
 S_ActionCall returns S_Do:
-	target=VariableRef key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
+	target=Primary key='.' expr=ActionRef '(' right=ExpressionList? ')'';'
 ;
 
 S_Loop:

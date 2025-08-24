@@ -53091,28 +53091,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__S_ActionCall__TargetAssignment_0"
-    // InternalGaml.g:15601:1: rule__S_ActionCall__TargetAssignment_0 : ( ruleVariableRef ) ;
+    // InternalGaml.g:15601:1: rule__S_ActionCall__TargetAssignment_0 : ( rulePrimary ) ;
     public final void rule__S_ActionCall__TargetAssignment_0() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:15605:1: ( ( ruleVariableRef ) )
-            // InternalGaml.g:15606:2: ( ruleVariableRef )
+            // InternalGaml.g:15605:1: ( ( rulePrimary ) )
+            // InternalGaml.g:15606:2: ( rulePrimary )
             {
-            // InternalGaml.g:15606:2: ( ruleVariableRef )
-            // InternalGaml.g:15607:3: ruleVariableRef
+            // InternalGaml.g:15606:2: ( rulePrimary )
+            // InternalGaml.g:15607:3: rulePrimary
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_ActionCallAccess().getTargetVariableRefParserRuleCall_0_0()); 
+               before(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0()); 
             }
             pushFollow(FOLLOW_2);
-            ruleVariableRef();
+            rulePrimary();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_ActionCallAccess().getTargetVariableRefParserRuleCall_0_0()); 
+               after(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0()); 
             }
 
             }
@@ -61570,12 +61570,12 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     protected DFA86 dfa86 = new DFA86(this);
     protected DFA123 dfa123 = new DFA123(this);
     static final String dfa_1s = "\154\uffff";
-    static final String dfa_2s = "\1\4\73\0\60\uffff";
-    static final String dfa_3s = "\1\u009f\73\0\60\uffff";
-    static final String dfa_4s = "\74\uffff\1\2\56\uffff\1\1";
-    static final String dfa_5s = "\1\uffff\1\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\54\1\55\1\56\1\57\1\60\1\61\1\62\1\63\1\64\1\65\1\66\1\67\1\70\1\71\1\72\60\uffff}>";
+    static final String dfa_2s = "\1\4\103\0\50\uffff";
+    static final String dfa_3s = "\1\u009f\103\0\50\uffff";
+    static final String dfa_4s = "\104\uffff\1\2\46\uffff\1\1";
+    static final String dfa_5s = "\1\uffff\1\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\54\1\55\1\56\1\57\1\60\1\61\1\62\1\63\1\64\1\65\1\66\1\67\1\70\1\71\1\72\1\73\1\74\1\75\1\76\1\77\1\100\1\101\1\102\50\uffff}>";
     static final String[] dfa_6s = {
-            "\1\74\1\72\4\74\4\uffff\1\71\1\74\1\6\1\73\1\74\1\uffff\1\74\1\uffff\1\1\1\2\1\3\1\4\1\5\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\54\1\55\1\56\1\57\1\60\1\61\1\62\1\63\1\64\1\65\1\66\1\67\1\70\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\7\1\10\1\14\1\15\1\16\1\17\1\11\1\12\1\13\5\uffff\31\74\7\uffff\1\74\2\uffff\2\74\5\uffff\1\74\2\uffff\1\74\3\uffff\1\74\1\uffff\1\74\13\uffff\2\74\1\uffff\4\74\7\uffff\1\74",
+            "\1\1\1\77\1\2\1\3\1\4\1\5\4\uffff\1\76\1\104\1\13\1\100\1\104\1\uffff\1\104\1\uffff\1\6\1\7\1\10\1\11\1\12\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\54\1\55\1\56\1\57\1\60\1\61\1\62\1\63\1\64\1\65\1\66\1\67\1\70\1\71\1\72\1\73\1\74\1\75\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\14\1\15\1\21\1\22\1\23\1\24\1\16\1\17\1\20\5\uffff\31\104\7\uffff\1\104\2\uffff\2\104\5\uffff\1\102\2\uffff\1\101\3\uffff\1\104\1\uffff\1\103\13\uffff\2\104\1\uffff\4\104\7\uffff\1\104",
             "\1\uffff",
             "\1\uffff",
             "\1\uffff",
@@ -61635,14 +61635,14 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             "\1\uffff",
             "\1\uffff",
             "\1\uffff",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
             "",
             "",
             "",
@@ -61721,7 +61721,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_1);
@@ -61736,7 +61736,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_2);
@@ -61751,7 +61751,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_3);
@@ -61766,7 +61766,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_4);
@@ -61781,7 +61781,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_5);
@@ -61796,7 +61796,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_6);
@@ -61811,7 +61811,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_7);
@@ -61826,7 +61826,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_8);
@@ -61841,7 +61841,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_9);
@@ -61856,7 +61856,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_10);
@@ -61871,7 +61871,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_11);
@@ -61886,7 +61886,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_12);
@@ -61901,7 +61901,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_13);
@@ -61916,7 +61916,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_14);
@@ -61931,7 +61931,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_15);
@@ -61946,7 +61946,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_16);
@@ -61961,7 +61961,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_17);
@@ -61976,7 +61976,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_18);
@@ -61991,7 +61991,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_19);
@@ -62006,7 +62006,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_20);
@@ -62021,7 +62021,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_21);
@@ -62036,7 +62036,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_22);
@@ -62051,7 +62051,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_23);
@@ -62066,7 +62066,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_24);
@@ -62081,7 +62081,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_25);
@@ -62096,7 +62096,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_26);
@@ -62111,7 +62111,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_27);
@@ -62126,7 +62126,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_28);
@@ -62141,7 +62141,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_29);
@@ -62156,7 +62156,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_30);
@@ -62171,7 +62171,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_31);
@@ -62186,7 +62186,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_32);
@@ -62201,7 +62201,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_33);
@@ -62216,7 +62216,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_34);
@@ -62231,7 +62231,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_35);
@@ -62246,7 +62246,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_36);
@@ -62261,7 +62261,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_37);
@@ -62276,7 +62276,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_38);
@@ -62291,7 +62291,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_39);
@@ -62306,7 +62306,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_40);
@@ -62321,7 +62321,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_41);
@@ -62336,7 +62336,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_42);
@@ -62351,7 +62351,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_43);
@@ -62366,7 +62366,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_44);
@@ -62381,7 +62381,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_45);
@@ -62396,7 +62396,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_46);
@@ -62411,7 +62411,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_47);
@@ -62426,7 +62426,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_48);
@@ -62441,7 +62441,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_49);
@@ -62456,7 +62456,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_50);
@@ -62471,7 +62471,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_51);
@@ -62486,7 +62486,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_52);
@@ -62501,7 +62501,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_53);
@@ -62516,7 +62516,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_54);
@@ -62531,7 +62531,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_55);
@@ -62546,7 +62546,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_56);
@@ -62561,7 +62561,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_57);
@@ -62576,7 +62576,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_58);
@@ -62591,10 +62591,130 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                         s = -1;
                         if ( (synpred13_InternalGaml()) ) {s = 107;}
 
-                        else if ( (true) ) {s = 60;}
+                        else if ( (true) ) {s = 68;}
 
                          
                         input.seek(index10_59);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 59 : 
+                        int LA10_60 = input.LA(1);
+
+                         
+                        int index10_60 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_60);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 60 : 
+                        int LA10_61 = input.LA(1);
+
+                         
+                        int index10_61 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_61);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 61 : 
+                        int LA10_62 = input.LA(1);
+
+                         
+                        int index10_62 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_62);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 62 : 
+                        int LA10_63 = input.LA(1);
+
+                         
+                        int index10_63 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_63);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 63 : 
+                        int LA10_64 = input.LA(1);
+
+                         
+                        int index10_64 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_64);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 64 : 
+                        int LA10_65 = input.LA(1);
+
+                         
+                        int index10_65 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_65);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 65 : 
+                        int LA10_66 = input.LA(1);
+
+                         
+                        int index10_66 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_66);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 66 : 
+                        int LA10_67 = input.LA(1);
+
+                         
+                        int index10_67 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_InternalGaml()) ) {s = 107;}
+
+                        else if ( (true) ) {s = 68;}
+
+                         
+                        input.seek(index10_67);
                         if ( s>=0 ) return s;
                         break;
             }

@@ -59,7 +59,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="S_Species" eSuperTypes="#//Statement #//S_Declaration #//TypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Experiment" eSuperTypes="#//Statement #//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//VariableRef"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionList"
         containment="true"/>

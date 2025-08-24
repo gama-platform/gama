@@ -28,12 +28,12 @@ public interface S_Do extends Statement
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Target</em>' containment reference.
-   * @see #setTarget(VariableRef)
+   * @see #setTarget(Expression)
    * @see gaml.compiler.gaml.GamlPackage#getS_Do_Target()
    * @model containment="true"
    * @generated
    */
-  VariableRef getTarget();
+  Expression getTarget();
 
   /**
    * Sets the value of the '{@link gaml.compiler.gaml.S_Do#getTarget <em>Target</em>}' containment reference.
@@ -43,7 +43,7 @@ public interface S_Do extends Statement
    * @see #getTarget()
    * @generated
    */
-  void setTarget(VariableRef value);
+  void setTarget(Expression value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
