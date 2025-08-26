@@ -21,6 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.ExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -33,6 +34,7 @@ import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.DoStatement.DoSerializer;
@@ -196,10 +198,10 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	Arguments args;
 
 	/** The target species. */
-	final String targetSpecies;
+	String targetSpecies;
 
 	/** The function. */
-	final IExpression function, returns;
+	final IExpression function, returns, target;
 
 	/** The Constant DO_FACETS. */
 	public static final Set<String> DO_FACETS = DescriptionFactory.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
@@ -212,11 +214,17 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
+		target = getFacet(IKeyword.TARGET);
+		targetSpecies = null;
 		if (((DoDescription) desc).isSuperInvocation()) {
 			final SpeciesDescription s = desc.getSpeciesContext().getParent();
 			targetSpecies = s.getName();
-		} else {
-			targetSpecies = null;
+		} else if (target != null) {
+			IType t = target.getGamlType();
+			if (t.isAgentType()) {
+				SpeciesDescription sd = t.getDenotedSpecies();
+				if (sd != null) { targetSpecies = sd.getName(); }
+			}
 		}
 		function = getFacet(IKeyword.INTERNAL_FUNCTION);
 		returns = getFacet(IKeyword.RETURNS);
@@ -260,8 +268,16 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		final IStatement.WithArgs executer = species.getAction(name);
 		Object result = null;
 		if (executer != null) {
-			final ExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
-			result = er.getValue();
+			if (target != null) {
+				IAgent agent = Cast.asAgent(scope, target.value(scope));
+				if (agent == null)
+					throw GamaRuntimeException.error("The target of an action call must be an agent", scope);
+				final ExecutionResult er = scope.execute(executer, agent, getRuntimeArgs(scope));
+				result = er.getValue();
+			} else {
+				final ExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
+				result = er.getValue();
+			}
 		} else if (function != null) {
 			result = function.value(scope);
 		} else
