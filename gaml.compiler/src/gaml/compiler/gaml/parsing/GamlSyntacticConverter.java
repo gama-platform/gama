@@ -85,6 +85,7 @@ import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionArguments;
+import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
@@ -97,6 +98,7 @@ import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Pragma;
+import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Definition;
@@ -290,26 +292,24 @@ public class GamlSyntacticConverter {
 				}
 				convertArgs(def.getArgs(), elt, errors);
 			}
-		} else if (stm instanceof S_Do) {
-			processDo(stm, errors, elt);
-		} else if (stm instanceof S_If) {
-			// If the statement is "if", we convert its potential "else" part
-			// and put it as a child
-			// of the syntactic element (as GAML expects it)
-			convElse((S_If) stm, elt, errors);
-		} else if (stm instanceof S_Action) {
-			// Conversion of "action ID (type1 ID1 <- V1, type2 ID2)" to
-			// "action ID {arg ID1 type: type1 default: V1; arg ID2 type:
-			// type2}"
-			convertArgs(((S_Action) stm).getArgs(), elt, errors);
-		} else if (stm instanceof S_Reflex ref) {
-			if (ref.getExpr() != null) { addFacet(elt, WHEN, convExpr(ref.getExpr(), errors), errors); }
-		} else if (stm instanceof S_Solve) {
-			final Expression e = stm.getExpr();
-			addFacet(elt, EQUATION, convertToLabel(e, EGaml.getInstance().getKeyOf(e)), errors);
-		} else if (stm instanceof S_Try) {
-			convCatch((S_Try) stm, elt, errors);
-		} else if (IKeyword.PARAMETER.equals(keyword)) { processParameter(stm, errors, elt); }
+		} else {
+			switch (stm) {
+				case S_Do sdo -> processDo(sdo, errors, elt);
+				case S_If sif -> convElse(sif, elt, errors);
+				case S_Action sa -> convertArgs(sa.getArgs(), elt, errors);
+				case S_Reflex ref -> {
+					if (ref.getExpr() != null) { addFacet(elt, WHEN, convExpr(ref.getExpr(), errors), errors); }
+				}
+				case S_Solve ss -> {
+					final Expression e = ss.getExpr();
+					addFacet(elt, EQUATION, convertToLabel(e, EGaml.getInstance().getKeyOf(e)), errors);
+				}
+				case S_Try st -> convCatch(st, elt, errors);
+				default -> {
+					if (IKeyword.PARAMETER.equals(keyword)) { processParameter(stm, errors, elt); }
+				}
+			}
+		}
 
 		// We apply some conversions to the facets expressed in the statement
 		convertFacets(stm, keyword, elt, errors);
@@ -377,15 +377,34 @@ public class GamlSyntacticConverter {
 	 * @param elt
 	 *            the elt
 	 */
-	private void processDo(final Statement stm, final Set<Diagnostic> errors, final ISyntacticElement elt) {
+	private void processDo(final S_Do stm, final Set<Diagnostic> errors, final ISyntacticElement elt) {
 		// Translation of "stm ID (ID1: V1, ID2:V2)" to "stm ID with:(ID1:
 		// V1, ID2:V2)"
-		final Expression e = stm.getExpr();
+		Expression e = stm.getExpr();
 		addFacet(elt, ACTION, convertToLabel(e, EGaml.getInstance().getKeyOf(e)), errors);
 		// Systematically adds the internal function (see #2915) in order to have the right documentation
 		// TODO AD: verify that 'ACTION' is still necessary in that case
-		addFacet(elt, INTERNAL_FUNCTION, convExpr(e, errors), errors);
-		if (e instanceof Function f) {
+		Expression target = stm.getTarget();
+		if (target != null) {
+			if (target instanceof ReservedLiteral && IKeyword.SELF.equals(EGaml.getInstance().getKeyOf(target))) {
+				elt.setKeyword(IKeyword.DO);
+			} else if (target instanceof ReservedLiteral
+					&& IKeyword.SUPER.equals(EGaml.getInstance().getKeyOf(target))) {
+				elt.setKeyword(IKeyword.INVOKE);
+			} else {
+				addFacet(elt, IKeyword.TARGET, convExpr(target, errors), errors);
+			}
+		}
+		if (e instanceof ActionRef && stm.getRight() instanceof ExpressionList list) {
+			Function f = EGaml.getInstance().getFactory().createFunction();
+			f.setLeft(e);
+			f.setRight(list);
+			e = f;
+		}
+		if (target == null) { addFacet(elt, INTERNAL_FUNCTION, convExpr(e, errors), errors); }
+		if (stm.getRight() instanceof ExpressionList list) {
+			addFacet(elt, WITH, convExpr(list, errors), errors);
+		} else if (e instanceof Function f) {
 			final ExpressionList list = f.getRight();
 			if (list != null) { addFacet(elt, WITH, convExpr(list, errors), errors); }
 

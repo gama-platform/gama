@@ -158,10 +158,39 @@ public class DoDescription extends StatementWithChildrenDescription {
 		if (action == null) {
 			final String actionName = getLitteral(ACTION);
 			if (actionName == null) return null;
-			declarationContext = (TypeDescription) getDescriptionDeclaringAction(actionName, isSuperInvocation());
-			if (declarationContext != null) { action = declarationContext.getAction(actionName); }
+			TypeDescription context = (TypeDescription) getDescriptionDeclaringAction(actionName, isSuperInvocation());
+			if (context != null) { action = context.getAction(actionName); }
 		}
 		return action;
+	}
+
+	/**
+	 * Gets the description that declares an action with the given name. Searches first if a target is given, otherwise
+	 * searches in the enclosing description.
+	 *
+	 * @param aName
+	 *            the action name to find
+	 * @param superInvocation
+	 *            whether to check super types
+	 * @return the description that declares the action, or null if not found
+	 */
+	@Override
+	public IDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
+		if (declarationContext == null) {
+			final IExpression target = getFacetExpr(TARGET);
+			if (target != null) {
+				final IType<?> t = target.getGamlType();
+				if (t.isAgentType()) { declarationContext = t.getSpecies(); }
+				if (declarationContext == null) {
+					error("The target of an action call must be an agent", IGamlIssue.WRONG_TYPE);
+					return null;
+				}
+			} else {
+				declarationContext = (TypeDescription) super.getDescriptionDeclaringAction(aName, superInvocation);
+			}
+
+		}
+		return declarationContext;
 	}
 
 	/**

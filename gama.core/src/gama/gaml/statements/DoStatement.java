@@ -44,6 +44,10 @@ import gama.gaml.types.IType;
  * @todo Description
  *
  */
+
+/**
+ * The Class DoStatement.
+ */
 @symbol (
 		name = { IKeyword.DO, IKeyword.INVOKE, "." },
 		kind = ISymbolKind.SINGLE_STATEMENT,
@@ -78,7 +82,11 @@ import gama.gaml.types.IType;
 						name = IKeyword.INTERNAL_FUNCTION,
 						type = IType.NONE,
 						optional = true,
-						internal = true), },
+						internal = true),
+				@facet (
+						name = IKeyword.TARGET,
+						type = IType.NONE,
+						optional = true), },
 		omissible = IKeyword.ACTION)
 @doc (
 		value = "Allows the agent to execute an action or a primitive (built-in actions available through custom species or skills).",
