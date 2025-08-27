@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * MultiThreadedArduinoReceiver.java, in gama.network, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * MultiThreadedArduinoReceiver.java, in gama.network, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -55,15 +55,15 @@ public class MultiThreadedArduinoReceiver extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println("START OF THE THREAD");
+		DEBUG.LOG("START OF THE THREAD");
 
 		// Successfully created Server Socket. Now wait for connections.
 		while (!closed) {
-			System.out.println("enter while");
+			DEBUG.LOG("enter while");
 
 			try {
 				if (myAgent.dead()) { this.interrupt(); }
-				// System.out.println("not dead");
+				// DEBUG.LOG("not dead");
 
 				final String sentence = arduino.serialRead(1);
 
@@ -80,7 +80,7 @@ public class MultiThreadedArduinoReceiver extends Thread {
 				// }
 				if (myAgent.dead()) { this.interrupt(); }
 
-				// System.out.println("sentence = " + sentence);
+				// DEBUG.LOG("sentence = " + sentence);
 
 				GamaMessage msg = new GamaMessage(myAgent.getScope(), "Arduino", myAgent.getName(), sentence);
 
@@ -88,21 +88,21 @@ public class MultiThreadedArduinoReceiver extends Thread {
 				mailbox.add(msg);
 
 				// msgs.addValue(myAgent.getScope(), msg);
-				// System.out.println("sentence = " + msg.getPlainContents());
+				// DEBUG.LOG("sentence = " + msg.getPlainContents());
 
 				// myAgent.setAttribute("messages" + myAgent, msgs);
-				// System.out.println("not dead");
+				// DEBUG.LOG("not dead");
 
 			} catch (final Exception ioe) {
 				closed = true;
 				this.interrupt();
 				ioe.printStackTrace();
 			}
-			// System.out.println("avt wait");
+			// DEBUG.LOG("avt wait");
 			THREADS.WAIT(timer);
-			// System.out.println("WAIT off!");
+			// DEBUG.LOG("WAIT off!");
 		}
-		// System.out.println("stop stop off!");
+		// DEBUG.LOG("stop stop off!");
 
 	}
 }

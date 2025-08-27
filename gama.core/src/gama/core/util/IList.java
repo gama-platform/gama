@@ -9,6 +9,9 @@
  ********************************************************************************************************/
 package gama.core.util;
 
+import static gama.gaml.types.GamaType.actualTypeOf;
+import static gama.gaml.types.GamaType.findCommonType;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -552,6 +555,18 @@ public interface IList<E>
 	@Override
 	default JsonValue serializeToJson(final Json json) {
 		return json.array(this);
+	}
+
+	/**
+	 * Compute runtime type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		return Types.LIST.of(findCommonType(stream(scope).map(e -> actualTypeOf(scope, e)).toArray(IType.class)));
 	}
 
 }

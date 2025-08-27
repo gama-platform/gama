@@ -91,8 +91,8 @@ public class GlobalVariableExpression extends VariableExpression implements IVar
 	public Object _value(final IScope scope) throws GamaRuntimeException {
 		final String name = getName();
 		// We first try in the 'normal' scope (so that regular global vars are still accessed by agents of micro-models,
-		// see #2238)
-		if (scope.hasAccessToGlobalVar(name)) return scope.getGlobalVarValue(name);
+		// see #2238) 
+		if (scope.hasAccessToGlobalVar(name) && !this.getDefinitionDescription().getModelDescription().isMicroModel()) return scope.getGlobalVarValue(name);
 		final IAgent microAgent = scope.getAgent();
 		if (microAgent != null) {
 			final IScope agentScope = microAgent.getScope();

@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.ui.shared.menus.GamaMenu;
-import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -121,7 +120,7 @@ public class ZoomController {
 				"Zoom out", e -> view.zoomOut(), SWT.RIGHT);
 		tb.sep(SWT.RIGHT);
 		if (view.hasCameras()) {
-			tb.menu(DISPLAY_TOOLBAR_CAMERA, "", "Choose a camera...", trigger -> {
+			tb.menuItem(DISPLAY_TOOLBAR_CAMERA, "", "Choose a camera...", trigger -> {
 				final GamaMenu menu = new GamaMenu() {
 
 					@Override
@@ -137,9 +136,8 @@ public class ZoomController {
 									cameraLocked.setSelection(view.isCameraLocked());
 								}
 
-							}, p.equals(view.getCameraHelper().getCameraName())
-									? GamaIcon.named(DISPLAY_TOOLBAR_CAMERA).image()
-									: GamaIcon.named(IGamaIcons.CAMERA_EMPTY).image());
+							}, p.equals(view.getCameraHelper().getCameraName()) ? (DISPLAY_TOOLBAR_CAMERA)
+									: (IGamaIcons.CAMERA_EMPTY));
 						}
 						sep();
 						action("Copy current camera", new SelectionAdapter() {
@@ -150,7 +148,7 @@ public class ZoomController {
 								WorkbenchHelper.copy(text);
 							}
 
-						}, GamaIcon.named(IGamaIcons.PASTE).image());
+						}, (IGamaIcons.PASTE));
 					}
 
 				};

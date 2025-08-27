@@ -34,7 +34,6 @@ import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.statements.test.TestState;
 import gama.headless.runtime.HeadlessApplication;
-
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
@@ -55,7 +54,7 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 	 * Instantiates a new model library tester.
 	 */
 	private ModelLibraryTester() {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	@Override
@@ -114,11 +113,15 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 		final List<GamlCompilationError> errors = new ArrayList<>();
 		try {
 			final IModel model = builder.compile(p, errors);
-			if (model == null || model.getDescription() == null) return;
+			if (model == null || model.getDescription() == null) {
+				return;
+			}
 			final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 					.filter(e -> model.getExperiment(e).isTest()).toList();
 
-			if (testExpNames.isEmpty()) return;
+			if (testExpNames.isEmpty()) {
+				return;
+			}
 			for (final String expName : testExpNames) {
 				final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 				if (exp != null) {

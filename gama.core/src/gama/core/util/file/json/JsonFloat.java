@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * JsonFloat.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * JsonFloat.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,6 +11,7 @@ package gama.core.util.file.json;
 
 import java.io.IOException;
 
+import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.IScope;
 import gama.gaml.operators.Cast;
 
@@ -63,6 +64,14 @@ class JsonFloat extends JsonValue {
 	 * @date 4 nov. 2023
 	 */
 	public static String formatOrdinate(double x, final int numberOfDigits) {
+		if (Double.isInfinite(x)) {
+			String result = (x > 0 ? "" : "-") + "Infinity";
+			return GamaPreferences.External.JSON_INFINITY.getValue() ? "\"" + result + "\"" : result;
+		}
+		if (Double.isNaN(x)) {
+			String result = "NaN";
+			return GamaPreferences.External.JSON_NAN.getValue() ? "\"" + result + "\"" : result;
+		}
 		double scale = Math.pow(10, numberOfDigits);
 		if (Math.abs(x) >= Math.pow(10, -3) && x < Math.pow(10, 7)) { x = Math.floor(x * scale + 0.5) / scale; }
 		return Double.toString(x);
@@ -151,6 +160,9 @@ class JsonFloat extends JsonValue {
 	 */
 	@Override
 	public double asDouble() {
+		// if (string != null) if (string.contains("Infinity"))
+		// return string.startsWith("-") ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		// else if (string.contains("NaN")) return Double.NaN;
 		return Cast.asFloat(null, string);
 	}
 

@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.gama</groupId>
@@ -10,7 +13,7 @@
 	</parent>
 	<artifactId>gama.product</artifactId>
 	<packaging>eclipse-repository</packaging>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -48,92 +51,135 @@
 								<!--
 								MacOS
 								x64 -->
-								<copy file="./extraresources/Model.icns"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/" />
-								<copy file="./extraresources/Experiment.icns"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/" />
-								<copy file="./extraresources/Info.plist"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/" overwrite="true"/>
 								<copy
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless">
-									<fileset dir="./extraresources/headless/osx" />
+                                    file="./extraresources/Model.icns"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/"
+                                />
+								<copy
+                                    file="./extraresources/Experiment.icns"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/"
+                                />
+								<copy
+                                    file="./extraresources/Info.plist"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/"
+                                    overwrite="true"
+                                />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless"
+                                >
+									<fileset dir="./extraresources/headless/unix" />
 								</copy>
 								<copy
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless/samples">
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless/samples"
+                                >
 									<fileset dir="./extraresources/headless/samples" />
 								</copy>
-								<copy 
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless/configuration">
-									<fileset dir="./target/products/gama.headless.product/macosx/cocoa/x86_64/Eclipse.app/Contents/Eclipse/configuration" />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/headless/configuration"
+                                >
+									<fileset
+                                        dir="./target/products/gama.headless.product/macosx/cocoa/x86_64/Eclipse.app/Contents/Eclipse/configuration"
+                                    />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Eclipse/dropins"/>
+								<mkdir
+                                    dir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Eclipse/dropins"
+                                />
 
 								<!-- aarch64 -->
-								<copy file="./extraresources/Model.icns"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/" />
-								<copy file="./extraresources/Experiment.icns"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/" />
-								<copy file="./extraresources/Info.plist"
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/" overwrite="true"/>
 								<copy
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless">
-									<fileset dir="./extraresources/headless/osx" />
+                                    file="./extraresources/Model.icns"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/"
+                                />
+								<copy
+                                    file="./extraresources/Experiment.icns"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/"
+                                />
+								<copy
+                                    file="./extraresources/Info.plist"
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/"
+                                    overwrite="true"
+                                />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless"
+                                >
+									<fileset dir="./extraresources/headless/unix" />
 								</copy>
 								<copy
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless/samples">
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless/samples"
+                                >
 									<fileset dir="./extraresources/headless/samples" />
 								</copy>
-								<copy 
-									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless/configuration">
-									<fileset dir="./target/products/gama.headless.product/macosx/cocoa/aarch64/Eclipse.app/Contents/Eclipse/configuration" />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/headless/configuration"
+                                >
+									<fileset
+                                        dir="./target/products/gama.headless.product/macosx/cocoa/aarch64/Eclipse.app/Contents/Eclipse/configuration"
+                                    />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Eclipse/dropins"/>
-								
+								<mkdir
+                                    dir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Eclipse/dropins"
+                                />
+
 								<!--
 								Windows
 								-->
 								<copy
-									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless">
-									<fileset
-										dir="./extraresources/headless/windows" />
+                                    todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless"
+                                >
+									<fileset dir="./extraresources/headless/windows" />
 								</copy>
 								<copy
-									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless/samples">
+                                    todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless/samples"
+                                >
 									<fileset dir="./extraresources/headless/samples" />
 								</copy>
-								<copy 
-									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless/configuration">
-									<fileset dir="./target/products/gama.headless.product/win32/win32/x86_64/configuration" />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/win32/win32/x86_64/headless/configuration"
+                                >
+									<fileset
+                                        dir="./target/products/gama.headless.product/win32/win32/x86_64/configuration"
+                                    />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/win32/win32/x86_64/dropins"/>
-								
+								<mkdir
+                                    dir="./target/products/gama.ui.application.product/win32/win32/x86_64/dropins"
+                                />
+
 								<!--
 								Linux
 								-->
-								<copy file="./extraresources/launcher/icon.icns"
-									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/" />
 								<copy
-									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless">
+                                    file="./extraresources/launcher/icon.icns"
+                                    todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/"
+                                />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless"
+                                >
 									<fileset dir="./extraresources/headless/unix" />
 								</copy>
 								<copy
-									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless/samples">
+                                    todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless/samples"
+                                >
 									<fileset dir="./extraresources/headless/samples" />
 								</copy>
-								<copy 
-									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless/configuration">
-									<fileset dir="./target/products/gama.headless.product/linux/gtk/x86_64/configuration" />
+								<copy
+                                    todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/headless/configuration"
+                                >
+									<fileset
+                                        dir="./target/products/gama.headless.product/linux/gtk/x86_64/configuration"
+                                    />
 								</copy>
-								<mkdir dir="./target/products/gama.ui.application.product/linux/gtk/x86_64/dropins"/>
+								<mkdir
+                                    dir="./target/products/gama.ui.application.product/linux/gtk/x86_64/dropins"
+                                />
 			                </target>
 						</configuration>
 
 					</execution>
 				</executions>
 			</plugin>
-			<!-- See here for resolution and usage of fix-info-plist-maven-plugin 
-				https://bugs.eclipse.org/bugs/show_bug.cgi?id=339526 http://stackoverflow.com/questions/24427985/edit-the-info-plist-after-eclipse-product-build 
-				, another solution could be to rewrite the PLIST file by a new PLIST using 
+			<!-- See here for resolution and usage of fix-info-plist-maven-plugin
+				https://bugs.eclipse.org/bugs/show_bug.cgi?id=339526 http://stackoverflow.com/questions/24427985/edit-the-info-plist-after-eclipse-product-build
+				, another solution could be to rewrite the PLIST file by a new PLIST using
 				maven-antrun-plugin -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -146,8 +192,8 @@
 							<goal>materialize-products</goal>
 						</goals>
 					</execution>
-					<!-- materialize and archive products need to be distant in mavenlifecycle, 
-						the only way for our ant-maven run to inject and modify files before packaging 
+					<!-- materialize and archive products need to be distant in mavenlifecycle,
+						the only way for our ant-maven run to inject and modify files before packaging
 						by tycho -->
 					<execution>
 						<id>archive-products</id>
@@ -158,7 +204,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<!-- Selection of products to be installed and configuration per product, 
+					<!-- Selection of products to be installed and configuration per product,
 						see http://www.eclipse.org/tycho/sitedocs/tycho-p2/tycho-p2-director-plugin/materialize-products-mojo.html -->
 					<!-- If the project contains more than one product file ... -->
 					<products>
@@ -181,8 +227,8 @@
 				</configuration>
 			</plugin>
 
-			<!-- Workaround: Use an existing config.ini file (caused by the problem 
-				that tycho will always generate a default one) , copying /target/../ to /target/configuration/ 
+			<!-- Workaround: Use an existing config.ini file (caused by the problem
+				that tycho will always generate a default one) , copying /target/../ to /target/configuration/
 				... -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>

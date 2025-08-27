@@ -73,21 +73,6 @@ jobs:
           java-version: "21"
           java-package: jdk
 
-      - name: Update Maven to 3.9.X
-        run: |
-          # Needed for Tycho 4.X.X and support for JDK 23
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
-          tar -xvf apache-maven-3.9.9-bin.tar.gz
-          mv apache-maven-3.9.9 /opt/
-          M2_HOME='/opt/apache-maven-3.9.9'
-          PATH="$M2_HOME/bin:$PATH"
-          export PATH
-          # Overwrite PATH with updated maven install
-          echo $PATH > $GITHUB_PATH
-          echo "=== Check if well installed ==="
-          echo "$ mvn -version"
-          mvn -version
-
       - name: Set custom runner parameters
         run: |
           echo "MAVEN_OPTS='-Dorg.slf4j.simpleLogger.defaultLogLevel=error -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx15g'" >> ~/.mavenrc
@@ -175,10 +160,6 @@ jobs:
           sed -i "s/<username>GAMA_PASS/<username>$GAMA_SERVER_USERNAME/g" $GITHUB_WORKSPACE/travis/settings.xml
           sed -i "s/<password>GAMA_PASS/<password>$GAMA_SERVER_PASSWORD/g" $GITHUB_WORKSPACE/travis/settings.xml
           bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
-          echo "Publishing m2 repository"
-          cd ~/.m2/repository
-          rm -fr org/gama/gama.product org/gama/gama.p2site .cache
-          rsync -avPq -e ssh . $GAMA_SERVER_USERNAME@152.228.133.219:/var/www/gama_updates/0.0.0
 
       - name: Export linux release
         uses: actions/upload-artifact@v4

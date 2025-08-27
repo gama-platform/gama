@@ -19,7 +19,6 @@ import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
 import static gama.core.runtime.server.ISocketCommand.SYNTAX;
 import static gama.core.runtime.server.MessageType.CommandExecutedSuccessfully;
-import static gama.core.runtime.server.MessageType.GamaServerError;
 import static gama.core.runtime.server.MessageType.MalformedRequest;
 import static gama.core.runtime.server.MessageType.UnableToExecuteRequest;
 
@@ -201,7 +200,7 @@ public class DefaultServerCommands {
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(GamaServerError, e, map, false);
+				return new CommandResponse(MessageType.RuntimeError, e, map, false);
 			}
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
@@ -336,7 +335,7 @@ public class DefaultServerCommands {
 		}
 		if (res == null || res.length() == 0 || res.startsWith("> Error: "))
 			return new CommandResponse(UnableToExecuteRequest, res, map, false);
-		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
+		return new CommandResponse(CommandExecutedSuccessfully, res, map, true);
 	}
 
 	/**
@@ -360,8 +359,11 @@ public class DefaultServerCommands {
 		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
-		List<String> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, errors, map, false);
+		if (entered.isBlank()) {
+			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
+		}
+		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
+		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
 		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
 	}

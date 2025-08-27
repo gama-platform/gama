@@ -29,21 +29,6 @@ jobs:
         run: |
           echo "MAVEN_OPTS='-Xmx15g'" >> ~/.mavenrc
 
-      - name: Update Maven to 3.9.X
-        run: |
-          # Needed for Tycho 4.X.X and support for JDK 21
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
-          tar -xvf apache-maven-3.9.9-bin.tar.gz
-          mv apache-maven-3.9.9 /opt/
-          M2_HOME='/opt/apache-maven-3.9.9'
-          PATH="$M2_HOME/bin:$PATH"
-          export PATH
-          # Overwrite PATH with updated maven install
-          echo $PATH > $GITHUB_PATH
-          echo "=== Check if well installed ==="
-          echo "$ mvn -version"
-          mvn -version
-
       - name: Compiling GAMA
         run: bash travis/build.sh -B -T 4
 
@@ -59,10 +44,13 @@ jobs:
           git config --global user.name "GAMA Bot"
           cd $GITHUB_WORKSPACE/../gama.wiki
           git remote set-url origin https://gama-bot:$BOT_TOKEN@github.com/gama-platform/gama.wiki.git
-          git status
-          git add -A
-          git commit -m "Regenerate operators artifacts on wiki  - $(date)"
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "Regenerate operators artifacts on wiki  - $(date)"
+            git push
+          else
+            echo "No changes to commit"
+          fi
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 

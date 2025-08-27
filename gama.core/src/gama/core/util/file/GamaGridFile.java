@@ -349,7 +349,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					} else if (nbRows == null && line.contains("nrows")) {
 						nbRows = intVal(line);
 					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-						noDataD = doubleVal(line);
+						
+						noDataD = line.contains("nan")? Double.NaN :doubleVal(line);
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
@@ -394,7 +395,18 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
-						ascData.set(scope, i, j, Double.valueOf(l[i]));
+						if (noDataD.isNaN()) {
+							Double v = 0.0;
+							try {
+								v = Double.valueOf(l[i]);
+							} catch (Exception e) {
+								v = Double.NaN; 
+							}
+							ascData.set(scope, i, j, v);
+						} else {
+							ascData.set(scope, i, j, Double.valueOf(l[i]));
+						}
+ 						
 
 					}
 					j++;
@@ -618,24 +630,24 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					for (int j = 0; j < vd.length; j++) { records.bands.get(j)[i] = vd[j]; }
 
 				}
-				if (createGeometries) {
-					// Building geometries
-					for (int i = 0, n = numRows * numCols; i < n; i++) {
 
-						setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
-						final GamaPoint p = new GamaPoint(records.x[i], records.y[i]);
-						GamaShape rect = (GamaShape) GamaGeometryType.buildRectangle(cellWidth, cellHeight, p);
-						if (gis == null) {
-							rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
-						} else {
-							rect = GamaShapeFactory.createFrom(gis.transform(rect.getInnerGeometry()));
-						}
-						IList<Double> bands = GamaListFactory.create(scope, Types.FLOAT);
-						records.fill(i, bands);
-						rect.setAttribute("grid_value", bands.get(0));
-						rect.setAttribute("bands", bands);
-						getBuffer().add(rect);
+			}
+			if (getBuffer() == null && createGeometries) {
+				// Building geometries
+				for (int i = 0, n = numRows * numCols; i < n; i++) {
+					setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
+					final GamaPoint p = new GamaPoint(records.x[i], records.y[i]);
+					GamaShape rect = (GamaShape) GamaGeometryType.buildRectangle(cellWidth, cellHeight, p);
+					if (gis == null) {
+						rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
+					} else {
+						rect = GamaShapeFactory.createFrom(gis.transform(rect.getInnerGeometry()));
 					}
+					IList<Double> bands = GamaListFactory.create(scope, Types.FLOAT);
+					records.fill(i, bands);
+					rect.setAttribute("grid_value", bands.get(0));
+					rect.setAttribute("bands", bands);
+					getBuffer().add(rect);
 				}
 			}
 		} catch (final Exception e) {

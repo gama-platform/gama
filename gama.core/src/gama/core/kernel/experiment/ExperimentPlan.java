@@ -26,10 +26,9 @@ import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.batch.BatchOutput;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.ExperimentPlan.BatchValidator;
@@ -230,7 +229,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 										IGamlIssue.MISSING_FACET);
 							} else {
 								int levels = Integer.parseInt(tmpDesc.getLitteral(Exploration.NB_LEVELS));
-								System.out.println(levels);
 								if (levels <= 0) { tmpDesc.error("Levels should be positive"); }
 							}
 							if (!tmpDesc.hasFacet(Exploration.SAMPLE_SIZE)) {
@@ -238,7 +236,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 										IGamlIssue.MISSING_FACET);
 							} else {
 								int sample = Integer.parseInt(tmpDesc.getLitteral(Exploration.SAMPLE_SIZE));
-								System.out.println(sample);
 								if (sample % 2 != 0) { tmpDesc.error("The sample size should be even"); }
 
 							}
@@ -248,10 +245,11 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 								tmpDesc.warning("Sample size not defined, will be 132 by default",
 										IGamlIssue.MISSING_FACET);
 							} else {
-								// int sample= Integer.valueOf(tmpDesc.getLitteral(Exploration.SAMPLE_SIZE));
+								// int sample=
+								// Integer.valueOf(tmpDesc.getLitteral(Exploration.SAMPLE_SIZE));
 								/*
-								 * System.out.println(sample); if(!((sample & (sample-1)) ==0)) {
-								 * tmpDesc.error("The sample size should be a power of 2"); }
+								 * if(!((sample & (sample-1)) ==0)) { tmpDesc.
+								 * error("The sample size should be a power of 2"); }
 								 */
 
 							}
@@ -410,21 +408,25 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 				add(agent);
 				scope.push(agent);
 				if (!empty) { inits = initialValues.get(i); }
-				// List of the names of initialized variables. Those that do not belong to the experiment will be passed
+				// List of the names of initialized variables. Those that do not
+				// belong to the experiment will be passed
 				// to the simulation (see #3198)
 				final List<String> names = new ArrayList(inits.keySet());
 				for (final IVariable var : orderedVars) {
 					String s = var.getName();
-					final Object initGet =
-							empty /* || !allowVarInitToBeOverridenByExternalInit(var) */ ? null : inits.get(s);
+					final Object initGet = empty/*
+												 * || !allowVarInitToBeOverridenByExternalInit(var)
+												 */ ? null : inits.get(s);
 					var.initializeWith(scope, agent, initGet);
 					names.remove(s);
 				}
-				// Trick to initialize the simulation variables (and not only the experiment's variables)
+				// Trick to initialize the simulation variables (and not only
+				// the experiment's variables)
 				// See discussion in #3198
 				for (final String s : names) {
-					final Object initGet =
-							empty /* || !allowVarInitToBeOverridenByExternalInit(var) */ ? null : inits.get(s);
+					final Object initGet = empty/*
+												 * || !allowVarInitToBeOverridenByExternalInit(var)
+												 */ ? null : inits.get(s);
 					agent.getScope().setAgentVarValue(agent, s, initGet);
 				}
 				if (sequence != null && !sequence.isEmpty()) { scope.execute(sequence, agent, null); }
@@ -474,7 +476,8 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 			exploration = new Exploration(null);
 		}
 
-		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) { setHeadless(true); }
+		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
+		// setHeadless(true); }
 		final IExpression expr = getFacet(IKeyword.KEEP_SEED);
 		if (expr != null && expr.isConst()) {
 			keepSeed = Cast.asBool(myScope, expr.value(myScope));
@@ -624,7 +627,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		super.setChildren(children);
 
-		BatchOutput fileOutputDescription = null;
 		LayoutStatement layout = null;
 		for (final ISymbol s : children) {
 			switch (s) {
@@ -641,9 +643,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 					break;
 				case IExploration ie:
 					exploration = ie;
-					break;
-				case BatchOutput bo:
-					fileOutputDescription = bo;
 					break;
 				case SimulationOutputManager som: {
 					if (originalSimulationOutputs != null) {
@@ -689,26 +688,9 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 				experimentOutputs.setLayout(originalSimulationOutputs.getLayout());
 			}
 		}
-		if (fileOutputDescription != null) { createOutput(fileOutputDescription); }
 		displayables.addAll(getUserCommands());
 	}
 
-	/**
-	 * Creates the output.
-	 *
-	 * @param output
-	 *            the output
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	private void createOutput(final BatchOutput output) throws GamaRuntimeException {
-		// TODO revoir tout ceci. Devrait plut�t �tre une commande
-		if (output == null) return;
-		IExpression data = output.getFacet(IKeyword.DATA);
-		if (data == null) { data = exploration.getOutputs(); }
-		final String dataString = data == null ? "time" : data.serializeToGaml(false);
-		// log = new FileOutput(output.getLiteral(IKeyword.TO), dataString, new ArrayList(parameters.keySet()), this);
-	}
 
 	/**
 	 * Open.
@@ -720,9 +702,10 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 		createAgent(seed);
 
-		// We add the agent as soon as possible so as to make it possible to evaluate variables in the opening of the
+		// We add the agent as soon as possible so as to make it possible to
+		// evaluate variables in the opening of the
 		// experiment
-		// Make sure that the attributes in experiment are inited (see #3842)
+		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
 		prepareGui();
@@ -732,26 +715,9 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		// showParameters();
 
 		if (isBatch()) {
-			myScope.getGui().getStatus().informStatus(
-					isTest() ? "Tests ready. Click run to begin." : " Batch ready. Click run to begin.",
-					StatusMessage.SIMULATION_ICON);
+			myScope.getGui().getStatus().informStatus(" Batch ready. Click run to begin.",
+					IStatusMessage.SIMULATION_ICON);
 			GAMA.updateExperimentState(this);
-
-		}
-
-	}
-
-	/**
-	 * Show parameters.
-	 */
-	private void showParameters() {
-		final ExperimentOutputManager manager = (ExperimentOutputManager) agent.getOutputManager();
-		Symbol layout = manager.getLayout() == null ? manager : manager.getLayout();
-		final Boolean showParameters = layout.getFacetValue(myScope, "parameters", null);
-		if (showParameters != null && !showParameters) {
-			myScope.getGui().hideParameters();
-		} else {
-			myScope.getGui().updateParameters();
 		}
 
 	}
@@ -760,6 +726,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 * Prepare gui.
 	 */
 	void prepareGui() {
+		if (isTest()) return;
 		final ExperimentOutputManager manager = (ExperimentOutputManager) agent.getOutputManager();
 		Symbol layout = manager.getLayout() == null ? manager : manager.getLayout();
 		final Boolean keepTabs = layout.getFacetValue(myScope, "tabs", true);
@@ -800,6 +767,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 			reloading = true;
 			agent.dispose();
+			agent = null;
 		} finally {
 			reloading = false;
 		}
@@ -1161,7 +1129,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	}
 
 	/**
-	 * Sets the parameter values.
+	 * Sets the parameter values. If other parameters outside of that list exist, they won't be reinitialized.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param p
@@ -1171,6 +1139,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	@Override
 	public void setParameterValues(final IList p) {
 		if (p != null) {
+			var scope = getExperimentScope();
 			for (var param : p.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") IMap<String, Object> m = (IMap<String, Object>) param;
 				String type = m.get("type") != null ? m.get("type").toString() : "";
@@ -1180,13 +1149,18 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 
 				final IParameter.Batch b = getParameterByTitle(m.get("name").toString());
 				if (b != null) {
-					setParameterValueByTitle(getExperimentScope(), m.get("name").toString(), v);
+					setParameterValueByTitle(scope, m.get("name").toString(), v);
 				} else if (getParameter(m.get("name").toString()) != null) {
-					setParameterValue(getExperimentScope(), m.get("name").toString(), v);
+					setParameterValue(scope, m.get("name").toString(), v);
 				}
-
 			}
 		}
+	}
+	
+	
+	@Override
+	public void refreshAllParameters() {
+		GAMA.getGui().updateParameters(true);
 	}
 
 }

@@ -18,7 +18,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -43,6 +42,7 @@ import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.Selector;
 
 /**
  * The Class AbstractEditor.
@@ -50,7 +50,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * @param <T>
  *            the generic type
  */
-public abstract class AbstractEditor<T> implements SelectionListener, ModifyListener, IParameterEditor<T> {
+public abstract class AbstractEditor<T> implements Selector, ModifyListener, IParameterEditor<T> {
 
 	/** The order. */
 	private static int ORDER;
@@ -218,7 +218,8 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 			Object result;
 			if (getScope() != null /* && agent == null */ && retrieveVarValue
 					|| agent.getSpecies().hasVar(param.getName())) {
-				// We are in a case where this is an experiment/simulation parameter and we want to retrieve the "deep"
+				// We are in a case where this is an experiment/simulation
+				// parameter and we want to retrieve the "deep"
 				// value of it
 				result = getScope().getAgentVarValue(getAgent(), param.getName());
 			} else {
@@ -299,7 +300,6 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 		// Create and initialize the toolbar associated with the value editor
 		editorToolbar = createEditorToolbar();
 		internalModification = false;
-		parent.requestLayout();
 	}
 
 	/**
@@ -344,7 +344,8 @@ public abstract class AbstractEditor<T> implements SelectionListener, ModifyList
 	 * @return the editor control foreground
 	 */
 	Color getEditorControlForeground() {
-		return GamaColors.getTextColorForBackground(getEditorControlBackground()).color(); // by default
+		return GamaColors.getTextColorForBackground(getEditorControlBackground()).color(); // by
+		// default
 	}
 
 	/**

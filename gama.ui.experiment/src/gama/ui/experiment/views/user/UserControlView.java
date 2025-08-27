@@ -17,8 +17,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -100,7 +98,7 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 	@Override
 	public void ownCreatePartControl(final Composite parent) {
 		// parent.setBackground(IGamaColors.WHITE.color());
-		if (scope == null) return;
+		if (scope == null) { return; }
 		inspectItem.setEnabled(true);
 		continueItem.setEnabled(true);
 		setPartName(
@@ -132,15 +130,10 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 				b.setEnabled(c.isEnabled(scope));
 				final GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, true, nbCol, nbLines);
 				b.setLayoutData(gd);
-				b.addSelectionListener(new SelectionAdapter() {
-
-					@Override
-					public void widgetSelected(final SelectionEvent e) {
-						scope.execute(c);
-						GAMA.getExperiment().refreshAllOutputs();
-						if (c.isContinue(scope)) { doContinue(); }
-					}
-
+				b.setSelectionListener(e -> {
+					scope.execute(c);
+					GAMA.getExperiment().refreshAllOutputs();
+					if (c.isContinue(scope)) { doContinue(); }
 				});
 				for (final UserInputStatement i : inputs) {
 					scope.addVarWithValue(i.getTempVarName(), i.value(scope));
@@ -208,6 +201,15 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 	@Override
 	protected boolean needsOutput() {
 		return false;
+	}
+
+	@Override
+	public void setFocus() {
+		if (getParentComposite() != null && !getParentComposite().isDisposed()
+				&& !getParentComposite().isFocusControl()) {
+			getParentComposite().setFocus(); // Necessary ?
+		}
+
 	}
 
 }

@@ -26,13 +26,36 @@
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
       <vmArgs>-server
--XX:+UseG1GC
+-Xms2G
+-Xmx16G
+-Xss128m
+-XX:+UseG1GC 
+-XX:+ParallelRefProcEnabled 
+-XX:MaxGCPauseMillis=200 
+-XX:+UnlockExperimentalVMOptions 
+-XX:+AlwaysActAsServerClassMachine
+-XX:NmethodSweepActivity=1 
+-XX:ReservedCodeCacheSize=400M
+-XX:NonNMethodCodeHeapSize=12M 
+-XX:ProfiledCodeHeapSize=194M
+-XX:NonProfiledCodeHeapSize=194M 
+-XX:-DontCompileHugeMethods
+-XX:+UseFastUnorderedTimeStamps 
+-XX:+AlwaysPreTouch 
+-XX:G1HeapWastePercent=5 
+-XX:G1MixedGCCountTarget=4 
+-XX:InitiatingHeapOccupancyPercent=15 
+-XX:G1MixedGCLiveThresholdPercent=90 
+-XX:G1RSetUpdatingPauseTimePercent=5 
+-XX:SurvivorRatio=32 
+-XX:+PerfDisableSharedMem 
+-XX:MaxTenuringThreshold=1 
+-XX:G1NewSizePercent=40 
+-XX:G1MaxNewSizePercent=50 
+-XX:G1HeapRegionSize=16M 
+-XX:G1ReservePercent=20
 -XX:+UseStringDeduplication
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
--Xms4096m
--Xmx4096m
--Xss128m
--Xmn1024m
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
 -Dosgi.locking=none
@@ -82,11 +105,19 @@
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
       </vmArgs>
+      <vmArgsLin>-Dswt.enable.autoScale=true
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
+      </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
       <vmArgsWin>-Dfile.encoding=UTF-8
 -Dorg.eclipse.swt.browser.DefaultType=edge
+-Dswt.enable.autoScale=true
+-Dswt.autoScale=quarter
+-Dswt.autoScale.method=smooth
+-Dswt.autoScale.updateOnRuntime=true
       </vmArgsWin>
    </launcherArgs>
 
@@ -105,6 +136,9 @@
          <bmp/>
       </win>
    </launcher>
+
+   <vm>
+   </vm>
 
    <license>
         <url>https://www.gnu.org/licenses/gpl-3.0.html</url>

@@ -10,6 +10,7 @@ on:
         default: 2025.03.0
       IS_STABLE_RELEASE:
         required: true
+        default: false
         type: string
     secrets:
       BOT_TOKEN:
@@ -96,13 +97,16 @@ jobs:
       - name: Get PR created for the release
         id: get-pr
         run: |
+          # Add delay to let the PR being opened and API to update
+          sleep 10
+          #  
           curl -G \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.BOT_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             --data-urlencode "q=is:pr author:gama-bot state:open repo:microsoft/winget-pkgs sort:created-desc" \
-            "https://api.github.com/search/issues?sort=created&order=desc&per_page=1" > ${{ runner.temp }}/pr.json
-
+            "https://api.github.com/search/issues?sort=created&order=desc&per_page=1" | tee ${{ runner.temp }}/pr.json
+          #
           echo "number=$(jq -r '.items[0].number' ${{ runner.temp }}/pr.json)" >> $GITHUB_OUTPUT
 
       - name: Mention developpers
@@ -116,7 +120,7 @@ jobs:
               issue_number: ${{ steps.get-pr.outputs.number }},
               owner: "microsoft",
               repo: "winget-pkgs",
-              body: 'Poke :point_right: @${{ github.triggering_actor }} @WoodenMaiden @lesquoyb'
+              body: 'Poke :point_right: @${{ github.triggering_actor }} @lesquoyb @RoiArthurB'
             })
 
             core.summary.

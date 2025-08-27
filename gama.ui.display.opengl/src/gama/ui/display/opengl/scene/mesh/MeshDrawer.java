@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * MeshDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,6 +30,7 @@ import gama.dev.DEBUG;
 import gama.gaml.statements.draw.IMeshColorProvider;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
+import one.util.streamex.DoubleStreamEx;
 
 /**
  *
@@ -161,7 +162,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 		double[] data = attributes.getSmoothProvider().smooth(cols, rows, object.getObject().getMatrix(), noData,
 				attributes.getSmooth());
-		getMinMax(data, noData, minMax);
+		getMinMax(data, noData);
 		initializeBuffers();
 		fillBuffers(data, noData);
 		finalizeBuffers();
@@ -188,18 +189,15 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 *            the result
 	 * @return the min max
 	 */
-	public double[] getMinMax(final double[] data, final double noData, final double[] result) {
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
-		for (double f : data) {
-			if (f == noData || f < above) { continue; }
-			if (f > max) { max = f; }
-			if (f < min) { min = f; }
-		}
-		if (result == null) return new double[] { min, max };
-		result[0] = min;
-		result[1] = max;
-		return result;
+	public void getMinMax(final double[] data, final double noData) {
+		minMax[0] = Double.MAX_VALUE;
+		minMax[1] = -Double.MAX_VALUE;
+		DoubleStreamEx.of(data).parallel().forEach(f -> {
+			if (f != noData) {
+				if (f > minMax[1]) { minMax[1] = f; }
+				if (f < minMax[0]) { minMax[0] = f; }
+			}
+		});
 	}
 
 	/**

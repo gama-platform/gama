@@ -157,9 +157,6 @@ public class DXFLayer {
 
 				if (onModelspace && entity.isModelSpace() || !onModelspace && !entity.isModelSpace()) {
 					Bounds b = entity.getBounds();
-
-					if (b.getMaximumX() == Double.NaN) { System.out.println("NANA=" + entity); }
-
 					if (b.isValid()) { bounds.addToBounds(b); }
 				}
 			}
@@ -175,7 +172,7 @@ public class DXFLayer {
 	 * @return List or null
 	 */
 	public List<DXFEntity> getDXFEntities(final String type) {
-		if (entities.containsKey(type)) return entities.get(type);
+		if (entities.containsKey(type)) { return entities.get(type); }
 
 		return null;
 	}
@@ -218,7 +215,7 @@ public class DXFLayer {
 			while (entityIterator.hasNext()) {
 				DXFEntity e = (DXFEntity) entityIterator.next();
 
-				if (e.getID().equals(id)) return e;
+				if (e.getID().equals(id)) { return e; }
 			}
 		}
 

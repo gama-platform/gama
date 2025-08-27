@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Dates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Dates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -43,19 +43,20 @@ import java.util.regex.Pattern;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.core.common.util.StringUtils;
+import gama.core.kernel.simulation.SimulationClock;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -273,7 +274,9 @@ public class Dates {
 	@no_test
 	@validator (EveryValidator.class)
 	public static Boolean every(final IScope scope, final Integer period) {
-		final int time = scope.getClock().getCycle();
+		SimulationClock clock = scope.getClock();
+		if (clock == null) return false;
+		final int time = clock.getCycle();
 		return period > 0 && (time == 0 || time >= period) && time % period == 0;
 	}
 
@@ -436,7 +439,18 @@ public class Dates {
 	public static Boolean every(final IScope scope, final IExpression period) {
 		return scope.getClock().getStartingDate().isIntervalReachedOptimized(scope, period);
 	}
-	
+
+	/**
+	 * Every.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param period
+	 *            the period
+	 * @param optimized
+	 *            the optimized
+	 * @return the boolean
+	 */
 	@operator (
 			value = "every",
 			category = { IOperatorCategory.DATE },
@@ -447,12 +461,11 @@ public class Dates {
 			comment = "Used to do something at regular intervals of time. Can be used in conjunction with 'since', 'after', 'before', 'until' or 'between', so that this computation only takes place in the temporal segment defined by these operators. In all cases, the starting_date of the model is used as a reference starting point",
 			examples = { @example (
 					value = "reflex when: every(2#days, false) since date('2000-01-01') { .. }",
-					isExecutable = false)})
+					isExecutable = false) })
 	@validator (EveryValidator.class)
 	@no_test
 	public static Boolean every(final IScope scope, final IExpression period, final boolean optimized) {
-		if (optimized)
-			return scope.getClock().getStartingDate().isIntervalReachedOptimized(scope, period);
+		if (optimized) return scope.getClock().getStartingDate().isIntervalReachedOptimized(scope, period);
 		return scope.getClock().getStartingDate().isIntervalReached(scope, period);
 	}
 
@@ -504,9 +517,10 @@ public class Dates {
 			concept = { IConcept.DATE, IConcept.CYCLE })
 	@doc (
 			see = { "to" },
-			value = "applies a step to an interval of dates defined by 'date1 to date2'. Beware that using every with #month or #year will produce odd results,"
-					+ "as these pseudo-constants are not constant; only the first value will be used to compute the intervals, so, for instance, if current_date is set to February"
-					+ "#month will only represent 28 or 29 days. ",
+			value = """
+					applies a step to an interval of dates defined by 'date1 to date2'. Beware that using every with #month or #year will produce odd results,\
+					as these pseudo-constants are not constant; only the first value will be used to compute the intervals, so, for instance, if current_date is set to February\
+					#month will only represent 28 or 29 days.\s""",
 			comment = "",
 			examples = { @example (
 					value = "(date('2000-01-01') to date('2010-01-01')) every (#day) // builds an interval between these two dates which contains all the days starting from the beginning of the interval",
@@ -539,11 +553,12 @@ public class Dates {
 					value = "date('2000-01-01') to date('2010-01-01') // builds an interval between these two dates",
 					isExecutable = false),
 					@example (
-							value = "(date('2000-01-01') to date('2010-01-01')) every (#day) // builds an interval between these two dates which contains all "
-									+ "the days starting from the beginning of the interval. Beware that using every with #month or #year will produce odd results, "
-									+ "as these pseudo-constants are not constant; only the first value will be used to compute the intervals (if current_date is set to a month of February, "
-									+ "#month will only represent 28 or 29 days depending on whether it is a leap year or not !). If such intervals need to be built, it is recommended to use"
-									+ "a generative way, for instance a loop using the 'plus_years' or 'plus_months' operators to build a list of dates",
+							value = """
+									(date('2000-01-01') to date('2010-01-01')) every (#day) // builds an interval between these two dates which contains all \
+									the days starting from the beginning of the interval. Beware that using every with #month or #year will produce odd results, \
+									as these pseudo-constants are not constant; only the first value will be used to compute the intervals (if current_date is set to a month of February, \
+									#month will only represent 28 or 29 days depending on whether it is a leap year or not !). If such intervals need to be built, it is recommended to use\
+									a generative way, for instance a loop using the 'plus_years' or 'plus_months' operators to build a list of dates""",
 							isExecutable = false) })
 	@test ("to_list((date('2001-01-01') to date('2001-01-06')) every(#day)) =\n"
 			+ "		[date ('2001-01-01 00:00:00'),date ('2001-01-02 00:00:00'),date ('2001-01-03 00:00:00'),date ('2001-01-04 00:00:00'),date ('2001-01-05 00:00:00')]")
@@ -1133,7 +1148,6 @@ public class Dates {
 			throws GamaRuntimeException {
 		return date1.plus(-duration * 1000, ChronoUnit.MILLIS);
 	}
-
 
 	/**
 	 * Concatenate date.

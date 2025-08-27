@@ -53,7 +53,7 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
 public class ExperimentJob implements IExperimentJob {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -358,7 +358,9 @@ public class ExperimentJob implements IExperimentJob {
 	 */
 	protected void exportVariables() {
 		final int size = this.listenedVariables.length;
-		if (size == 0) return;
+		if (size == 0) {
+			return;
+		}
 		for (int i = 0; i < size; i++) {
 			final ListenedVariable v = this.listenedVariables[i];
 			if (this.step % v.getFrameRate() == 0) {
@@ -540,7 +542,9 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the parameter
 	 */
 	private Parameter getParameter(final String name) {
-		for (final Parameter p : parameters) { if (p.getName().equals(name)) return p; }
+		for (final Parameter p : parameters) { if (p.getName().equals(name)) {
+			return p;
+		} }
 		return null;
 	}
 
@@ -555,7 +559,9 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the output
 	 */
 	private Output getOutput(final String name) {
-		for (final Output p : outputs) { if (p.getName().equals(name)) return p; }
+		for (final Output p : outputs) { if (p.getName().equals(name)) {
+			return p;
+		} }
 		return null;
 	}
 

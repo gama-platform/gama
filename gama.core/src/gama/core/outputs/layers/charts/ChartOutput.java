@@ -19,6 +19,7 @@ import org.jfree.chart.JFreeChart;
 
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.kernel.simulation.SimulationClock;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.gaml.expressions.IExpression;
@@ -172,7 +173,7 @@ public abstract class ChartOutput {
 
 	/** The gap. */
 	double gap = -1; // only used in bar charts? copied the code, don't
-						// understand how to use it...
+	// understand how to use it...
 
 	/** The xrangemax. */
 	double xrangeinterval, xrangemin, xrangemax;
@@ -235,7 +236,8 @@ public abstract class ChartOutput {
 	 */
 	public ChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		final String t = typeexp == null ? IKeyword.SERIES : Cast.asString(scope, typeexp.value(scope));
-		// TODO: heatmap is not taken into account here and it will be considered as a XY_CHART, is that normal ?
+		// TODO: heatmap is not taken into account here and it will be
+		// considered as a XY_CHART, is that normal ?
 		type = IKeyword.SERIES.equals(t) ? SERIES_CHART : IKeyword.HISTOGRAM.equals(t) ? HISTOGRAM_CHART
 				: IKeyword.RADAR.equals(t) ? RADAR_CHART : IKeyword.PIE.equals(t) ? PIE_CHART
 				: IKeyword.BOX_WHISKER.equals(t) ? BOX_WHISKER_CHART : IKeyword.SCATTER.equals(t) ? SCATTER_CHART
@@ -255,7 +257,11 @@ public abstract class ChartOutput {
 			ismyfirststep = false;
 			return 0;
 		}
-		return scope.getClock().getCycle() + 1;
+		if (scope != null) {
+			SimulationClock clock = scope.getClock();
+			if (clock != null) return clock.getCycle() + 1;
+		}
+		return 0;
 	}
 
 	/**
@@ -309,9 +315,11 @@ public abstract class ChartOutput {
 
 		}
 		resetAxes(scope);
-
-		lastUpdateCycle = scope.getClock().getCycle();
-		// DEBUG.LOG("output last update:" + lastUpdateCycle);
+		SimulationClock clock = scope.getClock();
+		if (clock != null) {
+			lastUpdateCycle = clock.getCycle();
+			// DEBUG.LOG("output last update:" + lastUpdateCycle);
+		}
 	}
 
 	/**

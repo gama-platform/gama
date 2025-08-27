@@ -487,7 +487,6 @@ public class GamaShapeFile extends GamaGisFile {
 				ShpFiles shp = new ShpFiles(getFile(scope).toURI().toURL());
 				try (ShapefileReader reader = new ShapefileReader(shp, false, false, GeometryUtils.GEOMETRY_FACTORY)) {
 					reader.setFlatGeometry(true);
-					// System.out.println("count:" + reader.getCount(0));
 					while (reader.hasNext()) {
 						Record record = reader.nextRecord();
 						Geometry g = (Geometry) record.shape();

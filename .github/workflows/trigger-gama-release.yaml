@@ -55,6 +55,9 @@ jobs:
         id: commit
         run: |
           chmod +x ${{ github.workspace }}/travis/*
+          # Overkill, but will catch every extraresources files to bump version there too
+          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh ${{ inputs.tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          #
           mv ${{ github.workspace }}/gama.product/extraresources ${{ github.workspace }}/travis
           mv ${{ github.workspace }}/LICENSE ${{ github.workspace }}/travis
 

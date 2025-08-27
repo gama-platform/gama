@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IGamaFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IGamaFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,11 +11,11 @@ package gama.core.util.file;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IAsset;
 import gama.core.common.interfaces.IEnvelopeProvider;
 import gama.core.common.interfaces.IKeyword;
@@ -25,7 +25,9 @@ import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
 import gama.core.util.IModifiableContainer;
 import gama.gaml.statements.Facets;
+import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 14 nov. 2011
@@ -311,6 +313,20 @@ public interface IGamaFile<C extends IModifiableContainer, Contents>
 	 */
 	default IModifiableContainer ensureContentsIsCompatible(final IModifiableContainer contents) {
 		return contents;
+	}
+
+	/**
+	 * Compute runtime type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i type
+	 */
+	@Override
+	default IType<?> computeRuntimeType(final IScope scope) {
+		C contents = getContents(scope);
+		IType<?> type = GamaType.actualTypeOf(scope, contents);
+		return Types.FILE.of(type.getKeyType(), type.getContentType());
 	}
 
 }

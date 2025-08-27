@@ -74,7 +74,7 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 		final var fds = ts.getFontData();
 		// if (fds == null)
 		// return getDefaultFont();
-		if (fds == null) return null;
+		if (fds == null) { return null; }
 		final var fd = fds[0];
 		return new GamaFont(fd.getName(), fd.getStyle(), fd.getHeight());
 	}
@@ -134,7 +134,7 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 
 	@Override
 	public TextAttribute getMergedAttributes(final String[] ids) {
-		if (ids.length < 2) throw new IllegalStateException();
+		if (ids.length < 2) { throw new IllegalStateException(); }
 		final var mergedIds = getMergedIds(ids);
 		var result = getAttribute(mergedIds);
 		if (result == null) {
@@ -158,8 +158,8 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 	 * @return the text attribute
 	 */
 	private TextAttribute merge(final TextAttribute first, final TextAttribute second) {
-		if (first == null) return second;
-		if (second == null) return first;
+		if (first == null) { return second; }
+		if (second == null) { return first; }
 		final var style = first.getStyle() | second.getStyle();
 		var fgColor = second.getForeground();
 		if (fgColor == null) { fgColor = first.getForeground(); }
@@ -199,32 +199,5 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 		return new TextAttribute(colorFromRGB(textStyle.getColor()), colorFromRGB(textStyle.getBackgroundColor()),
 				textStyle.getStyle(), fontFromFontData(textStyle.getFontData()));
 	}
-
-	// public void configureHighlightingPreferences() {
-	// final List<String> ids = new ArrayList<>();
-	// // First we create and/or read the preferences
-	// highlightingConfig.configure((id, name, style) -> {
-	// final var pref = GamaPreferences
-	// .create("pref_" + id + "_font", name + " font", () -> getFont(style), IType.FONT, false)
-	// .in(Modeling.NAME, "Syntax coloring").onChange(font -> {
-	// System.out.println("Pref " + "pref_" + id + "_font changed");
-	// applyFont(id, name, style, font);
-	// });
-	// applyFont(id, name, style, pref.getValue());
-	//
-	// final var pref2 =
-	// GamaPreferences
-	// .create("pref_" + id + "_color", "... and color",
-	// () -> GamaColors.toGamaColor(style.getColor()), IType.COLOR, false)
-	// .in(Modeling.NAME, "Syntax coloring").onChange(color -> {
-	// System.out.println("Pref " + "pref_" + id + "_color changed to " + color);
-	// applyColor(id, name, style, color);
-	// });
-	// applyColor(id, name, style, pref2.getValue());
-	// ids.add(pref.getKey());
-	// ids.add(pref2.getKey());
-	// });
-	// // ThemeHelper.CORE_THEME_LIGHT.refreshes(ids.toArray(new String[0]));
-	// }
 
 }

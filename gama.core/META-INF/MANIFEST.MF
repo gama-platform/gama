@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.p2.core,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.operations,
- org.eclipse.equinox.p2.engine
+ org.eclipse.equinox.p2.engine,
+ org.eclipse.xtext
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.core.common;
   uses:="org.osgi.framework,

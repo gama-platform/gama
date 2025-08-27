@@ -23,7 +23,6 @@ public class OsmosisBinaryParser extends BinaryParser {
 	 * @return The OsmUser object
 	 */
 	OsmUser getUser(final Osmformat.Info info) {
-		// System.out.println(info);
 		if (info.hasUid() && info.hasUserSid()) {
 			if (info.getUid() < 0) { return OsmUser.NONE; }
 			return new OsmUser(info.getUid(), getStringById(info.getUserSid()));
@@ -74,9 +73,7 @@ public class OsmosisBinaryParser extends BinaryParser {
 		long lasttimestamp = 0, lastchangeset = 0;
 		int lastuserSid = 0, lastuid = 0;
 		DenseInfo di = null;
-		if (nodes.hasDenseinfo()) {
-			di = nodes.getDenseinfo();
-		}
+		if (nodes.hasDenseinfo()) { di = nodes.getDenseinfo(); }
 		for (int i = 0; i < nodes.getIdCount(); i++) {
 			Node tmp;
 			final List<Tag> tags = new ArrayList<>(0);
@@ -229,9 +226,7 @@ public class OsmosisBinaryParser extends BinaryParser {
 
 		if (block.hasBbox()) {
 			String source = "no-version-specified";
-			if (block.hasSource()) {
-				source = block.getSource();
-			}
+			if (block.hasSource()) { source = block.getSource(); }
 
 			final double multiplier = .000000001;
 			final double rightf = block.getBbox().getRight() * multiplier;
@@ -250,9 +245,7 @@ public class OsmosisBinaryParser extends BinaryParser {
 	 * @param sink
 	 *            The sink for receiving all produced data.
 	 */
-	public void setSink(final Sink sink) {
-		this.sink = sink;
-	}
+	public void setSink(final Sink sink) { this.sink = sink; }
 
 	private Sink sink;
 }

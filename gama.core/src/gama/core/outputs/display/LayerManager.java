@@ -28,7 +28,7 @@ import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.outputs.layers.GisLayer;
 import gama.core.outputs.layers.GraphicLayer;
-import gama.core.outputs.layers.GridAgentLayer;
+import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
 import gama.core.outputs.layers.ILayerStatement;
 import gama.core.outputs.layers.ImageLayer;
@@ -63,7 +63,7 @@ public class LayerManager implements ILayerManager {
 		return switch (layer.getType(output)) {
 			case GRID -> new GridLayer(layer);
 			case AGENTS -> new AgentLayer(layer);
-			case GRID_AGENTS -> new GridAgentLayer(layer);
+			case GRID_AGENTS -> new HexagonalGridLayer(layer);
 			case SPECIES -> new SpeciesLayer(layer);
 			case IMAGE -> new ImageLayer(output.getScope(), layer);
 			case GIS -> new GisLayer(layer);

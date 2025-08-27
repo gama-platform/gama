@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IField.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IField.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,15 +32,17 @@ import gama.gaml.types.IType;
 @vars ({ @variable (
 		name = "no_data",
 		type = IType.FLOAT,
-		doc = @doc ("Represents the value that indicates the absence of data. "
-				+ "Setting it will only change the interpretation made by the field "
-				+ "of the values it contains, but not the values themselves")),
+		doc = @doc ("""
+				Represents the value that indicates the absence of data. \
+				Setting it will only change the interpretation made by the field \
+				of the values it contains, but not the values themselves""")),
 		@variable (
 				name = "cell_size",
 				type = IType.POINT,
-				doc = @doc ("Represents the dimension of an individual cell as a point (width, height)"
-						+ "Setting it will only change the interpretation made by the field "
-						+ "of the values it contains, but not the values themselves")),
+				doc = @doc ("""
+						Represents the dimension of an individual cell as a point (width, height)\
+						Setting it will only change the interpretation made by the field \
+						of the values it contains, but not the values themselves""")),
 		@variable (
 				name = "bands",
 				type = IType.LIST,
@@ -89,20 +91,11 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	void setNoData(IScope scope, double noData);
 
 	/**
-	 * Returns the min and max values in the field (computed w/o the no data value)
-	 *
-	 * @param result
-	 *            an existing array of doubles or null
-	 * @return the array passed in parameter with the new values or a new array allocated
-	 */
-	double[] getMinMax(double[] result);
-
-	/**
 	 * Gets the min max.
 	 *
 	 * @return the min max
 	 */
-	default double[] getMinMax() { return getMinMax(null); }
+	double[] getMinMax();
 
 	/**
 	 * Returns the bands registered for this field.

@@ -69,7 +69,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 			}
 			// viewer.setBackground(!ThemeHelper.isDark() ? IGamaColors.WHITE.color() : IGamaColors.DARK_GRAY.darker());
 			// viewer.computeSize(parent.getSize().x, SWT.DEFAULT);
-			viewer.setSpacing(8);
+			viewer.setSpacing(10);
 		}
 	}
 
@@ -295,7 +295,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 				if (getViewer() != null && !getViewer().isDisposed()) {
 					getViewer().updateItemNames();
 					getViewer().updateItemColors();
-					updateItemValues(GAMA.isSynchronized());
+					updateItemValues(GAMA.isSynchronized(), false);
 				}
 				return Status.OK_STATUS;
 			}
@@ -306,7 +306,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	public abstract List<T> getItems();
 
 	@Override
-	public abstract void updateItemValues(boolean synchronously);
+	public abstract void updateItemValues(boolean synchronously, boolean retrieveValues);
 
 	@Override
 	public void collapseAll() {

@@ -220,6 +220,15 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	}
 
 	@Override
+	public void setFocus() {
+		Control c = getSizableFontControl();
+		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+			c.setFocus(); // Necessary ?
+		}
+
+	}
+
+	@Override
 	public void pauseChanged() {
 		if (paused) {
 			WorkbenchHelper.asyncRun(() -> {
@@ -248,6 +257,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 				protected void fillMenu() {
 					GamaCommand.build(ACTION_CLEAR, "Clear", "Clear the console", e -> ConsoleView.this.reset())
 							.toItem(mainMenu);
+					GamaMenu.separate(mainMenu);
 					GamaCommand.build(DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
 							e -> saveAsLog()).toItem(mainMenu);
 					GamaMenu.separate(mainMenu);

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractGamlAdditions.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,12 +26,12 @@ import java.util.Map;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IDisplayCreator;
+import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IExperimentAgentCreator;
+import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.file.IGamaFile;
@@ -126,7 +126,6 @@ public abstract class AbstractGamlAdditions implements IGamlAdditions {
 		final IType<?> type = builtInTypes.initType(keyword, typeInstance, id, varKind, wraps[0], CURRENT_PLUGIN_NAME);
 		for (final Class cc : wraps) { Types.CLASSES_TYPES_CORRESPONDANCE.put(cc, type.getName()); }
 		Types.cache(id, typeInstance);
-		GAML.VARTYPE2KEYWORDS.put(varKind, keyword);
 	}
 
 	/**

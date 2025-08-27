@@ -32,7 +32,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	private volatile State currentState = State.NONE;
 
 	/**
-	 * Start for GUI. No SSL and a default ping interval
+	 * Start for GUI. No SSL, the default ping interval, and no TCP_NODELAY option
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param port
@@ -41,7 +41,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 16 oct. 2023
 	 */
 	public static GamaGuiWebSocketServer startForGUI(final int port) {
-		return startForGUI(port, DEFAULT_PING_INTERVAL);
+		return startForGUI(port, DEFAULT_PING_INTERVAL, false);
 	}
 
 	/**
@@ -63,8 +63,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @return the gama web socket server
 	 * @date 16 oct. 2023
 	 */
-	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval) {
-		GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval);
+	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval, final boolean noDelay) {
+		GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
 		server.currentServerConfig = GamaServerExperimentConfiguration.GUI;
 		server.start();
 		return server;
@@ -90,8 +90,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 *            the interval
 	 * @date 16 oct. 2023
 	 */
-	private GamaGuiWebSocketServer(final int port, final int interval) {
-		super(port, interval);
+	private GamaGuiWebSocketServer(final int port, final int interval, final boolean noDelay) {
+		super(port, interval, noDelay);
 	}
 
 	@Override

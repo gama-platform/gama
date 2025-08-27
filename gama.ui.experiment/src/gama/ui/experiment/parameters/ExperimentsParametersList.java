@@ -269,10 +269,11 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	}
 
 	@Override
-	public void updateItemValues(final boolean synchronously) {
+	public void updateItemValues(final boolean synchronously
+			, final boolean retrieveValues) {
 		for (final Map.Entry<String, Map<String, IParameterEditor<?>>> entry : sections.entrySet()) {
 			for (final IParameterEditor gp : entry.getValue().values()) {
-				gp.updateWithValueOfParameter(synchronously, false);
+				gp.updateWithValueOfParameter(synchronously, retrieveValues);
 			}
 		}
 		updateMonitors(synchronously);

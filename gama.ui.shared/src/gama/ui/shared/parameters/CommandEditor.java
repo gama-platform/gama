@@ -28,40 +28,42 @@ import gama.ui.shared.resources.IGamaColors;
  */
 public class CommandEditor extends AbstractStatementEditor<UserCommandStatement> {
 
-	/**
-	 * Instantiates a new command editor.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param command
-	 *            the command
-	 * @param l
-	 *            the l
-	 */
-	public CommandEditor(final IScope scope, final UserCommandStatement command, final EditorListener.Command l) {
-		super(scope, command, l);
-	}
+    /**
+     * Instantiates a new command editor.
+     *
+     * @param scope
+     *            the scope
+     * @param command
+     *            the command
+     * @param l
+     *            the l
+     */
+    public CommandEditor(final IScope scope, final UserCommandStatement command, final EditorListener.Command l) {
+	super(scope, command, l);
+    }
 
-	@Override
-	protected EditorListener.Command getListener() { return (Command) super.getListener(); }
+    @Override
+    protected EditorListener.Command getListener() {
+	return (Command) super.getListener();
+    }
 
-	@Override
-	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
-		textBox = FlatButton.button(composite, null, "");
-		textBox.setText(" " + getStatement().getName());
-		textBox.addSelectionListener(getListener());
-		return textBox;
-	}
+    @Override
+    protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+	textBox = FlatButton.button(composite, null, "");
+	textBox.setText(" " + getStatement().getName());
+	textBox.setSelectionListener(getListener());
+	return textBox;
+    }
 
-	@Override
-	Color getEditorControlBackground() {
-		GamaColor color = getStatement().getColor(getScope());
-		return color == null ? IGamaColors.NEUTRAL.color() : GamaColors.get(color).color();
-	}
+    @Override
+    Color getEditorControlBackground() {
+	GamaColor color = getStatement().getColor(getScope());
+	return color == null ? IGamaColors.NEUTRAL.color() : GamaColors.get(color).color();
+    }
 
-	@Override
-	EditorLabel createEditorLabel() {
-		return new EditorLabel(this, parent, " ", isSubParameter);
-	}
+    @Override
+    EditorLabel createEditorLabel() {
+	return new EditorLabel(this, parent, " ", isSubParameter);
+    }
 
 }

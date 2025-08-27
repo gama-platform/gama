@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * MyArduino.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MyArduino.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -16,6 +15,7 @@ import java.util.Scanner;
 
 import com.fazecast.jSerialComm.SerialPort;
 
+import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
 /**
@@ -203,7 +203,7 @@ public class MyArduino {
 		for (int i = 0; i < s.length(); i += noOfChars) {
 			pout.write(s.substring(i, i + noOfChars));
 			pout.flush();
-			System.out.println(s.substring(i, i + noOfChars));
+			DEBUG.LOG(s.substring(i, i + noOfChars));
 			THREADS.WAIT(delay);
 
 		}

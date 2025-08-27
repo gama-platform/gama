@@ -20,6 +20,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
@@ -56,7 +57,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	private SimulationPopupMenu popup;
 
 	/** The Constant WIDTH. */
-	private final static int WIDTH = 400;
+	private final static int WIDTH = 300;
 
 	/** The text. */
 	private final StringBuilder text = new StringBuilder(2000);
@@ -74,7 +75,8 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @param id
 	 *            the id
 	 */
-	public ExperimentControlContribution(final String id) { // NO_UCD (unused code)
+	public ExperimentControlContribution(final String id) { // NO_UCD (unused
+		// code)
 		super(id);
 		WorkbenchHelper.getService(IStatusDisplayer.class).setExperimentTarget(this);
 	}
@@ -87,10 +89,16 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	@Override
 	protected Control createControl(final Composite parent) {
 		final Composite compo = new Composite(parent, SWT.DOUBLE_BUFFERED);
-		GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).applyTo(compo);
-		label = FlatButton.label(compo, IGamaColors.NEUTRAL, "No experiment running", WIDTH)
-				.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image()).withMinimalHeight(24);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, true).hint(WIDTH, 24).applyTo(label);
+		GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).applyTo(compo);
+		Label l = new Label(compo, SWT.NONE);
+		l.setText("");
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(8, 25).applyTo(l);
+		label = FlatButton.label(compo, IGamaColors.NEUTRAL, "No experiment running", WIDTH).withHeight(25)
+				.setImage(GamaIcon.named(IGamaIcons.STATUS_CLOCK).image());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(WIDTH, 25).applyTo(label);
+		l = new Label(compo, SWT.NONE);
+		l.setText("");
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).hint(8, 25).applyTo(l);
 		popup = new SimulationPopupMenu(this);
 		label.addMouseListener(new MouseAdapter() {
 
@@ -166,7 +174,12 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @return the absolute origin
 	 * @date 26 août 2023
 	 */
-	public Point getLocation() { return label.toDisplay(label.getLocation()); }
+	public Point getLocation() {
+		Point p = label.toDisplay(label.getLocation());
+		p.x -= 14;
+		p.y += getHeight() - 4;
+		return p;
+	}
 
 	/**
 	 * Gets the popup width.
@@ -196,7 +209,8 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (isUpdating) return;
 		try {
 			isUpdating = true;
-			// DEBUG.OUT("Updating with current experiment " + GAMA.getExperiment());
+			// DEBUG.OUT("Updating with current experiment " +
+			// GAMA.getExperiment());
 			if (GAMA.getExperiment() == null) {
 				label.removeMenuSign();
 				popup.wipe();
@@ -205,7 +219,8 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 				label.addMenuSign();
 			}
 			ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
-			// label.setImageWithoutRecomputingSize(m.icon() == null ? null : GamaIcon.named(m.icon()).image());
+			// label.setImageWithoutRecomputingSize(m.icon() == null ? null :
+			// GamaIcon.named(m.icon()).image());
 			label.setColor(get(agent.getColor()));
 			label.setTextWithoutRecomputingSize(getClockMessage(agent));
 			if (popup.isVisible()) { popup.display(); }

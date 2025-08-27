@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaSpatialGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaSpatialGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -33,8 +32,8 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph.GraphEvent;
-import gama.core.util.graph._Edge;
 import gama.core.util.graph.GraphEvent.GraphEventType;
+import gama.core.util.graph._Edge;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.PathFactory;
 import gama.dev.DEBUG;
@@ -208,7 +207,6 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	protected void buildByVertices(final IScope scope, final IContainer<?, IShape> list, final boolean uniqueEdge) {
 		Iterable<? extends IShape> shapes = list.iterable(scope);
 		for (final IShape p : shapes) { super.addVertex(p); }
-		System.out.println("uniqueEdge: " + uniqueEdge);
 		for (final IShape o1 : shapes) { // Try to create automatic edges
 			if (o1.getAgent() != null) { o1.getAgent().setAttribute("attached_graph", this); }
 			for (final IShape o2 : shapes) {
@@ -278,7 +276,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 		DEBUG.OUT("Refreshing Edges " + edgeSpecies);
 		for (final IShape s1 : vSet) {
 			for (final IShape s2 : vSet) {
-				if (graphScope.interrupted()) return;
+				if (graphScope.interrupted()) { return; }
 				if (vertexRelation.equivalent(graphScope, s1, s2)) { continue; }
 				already = this.containsEdge(s1, s2);
 				if ((related = vertexRelation.related(graphScope, s1, s2)) && !already) {
@@ -290,8 +288,9 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 
 	@Override
 	protected Object generateEdgeObject(final Object v1, final Object v2) {
-		if (v1 instanceof IShape && v2 instanceof IShape)
+		if (v1 instanceof IShape && v2 instanceof IShape) {
 			return GamaGeometryType.buildLink(graphScope, (IShape) v1, (IShape) v2);
+		}
 		return super.generateEdgeObject(v1, v2);
 	}
 
@@ -356,11 +355,11 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	 * @return the built vertex
 	 */
 	public IShape getBuiltVertex(final Coordinate vertex) {
-		if (tolerance == 0) return verticesBuilt.get(vertex.hashCode());
+		if (tolerance == 0) { return verticesBuilt.get(vertex.hashCode()); }
 		final IShape sh = verticesBuilt.get(vertex.hashCode());
-		if (sh != null) return sh;
+		if (sh != null) { return sh; }
 		for (final Object v : verticesBuilt.values()) {
-			if (vertex.distance3D(((IShape) v).getLocation()) <= tolerance) return (IShape) v;
+			if (vertex.distance3D(((IShape) v).getLocation()) <= tolerance) { return (IShape) v; }
 		}
 		return null;
 	}
@@ -408,14 +407,14 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	 * @return true, if successful
 	 */
 	public boolean addEdgeWithNodes(final IScope scope, final IShape e, final IMap<GamaPoint, IShape> nodes) {
-		if (containsEdge(e)) return false;
+		if (containsEdge(e)) { return false; }
 		final Coordinate[] coord = e.getInnerGeometry().getCoordinates();
 		final IShape ptS = new GamaPoint(coord[0]);
 		final IShape ptT = new GamaPoint(coord[coord.length - 1]);
 		final IShape v1 = nodes.get(ptS);
-		if (v1 == null) return false;
+		if (v1 == null) { return false; }
 		final IShape v2 = nodes.get(ptT);
-		if (v2 == null) return false;
+		if (v2 == null) { return false; }
 
 		addVertex(v1);
 		addVertex(v2);

@@ -90,7 +90,9 @@ public class HeadlessApplication implements IApplication {
 	 * @return the injector
 	 */
 	private static Injector configureInjector() {
-		if (INJECTOR != null) return INJECTOR;
+		if (INJECTOR != null) {
+			return INJECTOR;
+		}
 		DEBUG.LOG("GAMA configuring and loading...");
 		System.setProperty("java.awt.headless", "true");
 		GAMA.setHeadLessMode(isServer);
@@ -128,6 +130,9 @@ public class HeadlessApplication implements IApplication {
 
 	/** The Constant PING_INTERVAL. */
 	final public static String PING_INTERVAL = "-ping_interval";
+
+	/** The Constant SOCKET_PARAMETER. */
+	final public static String NO_DELAY_PARAMETER = "-no-delay";
 
 	/** The Constant SOCKET_PARAMETER. */
 	final public static String SOCKET_PARAMETER = "-socket";
@@ -198,7 +203,7 @@ public class HeadlessApplication implements IApplication {
 	 * Show version.
 	 */
 	private static void showVersion() {
-		DEBUG.OFF();
+		DEBUG.ON();
 		DEBUG.LOG("Welcome to Gama-platform.org version " + GAMA.VERSION + "\n");
 		DEBUG.OFF();
 	}
@@ -208,9 +213,10 @@ public class HeadlessApplication implements IApplication {
 	 */
 	private static void showHelp() {
 		showVersion();
-		DEBUG.OFF();
+		DEBUG.ON();
 		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
-				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" + "\n\t\t" + CONSOLE_PARAMETER
+				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" 
+				+ "\n\t\t-ws [./path/to/ws]            -- manually set a workspace" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
 				+ VERBOSE_PARAMETER + "                            -- verbose mode" + "\n\t\t" + THREAD_PARAMETER
 				+ " [core]                   -- set the number of core available for experimentation" + "\n\t\t"
@@ -260,7 +266,7 @@ public class HeadlessApplication implements IApplication {
 		if (args.contains(VERBOSE_PARAMETER)) {
 			size = size - 1;
 			this.verbose = true;
-			DEBUG.OFF();
+			DEBUG.ON();
 			DEBUG.LOG("Log active", true);
 		}
 
@@ -315,10 +321,12 @@ public class HeadlessApplication implements IApplication {
 
 		// Runner verification
 		// ========================
-		if (mustContainInFile && mustContainOutFolder && size < 2)
+		if (mustContainInFile && mustContainOutFolder && size < 2) {
 			return showError(HeadLessErrors.INPUT_NOT_DEFINED, null);
-		if (!mustContainInFile && mustContainOutFolder && size < 1)
+		}
+		if (!mustContainInFile && mustContainOutFolder && size < 1) {
 			return showError(HeadLessErrors.OUTPUT_NOT_DEFINED, null);
+		}
 
 		// In/out files
 		// ========================
@@ -326,18 +334,22 @@ public class HeadlessApplication implements IApplication {
 			// Check and create output folder
 			Globals.OUTPUT_PATH = args.get(args.size() - 1);
 			final File output = new File(Globals.OUTPUT_PATH);
-			if (!output.exists() && !output.mkdir())
+			if (!output.exists() && !output.mkdir()) {
 				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.OUTPUT_PATH);
+			}
 			// Check and create output image folder
 			Globals.IMAGES_PATH = Globals.OUTPUT_PATH + "/snapshot";
 			final File images = new File(Globals.IMAGES_PATH);
-			if (!images.exists() && !images.mkdir())
+			if (!images.exists() && !images.mkdir()) {
 				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.IMAGES_PATH);
+			}
 		}
 		if (mustContainInFile) {
 			final int inIndex = args.size() - (mustContainOutFolder ? 2 : 1);
 			final File input = new File(args.get(inIndex));
-			if (!input.exists()) return showError(HeadLessErrors.NOT_EXIST_FILE_ERROR, args.get(inIndex));
+			if (!input.exists()) {
+				return showError(HeadLessErrors.NOT_EXIST_FILE_ERROR, args.get(inIndex));
+			}
 		}
 		return true;
 	}
@@ -352,7 +364,7 @@ public class HeadlessApplication implements IApplication {
 	 * @return true, if successful
 	 */
 	private static boolean showError(final int errorCode, final String path) {
-		DEBUG.OFF();
+		DEBUG.ON();
 		DEBUG.ERR(HeadLessErrors.getError(errorCode, path));
 		DEBUG.OFF();
 
@@ -402,6 +414,7 @@ public class HeadlessApplication implements IApplication {
 		DEBUG.OFF();
 
 		// Debug runner
+		boolean noDelay = args.contains(NO_DELAY_PARAMETER);
 		if (args.contains(VALIDATE_LIBRARY_PARAMETER)) return ModelLibraryValidator.getInstance().start();
 		if (args.contains(TEST_LIBRARY_PARAMETER)) return ModelLibraryTester.getInstance().start();
 		if (args.contains(RUN_LIBRARY_PARAMETER)) return ModelLibraryRunner.getInstance().start();
@@ -414,12 +427,12 @@ public class HeadlessApplication implements IApplication {
 		} else if (args.contains(BUILD_XML_PARAMETER)) {
 			buildXML(args);
 		} else if (args.contains(SOCKET_PARAMETER)) {
-			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping);
+			GamaHeadlessWebSocketServer.startForHeadless(socket, processorQueue, ping, noDelay);
 		} else if (args.contains(SSOCKET_PARAMETER)) {
 			final String jks = args.contains(SSOCKET_PARAMETER_JKSPATH) ? after(args, SSOCKET_PARAMETER_JKSPATH) : "";
 			final String spwd = args.contains(SSOCKET_PARAMETER_SPWD) ? after(args, SSOCKET_PARAMETER_SPWD) : "";
 			final String kpwd = args.contains(SSOCKET_PARAMETER_KPWD) ? after(args, SSOCKET_PARAMETER_KPWD) : "";
-			GAMA.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping));
+			GAMA.setServer(startForSecureHeadless(socket, processorQueue, true, jks, spwd, kpwd, ping, noDelay));
 		} else {
 			runSimulation(args);
 		}
@@ -437,8 +450,12 @@ public class HeadlessApplication implements IApplication {
 	 * @return the string
 	 */
 	public String after(final List<String> args, final String arg) {
-		if (args == null || args.size() < 2) return null;
-		for (int i = 0; i < args.size() - 1; i++) { if (args.get(i).equals(arg)) return args.get(i + 1); }
+		if (args == null || args.size() < 2) {
+			return null;
+		}
+		for (int i = 0; i < args.size() - 1; i++) { if (args.get(i).equals(arg)) {
+			return args.get(i + 1);
+		} }
 		return null;
 	}
 
@@ -459,7 +476,7 @@ public class HeadlessApplication implements IApplication {
 	public void buildXML(final List<String> arg)
 			throws ParserConfigurationException, TransformerException, IOException, GamaHeadlessException {
 		if (arg.size() < 3) {
-			DEBUG.OFF();
+			DEBUG.ON();
 			DEBUG.ERR("Check your parameters!");
 			showHelp();
 			return;
@@ -480,7 +497,7 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		if (selectedJob.size() == 0) {
-			DEBUG.OFF();
+			DEBUG.ON();
 			DEBUG.ERR("""
 
 					=== ERROR ===\
@@ -535,7 +552,7 @@ public class HeadlessApplication implements IApplication {
 		output.createNewFile();
 		final StreamResult result = new StreamResult(output);
 		transformer.transform(source, result);
-		DEBUG.OFF();
+		DEBUG.ON();
 		DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
 	}
 
@@ -692,7 +709,9 @@ public class HeadlessApplication implements IApplication {
 				break;
 			}
 		}
-		if (selectedJob == null) return;
+		if (selectedJob == null) {
+			return;
+		}
 		Globals.OUTPUT_PATH = argOutDir;
 
 		selectedJob.setBufferedWriter(new XMLWriter(Globals.OUTPUT_PATH + "/" + Globals.OUTPUT_FILENAME + ".xml"));

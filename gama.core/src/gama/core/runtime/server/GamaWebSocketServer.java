@@ -83,10 +83,11 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 *            the interval
 	 * @date 16 oct. 2023
 	 */
-	protected GamaWebSocketServer(final int port, final int interval) {
+	protected GamaWebSocketServer(final int port, final int interval, final boolean noDelay) {
 		super(new InetSocketAddress(port));
 		// Should solve the problem with the address being still used after relaunching
 		this.setReuseAddr(true);
+		this.setTcpNoDelay(noDelay);
 		canPing = interval >= 0;
 		pingInterval = interval;
 		configureErrorStream();
@@ -121,13 +122,16 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 16 oct. 2023
 	 */
 	private void configureErrorStream() {
+		// error handling should not rely on this as we don't know when the error starts and ends, 
+		// making it hard to handle on the client side. This is a last resort option
 		PrintStream errorStream = new PrintStream(System.err) {
-
+			
+			//This is actually probably never called, because printErrorStack uses print(String)
 			@Override
 			public void println(final String x) {
 				super.println(x);
 				broadcast(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, x)).toString());
-			}
+			}			
 		};
 		System.setErr(errorStream);
 	}

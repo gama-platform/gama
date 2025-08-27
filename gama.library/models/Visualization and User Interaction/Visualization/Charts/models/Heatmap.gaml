@@ -65,7 +65,7 @@ experiment "Different heatmaps" type: gui
 		consoles: false 
 		toolbars: false 
 		tray: false 
-		tabs: true
+		tabs: false
 		;	
 		
 		display "Nice Heatmap" type: 2d
@@ -79,7 +79,7 @@ experiment "Different heatmaps" type: gui
 
 		display "listOflist_heatmap" type: 2d
 		{
-			chart "listOflist_heatmap" type: heatmap
+			chart "Heatmap of list of lists" type: heatmap
 			{
 				data "cosX" value: mylldata color: [# blue] accumulate_values: false;
 				data "sinY" value: mylldata2 color: [# darkred] accumulate_values: false;
@@ -88,7 +88,7 @@ experiment "Different heatmaps" type: gui
 
 		display "list_heatmap" type: 2d antialias:false
 		{
-			chart "list_heatmap" type: heatmap 
+			chart "Heatmap of list" type: heatmap 
 			{
 				data "test" value: myldata color: [# cyan, # red] accumulate_values: false;
 			}
@@ -97,7 +97,7 @@ experiment "Different heatmaps" type: gui
 
 		display "simple_heatmap2" type: 2d
 		{
-			chart "simple heatmap2" type: heatmap
+			chart "Simple static heatmap" type: heatmap
 			{
 				data "test" value: [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]] color: [# cyan, # red] accumulate_values: false;
 			}
