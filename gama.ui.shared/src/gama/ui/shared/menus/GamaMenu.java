@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
+import gama.core.common.preferences.Pref;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.views.toolbar.Selector;
 
@@ -44,6 +45,15 @@ public abstract class GamaMenu {
 		string.setEnabled(false);
 		string.setText(s);
 		return string;
+	}
+
+	/**
+	 * Separate.
+	 *
+	 * @return the menu item
+	 */
+	public MenuItem separate() {
+		return separate(mainMenu);
 	}
 
 	/**
@@ -192,9 +202,12 @@ public abstract class GamaMenu {
 	public static MenuItem action(final Menu m, final String s, final SelectionListener listener, final String image) {
 		final MenuItem action = createItem(m, SWT.PUSH);
 		action.setText(s);
+
 		action.setData("image", image);
-		action.addSelectionListener(listener);
+    
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
+
 		return action;
 	}
 
@@ -214,10 +227,12 @@ public abstract class GamaMenu {
 	public static MenuItem action(final Menu m, final String s, final Selector listener, final String image) {
 		final MenuItem action = createItem(m, SWT.PUSH);
 		action.setText(s);
+
 		action.setData("image", image);
-		action.addSelectionListener(listener);
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
-		return action;
+
+    return action;
 	}
 
 	/**
@@ -259,9 +274,11 @@ public abstract class GamaMenu {
 		action.setText(s);
 		action.setData("image", image);
 		action.setSelection(select);
-		action.addSelectionListener(listener);
-		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
-		return action;
+    
+    if (listener != null) { action.addSelectionListener(listener); }
+    if (image != null) { action.setImage(GamaIcon.named(image).image()); }
+
+    return action;
 	}
 
 	/**
@@ -285,9 +302,11 @@ public abstract class GamaMenu {
 		action.setText(s);
 		action.setData("image", image);
 		action.setSelection(select);
-		action.addSelectionListener(listener);
+
+		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
-		return action;
+
+    return action;
 	}
 
 	/**
@@ -433,5 +452,50 @@ public abstract class GamaMenu {
 	 * Fill menu.
 	 */
 	protected abstract void fillMenu();
+
+	/**
+	 * Check.
+	 *
+	 * @param string
+	 *            the string
+	 * @param pref
+	 *            the pref
+	 */
+	public MenuItem check(final String string, final Pref<Boolean> pref) {
+		return check(string, pref, null);
+	}
+
+	/**
+	 * Check.
+	 *
+	 * @param string
+	 *            the string
+	 * @param pref
+	 *            the pref
+	 * @param additionalListener
+	 *            the additional listener
+	 * @return the menu item
+	 */
+	public MenuItem check(final String string, final Pref<Boolean> pref, final Selector additionalListener) {
+		return check(mainMenu, string, pref, additionalListener);
+	}
+
+	/**
+	 * @param mainMenu2
+	 * @param string
+	 * @param coreConsoleKeep
+	 */
+	public MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref,
+			final Selector additionalListener) {
+		final MenuItem item = check(menu, string, pref.getValue(), null, null);
+		item.setToolTipText(pref.getTitle());
+		Selector listener = e -> {
+			pref.set(!pref.getValue());
+			item.setSelection(pref.getValue());
+		};
+		item.addSelectionListener(listener);
+		if (additionalListener != null) { item.addSelectionListener(additionalListener); }
+		return item;
+	}
 
 }

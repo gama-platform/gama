@@ -753,6 +753,9 @@
           <viewShortcut
                 id="gama.ui.application.view.InteractiveConsoleView">
           </viewShortcut>
+          <viewShortcut
+                id="gama.ui.application.view.ConsoleView">
+          </viewShortcut>
          <view
                closeable="true"
                id="gama.ui.application.view.minimap"
@@ -767,6 +770,17 @@
           <view
                 closeable="true"
                 id="gama.ui.application.view.InteractiveConsoleView"
+                minimized="false"
+                moveable="true"
+                relationship="stack"
+                relative="gama.ui.application.view.problems"
+                showTitle="true"
+                standalone="false"
+                visible="true">
+          </view>
+          <view
+                closeable="true"
+                id="gama.ui.application.view.ConsoleView"
                 minimized="false"
                 moveable="true"
                 relationship="stack"

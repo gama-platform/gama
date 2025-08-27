@@ -40,7 +40,7 @@
             icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.console.png"
             id="gama.ui.application.view.ConsoleView"
             name="Console"
-            restorable="false">
+            restorable="true">
       </view>
       <view
             allowMultiple="true"
