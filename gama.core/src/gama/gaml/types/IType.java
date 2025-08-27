@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -142,6 +142,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/** The field. */
 	int FIELD = 31;
+
+	/** The class. Metatype of classes */
+	int CLASS = 32;
 
 	/** The available types. */
 	int AVAILABLE_TYPES = 50;

@@ -392,7 +392,7 @@ public class GamlSyntacticConverter {
 					&& IKeyword.SUPER.equals(EGaml.getInstance().getKeyOf(target))) {
 				elt.setKeyword(IKeyword.INVOKE);
 			} else {
-				addFacet(elt, IKeyword.TARGET, convExpr(target, errors), errors);
+				addFacet(elt, IKeyword.TARGET_AGENT, convExpr(target, errors), errors);
 			}
 		}
 		if (e instanceof ActionRef && stm.getRight() instanceof ExpressionList list) {

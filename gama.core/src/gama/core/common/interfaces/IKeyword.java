@@ -1070,6 +1070,9 @@ public interface IKeyword {
 	/** The target. */
 	String TARGET = "target";
 
+	/** The target agent. */
+	String TARGET_AGENT = "target_agent";
+
 	/** The test. */
 	String TEST = "test";
 

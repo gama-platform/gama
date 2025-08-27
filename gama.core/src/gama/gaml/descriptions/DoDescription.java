@@ -177,7 +177,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 	@Override
 	public IDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
 		if (declarationContext == null) {
-			final IExpression target = getFacetExpr(TARGET);
+			final IExpression target = getFacetExpr(TARGET_AGENT);
 			if (target != null) {
 				final IType<?> t = target.getGamlType();
 				if (t.isAgentType()) { declarationContext = t.getSpecies(); }

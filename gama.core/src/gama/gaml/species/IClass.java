@@ -43,30 +43,30 @@ import one.util.streamex.StreamEx;
 		name = IClass.ACTIONS,
 		type = IType.LIST,
 		of = IType.STRING,
-		doc = @doc ("A list of the names of the actions defined in this species")),
+		doc = @doc ("A list of the names of the actions defined in this species/class (incl. the ones inherited from its parent)")),
 
 		@variable (
 				name = IKeyword.ATTRIBUTES,
 				type = IType.LIST,
 				of = IType.STRING,
-				doc = @doc ("A list of the names of the attributes of this species")),
+				doc = @doc ("A list of the names of the attributes of this species/class (incl. the ones inherited from its parent)")),
 		@variable (
 				name = IKeyword.PARENT,
 				type = IType.SPECIES,
-				doc = @doc ("The parent (if any) of this species")),
+				doc = @doc ("The parent (if any) of this species/class - 'model' for models, 'experiment' for experiments and 'agent' for species with no explicit parent, 'object' for classes with no explicit parent")),
 		@variable (
 				name = IKeyword.NAME,
 				type = IType.STRING,
-				doc = @doc ("The name of the species")),
+				doc = @doc ("The name of the species/class")),
 		@variable (
 				name = IClass.SUBSPECIES,
 				type = IType.LIST,
 				of = IType.SPECIES,
-				doc = @doc ("A list of the names of subspecies of this species")) })
+				doc = @doc ("A list of the names of children of this species/class, i.e. its direct subspecies/subclasses")) })
 public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 
 	/** The subspecies. */
-	String SUBSPECIES = "subspecies";
+	String SUBSPECIES = "children";
 
 	/** The actions. */
 	String ACTIONS = "actions";

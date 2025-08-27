@@ -86,7 +86,7 @@ import gama.gaml.types.IType;
 						optional = true,
 						internal = true),
 				@facet (
-						name = IKeyword.TARGET,
+						name = IKeyword.TARGET_AGENT,
 						type = IType.NONE,
 						optional = true), },
 		omissible = IKeyword.ACTION)
@@ -214,7 +214,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		target = getFacet(IKeyword.TARGET);
+		target = getFacet(IKeyword.TARGET_AGENT);
 		targetSpecies = null;
 		if (((DoDescription) desc).isSuperInvocation()) {
 			final SpeciesDescription s = desc.getSpeciesContext().getParent();

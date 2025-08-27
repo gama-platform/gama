@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaSpeciesType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaClassType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -22,6 +22,7 @@ import gama.core.metamodel.population.IPopulationSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
 
 /**
@@ -32,44 +33,44 @@ import gama.gaml.species.ISpecies;
  * @todo Description
  *
  */
+
+/**
+ * The Class GamaClassType.
+ *
+ * @param <T>
+ *            the generic type
+ */
 @type (
-		name = IKeyword.SPECIES,
-		id = IType.SPECIES,
-		wraps = { ISpecies.class },
+		name = IKeyword.CLASS,
+		id = IType.CLASS,
+		wraps = { IClass.class },
 		kind = ISymbolKind.Variable.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
-		doc = @doc ("Meta-type of the species present in the GAML language"))
+		doc = @doc ("Meta-type of the classes present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContainerType<ISpecies> {
+public class GamaClassType<T extends IClass> extends GamaType<T> {
 
 	@Override
 	@doc (
-			value = "casting of the operand to a species.",
+			value = "casting of the operand to a class.",
 			usages = { @usage ("if the operand is nil, returns nil;"),
-					@usage ("if the operand is an agent, returns its species;"),
-					@usage ("if the operand is a string, returns the species with this name (nil if not found);"),
+					@usage ("if the operand is an object or an agent, returns its class or species;"),
+					@usage ("if the operand is a string, returns the class / species with this name (nil if not found);"),
 					@usage ("otherwise, returns nil") },
 			examples = { @example (
-					value = "species(self)",
+					value = "class(self)",
 					equals = "the species of the current agent",
 					isExecutable = false),
 					@example (
-							value = "species('node')",
-							equals = "node",
-							isExecutable = false),
-					@example (
-							value = "species([1,5,9,3])",
+							value = "class([1,5,9,3])",
 							equals = "nil",
-							isExecutable = false),
-					@example (
-							value = "species(node1)",
-							equals = "node",
 							isExecutable = false) })
-	public ISpecies cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+
+	public T cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		// TODO Add a more general cast with list of agents to find a common
 		// species.
-		ISpecies species = obj == null ? getDefault() : obj instanceof ISpecies ? (ISpecies) obj
+		T species = obj == null ? getDefault() : obj instanceof ISpecies ? (ISpecies) obj
 				: obj instanceof IAgent ? ((IAgent) obj).getSpecies()
 				: obj instanceof String
 						? scope.getModel() != null ? scope.getModel().getSpecies((String) obj) : getDefault()
@@ -79,7 +80,7 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 	}
 
 	@Override
-	public ISpecies cast(final IScope scope, final Object obj, final Object param, final IType keyType,
+	public T cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) {
 
 		final ISpecies result = cast(scope, obj, param, copy);
@@ -90,7 +91,7 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 	// TODO Verify that we dont need to declare the other cast method
 
 	@Override
-	public ISpecies getDefault() { return null; }
+	public T getDefault() { return null; }
 
 	@Override
 	public IType getContentType() { return Types.get(AGENT); }
@@ -117,37 +118,6 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 	@Override
 	public boolean canCastToConst() {
 		return false;
-	}
-
-	@Override
-	public IContainerType<?> of(final IType<?> sub1) {
-		return this;
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public IContainerType<?> of(final IType<?> sub1, final IType<?> sub2) {
-		return this;
-	}
-
-	/**
-	 * Gets the gaml type.
-	 *
-	 * @return the gaml type
-	 */
-	@Override
-	public IContainerType<ISpecies> getGamlType() { return this; }
-
-	/**
-	 * Type if casting.
-	 *
-	 * @param exp
-	 *            the exp
-	 * @return the i container type
-	 */
-	@Override
-	public IContainerType<?> typeIfCasting(final IExpression exp) {
-		return this;
 	}
 
 }
