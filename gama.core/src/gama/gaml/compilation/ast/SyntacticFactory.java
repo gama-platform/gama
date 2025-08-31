@@ -133,7 +133,8 @@ public class SyntacticFactory {
 			case MODEL -> data.length > 0 ? new SyntacticModelElement(keyword, facets, statement, (String) data[0])
 					: new SyntacticModelElement(keyword, facets, statement, null);
 			case EXPERIMENT -> new SyntacticExperimentElement(keyword, facets, statement);
-			case SPECIES, GRID, CLASS, SKILL -> new SyntacticSpeciesElement(keyword, facets, statement);
+			case SPECIES, GRID, SKILL -> new SyntacticSpeciesElement(keyword, facets, statement);
+			case CLASS -> new SyntacticClassElement(keyword, facets, statement);
 			default -> !withChildren ? new SyntacticSingleElement(keyword, facets, statement)
 					: new SyntacticComposedElement(keyword, facets, statement);
 		};

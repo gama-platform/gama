@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ISyntacticElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,9 +18,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IKeyword;
+import gama.gaml.descriptions.IDescription.IFacetVisitor;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.descriptions.IDescription.IFacetVisitor;
 import gama.gaml.interfaces.INamed;
 import gama.gaml.statements.Facets;
 
@@ -52,6 +52,9 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * The Constant DISPOSE_VISITOR.
 	 */
 	SyntacticVisitor DISPOSE_VISITOR = ISyntacticElement::dispose;
+
+	/** The class filter. */
+	Predicate<ISyntacticElement> CLASS_FILTER = ISyntacticElement::isClass;
 
 	/**
 	 * The Constant SPECIES_FILTER.
@@ -162,14 +165,21 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 *
 	 * @return true if the element is a species, false otherwise
 	 */
-	boolean isSpecies();
+	default boolean isSpecies() { return false; }
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	default boolean isClass() { return false; }
 
 	/**
 	 * Returns whether this element represents an experiment.
 	 *
 	 * @return true if the element is an experiment, false otherwise
 	 */
-	boolean isExperiment();
+	default boolean isExperiment() { return false; }
 
 	/**
 	 * Whether this elements has any facets.
@@ -200,7 +210,7 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @param visitor
 	 *            the visitor, not null
 	 */
-	void visitChildren(final SyntacticVisitor visitor);
+	default void visitChildren(final SyntacticVisitor visitor) {}
 
 	/**
 	 * Allows a visitor to visit only the elements that are species (either this element or its children).
@@ -208,7 +218,7 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @param visitor
 	 *            the visitor, not null
 	 */
-	void visitSpecies(final SyntacticVisitor visitor);
+	default void visitSpecies(final SyntacticVisitor visitor) {}
 
 	/**
 	 * Allows a visitor to visit only the elements that are experiments (either this element or its children).
@@ -216,7 +226,7 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @param visitor
 	 *            the visitor, not null
 	 */
-	void visitExperiments(final SyntacticVisitor visitor);
+	default void visitExperiments(final SyntacticVisitor visitor) {}
 
 	/**
 	 * Allows a visitor to visit only the elements that are grids (either this element or its children).
@@ -224,7 +234,15 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @param visitor
 	 *            the visitor, not null
 	 */
-	void visitGrids(final SyntacticVisitor visitor);
+	default void visitGrids(final SyntacticVisitor visitor) {}
+
+	/**
+	 * Visit classes.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 */
+	default void visitClasses(final SyntacticVisitor visitor) {}
 
 	/**
 	 * Compact the element by (1) setting the facets to null if they are empty; (2) compacting the map behind the facets

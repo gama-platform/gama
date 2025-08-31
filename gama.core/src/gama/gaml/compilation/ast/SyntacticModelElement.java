@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SyntacticModelElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -147,6 +147,17 @@ public class SyntacticModelElement extends SyntacticTopLevelElement {
 		if (hasFacet(IKeyword.PRAGMA))
 			return (Map<String, List<String>>) this.getExpressionAt(IKeyword.PRAGMA).getExpression().getConstValue();
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see gama.gaml.compilation.ast.AbstractSyntacticElement#visitSpecies(gama.gaml.compilation.ast.ISyntacticElement.
+	 * SyntacticVisitor)
+	 */
+	@Override
+	public void visitClasses(final SyntacticVisitor visitor) {
+		visitAllChildren(visitor, CLASS_FILTER);
 	}
 
 }
