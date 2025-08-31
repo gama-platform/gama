@@ -17,20 +17,14 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulationSet;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.species.IClass;
-import gama.gaml.species.ISpecies;
 
 /**
- * The type used for representing species objects (since they can be manipulated in a model)
+ * The type used for representing class objects (since they can be manipulated in a model)
  *
- * Written by drogoul Modified on 1 aout 2010
- *
- * @todo Description
  *
  */
 
@@ -48,42 +42,39 @@ import gama.gaml.species.ISpecies;
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the classes present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaClassType<T extends IClass> extends GamaType<T> {
+public class GamaClassType extends GamaMetaClassType<IClass> {
 
 	@Override
 	@doc (
 			value = "casting of the operand to a class.",
 			usages = { @usage ("if the operand is nil, returns nil;"),
-					@usage ("if the operand is an object or an agent, returns its class or species;"),
-					@usage ("if the operand is a string, returns the class / species with this name (nil if not found);"),
+					@usage ("if the operand is an object, returns its class;"),
+					@usage ("if the operand is a string, returns the class with this name (nil if not found);"),
 					@usage ("otherwise, returns nil") },
 			examples = { @example (
 					value = "class(self)",
-					equals = "the species of the current agent",
+					equals = "the class of the current object",
 					isExecutable = false),
 					@example (
 							value = "class([1,5,9,3])",
 							equals = "nil",
 							isExecutable = false) })
 
-	public T cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public IClass cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		// TODO Add a more general cast with list of agents to find a common
 		// species.
-		T species = obj == null ? getDefault() : obj instanceof ISpecies ? (ISpecies) obj
-				: obj instanceof IAgent ? ((IAgent) obj).getSpecies()
+		return obj == null ? getDefault() : obj instanceof IClass c ? c : obj instanceof IObject o ? o.getSpecies()
 				: obj instanceof String
-						? scope.getModel() != null ? scope.getModel().getSpecies((String) obj) : getDefault()
+						? scope.getModel() != null ? scope.getModel().getClass((String) obj) : getDefault()
 				: getDefault();
-		if (obj instanceof IPopulationSet) { species = ((IPopulationSet) obj).getSpecies(); }
-		return species;
 	}
 
 	@Override
-	public T cast(final IScope scope, final Object obj, final Object param, final IType keyType,
+	public IClass cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) {
 
-		final ISpecies result = cast(scope, obj, param, copy);
+		final IClass result = cast(scope, obj, param, copy);
 		if (result == null && contentType.isAgentType()) return scope.getModel().getSpecies(contentType.getName());
 		return result;
 	}
@@ -91,29 +82,10 @@ public class GamaClassType<T extends IClass> extends GamaType<T> {
 	// TODO Verify that we dont need to declare the other cast method
 
 	@Override
-	public T getDefault() { return null; }
-
-	@Override
-	public IType getContentType() { return Types.get(AGENT); }
-
-	@Override
-	public IType getKeyType() { return Types.INT; }
+	public IClass getDefault() { return null; }
 
 	@Override
 	public boolean isDrawable() { return true; }
-
-	@Override
-	public IType contentsTypeIfCasting(final IExpression exp) {
-		final IType itemType = exp.getGamlType();
-		if (itemType.isAgentType()) return itemType;
-		switch (exp.getGamlType().id()) {
-			case SPECIES:
-				return itemType.getContentType();
-			case IType.STRING:
-				return Types.AGENT;
-		}
-		return exp.getGamlType();
-	}
 
 	@Override
 	public boolean canCastToConst() {

@@ -40,7 +40,7 @@ import gama.gaml.species.ISpecies;
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the species present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContainerType<ISpecies> {
+public class GamaSpeciesType extends GamaMetaClassType<ISpecies> implements IContainerType<ISpecies> {
 
 	@Override
 	@doc (
@@ -93,7 +93,7 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 	public ISpecies getDefault() { return null; }
 
 	@Override
-	public IType getContentType() { return Types.get(AGENT); }
+	public IType getContentType() { return Types.get(IType.AGENT); }
 
 	@Override
 	public IType getKeyType() { return Types.INT; }
@@ -106,7 +106,7 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return itemType;
 		switch (exp.getGamlType().id()) {
-			case SPECIES:
+			case IType.SPECIES:
 				return itemType.getContentType();
 			case IType.STRING:
 				return Types.AGENT;
@@ -136,7 +136,7 @@ public class GamaSpeciesType extends GamaClassType<ISpecies> implements IContain
 	 * @return the gaml type
 	 */
 	@Override
-	public IContainerType<ISpecies> getGamlType() { return this; }
+	public GamaSpeciesType getGamlType() { return this; }
 
 	/**
 	 * Type if casting.

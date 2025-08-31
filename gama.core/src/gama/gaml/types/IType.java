@@ -146,6 +146,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** The class. Metatype of classes */
 	int CLASS = 32;
 
+	/** The object. Generic object type */
+	int OBJECT = 33;
+
 	/** The available types. */
 	int AVAILABLE_TYPES = 50;
 
