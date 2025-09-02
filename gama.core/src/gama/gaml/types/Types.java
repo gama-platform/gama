@@ -28,6 +28,7 @@ import gama.core.util.ICollector;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -64,11 +65,17 @@ public class Types {
 	/** The built in species map. */
 	private static volatile Map<String, SpeciesDescription> builtInSpeciesMap;
 
+	/** The built in classes map. */
+	private static volatile Map<String, ClassDescription> builtInClassesMap;
+
 	/** The Constant NO_TYPE. */
 	public final static IType NO_TYPE = new GamaNoType();
 
 	/** The type. */
-	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE;
+	public static IType PATH, FONT, SKILL, DATE, ACTION, TYPE;
+
+	/** The agent. */
+	public static GamaGenericAgentType AGENT;
 
 	/** The int. */
 	public static GamaIntegerType INT;
@@ -96,6 +103,9 @@ public class Types {
 
 	/** The field. */
 	public static GamaFieldType FIELD;
+
+	/** The object. */
+	public static GamaGenericObjectType OBJECT;
 
 	/** The species. */
 	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
@@ -159,7 +169,7 @@ public class Types {
 				PAIR = (GamaPairType) instance;
 				break;
 			case IType.AGENT:
-				AGENT = instance;
+				AGENT = (GamaGenericAgentType) instance;
 				break;
 			case IType.PATH:
 				PATH = instance;
@@ -190,6 +200,9 @@ public class Types {
 				break;
 			case IType.FIELD:
 				FIELD = (GamaFieldType) instance;
+				break;
+			case IType.OBJECT:
+				OBJECT = (GamaGenericObjectType) instance;
 				break;
 			default:
 		}
@@ -249,6 +262,12 @@ public class Types {
 				return ACTION;
 			case IType.TYPE:
 				return TYPE;
+			case IType.CLASS:
+				return CLASS;
+			case IType.FIELD:
+				return FIELD;
+			case IType.OBJECT:
+				return OBJECT;
 		}
 		return builtInTypes.get(String.valueOf(type));
 	}
@@ -365,6 +384,20 @@ public class Types {
 		root.getAllSpecies(result);
 		builtInSpeciesMap = StreamEx.of(result).toMap(SpeciesDescription::getName, sd -> sd);
 		return builtInSpeciesMap;
+	}
+
+	/**
+	 * Gets the built in classes.
+	 *
+	 * @return the built in classes
+	 */
+	public static Map<String, ? extends ClassDescription> getBuiltInClasses() {
+		if (builtInSpeciesMap != null) return builtInClassesMap;
+		final ModelDescription root = ModelDescription.ROOT;
+		List<ClassDescription> result = new ArrayList();
+		root.getAllClasses(result);
+		builtInClassesMap = StreamEx.of(result).toMap(ClassDescription::getName, sd -> sd);
+		return builtInClassesMap;
 	}
 
 	/**

@@ -233,9 +233,21 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	 *            the class name
 	 * @return the class
 	 */
+	@Override
 	public IClass getClass(final String className) {
 		if (className == null) return null;
+		if (IKeyword.MODEL.equals(className)) return GamaMetaModel.INSTANCE.getAbstractObjectClass();
 		return classes.get(className);
+	}
+
+	@Override
+	public IClass getClass(final String speciesName, final String origin) {
+		if (speciesName == null) return null;
+		for (final Map.Entry<String, ISpecies> entry : getAllSpecies().entrySet()) {
+			final ISpecies mm = entry.getValue();
+			if (mm instanceof GamlModelSpecies gms && origin.equals(mm.getName())) return gms.getClass(speciesName);
+		}
+		return getClass(speciesName);
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaMetaModel.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.gaml.compilation.kernel;
 import static gama.core.common.interfaces.IKeyword.AGENT;
 import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
 import static gama.core.common.interfaces.IKeyword.MODEL;
+import static gama.gaml.compilation.kernel.GamaBundleLoader.CURRENT_PLUGIN_NAME;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,14 +31,19 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.GamlModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.population.IPopulation;
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.IObjectConstructor;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.PlatformSpeciesDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.species.ISpecies;
+import gama.gaml.species.GamlClass;
+import gama.gaml.species.GamlSpecies;
+import gama.gaml.species.IClass;
 import gama.gaml.types.GamaGenericAgentType;
 import gama.gaml.types.Types;
 
@@ -70,13 +76,19 @@ public class GamaMetaModel {
 	private GamlModelSpecies abstractModelSpecies;
 
 	/** The abstract agent species. */
-	private ISpecies abstractAgentSpecies;
+	private GamlSpecies abstractAgentSpecies;
+
+	/** The abstract object class. */
+	private IClass abstractObjectClass;
 
 	/** The is initialized. */
 	public volatile boolean isInitialized;
 
 	/** The experiment. */
 	private SpeciesDescription agent;
+
+	/** The object. */
+	private ClassDescription object;
 
 	/** The model. */
 	private ModelDescription model;
@@ -97,13 +109,28 @@ public class GamaMetaModel {
 	public static SpeciesDescription getAgentSpeciesDescription() { return INSTANCE.agent; }
 
 	/**
+	 * Gets the object class description.
+	 *
+	 * @return the object class description
+	 */
+	public static ClassDescription getObjectClassDescription() {
+		if (INSTANCE.object == null) {
+			INSTANCE.object = DescriptionFactory.createBuiltInClassDescription(IKeyword.OBJECT, IObject.class,
+					getModelDescription(), null, IObjectConstructor.DEFAULT, CURRENT_PLUGIN_NAME);
+			INSTANCE.object.copyJavaAdditions();
+			INSTANCE.object.validate();
+		}
+		return INSTANCE.object;
+	}
+
+	/**
 	 * Gets the model description.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @return the model description
 	 * @date 15 janv. 2024
 	 */
-	public static SpeciesDescription getModelDescription() { return INSTANCE.model; }
+	public static ModelDescription getModelDescription() { return INSTANCE.model; }
 
 	/**
 	 * Gets the experiment description.
@@ -157,7 +184,7 @@ public class GamaMetaModel {
 		 */
 		public SpeciesProto(final String name, final Class clazz, final IAgentConstructor helper,
 				final String[] skills) {
-			plugin = GamaBundleLoader.CURRENT_PLUGIN_NAME;
+			plugin = CURRENT_PLUGIN_NAME;
 			this.name = name;
 			this.clazz = clazz;
 			this.helper = helper;
@@ -329,9 +356,19 @@ public class GamaMetaModel {
 	 *
 	 * @return the abstract agent species
 	 */
-	public ISpecies getAbstractAgentSpecies() {
-		if (abstractAgentSpecies == null) { abstractAgentSpecies = (ISpecies) getAgentSpeciesDescription().compile(); }
+	public GamlSpecies getAbstractAgentSpecies() {
+		if (abstractAgentSpecies == null) {
+			abstractAgentSpecies = (GamlSpecies) getAgentSpeciesDescription().compile();
+		}
 		return abstractAgentSpecies;
+	}
+
+	/**
+	 * @return
+	 */
+	public IClass getAbstractObjectClass() {
+		if (abstractObjectClass == null) { abstractObjectClass = (GamlClass) getObjectClassDescription().compile(); }
+		return abstractObjectClass;
 	}
 
 	/**

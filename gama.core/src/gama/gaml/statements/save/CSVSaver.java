@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * CSVSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * CSVSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.core.util.file.csv.AbstractCSVManipulator;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
@@ -51,11 +51,11 @@ public class CSVSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-//	public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
-//			throws GamaRuntimeException {
-//		if (os == null) return;
-//		save(scope, new OutputStreamWriter(os), header, item);
-//	}
+	// public void save(final IScope scope, final IExpression item, final OutputStream os, final boolean header)
+	// throws GamaRuntimeException {
+	// if (os == null) return;
+	// save(scope, new OutputStreamWriter(os), header, item);
+	// }
 
 	/**
 	 * Save.
@@ -79,7 +79,7 @@ public class CSVSaver extends AbstractSaver {
 
 		StringBuilder sb = new StringBuilder();
 		final IType itemType = item.getGamlType();
-		final SpeciesDescription sd;
+		final TypeDescription sd;
 		if (itemType.isAgentType()) {
 			sd = itemType.getSpecies();
 		} else if (itemType.getContentType().isAgentType()) {
@@ -104,12 +104,10 @@ public class CSVSaver extends AbstractSaver {
 				if (obj instanceof IAgent) {
 					final IAgent ag = Cast.asAgent(scope, obj);
 					sb.append(scope.getClock().getCycle() + del + ag.getName().replace(';', ',') + del
-							+ ag.getLocation().getX() + del + ag.getLocation().getY() + del
-							+ ag.getLocation().getZ());
+							+ ag.getLocation().getX() + del + ag.getLocation().getY() + del + ag.getLocation().getZ());
 					for (final String v : attributeNames) {
 						String val = StringUtils.toGaml(ag.getDirectVarValue(scope, v), false).replace(';', ',');
-						if (val.startsWith("'") && val.endsWith("'")
-								|| val.startsWith("\"") && val.endsWith("\"")) {
+						if (val.startsWith("'") && val.endsWith("'") || val.startsWith("\"") && val.endsWith("\"")) {
 							val = val.substring(1, val.length() - 1);
 						}
 						sb.append(del + val);
@@ -137,7 +135,6 @@ public class CSVSaver extends AbstractSaver {
 		}
 		GAMA.getBufferingController().askWriteFile(file.getAbsolutePath(), scope, sb, saveOptions);
 	}
-
 
 	/**
 	 * To clean string.

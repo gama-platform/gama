@@ -13,6 +13,7 @@ package gama.gaml.factories;
 import static gama.annotations.precompiler.ISymbolKind.ACTION;
 import static gama.annotations.precompiler.ISymbolKind.BATCH_METHOD;
 import static gama.annotations.precompiler.ISymbolKind.BEHAVIOR;
+import static gama.annotations.precompiler.ISymbolKind.CLASS;
 import static gama.annotations.precompiler.ISymbolKind.EXPERIMENT;
 import static gama.annotations.precompiler.ISymbolKind.LAYER;
 import static gama.annotations.precompiler.ISymbolKind.MODEL;
@@ -26,6 +27,7 @@ import static gama.annotations.precompiler.ISymbolKind.Variable.CONTAINER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.NUMBER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.REGULAR;
 import static gama.core.common.interfaces.IKeyword.AGENT;
+import static gama.core.common.interfaces.IKeyword.OBJECT;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,9 +46,11 @@ import gama.core.util.ICollector;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.IObjectConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.gaml.compilation.ast.SyntacticFactory;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -99,7 +103,7 @@ public class DescriptionFactory {
 		add(new ExperimentFactory(), EXPERIMENT);
 		add(new ModelFactory(), MODEL);
 		add(new PlatformFactory(), PLATFORM);
-		add(new SpeciesFactory(), SPECIES);
+		add(new SpeciesFactory(), SPECIES, CLASS);
 		add(new StatementFactory(), SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD,
 				OUTPUT);
 		add(new VariableFactory(), CONTAINER, NUMBER, REGULAR, PARAMETER);
@@ -282,6 +286,16 @@ public class DescriptionFactory {
 	}
 
 	/**
+	 * Adds the species name as type.
+	 *
+	 * @param name
+	 *            the name
+	 */
+	public static void addClassNameAsType(final String name) {
+		if (!OBJECT.equals(name)) { VAR_KEYWORDS_PROTOS.putIfAbsent(name, VAR_KEYWORDS_PROTOS.get(OBJECT)); }
+	}
+
+	/**
 	 * Creates the.
 	 *
 	 * @param factory
@@ -431,6 +445,31 @@ public class DescriptionFactory {
 			final Set<String> skills, final String plugin) {
 		return ((SpeciesFactory) getFactory(SPECIES)).createBuiltInSpeciesDescription(name, clazz, superDesc, parent,
 				helper, skills, null, plugin);
+	}
+
+	/**
+	 * Creates a new Description object.
+	 *
+	 * @param name
+	 *            the name
+	 * @param clazz
+	 *            the clazz
+	 * @param superDesc
+	 *            the super desc
+	 * @param parent
+	 *            the parent
+	 * @param helper
+	 *            the helper
+	 * @param skills
+	 *            the skills
+	 * @param plugin
+	 *            the plugin
+	 * @return the species description
+	 */
+	public static ClassDescription createBuiltInClassDescription(final String name, final Class clazz,
+			final ModelDescription macro, final ClassDescription parent, final IObjectConstructor helper,
+			final String plugin) {
+		return ((SpeciesFactory) getFactory(CLASS)).createBuiltInClassDescription(name, clazz, macro, parent);
 	}
 
 	/**

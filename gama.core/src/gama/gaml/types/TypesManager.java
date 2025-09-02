@@ -18,8 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
@@ -92,6 +94,27 @@ public class TypesManager implements ITypesManager {
 
 	}
 
+	/**
+	 * Adds the class type.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the i type<? extends I object>
+	 */
+	public IType<? extends IObject> addClassType(final ClassDescription species) {
+		final String name = species.getName();
+		if (IKeyword.OBJECT.equals(name)) return (IType<? extends IObject>) get(IKeyword.OBJECT);
+		if (!species.isBuiltIn() && containsType(name)) {
+			species.error("Class " + name + " already declared. Class names must be unique", IGamlIssue.DUPLICATE_NAME,
+					species.getUnderlyingElement(), name);
+			return (IType<? extends IObject>) this.get(name);
+		}
+		return addClassType(
+				new GamaObjectType(species, species.getName(), ++CURRENT_INDEX, (Class<IObject>) species.getJavaBase()),
+				species.getJavaBase());
+
+	}
+
 	@Override
 	public <Support> IType<Support> initType(final String keyword, final IType<Support> originalType, final int id,
 			final int varKind, final Class<Support> support, final String plugin) {
@@ -113,6 +136,28 @@ public class TypesManager implements ITypesManager {
 	 */
 	private IType<? extends IAgent> addSpeciesType(final IType<? extends IAgent> t,
 			final Class<? extends IAgent> clazz) {
+		final int i = t.id();
+		final String name = t.toString();
+		types.put(name, t);
+		// Hack to allow types to be declared with their id as string
+		types.put(String.valueOf(i), t);
+		// for (final Class cc : wraps) {
+		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
+		// }
+		return t;
+	}
+
+	/**
+	 * Adds the class type.
+	 *
+	 * @param t
+	 *            the t
+	 * @param clazz
+	 *            the clazz
+	 * @return the i type<? extends I agent>
+	 */
+	private IType<? extends IObject> addClassType(final IType<? extends IObject> t,
+			final Class<? extends IObject> clazz) {
 		final int i = t.id();
 		final String name = t.toString();
 		types.put(name, t);
@@ -156,6 +201,10 @@ public class TypesManager implements ITypesManager {
 			addSpeciesType(entry);
 			return true;
 		});
+		model.visitAllClasses(entry -> {
+			addClassType(entry);
+			return true;
+		});
 		// Then we parent the types
 		model.visitAllSpecies(entry -> {
 			final IType type = get(entry.getName());
@@ -163,6 +212,15 @@ public class TypesManager implements ITypesManager {
 				final TypeDescription parent = entry.getParent();
 				// Takes care of invalid species (see Issue 711)
 				type.setParent(parent == null || parent == entry ? get(IKeyword.AGENT) : get(parent.getName()));
+			}
+			return true;
+		});
+		model.visitAllClasses(entry -> {
+			final IType type = get(entry.getName());
+			if (!IKeyword.OBJECT.equals(type.getName())) {
+				final TypeDescription parent = entry.getParent();
+				// Takes care of invalid species (see Issue 711)
+				type.setParent(parent == null || parent == entry ? get(IKeyword.OBJECT) : get(parent.getName()));
 			}
 			return true;
 		});

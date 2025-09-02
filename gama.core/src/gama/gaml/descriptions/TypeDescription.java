@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
+import static com.google.common.collect.Iterables.transform;
 import static gama.gaml.descriptions.VariableDescription.FUNCTION_DEPENDENCIES_FACETS;
 import static gama.gaml.descriptions.VariableDescription.INIT_DEPENDENCIES_FACETS;
 
@@ -26,11 +27,15 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.interfaces.ISkill;
+import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
+import gama.gaml.expressions.types.TypeConstantExpression;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -60,6 +65,9 @@ public abstract class TypeDescription extends SymbolDescription {
 
 	/** The parent. */
 	protected TypeDescription parent;
+
+	/** The species expr. */
+	protected TypeConstantExpression constantExpr;
 
 	/** The is abstract. */
 	// protected final boolean isAbstract;
@@ -874,5 +882,91 @@ public abstract class TypeDescription extends SymbolDescription {
 	public ActionDescription getOwnAction(final String kw) {
 		return actions == null ? null : actions.get(kw);
 	}
+
+	/**
+	 * Copy java additions.
+	 */
+	public void copyJavaAdditions() {
+		final Class clazz = getJavaBase();
+		if (clazz == null) {
+			error("This species cannot be compiled as its Java base is unknown. ", IGamlIssue.UNKNOWN_SPECIES);
+			return;
+		}
+		Class<? extends IAgent> base = getJavaBase();
+		Iterable<Class<? extends ISkill>> skillClasses = transform(getSkills(), TO_CLASS);
+		Iterable<IDescription> javaChildren = GAML.getAllChildrenOf(base, skillClasses);
+		for (final IDescription v : javaChildren) { addJavaChild(v); }
+	}
+
+	/**
+	 * Document this.
+	 *
+	 * @param doc
+	 *            the doc
+	 * @return true, if successful
+	 */
+	public abstract void documentThis(Doc doc);
+
+	/**
+	 * @return
+	 */
+	protected Iterable getSkills() { return Collections.EMPTY_LIST; }
+
+	/**
+	 * Adds the java child.
+	 *
+	 * @param addition
+	 *            the v
+	 */
+	private void addJavaChild(final IDescription addition) {
+		if (isBuiltIn()) { addition.setOriginName("built-in " + getKeyword() + " " + getName()); }
+		boolean toAdd = false;
+		if (addition instanceof VariableDescription variable) {
+			if (this.isBuiltIn() && !hasAttribute(addition.getName()) || variable.isContextualType()) {
+				toAdd = true;
+			} else if (parent != null && parent != this) {
+				final VariableDescription existing = parent.getAttribute(addition.getName());
+				if (existing == null || !existing.getOriginName().equals(addition.getOriginName())) { toAdd = true; }
+			} else {
+				toAdd = true;
+			}
+			if (toAdd) { addOwnAttribute(variable.copy(this)); }
+		} else {
+			if (parent == null) {
+				toAdd = true;
+			} else if (parent != this) {
+				final ActionDescription existing = parent.getAction(addition.getName());
+				if (existing == null || !existing.getOriginName().equals(addition.getOriginName())) { toAdd = true; }
+			}
+			if (toAdd) { addAction((ActionDescription) addition); }
+		}
+	}
+
+	/**
+	 * Checks if is grid.
+	 *
+	 * @return true, if is grid
+	 */
+
+	public boolean isGrid() { return false; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	public boolean isModel() { return false; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	public boolean isExperiment() { return false; }
+
+	/**
+	 * @return
+	 */
+	public abstract TypeConstantExpression getConstantExpr();
 
 }

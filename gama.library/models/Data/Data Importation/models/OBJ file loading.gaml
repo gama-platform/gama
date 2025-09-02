@@ -12,13 +12,13 @@ global {
 	geometry shape <- square(10000);
 
 	init { 
-		create object{
+		create objects{
 			location <- world.location;
 		}
 	}  
 } 
 
-species object {
+species objects {
 	
 	geometry shape <- obj_file("../includes/teapot.obj") as geometry;
 
@@ -29,7 +29,7 @@ species object {
 experiment Display  type: gui {
 	output {
 		display complex  background:#gray type: 3d{
-		  species object;				
+		  species objects;				
 		}
 	}
 }

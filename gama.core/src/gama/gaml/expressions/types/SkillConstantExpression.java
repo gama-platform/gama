@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SkillConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SkillConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,13 +14,12 @@ import gama.annotations.precompiler.GamlProperties;
 import gama.core.common.interfaces.ISkill;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.types.IType;
 
 /**
  * The Class SkillConstantExpression.
  */
-public class SkillConstantExpression extends ConstantExpression {
+public class SkillConstantExpression extends TypeConstantExpression {
 
 	/**
 	 * Instantiates a new skill constant expression.

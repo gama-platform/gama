@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,8 +13,6 @@ package gama.core.outputs.layers;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -22,6 +20,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.AgentLayerStatement.AgentLayerValidator;
@@ -34,6 +34,7 @@ import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StatementDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
@@ -169,15 +170,13 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 		public void validate(final StatementDescription description) {
 			// Should be broken down in subclasses
 			IExpressionDescription ed = description.getFacet(VALUE);
-			SpeciesDescription target = null;
 			if (ed == null || ed.getExpression() == null) return;
-			target = ed.getExpression().getGamlType().getContentType().getSpecies();
-			if (target == null) // Already caught by the type checking
-				return;
+			TypeDescription target = ed.getExpression().getGamlType().getContentType().getSpecies();
+			if (!(target instanceof SpeciesDescription sd)) return;
 			ed = description.getFacet(ASPECT);
 			if (ed != null) {
 				final String a = description.getLitteral(ASPECT);
-				if (target.getAspect(a) != null) {
+				if (sd.getAspect(a) != null) {
 					ed.compileAsLabel();
 				} else if (a != null && !DEFAULT.equals(a)) {
 					description.error(a + " is not the name of an aspect of " + target.getName(), IGamlIssue.GENERAL,

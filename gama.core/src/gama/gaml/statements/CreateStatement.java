@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CreateStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * CreateStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
@@ -59,6 +59,7 @@ import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.operators.Cast;
@@ -249,8 +250,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				return;
 			}
 
-			final SpeciesDescription sd = species.getGamlType().getDenotedSpecies();
-			if (sd == null) {
+			final TypeDescription td = species.getGamlType().getDenotedSpecies();
+			if (!(td instanceof SpeciesDescription sd)) {
 				cd.error("The species to instantiate cannot be determined", UNKNOWN_SPECIES, SPECIES);
 				return;
 			}
@@ -260,7 +261,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				final boolean mir = sd.isMirror();
 				final boolean gri = sd.isGrid();
 				final boolean bui = sd.isBuiltIn();
-				if (abs || mir || gri /** see #4 || bui**/) {
+				if (abs || mir || gri /** see #4 || bui **/
+				) {
 					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : bui ? "built-in" : "";
 					cd.error(sd.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
 					return;
@@ -478,7 +480,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
 			throw GamaRuntimeException.error("Simulations can only be created within experiments", scope);
 		final SpeciesDescription sd = pop.getSpecies().getDescription();
-		final String error = sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" :**/ sd.isGrid() ? "a grid" : null;
+		final String error =
+				sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" : **/
+						sd.isGrid() ? "a grid" : null;
 		if (error != null)
 			throw GamaRuntimeException.error(sd.getName() + "is " + error + " and cannot be instantiated.", scope);
 	}

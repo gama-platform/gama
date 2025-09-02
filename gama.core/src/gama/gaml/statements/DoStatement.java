@@ -32,6 +32,7 @@ import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.operators.Cast;
@@ -222,7 +223,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		} else if (target != null) {
 			IType t = target.getGamlType();
 			if (t.isAgentType()) {
-				SpeciesDescription sd = t.getDenotedSpecies();
+				TypeDescription sd = t.getDenotedSpecies();
 				if (sd != null) { targetSpecies = sd.getName(); }
 			}
 		}

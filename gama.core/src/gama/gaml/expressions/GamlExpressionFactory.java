@@ -32,6 +32,7 @@ import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StringBasedExpressionDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.data.MapExpression;
 import gama.gaml.expressions.operators.PrimitiveOperator;
@@ -140,7 +141,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public SpeciesConstantExpression createSpeciesConstant(final IType type) {
 		if (type.getGamlType() != Types.SPECIES) return null;
-		final SpeciesDescription sd = type.getContentType().getSpecies();
+		final TypeDescription sd = type.getContentType().getSpecies();
 		if (sd == null) return null;
 		return new SpeciesConstantExpression(sd.getName(), type, sd);
 	}

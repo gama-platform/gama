@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ParametricType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,6 +30,7 @@ import gama.dev.DEBUG;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.TypeExpression;
 
@@ -151,8 +152,8 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	/**
 	 * Method cast()
 	 *
-	 * @see gama.gaml.types.IType#cast(gama.core.runtime.IScope, java.lang.Object, java.lang.Object, gama.gaml.types.IType,
-	 *      gama.gaml.types.IType)
+	 * @see gama.gaml.types.IType#cast(gama.core.runtime.IScope, java.lang.Object, java.lang.Object,
+	 *      gama.gaml.types.IType, gama.gaml.types.IType)
 	 */
 	@Override
 	public IContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final IType<?> kt,
@@ -207,25 +208,6 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	}
 
 	/**
-	 * Method isSpeciesType()
-	 *
-	 * @see gama.gaml.types.IType#isSpeciesType()
-	 */
-	@Override
-	public boolean isAgentType() {
-		// Verify this
-		return type.isAgentType();
-	}
-
-	/**
-	 * Method isSkillType()
-	 *
-	 * @see gama.gaml.types.IType#isSkillType()
-	 */
-	@Override
-	public boolean isSkillType() { return false; }
-
-	/**
 	 * Method defaultContentType()
 	 *
 	 * @see gama.gaml.types.IType#defaultContentType()
@@ -255,18 +237,18 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.gaml.types.IType#getSpecies()
 	 */
 	@Override
-	public SpeciesDescription getSpecies() {
+	public TypeDescription getSpecies() {
 
-		// if (result != null)
 		return type.getSpecies();
-		// return contentsType.getSpecies();
 	}
 
 	@Override
 	public SpeciesDescription getDenotedSpecies() {
-		final SpeciesDescription result = type.getSpecies();
-		if (result != null) return result;
-		return contentsType.getSpecies();
+		TypeDescription result = type.getSpecies();
+		if (result instanceof SpeciesDescription sd) return sd;
+		result = contentsType.getSpecies();
+		if (result instanceof SpeciesDescription sd) return sd;
+		return null;
 	}
 
 	/**

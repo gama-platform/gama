@@ -1,21 +1,25 @@
 /*******************************************************************************************************
  *
  * SpeciesFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.factories;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.kernel.GamaBundleLoader;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.descriptions.TypeDescription;
@@ -64,6 +68,34 @@ public class SpeciesFactory extends SymbolFactory {
 			final Set<String> skills, final Facets userSkills, final String plugin) {
 		DescriptionFactory.addSpeciesNameAsType(name);
 		return new SpeciesDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
+	}
+
+	/**
+	 * Creates a new Species object.
+	 *
+	 * @param name
+	 *            the name
+	 * @param clazz
+	 *            the clazz
+	 * @param superDesc
+	 *            the super desc
+	 * @param parent
+	 *            the parent
+	 * @param helper
+	 *            the helper
+	 * @param skills
+	 *            the skills
+	 * @param userSkills
+	 *            the user skills
+	 * @param plugin
+	 *            the plugin
+	 * @return the class description
+	 */
+	public ClassDescription createBuiltInClassDescription(final String name, final Class clazz,
+			final ModelDescription macro, final ClassDescription parent) {
+		DescriptionFactory.addSpeciesNameAsType(name);
+		return new ClassDescription(name, clazz, macro, parent, Collections.EMPTY_LIST, null, null, Facets.NULL,
+				GamaBundleLoader.CURRENT_PLUGIN_NAME);
 	}
 
 }

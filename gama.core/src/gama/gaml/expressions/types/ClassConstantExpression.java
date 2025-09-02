@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * SpeciesConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * ClassConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -11,7 +11,6 @@
 package gama.gaml.expressions.types;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.util.ICollector;
 import gama.dev.DEBUG;
@@ -28,7 +27,7 @@ import gama.gaml.types.IType;
  * @date 16 janv. 2024
  */
 @SuppressWarnings ({ "rawtypes" })
-public class SpeciesConstantExpression extends TypeConstantExpression {
+public class ClassConstantExpression extends TypeConstantExpression {
 
 	static {
 		DEBUG.OFF();
@@ -54,34 +53,23 @@ public class SpeciesConstantExpression extends TypeConstantExpression {
 	 * @param t
 	 *            the t
 	 */
-	public SpeciesConstantExpression(final String string, final IType t, final IDescription context) {
+	public ClassConstantExpression(final String string, final IType t, final IDescription context) {
 		super(string, t);
-
 		origin = context.getModelDescription().getName();
 		alias = context.getModelDescription().getAlias();
 		belongsToAMicroModel = alias != null && !alias.isEmpty();
-		// DEBUG.OUT("Creation of species constant expression " + string + " in context of " + origin + " with alias "
-		// + alias);
 	}
 
 	@Override
 	public Object _value(final IScope scope) {
+
 		final IAgent a = scope.getAgent();
 		if (a != null) {
-			if (!belongsToAMicroModel) {
-				final IPopulation pop = a.getPopulationFor((String) value);
-				if (pop != null) return pop.getSpecies();
-				return scope.getModel().getSpecies((String) value);
-			}
-			final IPopulation pop = scope.getRoot().getExternMicroPopulationFor(alias + "." + value);
-			if (pop != null) return pop.getSpecies();
-			return scope.getModel().getSpecies((String) value, origin);
+			if (!belongsToAMicroModel) return scope.getModel().getClass((String) value);
+			return scope.getModel().getClass((String) value, origin);
 		}
 		return null;
 	}
-
-	@Override
-	public boolean isConst() { return false; }
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {

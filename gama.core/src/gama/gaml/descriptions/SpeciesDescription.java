@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
-import static com.google.common.collect.Iterables.transform;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -78,9 +76,6 @@ public class SpeciesDescription extends TypeDescription {
 
 	/** The agent constructor. */
 	private IAgentConstructor agentConstructor;
-
-	/** The species expr. */
-	private SpeciesConstantExpression speciesExpr;
 
 	/** The java base. */
 	protected Class javaBase;
@@ -297,64 +292,6 @@ public class SpeciesDescription extends TypeDescription {
 			if (desc != null) { result = new DenotedActionExpression(desc); }
 		}
 		return result;
-	}
-
-	/**
-	 * Copy java additions.
-	 */
-	public void copyJavaAdditions() {
-		final Class clazz = getJavaBase();
-		if (clazz == null) {
-			error("This species cannot be compiled as its Java base is unknown. ", IGamlIssue.UNKNOWN_SPECIES);
-			return;
-		}
-		Class<? extends IAgent> base = getJavaBase();
-		Iterable<Class<? extends ISkill>> skillClasses = transform(getSkills(), TO_CLASS);
-		Iterable<IDescription> javaChildren = GAML.getAllChildrenOf(base, skillClasses);
-		for (final IDescription v : javaChildren) { addJavaChild(v); }
-	}
-
-	/**
-	 * Adds the java child.
-	 *
-	 * @param v
-	 *            the v
-	 */
-	private void addJavaChild(final IDescription v) {
-		if (isBuiltIn()) { v.setOriginName("built-in species " + getName()); }
-		if (v instanceof VariableDescription) {
-			boolean toAdd = false;
-			if (this.isBuiltIn() && !hasAttribute(v.getName()) || ((VariableDescription) v).isContextualType()) {
-				toAdd = true;
-			} else if (parent != null && parent != this) {
-				final VariableDescription existing = parent.getAttribute(v.getName());
-				if (existing == null || !existing.getOriginName().equals(v.getOriginName())) { toAdd = true; }
-			} else {
-				toAdd = true;
-			}
-			if (toAdd) {
-				// Fixes a problem where built-in attributes were not linked with their declaring class
-				// Class<?> c = VariableDescription.CLASS_DEFINITIONS.remove(v);
-				final VariableDescription var = (VariableDescription) v.copy(this);
-				addOwnAttribute(var);
-				// var.builtInDoc = ((VariableDescription) v).getBuiltInDoc();
-				// VariableDescription.CLASS_DEFINITIONS.put(var, c);
-			}
-
-		} else {
-			boolean toAdd = false;
-			if (parent == null) {
-				toAdd = true;
-			} else if (parent != this) {
-				final StatementDescription existing = parent.getAction(v.getName());
-				if (existing == null || !existing.getOriginName().equals(v.getOriginName())) { toAdd = true; }
-			}
-			if (toAdd) {
-
-				// v.setEnclosingDescription(this);
-				addAction((ActionDescription) v);
-			}
-		}
 	}
 
 	@Override
@@ -662,6 +599,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return true, if is grid
 	 */
+	@Override
 	public boolean isGrid() { return isSet(Flag.isGrid); }
 
 	@Override
@@ -680,6 +618,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return the documentation without meta
 	 */
+	@Override
 	public void documentThis(final Doc sb) {
 		final String parentName = getParent() == null ? "nil" : getParent().getName();
 		final String hostName = getMacroSpecies() == null ? null : getMacroSpecies().getName();
@@ -705,12 +644,13 @@ public class SpeciesDescription extends TypeDescription {
 	/**
 	 * Returns the constant expression representing this species
 	 */
-	public SpeciesConstantExpression getSpeciesExpr() {
-		if (speciesExpr == null) {
+	@Override
+	public SpeciesConstantExpression getConstantExpr() {
+		if (constantExpr == null) {
 			final IType type = GamaType.from(SpeciesDescription.this);
-			speciesExpr = GAML.getExpressionFactory().createSpeciesConstant(type);
+			constantExpr = GAML.getExpressionFactory().createSpeciesConstant(type);
 		}
-		return speciesExpr;
+		return (SpeciesConstantExpression) constantExpr;
 	}
 
 	/**
@@ -931,20 +871,6 @@ public class SpeciesDescription extends TypeDescription {
 	}
 
 	/**
-	 * Checks if is experiment.
-	 *
-	 * @return true, if is experiment
-	 */
-	public boolean isExperiment() { return false; }
-
-	/**
-	 * Checks if is model.
-	 *
-	 * @return true, if is model
-	 */
-	public boolean isModel() { return false; }
-
-	/**
 	 * Checks for micro species.
 	 *
 	 * @return true, if successful
@@ -1108,6 +1034,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return the skills
 	 */
+	@Override
 	public Iterable<SkillDescription> getSkills() {
 		final List<SkillDescription> base =
 				control == null ? Collections.EMPTY_LIST : Collections.singletonList(control);

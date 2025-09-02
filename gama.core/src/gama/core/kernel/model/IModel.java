@@ -41,6 +41,17 @@ public interface IModel extends ISpecies {
 	IClass getClass(String name);
 
 	/**
+	 * Gets the class.
+	 *
+	 * @param name
+	 *            the name
+	 * @param origin
+	 *            the origin
+	 * @return the class
+	 */
+	IClass getClass(String name, String origin);
+
+	/**
 	 * Gets the species.
 	 *
 	 * @param speciesName

@@ -734,6 +734,9 @@ public interface IKeyword {
 	/** The number. */
 	String NUMBER = "number";
 
+	/** The object. */
+	String OBJECT = "object";
+
 	/** The of. */
 	String OF = "of";
 

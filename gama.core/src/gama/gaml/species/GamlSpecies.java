@@ -910,7 +910,7 @@ public class GamlSpecies extends GamlClass implements ISpecies {
 
 	@Override
 	public IContainerType<?> getGamlType() {
-		return (IContainerType<?>) getDescription().getSpeciesExpr().getGamlType();
+		return (IContainerType<?>) getDescription().getConstantExpr().getGamlType();
 	}
 
 }

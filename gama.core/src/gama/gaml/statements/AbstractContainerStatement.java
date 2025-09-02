@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractContainerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,7 @@ import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.expressions.IVarExpression;
@@ -88,7 +88,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 			 */
 			if (index != null && list.getGamlType().isAgentType() && index.isConst()) {
 				final String s = index.literalValue();
-				final SpeciesDescription sd = list.getGamlType().getSpecies();
+				final TypeDescription sd = list.getGamlType().getSpecies();
 				if (sd.hasAttribute(s)) {
 					if (PUT.equals(keyword)) {
 						cd.warning(

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaGenericAgentType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaGenericObjectType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -16,9 +16,10 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.ClassDescription;
 
 /**
  * The "generic" agent type.
@@ -30,19 +31,19 @@ import gama.gaml.descriptions.SpeciesDescription;
  *
  */
 @type (
-		name = IKeyword.AGENT,
-		id = IType.AGENT,
-		wraps = { IAgent.class },
+		name = IKeyword.OBJECT,
+		id = IType.OBJECT,
+		wraps = { IObject.class },
 		kind = ISymbolKind.Variable.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
-		doc = @doc ("The basic and default type of agents in GAML"))
-public class GamaGenericAgentType extends GamaAgentType {
+		doc = @doc ("The basic and default type of objects in GAML"))
+public class GamaGenericObjectType extends GamaObjectType {
 
 	/**
 	 * Instantiates a new gama generic agent type.
 	 */
-	public GamaGenericAgentType() {
-		super(null, IKeyword.AGENT, IType.AGENT, IAgent.class);
+	public GamaGenericObjectType() {
+		super(null, IKeyword.OBJECT, IType.OBJECT, IObject.class);
 	}
 
 	/**
@@ -51,7 +52,7 @@ public class GamaGenericAgentType extends GamaAgentType {
 	 * @param sd
 	 *            the new species
 	 */
-	public void setSpecies(final SpeciesDescription sd) { species = sd; }
+	public void setSpecies(final ClassDescription sd) { species = sd; }
 
 	@Override
 	public IAgent cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
@@ -75,8 +76,5 @@ public class GamaGenericAgentType extends GamaAgentType {
 	public boolean isSuperTypeOf(final IType<?> type) {
 		return type != this && type instanceof GamaAgentType;
 	}
-
-	@Override
-	public SpeciesDescription getDenotedSpecies() { return species; }
 
 }

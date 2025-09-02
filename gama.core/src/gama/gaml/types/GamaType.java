@@ -29,7 +29,6 @@ import gama.core.util.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.TypeExpression;
@@ -259,12 +258,6 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	@Override
-	public boolean isAgentType() { return false; }
-
-	@Override
-	public boolean isSkillType() { return false; }
-
-	@Override
 	public IType<?> getContentType() { return Types.NO_TYPE; }
 
 	@Override
@@ -274,10 +267,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public String getSpeciesName() { return null; }
 
 	@Override
-	public SpeciesDescription getSpecies() { return null; }
+	public TypeDescription getSpecies() { return null; }
 
 	@Override
-	public SpeciesDescription getDenotedSpecies() { return getSpecies(); }
+	public TypeDescription getDenotedSpecies() { return getSpecies(); }
 
 	/**
 	 * Checks if is super type of.
