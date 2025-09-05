@@ -493,7 +493,7 @@ public class Containers {
 			
 			for(int colIdx = 0; colIdx < columns.size(); colIdx ++) {
 				for(int rowIdx = 0; rowIdx < rows.size(); rowIdx ++) {
-					result.set(scope, colIdx, colIdx, m1.get(scope, columns.get(colIdx), rows.get(rowIdx)) );
+					result.set(scope, colIdx, rowIdx, m1.get(scope, columns.get(colIdx), rows.get(rowIdx)) );
 				}
 			}
 			
