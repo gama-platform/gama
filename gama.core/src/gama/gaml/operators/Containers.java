@@ -75,6 +75,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.operators.BinaryOperator;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.species.ISpecies;
+import gama.gaml.types.GamaFieldType;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -366,8 +367,7 @@ public class Containers {
 				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
-		@doc (
-				value = "Retrieves elements from the first argument every `step` (second argument) elements. Raises an error if the step is negative or equal to zero")
+		@doc (value = "Retrieves elements from the first argument every `step` (second argument) elements. Raises an error if the step is negative or equal to zero")
 		@test ("[1,2,3,4,5] every 2 = [1,3,5]")
 		public static IList every(final IScope scope, final IList source, final Integer step) {
 			if (step <= 0)
@@ -390,18 +390,18 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = { "copy_between", "between" /* , "copy" */ },
+				value = { "copy_between", "between", "slice" },
 				can_be_const = true,
 				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				category = { IOperatorCategory.LIST },
 				concept = { IConcept.CONTAINER, IConcept.LIST })
 		@doc (
-				value = "Returns a copy of the first operand between the indexes determined by the second (inclusive) and third operands (exclusive)",
+				value = "Returns a copy of the first operand between the indices determined by the second (inclusive) and third operands (exclusive)",
 				examples = { @example (
 						value = " copy_between ([4, 1, 6, 9 ,7], 1, 3)",
 						equals = "[1, 6]") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
-						@usage ("If the second operand is greater than or equal to the third operand, return an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
 						@usage ("If the first operand is nil, raises an error") })
 		@test ("copy_between ([4, 1, 6, 9 ,7], 1, 3) = [1,6]")
 		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end) {
@@ -412,6 +412,154 @@ public class Containers {
 			if (beginIndex < endIndex) { result.addAll(l1.subList(beginIndex, endIndex)); }
 			return result;
 		}
+		
+		
+		@operator (
+				value = { "copy_between", "between" , "slice" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.LIST },
+				concept = { IConcept.CONTAINER, IConcept.LIST })
+		@doc (
+				value = "Returns a copy of the first operand between the indices determined by the second (inclusive) and third operands (exclusive) using the increment given by the fourth operand",
+				examples = { @example (
+						value = " slice ([4, 1, 6, 9 ,7], 1, 5, 2)",
+						equals = "[1, 9]") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") })
+		@test ("slice ([4, 1, 6, 9 ,7], 1, 5, 2) = [1,9]")
+		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end, final Integer step) {
+			
+			final int size = notNull(scope, l1).size();
+			final IList result = listLike(l1).get();
+			final boolean positiveStep = step > 0;
+
+			if (step == 0)
+				return result;
+			
+			
+			int beginIdx = begin;
+			int endIdx = end;
+
+			// we convert negative indices into positive ones
+			if (begin < 0) {
+				beginIdx = Math.max(0, size + begin);
+			}
+			if (end < 0) {
+				endIdx = Math.max(0, size + end);
+			}
+			
+			// rejecting invalid ranges
+			if (positiveStep && beginIdx >= endIdx) {
+				return result;
+			}
+			if (!positiveStep && beginIdx <= endIdx) {
+				return result;
+			}
+			
+			for (int i = beginIdx; positiveStep && i < endIdx || !positiveStep && i > endIdx; i += step) {
+				result.add(l1.get(i));
+			}
+			return result;
+		}
+		
+		
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a submatrix of the matrix or field given as first operand for columns and rows with the indices given by the second and third operands, following their order in the lists",
+				examples = { @example (
+						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), [2, 1, 3], [0, 1])",
+						equals = "matrix([[3, 6], [2, 5], [1, 1]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") })
+		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final List<Integer> columns, final List<Integer> rows) {
+
+			final GamaPoint aimedDimensions = new GamaPoint(columns.size(), rows.size());
+			final IMatrix result = m1.getGamlType() ==  Types.FIELD 
+					? GamaFieldType.buildField(scope, (int) aimedDimensions.x, (int)aimedDimensions.y)
+					: switch (m1.getGamlType().getContentType().id()) {
+						case IType.INT -> new GamaIntMatrix(aimedDimensions);
+						case IType.FLOAT -> new GamaFloatMatrix(aimedDimensions);
+						default -> new GamaObjectMatrix(aimedDimensions, m1.getGamlType().getContentType());
+					};
+			
+			for(int colIdx = 0; colIdx < columns.size(); colIdx ++) {
+				for(int rowIdx = 0; rowIdx < rows.size(); rowIdx ++) {
+					result.set(scope, colIdx, colIdx, m1.get(scope, columns.get(colIdx), rows.get(rowIdx)) );
+				}
+			}
+			
+			return result;
+		}
+		
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a submatrix of the matrix or field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands using the increment given by the fourth operand",
+				examples = { @example (
+						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), 1::2, 0::1, 2::1)",
+						equals = "matrix([[2, 5], [1, 1]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") })
+		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows, final GamaPair<Integer, Integer> steps) {
+
+			//TODO: currently it's only a simple version that only works for positive steps
+			//TODO: also it doesn't convert negative indices into positive ones
+			final GamaPoint initialDimensions = notNull(scope, m1).getDimensions();
+			final int aimedCols = (int) Math.min(columns.value - columns.key + 1, initialDimensions.x);
+			final int aimedRows = (int) Math.min(rows.value - rows.key + 1, initialDimensions.y);
+
+			List<Integer> cols = new ArrayList<>();
+			List<Integer> rowsList = new ArrayList<>();
+			for(int col = 0; col < aimedCols; col += steps.key) {
+				cols.add(columns.key + col);
+			}
+			for(int row = 0; row < aimedRows; row += steps.value) {
+				rowsList.add(rows.key + row);
+			}
+			
+			return submatrix(scope, m1, cols, rowsList);
+		}
+		
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a submatrix of the matrix or field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands.",
+				examples = { @example (
+						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ]]), 1::2, 0::1)",
+						equals = "matrix([2, 5], [3, 6]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") })
+		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 1::1) = matrix([[2, 5], [3, 6], [1, 1]])")
+		public static IMatrix copy_between(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
+			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(columns.value-columns.key), 
+																(int) Math.signum(rows.value-rows.key), 
+																Types.INT, 
+																Types.INT);
+			return submatrix(scope, m1, columns, rows, steps);
+		}
+		
+		
+		
 
 		/**
 		 * Copy between.
@@ -2441,7 +2589,7 @@ public class Containers {
 		int rows = c.getRows(scope);
 		int type = filter.getGamlType().id();
 		IMatrix result = switch (type) {
-			case IType.FLOAT -> new GamaFloatMatrix(cols, rows);
+			case IType.FLOAT -> c.getGamlType() == Types.FIELD  ? GamaFieldType.buildField(scope, cols, rows) : new GamaFloatMatrix(cols, rows);
 			case IType.INT -> new GamaIntMatrix(cols, rows);
 			default -> new GamaObjectMatrix(cols, rows, filter.getGamlType());
 		};
