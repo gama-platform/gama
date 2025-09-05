@@ -49,7 +49,7 @@ global {
 
 		Gama_shape_file <- shape_file("../includes/GamaVectorized.shp");
 		
-		create object from:Gama_shape_file with:[type::string(get("type")), name::string(get("name")),level::int(get("level"))]{
+		create objects from:Gama_shape_file with:[type::string(get("type")), name::string(get("name")),level::int(get("level"))]{
 		    origin <- myself.origin;
 		    color<-#white;
 		    if (name = "gamablue"){
@@ -86,9 +86,9 @@ global {
 		    location<-location  - {0,0,depth/2};
 		}
 
-		ask object{
+		ask objects{
 			 if (name = "1.9"){
-		    	origin <- first(object where (each.name="circle")).location;
+		    	origin <- first(objects where (each.name="circle")).location;
 		    }
 			switch level {
 				match 5 {
@@ -116,9 +116,9 @@ global {
 		}
 		
 		
-		loop i over: remove_duplicates(object collect each.level){
-			ask first(object where (each.level = i)){
-				linked_objects <- object where (each.level = i-1);
+		loop i over: remove_duplicates(objects collect each.level){
+			ask first(objects where (each.level = i)){
+				linked_objects <- objects where (each.level = i-1);
 			}
 		}
 	}  
@@ -129,14 +129,14 @@ global {
 } 
 
 // definition of the parts of the animated 3d model
-species object skills:[moving]{
+species objects skills:[moving]{
 	rgb color;
 	string type;
 	string name;
 	point axe <- {0,1,0};
 	float rotation_speed <- 1.0;
 	int level;
-	list<object> linked_objects <- [];
+	list<objects> linked_objects <- [];
 	float depth <- 0.0;
 	point origin;
 	point shift;		

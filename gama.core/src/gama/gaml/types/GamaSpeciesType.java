@@ -147,7 +147,7 @@ public class GamaSpeciesType extends GamaMetaClassType<ISpecies> implements ICon
 	 */
 	@Override
 	public IContainerType<?> typeIfCasting(final IExpression exp) {
-		return this;
+		return (IContainerType<?>) super.typeIfCasting(exp);
 	}
 
 }
