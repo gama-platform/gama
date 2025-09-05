@@ -336,19 +336,24 @@ public class ModelDescription extends SpeciesDescription {
 				md.getTypesManager().setParent(getTypesManager());
 				if (microModels == null) { microModels = GamaMapFactory.create(); }
 				microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
+				// no return as the species md must also be added as a child
 			}
 			case ClassDescription cd -> {
 				final String s = child.getName();
 				if (classes == null) { classes = GamaMapFactory.createOrdered(); }
 				classes.put(s, cd);
+				return cd;
 			}
 			case ExperimentDescription ed -> {
 				final String s = ed.getName();
 				if (experiments == null) { experiments = GamaMapFactory.createOrdered(); }
 				experiments.put(s, ed);
+				return ed;
 			}
-			default -> super.addChild(child);
+			default -> {
+			}
 		}
+		super.addChild(child);
 		return child;
 	}
 
