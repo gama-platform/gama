@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IContainerType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,6 +42,16 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	 */
 	@Override
 	IContainerType<?> typeIfCasting(final IExpression exp);
+
+	/**
+	 * Method isContainer()
+	 *
+	 * @see gama.gaml.types.IType#isContainer()
+	 */
+	@Override
+	default boolean isContainer() {
+		return true; // ???
+	}
 
 	/**
 	 * Cast.

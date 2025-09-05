@@ -345,16 +345,6 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	public void init(final int varKind, final int id, final String name, final Class<IContainer<?, ?>> clazz) {}
 
 	/**
-	 * Method isContainer()
-	 *
-	 * @see gama.gaml.types.IType#isContainer()
-	 */
-	@Override
-	public boolean isContainer() {
-		return true; // ???
-	}
-
-	/**
 	 * Method isFixedLength()
 	 *
 	 * @see gama.gaml.types.IType#isFixedLength()

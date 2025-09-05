@@ -345,9 +345,6 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	@Override
-	public boolean isContainer() { return false; }
-
-	@Override
 	public boolean isNumber() { return false; }
 
 	@Override

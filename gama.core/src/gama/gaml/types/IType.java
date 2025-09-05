@@ -370,7 +370,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 */
 	// public abstract boolean hasContents();
 
-	boolean isContainer();
+	default boolean isContainer() { return false; }
 
 	/**
 	 * Whether or not this type can be used in add or remove statements
