@@ -8,32 +8,83 @@
 
 model Slicing
 
+
+species dummy;
+
 experiment "Slicing tests" type:test {
 	
 	list l <- [1,2,3,4,5,6];
+	string s <- "this is a test string";
+	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
+	matrix<int> mi <- matrix(range(0,3) collect (c: range(0,3) collect (r: c+r)));
+	matrix<dummy> md;
+	field f <- field(mf);
+	
+	init {
+//		create dummy number:9;
+//		md <- matrix(range(0,3) collect (c: range(0,3) collect (r: dummy[c+r])));
+//		
+//		write mi;
+//		write '\n';
+//		write md;
+	}
+	
+	
+	test copyBetween {
+		assert l copy_between(0, 3) = [1,2,3];
+	}
+	test copyBetweenReverse {
+		assert l copy_between(3, 0) = [];
+	}
+	test copyBetweenEmpty {
+		assert [] copy_between(0, 3) = [];
+	}
+	test copyBetweenString {
+		assert s copy_between(0, 3) = "thi";
+	}
+	test copyBetweenEmptyString {
+		assert "" copy_between(0, 3) = "";
+	}
 		
 	test simpleSlicing {
-		assert l slice(0, 3) = [1,2,3];
+		assert l slice(0, 3) = [1,2,3,4];
 	}
 	
 	test simpleSlicingExplicitStep {
-		assert l slice(0, 3, 1) = [1,2,3];
+		assert l slice(0, 3, 1) = [1,2,3,4];
 	}
 	
 	test slicingStep {
-		assert l slice (0, 3, 2) = [1,3];
+		assert l slice (0, 4, 2) = [1,3,5];
 	}
 	
 	test slicingNegativeStep {
-		assert l slice (5, 2, -1) = [6,5,4];	
+		assert l slice (5, 2, -1) = [6,5,4,3];	
+	}
+	test sameIndexSimpleSlicing{
+		assert l slice(0,0) = [1];
+	}
+	test sameIndexSimpleSlicing2{
+		//TODO: this one fails on purpose because we still have to pick which behaviour is the between this and the previous one
+		assert l slice(0,0) = [];
 	}
 	
+	
 	test reverseList {
-		assert l slice(5,0, -1) = [6,5,4,3,2,1];
+		assert l slice(5,0) = [6,5,4,3,2,1];
+	}
+	test reverseString {
+		assert concatenate(list(s) slice(-1, 0)) = reverse(s);
+	}
+	test reverseListWithStep {
+		assert l slice(5,0, -2) = [6,4,2];
+	}
+	test reverseStringWithStep {
+		assert list(s) slice(-1, 0,-2) = ['g','i','t',' ','s','t','a','s',' ','i','t'];
 	}
 	
 	test implicitNegativeStep {
-		assert l slice(5, 2) = [6,5,4];
+		assert l slice(5, 2) = [6,5,4,3];
 	}
 	
 	test negativeIndexEnd {
@@ -44,15 +95,28 @@ experiment "Slicing tests" type:test {
 	}
 	
 	test negativeIndexStart {
-		assert l slice(-2, 2, -1) = [5,4];
+		assert l slice(-2, 2, -1) = [5,4,3];
 	}
 	
 	test negativeIndexStartImplicitStep {
-		assert l slice(-2, 7) = [5,6];
+		assert l slice(-2, 5) = [5,6];
+	}
+	test outOfUpperBound{
+		assert l slice(1,10) = [2,3,4,5,6];
 	}
 	
+	test outOfLowerBound{
+		assert l slice(-100,4) = [1,2,3,4,5];
+	}
+	test outOfUpperBoundStep{
+		assert l slice(1,10, 2) = [2,4,6];
+	}
+	
+	test outOfLowerBoundStep{
+		assert l slice(-100,4, 2) = [1,3,5];
+	}
 	test implicitNegativeStepWithNegativeIndices {
-		assert l slice(-1, 2) = [6,5,4];
+		assert l slice(-1, 2) = [6,5,4,3];
 	}
 	
 	test sliceField{

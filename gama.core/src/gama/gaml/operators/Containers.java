@@ -390,7 +390,7 @@ public class Containers {
 		 * @return the i list
 		 */
 		@operator (
-				value = { "copy_between", "between", "slice" },
+				value = { "copy_between", "between" },
 				can_be_const = true,
 				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				category = { IOperatorCategory.LIST },
@@ -402,7 +402,9 @@ public class Containers {
 						equals = "[1, 6]") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
-						@usage ("If the first operand is nil, raises an error") })
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "slice", "submatrix", "sublist" }
+				)
 		@test ("copy_between ([4, 1, 6, 9 ,7], 1, 3) = [1,6]")
 		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end) {
 			final int beginIndex = begin < 0 ? 0 : begin;
@@ -414,23 +416,75 @@ public class Containers {
 		}
 		
 		
+		/**
+		 * Makes sure a given index is valid for a list of given size.
+		 * Converts a possibly negative index into a positive one (-1 = size-1, -2 = size - 2 etc.). 
+		 * Checks for out of bound values and clamp if needed.
+		 *
+		 * @param idx
+		 *            the idx
+		 * @param size
+		 *            the size
+		 * @return the int
+		 */
+		protected static int convertToListIndex(final int idx, final int size) {
+			int i = idx;
+			if (idx < 0) {
+				i = size + idx;
+			}
+			return Math.max(Math.min(i, size - 1),0);
+		}
+		
 		@operator (
-				value = { "copy_between", "between" , "slice" },
+				value = { "sublist" },
 				can_be_const = true,
 				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				category = { IOperatorCategory.LIST },
 				concept = { IConcept.CONTAINER, IConcept.LIST })
 		@doc (
-				value = "Returns a copy of the first operand between the indices determined by the second (inclusive) and third operands (exclusive) using the increment given by the fourth operand",
+				value = "Returns a copy of the first operand composed by the elements at the indices given in the second operand",
 				examples = { @example (
-						value = " slice ([4, 1, 6, 9 ,7], 1, 5, 2)",
+						value = "sublist ([4, 1, 6, 9 ,7], [2, 2, 4])",
+						equals = "[6, 6, 7]") },
+				usages = { 
+						@usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error"),
+						@usage ("Indices in the second operand can be negative, in which case they are counted from the end of the list (-1 being the last element, -2 the one before last, etc.)"),
+						@usage ("If an index in the second operand is out of bounds (either > size of the first operand or < of - size) it will be clamped to 0 or size-1.") },
+				see = { "copy_between", "between", "submatrix", "slice" }
+				)
+		@test ("sublist ([4, 1, 6, 9 ,7], [2, 2, 4]) = [6, 6, 7]")
+		public static IList sublist(final IScope scope, final IList l1, final IList<Integer> indices) {
+			
+			final IList result = listLike(l1).get();
+			
+			if (l1.size() == 0) { return result; }
+			
+			for(int i : indices) {
+				result.add(l1.get(convertToListIndex(i, l1.size())));
+			}
+			return result;
+		}
+		
+		@operator (
+				value = { "slice"},
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.LIST },
+				concept = { IConcept.CONTAINER, IConcept.LIST })
+		@doc (
+				value = "Returns a copy of the first operand between the indices determined by the second (inclusive) and third operands (inclusive) using the increment given by the fourth operand",
+				examples = { @example (
+						value = " slice ([4, 1, 6, 9 ,7], 1, 4, 2)",
 						equals = "[1, 9]") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
-						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
-						@usage ("If the first operand is nil, raises an error") })
+						@usage ("If the second or third operand is less than 0 it is considered as counting from the end of the list, -1 representing the last element, -2 the one before last, etc."),
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "sublist", "submatrix" }
+				)
 		@test ("slice ([4, 1, 6, 9 ,7], 1, 5, 2) = [1,9]")
-		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end, final Integer step) {
-			
+		public static IList slice(final IScope scope, final IList l1, final Integer begin, final Integer end, final Integer step) {
+			//TODO: could generate the list of indices then call sublist but would do one more round of convertToListIndex
 			final int size = notNull(scope, l1).size();
 			final IList result = listLike(l1).get();
 			final boolean positiveStep = step > 0;
@@ -439,31 +493,40 @@ public class Containers {
 				return result;
 			
 			
-			int beginIdx = begin;
-			int endIdx = end;
+			int beginIdx = convertToListIndex(begin, size);
+			int endIdx = convertToListIndex(end, size);
 
-			// we convert negative indices into positive ones
-			if (begin < 0) {
-				beginIdx = Math.max(0, size + begin);
-			}
-			if (end < 0) {
-				endIdx = Math.max(0, size + end);
-			}
-			
-			// rejecting invalid ranges
-			if (positiveStep && beginIdx >= endIdx) {
-				return result;
-			}
-			if (!positiveStep && beginIdx <= endIdx) {
-				return result;
-			}
-			
-			for (int i = beginIdx; positiveStep && i < endIdx || !positiveStep && i > endIdx; i += step) {
+			for (int i = beginIdx; positiveStep && i <= endIdx || !positiveStep && i >= endIdx; i += step) {
 				result.add(l1.get(i));
 			}
 			return result;
 		}
 		
+
+		@operator (
+				value = { "slice"},
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.LIST },
+				concept = { IConcept.CONTAINER, IConcept.LIST })
+		@doc (
+				value = "Returns a copy of the first operand from the index determined by the second (inclusive) to the one determined by the third operands (inclusive). If the second index is less than the first, the list is built in reverse order",
+				examples = { @example (
+						value = " slice ([4, 1, 6, 9 ,7], 1, 4)",
+						equals = "[1, 6, 9, 7]") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second or third operand is less than 0 it is considered as counting from the end of the list, -1 representing the last element, -2 the one before last, etc."),
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "sublist", "submatrix" }
+				)
+		@test ("slice ([4, 1, 6, 9 ,7], 1, 5) = [1, 6, 9, 7]")
+		@test ("slice ([4, 1, 6, 9 ,7], 5, 1) = [7, 9, 6, 1]")
+		public static IList slice(final IScope scope, final IList l1, final Integer begin, final Integer end) {			
+			final int size = notNull(scope, l1).size();
+			int beginIdx = convertToListIndex(begin, size);
+			int endIdx = convertToListIndex(end, size);
+			return slice(scope, l1, beginIdx, endIdx, endIdx==beginIdx ? 1 : (int) Math.signum(endIdx-beginIdx));
+		}
 		
 		@operator (
 				value = {  "slice", "submatrix" },
@@ -478,7 +541,8 @@ public class Containers {
 						equals = "matrix([[3, 6], [2, 5], [1, 1]])") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
-						@usage ("If the first operand is nil, raises an error") })
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
 		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final List<Integer> columns, final List<Integer> rows) {
 
@@ -513,11 +577,12 @@ public class Containers {
 						equals = "matrix([[2, 5], [1, 1]])") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
-						@usage ("If the first operand is nil, raises an error") })
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows, final GamaPair<Integer, Integer> steps) {
 
-			//TODO: currently it's only a simple version that only works for positive steps
+			//TODO: currently it's just a simple version that only works for positive steps
 			//TODO: also it doesn't convert negative indices into positive ones
 			final GamaPoint initialDimensions = notNull(scope, m1).getDimensions();
 			final int aimedCols = (int) Math.min(columns.value - columns.key + 1, initialDimensions.x);
@@ -548,9 +613,10 @@ public class Containers {
 						equals = "matrix([2, 5], [3, 6]])") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
-						@usage ("If the first operand is nil, raises an error") })
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 1::1) = matrix([[2, 5], [3, 6], [1, 1]])")
-		public static IMatrix copy_between(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
 			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(columns.value-columns.key), 
 																(int) Math.signum(rows.value-rows.key), 
 																Types.INT, 
