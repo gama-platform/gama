@@ -631,19 +631,23 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows, final GamaPair<Integer, Integer> steps) {
 
-			//TODO: currently it's just a simple version that only works for positive steps
-			//TODO: also it doesn't convert negative indices into positive ones
+			//TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid creating the intermediate lists
 			final GamaPoint initialDimensions = notNull(scope, m1).getDimensions();
-			final int aimedCols = (int) Math.min(columns.value - columns.key + 1, initialDimensions.x);
-			final int aimedRows = (int) Math.min(rows.value - rows.key + 1, initialDimensions.y);
+			final int startCol = convertToListIndex(columns.key, (int)initialDimensions.x);
+			final int endCol = convertToListIndex(columns.value, (int)initialDimensions.x);
+			final int startRow = convertToListIndex(rows.key, (int)initialDimensions.y);
+			final int endRow = convertToListIndex(rows.value, (int)initialDimensions.y);
 
+			final boolean positiveColStep = steps.key > 0;
+			final boolean positiveRowStep = steps.value > 0;
+			
 			List<Integer> cols = new ArrayList<>();
 			List<Integer> rowsList = new ArrayList<>();
-			for(int col = 0; col < aimedCols; col += steps.key) {
-				cols.add(columns.key + col);
+			for(int col = startCol; positiveColStep && col <= endCol || !positiveColStep && col >= endCol; col += steps.key) {
+				cols.add(col);
 			}
-			for(int row = 0; row < aimedRows; row += steps.value) {
-				rowsList.add(rows.key + row);
+			for(int row = startRow; positiveRowStep && row <= endRow || !positiveRowStep && row >= endRow; row += steps.value) {
+				rowsList.add(row);
 			}
 			
 			return submatrix(scope, m1, cols, rowsList);
@@ -686,8 +690,12 @@ public class Containers {
 				see = { "copy_between", "between", "slice" })
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
-			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(columns.value-columns.key), 
-																(int) Math.signum(rows.value-rows.key), 
+			final int firstCol = convertToListIndex(columns.key,(int) m1.getDimensions().x);
+			final int lastCol = convertToListIndex(columns.value,(int) m1.getDimensions().x);
+			final int firstRow = convertToListIndex(rows.key,(int) m1.getDimensions().y);
+			final int lastRow = convertToListIndex(rows.value,(int) m1.getDimensions().y);
+			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(lastCol-firstCol), 
+																(int) Math.signum(lastRow-firstRow), 
 																Types.INT, 
 																Types.INT);
 			return submatrix(scope, m1, columns, rows, steps);
