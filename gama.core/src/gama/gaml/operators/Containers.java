@@ -275,10 +275,22 @@ public class Containers {
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
 		@doc (
-				value = "builds a list of int representing all contiguous values from zero to the argument. The range can be increasing or decreasing.",
+				value = "builds a list of int representing all contiguous values from zero to the argument included. The range can be increasing or decreasing.",
 				masterDoc = true,
-				special_cases = "Passing 0 will return a singleton list with 0.")
+				special_cases = "Passing 0 will return a singleton list with 0.",
+				examples = {
+						@example (
+								value = "range(2)",
+								equals = "[0,1,2]"),
+						@example (
+								value = "range(-2)",
+								equals = "[0,-1,-2]"),
+						@example (
+								value = "range(1) collect(i: range(1) collect(j: i + j))",
+								equals = "[[0,1],[1,2]]")
+				})
 		@test ("range(2) = [0,1,2]")
+		@test ("range(-2) = [0,-1,-2]")
 		@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]")
 		public static IList range(final IScope scope, final Integer end) {
 			if (end == 0) return GamaListFactory.wrap(Types.INT, 0);
@@ -302,14 +314,23 @@ public class Containers {
 				category = { IOperatorCategory.CONTAINER },
 				can_be_const = true)
 		@doc (
-				value = "the list of int representing all contiguous values from the first to the second argument.",
+				value = "the list of int representing all contiguous values from the first to the second argument included.",
 				usages = { @usage (
-						value = "When used with 2 operands, it returns the list of int representing all contiguous values from the first to the second argument. "
-								+ "Passing the same value for both will return a singleton list with this value",
-						examples = { @example (
+						value = "When passing the same value for both arguments the operator will return a list containing only this value",
+						examples = { 
+							@example (
 								value = "range(0,2)",
-								equals = "[0,1,2]") }) })
+								equals = "[0,1,2]"),
+							@example (
+								value = "range(2,0)",
+								equals = "[2,1,0]"),
+							@example(
+								value = "range(0,0)",
+								equals = "[0]")		
+						}) })
 		@test ("range(0,2) = [0,1,2]")
+		@test ("range(2,0) = [2,1,0]")
+		@test ("range(0,0) = [0]")
 		public static IList range(final IScope scope, final Integer start, final Integer end) {
 			final Integer step = start > end ? -1 : 1;
 			return range(scope, start, end, step);
