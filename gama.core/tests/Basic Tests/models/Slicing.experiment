@@ -16,17 +16,12 @@ experiment "Slicing tests" type:test {
 	list l <- [1,2,3,4,5,6];
 	string s <- "this is a test string";
 	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
-	matrix<int> mi <- matrix(range(0,3) collect (c: range(0,3) collect (r: c+r)));
+//	matrix<int> mi <- matrix(range(0,3) collect (c: range(0,3) collect (r: c+r)));
 	matrix<dummy> md;
 	field f <- field(mf);
 	
 	init {
-//		create dummy number:9;
-//		md <- matrix(range(0,3) collect (c: range(0,3) collect (r: dummy[c+r])));
-//		
-//		write mi;
-//		write '\n';
-//		write md;
+//		write range(0,3) collect (c: range(0,3) collect (r: c+r));
 	}
 	
 	
@@ -63,12 +58,7 @@ experiment "Slicing tests" type:test {
 	}
 	test sameIndexSimpleSlicing{
 		assert l slice(0,0) = [1];
-	}
-	test sameIndexSimpleSlicing2{
-		//TODO: this one fails on purpose because we still have to pick which behaviour is the between this and the previous one
-		assert l slice(0,0) = [];
-	}
-	
+	}	
 	
 	test reverseList {
 		assert l slice(5,0) = [6,5,4,3,2,1];
@@ -120,8 +110,9 @@ experiment "Slicing tests" type:test {
 	}
 	
 	test sliceField{
-		assert false;
-		//TODO check the result and check the type
+		let f2 <- slice (f, 1::2, 1::2);
+		assert type_of(f2) = field;
+		assert f2 = field([[6,10],[7,11]]);
 	}
 	
 	test sliceFloatMatrix{

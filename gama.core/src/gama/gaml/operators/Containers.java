@@ -476,7 +476,7 @@ public class Containers {
 		@doc (
 				value = "Returns a copy of the first operand between the indices determined by the second (inclusive) and third operands (inclusive) using the increment given by the fourth operand",
 				examples = { @example (
-						value = " slice ([4, 1, 6, 9 ,7], 1, 4, 2)",
+						value = " slice ([4, 1, 6, 9 ,7], 1, 5, 2)",
 						equals = "[1, 9]") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second or third operand is less than 0 it is considered as counting from the end of the list, -1 representing the last element, -2 the one before last, etc."),
@@ -512,9 +512,14 @@ public class Containers {
 				concept = { IConcept.CONTAINER, IConcept.LIST })
 		@doc (
 				value = "Returns a copy of the first operand from the index determined by the second (inclusive) to the one determined by the third operand (inclusive).",
-				examples = { @example (
-						value = " slice ([4, 1, 6, 9 ,7], 1, 4)",
-						equals = "[1, 6, 9, 7]") },
+				examples = { 
+						@example (
+							value = " slice ([4, 1, 6, 9 ,7], 1, 5)",
+							equals = "[1, 6, 9, 7]"),		
+						@example (
+								value = " slice ([4, 1, 6, 9 ,7], 5, 1)",
+								equals = "[7, 9, 6, 1]")
+				},
 				usages = { @usage("If the second index is less than the first, the list is built in reverse order"),
 						@usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second or third operand is less than 0 it is considered as counting from the end of the list, -1 representing the last element, -2 the one before last, etc."),
@@ -566,6 +571,27 @@ public class Containers {
 			return result;
 		}
 		
+
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a subfield of the field given as first operand for columns and rows with the indices given by the second and third operands, following their order in the lists",
+				examples = { @example (
+						value = " slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), [2, 1, 3], [0, 1])",
+						equals = "field([[3, 6], [2, 5], [1, 1]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
+		@test ("submatrix (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = field([[3, 6], [2, 5], [1, 1]])")
+		public static GamaField submatrix(final IScope scope, final GamaField f, final List<Integer> columns, final List<Integer> rows) {
+			return (GamaField) submatrix(scope, (IMatrix)f, columns, rows);
+		}
+		
 		@operator (
 				value = {  "slice", "submatrix" },
 				can_be_const = true,
@@ -575,7 +601,7 @@ public class Containers {
 		@doc (
 				value = "Returns a submatrix of the matrix or field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands using the increment given by the fourth operand",
 				examples = { @example (
-						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), 1::2, 0::1, 2::1)",
+						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), 1::3, 0::1, 2::1)",
 						equals = "matrix([[2, 5], [1, 1]])") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
@@ -609,15 +635,35 @@ public class Containers {
 				category = { IOperatorCategory.MATRIX},
 				concept = { IConcept.CONTAINER, IConcept.MATRIX })
 		@doc (
-				value = "Returns a submatrix of the matrix or field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands.",
+				value = "Returns a subfield of the field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands using the increment given by the fourth operand",
 				examples = { @example (
-						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ]]), 1::2, 0::1)",
-						equals = "matrix([2, 5], [3, 6]])") },
+						value = " slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 1, 1]]), 1::3, 0::1, 2::1)",
+						equals = "field([[2, 5], [1, 1]])") },
 				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
-		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 1::1) = matrix([[2, 5], [3, 6], [1, 1]])")
+		@test ("slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = field([[2, 5], [1, 1]])")
+		public static GamaField submatrix(final IScope scope, final GamaField f, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows, final GamaPair<Integer, Integer> steps) {	
+			return (GamaField) submatrix(scope, (IMatrix)f, columns, rows, steps);
+		}
+		
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a submatrix of the matrix or field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands.",
+				examples = { @example (
+						value = " slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1)",
+						equals = "matrix([2, 5], [3, 6], [1, 1]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
+		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
 			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(columns.value-columns.key), 
 																(int) Math.signum(rows.value-rows.key), 
@@ -626,7 +672,25 @@ public class Containers {
 			return submatrix(scope, m1, columns, rows, steps);
 		}
 		
-		
+		@operator (
+				value = {  "slice", "submatrix" },
+				can_be_const = true,
+				content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+				category = { IOperatorCategory.MATRIX},
+				concept = { IConcept.CONTAINER, IConcept.MATRIX })
+		@doc (
+				value = "Returns a subfield of the field given as first operand for columns between the indices determined by the second and rows between those determined by the third operands.",
+				examples = { @example (
+						value = " slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1)",
+						equals = "field([2, 5], [3, 6], [1, 1]])") },
+				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
+						@usage ("If the first operand is nil, raises an error") },
+				see = { "copy_between", "between", "slice" })
+		@test ("slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = field([[2, 5], [3, 6], [1, 1]])")
+		public static GamaField submatrix(final IScope scope, final GamaField f, final GamaPair<Integer, Integer> columns, final GamaPair<Integer, Integer> rows) {
+			return (GamaField) submatrix(scope, (IMatrix) f, columns, rows);
+		}
 		
 
 		/**
