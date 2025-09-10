@@ -63,6 +63,7 @@ import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
+import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
@@ -484,7 +485,7 @@ public class Containers {
 				)
 		@test ("slice ([4, 1, 6, 9 ,7], 1, 5, 2) = [1,9]")
 		public static IList slice(final IScope scope, final IList l1, final Integer begin, final Integer end, final Integer step) {
-			//TODO: could generate the list of indices then call sublist but would do one more round of convertToListIndex
+			//TODO: could generate the list of indices then call sublist but would do one more round of convertToListIndex and create a potentially big intermediate list
 			final int size = notNull(scope, l1).size();
 			final IList result = listLike(l1).get();
 			final boolean positiveStep = step > 0;
@@ -510,11 +511,12 @@ public class Containers {
 				category = { IOperatorCategory.LIST },
 				concept = { IConcept.CONTAINER, IConcept.LIST })
 		@doc (
-				value = "Returns a copy of the first operand from the index determined by the second (inclusive) to the one determined by the third operands (inclusive). If the second index is less than the first, the list is built in reverse order",
+				value = "Returns a copy of the first operand from the index determined by the second (inclusive) to the one determined by the third operand (inclusive).",
 				examples = { @example (
 						value = " slice ([4, 1, 6, 9 ,7], 1, 4)",
 						equals = "[1, 6, 9, 7]") },
-				usages = { @usage ("If the first operand is empty, returns an empty object of the same type"),
+				usages = { @usage("If the second index is less than the first, the list is built in reverse order"),
+						@usage ("If the first operand is empty, returns an empty object of the same type"),
 						@usage ("If the second or third operand is less than 0 it is considered as counting from the end of the list, -1 representing the last element, -2 the one before last, etc."),
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "sublist", "submatrix" }
@@ -547,7 +549,7 @@ public class Containers {
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final List<Integer> columns, final List<Integer> rows) {
 
 			final GamaPoint aimedDimensions = new GamaPoint(columns.size(), rows.size());
-			final IMatrix result = m1.getGamlType() ==  Types.FIELD 
+			final IMatrix result = m1.getGamlType().id() ==  IType.FIELD 
 					? GamaFieldType.buildField(scope, (int) aimedDimensions.x, (int)aimedDimensions.y)
 					: switch (m1.getGamlType().getContentType().id()) {
 						case IType.INT -> new GamaIntMatrix(aimedDimensions);
@@ -2628,6 +2630,20 @@ public class Containers {
 				.toCollection(listOf(resultingContentsType));
 
 	}
+	
+	
+	@operator (
+			value = { "collect" },
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "When applied to a field, collect returns a field of the same size, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
+	@test ("field([1,2,4],[1,3,4]) collect (x: x *2) = field([2,4,8],[2,6,8])")
+	public static GamaField collect(final IScope scope, final String eachName, final GamaField f, final IExpression filter) {
+		return (GamaField) collect(scope, eachName, (IMatrix)f, filter);
+	}
 
 	/**
 	 * Collect.
@@ -2649,8 +2665,7 @@ public class Containers {
 	@doc (
 			value = "When applied to a matrix, collect returns a matrix of the same size, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
 	@test ("matrix([1,2,4],[1,3,4]) collect (x: x *2) = matrix([2,4,8],[2,6,8])")
-	public static IMatrix collect(final IScope scope, final String eachName, final IMatrix c,
-			final IExpression filter) {
+	public static IMatrix collect(final IScope scope, final String eachName, final IMatrix c, final IExpression filter) {
 		int cols = c.getCols(scope);
 		int rows = c.getRows(scope);
 		int type = filter.getGamlType().id();
