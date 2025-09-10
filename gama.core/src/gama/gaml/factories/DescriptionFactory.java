@@ -580,6 +580,7 @@ public class DescriptionFactory {
 			};
 			source.visitChildren(visitor);
 			source.visitGrids(visitor);
+			source.visitClasses(visitor);
 			source.visitSpecies(visitor);
 			source.visitExperiments(visitor);
 			children = childrenList.items();

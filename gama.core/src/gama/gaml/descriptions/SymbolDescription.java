@@ -1228,7 +1228,12 @@ public abstract class SymbolDescription implements IDescription {
 		}
 
 		// If a custom validator has been defined, run it
-		if (!proto.getValidator().validate(this, element)) return null;
+		try {
+			if (!proto.getValidator().validate(this, element)) return null;
+		} catch (ClassCastException e1) {
+			if (!proto.getValidator().validate(this, element)) return null;
+		}
+
 		return this;
 	}
 

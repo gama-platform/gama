@@ -392,7 +392,7 @@ public class Types {
 	 * @return the built in classes
 	 */
 	public static Map<String, ? extends ClassDescription> getBuiltInClasses() {
-		if (builtInSpeciesMap != null) return builtInClassesMap;
+		if (builtInClassesMap != null) return builtInClassesMap;
 		final ModelDescription root = ModelDescription.ROOT;
 		List<ClassDescription> result = new ArrayList();
 		root.getAllClasses(result);

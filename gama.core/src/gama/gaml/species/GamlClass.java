@@ -33,8 +33,8 @@ import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.compilation.annotations.validator;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.species.GamlClass.ClassValidator;
 import gama.gaml.statements.ActionStatement;
@@ -64,7 +64,7 @@ import gama.gaml.variables.IVariable;
 						doc = @doc ("the identifier of the class, which must be unique in the model. It is used to refer to the class in the model, and to create instances of it.")),
 				@facet (
 						name = IKeyword.PARENT,
-						type = IType.SPECIES,
+						type = IType.CLASS,
 						optional = true,
 						doc = @doc ("the parent class (inheritance)")),
 				@facet (
@@ -74,7 +74,7 @@ import gama.gaml.variables.IVariable;
 						doc = @doc ("whether the class is virtual (cannot be instantiated, but only used as a parent) (false by default)")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "The class statement allows modelers to define new classes in the model. A class is a template for creating objects, and can be used to define the attributes and actions of objects in the model. Classes can inherit from other classes, and can have attributes and actions.")
+		value = "The class statement allows modelers to define new classes in the model. A class is a template for creating objects, and can be used to define the attributes and actions of objects in the model. Classes can inherit from other classes")
 @validator (ClassValidator.class)
 public class GamlClass extends Symbol implements IClass {
 
@@ -102,9 +102,7 @@ public class GamlClass extends Symbol implements IClass {
 		 */
 		@Override
 		public void validate(final IDescription desc) {
-
-			final SpeciesDescription sd = (SpeciesDescription) desc;
-
+			final ClassDescription sd = (ClassDescription) desc;
 			/** The name. */
 			final String name = sd.getName();
 			if (GAML.isUnaryOperator(name)) {

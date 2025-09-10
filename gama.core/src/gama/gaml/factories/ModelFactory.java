@@ -262,7 +262,7 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classesNodes,
 			final Map<String, ISyntacticElement> experimentNodes, final Map<String, TypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { addMicroSpecies(model, speciesNode, tempSpeciesCache); });
-
+		classesNodes.forEach((s, classNode) -> addClass(model, classNode, tempSpeciesCache));
 		experimentNodes.forEach((s, experimentNode) -> { addExperiment(s, model, experimentNode, tempSpeciesCache); });
 	}
 
@@ -572,6 +572,27 @@ public class ModelFactory extends SymbolFactory {
 		final SyntacticVisitor visitor = element -> addMicroSpecies(mDesc, element, cache);
 		micro.visitSpecies(visitor);
 		micro.visitExperiments(visitor);
+	}
+
+	/**
+	 * Adds the class.
+	 *
+	 * @param macro
+	 *            the macro
+	 * @param micro
+	 *            the micro
+	 * @param cache
+	 *            the cache
+	 */
+	void addClass(final ModelDescription macro, final ISyntacticElement micro,
+			final Map<String, TypeDescription> cache) {
+		// Create the species description without any children. Passing
+		// explicitly an empty list and not null;
+		final ClassDescription mDesc =
+				(ClassDescription) DescriptionFactory.create(micro, macro, Collections.EMPTY_LIST);
+		cache.put(mDesc.getName(), mDesc);
+		// Add it to its macro-species
+		macro.addChild(mDesc);
 	}
 
 	/**

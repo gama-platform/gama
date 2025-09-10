@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.descriptions.ClassDescription;
@@ -39,7 +40,14 @@ public class SpeciesFactory extends SymbolFactory {
 	@Override
 	protected TypeDescription buildDescription(final String keyword, final Facets facets, final EObject element,
 			final Iterable<IDescription> children, final IDescription sd, final SymbolProto proto) {
-		return new SpeciesDescription(keyword, null, (SpeciesDescription) sd, null, children, element, facets);
+		TypeDescription result = null;
+		if (IKeyword.CLASS.equals(keyword)) {
+			result = new ClassDescription(keyword, null, (ModelDescription) sd, null, children, element, null, facets,
+					GamaBundleLoader.CURRENT_PLUGIN_NAME);
+		} else {
+			result = new SpeciesDescription(keyword, null, (SpeciesDescription) sd, null, children, element, facets);
+		}
+		return result;
 	}
 
 	/**
