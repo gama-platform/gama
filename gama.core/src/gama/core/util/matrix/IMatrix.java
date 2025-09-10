@@ -55,7 +55,9 @@ import one.util.streamex.StreamEx;
 		@variable (
 				name = IMatrix.COLUMNS,
 				type = IType.INT,
-				doc = { @doc ("Returns the number of columns of the receiver matrix") }) })
+				doc = { @doc ("Returns the number of columns of the receiver matrix") })
+})
+
 @SuppressWarnings ({ "rawtypes" })
 public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint, T>,
 		IAddressableContainer<GamaPoint, T, GamaPoint, T>, IFieldMatrixProvider {
@@ -162,6 +164,23 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 			see = "rows_list")
 	IList<IList<T>> getColumnsList();
 
+	
+	@operator (
+			value = "as_list",
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "returns a list of all the elements of the matrix, in row-major order",
+			examples = { @example (
+					value = "as_list(matrix([[\"el11\",\"el21\",\"el31\"],[\"el12\",\"el22\",\"el32\"],[\"el13\",\"el23\",\"el33\"]]))",
+					equals = "[\"el11\",\"el12\",\"el13\",\"el21\",\"el22\",\"el23\",\"el31\",\"el32\",\"el33\"]") },
+			see = { "rows_list", "columns_list" })
+	@test ("as_list(matrix([[1,4,7],[2,5,8],[3,6,9]])) = [1,2,3,4,5,6,7,8,9]")
+	IList<T> asList(final IScope scope);
+
+	
 	/**
 	 * Gets the row.
 	 *

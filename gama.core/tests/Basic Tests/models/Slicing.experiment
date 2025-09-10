@@ -8,22 +8,27 @@
 
 model Slicing
 
+global{
+	list l <- [1,2,3,4,5,6];
+	string s <- "this is a test string";
+	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
+	field f <- field(mf);
+	matrix<int> mi <- matrix(range(1,3) collect (c: range(0,2) collect (r: c+r*3)));
+	matrix<dummy> md;
+	list<dummy> ld;
+	
+	init {
+		create dummy number:9;
+		md <- matrix(range(0, 2) collect (c: range(0, 2) collect (r: dummy(c+r*3))));
+		ld <- as_list(md);
+	}
+	
+}
 
 species dummy;
 
 experiment "Slicing tests" type:test {
 	
-	list l <- [1,2,3,4,5,6];
-	string s <- "this is a test string";
-	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
-	matrix<int> mi <- matrix(range(1,3) collect (c: range(0,2) collect (r: c+r*3)));
-	matrix<dummy> md;
-	field f <- field(mf);
-	
-	init {
-		write mi;
-//		write range(0,3) collect (c: range(0,3) collect (r: c+r));
-	}
 	
 	
 	test copyBetween {
@@ -45,7 +50,11 @@ experiment "Slicing tests" type:test {
 	test simpleSlicing {
 		assert l slice(0, 3) = [1,2,3,4];
 	}
-	
+		
+	test sliceAgentList{
+		assert false;
+		//TODO check the result and check the type
+	}
 	test simpleSlicingExplicitStep {
 		assert l slice(0, 3, 1) = [1,2,3,4];
 	}
@@ -128,14 +137,10 @@ experiment "Slicing tests" type:test {
 	}
 	
 	test sliceObjectMatrix{
-		assert false;
-		//TODO check the result and check the type
+		let m2 <- slice (md, 1::2, 1::2);
+		assert m2 = matrix<dummy>([[dummy(4),dummy(7)],[dummy(5),dummy(8)]]);
 	}
-	
-	test sliceAgentList{
-		assert false;
-		//TODO check the result and check the type
-	}
+
 	
 	test sliceMatrixListColRow{
 		assert false;
