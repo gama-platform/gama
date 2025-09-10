@@ -108,7 +108,7 @@ public class Random2 {
 			category = { IOperatorCategory.RANDOM },
 			concept = { IConcept.RANDOM })
 	@doc (
-			value = "returns a random value from a exponential distribution with specified values of the rate (lambda) parameters. See https://mathworld.wolfram.com/ExponentialDistribution.html for more details ). ",
+			value = "returns a random value from a exponential distribution with specified values of the scale parameters (1/lambda). See https://mathworld.wolfram.com/ExponentialDistribution.html for more details ). ",
 			examples = { @example (
 					value = "exp_rnd(5) ",
 					equals = "0.731",
@@ -116,10 +116,10 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"truncated_gauss", "weibull_trunc_rnd" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static Double OpExpDist(final IScope scope, final Double rate)
+	public static Double OpExpDist(final IScope scope, final Double scale)
 			throws GamaRuntimeException {
 		final ExponentialDistribution dist =
-				new ExponentialDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()), rate);
+				new ExponentialDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()), scale);
 
 		return dist.sample();
 	}	
