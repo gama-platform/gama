@@ -21,7 +21,7 @@ import gama.core.runtime.IScope;
  *
  */
 
-public class LatinhypercubeSampling extends SamplingUtils{
+public class LatinhypercubeSampling extends SamplingUtils {
 	
 	//public LatinhypercubeSampling() { }
 	
@@ -105,4 +105,5 @@ public class LatinhypercubeSampling extends SamplingUtils{
         return buildParametersSetfromSample(scope,parameters,sampling);
         
     }
+    
 }
