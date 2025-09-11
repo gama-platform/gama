@@ -19,7 +19,6 @@ import static gama.core.runtime.server.ISocketCommand.PARAMETERS;
 import static gama.core.runtime.server.ISocketCommand.SYNC;
 import static gama.core.runtime.server.ISocketCommand.SYNTAX;
 import static gama.core.runtime.server.MessageType.CommandExecutedSuccessfully;
-import static gama.core.runtime.server.MessageType.GamaServerError;
 import static gama.core.runtime.server.MessageType.MalformedRequest;
 import static gama.core.runtime.server.MessageType.UnableToExecuteRequest;
 

@@ -89,7 +89,7 @@ import gama.gaml.types.Types;
 				doc = @doc ("provides information about the ordering of vehicle on any given lane")), })
 
 @skill (
-		name = "road_skill",
+		name = RoadSkill.ROAD_SKILL,
 		concept = { IConcept.TRANSPORT, IConcept.SKILL },
 		doc = @doc ("A skill for agents representing roads in traffic simulations"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
@@ -97,7 +97,7 @@ public class RoadSkill extends Skill {
 
 
 	/** The Constant SKILL_ROAD. */
-	public static final String SKILL_ROAD = "skill_road";
+	public static final String ROAD_SKILL = "road_skill";
 
 	/** The Constant ALL_AGENTS. */
 	// TODO: rename these two lists?
