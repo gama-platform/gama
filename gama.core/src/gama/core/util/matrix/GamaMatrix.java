@@ -493,6 +493,12 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		return _listValue(scope, contentsType, true);
 	}
 
+	
+	@Override
+	public IList<T> asList(final IScope scope) {
+		return listValue(scope, type.getContentType(), false);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 *

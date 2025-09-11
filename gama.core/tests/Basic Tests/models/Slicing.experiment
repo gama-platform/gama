@@ -1,0 +1,272 @@
+/**
+* Name: Slicing
+* Based on the internal empty template. 
+* Author: baptiste lesquoy
+* Tags: 
+*/
+
+
+model Slicing
+
+global{
+	list l <- [1,2,3,4,5,6];
+	string s <- "this is a test string";
+	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
+	field f <- field(mf);
+	matrix<int> mi <- matrix(range(1,3) collect (c: range(0,2) collect (r: c+r*3)));
+	matrix<dummy> md;
+	list<dummy> ld;
+	
+	init {
+		create dummy number:9;
+		md <- matrix(range(0, 2) collect (c: range(0, 2) collect (r: dummy(c+r*3))));
+		ld <- as_list(md);
+	}
+	
+}
+
+species dummy;
+
+experiment "Slicing tests" type:test {
+	
+	
+	
+	test copyBetween {
+		assert l copy_between(0, 3) = [1,2,3];
+	}
+	test copyBetweenReverse {
+		assert l copy_between(3, 0) = [];
+	}
+	test copyBetweenEmpty {
+		assert [] copy_between(0, 3) = [];
+	}
+	test copyBetweenString {
+		assert s copy_between(0, 3) = "thi";
+	}
+	test copyBetweenEmptyString {
+		assert "" copy_between(0, 3) = "";
+	}
+		
+	test simpleSlicing {
+		assert l slice(0, 3) = [1,2,3,4];
+	}	
+	test sliceAgentList{
+		assert ld slice(0, 3) = [dummy(0), dummy(1), dummy(2), dummy(3)];
+	}
+	test simpleSlicingExplicitStep {
+		assert l slice(0, 3, 1) = [1,2,3,4];
+	}
+	test sliceAgentListStep{
+		assert ld slice(0, 4,2) = [dummy(0), dummy(2), dummy(4)];
+	}
+	
+	test slicingStep {
+		assert l slice (0, 4, 2) = [1,3,5];
+	}
+	
+	test slicingNegativeStep {
+		assert l slice (5, 2, -1) = [6,5,4,3];	
+	}
+	test sameIndexSimpleSlicing{
+		assert l slice(0,0) = [1];
+	}	
+	
+	test reverseList {
+		assert l slice(5,0) = [6,5,4,3,2,1];
+	}
+	test reverseString {
+		assert concatenate(list(s) slice(-1, 0)) = reverse(s);
+	}
+	test reverseListWithStep {
+		assert l slice(5,0, -2) = [6,4,2];
+	}
+	test reverseStringWithStep {
+		assert list(s) slice(-1, 0,-2) = ['g','i','t',' ','s','t','a','s',' ','i','t'];
+	}
+	
+	test implicitNegativeStep {
+		assert l slice(5, 2) = [6,5,4,3];
+	}
+	
+	test negativeIndexEnd {
+		assert l slice(2, -1, 1) = [3,4,5,6];
+	}
+	test negativeIndexEndImplicitStep {
+		assert l slice(2, -1) = [3,4,5,6];
+	}
+	
+	test negativeIndexStart {
+		assert l slice(-2, 2, -1) = [5,4,3];
+	}
+	
+	test negativeIndexStartImplicitStep {
+		assert l slice(-2, 5) = [5,6];
+	}
+	test outOfUpperBound{
+		assert l slice(1,10) = [2,3,4,5,6];
+	}
+	
+	test outOfLowerBound{
+		assert l slice(-100,4) = [1,2,3,4,5];
+	}
+	test outOfUpperBoundStep{
+		assert l slice(1,10, 2) = [2,4,6];
+	}
+	
+	test outOfLowerBoundStep{
+		assert l slice(-100,4, 2) = [1,3,5];
+	}
+	test implicitNegativeStepWithNegativeIndices {
+		assert l slice(-1, 2) = [6,5,4,3];
+	}
+	
+	test sliceField{
+		let f2 <- slice (f, 1::2, 1::2);
+		assert type_of(f2) = field;
+		assert f2 = field([[6,10],[7,11]]);
+	}
+	
+	test sliceFloatMatrix{
+		let m2 <- slice (mf, 1::2, 1::2);
+		//cannot test the type currently because type_of(m2) = matrix<float> doesn't compile
+		assert m2 = matrix<float>([[6.0,10],[7,11]]);
+	}
+	
+	test sliceIntMatrix{
+		let m2 <- slice (mi, 1::2, 1::2);
+		assert m2 = matrix<int>([[5,8],[6,9]]);
+	}
+	
+	test sliceObjectMatrix{
+		let m2 <- slice (md, 1::2, 1::2);
+		assert m2 = matrix<dummy>([[dummy(4),dummy(7)],[dummy(5),dummy(8)]]);
+	}
+
+	
+	test sliceMatrixListColRow{
+		let m2 <- slice (md, [0,2], [0,2]);
+		assert m2 = matrix<dummy>([[dummy(0),dummy(6)],[dummy(2),dummy(8)]]);
+	}
+	
+	
+	test sliceMatrixListColRowRepeatRows{
+		let m2 <- slice (mi, [0,2], [0,2,2]);
+		assert m2 = matrix([[1,7,7],[3,9,9]]);
+	}
+	
+	
+	test sliceMatrixListColRowRepeatCols{
+		let m2 <- slice (mi, [0,0,2], [0,2]);
+		assert m2 = matrix([[1,7], [1,7],[3,9]]);
+	}
+	
+	test sliceMatrixReverseCols{
+		let m2 <- slice (mi, 2::0, 0::2);
+		assert m2 = matrix([[3,6,9],[2,5,8],[1,4,7]]);
+	}
+	
+	test sliceMatrixReverseRows{
+		let m2 <- slice (mi, 0::2, 2::0);
+		assert m2 = matrix([[7,4,1], [8,5,2], [9,6,3]]);
+	}
+	test sliceMatrixReverseRowsAndCols{
+		let m2 <- slice (mi, 2::0, 2::0);
+		assert m2 = matrix([[9,6,3], [8,5,2], [7,4,1]]);
+	}
+	
+	test sliceMatrixNegativeColStep{
+		let m2 <- slice (mi, 2::0, 0::2, -2::1);
+		assert m2 = matrix([[3,6,9],[1,4,7]]);
+	}
+	
+	test sliceMatrixNegativeRowStep{
+		let m2 <- slice (mi, 2::0, 0::2, -2::1);
+		assert m2 = matrix([[3,6,9],[1,4,7]]);
+	}
+	
+	test sliceMatrixNegativeIndexCols{
+		let m2 <- slice (mi, -1::-3, 0::2, -2::1);
+		assert m2 = matrix([[3,6,9],[1,4,7]]);
+	}
+	
+	test sliceMatrixNegativeIndexRows{
+		let m2 <- slice (mi, 2::0, -3::-1, -2::1);
+		assert m2 = matrix([[3,6,9],[1,4,7]]);
+	}
+	
+	test sliceMatrixReverseListCols{
+		let m2 <- slice (mi, range(2,0), range(2));
+		assert m2 = matrix([[3,6,9],[2,5,8],[1,4,7]]);
+	}
+	
+	test sliceMatrixReverseListRows{
+		let m2 <- slice (mi, range(2), range(2,0));
+		assert m2 = matrix([[7,4,1], [8,5,2], [9,6,3]]);
+	}
+	
+	test sliceMatrixImplicitZeroRowStep{
+		let m2 <- slice (mi, 0::1, 1::1);
+		assert m2 = matrix([[4],[5]]);
+	}
+	
+	test sliceMatrixImplicitZeroColStep{
+		let m2 <- slice (mi, 0::0, 0::1);
+		assert m2 = matrix([[1,4]]);
+	}
+	
+	test sliceMatrixExplicitZeroRowStep{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::0);
+		assert empty(m2);
+	}
+	
+	test sliceMatrixExplicitZeroColStep{
+		let m2 <- slice (mi, 0::-1, 0::-1, 0::1);
+		assert empty(m2);
+	}
+	
+	test sliceMatrixOutOfLowerBoundCol{
+		let m2 <- slice (mi, -10::-1, 1::2);
+		assert m2 = matrix([[4,7],[5,8],[6,9]]);
+	}
+	test sliceMatrixOutOfUpperBoundCol{
+		let m2 <- slice (mi, 0::25, 1::2);
+		assert m2 = matrix([[4,7],[5,8],[6,9]]);
+	}
+	test sliceMatrixOutOfLowerBoundRow{
+		let m2 <- slice (mi, 0::-1, -10::1);
+		assert m2 = matrix([[1,4],[2,5],[3,6]]);
+	}
+	
+	test sliceMatrixOutOfUpperBoundRow{
+		let m2 <- slice (mi, 0::-1, 0::10);
+		assert m2 = matrix([[1,4,7],[2,5,8],[3,6,9]]);
+	}
+	test sliceMatrixOutOfBoundStepCol{
+		let m2 <- slice (mi, 0::-1, 0::-1, 10::1);
+		assert m2 = matrix([[1,4,7]]);
+	}
+	test sliceMatrixOutOfBoundStepRow{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::10);
+		assert m2 = matrix([[1,2,3]]);
+	}
+	test sliceMatrixNegativeOutOfBoundStepCol{
+		let m2 <- slice (mi, -1::0, 0::-1, -10::1);
+		assert m2 = matrix([[3,6,9]]);
+	}
+	test sliceMatrixNegativeOutOfBoundStepRow{
+		let m2 <- slice (mi, 0::-1, -1::0, 1::-10);
+		assert m2 = matrix([[7,8,9]]);
+	}
+	test sliceMatrixNonsensicalColAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, -1::1);
+		assert empty(m2);
+	}
+	test sliceMatrixNonsensicalRowAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::-1);
+		assert empty(m2);
+	}
+	test sliceMatrixNonsensicalRowColAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, -1::-1);
+		assert empty(m2);
+	}
+}

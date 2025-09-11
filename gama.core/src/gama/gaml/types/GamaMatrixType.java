@@ -13,10 +13,10 @@ package gama.gaml.types;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
@@ -105,6 +105,25 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 		if (desiredType.id() == IType.FLOAT) return new GamaFloatMatrix(scope, list, preferredSize);
 		return new GamaObjectMatrix(scope, list, preferredSize, desiredType);
 
+	}
+	
+	/**
+	 * Creates a new matrix of the same type as the given one with the asked dimensions and default values.
+	 * 
+	 * @param matrix
+	 *            the base matrix
+	 * @param dimensions
+	 * 				the dimensions of the new matrix
+	 * @return a new empty matrix
+	 */
+	public static IMatrix matrixLike(final IScope scope, final IMatrix matrix, final GamaPoint dimensions) {
+		return 		matrix.getGamlType().id() ==  IType.FIELD 
+				? GamaFieldType.buildField(scope, (int) dimensions.x, (int) dimensions.y)
+				: switch (matrix.getGamlType().getContentType().id()) {
+					case IType.INT -> new GamaIntMatrix(dimensions);
+					case IType.FLOAT -> new GamaFloatMatrix(dimensions);
+					default -> new GamaObjectMatrix(dimensions, matrix.getGamlType().getContentType());
+				};
 	}
 
 	/**
