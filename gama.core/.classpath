@@ -10,11 +10,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry excluding="msi/gama/util/file/json/Jsoner.java" kind="src" path="src"/>
-	<classpathentry kind="src" path="gaml">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="lib/caffeine-3.2.2.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -198,6 +193,11 @@
 	<classpathentry kind="lib" path="lib/titanium-rdf-n-quads-1.0.0.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="gaml">
+		<attributes>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
