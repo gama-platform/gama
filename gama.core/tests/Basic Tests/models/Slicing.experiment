@@ -204,5 +204,69 @@ experiment "Slicing tests" type:test {
 		assert m2 = matrix([[7,4,1], [8,5,2], [9,6,3]]);
 	}
 	
+	test sliceMatrixImplicitZeroRowStep{
+		let m2 <- slice (mi, 0::1, 1::1);
+		assert m2 = matrix([[4],[5]]);
+	}
 	
+	test sliceMatrixImplicitZeroColStep{
+		let m2 <- slice (mi, 0::0, 0::1);
+		assert m2 = matrix([[1,4]]);
+	}
+	
+	test sliceMatrixExplicitZeroRowStep{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::0);
+		assert empty(m2);
+	}
+	
+	test sliceMatrixExplicitZeroColStep{
+		let m2 <- slice (mi, 0::-1, 0::-1, 0::1);
+		assert empty(m2);
+	}
+	
+	test sliceMatrixOutOfLowerBoundCol{
+		let m2 <- slice (mi, -10::-1, 1::2);
+		assert m2 = matrix([[4,7],[5,8],[6,9]]);
+	}
+	test sliceMatrixOutOfUpperBoundCol{
+		let m2 <- slice (mi, 0::25, 1::2);
+		assert m2 = matrix([[4,7],[5,8],[6,9]]);
+	}
+	test sliceMatrixOutOfLowerBoundRow{
+		let m2 <- slice (mi, 0::-1, -10::1);
+		assert m2 = matrix([[1,4],[2,5],[3,6]]);
+	}
+	
+	test sliceMatrixOutOfUpperBoundRow{
+		let m2 <- slice (mi, 0::-1, 0::10);
+		assert m2 = matrix([[1,4,7],[2,5,8],[3,6,9]]);
+	}
+	test sliceMatrixOutOfBoundStepCol{
+		let m2 <- slice (mi, 0::-1, 0::-1, 10::1);
+		assert m2 = matrix([[1,4,7]]);
+	}
+	test sliceMatrixOutOfBoundStepRow{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::10);
+		assert m2 = matrix([[1,2,3]]);
+	}
+	test sliceMatrixNegativeOutOfBoundStepCol{
+		let m2 <- slice (mi, -1::0, 0::-1, -10::1);
+		assert m2 = matrix([[3,6,9]]);
+	}
+	test sliceMatrixNegativeOutOfBoundStepRow{
+		let m2 <- slice (mi, 0::-1, -1::0, 1::-10);
+		assert m2 = matrix([[7,8,9]]);
+	}
+	test sliceMatrixNonsensicalColAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, -1::1);
+		assert empty(m2);
+	}
+	test sliceMatrixNonsensicalRowAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, 1::-1);
+		assert empty(m2);
+	}
+	test sliceMatrixNonsensicalRowColAndStepDirection{
+		let m2 <- slice (mi, 0::-1, 0::-1, -1::-1);
+		assert empty(m2);
+	}
 }

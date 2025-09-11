@@ -38,7 +38,7 @@ import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 15 d�c. 2010
+ * Written by drogoul Modified on 15 dec. 2010
  *
  * @todo Description
  *

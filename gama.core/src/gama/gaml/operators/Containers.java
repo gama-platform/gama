@@ -77,6 +77,7 @@ import gama.gaml.expressions.operators.BinaryOperator;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaFieldType;
+import gama.gaml.types.GamaMatrixType;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -575,13 +576,7 @@ public class Containers {
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final List<Integer> columns, final List<Integer> rows) {
 
 			final GamaPoint aimedDimensions = new GamaPoint(columns.size(), rows.size());
-			final IMatrix result = m1.getGamlType().id() ==  IType.FIELD 
-					? GamaFieldType.buildField(scope, (int) aimedDimensions.x, (int)aimedDimensions.y)
-					: switch (m1.getGamlType().getContentType().id()) {
-						case IType.INT -> new GamaIntMatrix(aimedDimensions);
-						case IType.FLOAT -> new GamaFloatMatrix(aimedDimensions);
-						default -> new GamaObjectMatrix(aimedDimensions, m1.getGamlType().getContentType());
-					};
+			final IMatrix result = GamaMatrixType.matrixLike(scope, m1, aimedDimensions);
 			
 			for(int colIdx = 0; colIdx < columns.size(); colIdx ++) {
 				for(int rowIdx = 0; rowIdx < rows.size(); rowIdx ++) {
@@ -641,9 +636,21 @@ public class Containers {
 			final boolean positiveColStep = steps.key > 0;
 			final boolean positiveRowStep = steps.value > 0;
 			
+			// Eliminating nonsensical cases
+			if (steps.key == 0 || steps.value == 0) {
+				return GamaMatrixType.matrixLike(scope, m1, new GamaPoint(0,0));
+			}
+			if (positiveColStep && startCol > endCol || !positiveColStep && startCol < endCol) {
+				return GamaMatrixType.matrixLike(scope, m1, new GamaPoint(0,0));
+			}
+			if (positiveRowStep && startRow > endRow || !positiveRowStep && startRow < endRow) {
+				return GamaMatrixType.matrixLike(scope, m1, new GamaPoint(0,0));
+			}
+			
+			
 			List<Integer> cols = new ArrayList<>();
 			List<Integer> rowsList = new ArrayList<>();
-			for(int col = startCol; positiveColStep && col <= endCol || !positiveColStep && col >= endCol; col += steps.key) {
+			for(int col = startCol; positiveColStep && col <= endCol || !positiveColStep && col >= endCol ; col += steps.key) {
 				cols.add(col);
 			}
 			for(int row = startRow; positiveRowStep && row <= endRow || !positiveRowStep && row >= endRow; row += steps.value) {
@@ -694,8 +701,8 @@ public class Containers {
 			final int lastCol = convertToListIndex(columns.value,(int) m1.getDimensions().x);
 			final int firstRow = convertToListIndex(rows.key,(int) m1.getDimensions().y);
 			final int lastRow = convertToListIndex(rows.value,(int) m1.getDimensions().y);
-			GamaPair<Integer, Integer> steps = new GamaPair<>(	(int) Math.signum(lastCol-firstCol), 
-																(int) Math.signum(lastRow-firstRow), 
+			GamaPair<Integer, Integer> steps = new GamaPair<>(	lastCol == firstCol ? 1 : (int) Math.signum(lastCol-firstCol), 
+																lastRow == firstRow ? 1 : (int) Math.signum(lastRow-firstRow), 
 																Types.INT, 
 																Types.INT);
 			return submatrix(scope, m1, columns, rows, steps);
