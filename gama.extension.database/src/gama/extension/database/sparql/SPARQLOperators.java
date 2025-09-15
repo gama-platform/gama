@@ -54,14 +54,17 @@ public class SPARQLOperators {
     		)
     public static IList<IList<String>> queryEndpoint(final IScope scope, final String queryStr, final String endpoint, int timeout){
     	
-    	Query query = QueryFactory.create(queryStr);
     	final IList<IList<String>> res = GamaListFactory.create();
+    	QueryExecution qexec = null;
     	
-    	try (QueryExecution qexec = QueryExecution.service(endpoint)
-				.query(query)
-				.timeout(timeout)
-				.build()) {
-			
+    	try {
+    		Query query = QueryFactory.create(queryStr);
+    		
+    		qexec = QueryExecution.service(endpoint)
+    				.query(query)
+    				.timeout(timeout)
+    				.build();
+    			
 			ResultSet rs = qexec.execSelect();
 			Map<String, Integer> colIndex = new HashMap<>();
 			while (rs.hasNext()) {
@@ -81,14 +84,18 @@ public class SPARQLOperators {
 					row.addValueAtIndex(scope, colIndex.get(var), val);
 				}
 				res.add(row);
-				
-			}
+			}    		
+			
 		} catch (Exception e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(	"While executing request: '" + queryStr + "'\n"
 																			+ "on endpoint: '" + endpoint + "'\n"
 																			+ "error:'" + e.toString(), scope), false);
+			
 			return null; // will be casted to an empty list
     	}
+    	finally {
+			if (qexec != null) qexec.close();
+		}
     	
     	return res;
     }
