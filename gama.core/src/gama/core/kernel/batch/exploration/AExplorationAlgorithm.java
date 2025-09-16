@@ -592,8 +592,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		} else if (stepFloatValue == 0) { stepFloatValue = 0.1; }
 
 		while (minFloatValue <= maxFloatValue) {
-			minFloatValue += stepFloatValue;
 			res.add(minFloatValue);
+			minFloatValue += stepFloatValue;
 		}
 
 		return res;
