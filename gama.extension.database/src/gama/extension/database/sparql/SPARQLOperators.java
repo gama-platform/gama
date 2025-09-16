@@ -1,9 +1,7 @@
 package gama.extension.database.sparql;
 
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -19,9 +17,10 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
+import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
+import gama.core.util.IMap;
 import gama.gaml.types.Types;
-import one.util.streamex.StreamEx;
 
 
 public class SPARQLOperators {
@@ -38,7 +37,7 @@ public class SPARQLOperators {
     		category = {IOperatorCategory.SPARQL},
     		concept = {IConcept.DATABASE}
     		)
-    public static IList<IList<String>> queryEndpoint(final IScope scope, final String queryStr, final String endpoint){
+    public static IMap<String, IList<String>> queryEndpoint(final IScope scope, final String queryStr, final String endpoint){
     	return queryEndpoint(scope, queryStr, endpoint, 10000);
     }
 
@@ -52,9 +51,9 @@ public class SPARQLOperators {
     		category = {IOperatorCategory.SPARQL},
     		concept = {IConcept.DATABASE}
     		)
-    public static IList<IList<String>> queryEndpoint(final IScope scope, final String queryStr, final String endpoint, int timeout){
+    public static IMap<String, IList<String>> queryEndpoint(final IScope scope, final String queryStr, final String endpoint, int timeout){
     	
-    	final IList<IList<String>> res = GamaListFactory.create();
+    	final IMap<String, IList<String>> res = GamaMapFactory.create(Types.STRING, Types.LIST);
     	QueryExecution qexec = null;
     	
     	try {
@@ -66,32 +65,28 @@ public class SPARQLOperators {
     				.build();
     			
 			ResultSet rs = qexec.execSelect();
-			Map<String, Integer> colIndex = new HashMap<>();
 			while (rs.hasNext()) {
 				QuerySolution qs = rs.next();
 				Iterator<String> itVars = qs.varNames();
-				// We add the header row
-				if (res.size() == 0) {
-					res.add(GamaListFactory.create());
-					res.get(0).addAll(StreamEx.of(itVars).toList());
-					StreamEx.of(itVars).forEach(v -> colIndex.put(v, res.get(0).indexOf(v)));// We store the index of each column
-				}
-				final IList<String> row = GamaListFactory.create(Types.STRING, colIndex.size());
 				
+				// We add the headers if not done yet
+				if (res.size() == 0) {
+					itVars.forEachRemaining(v -> res.put(v, GamaListFactory.create(Types.STRING)));
+				}
+				
+				// We add the values
 				while (itVars.hasNext()) {
 					String var = itVars.next().toString();
 					String val = qs.get(var).toString();
-					row.addValueAtIndex(scope, colIndex.get(var), val);
+					res.get(var).add(val);
 				}
-				res.add(row);
-			}    		
-			
+			}
 		} catch (Exception e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(	"While executing request: '" + queryStr + "'\n"
 																			+ "on endpoint: '" + endpoint + "'\n"
 																			+ "error:'" + e.toString(), scope), false);
 			
-			return null; // will be casted to an empty list
+			return null; 
     	}
     	finally {
 			if (qexec != null) qexec.close();

@@ -14,14 +14,13 @@ global {
 	
 	init {
 		
-		write "The query about to be executed will fail";
+		write "The query about to be executed is supposed to fail";
 		
-		list<list<string>> result <- sparql_query("NOT A QUERY", "Not an endpoint");
-		
+		map<string,list<string>> result <- sparql_query("NOT A QUERY", "Not an endpoint");
+		write result;
 		if empty(result) and !empty(#current_error) {
-			write #current_error color:#red;
-			
-		}			
+			write #current_error color:#red;	
+		}
 	}
 	
 }
