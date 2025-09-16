@@ -65,27 +65,30 @@ public class SPARQLOperators {
     				.build();
     			
 			ResultSet rs = qexec.execSelect();
+			
+			// We start by creating the lists for each variable
+			var variables =  rs.getResultVars();
+			variables.forEach(v -> res.put(v, GamaListFactory.create(Types.STRING)));
+			
 			while (rs.hasNext()) {
 				QuerySolution qs = rs.next();
-				Iterator<String> itVars = qs.varNames();
-				
-				// We add the headers if not done yet
-				if (res.size() == 0) {
-					itVars.forEachRemaining(v -> res.put(v, GamaListFactory.create(Types.STRING)));
-				}
-				
-				// We add the values
-				while (itVars.hasNext()) {
-					String var = itVars.next().toString();
-					String val = qs.get(var).toString();
-					res.get(var).add(val);
+								
+				for(var variable : variables) {
+					String value = null;
+					try {
+						// This may fail if the variable is not present in this row
+						value = qs.get(variable).toString();
+					}
+					catch (Exception e) {
+						// We just leave the value to null
+					}
+					res.get(variable).add(value);
 				}
 			}
 		} catch (Exception e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(	"While executing request: '" + queryStr + "'\n"
 																			+ "on endpoint: '" + endpoint + "'\n"
 																			+ "error:'" + e.toString(), scope), false);
-			
 			return null; 
     	}
     	finally {
