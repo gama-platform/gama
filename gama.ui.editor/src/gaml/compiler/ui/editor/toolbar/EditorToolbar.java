@@ -183,10 +183,10 @@ public class EditorToolbar {
 							event -> {
 								editor.zoomOut();
 							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
-					GamaMenu.separate(mainMenu);
+					separate();
 					addPresentationItems(mainMenu, -1);
 					addManagementItems(mainMenu, -1);
-					GamaMenu.separate(mainMenu);
+					separate();
 					final IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
 					String title = part == null ? "Show outline" : "Hide outline";
 					Selector command = part == null ? e -> showView(IGui.OUTLINE_VIEW_ID)
@@ -202,6 +202,20 @@ public class EditorToolbar {
 					command = map == null ? e -> showView(IGui.MINIMAP_VIEW_ID)
 							: e -> WorkbenchHelper.getPage().hideView(map);
 					GamaCommand.build("editor/command.navigation", title, null, command).toItem(mainMenu);
+					separate();
+					check("Surround selection using { [ ( \\", GamaPreferences.Modeling.CORE_SURROUND_SELECTED);
+					check("Close quotes '...' ", GamaPreferences.Modeling.CORE_CLOSE_QUOTE);
+					check("Close double quotes \"...\" ", GamaPreferences.Modeling.CORE_CLOSE_DOUBLE);
+					check("Close brackets [...] ", GamaPreferences.Modeling.CORE_CLOSE_SQUARE);
+					check("Close curly brackets {...} ", GamaPreferences.Modeling.CORE_CLOSE_CURLY);
+					check("Close parentheses (...) ", GamaPreferences.Modeling.CORE_CLOSE_PARENTHESES);
+					separate();
+					check("Formatting on save", GamaPreferences.Modeling.EDITOR_CLEAN_UP);
+					check("Mark occurences", GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES);
+					check("Inline markers", GamaPreferences.Modeling.EDITOR_MINING);
+					separate();
+					check("Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU,
+							e1 -> editor.updateToolbar());
 				}
 
 			};

@@ -260,6 +260,11 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 					GamaMenu.separate(mainMenu);
 					GamaCommand.build(DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
 							e -> saveAsLog()).toItem(mainMenu);
+					GamaMenu.separate(mainMenu);
+					check("Keep contents", GamaPreferences.Interface.CORE_CONSOLE_KEEP);
+					check("Wrap long lines", GamaPreferences.Interface.CORE_CONSOLE_WRAP, e -> {
+						viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
+					});
 				}
 
 			};
