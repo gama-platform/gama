@@ -515,6 +515,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IType.FLOAT -> getFloatParameterSwip(scope, var);
 			case IType.DATE -> getDateParameterSwip(scope, var);
 			case IType.POINT -> getPointParameterSwip(scope, var);
+			case IType.BOOL -> Arrays.asList(true,false);
 			default -> getDefaultParameterSwip(scope, var);
 		};
 	}

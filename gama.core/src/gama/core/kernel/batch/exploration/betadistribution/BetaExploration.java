@@ -201,9 +201,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 	 * @return
 	 */
 	private List<Batch> getParams(BatchAgent xp) {
-		return xp.getParametersToExplore().stream()
-				.filter(p -> p.getMinValue(xp.getScope()) != null && p.getMaxValue(xp.getScope()) != null)
-				.map(p -> p).toList();
+		return xp.getParametersToExplore().stream().map(p -> p).toList();
 	}
 	
 	/**
