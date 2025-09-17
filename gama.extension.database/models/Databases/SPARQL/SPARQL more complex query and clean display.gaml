@@ -22,7 +22,7 @@ global {
 	
 	init {
 		
-		write "Asking dbpedia for a list of all French philosophers";
+		write "Asking dbpedia for a list of all French philosophers:";
 		
 		// Those variables will be used as variable names in the query and will be the keys of the returned map
 		// do not insert illegal characters into them, else the query will fail
@@ -46,7 +46,6 @@ global {
 			return;
 		}
 
-		write "Results fetched, printing them";
 		int colNameWidth <- result[headerNameCol] max_of length(each) + 2; // +2 to add a space on each side
 		int colBirthdateWidth <- result[headerBirthdateCol] max_of length(each) + 2;
 		int totalWidth <- colNameWidth + colBirthdateWidth + 3; // 3 more characters for borders

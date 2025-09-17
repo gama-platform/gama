@@ -38,7 +38,7 @@ global {
 				place_of_birth <- first(result["birthPlaces"][i] split_with ";");
 				string infl <- result["influencedByList"][i];
 				if infl != nil and !empty(infl) {
-					influences <- (infl split_with ";") as_map (each::[]);// hack that could be removed when #767 is solved			
+					influences <-map<string, philosopher>((infl split_with ";") as_map (each::[]));// hack that could be removed when #767 is solved			
 				}
 				else {
 					influences <- map([]);
