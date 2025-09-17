@@ -18,6 +18,7 @@ import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Vector3f;
+import com.jme3.bullet.joints.PhysicsJoint;
 
 import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.metamodel.agent.IAgent;
@@ -26,6 +27,7 @@ import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;
+import gama.extension.physics.common.IJointDefinition;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
 /**
@@ -226,4 +228,25 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 		updatableAgents.clear();
 	}
 
+	/**
+	 * Adds a joint to the native Bullet world.
+	 *
+	 * @param joint the joint to add
+	 */
+	public void addJoint(PhysicsJoint joint) {
+		world.addJoint(joint);
+	}
+
+	@Override
+	public Object createJoint(IJointDefinition jointDefinition) {
+		PhysicsJoint joint = convertToNativeBulletJoint(jointDefinition);
+		world.addJoint(joint);
+		return joint;
+	}
+
+	private PhysicsJoint convertToNativeBulletJoint(IJointDefinition jointDefinition) {
+		// Conversion logic for native Bullet joints
+		// Example: Create a HingeJoint, SliderJoint, etc., based on jointDefinition
+		return null; // Placeholder
+	}
 }

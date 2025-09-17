@@ -24,12 +24,14 @@ import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
 import com.google.common.collect.Multimap;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
+import gama.extension.physics.common.IJointDefinition;
 import gama.extension.physics.common.IShapeConverter;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
@@ -149,4 +151,25 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 		});
 	}
 
+	/**
+	 * Adds a joint (constraint) to the jBullet world.
+	 *
+	 * @param constraint the joint/constraint to add
+	 */
+	public void addJoint(TypedConstraint constraint) {
+		world.addConstraint(constraint);
+	}
+
+	@Override
+	public Object createJoint(IJointDefinition jointDefinition) {
+		TypedConstraint constraint = convertToBulletConstraint(jointDefinition);
+		world.addConstraint(constraint);
+		return constraint;
+	}
+
+	private TypedConstraint convertToBulletConstraint(IJointDefinition jointDefinition) {
+		// Conversion logic for Bullet constraints
+		// Example: Create a Point2PointConstraint, HingeConstraint, etc., based on jointDefinition
+		return null; // Placeholder
+	}
 }
