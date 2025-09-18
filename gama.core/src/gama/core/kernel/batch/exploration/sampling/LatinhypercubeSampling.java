@@ -33,11 +33,11 @@ public class LatinhypercubeSampling extends SamplingUtils {
         return r.nextInt(n);
     }
 
-    private static List<Double> shuffle(List<Double> array,Random r) {
+    private static <T extends Number> List<T> shuffle(List<T> array,Random r) {
         for (int i = array.size() - 1; i >= 1; i--) {
             int j = nextInt(i + 1,r);
             if (i != j) {
-                double temp = array.get(i);
+                T temp = array.get(i);
                 array.set(i,array.get(j));
                 array.set(j,temp);
             }
@@ -54,18 +54,36 @@ public class LatinhypercubeSampling extends SamplingUtils {
      */
     private static Map<String,List<Double>> generate(int N, List<String> names,Random r) {
         Map<String,List<Double>> results= new LinkedHashMap<>();
-        List<Double> temp=new ArrayList<>();
-        double d = 1.0 / N;
-        for (int i = 0; i < names.size(); i++) {
-            for (int j = 0; j < N; j++) {
-                temp.add(nextDouble(j * d, (j + 1) * d,r));
+        for (String n : names) { results.put(n, new ArrayList<Double>()); }
+        
+        // For each dimensions
+        for (int d = 0; d < names.size(); d++) {
+            // Permuted intervals 
+            List<Integer> intervals = new ArrayList<>();
+            for (int i = 0; i < N; i++) {
+                intervals.add(i);
+            }
+            intervals = shuffle(intervals, r);
+
+            // Assigne un point aléatoire dans chaque intervalle
+            
+            for (int i = 0; i < N; i++) {
+                results.get(names.get(d)).add((intervals.get(i) + r.nextDouble()) / N);
             }
         }
-        for(int i=0; i<names.size();i++){
-            List<Double> new_temp= new ArrayList<>(shuffle(temp,r));
-            results.put(names.get(i),new_temp);
-        }
+
         return results;
+        
+        
+//        List<Double> temp=new ArrayList<>();
+//        double d = 1.0 / N;
+//        for (int i = 0; i < names.size(); i++) {
+//            for (int j = 0; j < N; j++) {
+//                temp.add(nextDouble(j * d, (j + 1) * d,r));
+//            }
+//            results.put(names.get(i),new ArrayList<>(shuffle(temp,r)));
+//        }
+//        return results;
     }
 
     /**
