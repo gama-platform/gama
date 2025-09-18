@@ -263,7 +263,8 @@ public abstract class AbstractGamlAdditions implements IGamlAdditions {
 			final Map<Signature, OperatorProto> map = GAML.OPERATORS.get(kw);
 			if (!map.containsKey(signature)) {
 				OperatorProto proto;
-				if (nbParameters == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType()) {
+				if (nbParameters == 2 && (OF.equals(kw) || _DOT.equals(kw))
+						&& (signature.get(0).isAgentType() || signature.get(0).isObjectType())) {
 					proto = new OperatorProto(kw, method, null, helper, c, true, rt, signature, t, content, index,
 							contentContentType, expectedContentTypes, plugin);
 				} else {

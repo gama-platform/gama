@@ -37,7 +37,7 @@ experiment Display type: gui autorun: true {
 		layout #split;
 		display shared type: 3d virtual: true {
 			image "../includes/wood.jpg";
-			species object;
+			species objects;
 		}
 		display "Changing every 500" parent: shared camera: [#from_up_front, #from_up_left, #from_up_right, #from_above, #from_front, #from_left, #from_right] at ((cycle / 500) mod 7) {
 		}

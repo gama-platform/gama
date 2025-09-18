@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,26 +24,26 @@ import javax.sound.sampled.Clip;
 
 import org.eclipse.core.runtime.Platform;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.InputParameter;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
-import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
@@ -464,16 +464,47 @@ public class System {
 	}
 
 	/**
-	 * Op copy.
+	 * Op get value.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param o
-	 *            the o
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
 	 * @return the object
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@operator (
+			value = { IKeyword._DOT, IKeyword.OF },
+			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
+	@doc (
+			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
+			masterDoc = true,
+			special_cases = "if the agent is nil or dead, throws an exception",
+			usages = @usage (
+					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
+					examples = { @example (
+							value = "agent1.location",
+							equals = "the location of the agent agent1",
+							isExecutable = false),
+					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
+					}))
+	@no_test
+	public static Object opGetValue(final IScope scope, final IObject a, final IExpression s)
+			throws GamaRuntimeException {
+		if (a == null) {
+			if (!scope.interrupted()) throw GamaRuntimeException
+					.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
+			return null;
+		}
+		return scope.evaluate(s, a).getValue();
+	}
 
 	/**
 	 * Op copy.
@@ -499,18 +530,6 @@ public class System {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);
 		return o;
 	}
-
-	/**
-	 * User input.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param map
-	 *            the map
-	 * @param font
-	 *            the font
-	 * @return the i map
-	 */
 
 	/**
 	 * User input dialog.
@@ -540,16 +559,6 @@ public class System {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return userInputDialog(scope, title, parameters, null, null);
 	}
-
-	/**
-	 * User input dialog.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param parameters
-	 *            the parameters
-	 * @return the i map
-	 */
 
 	/**
 	 * User input dialog.
@@ -609,7 +618,6 @@ public class System {
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, null, true));
 	}
-	
 
 	/**
 	 * User input dialog.
@@ -642,7 +650,6 @@ public class System {
 			final GamaFont font, final GamaColor color) {
 		return userInputDialog(scope, title, parameters, font, color, true);
 	}
-
 
 	/**
 	 * User input dialog.
@@ -681,7 +688,6 @@ public class System {
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, color, showTitle));
 	}
-
 
 	/**
 	 * Open wizard.
@@ -724,18 +730,6 @@ public class System {
 	 *            the pages
 	 * @return the i map
 	 */
-
-	/**
-	 * Open wizard.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param pages
-	 *            the pages
-	 * @return the i map
-	 */
 	@operator (
 			value = IKeyword.WIZARD,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -750,20 +744,6 @@ public class System {
 			final IList<IMap<String, Object>> pages) {
 		return scope.getGui().openWizard(scope, title, null, pages);
 	}
-
-	/**
-	 * Wizard page.
-	 *
-	 * @param title
-	 *            the title
-	 * @param description
-	 *            the description
-	 * @param parameters
-	 *            the parameters
-	 * @param font
-	 *            the font
-	 * @return the i map
-	 */
 
 	/**
 	 * Wizard page.
@@ -809,18 +789,6 @@ public class System {
 	 *            the parameters
 	 * @return the i map
 	 */
-
-	/**
-	 * Wizard page.
-	 *
-	 * @param title
-	 *            the title
-	 * @param description
-	 *            the description
-	 * @param parameters
-	 *            the parameters
-	 * @return the i map
-	 */
 	@operator (
 			value = IKeyword.WIZARD_PAGE,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -839,18 +807,6 @@ public class System {
 		results.put(IKeyword.PARAMETERS, parameters);
 		return results;
 	}
-
-	/**
-	 * User confirm dialog.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param message
-	 *            the message
-	 * @return the boolean
-	 */
 
 	/**
 	 * User confirm dialog.
@@ -888,18 +844,6 @@ public class System {
 	 *            the type
 	 * @return the i parameter
 	 */
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param type
-	 *            the type
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -910,18 +854,6 @@ public class System {
 	public static IParameter enterValue(final IScope scope, final String title, final IType type) {
 		return enterValue(scope, title, type, type.getDefault());
 	}
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 
 	/**
 	 * Enter value.
@@ -961,21 +893,6 @@ public class System {
 	 * @return the i parameter
 	 */
 
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1007,23 +924,6 @@ public class System {
 	 * @return the i parameter
 	 */
 
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @param step
-	 *            the step
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1047,22 +947,6 @@ public class System {
 			final Integer max, final Integer step) {
 		return new InputParameter(title, init, min, max, step);
 	}
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @return the i parameter
-	 */
 
 	/**
 	 * Enter value.
@@ -1109,24 +993,6 @@ public class System {
 	 *            the step
 	 * @return the i parameter
 	 */
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @param min
-	 *            the min
-	 * @param max
-	 *            the max
-	 * @param step
-	 *            the step
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1151,18 +1017,6 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1173,18 +1027,6 @@ public class System {
 	public static IParameter enterValue(final IScope scope, final String title, final Double init) {
 		return enterValue(scope, title, Types.FLOAT, init);
 	}
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 
 	/**
 	 * Enter value.
@@ -1227,18 +1069,6 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1250,20 +1080,6 @@ public class System {
 	public static IParameter enterValue(final IScope scope, final String title, final String init) {
 		return enterValue(scope, title, Types.STRING, init);
 	}
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param type
-	 *            the type
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 
 	/**
 	 * Enter value.
@@ -1300,18 +1116,6 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param init
-	 *            the init
-	 * @return the i parameter
-	 */
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1322,22 +1126,6 @@ public class System {
 	public static IParameter enterValue(final IScope scope, final String title, final Object init) {
 		return new InputParameter(title, init, GamaType.of(init));
 	}
-
-	/**
-	 * Enter value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param type
-	 *            the type
-	 * @param init
-	 *            the init
-	 * @param among
-	 *            the among
-	 * @return the i parameter
-	 */
 
 	/**
 	 * Enter value.
@@ -1420,6 +1208,5 @@ public class System {
 	public static Object copyFromClipboard(final IScope scope, final IType type) {
 		return type.copyFromClipboard(scope);
 	}
-
 
 }

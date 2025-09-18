@@ -74,7 +74,7 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	/**
 	 * The Constant OTHER_FILTER.
 	 */
-	Predicate<ISyntacticElement> OTHER_FILTER = each -> !each.isExperiment() && !each.isSpecies();
+	Predicate<ISyntacticElement> OTHER_FILTER = each -> !each.isExperiment() && !each.isSpecies() && !each.isClass();
 
 	/**
 	 * Sets the keyword of the element.

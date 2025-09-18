@@ -203,7 +203,7 @@ experiment "Run me !"   type: gui autorun:true{
 	parameter 'Inner rings' var: inner_rings   category: "Preferences";
 	output {
 		display "1.9"  background: world.changeColor(cycle) type: 3d axes:false autosave:false fullscreen:false toolbar:false{
-		  species object aspect:obj;			
+		  species objects aspect:obj;			
 		}
 	}
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentExecutionContext.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +14,7 @@ import gama.core.common.interfaces.IDisposable;
 import gama.core.common.util.PoolUtils;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 
 /**
  * The Class AgentExecutionContext.
@@ -37,7 +38,7 @@ public class AgentExecutionContext implements IDisposable {
 	 *            the outer
 	 * @return the agent execution context
 	 */
-	public static AgentExecutionContext create(final IAgent agent, final AgentExecutionContext outer) {
+	public static AgentExecutionContext create(final IObject agent, final AgentExecutionContext outer) {
 
 		final AgentExecutionContext result;
 		if (POOL_ACTIVE) {
@@ -51,7 +52,7 @@ public class AgentExecutionContext implements IDisposable {
 	}
 
 	/** The agent. */
-	IAgent agent;
+	IObject agent;
 
 	/** The outer. */
 	AgentExecutionContext outer;
@@ -66,7 +67,11 @@ public class AgentExecutionContext implements IDisposable {
 	 *
 	 * @return the agent
 	 */
-	public IAgent getAgent() { return agent; }
+	public IAgent getAgent() {
+		if (agent instanceof IAgent ag) return ag;
+		if (outer != null) return outer.getAgent();
+		return null;
+	}
 
 	@Override
 	public String toString() {
@@ -106,6 +111,7 @@ public class AgentExecutionContext implements IDisposable {
 	 * @date 1 oct. 2023
 	 */
 	public SimulationAgent getSimulation() {
+		IAgent agent = getAgent();
 		if (agent == null) return null;
 		return agent.getSimulation();
 	}

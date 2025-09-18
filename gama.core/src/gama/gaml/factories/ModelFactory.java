@@ -202,7 +202,7 @@ public class ModelFactory extends SymbolFactory {
 		// actions....
 		complementSpecies(model, globalNodes);
 
-		complementSpeciesAndExperiments(model, speciesNodes, experimentNodes);
+		complementSpeciesAndExperiments(model, speciesNodes, classesNodes, experimentNodes);
 
 		// Complement recursively the different species (incl. the world). The
 		// recursion is hierarchical
@@ -235,7 +235,10 @@ public class ModelFactory extends SymbolFactory {
 	 * @date 26 déc. 2023
 	 */
 	private void complementSpeciesAndExperiments(final ModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classesNodes,
+			final Map<String, ISyntacticElement> experimentNodes) {
+		classesNodes.forEach(
+				(s, classNode) -> { complementSpecies(model.getClassDescription(classNode.getName()), classNode); });
 		speciesNodes.forEach((s, speciesNode) -> {
 			complementSpecies(model.getMicroSpecies(speciesNode.getName()), speciesNode);
 		});
@@ -652,7 +655,7 @@ public class ModelFactory extends SymbolFactory {
 	 * @param micro
 	 *            the structure of micro-species
 	 */
-	void complementSpecies(final SpeciesDescription species, final ISyntacticElement node) {
+	void complementSpecies(final TypeDescription species, final ISyntacticElement node) {
 		if (species == null) return;
 		species.copyJavaAdditions();
 		node.visitChildren(element -> {
@@ -660,10 +663,12 @@ public class ModelFactory extends SymbolFactory {
 			if (childDesc != null) { species.addChild(childDesc); }
 		});
 		// recursively complement micro-species
-		node.visitSpecies(element -> {
-			final SpeciesDescription sd = species.getMicroSpecies(element.getName());
-			if (sd != null) { complementSpecies(sd, element); }
-		});
+		if (species instanceof SpeciesDescription macro) {
+			node.visitSpecies(element -> {
+				final SpeciesDescription sd = macro.getMicroSpecies(element.getName());
+				if (sd != null) { complementSpecies(sd, element); }
+			});
+		}
 
 	}
 

@@ -30,6 +30,7 @@ import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.benchmark.StopWatch;
@@ -265,7 +266,7 @@ public class ExecutionScope implements IScope {
 	 *            the agent
 	 * @return the agent execution context
 	 */
-	public AgentExecutionContext createChildContext(final IAgent agent) {
+	public AgentExecutionContext createChildContext(final IObject agent) {
 		return AgentExecutionContext.create(agent, agentContext);
 	}
 
@@ -397,7 +398,7 @@ public class ExecutionScope implements IScope {
 	private final Object lock = new Object();
 
 	@Override
-	public boolean push(final IAgent agent) {
+	public boolean push(final IObject agent) {
 		synchronized (lock) {
 			final IAgent a = agentContext == null ? null : agentContext.getAgent();
 			if (a == null) {
@@ -428,7 +429,7 @@ public class ExecutionScope implements IScope {
 	 */
 	// @Override
 	@Override
-	public synchronized void pop(final IAgent agent) {
+	public synchronized void pop(final IObject agent) {
 		synchronized (lock) {
 			if (agentContext == null) {
 				DEBUG.OUT("Agents stack is empty");
@@ -660,6 +661,27 @@ public class ExecutionScope implements IScope {
 			}
 		} finally {
 			if (pushed) { pop(agent); }
+		}
+	}
+
+	@Override
+	public ExecutionResult evaluate(final IExpression expr, final IObject object) throws GamaRuntimeException {
+		if (object == null || interrupted()) return FAILED;
+		final boolean pushed = push(object);
+		try {
+			try (StopWatch w = GAMA.benchmark(this, object)) {
+				return withValue(expr.value(this));
+			} catch (final Throwable ex) {
+				if (ex instanceof OutOfMemoryError) {
+					GamaExecutorService.EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), ex);
+					return FAILED;
+				}
+				final GamaRuntimeException g = GamaRuntimeException.create(ex, this);
+				GAMA.reportAndThrowIfNeeded(this, g, true);
+				return FAILED;
+			}
+		} finally {
+			if (pushed) { pop(object); }
 		}
 	}
 

@@ -74,7 +74,7 @@ public class GamaGenericObjectType extends GamaObjectType {
 
 	@Override
 	public boolean isSuperTypeOf(final IType<?> type) {
-		return type != this && type instanceof GamaAgentType;
+		return type != this && type instanceof GamaObjectType;
 	}
 
 }

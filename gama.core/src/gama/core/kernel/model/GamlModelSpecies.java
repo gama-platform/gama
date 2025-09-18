@@ -236,7 +236,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	@Override
 	public IClass getClass(final String className) {
 		if (className == null) return null;
-		if (IKeyword.MODEL.equals(className)) return GamaMetaModel.INSTANCE.getAbstractObjectClass();
+		if (IKeyword.OBJECT.equals(className)) return GamaMetaModel.INSTANCE.getAbstractObjectClass();
 		return classes.get(className);
 	}
 
