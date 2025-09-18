@@ -223,6 +223,14 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 					if (xp.getGamlType().isAssignableFrom(Types.LIST))
 						desc.error( "Using " + IKeyword.BATCH_VAR_OUTPUTS + " requires to input a list: got "+xp.getDenotedType());
 				}
+				
+				if (tmpDesc.hasFacet(Exploration.SAMPLE_SIZE)) {
+					int samples = Integer.parseInt(tmpDesc.getLitteral(Exploration.SAMPLE_SIZE));
+					if (samples < 1) {
+						desc.error("Sampling must be a positive integer !");
+					}
+				}
+				
 				if (tmpDesc.hasFacet(Exploration.METHODS)) {
 
 					switch (tmpDesc.getLitteral(Exploration.METHODS)) {
