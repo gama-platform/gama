@@ -24,7 +24,6 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -199,24 +198,6 @@ public class Exploration extends AExplorationAlgorithm {
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-
-		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
-			@Override
-			public Object value() {
-				return sample_size;
-			}
-		});
-
-		exp.add(new ParameterAdapter("Sampling method", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
-			@Override
-			public Object value() {
-				if (hasFacet(IKeyword.FROM)) return FROM_FILE;
-				if (hasFacet(IKeyword.WITH)) return FROM_LIST;
-				return hasFacet(Exploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(METHODS).value(agent.getScope())) : DEFAULT_SAMPLING;
-			}
-		});
-
 	}
 
 }

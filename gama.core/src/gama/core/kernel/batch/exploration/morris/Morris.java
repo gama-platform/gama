@@ -60,6 +60,7 @@ import gama.gaml.operators.Strings;
 public final class Morris {
 	
 	public static final int DEFAULT_LEVELS = 4;
+	public static final int DEFAULT_TRAJECTORIES = 10;
 	
 	/**
 	 * Attributes 
