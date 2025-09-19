@@ -418,7 +418,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	@Override
 	public T getOrCreateAgent(final IScope scope, final Integer index) {
 		T agent = getAgent(index);
-		return agent == null ? (T) createAgentAt(scope, index, Collections.EMPTY_MAP, false, true) : agent;
+		return agent == null ? (T) createAgentAtIndex(scope, index, Collections.EMPTY_MAP, false, true) : agent;
 	}
 
 	/**
@@ -519,7 +519,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	}
 
 	@Override
-	public T createAgentAt(final IScope scope, final int index, final Map<String, Object> initialValues,
+	public T createAgentAtIndex(final IScope scope, final int index, final Map<String, Object> initialValues,
 			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
 
 		final List<Map<String, Object>> mapInitialValues = new ArrayList<>();

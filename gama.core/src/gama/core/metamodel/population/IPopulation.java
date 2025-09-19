@@ -171,6 +171,21 @@ public interface IPopulation<T extends IAgent>
 	}
 
 	/**
+	 * Creates the one agent.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param initialValues
+	 *            the initial values
+	 * @return the t
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	default T createOneAgent(final IScope scope, final Map<String, Object> initialValues) throws GamaRuntimeException {
+		return createAgentAtIndex(scope, size(), initialValues, false, true);
+	}
+
+	/**
 	 * Create agents as members of this population.
 	 *
 	 * @param scope
@@ -247,7 +262,7 @@ public interface IPopulation<T extends IAgent>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	T createAgentAt(final IScope s, int index, Map<String, Object> initialValues, boolean isRestored,
+	T createAgentAtIndex(final IScope s, int index, Map<String, Object> initialValues, boolean isRestored,
 			boolean toBeScheduled) throws GamaRuntimeException;
 
 	/**

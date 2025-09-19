@@ -10,7 +10,7 @@
 package gama.gaml.variables;
 
 import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
@@ -60,7 +60,7 @@ public interface IVariable extends ISymbol, IParameter {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	void initializeWith(IScope scope, IAgent gamaObject, Object object) throws GamaRuntimeException;
+	void initializeWith(IScope scope, IObject gamaObject, Object object) throws GamaRuntimeException;
 
 	/**
 	 * Can be called on this variable to indicate that the value it represents has been changed outside. For instance,
@@ -82,7 +82,7 @@ public interface IVariable extends ISymbol, IParameter {
 	 * @param newValue
 	 *            new value, once it has been set
 	 */
-	void notifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue, final Object newValue);
+	void notifyOfValueChange(final IScope scope, final IObject agent, final Object oldValue, final Object newValue);
 
 	/**
 	 * Sets the val.
@@ -96,7 +96,7 @@ public interface IVariable extends ISymbol, IParameter {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	void setVal(IScope scope, IAgent agent, Object v) throws GamaRuntimeException;
+	void setVal(IScope scope, IObject agent, Object v) throws GamaRuntimeException;
 
 	/**
 	 * Value.
@@ -109,7 +109,7 @@ public interface IVariable extends ISymbol, IParameter {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	Object value(IScope scope, IAgent agent) throws GamaRuntimeException;
+	Object value(IScope scope, IObject agent) throws GamaRuntimeException;
 
 	/**
 	 * Gets the updated value.

@@ -938,6 +938,11 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	}
 
 	@Override
+	public IExpression caseParameter(final Parameter object) {
+		return binary("::", caseVar(EGaml.getInstance().getKeyOf(object), object), object.getRight());
+	}
+
+	@Override
 	public IExpression caseUnit(final Unit object) {
 		// We simply return a multiplication, since the right member (the
 		// "unit") will be translated into its float value
@@ -1070,6 +1075,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (result != null) return result;
 		result = tryActionCall(op, object);
 		if (result != null) return result;
+		// If not a casting or an action call, we try to compile it as an operator
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
 		return switch (args.size()) {
 			case 0 -> {
@@ -1105,6 +1111,11 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			return null;
 		}
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
+		// If the argument list is composed only of Parameter or ArgumentPair, then it cannot be a casting, but more
+		// likely a constructor.
+		if (!args.isEmpty() && (t.isObjectType() || t.isAgentType())
+				&& Iterables.all(args, e -> e instanceof Parameter || e instanceof ArgumentPair))
+			return tryConstructor(op, t, object, args);
 		return switch (args.size()) {
 			case 0 -> null;
 			case 1 -> {
@@ -1148,6 +1159,22 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (action == null) return null;
 		final ExpressionList params = object.getRight();
 		return action(op, caseVar(isSuper ? SUPER : SELF, object), params, action);
+	}
+
+	/**
+	 * Try constructor.
+	 *
+	 * @param op
+	 *            the op
+	 * @param object
+	 *            the object
+	 * @param args
+	 * @return the i expression
+	 */
+	private IExpression tryConstructor(final String op, final IType t, final Function object,
+			final List<Expression> args) {
+		Iterable<IExpression> exprs = transform(args, this::compile);
+		return getFactory().createOperator(IKeyword.INSTANTIATE, getContext(), object, getFactory().createMap(exprs));
 	}
 
 	@Override
@@ -1244,11 +1271,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IVarDescriptionProvider temp_sd = context == null ? null : context.getDescriptionDeclaringVar(varName);
 
 		if (temp_sd != null) {
-			if (!(temp_sd instanceof SpeciesDescription)) return temp_sd.getVarExpr(varName, false);
+			if (!(temp_sd instanceof TypeDescription)) return temp_sd.getVarExpr(varName, false);
 			final SpeciesDescription remote_sd = getContext().getSpeciesContext();
 			if (remote_sd != null) {
-				final SpeciesDescription found_sd = (SpeciesDescription) temp_sd;
-				if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && !remote_sd.hasMacroSpecies(found_sd)) {
+				final TypeDescription found_sd = (TypeDescription) temp_sd;
+				if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && found_sd instanceof SpeciesDescription fsd
+						&& !remote_sd.hasMacroSpecies(fsd)) {
 					getContext().error("The variable " + varName + " is not accessible in this context ("
 							+ remote_sd.getName() + "), but in the context of " + found_sd.getName()
 							+ ". It should be preceded by 'myself.'", IGamlIssue.UNKNOWN_VAR, object, varName);

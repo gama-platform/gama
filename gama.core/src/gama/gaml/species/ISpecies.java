@@ -23,6 +23,7 @@ import gama.core.metamodel.population.IPopulationSet;
 import gama.core.runtime.IScope;
 import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
+import gama.core.util.IMap;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
@@ -306,5 +307,19 @@ public interface ISpecies
 	 */
 	@Override
 	SpeciesDescription getDescription();
+
+	/**
+	 * Creates the instance.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param args
+	 *            the args
+	 * @return the i agent
+	 */
+	@Override
+	default IAgent createInstance(final IScope scope, final IMap<String, Object> args) {
+		return getPopulation(scope).createOneAgent(scope, args);
+	}
 
 }

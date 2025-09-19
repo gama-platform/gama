@@ -913,4 +913,9 @@ public class GamlSpecies extends GamlClass implements ISpecies {
 		return (IContainerType<?>) getDescription().getConstantExpr().getGamlType();
 	}
 
+	@Override
+	public IAgent createInstance(final IScope scope, final IMap<String, Object> args) {
+		return getPopulation(scope).createOneAgent(scope, args);
+	}
+
 }

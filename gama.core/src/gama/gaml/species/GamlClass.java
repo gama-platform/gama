@@ -23,9 +23,12 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.GamlModelSpecies;
+import gama.core.metamodel.agent.GamlObject;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
+import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.gaml.compilation.GAML;
@@ -316,5 +319,23 @@ public class GamlClass extends Symbol implements IClass {
 		}
 
 		return retVal;
+	}
+
+	@Override
+	public IObject createInstance(final IScope scope, final IMap<String, Object> args) {
+		return new GamlObject(this, args);
+	}
+
+	@Override
+	public Object getVarValue(final IScope scope, final String s, final GamlObject gamlObject) {
+		IVariable var = getVar(s);
+		if (var != null) return var.value(scope, gamlObject);
+		return null;
+	}
+
+	@Override
+	public void setVarValue(final IScope scope, final String s, final Object v, final GamlObject gamlObject) {
+		IVariable var = getVar(s);
+		if (var != null) { var.setVal(scope, gamlObject, v); }
 	}
 }

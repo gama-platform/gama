@@ -1286,4 +1286,7 @@ public interface IKeyword {
 
 	/** The class. */
 	String CLASS = "class";
+
+	/** The instantiate. */
+	String INSTANTIATE = "instantiate";
 }

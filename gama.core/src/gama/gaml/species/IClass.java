@@ -19,9 +19,12 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ITyped;
 import gama.core.kernel.model.GamlModelSpecies;
+import gama.core.metamodel.agent.GamlObject;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
+import gama.core.util.IMap;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.interfaces.IGamlable;
@@ -230,5 +233,28 @@ public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 	 * @param gamlModelSpecies
 	 */
 	void setMacroSpecies(GamlModelSpecies model);
+
+	/**
+	 * @param scope
+	 * @param args
+	 * @return
+	 */
+	IObject createInstance(IScope scope, IMap<String, Object> args);
+
+	/**
+	 * @param scope
+	 * @param s
+	 * @param gamlObject
+	 * @return
+	 */
+	Object getVarValue(IScope scope, String s, GamlObject gamlObject);
+
+	/**
+	 * @param scope
+	 * @param s
+	 * @param v
+	 * @param gamlObject
+	 */
+	void setVarValue(IScope scope, String s, Object v, GamlObject gamlObject);
 
 }

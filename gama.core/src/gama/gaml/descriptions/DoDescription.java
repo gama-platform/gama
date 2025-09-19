@@ -180,7 +180,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 			final IExpression target = getFacetExpr(TARGET_AGENT);
 			if (target != null) {
 				final IType<?> t = target.getGamlType();
-				if (t.isAgentType()) { declarationContext = t.getSpecies(); }
+				if (t.isAgentType() || t.isObjectType()) { declarationContext = t.getSpecies(); }
 				if (declarationContext == null) {
 					error("The target of an action call must be an agent", IGamlIssue.WRONG_TYPE);
 					return null;

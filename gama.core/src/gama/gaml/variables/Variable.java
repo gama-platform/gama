@@ -32,6 +32,7 @@ import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.common.util.JavaUtils;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.StopWatch;
@@ -605,7 +606,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Object coerce(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
+	protected Object coerce(final IObject agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		return type.cast(scope, v, null, false);
 	}
 
@@ -662,15 +663,15 @@ public class Variable extends Symbol implements IVariable {
 	 *             the gama runtime exception
 	 */
 	@Override
-	public void initializeWith(final IScope scope, final IAgent a, final Object v) throws GamaRuntimeException {
+	public void initializeWith(final IScope scope, final IObject a, final Object v) throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
 			scope.setCurrentSymbol(this);
 			if (v != null) {
 				_setVal(a, scope, v);
 			} else if (initExpression != null) {
 				_setVal(a, scope, scope.evaluate(initExpression, a).getValue());
-			} else if (initer != null) {
-				final Object val = initer.run(scope, a, gSkill == null ? a : gSkill);
+			} else if (initer != null && a instanceof IAgent agent) {
+				final Object val = initer.run(scope, agent, gSkill == null ? a : gSkill);
 				_setVal(a, scope, val);
 			} else {
 				_setVal(a, scope, getType().getDefault());
@@ -733,7 +734,7 @@ public class Variable extends Symbol implements IVariable {
 	 *             the gama runtime exception
 	 */
 	@Override
-	public final void setVal(final IScope scope, final IAgent agent, final Object v) throws GamaRuntimeException {
+	public final void setVal(final IScope scope, final IObject agent, final Object v) throws GamaRuntimeException {
 		if (isNotModifiable) return;
 		final Object oldValue = !mustNotifyOfChanges ? null : value(scope, agent);
 		_setVal(agent, scope, v);
@@ -754,16 +755,16 @@ public class Variable extends Symbol implements IVariable {
 	 * @param newValue
 	 *            the new value
 	 */
-	private void internalNotifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue,
+	private void internalNotifyOfValueChange(final IScope scope, final IObject obj, final Object oldValue,
 			final Object newValue) {
-		if (onChangeExpression != null) {
+		if (onChangeExpression != null && obj instanceof IAgent agent) {
 			if (on_changer == null) {
 				on_changer = agent.getSpecies().getAction(Cast.asString(scope, onChangeExpression.value(scope)));
 			}
 			scope.execute(on_changer, agent, null);
 		}
 
-		if (listeners != null) {
+		if (listeners != null && obj instanceof IAgent agent) {
 			listeners.forEach(
 					(listener, skill) -> { listener.run(scope, agent, skill == null ? agent : skill, newValue); });
 		}
@@ -780,7 +781,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @param newValue
 	 */
 	@Override
-	public final void notifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue,
+	public final void notifyOfValueChange(final IScope scope, final IObject agent, final Object oldValue,
 			final Object newValue) {
 		// so as to block internal notifications, since notifications are produced somewhere else in GAMA.
 		mustNotifyOfChanges = false;
@@ -799,13 +800,13 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected void _setVal(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
-		Object val = coerce(agent, scope, v);
-		val = checkAmong(agent, scope, val);
-		if (setter != null) {
+	protected void _setVal(final IObject obj, final IScope scope, final Object v) throws GamaRuntimeException {
+		Object val = coerce(obj, scope, v);
+		val = checkAmong(obj, scope, val);
+		if (setter != null && obj instanceof IAgent agent) {
 			setter.run(scope, agent, sSkill == null ? agent : sSkill, val);
 		} else {
-			agent.setAttribute(name, val);
+			obj.setAttribute(name, val);
 		}
 		// if (isSpeciesConst) {
 		// speciesWideValue = val;
@@ -825,7 +826,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Object checkAmong(final IAgent agent, final IScope scope, final Object val) throws GamaRuntimeException {
+	protected Object checkAmong(final IObject agent, final IScope scope, final Object val) throws GamaRuntimeException {
 		if (amongExpression == null) return val;
 		final List among = Cast.asList(scope, scope.evaluate(amongExpression, agent).getValue());
 		if (among == null || among.contains(val)) return val;
@@ -851,16 +852,17 @@ public class Variable extends Symbol implements IVariable {
 	 *             the gama runtime exception
 	 */
 	@Override
-	public Object value(final IScope scope, final IAgent agent) throws GamaRuntimeException {
+	public Object value(final IScope scope, final IObject obj) throws GamaRuntimeException {
 		// if (isSpeciesConst) { return speciesWideValue; }
-		if (getter != null) return getter.run(scope, agent, gSkill == null ? agent : gSkill);
-		if (functionExpression != null) return scope.evaluate(functionExpression, agent).getValue();
+		if (getter != null && obj instanceof IAgent agent)
+			return getter.run(scope, agent, gSkill == null ? agent : gSkill);
+		if (functionExpression != null) return scope.evaluate(functionExpression, obj).getValue();
 		// Var not yet initialized. May happen when asking for its value while initializing an editor
 		// See Issue #2781 + Issue #3920
-		if (!agent.hasAttribute(name) && (isNotModifiable || initExpression != null && initExpression.isConst())
+		if (!obj.hasAttribute(name) && (isNotModifiable || initExpression != null && initExpression.isConst())
 				&& !description.isBuiltIn())
 			return getInitialValue(scope);
-		return agent.getAttribute(name);
+		return obj.getAttribute(name);
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * NumberVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,15 +13,15 @@ package gama.gaml.variables;
 import static gama.gaml.operators.Cast.asFloat;
 import static gama.gaml.operators.Cast.asPoint;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -195,7 +195,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	}
 
 	@Override
-	public Object coerce(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
+	public Object coerce(final IObject agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		final Object val = super.coerce(agent, scope, v);
 		return switch (type.id()) {
 			case IType.INT -> checkMinMax(agent, scope, (Integer) val);
@@ -220,7 +220,8 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Integer checkMinMax(final IAgent agent, final IScope scope, final Integer f) throws GamaRuntimeException {
+	protected Integer checkMinMax(final IObject agent, final IScope scope, final Integer f)
+			throws GamaRuntimeException {
 		if (min != null) {
 			final Integer m = minVal == null ? Cast.asInt(scope, scope.evaluate(min, agent).getValue())
 					: (Integer) minVal.run(scope);
@@ -247,7 +248,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Double checkMinMax(final IAgent agent, final IScope scope, final Double f) throws GamaRuntimeException {
+	protected Double checkMinMax(final IObject agent, final IScope scope, final Double f) throws GamaRuntimeException {
 		if (min != null) {
 			final Double fmin =
 					minVal == null ? asFloat(scope, scope.evaluate(min, agent).getValue()) : (Double) minVal.run(scope);
@@ -274,7 +275,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected GamaPoint checkMinMax(final IAgent agent, final IScope scope, final GamaPoint f)
+	protected GamaPoint checkMinMax(final IObject agent, final IScope scope, final GamaPoint f)
 			throws GamaRuntimeException {
 		if (f == null) return null;
 		if (min != null) {
@@ -303,7 +304,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected GamaDate checkMinMax(final IAgent agent, final IScope scope, final GamaDate f)
+	protected GamaDate checkMinMax(final IObject agent, final IScope scope, final GamaDate f)
 			throws GamaRuntimeException {
 		if (f == null) return null;
 		if (min != null) {

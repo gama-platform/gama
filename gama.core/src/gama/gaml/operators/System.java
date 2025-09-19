@@ -60,9 +60,7 @@ import gama.gaml.types.Types;
  *
  */
 public class System {
-
 	/**
-	 * Op dead.
 	 *
 	 * @param scope
 	 *            the scope
@@ -93,6 +91,29 @@ public class System {
 	@test ("dead(simulation) = false")
 	public static Boolean opDead(final IScope scope, final IAgent a) {
 		return a == null || a.dead();
+	}
+
+	/**
+	 * Instantiate.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param type
+	 *            the type
+	 * @param args
+	 *            the args
+	 * @return the i object
+	 */
+	@operator (
+			value = IKeyword.INSTANTIATE,
+			can_be_const = false,
+			concept = IConcept.SYSTEM)
+	@doc ("Allow to create an object of a given type, with given arguments. The type can be either an agent type or an object type. The arguments are given as a map of name/value pairs, where the names are the names of the atrributes of the species or class.")
+	public static IObject instantiate(final IScope scope, final IType type, final IMap<String, Object> args) {
+		if (type == null || type == Types.NO_TYPE) return null;
+		if (type.isAgentType()) return scope.getModel().getSpecies(type.getSpeciesName()).createInstance(scope, args);
+		if (type.isObjectType()) return scope.getModel().getClass(type.getSpeciesName()).createInstance(scope, args);
+		throw GamaRuntimeException.error("Cannot instantiate an object of type " + type.getName(), scope);
 	}
 
 	/**

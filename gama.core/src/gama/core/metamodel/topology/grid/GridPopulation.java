@@ -1190,7 +1190,7 @@ public class GridPopulation implements IPopulation<IAgent> {
 	private boolean isDisposing = false;
 
 	@Override
-	public IAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,
+	public IAgent createAgentAtIndex(final IScope s, final int index, final Map<String, Object> initialValues,
 			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
 
 		final List<Map<String, Object>> mapInitialValues = new ArrayList<>();
