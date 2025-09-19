@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.expressions;
 
+import java.util.Map;
+
 import org.eclipse.emf.ecore.EObject;
 
 import gama.core.metamodel.agent.IAgent;
@@ -183,6 +185,15 @@ public interface IExpressionFactory {
 	 * @return the i expression
 	 */
 	IExpression createMap(final Iterable<? extends IExpression> elements);
+
+	/**
+	 * Creates a new IExpression object.
+	 *
+	 * @param argMap
+	 *            the arg map
+	 * @return the i expression
+	 */
+	IExpression createMap(Map<String, IExpression> argMap);
 
 	/**
 	 * @param op

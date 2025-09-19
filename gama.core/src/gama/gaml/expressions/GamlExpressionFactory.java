@@ -222,6 +222,17 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		return MapExpression.create(elements);
 	}
 
+	/**
+	 * Creates a new GamlExpression object.
+	 *
+	 * @param elements
+	 *            the elements
+	 * @return the i expression
+	 */
+	public IExpression createMap(final Map<String, IExpression> elements) {
+		return MapExpression.create(elements);
+	}
+
 	@Override
 	public boolean hasExactOperator(final String op, final IExpression arg) {
 		// If arguments are invalid, we have no match

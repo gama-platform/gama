@@ -375,7 +375,7 @@ public class EGaml implements IGamlEcoreUtils {
 	public String getKeyOfParameter(final Parameter p) {
 		String s = getKeyOf(p.getLeft());
 		if (s == null) { s = p.getBuiltInFacetKey(); }
-		return s.endsWith(":") ? s.substring(0, s.length() - 1) : s;
+		return s == null ? "" : s.endsWith(":") ? s.substring(0, s.length() - 1) : s;
 	}
 
 	/**

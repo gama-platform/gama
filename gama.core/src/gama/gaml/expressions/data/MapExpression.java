@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * MapExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -65,6 +65,14 @@ public class MapExpression extends AbstractExpression implements IOperator {
 		return new MapExpression(elements);
 	}
 
+	/**
+	 * @param elements
+	 * @return
+	 */
+	public static IExpression create(final Map<String, IExpression> elements) {
+		return new MapExpression(elements);
+	}
+
 	/** The keys. */
 	private final IExpression[] keys;
 
@@ -102,6 +110,25 @@ public class MapExpression extends AbstractExpression implements IOperator {
 		// values = GamaMapFactory.create(keyType, contentsType, keys.length);
 		// setName(pairs.toString());
 		type = Types.MAP.of(keyType, contentsType);
+	}
+
+	/**
+	 * Instantiates a new map expression.
+	 *
+	 * @param pairs
+	 *            the pairs
+	 */
+	MapExpression(final Map<String, IExpression> pairs) {
+		final int size = pairs.size();
+		keys = new IExpression[size];
+		vals = new IExpression[size];
+		int i = 0;
+		for (final Map.Entry<String, IExpression> entry : pairs.entrySet()) {
+			keys[i] = GAML.getExpressionFactory().createConst(entry.getKey(), Types.STRING);
+			vals[i] = entry.getValue();
+			i++;
+		}
+		type = Types.MAP.of(Types.STRING, GamaType.findCommonType(vals, GamaType.TYPE));
 	}
 
 	/**

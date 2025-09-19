@@ -819,6 +819,54 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		return argMap;
 	}
 
+	/**
+	 * Parses the attributes.
+	 *
+	 * @param action
+	 *            the action
+	 * @param o
+	 *            the o
+	 * @return the facets
+	 */
+	public IExpression parseAttributes(final TypeDescription type, final EObject o,
+			final IDescription constructorStatement) {
+		if (o == null) return null;
+		List<Expression> parameters = null;
+		EGaml egaml = EGaml.getInstance();
+		if (o instanceof Array array) {
+			parameters = egaml.getExprsOf(array.getExprs());
+		} else if (o instanceof ExpressionList) { parameters = egaml.getExprsOf(o); }
+		final Map<String, IExpression> argMap = GamaMapFactory.createUnordered();
+
+		for (final Expression exp : parameters) {
+			String arg = null;
+			IExpressionDescription ed = null;
+			if (exp instanceof ArgumentPair p) {
+				arg = egaml.getKeyOfArgumentPair(p);
+				ed = builder.create(p.getRight());
+			} else if (exp instanceof Parameter p) {
+				arg = egaml.getKeyOfParameter(p);
+				ed = builder.create(p.getRight());
+			}
+			if (!type.hasAttribute(arg)) {
+				constructorStatement.error("Attribute " + arg + " does not belong to " + type.getName());
+				return null;
+			}
+			if (ed != null) {
+
+				ed.compile(constructorStatement);
+				IType attrType = type.getAttribute(arg).getGamlType();
+				if (!ed.getExpression().getGamlType().isAssignableFrom(attrType)) {
+					constructorStatement.error("Attribute " + arg + " of " + type.getName() + " is of type " + attrType
+							+ " and cannot receive a value of type " + ed.getExpression().getGamlType());
+					return null;
+				}
+			}
+			argMap.put(arg, ed.getExpression());
+		}
+		return getFactory().createMap(argMap);
+	}
+
 	@Override
 	public IExpression caseSkillRef(final SkillRef object) {
 		return skill(EGaml.getInstance().getKeyOf(object));
@@ -1173,8 +1221,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	private IExpression tryConstructor(final String op, final IType t, final Function object,
 			final List<Expression> args) {
+		final TypeDescription sd = t.getSpecies();
+		if (sd == null) return null;
 		Iterable<IExpression> exprs = transform(args, this::compile);
-		return getFactory().createOperator(IKeyword.INSTANTIATE, getContext(), object, getFactory().createMap(exprs));
+		IExpression exprMap = parseAttributes(sd, object.getRight(), getContext());
+		return getFactory().createOperator(IKeyword.INSTANTIATE, getContext(), object,
+				getFactory().createTypeExpression(t), exprMap);
 	}
 
 	@Override

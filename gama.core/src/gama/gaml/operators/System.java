@@ -107,6 +107,7 @@ public class System {
 	@operator (
 			value = IKeyword.INSTANTIATE,
 			can_be_const = false,
+			type = ITypeProvider.DENOTED_TYPE_AT_INDEX + 1,
 			concept = IConcept.SYSTEM)
 	@doc ("Allow to create an object of a given type, with given arguments. The type can be either an agent type or an object type. The arguments are given as a map of name/value pairs, where the names are the names of the atrributes of the species or class.")
 	public static IObject instantiate(final IScope scope, final IType type, final IMap<String, Object> args) {
