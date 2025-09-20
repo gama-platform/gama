@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * MapComparison.java, in gama.extension.stats, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MapComparison.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.stats;
 
@@ -713,7 +713,7 @@ public class MapComparison {
 	 * @param Xvals
 	 *            the xvals
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	private static void computeXaXsTransitions(final IScope scope, final IAgentFilter filter,
 			final GamaMatrix<Double> fuzzytransitions, final Double distance, final IContainer<Integer, IAgent> agents,
 			final int nbCat, final Map<List<Integer>, Map<Double, Double>> XaPerTransition,
@@ -721,7 +721,7 @@ public class MapComparison {
 
 		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
 		for (final IAgent ag : agents.iterable(scope)) { locs.add(ag.getLocation()); }
-		final GamaPoint centralLoc = (GamaPoint) Containers.opMean(scope, locs);
+		final GamaPoint centralLoc = (GamaPoint) Containers.mean(scope, locs);
 		if (filter != null) {
 			final IAgent centralAg = scope.getTopology().getAgentClosestTo(scope, centralLoc, filter);
 			final List<IAgent> neighbors = distance == 0 ? new ArrayList<>()
@@ -760,13 +760,11 @@ public class MapComparison {
 								mapxa = GamaMapFactory.create();
 								mapxa.put(xa, 1.0);
 								XaPerTransition.put(ca, mapxa);
-							} else  {
+							} else {
 								Double val = mapxa.get(xa);
-								if (val == null) {
-									val = 0d;
-								}
+								if (val == null) { val = 0d; }
 								mapxa.put(xa, val + 1.0);
-							} 
+							}
 							Xvals.add(xa);
 						}
 						if (xs > 0) {
@@ -776,11 +774,9 @@ public class MapComparison {
 								mapxs.put(xs, 1.0);
 								XsPerTransition.put(ca, mapxs);
 							} else {
-								Double val =  mapxs.get(xs) ;
-								if (val == null) {
-									val = 0.0;
-								}
-								mapxs.put(xs, val+ 1.0);
+								Double val = mapxs.get(xs);
+								if (val == null) { val = 0.0; }
+								mapxs.put(xs, val + 1.0);
 							}
 							Xvals.add(xs);
 						}
@@ -1044,7 +1040,7 @@ public class MapComparison {
 
 		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
 		for (final IAgent ag : agents.iterable(scope)) { locs.add(ag.getLocation()); }
-		final GamaPoint centralLoc = (GamaPoint) Containers.opMean(scope, locs);
+		final GamaPoint centralLoc = (GamaPoint) Containers.mean(scope, locs);
 		final IAgent centralAg = scope.getTopology().getAgentClosestTo(scope, centralLoc, filter);
 		final List<IAgent> neighbors = distance == 0 || filter == null ? new ArrayList<>()
 				: new ArrayList<>(scope.getTopology().getNeighborsOf(scope, centralAg, distance, filter));

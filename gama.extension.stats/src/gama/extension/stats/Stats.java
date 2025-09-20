@@ -385,7 +385,7 @@ public class Stats {
 
 		// TODO input parameters validation
 
-		final double mean = (Double) Containers.opMean(scope, data);
+		final double mean = (Double) Containers.mean(scope, data);
 		final double variance = Stats.opVariance(scope, data);
 
 		return Descriptive.autoCorrelation(toDoubleArrayList(scope, data), lag, mean, variance);
@@ -3050,7 +3050,7 @@ public class Stats {
 	@test ("[1,2] mean_of (each * 10 ) = 15")
 	public static Object opMeanOf(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
-		return Containers.opMean(scope, collect(scope, eachName, container, filter));
+		return Containers.mean(scope, collect(scope, eachName, container, filter));
 	}
 
 	/**
