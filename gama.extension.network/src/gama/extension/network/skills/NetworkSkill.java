@@ -100,7 +100,7 @@ public class NetworkSkill extends MessagingSkill {
 		// final IAgent agent = scope.getAgent();
 		final String commandToExecute = (String) scope.getArg("command", IType.STRING);
 
-		return gama.gaml.operators.System.console(scope, commandToExecute);
+		return gama.gaml.operators.User.console(scope, commandToExecute);
 
 		// // String res = "";
 		//
