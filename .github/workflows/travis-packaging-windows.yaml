@@ -30,8 +30,10 @@ jobs:
           mkdir gama_input
           7z x ${{ matrix.zipName }} -ogama_input
 
-      - name: Create installer
-        run: iscc.exe windows_installer_script.iss
+      - name: Compile .ISS to .EXE Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
+        with:
+          path: windows_installer_script.iss
 
       - uses: actions/upload-artifact@v4
         with:

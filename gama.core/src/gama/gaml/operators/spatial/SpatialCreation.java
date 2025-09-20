@@ -290,7 +290,10 @@ public class SpatialCreation {
 			double ang = i * (Math.PI / nPts);
 			double x = xRadius * Math.cos(ang);
 			double y = yRadius * Math.sin(ang);
-			pts[iPt++] = new Coordinate(x, y);
+			// Interpolate z value between pt1.z and pt2.z based on position along the arc
+			double t = (double) i / (nPts - 1); // Normalized position from 0 to 1
+			double z = pt1.z + t * (pt2.z - pt1.z);
+			pts[iPt++] = new Coordinate(x, y, z);
 		}
 		IShape shape = GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createLineString(pts));
 		shape = SpatialTransformations.rotated_by(scope, shape, SpatialRelations.towards(scope, pt2, pt1));
