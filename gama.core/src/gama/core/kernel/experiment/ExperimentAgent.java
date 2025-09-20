@@ -38,6 +38,7 @@ import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.population.DefaultPopulationFactory;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationFactory;
@@ -1192,7 +1193,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 *            the value
 		 */
 		@Override
-		public void setAgentVarValue(final IAgent a, final String name, final Object value) {
+		public void setAgentVarValue(final IObject a, final String name, final Object value) {
 			if (a == ExperimentAgent.this) {
 				setGlobalVarValue(name, value);
 			} else {
@@ -1210,7 +1211,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @return the agent var value
 		 */
 		@Override
-		public Object getAgentVarValue(final IAgent a, final String varName) {
+		public Object getAgentVarValue(final IObject a, final String varName) {
 			if (a == ExperimentAgent.this) return getGlobalVarValue(varName);
 			return super.getAgentVarValue(a, varName);
 		}

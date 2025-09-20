@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.ExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -37,7 +37,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
-import gama.gaml.species.ISpecies;
+import gama.gaml.species.IClass;
 import gama.gaml.statements.DoStatement.DoSerializer;
 import gama.gaml.types.IType;
 
@@ -257,22 +257,29 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 * Returns the species on which to find the action. If a species target (desc) exists, then it is a super invocation
 	 * and we have to find the corresponding action. Otherwise, we return the species of the agent
 	 */
-	private ISpecies getContext(final IScope scope) {
-		return targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : scope.getAgent().getSpecies();
+	private IClass getContext(final IScope scope) {
+		if (targetSpecies != null) return scope.getModel().getSpecies(targetSpecies);
+		if (target != null) {
+			IObject agent = Cast.asObject(scope, target.value(scope));
+			if (agent == null)
+				throw GamaRuntimeException.error("The target of an action call must be an object or an agent", scope);
+			return agent.getSpecies();
+		}
+		return scope.getCurrentObjectOrAgent().getSpecies();
 	}
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final ISpecies species = getContext(scope);
+		final IClass species = getContext(scope);
 		if (species == null)
-			throw GamaRuntimeException.error("Impossible to find a species to execute " + getName(), scope);
+			throw GamaRuntimeException.error("Impossible to find a species or a class to execute " + getName(), scope);
 		final IStatement.WithArgs executer = species.getAction(name);
 		Object result = null;
 		if (executer != null) {
 			if (target != null) {
-				IAgent agent = Cast.asAgent(scope, target.value(scope));
-				if (agent == null)
-					throw GamaRuntimeException.error("The target of an action call must be an agent", scope);
+				IObject agent = Cast.asObject(scope, target.value(scope));
+				if (agent == null) throw GamaRuntimeException
+						.error("The target of an action call must be an agent or an object", scope);
 				final ExecutionResult er = scope.execute(executer, agent, getRuntimeArgs(scope));
 				result = er.getValue();
 			} else {

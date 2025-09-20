@@ -15,7 +15,6 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -55,17 +54,17 @@ public class GamaGenericObjectType extends GamaObjectType {
 	public void setSpecies(final ClassDescription sd) { species = sd; }
 
 	@Override
-	public IAgent cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
+	public IObject cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
 			final IType<?> contentsType, final boolean copy) throws GamaRuntimeException {
 		return cast(scope, obj, param, copy);
 	}
 
 	@Override
 	@doc ("Returns an agent if the argument is already an agent, otherwise returns null")
-	public IAgent cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public IObject cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		if (obj == null) return getDefault();
-		if (obj instanceof IAgent a) return a;
+		if (obj instanceof IObject a) return a;
 		return getDefault();
 	}
 

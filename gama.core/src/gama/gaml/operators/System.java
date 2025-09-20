@@ -18,6 +18,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
+import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
@@ -60,7 +61,7 @@ public class System {
 					equals = "true or false",
 					isExecutable = false))
 	@test ("dead(simulation) = false")
-	public static Boolean opDead(final IScope scope, final IAgent a) {
+	public static Boolean dead(final IScope scope, final IAgent a) {
 		return a == null || a.dead();
 	}
 
@@ -303,9 +304,158 @@ public class System {
 	@doc (
 			value = "returns a copy of the operand.")
 	@no_test
-	public static Object opCopy(final IScope scope, final Object o) throws GamaRuntimeException {
+	public static Object copy(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);
 		return o;
+	}
+
+	/**
+	 * Console.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
+	
+	
+	
+	/**
+	 * Console.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the s
+	 * @param directory
+	 *            the directory
+	 * @return the string
+	 */
+	
+	
+	
+	/**
+	 * Console.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the s
+	 * @param directory
+	 *            the directory
+	 * @param environment
+	 *            the environment
+	 * @return the string
+	 */
+	
+	
+	
+	/**
+	 * Op get value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	
+	/**
+	 * Op get value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = { IKeyword._DOT, IKeyword.OF },
+			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
+	@doc (
+			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
+			masterDoc = true,
+			special_cases = "if the agent is nil or dead, throws an exception",
+			usages = @usage (
+					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
+					examples = { @example (
+							value = "agent1.location",
+							equals = "the location of the agent agent1",
+							isExecutable = false),
+					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
+					}))
+	@no_test
+	public static Object dot(final IScope scope, final IAgent a, final IExpression s)
+			throws GamaRuntimeException {
+		if (a == null) {
+			if (!scope.interrupted()) throw GamaRuntimeException
+					.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target agent is nil", scope);
+			return null;
+		}
+		if (a.dead()) {
+			// scope.getGui().debug("System.opGetValue");
+			if (!scope.interrupted()) // scope.getGui().debug("System.opGetValue error");
+				throw GamaRuntimeException
+						.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target agent is dead", scope);
+			return null;
+		}
+		return scope.evaluate(s, a).getValue();
+	}
+
+	/**
+	 * Op get value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = { IKeyword._DOT, IKeyword.OF },
+			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
+	@doc (
+			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
+			masterDoc = true,
+			special_cases = "if the agent is nil or dead, throws an exception",
+			usages = @usage (
+					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
+					examples = { @example (
+							value = "agent1.location",
+							equals = "the location of the agent agent1",
+							isExecutable = false),
+					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
+					}))
+	@no_test
+	public static Object dot(final IScope scope, final IObject a, final IExpression s)
+			throws GamaRuntimeException {
+		if (a == null) {
+			if (!scope.interrupted()) throw GamaRuntimeException
+					.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
+			return null;
+		}
+		return scope.evaluate(s, a).getValue();
 	}
 
 	/**

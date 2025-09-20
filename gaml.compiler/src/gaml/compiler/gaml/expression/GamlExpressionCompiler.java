@@ -417,11 +417,13 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	private IExpression binary(final String op, final IExpression left, final Expression originalExpression) {
 		if (left == null) return null;
+		// We check that the operator is known
 		if (!GAML.OPERATORS.containsKey(op)) {
 			getContext().error("Unknown operator: " + op, IGamlIssue.UNKNOWN_ACTION, originalExpression.eContainer(),
 					op);
 			return null;
 		}
+		// We keep a reference to the right-hand expression
 		Expression rightMember = originalExpression;
 		// if the operator is an iterator, we must initialize the context
 		// sensitive "each" variable
@@ -430,6 +432,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (isIterator) {
 			// Finding the name of 'each' if redefined
 			if (rightMember instanceof ExpressionList params) {
+
 				final List<Expression> exprs = EGaml.getInstance().getExprsOf(params);
 				if (!exprs.isEmpty()) {
 					final Expression arg = exprs.get(0);
@@ -853,7 +856,6 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 				return null;
 			}
 			if (ed != null) {
-
 				ed.compile(constructorStatement);
 				IType attrType = type.getAttribute(arg).getGamlType();
 				if (!ed.getExpression().getGamlType().isAssignableFrom(attrType)) {
@@ -861,8 +863,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 							+ " and cannot receive a value of type " + ed.getExpression().getGamlType());
 					return null;
 				}
+				argMap.put(arg, ed.getExpression());
 			}
-			argMap.put(arg, ed.getExpression());
 		}
 		return getFactory().createMap(argMap);
 	}

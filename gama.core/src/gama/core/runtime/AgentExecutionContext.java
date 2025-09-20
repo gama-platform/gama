@@ -67,9 +67,16 @@ public class AgentExecutionContext implements IDisposable {
 	 *
 	 * @return the agent
 	 */
-	public IAgent getAgent() {
-		if (agent instanceof IAgent ag) return ag;
-		if (outer != null) return outer.getAgent();
+	public IObject getCurrentObjectOrAgent() { return agent; }
+
+	/**
+	 * Gets the first agent.
+	 *
+	 * @return the first agent
+	 */
+	public IAgent getFirstAgent() {
+		if (agent instanceof IAgent) return (IAgent) agent;
+		if (outer != null) return outer.getFirstAgent();
 		return null;
 	}
 
@@ -111,7 +118,7 @@ public class AgentExecutionContext implements IDisposable {
 	 * @date 1 oct. 2023
 	 */
 	public SimulationAgent getSimulation() {
-		IAgent agent = getAgent();
+		IAgent agent = getFirstAgent();
 		if (agent == null) return null;
 		return agent.getSimulation();
 	}

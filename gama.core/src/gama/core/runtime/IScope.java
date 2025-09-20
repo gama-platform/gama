@@ -409,7 +409,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The result of the execution
 	 */
 	default ExecutionResult execute(final IExecutable executable) {
-		return execute(executable, getAgent(), null);
+		return execute(executable, getCurrentObjectOrAgent(), null);
 	}
 
 	/**
@@ -422,7 +422,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The result of the execution
 	 */
 	default ExecutionResult execute(final IExecutable executable, final Arguments args) {
-		return execute(executable, getAgent(), args);
+		return execute(executable, getCurrentObjectOrAgent(), args);
 	}
 
 	/**
@@ -436,7 +436,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default ExecutionResult execute(final IExecutable executable, final IAgent agent, final Arguments args) {
+	default ExecutionResult execute(final IExecutable executable, final IObject agent, final Arguments args) {
 		return execute(executable, agent, false, args);
 	}
 
@@ -487,7 +487,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If the variable doesn't exist or cannot be accessed
 	 */
-	Object getAgentVarValue(IAgent agent, String name) throws GamaRuntimeException;
+	Object getAgentVarValue(IObject agent, String name) throws GamaRuntimeException;
 
 	/**
 	 * Sets the value of a variable of a specific agent.
@@ -501,7 +501,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If the variable doesn't exist or cannot be modified
 	 */
-	void setAgentVarValue(IAgent agent, String name, Object v) throws GamaRuntimeException;
+	void setAgentVarValue(IObject agent, String name, Object v) throws GamaRuntimeException;
 
 	/**
 	 * Returns the value of a global variable defined at the simulation level.
@@ -884,7 +884,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	ExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, Arguments args);
+	ExecutionResult execute(IExecutable statement, IObject target, boolean useTargetScopeForExecution, Arguments args);
 
 	/**
 	 * Retrieves and clears the BREAK flow status.
@@ -1030,4 +1030,23 @@ public interface IScope extends Closeable, IBenchmarkable {
 		if (m == null) return Types.builtInTypes;
 		return m.getDescription().getTypesManager();
 	}
+
+	/**
+	 * @param name
+	 * @return
+	 */
+	Object getCurrentAgentOrObjectAttributeValue(String name);
+
+	/**
+	 * @param name
+	 * @param v
+	 */
+	void setCurrentAgentOrObjectAttributeValue(String name, Object v);
+
+	/**
+	 * Gets the current object or agent.
+	 *
+	 * @return the current object or agent
+	 */
+	IObject getCurrentObjectOrAgent();
 }

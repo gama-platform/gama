@@ -24,6 +24,7 @@ import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.IModel;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
@@ -221,7 +222,22 @@ public class Cast {
 	 *             the gama runtime exception
 	 */
 	public static IAgent asAgent(final IScope scope, final Object val) throws GamaRuntimeException {
-		return (IAgent) Types.AGENT.cast(scope, val, null, false);
+		return Types.AGENT.cast(scope, val, null, false);
+	}
+
+	/**
+	 * As object.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param val
+	 *            the val
+	 * @return the i object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public static IObject asObject(final IScope scope, final Object val) throws GamaRuntimeException {
+		return (IObject) Types.OBJECT.cast(scope, val, null, false);
 	}
 
 	/**

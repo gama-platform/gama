@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Arguments.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Arguments.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.IExpressionDescription;
@@ -34,7 +35,7 @@ public class Arguments extends Facets {
 	/*
 	 * The caller represents the agent in the context of which the arguments need to be evaluated.
 	 */
-	ThreadLocal<IAgent> caller = new ThreadLocal<>();
+	ThreadLocal<IObject> caller = new ThreadLocal<>();
 
 	/**
 	 * Instantiates a new arguments.
@@ -136,7 +137,7 @@ public class Arguments extends Facets {
 	 * @param caller
 	 *            the new caller
 	 */
-	public void setCaller(final IAgent caller) {
+	public void setCaller(final IObject caller) {
 		this.caller.set(caller);
 	}
 
@@ -145,7 +146,7 @@ public class Arguments extends Facets {
 	 *
 	 * @return the caller
 	 */
-	public IAgent getCaller() { return caller.get(); }
+	public IObject getCaller() { return caller.get(); }
 
 	@Override
 	public void dispose() {

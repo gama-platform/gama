@@ -29,7 +29,6 @@ import gama.core.common.util.FileUtils;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.InputParameter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
@@ -38,7 +37,6 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -668,98 +666,7 @@ public class User {
 	 *             the gama runtime exception
 	 */
 	
-	/**
-	 * Op get value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param a
-	 *            the a
-	 * @param s
-	 *            the s
-	 * @return the object
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@operator (
-			value = { IKeyword._DOT, IKeyword.OF },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
-			category = { IOperatorCategory.SYSTEM },
-			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
-	@doc (
-			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
-			masterDoc = true,
-			special_cases = "if the agent is nil or dead, throws an exception",
-			usages = @usage (
-					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
-					examples = { @example (
-							value = "agent1.location",
-							equals = "the location of the agent agent1",
-							isExecutable = false),
-					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
-					}))
-	@no_test
-	public static Object opGetValue(final IScope scope, final IAgent a, final IExpression s)
-			throws GamaRuntimeException {
-		if (a == null) {
-			if (!scope.interrupted()) throw GamaRuntimeException
-					.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target agent is nil", scope);
-			return null;
-		}
-		if (a.dead()) {
-			// scope.getGui().debug("System.opGetValue");
-			if (!scope.interrupted()) // scope.getGui().debug("System.opGetValue error");
-				throw GamaRuntimeException
-						.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target agent is dead", scope);
-			return null;
-		}
-		return scope.evaluate(s, a).getValue();
-	}
-
-	/**
-	 * Op get value.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param a
-	 *            the a
-	 * @param s
-	 *            the s
-	 * @return the object
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@operator (
-			value = { IKeyword._DOT, IKeyword.OF },
-			type = ITypeProvider.TYPE_AT_INDEX + 2,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
-			category = { IOperatorCategory.SYSTEM },
-			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
-	@doc (
-			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
-			masterDoc = true,
-			special_cases = "if the agent is nil or dead, throws an exception",
-			usages = @usage (
-					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
-					examples = { @example (
-							value = "agent1.location",
-							equals = "the location of the agent agent1",
-							isExecutable = false),
-					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
-					}))
-	@no_test
-	public static Object opGetValue(final IScope scope, final IObject a, final IExpression s)
-			throws GamaRuntimeException {
-		if (a == null) {
-			if (!scope.interrupted()) throw GamaRuntimeException
-					.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
-			return null;
-		}
-		return scope.evaluate(s, a).getValue();
-	}
+	
 
 	/**
 	 * Play sound.
