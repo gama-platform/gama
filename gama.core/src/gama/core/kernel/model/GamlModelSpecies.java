@@ -127,7 +127,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	protected Map<String, ISpecies> allSpecies;
 
 	/** The classes. */
-	protected final Map<String, IClass> classes = GamaMapFactory.createOrdered();
+	protected final Map<String, IClass> classes = GamaMapFactory.create();
 
 	/**
 	 * Instantiates a new gaml model species.
@@ -293,9 +293,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();
-
 		final List<IExperimentPlan> theExperiments = new ArrayList<>();
-
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {
 			final ISymbol s = it.next();
 

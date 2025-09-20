@@ -472,6 +472,7 @@ public class ModelDescription extends SpeciesDescription {
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
 		boolean result = super.visitChildren(visitor);
 		if (result && experiments != null) { result &= experiments.forEachValue(visitor); }
+		if (result && classes != null) { result &= classes.forEachValue(visitor); }
 		return result;
 	}
 
