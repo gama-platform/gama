@@ -478,7 +478,9 @@ public class ModelDescription extends SpeciesDescription {
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		if (!super.visitOwnChildren(visitor) || experiments != null && !experiments.forEachValue(visitor)) return false;
+		if (!super.visitOwnChildren(visitor) || experiments != null && !experiments.forEachValue(visitor)
+				|| classes != null && !classes.forEachValue(visitor))
+			return false;
 		return true;
 	}
 
@@ -489,7 +491,8 @@ public class ModelDescription extends SpeciesDescription {
 			return each.visitOwnChildrenRecursively(visitor);
 		};
 		if (!super.visitOwnChildrenRecursively(visitor)
-				|| experiments != null && !experiments.forEachValue(recursiveVisitor))
+				|| experiments != null && !experiments.forEachValue(recursiveVisitor)
+				|| classes != null && !classes.forEachValue(visitor))
 			return false;
 		return true;
 	}
