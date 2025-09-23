@@ -602,7 +602,6 @@ public class ModelDescription extends SpeciesDescription {
 	protected boolean parentIsVisible() {
 		if (!getParent().isModel()) return false;
 		if (parent.isBuiltIn()) return true;
-
 		return false;
 	}
 
@@ -613,6 +612,20 @@ public class ModelDescription extends SpeciesDescription {
 	public ClassDescription getClassDescription(final String p) {
 		if (classes == null) return null;
 		return classes.get(p);
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean hasClasses() {
+		return classes != null && !classes.isEmpty();
+	}
+
+	/**
+	 * @return
+	 */
+	public HashMap<String, ClassDescription> getClasses() {
+		return classes == null ? new HashMap<>() : new HashMap(classes);
 	}
 
 }
