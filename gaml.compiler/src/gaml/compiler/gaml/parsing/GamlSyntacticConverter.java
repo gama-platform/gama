@@ -399,7 +399,9 @@ public class GamlSyntacticConverter {
 			Function f = EGaml.getInstance().getFactory().createFunction();
 			f.setLeft(e);
 			f.setRight(list);
+			stm.setExpr(f);
 			e = f;
+			// stm.eResource().getContents().add(f); // to avoid a warning
 		}
 		if (target == null) { addFacet(elt, INTERNAL_FUNCTION, convExpr(e, errors), errors); }
 		if (stm.getRight() instanceof ExpressionList list) {

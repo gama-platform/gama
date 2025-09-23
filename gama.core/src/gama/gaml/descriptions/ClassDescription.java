@@ -69,21 +69,6 @@ public class ClassDescription extends TypeDescription {
 	public Class<? extends IObject> getJavaBase() { return IObject.class; }
 
 	@Override
-	public IDescription addChild(final IDescription child) {
-		super.addChild(child);
-		switch (child) {
-			case ActionDescription ad:
-				addAction(ad);
-				break;
-			case VariableDescription vd:
-				addOwnAttribute(vd);
-				break;
-			default:
-		}
-		return child;
-	}
-
-	@Override
 	public void documentThis(final Doc sb) {
 		final String parentName = getParent() == null ? "nil" : getParent().getName();
 		final String hostName = getEnclosingDescription() == null ? null : getEnclosingDescription().getName();

@@ -300,15 +300,11 @@ public class SpeciesDescription extends TypeDescription {
 		if (desc == null) return null;
 		if (desc instanceof StatementDescription statement) {
 			final String kw = desc.getKeyword();
-			if (PRIMITIVE.equals(kw) || ACTION.equals(kw)) {
-				addAction((ActionDescription) statement);
-			} else if (ASPECT.equals(kw)) {
+			if (ASPECT.equals(kw)) {
 				addAspect(statement);
 			} else {
 				addBehavior(statement);
 			}
-		} else if (desc instanceof VariableDescription) {
-			addOwnAttribute((VariableDescription) desc);
 		} else if (desc instanceof SpeciesDescription) { addMicroSpecies((SpeciesDescription) desc); }
 		return desc;
 	}
@@ -665,22 +661,9 @@ public class SpeciesDescription extends TypeDescription {
 		return getMicroSpecies().forEachValue(visitor);
 	}
 
-	// public boolean visitSortedMicroSpecies(final DescriptionVisitor<SpeciesDescription> visitor) {
-	// if (!hasMicroSpecies()) { return true; }
-	// final Iterable<SpeciesDescription> all = getSortedMicroSpecies();
-	// for (final SpeciesDescription sd : all) {
-	// if (!visitor.process(sd)) { return false; }
-	// }
-	// return true;
-	// }
-
 	@Override
 	public void setParent(final TypeDescription parent) {
 		super.setParent(parent);
-		if (!isBuiltIn() && !verifyParent()) {
-			super.setParent(null);
-			return;
-		}
 		if (parent instanceof SpeciesDescription && parent != this && !isSet(Flag.CanUseMinimalAgents)
 				&& !parent.isBuiltIn()) {
 			((SpeciesDescription) parent).invalidateMinimalAgents();
@@ -701,8 +684,10 @@ public class SpeciesDescription extends TypeDescription {
 	 * @throws GamlException
 	 *             if the species with the specified name can not be a parent of this species.
 	 */
+	@Override
 	protected boolean verifyParent() {
 		if (parent == null) return true;
+		if (!super.verifyParent()) return false;
 		if (this == parent) {
 			error(getName() + " species can't be a sub-species of itself", IGamlIssue.GENERAL);
 			return false;
@@ -714,10 +699,6 @@ public class SpeciesDescription extends TypeDescription {
 		if (!parentIsVisible()) {
 			error(parent.getName() + " can't be a parent species of " + this.getName() + " species.",
 					IGamlIssue.WRONG_PARENT, PARENT);
-			return false;
-		}
-		if (hierarchyContainsSelf()) {
-			error(this.getName() + " species and " + parent.getName() + " species can't be sub-species of each other.");
 			return false;
 		}
 		return true;
@@ -743,22 +724,6 @@ public class SpeciesDescription extends TypeDescription {
 			}
 		});
 		return result[0];
-	}
-
-	/**
-	 * Hierarchy contains self.
-	 *
-	 * @return true, if successful
-	 */
-	private boolean hierarchyContainsSelf() {
-		SpeciesDescription currentSpeciesDesc = this;
-		while (currentSpeciesDesc != null) {
-			final SpeciesDescription p = currentSpeciesDesc.getParent();
-			// Takes care of invalid species (see Issue 711)
-			if (p == currentSpeciesDesc || p == this) return true;
-			currentSpeciesDesc = p;
-		}
-		return false;
 	}
 
 	/**

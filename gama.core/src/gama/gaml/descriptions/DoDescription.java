@@ -193,24 +193,17 @@ public class DoDescription extends StatementWithChildrenDescription {
 		return declarationContext;
 	}
 
-	/**
-	 * Gets the declaration context name.
-	 *
-	 * @return the declaration context name
-	 */
-	private String getDeclarationContextName() {
-		return declarationContext == null ? getSpeciesContext().getName() : declarationContext.getName();
-	}
-
 	@Override
 	public IDescription validate() {
 		IDescription result = super.validate();
 		if (result == null) return null;
 		ActionDescription a = getAction();
 		if (a == null) {
+			String declarationContextName =
+					declarationContext == null ? getSpeciesContext().getName() : declarationContext.getName();
 			String actionName = getLitteral(ACTION);
-			error("Action " + actionName + " does not exist in " + getDeclarationContextName(),
-					IGamlIssue.UNKNOWN_ACTION, ACTION, actionName, getDeclarationContextName());
+			error("Action " + actionName + " does not exist in " + declarationContextName, IGamlIssue.UNKNOWN_ACTION,
+					ACTION, actionName, declarationContextName);
 			return null;
 		}
 		if (a instanceof PrimitiveDescription pd) {

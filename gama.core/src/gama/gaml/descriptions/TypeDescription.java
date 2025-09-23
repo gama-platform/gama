@@ -105,12 +105,23 @@ public abstract class TypeDescription extends SymbolDescription {
 			}
 		// parent can be null
 		if (parent != null) { setParent(parent); }
-		if (plugin != null && isBuiltIn()) {
-			this.originName = plugin;
-			// DEBUG.LOG("Origin name " + getOriginName() + " and plugin "
-			// + plugin + " of " + this);
-		}
+		if (plugin != null && isBuiltIn()) { this.originName = plugin; }
 
+	}
+
+	@Override
+	public IDescription addChild(final IDescription child) {
+		super.addChild(child);
+		switch (child) {
+			case ActionDescription ad:
+				addAction(ad);
+				break;
+			case VariableDescription vd:
+				addOwnAttribute(vd);
+				break;
+			default:
+		}
+		return child;
 	}
 
 	/**
@@ -471,7 +482,44 @@ public abstract class TypeDescription extends SymbolDescription {
 	 * @param parent
 	 *            the new parent
 	 */
-	public void setParent(final TypeDescription parent) { this.parent = parent; }
+	public void setParent(final TypeDescription parent) {
+		this.parent = parent;
+		if (!isBuiltIn() && !verifyParent()) { this.parent = null; }
+	}
+
+	/**
+	 * Verify parent.
+	 *
+	 * @return true, if successful
+	 */
+	protected boolean verifyParent() {
+		if (parent == null) return true;
+		if (this == parent) {
+			error(getName() + " species can't be a sub-species of itself", IGamlIssue.GENERAL);
+			return false;
+		}
+		if (hierarchyContainsSelf()) {
+			error(this.getName() + " species and " + parent.getName() + " species can't be sub-species of each other.");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Hierarchy contains self.
+	 *
+	 * @return true, if successful
+	 */
+	private boolean hierarchyContainsSelf() {
+		TypeDescription currentSpeciesDesc = this;
+		while (currentSpeciesDesc != null) {
+			final TypeDescription p = currentSpeciesDesc.getParent();
+			// Takes care of invalid species (see Issue 711)
+			if (p == currentSpeciesDesc || p == this) return true;
+			currentSpeciesDesc = p;
+		}
+		return false;
+	}
 
 	/**
 	 * Duplicate info.
