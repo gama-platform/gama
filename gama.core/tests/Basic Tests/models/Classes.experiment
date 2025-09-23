@@ -1,0 +1,138 @@
+/**
+* Name: Classes
+* Do a bunch of tests on class objects 
+* Author: baptiste lesquoy
+* Tags: 
+*/
+
+
+model Classes
+
+class A {
+	
+	int i;
+	int j;
+	
+}
+
+class ObjWithCtor {
+	
+	int k;
+	
+	init {
+		j <- 2; //todo: error, shouldn't compile
+		k <- 4;
+	}	
+}
+
+class ObjChild parent:A{
+	
+	init {
+		i <- 3;
+	}
+	
+}
+
+class ObjChildCtor parent:ObjWithCtor {
+	
+	init {
+		k <- 5;
+	}
+}
+
+class ObjTwoLvlChild parent:ObjChild {
+
+	string s;	
+}
+
+
+experiment testClasses type:test {
+	
+	
+	test declareClassVar {
+		
+		A myVar;
+		list<A> listVar <- [myVar];
+		assert type_of(myVar) = A;
+		assert type_of(listVar[0]) = A;
+	
+	}
+	
+	test createDefaultObject {
+		assert false;//todo: not possible yet
+	}
+	
+	test createObjectWithDefaultCtor {
+		ObjWithCtor obj;
+		assert obj.k = 4;
+	}
+	
+	test useAskOnObj {
+		assert false;//todo
+	}
+	
+	test createAndDestroyObject {
+		A myVar <- A(i:100);
+		assert myVar.i = 100;
+		assert false;//no destructor yet ?
+//		ask myVar{
+//			do die;
+//		}	
+	}
+	
+	test objEquality{
+		A a <- A(i: 2, j: 3);
+		A b <- A(i: 2, j: 3);
+		assert a != b; //references are different even though values are the same
+		assert a = a;
+		assert b = b;
+		assert a.i = b.i and a.j = b.j;
+	}
+	
+	test listContainsObj{
+		A a <- A(i: 2, j: 3);
+		A b <- A(i: 2, j: 3);
+		A c <- A(i: 9, j: 9);
+		list<A> l <- [a];
+		assert l contains a;
+		assert !(l contains b); // different references but same values
+		assert !(l contains c); // different references and values
+	}
+	
+	test objectsAreNotInAgents {
+		ObjWithCtor obj;
+		assert !(agents contains obj);
+	}
+	
+	test createListObjects {
+		list<A> l <- list_with(3, A(i:rnd(1,10)));
+		assert length(l) = 3;
+		assert l none_matches (each = nil);
+		assert l all_match (each.i > 0);
+	}
+	
+	test childObjDefaultCtor {
+		ObjChild o;
+		assert o.i = 3;
+	}
+	
+	test childObjChangeInheritedVar {
+		ObjChild o <- ObjChild(i:15);
+		assert o.i = 15;
+	}
+	
+	test lastDefaultCtorUsed{
+		ObjChildCtor o;
+		assert o.k = 5; // the last definition of init sets k to 5
+	}
+	
+	test defaultCtorPreviousLvl {
+		ObjTwoLvlChild o;
+		assert o.i = 3; // the parent's Ctor should have been called
+	}
+	
+	test makeTestsOnCallingParentsActions{
+		assert false;//todo
+	}
+	
+}
