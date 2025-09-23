@@ -43,8 +43,25 @@ class ObjChildCtor parent:ObjWithCtor {
 class ObjTwoLvlChild parent:ObjChild {
 
 	string s;	
+	
 }
 
+class ObjRefOther {
+//	A myA; //TODO: can't uncomment because it doesn't compile but should
+}
+
+class ObjSelfRef {
+//	ObjSelfRef aFriend;//TODO: same as above
+}
+
+class ContainsAgents {
+	dummy myDummy;
+	dummy_g myGridCell;
+}
+
+species dummy;
+
+grid dummy_g height:10 width:10;
 
 experiment testClasses type:test {
 	
@@ -133,6 +150,16 @@ experiment testClasses type:test {
 	
 	test makeTestsOnCallingParentsActions{
 		assert false;//todo
+	}
+	
+	test objHoldsAgents {
+		create dummy returns:d;
+		ContainsAgents o1;
+		ContainsAgents o2 <- ContainsAgents(myDummy:first(d), myGridCell:dummy_g[1,1]);
+		assert o1.myDummy = nil;
+		assert o1.myGridCell = nil;
+		assert o2.myDummy = first(d);
+		assert o2.myGridCell = dummy_g[1,1];
 	}
 	
 }
