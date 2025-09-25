@@ -834,8 +834,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	public IExpression parseAttributes(final TypeDescription type, final EObject o,
 			final IDescription constructorStatement) {
-		if (o == null) return getFactory().createMap(Collections.EMPTY_LIST);
-		List<Expression> parameters = null;
+		List<Expression> parameters = Collections.EMPTY_LIST;
 		EGaml egaml = EGaml.getInstance();
 		if (o instanceof Array array) {
 			parameters = egaml.getExprsOf(array.getExprs());

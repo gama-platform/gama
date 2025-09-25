@@ -10,10 +10,12 @@
  ********************************************************************************************************/
 package gama.gaml.types;
 
+import gama.core.metamodel.agent.GamlObject;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.util.IMap;
 import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
@@ -122,5 +124,19 @@ public class GamaObjectType extends GamaType<IObject> {
 
 	@Override
 	public boolean isDrawable() { return true; }
+
+	/**
+	 * Deserialize from json.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param str
+	 *            the str
+	 * @return the gaml object
+	 */
+	@Override
+	public GamlObject deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
+		return new GamlObject(scope, scope.getModel().getClass(name), map2);
+	}
 
 }

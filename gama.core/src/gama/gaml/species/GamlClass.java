@@ -323,7 +323,7 @@ public class GamlClass extends Symbol implements IClass {
 
 	@Override
 	public IObject createInstance(final IScope scope, final IMap<String, Object> args) {
-		return new GamlObject(this, args);
+		return new GamlObject(scope, this, args);
 	}
 
 	@Override

@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.metamodel.agent;
 
+import gama.core.common.interfaces.IValue;
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -20,7 +21,7 @@ import gama.gaml.species.IClass;
  *
  */
 public interface IObject<ClassOrSpecies extends IClass>
-		extends IAttributed, IContainer.Addressable<String, Object>, IVarAndActionSupport {
+		extends IAttributed, IContainer.Addressable<String, Object>, IVarAndActionSupport, IValue {
 
 	/**
 	 * Gets the species.
