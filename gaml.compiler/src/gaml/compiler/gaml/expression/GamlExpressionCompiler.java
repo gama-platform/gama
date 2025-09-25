@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -833,7 +834,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	public IExpression parseAttributes(final TypeDescription type, final EObject o,
 			final IDescription constructorStatement) {
-		if (o == null) return null;
+		if (o == null) return getFactory().createMap(Collections.EMPTY_LIST);
 		List<Expression> parameters = null;
 		EGaml egaml = EGaml.getInstance();
 		if (o instanceof Array array) {
@@ -1163,9 +1164,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
 		// If the argument list is composed only of Parameter or ArgumentPair, then it cannot be a casting, but more
 		// likely a constructor.
-		if (!args.isEmpty() && (t.isObjectType() || t.isAgentType())
-				&& Iterables.all(args, e -> e instanceof Parameter || e instanceof ArgumentPair))
-			return tryConstructor(op, t, object, args);
+		if ((t.isObjectType() || t.isAgentType())
+				&& (args.isEmpty() || Iterables.all(args, e -> e instanceof Parameter || e instanceof ArgumentPair)))
+			return tryConstructor(op, t, object);
 		return switch (args.size()) {
 			case 0 -> null;
 			case 1 -> {
@@ -1221,11 +1222,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 * @param args
 	 * @return the i expression
 	 */
-	private IExpression tryConstructor(final String op, final IType t, final Function object,
-			final List<Expression> args) {
+	private IExpression tryConstructor(final String op, final IType t, final Function object) {
 		final TypeDescription sd = t.getSpecies();
 		if (sd == null) return null;
-		Iterable<IExpression> exprs = transform(args, this::compile);
 		IExpression exprMap = parseAttributes(sd, object.getRight(), getContext());
 		return getFactory().createOperator(IKeyword.INSTANTIATE, getContext(), object,
 				getFactory().createTypeExpression(t), exprMap);
