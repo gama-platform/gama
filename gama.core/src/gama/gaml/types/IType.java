@@ -153,7 +153,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	int AVAILABLE_TYPES = 50;
 
 	/** The species types. */
-	int SPECIES_TYPES = 100;
+	int USER_DEFINED_TYPES = 100;
 
 	/**
 	 * Cast.

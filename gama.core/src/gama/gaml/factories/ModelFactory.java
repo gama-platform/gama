@@ -563,8 +563,7 @@ public class ModelFactory extends SymbolFactory {
 	 */
 	void addMicroSpecies(final SpeciesDescription macro, final ISyntacticElement micro,
 			final Map<String, TypeDescription> cache) {
-		// Create the species description without any children. Passing
-		// explicitly an empty list and not null;
+		// Create the class description without any children. Passing explicitly an empty list and not null;
 		final SpeciesDescription mDesc =
 				(SpeciesDescription) DescriptionFactory.create(micro, macro, Collections.EMPTY_LIST);
 		cache.put(mDesc.getName(), mDesc);
@@ -589,8 +588,7 @@ public class ModelFactory extends SymbolFactory {
 	 */
 	void addClass(final ModelDescription macro, final ISyntacticElement micro,
 			final Map<String, TypeDescription> cache) {
-		// Create the species description without any children. Passing
-		// explicitly an empty list and not null;
+		// Create the class description without any children. Passing explicitly an empty list and not null;
 		final ClassDescription mDesc =
 				(ClassDescription) DescriptionFactory.create(micro, macro, Collections.EMPTY_LIST);
 		cache.put(mDesc.getName(), mDesc);

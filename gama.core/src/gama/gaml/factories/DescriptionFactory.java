@@ -175,6 +175,7 @@ public class DescriptionFactory {
 			if (md == null) return null;
 			final IType t = md.getTypesManager().get(keyword);
 			if (t.isAgentType()) return getVarProto(AGENT, null);
+			if (t.isObjectType()) return getVarProto(OBJECT, null);
 		}
 		return p;
 	}

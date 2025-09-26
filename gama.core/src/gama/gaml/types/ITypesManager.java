@@ -109,7 +109,7 @@ public interface ITypesManager extends IDisposable {
 	 *            the plugin name
 	 * @return the i type
 	 */
-	<Support> IType<Support> initType(String keyword, IType<Support> typeInstance, int id, int varKind,
+	<Support> IType<Support> initBuiltInType(String keyword, IType<Support> typeInstance, int id, int varKind,
 			Class<Support> support, String pluginName);
 
 	/**

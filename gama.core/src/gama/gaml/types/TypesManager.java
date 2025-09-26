@@ -37,7 +37,7 @@ public class TypesManager implements ITypesManager {
 	}
 
 	/** The current index. */
-	public static int CURRENT_INDEX = IType.SPECIES_TYPES;
+	public static int CURRENT_INDEX = IType.USER_DEFINED_TYPES;
 
 	/** The parent. */
 	private TypesManager parent;
@@ -112,7 +112,7 @@ public class TypesManager implements ITypesManager {
 	}
 
 	@Override
-	public <Support> IType<Support> initType(final String name, final IType<Support> originalType, final int id,
+	public <Support> IType<Support> initBuiltInType(final String name, final IType<Support> originalType, final int id,
 			final int varKind, final Class<Support> support, final String plugin) {
 		IType<Support> typeInstance = originalType;
 		if (IKeyword.UNKNOWN.equals(name)) { typeInstance = Types.NO_TYPE; }
