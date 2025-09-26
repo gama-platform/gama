@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PlatformFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,7 +26,7 @@ import gama.gaml.statements.Facets;
 public class PlatformFactory extends SpeciesFactory {
 
 	@Override
-	public SpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
+	public PlatformSpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
 		DescriptionFactory.addSpeciesNameAsType(name);

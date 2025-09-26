@@ -17,8 +17,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IObject;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.ClassDescription;
@@ -74,119 +72,58 @@ public class TypesManager implements ITypesManager {
 		if (t != null) { types.put(otherTypeName, t); }
 	}
 
+	/**
+	 * Adds the user defined type.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the i type<? extends I agent>
+	 */
 	/*
 	 * (non-Javadoc)
 	 *
 	 * @see gama.gaml.types.ITypesManager#addSpeciesType(gama.gaml.descriptions. TypeDescription)
 	 */
 	@Override
-	public IType<? extends IAgent> addSpeciesType(final SpeciesDescription species) {
+	public IType addUserDefinedType(final TypeDescription species) {
 		final String name = species.getName();
-		if (IKeyword.AGENT.equals(name)) return (IType<? extends IAgent>) get(IKeyword.AGENT);
+		boolean isClass = species instanceof ClassDescription;
+		if (isClass) {
+			if (IKeyword.OBJECT.equals(name)) return get(IKeyword.OBJECT);
+		} else if (IKeyword.AGENT.equals(name)) return get(IKeyword.AGENT);
+		// We check that the name is not already used
 		if (!species.isBuiltIn() && containsType(name)) {
-			species.error("Species " + name + " already declared. Species name must be unique",
+			String typeKind = isClass ? "Class" : "Species";
+			species.error(typeKind + " " + name + " already declared. " + typeKind + " names must be unique",
 					IGamlIssue.DUPLICATE_NAME, species.getUnderlyingElement(), name);
-			return (IType<? extends IAgent>) this.get(name);
+			return this.get(name);
 		}
-		return addSpeciesType(
-				new GamaAgentType(species, species.getName(), ++CURRENT_INDEX, (Class<IAgent>) species.getJavaBase()),
-				species.getJavaBase());
-
-	}
-
-	/**
-	 * Adds the class type.
-	 *
-	 * @param species
-	 *            the species
-	 * @return the i type<? extends I object>
-	 */
-	public IType<? extends IObject> addClassType(final ClassDescription species) {
-		final String name = species.getName();
-		if (IKeyword.OBJECT.equals(name)) return (IType<? extends IObject>) get(IKeyword.OBJECT);
-		if (!species.isBuiltIn() && containsType(name)) {
-			species.error("Class " + name + " already declared. Class names must be unique", IGamlIssue.DUPLICATE_NAME,
-					species.getUnderlyingElement(), name);
-			return (IType<? extends IObject>) this.get(name);
-		}
-		return addClassType(
-				new GamaObjectType(species, species.getName(), ++CURRENT_INDEX, (Class<IObject>) species.getJavaBase()),
-				species.getJavaBase());
+		Class javaBase = species.getJavaBase();
+		IType result = isClass ? new GamaObjectType((ClassDescription) species, name, ++CURRENT_INDEX, javaBase)
+				: new GamaAgentType((SpeciesDescription) species, name, ++CURRENT_INDEX, javaBase);
+		final Class clazz = javaBase;
+		final int i = result.id();
+		types.put(name, result);
+		// Hack to allow types to be declared with their id as string
+		types.put(String.valueOf(i), result);
+		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
+		return result;
 
 	}
 
 	@Override
-	public <Support> IType<Support> initType(final String keyword, final IType<Support> originalType, final int id,
+	public <Support> IType<Support> initType(final String name, final IType<Support> originalType, final int id,
 			final int varKind, final Class<Support> support, final String plugin) {
 		IType<Support> typeInstance = originalType;
-		if (IKeyword.UNKNOWN.equals(keyword)) { typeInstance = Types.NO_TYPE; }
-		typeInstance.init(varKind, id, keyword, support);
+		if (IKeyword.UNKNOWN.equals(name)) { typeInstance = Types.NO_TYPE; }
+		typeInstance.init(varKind, id, name, support);
 		typeInstance.setDefiningPlugin(plugin);
-		return addType(typeInstance, support);
-	}
-
-	/**
-	 * Adds the species type.
-	 *
-	 * @param t
-	 *            the t
-	 * @param clazz
-	 *            the clazz
-	 * @return the i type<? extends I agent>
-	 */
-	private IType<? extends IAgent> addSpeciesType(final IType<? extends IAgent> t,
-			final Class<? extends IAgent> clazz) {
-		final int i = t.id();
-		final String name = t.toString();
-		types.put(name, t);
+		types.put(name, typeInstance);
 		// Hack to allow types to be declared with their id as string
-		types.put(String.valueOf(i), t);
-		// for (final Class cc : wraps) {
-		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
-		// }
-		return t;
-	}
-
-	/**
-	 * Adds the class type.
-	 *
-	 * @param t
-	 *            the t
-	 * @param clazz
-	 *            the clazz
-	 * @return the i type<? extends I agent>
-	 */
-	private IType<? extends IObject> addClassType(final IType<? extends IObject> t,
-			final Class<? extends IObject> clazz) {
-		final int i = t.id();
-		final String name = t.toString();
-		types.put(name, t);
-		// Hack to allow types to be declared with their id as string
-		types.put(String.valueOf(i), t);
-		// for (final Class cc : wraps) {
-		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
-		// }
-		return t;
-	}
-
-	/**
-	 * Adds the type.
-	 *
-	 * @param t
-	 *            the t
-	 * @param support
-	 *            the support
-	 * @return the i type
-	 */
-	private IType addType(final IType t, final Class support) {
-		final int i = t.id();
-		final String name = t.toString();
-		types.put(name, t);
-		// Hack to allow types to be declared with their id as string
-		types.put(String.valueOf(i), t);
-		GAML.VARTYPE2KEYWORDS.put(t.getVarKind(), name);
-		DescriptionFactory.addNewTypeName(name, t.getVarKind());
-		return t;
+		types.put(String.valueOf(id), typeInstance);
+		GAML.VARTYPE2KEYWORDS.put(varKind, name);
+		DescriptionFactory.addNewTypeName(name, varKind);
+		return typeInstance;
 	}
 
 	/*
@@ -198,11 +135,11 @@ public class TypesManager implements ITypesManager {
 	public void init(final ModelDescription model) {
 		// We first add the species as types
 		model.visitAllSpecies(entry -> {
-			addSpeciesType(entry);
+			addUserDefinedType(entry);
 			return true;
 		});
 		model.visitAllClasses(entry -> {
-			addClassType(entry);
+			addUserDefinedType(entry);
 			return true;
 		});
 		// Then we parent the types

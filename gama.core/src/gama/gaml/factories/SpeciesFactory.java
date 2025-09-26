@@ -101,7 +101,7 @@ public class SpeciesFactory extends SymbolFactory {
 	 */
 	public ClassDescription createBuiltInClassDescription(final String name, final Class clazz,
 			final ModelDescription macro, final ClassDescription parent) {
-		DescriptionFactory.addSpeciesNameAsType(name);
+		DescriptionFactory.addClassNameAsType(name);
 		return new ClassDescription(name, clazz, macro, parent, Collections.EMPTY_LIST, null, null, Facets.NULL,
 				GamaBundleLoader.CURRENT_PLUGIN_NAME);
 	}

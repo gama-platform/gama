@@ -72,6 +72,24 @@ public class DescriptionFactory {
 	/** The factories. */
 	static Map<Integer, SymbolFactory> FACTORIES = new HashMap();
 
+	/** The species factory. */
+	private static SpeciesFactory speciesFactory = new SpeciesFactory();
+
+	/** The model factory. */
+	private static ModelFactory modelFactory = new ModelFactory();
+
+	/** The experiment factory. */
+	private static ExperimentFactory experimentFactory = new ExperimentFactory();
+
+	/** The platform factory. */
+	private static PlatformFactory platformFactory = new PlatformFactory();
+
+	/** The statement factory. */
+	private static StatementFactory statementFactory = new StatementFactory();
+
+	/** The variable factory. */
+	private static VariableFactory variableFactory = new VariableFactory();
+
 	/** The statement keywords protos. */
 	static Map<String, SymbolProto> STATEMENT_KEYWORDS_PROTOS = new HashMap();
 
@@ -100,13 +118,12 @@ public class DescriptionFactory {
 	 * Initialize.
 	 */
 	public static void initialize() {
-		add(new ExperimentFactory(), EXPERIMENT);
-		add(new ModelFactory(), MODEL);
-		add(new PlatformFactory(), PLATFORM);
-		add(new SpeciesFactory(), SPECIES, CLASS);
-		add(new StatementFactory(), SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD,
-				OUTPUT);
-		add(new VariableFactory(), CONTAINER, NUMBER, REGULAR, PARAMETER);
+		add(experimentFactory, EXPERIMENT);
+		add(modelFactory, MODEL);
+		add(platformFactory, PLATFORM);
+		add(speciesFactory, SPECIES, CLASS);
+		add(statementFactory, SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD, OUTPUT);
+		add(variableFactory, CONTAINER, NUMBER, REGULAR, PARAMETER);
 	}
 
 	/**
@@ -397,13 +414,6 @@ public class DescriptionFactory {
 	}
 
 	/**
-	 * Gets the model factory.
-	 *
-	 * @return the model factory
-	 */
-	public static ModelFactory getModelFactory() { return (ModelFactory) getFactory(MODEL); }
-
-	/**
 	 * Gets the allowed facets for.
 	 *
 	 * @param keys
@@ -443,8 +453,8 @@ public class DescriptionFactory {
 	public static SpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
-		return ((SpeciesFactory) getFactory(SPECIES)).createBuiltInSpeciesDescription(name, clazz, superDesc, parent,
-				helper, skills, null, plugin);
+		return speciesFactory.createBuiltInSpeciesDescription(name, clazz, superDesc, parent, helper, skills, null,
+				plugin);
 	}
 
 	/**
@@ -469,7 +479,7 @@ public class DescriptionFactory {
 	public static ClassDescription createBuiltInClassDescription(final String name, final Class clazz,
 			final ModelDescription macro, final ClassDescription parent, final IObjectConstructor helper,
 			final String plugin) {
-		return ((SpeciesFactory) getFactory(CLASS)).createBuiltInClassDescription(name, clazz, macro, parent);
+		return speciesFactory.createBuiltInClassDescription(name, clazz, macro, parent);
 	}
 
 	/**
@@ -494,8 +504,8 @@ public class DescriptionFactory {
 	public static SpeciesDescription createPlatformSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription macro, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> allSkills, final String plugin) {
-		return ((SpeciesFactory) getFactory(PLATFORM)).createBuiltInSpeciesDescription(name, clazz, macro, parent,
-				helper, allSkills, null, plugin);
+		return platformFactory.createBuiltInSpeciesDescription(name, clazz, macro, parent, helper, allSkills, null,
+				plugin);
 	}
 
 	/**
@@ -520,8 +530,8 @@ public class DescriptionFactory {
 	public static SpeciesDescription createBuiltInExperimentDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
-		return ((ExperimentFactory) getFactory(EXPERIMENT)).createBuiltInSpeciesDescription(name, clazz, superDesc,
-				parent, helper, skills, null, plugin);
+		return experimentFactory.createBuiltInSpeciesDescription(name, clazz, superDesc, parent, helper, skills, null,
+				plugin);
 	}
 
 	/**
