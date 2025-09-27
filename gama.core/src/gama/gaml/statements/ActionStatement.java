@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ActionStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,8 +14,6 @@ import static gama.core.util.Collector.getOrderedSet;
 import static gama.gaml.compilation.GAML.getExpressionFactory;
 import static gama.gaml.types.Types.intFloatCase;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -23,6 +21,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.ICollector;
@@ -31,10 +31,10 @@ import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.IDescription;
+import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
@@ -57,7 +57,8 @@ import gama.gaml.types.Types;
 		unique_name = true,
 		concept = { IConcept.SPECIES, IConcept.ACTION })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.CLASS, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL,
+				ISymbolKind.SKILL })
 @facets (
 		value = { @facet (
 				name = IKeyword.NAME,

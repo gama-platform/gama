@@ -112,7 +112,8 @@ import gama.gaml.types.IType;
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE, IConcept.ARITHMETIC })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.CLASS, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL,
+				ISymbolKind.SKILL })
 @doc ("Declaration of an attribute of a species or an experiment; this type of attributes accepts "
 		+ "min:, max: and step: facets, automatically clamping the value if it is lower than min or higher than max.")
 public class NumberVariable<T extends Comparable, Step extends Comparable> extends Variable {

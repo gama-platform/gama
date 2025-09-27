@@ -776,4 +776,10 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 	 */
 	boolean isInvocation();
 
+	/**
+	 * @param classDescription
+	 * @return
+	 */
+	boolean canBeDefinedIn(IDescription desc);
+
 }

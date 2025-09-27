@@ -46,6 +46,7 @@ import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.compilation.annotations.validator;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
@@ -154,7 +155,8 @@ import gama.gaml.types.Types;
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.CLASS, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL,
+				ISymbolKind.SKILL })
 @doc ("Declaration of an attribute of a species or an experiment")
 @validator (gama.gaml.variables.Variable.VarValidator.class)
 @SuppressWarnings ({ "rawtypes" })
@@ -221,6 +223,13 @@ public class Variable extends Symbol implements IVariable {
 				}
 			}
 			// The name is ok. Now verifying the logic of facets
+
+			// If the attribute is defined in a class, it cannot be updated
+			if (cd.getEnclosingDescription() instanceof ClassDescription && cd.hasFacet(UPDATE)) {
+				cd.error("Attributes defined in a class cannot be updated", IGamlIssue.WRONG_CONTEXT, UPDATE);
+				return;
+			}
+
 			// Verifying that 'function' is not used in conjunction with other
 			// "value" facets
 			if (cd.hasFacet(FUNCTION) && (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {

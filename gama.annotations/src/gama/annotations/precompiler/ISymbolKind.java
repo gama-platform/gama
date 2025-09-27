@@ -115,6 +115,7 @@ public interface ISymbolKind {
 			"Batch", "Batch", "", "Statement", "Statement", "Experiment", "", "Operator", "" };
 
 	/** The Constant STATEMENTS_WITH_ATTRIBUTES. */
-	Set<Integer> STATEMENTS_CONTAINING_ATTRIBUTES = new HashSet<>(Arrays.asList(SPECIES, EXPERIMENT, OUTPUT, MODEL));
+	Set<Integer> STATEMENTS_CONTAINING_ATTRIBUTES =
+			new HashSet<>(Arrays.asList(SPECIES, EXPERIMENT, OUTPUT, MODEL, CLASS));
 
 }

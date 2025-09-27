@@ -81,6 +81,11 @@ public class ClassDescription extends TypeDescription {
 	}
 
 	@Override
+	public void addChildren(final Iterable<? extends IDescription> originalChildren) {
+		super.addChildren(originalChildren);
+	}
+
+	@Override
 	public ClassConstantExpression getConstantExpr() {
 		if (constantExpr == null) {
 			final IType type = GamaType.from(ClassDescription.this);

@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
+import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.interfaces.IGamlDescription;
 
@@ -17,12 +18,13 @@ import gama.gaml.interfaces.IGamlDescription;
  *
  * @author drogoul 4 juil. 07
  */
-public interface ISkill extends IGamlDescription, IVarAndActionSupport {
+public interface ISkill extends IGamlDescription, IVarAndActionSupport, ISymbol {
 
 	/**
 	 * Gets the description.
 	 *
 	 * @return the description
 	 */
+	@Override
 	SkillDescription getDescription();
 }

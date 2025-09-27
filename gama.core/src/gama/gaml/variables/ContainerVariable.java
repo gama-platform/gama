@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ContainerVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -88,15 +88,15 @@ import gama.gaml.variables.ContainerVariable.ContainerVarValidator;
 						name = IKeyword.INDEX,
 						type = IType.TYPE_ID,
 						optional = true,
-						doc = @doc ("The type of the key used to retrieve the contents of this attribute")), 
-		},
+						doc = @doc ("The type of the key used to retrieve the contents of this attribute")), },
 		omissible = IKeyword.NAME)
 @symbol (
 		kind = ISymbolKind.Variable.CONTAINER,
 		with_sequence = false,
 		concept = { IConcept.CONTAINER })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.CLASS, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL,
+				ISymbolKind.SKILL })
 @doc ("Declaration of an attribute of a species or an experiment")
 @validator (ContainerVarValidator.class)
 public class ContainerVariable extends Variable {

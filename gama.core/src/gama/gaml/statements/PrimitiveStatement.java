@@ -44,7 +44,8 @@ import gama.gaml.types.IType;
 		internal = true,
 		concept = { IConcept.ACTION, IConcept.SYSTEM })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL },
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.SKILL,
+				ISymbolKind.CLASS },
 		symbols = IKeyword.CHART)
 @facets (
 		value = { @facet (

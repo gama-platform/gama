@@ -52,9 +52,9 @@ import gama.gaml.variables.IVariable;
  */
 @symbol (
 		name = { IKeyword.CLASS },
-		kind = ISymbolKind.SPECIES,
+		kind = ISymbolKind.CLASS,
 		with_sequence = true,
-		concept = { IConcept.SPECIES })
+		concept = { IConcept.SPECIES, IConcept.CLASS })
 @inside (
 		kinds = { ISymbolKind.MODEL })
 @facets (

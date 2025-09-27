@@ -753,9 +753,16 @@ public abstract class SymbolDescription implements IDescription {
 	 *            the children to add
 	 */
 	// @Override
-	public final void addChildren(final Iterable<? extends IDescription> originalChildren) {
+	public void addChildren(final Iterable<? extends IDescription> originalChildren) {
 		if (originalChildren == null) return;
-		for (final IDescription c : originalChildren) { addChild(c); }
+		for (final IDescription c : originalChildren) {
+			// We first verify that the description is at the right place
+			if (!c.canBeDefinedIn(this)) {
+				error(c.getKeyword() + " cannot be defined in " + getKeyword(), IGamlIssue.WRONG_CONTEXT);
+			} else {
+				addChild(c);
+			}
+		}
 	}
 
 	/**
@@ -1593,4 +1600,9 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return true if this is a create statement, false otherwise
 	 */
 	public boolean isCreate() { return isSet(Flag.IsCreate); }
+
+	@Override
+	public boolean canBeDefinedIn(final IDescription desc) {
+		return proto != null && proto.canBeDefinedIn(desc);
+	}
 }
