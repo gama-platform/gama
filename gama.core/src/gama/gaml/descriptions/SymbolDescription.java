@@ -775,6 +775,11 @@ public abstract class SymbolDescription implements IDescription {
 	// @Override
 	public IDescription addChild(final IDescription child) {
 		if (child == null) return null;
+		if (!child.canBeDefinedIn(this)) {
+			error(child.getKeyword() + " cannot be defined in " + getKeyword(), IGamlIssue.WRONG_CONTEXT,
+					child.getUnderlyingElement());
+			return null;
+		}
 		child.setEnclosingDescription(this);
 		return child;
 	}
