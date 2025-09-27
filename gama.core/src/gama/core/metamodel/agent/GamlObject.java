@@ -52,10 +52,10 @@ public class GamlObject implements IObject<IClass> {
 		this.species = species;
 		this.attributes = GamaMapFactory.create();
 		if (attributes != null && !attributes.isEmpty()) { this.attributes.putAll(attributes); }
+		// We initialize the attributes using either the provided value, the init facet, or the default value of the
+		// type
 		species.getVars().forEach(v -> {
-			if (!v.hasFacet(IKeyword.INIT) && !this.attributes.containsKey(v.getName())) {
-				this.attributes.put(v.getName(), v.getType().getDefault());
-			}
+			v.initializeWith(scope, this, attributes == null ? null : attributes.get(v.getName()));
 		});
 	}
 
