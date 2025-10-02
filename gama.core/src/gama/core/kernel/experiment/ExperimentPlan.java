@@ -222,6 +222,9 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 					IExpression xp = tmpDesc.getFacet(IKeyword.BATCH_VAR_OUTPUTS).getExpression();
 					if (xp.getGamlType().isAssignableFrom(Types.LIST))
 						desc.error( "Using " + IKeyword.BATCH_VAR_OUTPUTS + " requires to input a list: got "+xp.getDenotedType());
+					if (!tmpDesc.hasFacet(IKeyword.BATCH_OUTPUT)) {
+						desc.warning("Facet "+IKeyword.BATCH_OUTPUT+" is undefined, hence output will be save in a default file side to this .gaml file (coucou Benoit!)", "");
+					}
 				}
 				
 				if (tmpDesc.hasFacet(Exploration.SAMPLE_SIZE)) {

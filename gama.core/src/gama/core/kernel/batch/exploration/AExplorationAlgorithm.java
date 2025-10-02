@@ -312,7 +312,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param results
 	 */
 	public void saveRawResults(final IScope scope, final IMap<ParametersSet, Map<String, List<Object>>> results) {
-		String path_to = Cast.asString(scope, outputFilePath.value(scope));
+		String path_to = outputFilePath==null ? FileUtils.constructAbsoluteFilePath(scope, currentExperiment.getName()+"_results.csv", false) :
+				Cast.asString(scope, outputFilePath.value(scope));
 		final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 		final File parento = fo.getParentFile();
 		if (!parento.exists()) {
@@ -389,7 +390,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 
-		try (FileReader fr = new FileReader(new File(path), StandardCharsets.UTF_8);
+		try (FileReader fr = new FileReader(
+				new File(FileUtils.constructAbsoluteFilePath(scope, path, false)), StandardCharsets.UTF_8);
 				BufferedReader br = new BufferedReader(fr)) {
 			String line = " ";
 			String[] tempArr;
