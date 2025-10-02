@@ -56,7 +56,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	GamaPoint cellDimensions = null;
 
 	/** The no data value. */
-	double epsilon, noDataValue;
+	double noDataValue;
 
 	/** The bands. */
 	IList<GamaField> bands = GamaListFactory.create(Types.FIELD);
@@ -91,7 +91,6 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		this(scope, primary.numCols, primary.numRows, band, primary.noDataValue);
 		worldDimensions = primary.worldDimensions;
 		cellDimensions = primary.cellDimensions;
-		epsilon = primary.epsilon;
 	}
 
 	/**
@@ -128,7 +127,6 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		IShape world = scope.getSimulation().getGeometry();
 		worldDimensions = new GamaPoint(world.getWidth(), world.getHeight());
 		cellDimensions = new GamaPoint(world.getWidth() / this.numCols, world.getHeight() / this.numRows);
-		epsilon = cellDimensions.x / 1000;
 	}
 
 	@Override

@@ -1,0 +1,32 @@
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbc: <http://dbpedia.org/resource/Category:>
+PREFIX dct: <http://purl.org/dc/terms/>
+
+SELECT 
+  (REPLACE(REPLACE(STRAFTER(STR(?philosopher), "http://dbpedia.org/resource/"), "_", " "), ", .*", "") AS ?name)
+  (STR(?birthDate) AS ?birthDateStr)
+  (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?birthPlace), "http://dbpedia.org/resource/"), "_", " "); SEPARATOR="; ") AS ?birthPlaces)
+  (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?nationality), "http://dbpedia.org/resource/"), "_", " "); SEPARATOR="; ") AS ?nationalities)
+  (GROUP_CONCAT(
+     DISTINCT CONCAT(
+       REPLACE(REPLACE(STRAFTER(STR(?influence), "http://dbpedia.org/resource/"), "_", " "), ", .*", ""),
+       IF(BOUND(?influenceBirth), CONCAT(" (", STR(?influenceBirth), ")"), "")
+     ); 
+     SEPARATOR=";"
+   ) AS ?influencedByList)
+WHERE {
+  ?philosopher dct:subject dbc:French_philosophers ;
+               dbo:birthDate ?birthDate .
+  FILTER(datatype(?birthDate) = xsd:date || datatype(?birthDate) = xsd:dateTime)
+
+  OPTIONAL { ?philosopher dbo:birthPlace ?birthPlace }
+  OPTIONAL { ?philosopher dbo:nationality ?nationality }
+  OPTIONAL { 
+    ?philosopher dbo:influencedBy ?influence .
+    ?influence dbo:birthDate ?influenceBirth
+  }
+}
+GROUP BY ?philosopher ?birthDate
+ORDER BY ASC(?birthDate)
+LIMIT 200
