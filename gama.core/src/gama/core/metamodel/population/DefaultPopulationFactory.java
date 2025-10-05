@@ -12,8 +12,6 @@ package gama.core.metamodel.population;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.runtime.IScope;
 import gama.gaml.species.ISpecies;
@@ -32,9 +30,7 @@ public class DefaultPopulationFactory implements IPopulationFactory {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public IPopulation createGridPopulation(final IScope scope, final IMacroAgent host, final ISpecies species) {
-		final ITopology t = GridPopulation.buildGridTopology(scope, species, host);
-		final GamaSpatialMatrix m = (GamaSpatialMatrix) t.getPlaces();
-		return new GridPopulation(m, t, host, species);
+		return new GridPopulation(host, species);
 	}
 
 }

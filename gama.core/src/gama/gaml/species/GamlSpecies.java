@@ -129,6 +129,7 @@ import one.util.streamex.StreamEx;
 						type = IType.BOOL,
 						optional = true,
 						doc = { @doc (
+								deprecated = "this option is not used anymore",
 								value = "(grid only),(true by default). Allows to specify if the agents of the grid are regular agents (like those of any other species) or minimal ones (which can't have sub-populations, can't inherit from a regular species, etc.)") }),
 				@facet (
 						name = "optimizer",

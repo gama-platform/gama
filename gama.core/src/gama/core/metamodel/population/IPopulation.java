@@ -472,7 +472,7 @@ public interface IPopulation<T extends IAgent>
 	 * @param agents
 	 *            the agents
 	 */
-	default <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {}
+	<T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents);
 
 	/**
 	 * @return
