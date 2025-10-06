@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -77,7 +78,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	private final MirrorPopulationManagement mirrorManagement;
 
 	/** The Constant isLiving. */
-	public final static IPopulation.IsLiving isLiving = new IPopulation.IsLiving();
+	public final static Predicate<IAgent> isLiving = input -> input != null && !input.dead();
 
 	/**
 	 * The Class MirrorPopulationManagement.

@@ -13,8 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Predicate;
-
 import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IStepable;
 import gama.core.metamodel.agent.IAgent;
@@ -106,23 +104,6 @@ public interface IPopulation<T extends IAgent>
 		 *            the pop
 		 */
 		void notifyPopulationCleared(IScope scope, IPopulation<? extends IAgent> pop);
-
-	}
-
-	/**
-	 * The Class IsLiving.
-	 */
-	public static class IsLiving implements Predicate<IAgent> {
-
-		/**
-		 * Method apply()
-		 *
-		 * @see com.google.common.base.Predicate#apply(java.lang.Object)
-		 */
-		@Override
-		public boolean apply(final IAgent input) {
-			return input != null && !input.dead();
-		}
 
 	}
 
@@ -412,7 +393,7 @@ public interface IPopulation<T extends IAgent>
 	T getAgent(IScope scope, GamaPoint coord);
 
 	/**
-	 * To array.
+	 * To array. Necessary to avoid ambiguity with the method in List and return the correct type.
 	 *
 	 * @return the t[]
 	 */

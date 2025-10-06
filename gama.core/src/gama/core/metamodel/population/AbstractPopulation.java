@@ -439,12 +439,12 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public <A> A[] toArray(final A[] a) {
-		return (A[]) internalListOfAgents(false, true).toArray();
+		return internalListOfAgents(false, true).toArray(a);
 	}
 
 	@Override
 	public T[] toArray() {
-		return (T[]) internalListOfAgents(false, true).toArray(new IAgent[0]);
+		return (T[]) toArray(new IAgent[0]);
 	}
 
 	@Override
