@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
 
@@ -51,7 +50,6 @@ import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
-import one.util.streamex.StreamEx;
 
 /**
  * Class GridPopulation.
@@ -137,20 +135,6 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	 */
 	public GridPopulation(final IMacroAgent host, final ISpecies species) {
 		super(host, species);
-	}
-
-	/**
-	 * Stream.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the stream
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public Stream<IAgent> stream() {
-		Stream s = StreamEx.of(agentsContainer.matrix);
-		return s;
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -274,23 +258,6 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	@Override
 	public synchronized IAgent[] toArray() {
 		return Arrays.copyOf(agentsContainer.matrix, agentsContainer.matrix.length, IAgent[].class);
-	}
-
-	/**
-	 * Dispose.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public void dispose() {
-		isDisposing = true;
-		killMembers();
-		if (topology != null) {
-			topology.dispose();
-			topology = null;
-		}
-		clear();
 	}
 
 	/**
@@ -621,22 +588,6 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	}
 
 	/**
-	 * Contains all.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param c
-	 *            the c
-	 * @return true, if successful
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean containsAll(final Collection<?> c) {
-		for (Object o : c)
-			if (!contains(o)) return false;
-		return true;
-	}
-
-	/**
 	 * Adds the all.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -750,21 +701,6 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	@Override
 	public IAgent remove(final int index) {
 		return null;
-	}
-
-	/**
-	 * Index of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param o
-	 *            the o
-	 * @return the int
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public int indexOf(final Object o) {
-		for (int i = 0; i < agentsContainer.actualNumberOfCells; i++) { if (agentsContainer.matrix[i] == o) return i; }
-		return -1;
 	}
 
 	/**

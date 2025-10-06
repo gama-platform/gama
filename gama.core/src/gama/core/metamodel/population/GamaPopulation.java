@@ -39,7 +39,6 @@ import gama.core.metamodel.topology.filter.In;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.metamodel.topology.graph.GraphTopology;
 import gama.core.runtime.FlowStatus;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -206,31 +205,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	@Override
 	public Iterable<T> iterable(final IScope scope) {
 		return (Iterable<T>) getAgents(scope);
-	}
-
-	/**
-	 * Dispose.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public void dispose() {
-		isDisposing = true;
-		killMembers();
-		final IScope scope = getHost() == null ? GAMA.getRuntimeScope() : getHost().getScope();
-		firePopulationCleared(scope);
-		if (topology != null) {
-			topology.dispose();
-			topology = null;
-		}
-		clear();
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public T[] toArray() {
-		return (T[]) agentsContainer.toArray(new IAgent[0]);
 	}
 
 	/**
@@ -422,11 +396,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	}
 
 	@Override
-	public String toString() {
-		return "Population of " + species.getName();
-	}
-
-	@Override
 	public void addValue(final IScope scope, final T value) {
 		fireAgentAdded(scope, value);
 		add(value);
@@ -436,11 +405,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	public void addValueAtIndex(final IScope scope, final Object index, final T value) {
 		fireAgentAdded(scope, value);
 		agentsContainer.addValueAtIndex(scope, index, value);
-	}
-
-	@Override
-	public void addValues(final IScope scope, final IContainer values) {
-		for (final T o : (java.lang.Iterable<T>) values.iterable(scope)) { addValue(scope, o); }
 	}
 
 	@Override
@@ -500,11 +464,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 
 	@Override
 	public boolean isEmpty() { return agentsContainer.isEmpty(); }
-
-	@Override
-	public boolean contains(final Object o) {
-		return agentsContainer.contains(o);
-	}
 
 	@Override
 	public <T> T[] toArray(final T[] a) {
