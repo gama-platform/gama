@@ -48,7 +48,6 @@ import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
 
 /**
@@ -406,8 +405,7 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	 */
 	@Override
 	public java.lang.Iterable<IAgent> iterable(final IScope scope) {
-		return listValue(scope, Types.NO_TYPE, false); // TODO Types.AGENT
-		// ??
+		return listValue(scope, getGamlType().getContentType(), false);
 	}
 
 	/**

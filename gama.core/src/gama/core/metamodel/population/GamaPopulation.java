@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -77,9 +76,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	/** The mirror management. */
 	private final MirrorPopulationManagement mirrorManagement;
 
-	/** The Constant isLiving. */
-	public final static Predicate<IAgent> isLiving = input -> input != null && !input.dead();
-
 	/**
 	 * The Class MirrorPopulationManagement.
 	 */
@@ -103,7 +99,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 			final IPopulation<T> pop = GamaPopulation.this;
 			final Set<IAgent> targets = new HashSet<IAgent>(Cast.asList(scope, listOfTargetAgents.value(scope)));
 			final List<IAgent> toKill = new ArrayList<>();
-			for (final IAgent agent : pop.iterable(scope)) {
+			for (final IAgent agent : pop) {
 				final IAgent target = Cast.asAgent(scope, agent.getAttribute(TARGET));
 				if (targets.contains(target)) {
 					targets.remove(target);
@@ -138,31 +134,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 				species.isMirror() && host != null ? new MirrorPopulationManagement(species.getFacet(MIRRORS)) : null;
 	}
 
-	/**
-	 * Step.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return true, if successful
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public boolean step(final IScope scope) throws GamaRuntimeException {
-		final IExpression frequencyExp = species.getFrequency();
-		if (frequencyExp != null) {
-			final int frequency = Cast.asInt(scope, frequencyExp.value(scope));
-			final int step = scope.getClock().getCycle();
-			if (frequency == 0 || step % frequency != 0) return true;
-		}
-		if (mirrorManagement != null) { mirrorManagement.executeOn(scope); }
-		getSpecies().getArchitecture().preStep(scope, this);
-		return stepAgents(scope);
-
-	}
-
 	@Override
 	protected void manageMirror(final IScope scope) {
 		if (mirrorManagement != null) { mirrorManagement.executeOn(scope); }
@@ -178,28 +149,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 	@Override
 	protected boolean stepAgents(final IScope scope) {
 		return GamaExecutorService.step(scope, this, getSpecies());
-	}
-
-	/**
-	 * Take copy into account and always creates a list (necessary for #2254)
-	 */
-	@Override
-	public IList<T> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (copy) return GamaListFactory.create(scope, contentsType, this);
-		return this;
-	}
-
-	/**
-	 * Explicity copy (necessary for #2254)
-	 */
-	@Override
-	public IList<T> copy(final IScope scope) {
-		return listValue(scope, getGamlType().getContentType(), true);
-	}
-
-	@Override
-	public T getAgent(final Integer index) {
-		return Iterables.find(this, each -> each.getIndex() == index, null);
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -396,48 +345,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 
 	}
 
-	@Override
-	public void addValue(final IScope scope, final T value) {
-		fireAgentAdded(scope, value);
-		add(value);
-	}
-
-	@Override
-	public void addValueAtIndex(final IScope scope, final Object index, final T value) {
-		fireAgentAdded(scope, value);
-		agentsContainer.addValueAtIndex(scope, index, value);
-	}
-
-	@Override
-	public void removeValue(final IScope scope, final Object value) {
-		if (value instanceof IAgent && agentsContainer.remove(value)) {
-			if (topology != null) { topology.removeAgent((IAgent) value); }
-			fireAgentRemoved(scope, (IAgent) value);
-		}
-	}
-
-	@Override
-	public void removeValues(final IScope scope, final IContainer values) {
-		for (final Object o : values.iterable(scope)) { removeValue(scope, o); }
-	}
-
-	@Override
-	public void removeAllOccurrencesOfValue(final IScope scope, final Object value) {
-		removeValue(scope, value);
-	}
-
-	@Override
-	public boolean remove(final Object a) {
-		removeValue(null, a);
-		return true;
-	}
-
-	@Override
-	public boolean contains(final IScope scope, final Object o) {
-		if (!(o instanceof IAgent)) return false;
-		return ((IAgent) o).getPopulation() == this;
-	}
-
 	// Filter methods
 
 	@Override
@@ -454,31 +361,9 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> impl
 
 	}
 
-	/**
-	 * @param actionScope
-	 * @param iterable
-	 * @return
-	 */
-	public static <T extends IAgent> Iterable<T> allLivingAgents(final Iterable<T> iterable) {
-		return Iterables.filter(iterable, isLiving);
-	}
-
-	@Override
-	public boolean isEmpty() { return agentsContainer.isEmpty(); }
-
-	@Override
-	public <T> T[] toArray(final T[] a) {
-		return agentsContainer.toArray(a);
-	}
-
-	@Override
-	public void clear() {
-		agentsContainer.clear();
-	}
-
 	@Override
 	public List<T> internalListOfAgents(final boolean makeCopy, final boolean onlyLiving) {
-		if (onlyLiving) return Lists.newArrayList(allLivingAgents(agentsContainer));
+		if (onlyLiving) return Lists.newArrayList(Iterables.filter(agentsContainer, a -> a != null && !a.dead()));
 		if (!makeCopy) return agentsContainer;
 		return new ArrayList<>(agentsContainer);
 	}

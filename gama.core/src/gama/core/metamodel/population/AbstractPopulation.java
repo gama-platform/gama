@@ -33,7 +33,6 @@ import com.google.common.collect.Iterators;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.GAMA;
@@ -238,18 +237,13 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public T getAgent(final Integer index) {
-		return internalListOfAgents(false, true).get(index);
+		return Iterables.find(this, each -> each.getIndex() == index, null);
 	}
 
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
 		return GamaListFactory.create(scope, getGamlType().getContentType(), internalListOfAgents(false, true));
 	}
-
-	@Override
-	public T getAgent(final IScope scope, final GamaPoint coord) {
-		return null;
-		/* Optional: override in spatial populations */ }
 
 	@Override
 	public void addListener(final Listener listener) {
@@ -263,7 +257,10 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public void removeValue(final IScope scope, final Object value) {
-		if (value instanceof IAgent && remove(value) && topology != null) { topology.removeAgent((IAgent) value); }
+		if (value instanceof IAgent && remove(value) && topology != null) {
+			topology.removeAgent((IAgent) value);
+			fireAgentRemoved(scope, (IAgent) value);
+		}
 	}
 
 	@Override
@@ -278,11 +275,13 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public void addValue(final IScope scope, final T value) {
+		fireAgentAdded(scope, value);
 		add(value);
 	}
 
 	@Override
 	public void addValueAtIndex(final IScope scope, final Object index, final T value) {
+		fireAgentAdded(scope, value);
 		add(value);
 	}
 
@@ -439,7 +438,7 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public <A> A[] toArray(final A[] a) {
-		return internalListOfAgents(false, true).toArray(a);
+		return internalListOfAgents(false, false).toArray(a);
 	}
 
 	@Override

@@ -9,8 +9,11 @@
  ********************************************************************************************************/
 package gama.core.util;
 
+import static gama.core.util.GamaListFactory.create;
+import static gama.core.util.GamaListFactory.createWithoutCasting;
 import static gama.gaml.types.GamaType.actualTypeOf;
 import static gama.gaml.types.GamaType.findCommonType;
+import static gama.gaml.types.GamaType.requiresCasting;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -72,11 +75,9 @@ public interface IList<E>
 	 */
 	@Override
 	default IList<E> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (!GamaType.requiresCasting(contentsType, getGamlType().getContentType())) {
-			if (copy) return GamaListFactory.createWithoutCasting(contentsType, this);
-			return this;
-		}
-		return GamaListFactory.create(scope, contentsType, this);
+		if (!requiresCasting(contentsType, getGamlType().getContentType()))
+			return copy ? createWithoutCasting(contentsType, this) : this;
+		return create(scope, contentsType, this);
 	}
 
 	/**
@@ -481,8 +482,7 @@ public interface IList<E>
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, Cast.asInt(scope, indices.get(0)));
 		// We do not consider the case where multiple indices are used. Maybe
-		// could be used in the
-		// future to return a list of values ?
+		// could be used in the future to return a list of values ?
 	}
 
 	/**
