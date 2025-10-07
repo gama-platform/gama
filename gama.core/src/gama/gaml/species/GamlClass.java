@@ -67,7 +67,7 @@ import gama.gaml.variables.IVariable;
 						doc = @doc ("the identifier of the class, which must be unique in the model. It is used to refer to the class in the model, and to create instances of it.")),
 				@facet (
 						name = IKeyword.PARENT,
-						type = IType.CLASS,
+						type = IType.TYPE,
 						optional = true,
 						doc = @doc ("the parent class (inheritance)")),
 				@facet (
