@@ -71,6 +71,8 @@ species dummy;
 
 grid dummy_g height:10 width:10;
 
+species derivedFromClass parent:MainClass;
+
 experiment testClasses type:test {
 	
 	
@@ -215,6 +217,10 @@ experiment testClasses type:test {
 		assert o2.myDummy = first(d);
 		assert o2.myGridCell = dummy_g[1,1];
 	}
-		
+	
+	test speciesDerivedFromClassContainsClassVariables{
+		create derivedFromClass returns:d;
+		assert false; // compilation error currently
+	}
 	
 }
