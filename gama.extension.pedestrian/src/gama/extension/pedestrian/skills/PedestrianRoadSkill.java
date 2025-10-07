@@ -42,7 +42,7 @@ import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaIntegerType;
 import gama.gaml.types.IType;
@@ -87,7 +87,7 @@ import gama.gaml.types.Types;
 				type = IType.MAP,
 				init = "[]",
 				doc = @doc ("The exit hub (several exit connected to each road extremities) that makes it possible to reduce angular distance when travelling to connected pedestrian roads")) })
-public class PedestrianRoadSkill extends Skill {
+public class PedestrianRoadSkill extends GamlSkill {
 
 	/** The Constant PEDESTRIAN_ROAD_SKILL. */
 	public final static String PEDESTRIAN_ROAD_SKILL = "pedestrian_road";

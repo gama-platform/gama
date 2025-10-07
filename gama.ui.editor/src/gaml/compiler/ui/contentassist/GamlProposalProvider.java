@@ -123,7 +123,6 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 							isOperator = true;
 							cp.setImage(typeImage);
 							break;
-						case null:
 						default:
 							break;
 					}

@@ -19,7 +19,6 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
@@ -49,19 +48,14 @@ import gama.gaml.types.IType;
 						doc = @doc ("the identifier of the skill, which must be unique in the model. It is used to refer to the skill in the model.")),
 				@facet (
 						name = IKeyword.PARENT,
-						type = IType.CLASS,
+						type = IType.SKILL,
 						optional = true,
-						doc = @doc ("the parent class (inheritance)")),
-				@facet (
-						name = IKeyword.VIRTUAL,
-						type = IType.BOOL,
-						optional = true,
-						doc = @doc ("whether the class is virtual (cannot be instantiated, but only used as a parent) (false by default)")) },
+						doc = @doc ("the parent skill (inheritance)")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "The class statement allows modelers to define new classes in the model. A class is a template for creating objects, and can be used to define the attributes and actions of objects in the model. Classes can inherit from other classes")
+		value = "The skill statement allows modelers to define new skills in the model. A skill is a definition of associated actions and attribures, which can be attached to species and define the attributes and actions of agents with similar 'skills' in the model. Skills can inherit from other skills")
 
-public class Skill implements ISkill {
+public class GamlSkill implements ISkill {
 
 	/** The description. */
 	protected SkillDescription description;
@@ -72,12 +66,12 @@ public class Skill implements ISkill {
 	 * @param desc
 	 *            the desc
 	 */
-	protected Skill() {}
+	protected GamlSkill() {}
 
 	/**
 	 * Instantiates a new skill.
 	 */
-	public Skill(final IDescription desc) {
+	public GamlSkill(final IDescription desc) {
 		this();
 	}
 

@@ -22,7 +22,6 @@ import com.google.common.collect.Iterables;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
@@ -43,6 +42,7 @@ import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Strings;
+import gama.gaml.skills.ISkill;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;

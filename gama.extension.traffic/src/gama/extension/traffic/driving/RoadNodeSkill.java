@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.metamodel.agent.IAgent;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.types.IType;
 
 /**
@@ -61,7 +61,7 @@ import gama.gaml.types.IType;
 		concept = { IConcept.TRANSPORT, IConcept.SKILL },
 		doc = @doc ("A skill for agents representing intersections on roads"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class RoadNodeSkill extends Skill {
+public class RoadNodeSkill extends GamlSkill {
 
 
 	/** The Constant ROADS_IN. */

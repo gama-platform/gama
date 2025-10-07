@@ -73,7 +73,7 @@ public class GamaAgentType extends GamaType<IAgent> {
 		if (obj == null || scope == null || scope.getModel() == null) return null;
 		ISpecies species = (ISpecies) param;
 		if (species == null) { species = scope.getModel().getSpecies(this.species.getName()); }
-		if (species == null) return (IAgent) Types.AGENT.cast(scope, obj, param, copy);
+		if (species == null) return Types.AGENT.cast(scope, obj, param, copy);
 		if (obj instanceof IAgent) return ((IAgent) obj).isInstanceOf(species, false) ? (IAgent) obj : null;
 		if (obj instanceof Integer) return scope.getAgent().getPopulationFor(species).getAgent((Integer) obj);
 		if (obj instanceof GamaPoint) {

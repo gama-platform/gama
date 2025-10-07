@@ -7,8 +7,9 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.common.interfaces;
+package gama.gaml.skills;
 
+import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.interfaces.IGamlDescription;

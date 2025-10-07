@@ -74,7 +74,7 @@ import gama.gaml.types.Types;
 		name = GridSkill.SKILL_NAME,
 		concept = { IConcept.GRID, IConcept.SKILL },
 		internal = true)
-public class GridSkill extends Skill {
+public class GridSkill extends GamlSkill {
 
 	/** The Constant SKILL_NAME. */
 	public static final String SKILL_NAME = "grid";

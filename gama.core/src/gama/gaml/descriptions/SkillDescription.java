@@ -16,10 +16,10 @@ import java.util.Collections;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.expressions.types.SkillConstantExpression;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
+import gama.gaml.skills.ISkill;
 import gama.gaml.types.IType;
 
 /**
@@ -28,7 +28,7 @@ import gama.gaml.types.IType;
 public class SkillDescription extends TypeDescription {
 
 	/** The instance. */
-	Skill instance;
+	GamlSkill instance;
 
 	/** The constant expression. */
 	SkillConstantExpression constantExpression;
@@ -100,10 +100,10 @@ public class SkillDescription extends TypeDescription {
 	 *
 	 * @return the skill
 	 */
-	public Skill createInstance() {
-		Skill instance = null;
+	public GamlSkill createInstance() {
+		GamlSkill instance = null;
 		try {
-			instance = (Skill) getJavaBase().newInstance();
+			instance = (GamlSkill) getJavaBase().newInstance();
 			instance.setDescription(this);
 		} catch (InstantiationException | IllegalAccessException e) {}
 		return instance;
@@ -114,7 +114,7 @@ public class SkillDescription extends TypeDescription {
 	 *
 	 * @return single instance of SkillDescription
 	 */
-	public Skill getInstance() {
+	public GamlSkill getInstance() {
 		if (instance == null) { instance = createInstance(); }
 		return instance;
 	}

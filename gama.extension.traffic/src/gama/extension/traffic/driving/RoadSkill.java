@@ -39,7 +39,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.extension.traffic.driving.carfollowing.CustomDualTreeBidiMap;
 import gama.gaml.operators.Containers;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -93,7 +93,7 @@ import gama.gaml.types.Types;
 		concept = { IConcept.TRANSPORT, IConcept.SKILL },
 		doc = @doc ("A skill for agents representing roads in traffic simulations"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class RoadSkill extends Skill {
+public class RoadSkill extends GamlSkill {
 
 
 	/** The Constant SKILL_ROAD. */

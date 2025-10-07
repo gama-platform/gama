@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.gaml.architecture;
 
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.gaml.skills.ISkill;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IStatement;
 

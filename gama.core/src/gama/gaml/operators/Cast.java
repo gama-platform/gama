@@ -237,7 +237,7 @@ public class Cast {
 	 *             the gama runtime exception
 	 */
 	public static IObject asObject(final IScope scope, final Object val) throws GamaRuntimeException {
-		return (IObject) Types.OBJECT.cast(scope, val, null, false);
+		return Types.OBJECT.cast(scope, val, null, false);
 	}
 
 	/**

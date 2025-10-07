@@ -26,7 +26,7 @@ import gama.core.util.matrix.IMatrix;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -48,7 +48,7 @@ import gama.gaml.types.Types;
 		concept = { IConcept.DATABASE, IConcept.SKILL })
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 @doc ("This skill allows agents to be provided with actions and attributes in order to connect to SQL databases")
-public class SQLSkill extends Skill {
+public class SQLSkill extends GamlSkill {
 
 	/**
 	 * Test connection.

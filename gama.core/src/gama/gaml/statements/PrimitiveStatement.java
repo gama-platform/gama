@@ -18,7 +18,6 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -28,6 +27,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.PrimitiveDescription;
+import gama.gaml.skills.ISkill;
 import gama.gaml.species.GamlSpecies;
 import gama.gaml.types.IType;
 

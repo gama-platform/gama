@@ -13,13 +13,13 @@ package gama.gaml.architecture.reflex;
 import gama.core.runtime.IScope;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.species.ISpecies;
 
 /**
  * The Class AbstractArchitecture.
  */
-public abstract class AbstractArchitecture extends Skill implements IArchitecture {
+public abstract class AbstractArchitecture extends GamlSkill implements IArchitecture {
 
 	/**
 	 * Instantiates a new abstract architecture.

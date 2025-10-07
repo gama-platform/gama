@@ -35,7 +35,6 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -67,6 +66,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.ModelFactory;
+import gama.gaml.skills.ISkill;
 import gama.gaml.types.IType;
 import gama.gaml.types.Signature;
 import gama.gaml.types.Types;

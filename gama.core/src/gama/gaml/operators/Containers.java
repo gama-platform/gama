@@ -606,8 +606,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
-		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final List<Integer> columns,
-				final List<Integer> rows) {
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Integer> columns,
+				final IList<Integer> rows) {
 
 			final GamaPoint aimedDimensions = new GamaPoint(columns.size(), rows.size());
 			final IMatrix result = GamaMatrixType.matrixLike(scope, m1, aimedDimensions);
@@ -650,8 +650,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("submatrix (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = field([[3, 6], [2, 5], [1, 1]])")
-		public static GamaField submatrix(final IScope scope, final GamaField f, final List<Integer> columns,
-				final List<Integer> rows) {
+		public static GamaField submatrix(final IScope scope, final GamaField f, final IList<Integer> columns,
+				final IList<Integer> rows) {
 			return (GamaField) submatrix(scope, (IMatrix) f, columns, rows);
 		}
 
@@ -701,11 +701,12 @@ public class Containers {
 			final boolean positiveRowStep = steps.value > 0;
 
 			// Eliminating nonsensical cases
-			if (steps.key == 0 || steps.value == 0 || (positiveColStep ? startCol > endCol : startCol < endCol) || (positiveRowStep ? startRow > endRow : startRow < endRow))
+			if (steps.key == 0 || steps.value == 0 || (positiveColStep ? startCol > endCol : startCol < endCol)
+					|| (positiveRowStep ? startRow > endRow : startRow < endRow))
 				return GamaMatrixType.matrixLike(scope, m1, new GamaPoint(0, 0));
 
-			List<Integer> cols = new ArrayList<>();
-			List<Integer> rowsList = new ArrayList<>();
+			IList<Integer> cols = GamaListFactory.create(Types.INT);
+			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
 			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key) {
 				cols.add(col);
 			}

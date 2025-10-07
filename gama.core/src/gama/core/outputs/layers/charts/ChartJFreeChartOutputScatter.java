@@ -681,7 +681,6 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
 							myshape = defaultmarkers[9];
 							break;
-						case null:
 						default:
 							break;
 					}
@@ -725,7 +724,6 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
 							myshape = defaultmarkers[9];
 							break;
-						case null:
 						default:
 							break;
 					}

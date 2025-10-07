@@ -43,7 +43,7 @@ import gama.gaml.types.IType;
 @skill (
 		name = IKeyword.THREAD_SKILL,
 		concept = { IConcept.SKILL, IConcept.SYSTEM })
-public class ThreadSkill extends Skill {
+public class ThreadSkill extends GamlSkill {
 
 	/** The executor. */
 	ScheduledExecutorService executor = Executors.newScheduledThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());

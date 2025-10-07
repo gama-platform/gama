@@ -26,7 +26,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.UnmodifiableIterator;
 
-import gama.core.common.interfaces.ISkill;
+import gama.gaml.skills.ISkill;
 
 /**
  * Written by drogoul Modified on 28 d�c. 2010

@@ -27,7 +27,6 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
@@ -37,6 +36,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
 import gama.gaml.expressions.types.TypeConstantExpression;
 import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.skills.ISkill;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
 

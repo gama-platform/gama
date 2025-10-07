@@ -19,7 +19,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.dev.DEBUG;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 
 /**
  * The Class PlayMusicSkill.
@@ -28,7 +28,7 @@ import gama.gaml.skills.Skill;
 		name = IPlayMusic.MUSIC_SKILL,
 		concept = { IConcept.NETWORK, IConcept.COMMUNICATION, IConcept.SKILL },
 		doc = @doc ("Skill allowing agents to output sounds"))
-public class PlayMusicSkill extends Skill implements IPlayMusic {
+public class PlayMusicSkill extends GamlSkill implements IPlayMusic {
 
 	/** The volume. */
 	public int volume = 200;
