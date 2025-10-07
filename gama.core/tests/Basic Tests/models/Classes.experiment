@@ -8,53 +8,61 @@
 
 model Classes
 
-class A {
+class MainClass {
 	
 	int i;
 	int j;
+	int k <- 5;
 	
+	action do_stuff{}
+	
+	string return_hello {
+		return "hello";
+	}
+	
+	float operation(float x, float y) {
+		return x + y;
+	}
+	
+	action virtual_do_stuff;
 }
 
-class ObjWithCtor {
-	
-	int k;
-	
-	init {
-		j <- 2; //todo: error, shouldn't compile
-		k <- 4;
-	}	
-}
 
-class ObjChild parent:A{
+class ChildClass parent:MainClass{
+	int i <- 3;
+	int k <- 10;
 	
-	init {
-		i <- 3;
+	float operation(float x, float y){
+		return x * y;
+	}
+	
+	float derived_operation(float x, float y){
+		error "parent is not available yet in the grammar. We should be able to write return parent.operation(x,y) + 2";
+		return 0.0;
+	}
+	
+	action virtual_do_stuff{
+		write "implemented";
 	}
 	
 }
 
-class ObjChildCtor parent:ObjWithCtor {
-	
-	init {
-		k <- 5;
-	}
-}
-
-class ObjTwoLvlChild parent:ObjChild {
-
+class TwoLvlChildClass parent:ChildClass {
 	string s;	
-	
+	list l;
+	map m;
 }
 
-class ObjRefOther {
-//	A myA; //TODO: can't uncomment because it doesn't compile but should
+class ClassRefOther {
+	MainClass myA; 
 }
 
-class ObjSelfRef {
-//	ObjSelfRef aFriend;//TODO: same as above
+class ClassSelfRef parent:ClassRefOther{
+	ClassSelfRef aFriend;
+	ClassRefOther refToAParentObj;
 }
 
-class ContainsAgents {
+class AgentContainer {
 	dummy myDummy;
 	dummy_g myGridCell;
 }
@@ -66,40 +74,68 @@ grid dummy_g height:10 width:10;
 experiment testClasses type:test {
 	
 	
-	test declareClassVar {
+	test checkVariableTypes {
+		MainClass myVar;
+		list<MainClass> listVar <- [myVar];
+		assert type_of(myVar) = MainClass;
+		assert type_of(listVar[0]) = MainClass;
+	}
+	
+	test checkUnitializedObjValue{
+		MainClass myVar;
+		assert myVar = nil;
+	}
+	
+	test checkDefaultObjectValue {
+		MainClass myVar <- MainClass();
+		MainClass myVar2 <- MainClass();
+		assert myVar != nil;
+		assert myVar2 != nil;
+		assert myVar != myVar2;
+	}
+	
+	test checkDefaultUnitializedVars{
+		// checking that variables are the same when unitialized in an object as in the rest of gaml code
+		int i;
+		MainClass obj <- MainClass();
+		assert obj.i = i;
 		
-		A myVar;
-		list<A> listVar <- [myVar];
-		assert type_of(myVar) = A;
-		assert type_of(listVar[0]) = A;
-	
+		string s;
+		list l;
+		map m;
+		TwoLvlChildClass obj2 <- TwoLvlChildClass();
+		assert obj2.s = s;
+		assert obj2.l = l;
+		assert obj2.m = m;
+		
+		dummy myDummy;
+		dummy_g myGridCell;
+		AgentContainer ac <- AgentContainer();
+		assert ac.myDummy = myDummy;
+		assert ac.myGridCell = myGridCell;
+
+
+		ClassSelfRef aFriend;
+		ClassRefOther refToAParentObj;
+		ClassSelfRef obj3 <- ClassSelfRef();
+		assert obj3.aFriend = aFriend;
+		assert obj3.refToAParentObj = refToAParentObj;
 	}
 	
-	test createDefaultObject {
-		assert false;//todo: not possible yet
+	
+	test checkDefaultAssignedVarValues {
+		MainClass obj <- MainClass();
+		assert obj.k = 5;
 	}
 	
-	test createObjectWithDefaultCtor {
-		ObjWithCtor obj;
-		assert obj.k = 4;
-	}
-	
-	test useAskOnObj {
-		assert false;//todo
-	}
-	
-	test createAndDestroyObject {
-		A myVar <- A(i:100);
-		assert myVar.i = 100;
-		assert false;//no destructor yet ?
-//		ask myVar{
-//			do die;
-//		}	
+	test changeVarValuesInConstructor{
+		MainClass obj <- MainClass(k: 100);
+		assert obj.k = 100;
 	}
 	
 	test objEquality{
-		A a <- A(i: 2, j: 3);
-		A b <- A(i: 2, j: 3);
+		MainClass a <- MainClass(i: 2, j: 3);
+		MainClass b <- MainClass(i: 2, j: 3);
 		assert a != b; //references are different even though values are the same
 		assert a = a;
 		assert b = b;
@@ -107,59 +143,78 @@ experiment testClasses type:test {
 	}
 	
 	test listContainsObj{
-		A a <- A(i: 2, j: 3);
-		A b <- A(i: 2, j: 3);
-		A c <- A(i: 9, j: 9);
-		list<A> l <- [a];
+		MainClass a <- MainClass(i: 2, j: 3);
+		MainClass b <- MainClass(i: 2, j: 3);
+		MainClass c <- MainClass(i: 9, j: 9);
+		list<MainClass> l <- [a];
 		assert l contains a;
 		assert !(l contains b); // different references but same values
 		assert !(l contains c); // different references and values
 	}
 	
 	test objectsAreNotInAgents {
-		ObjWithCtor obj;
+		MainClass obj <- MainClass();
 		assert !(agents contains obj);
 	}
 	
 	test createListObjects {
-		list<A> l <- list_with(3, A(i:rnd(1,10)));
+		list<MainClass> l <- list_with(3, MainClass(i:rnd(1,10)));
 		assert length(l) = 3;
 		assert l none_matches (each = nil);
 		assert l all_match (each.i > 0);
 	}
 	
 	test childObjDefaultCtor {
-		ObjChild o;
+		ChildClass o <- ChildClass();
 		assert o.i = 3;
 	}
 	
 	test childObjChangeInheritedVar {
-		ObjChild o <- ObjChild(i:15);
+		ChildClass o <- ChildClass(i:15);
 		assert o.i = 15;
 	}
 	
-	test lastDefaultCtorUsed{
-		ObjChildCtor o;
-		assert o.k = 5; // the last definition of init sets k to 5
+	test lastDefaultVarInitUsed{
+		ChildClass o <- ChildClass();
+		assert o.k = 10; 
+		TwoLvlChildClass o2 <- TwoLvlChildClass(); // k is not redefined in TwoLvlChildClass and so it should have been assigned a value at ChildClass level
+		assert o2.k = 10;
 	}
 	
-	test defaultCtorPreviousLvl {
-		ObjTwoLvlChild o;
-		assert o.i = 3; // the parent's Ctor should have been called
+	test testActions{
+		MainClass a <- MainClass();
+		a.do_stuff(); // This should be permitted by gaml
+		assert a.return_hello() = "hello";
+		assert a.operation(2.0, 3.0) = 2.0+3.0;
 	}
 	
-	test makeTestsOnCallingParentsActions{
-		assert false;//todo
+	test cannotCallUnimplementedAction{
+		MainClass a <- MainClass();
+		a.virtual_do_stuff();
+		assert false;// This test should raise an exception at runtime or the MainClass constructor shouldn't be available
+	}
+	
+	test handleChildrenWithParentType {
+		MainClass a <- ChildClass();
+		assert a != nil;
+		assert a.i = 3;
+		assert a.operation(1.0, 2.0) = 1.0*2.0;
+	}
+	
+	test callingParentsActions{
+		ChildClass c <- ChildClass();
+		assert c.derived_operation(1.0,2.0) = 5.0;
 	}
 	
 	test objHoldsAgents {
 		create dummy returns:d;
-		ContainsAgents o1;
-		ContainsAgents o2 <- ContainsAgents(myDummy:first(d), myGridCell:dummy_g[1,1]);
+		AgentContainer o1 <- AgentContainer();
+		AgentContainer o2 <- AgentContainer(myDummy:first(d), myGridCell:dummy_g[1,1]);
 		assert o1.myDummy = nil;
 		assert o1.myGridCell = nil;
 		assert o2.myDummy = first(d);
 		assert o2.myGridCell = dummy_g[1,1];
 	}
+		
 	
 }
