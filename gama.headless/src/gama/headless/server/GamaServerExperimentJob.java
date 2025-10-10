@@ -24,7 +24,7 @@ import javax.imageio.ImageIO;
 import org.java_websocket.WebSocket;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.util.IList;
@@ -142,7 +142,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	public void initParam(final IList p) {
 		IList params = p;
 		if (params != null) {
-			final ExperimentPlan curExperiment = (ExperimentPlan) simulator.getExperimentPlan();
+			final ExperimentSpecies curExperiment = (ExperimentSpecies) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
 				String type = m.get(IKeyword.TYPE).toString();

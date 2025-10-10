@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.IOutputManager;
@@ -43,7 +43,7 @@ public class OutputsMenu extends ContributionItem {
 
 	@Override
 	public void fill(final Menu main, final int index) {
-		IExperimentPlan exp = GAMA.getExperiment();
+		IExperimentSpecies exp = GAMA.getExperiment();
 		if (exp == null) return;
 		ExperimentAgent agent = exp.getAgent();
 		if (agent == null) return;

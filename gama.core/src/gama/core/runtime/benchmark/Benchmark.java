@@ -12,7 +12,7 @@ package gama.core.runtime.benchmark;
 import java.util.concurrent.ConcurrentHashMap;
 
 import gama.core.common.interfaces.IBenchmarkable;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.Benchmark.ScopeRecord;
 
@@ -72,7 +72,7 @@ public class Benchmark extends ConcurrentHashMap<IScope, ScopeRecord> {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public Benchmark(final IExperimentPlan experiment) {
+	public Benchmark(final IExperimentSpecies experiment) {
 		tree = new BenchmarkTree(experiment.getModel().getDescription(), experiment.getDescription());
 	}
 
@@ -95,7 +95,7 @@ public class Benchmark extends ConcurrentHashMap<IScope, ScopeRecord> {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public void saveAndDispose(final IExperimentPlan experiment) {
+	public void saveAndDispose(final IExperimentSpecies experiment) {
 		new BenchmarkConsolePrinter().print(this);
 		new BenchmarkCSVExporter().save(experiment, this);
 		tree.dispose();

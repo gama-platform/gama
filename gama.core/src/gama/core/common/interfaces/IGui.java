@@ -17,7 +17,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -282,7 +282,7 @@ public interface IGui {
 	 *            the experiment
 	 * @return true, if successful
 	 */
-	default boolean confirmClose(final IExperimentPlan experiment) {
+	default boolean confirmClose(final IExperimentSpecies experiment) {
 		return true;
 	}
 
@@ -675,7 +675,7 @@ public interface IGui {
 	 * @param showEditors
 	 *            the show editors
 	 */
-	default void arrangeExperimentViews(final IScope myScope, final IExperimentPlan experimentPlan,
+	default void arrangeExperimentViews(final IScope myScope, final IExperimentSpecies experimentPlan,
 			final Boolean keepTabs, final Boolean keepToolbars, final Boolean showConsoles,
 			final Boolean showParameters, final Boolean showNavigator, final Boolean showControls,
 			final Boolean keepTray, final Supplier<GamaColor> color, final boolean showEditors) {}

@@ -17,7 +17,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
@@ -78,14 +78,14 @@ public interface IModelSpecies extends ISpecies {
 	 *            the s
 	 * @return the experiment
 	 */
-	IExperimentPlan getExperiment(final String s);
+	IExperimentSpecies getExperiment(final String s);
 
 	/**
 	 * Gets the experiments.
 	 *
 	 * @return the experiments
 	 */
-	Iterable<IExperimentPlan> getExperiments();
+	Iterable<IExperimentSpecies> getExperiments();
 
 	/**
 	 * Gets the working path.

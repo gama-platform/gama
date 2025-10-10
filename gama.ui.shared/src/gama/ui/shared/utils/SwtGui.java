@@ -45,7 +45,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IRuntimeExceptionHandler;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModelSpecies;
@@ -124,7 +124,7 @@ public class SwtGui implements IGui {
 	public SwtGui() {}
 
 	@Override
-	public boolean confirmClose(final IExperimentPlan exp) {
+	public boolean confirmClose(final IExperimentSpecies exp) {
 		if (exp == null || !GamaPreferences.Runtime.CORE_ASK_CLOSING.getValue()) return true;
 		PerspectiveHelper.switchToSimulationPerspective();
 		return Messages.modalQuestion("Close simulation confirmation", "Do you want to close experiment '"
@@ -492,7 +492,7 @@ public class SwtGui implements IGui {
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void arrangeExperimentViews(final IScope scope, final IExperimentPlan exp, final Boolean keepTabs,
+	public void arrangeExperimentViews(final IScope scope, final IExperimentSpecies exp, final Boolean keepTabs,
 			final Boolean keepToolbars, final Boolean showConsoles, final Boolean showParameters,
 			final Boolean showNavigator, final Boolean showControls, final Boolean keepTray,
 			final Supplier<GamaColor> color, final boolean showEditors) {
@@ -530,7 +530,7 @@ public class SwtGui implements IGui {
 	/**
 	 * Method cleanAfterExperiment()
 	 *
-	 * @see gama.core.common.interfaces.IGui#cleanAfterExperiment(gama.core.kernel.experiment.IExperimentPlan)
+	 * @see gama.core.common.interfaces.IGui#cleanAfterExperiment(gama.core.kernel.experiment.IExperimentSpecies)
 	 */
 	@Override
 	public void cleanAfterExperiment() {

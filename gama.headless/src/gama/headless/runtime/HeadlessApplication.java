@@ -40,7 +40,7 @@ import com.google.inject.Injector;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.NullGuiHandler;
@@ -669,7 +669,7 @@ public class HeadlessApplication implements IApplication {
 		GamaExecutorService.CONCURRENCY_SIMULATIONS.set(true);
 		GamaExecutorService.THREADS_NUMBER.set(processorQueue.getCorePoolSize());
 
-		final IExperimentPlan expPlan = mdl.getExperiment(experimentName);
+		final IExperimentSpecies expPlan = mdl.getExperiment(experimentName);
 		assertIsExperiment(experimentName, expPlan);
 		expPlan.setHeadless(true);
 		expPlan.open();
@@ -743,7 +743,7 @@ public class HeadlessApplication implements IApplication {
 	 * @param expPlan
 	 *            the exp plan
 	 */
-	private void assertIsExperiment(final String experimentName, final IExperimentPlan expPlan) {
+	private void assertIsExperiment(final String experimentName, final IExperimentSpecies expPlan) {
 		if (expPlan == null) {
 			DEBUG.LOG("Experiment " + experimentName + " does not exist. Verify its name.");
 			System.exit(-1);

@@ -24,7 +24,7 @@ import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentController;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -1085,7 +1085,7 @@ public class ExecutionScope implements IScope {
 	public boolean isPaused() {
 		final IExperimentAgent exp = getExperiment();
 		if (exp != null) {
-			final IExperimentPlan plan = exp.getSpecies();
+			final IExperimentSpecies plan = exp.getSpecies();
 			if (plan != null) {
 				final IExperimentController controller = plan.getController();
 				if (controller != null) return controller.isPaused() || isOnUserHold();

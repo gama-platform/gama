@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
@@ -109,7 +109,7 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @date 25 août 2023
 	 */
 	List<ITopLevelAgent> getAgentsToDisplay() {
-		IExperimentPlan plan = GAMA.getExperiment();
+		IExperimentSpecies plan = GAMA.getExperiment();
 		if (plan == null) return Collections.EMPTY_LIST;
 		IExperimentAgent exp = GAMA.getExperiment().getAgent();
 		if (exp == null) return Collections.EMPTY_LIST;

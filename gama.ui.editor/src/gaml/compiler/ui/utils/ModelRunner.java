@@ -33,7 +33,7 @@ import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
 import gama.core.kernel.model.IModelSpecies;
@@ -125,7 +125,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 		if (testExpNames.isEmpty()) return null;
 		final List<TestExperimentSummary> result = new ArrayList<>();
 		for (final String expName : testExpNames) {
-			final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
+			final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 			if (exp != null) {
 				exp.setHeadless(true);
 				final TestAgent agent = (TestAgent) exp.getAgent();

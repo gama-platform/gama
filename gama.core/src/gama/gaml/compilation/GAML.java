@@ -35,7 +35,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -286,7 +286,7 @@ public class GAML {
 	 * @return the model context
 	 */
 	public static ModelDescription getModelContext() {
-		IExperimentPlan experiment = GAMA.getExperiment();
+		IExperimentSpecies experiment = GAMA.getExperiment();
 		if (experiment == null) return null;
 		return experiment.getModel().getDescription();
 	}

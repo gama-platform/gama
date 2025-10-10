@@ -304,7 +304,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	public String getDefinedRng() {
 		if (GamaPreferences.Runtime.CORE_RND_EDITABLE.getValue())
-			return (String) ((ExperimentPlan) getSpecies()).parameters.get(IKeyword.RNG).value(ownScope);
+			return (String) ((ExperimentSpecies) getSpecies()).parameters.get(IKeyword.RNG).value(ownScope);
 		return GamaPreferences.External.CORE_RNG.getValue();
 	}
 
@@ -315,7 +315,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	public Double getDefinedSeed() {
 		if (GamaPreferences.Runtime.CORE_RND_EDITABLE.getValue()) {
-			final IParameter.Batch p = (Batch) ((ExperimentPlan) getSpecies()).parameters.get(IKeyword.SEED);
+			final IParameter.Batch p = (Batch) ((ExperimentSpecies) getSpecies()).parameters.get(IKeyword.SEED);
 			return p.isDefined() ? (Double) p.value(ownScope) : null;
 		}
 		return GamaPreferences.External.CORE_SEED_DEFINED.getValue() ? GamaPreferences.External.CORE_SEED.getValue()
@@ -579,7 +579,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public IExperimentAgent getExperiment() { return this; }
 
 	@Override
-	public IExperimentPlan getSpecies() { return (IExperimentPlan) super.getSpecies(); }
+	public IExperimentSpecies getSpecies() { return (IExperimentSpecies) super.getSpecies(); }
 
 	/**
 	 * Sets the location.
@@ -635,7 +635,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *
 	 * @return the experiment parameters category
 	 */
-	protected String getExperimentParametersCategory() { return IExperimentPlan.SYSTEM_CATEGORY_PREFIX; }
+	protected String getExperimentParametersCategory() { return IExperimentSpecies.SYSTEM_CATEGORY_PREFIX; }
 
 	@Override
 	@getter (
@@ -1007,7 +1007,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				for (SimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
 						recorder.restore(sim);
-						if (!((ExperimentPlan) this.getSpecies()).keepsSeed()) {
+						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
 							sim.setRandomGenerator(
 									new RandomUtils(random.next(), sim.getRandomGenerator().getRngName()));
 						}

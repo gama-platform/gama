@@ -31,7 +31,7 @@ import org.eclipse.ui.progress.UIJob;
 import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IGamaView;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -190,7 +190,7 @@ public abstract class GamaViewPart extends ViewPart
 		final String id = site.getId() + (s_id == null ? "" : s_id);
 		IOutput out = null;
 
-		final IExperimentPlan experiment = GAMA.getExperiment();
+		final IExperimentSpecies experiment = GAMA.getExperiment();
 
 		if (experiment != null) {
 			for (final IOutputManager manager : concat(

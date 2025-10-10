@@ -52,7 +52,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	protected final GeneralSynchronizer previouslock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	/** The experiment. */
-	protected IExperimentPlan experiment;
+	protected IExperimentSpecies experiment;
 
 	/** The commands. */
 	protected volatile ArrayBlockingQueue<ExperimentCommand> commands = new ArrayBlockingQueue<>(50);
@@ -67,7 +67,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	}, "Front end controller");
 
 	@Override
-	public IExperimentPlan getExperiment() { return experiment; }
+	public IExperimentSpecies getExperiment() { return experiment; }
 
 	/**
 	 * Sets the experiment.
@@ -75,7 +75,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @param exp
 	 *            the new experiment
 	 */
-	public void setExperiment(final IExperimentPlan exp) { this.experiment = exp; }
+	public void setExperiment(final IExperimentSpecies exp) { this.experiment = exp; }
 
 	/**
 	 * Offer.

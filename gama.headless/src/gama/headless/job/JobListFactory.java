@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.model.IModelSpecies;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaCompilationFailedException;
@@ -53,7 +53,7 @@ public class JobListFactory {
 		IModelSpecies model = GamlModelBuilder.getDefaultInstance().compile(new File(modelPath), null, null);
 		Map<JobPlanExperimentID, IExperimentJob> originalJobs = new LinkedHashMap<>();
 		if (numberOfCores != null && numberOfCores > 0) {
-			for (IExperimentPlan exp : model.getExperiments()) {
+			for (IExperimentSpecies exp : model.getExperiments()) {
 				exp.setConcurrency(GAML.getExpressionFactory().createConst(numberOfCores, Types.INT));
 			}
 		}

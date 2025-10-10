@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -34,7 +34,7 @@ public class Experiment implements IExperiment {
 	public static final double DEFAULT_SEED_VALUE = 0;
 
 	/** The current experiment. */
-	protected IExperimentPlan currentExperiment = null;
+	protected IExperimentSpecies currentExperiment = null;
 
 	/** The params. */
 	protected ParametersSet params = new ParametersSet();
@@ -114,7 +114,7 @@ public class Experiment implements IExperiment {
 		this.experimentName = expName;
 		this.currentStep = 0;
 
-		final ExperimentPlan curExperiment = (ExperimentPlan) model.getExperiment(expName);
+		final ExperimentSpecies curExperiment = (ExperimentSpecies) model.getExperiment(expName);
 		curExperiment.setHeadless(true);
 		curExperiment.setController(ec.controller);
 		curExperiment.setParameterValues(p);
@@ -192,7 +192,7 @@ public class Experiment implements IExperiment {
 	public IModelSpecies getModel() { return this.model; }
 
 	@Override
-	public IExperimentPlan getExperimentPlan() { return this.currentExperiment; }
+	public IExperimentSpecies getExperimentPlan() { return this.currentExperiment; }
 
 	@Override
 	public IExpression compileExpression(final String expression) {

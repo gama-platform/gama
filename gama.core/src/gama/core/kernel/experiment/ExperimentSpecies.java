@@ -31,7 +31,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.batch.exploration.Exploration;
-import gama.core.kernel.experiment.ExperimentPlan.BatchValidator;
+import gama.core.kernel.experiment.ExperimentSpecies.BatchValidator;
 import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.GamaPopulation;
@@ -183,7 +183,7 @@ import gama.gaml.variables.IVariable;
 		kinds = { ISymbolKind.MODEL })
 @validator (BatchValidator.class)
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
+public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies {
 
 	/**
 	 * The Class BatchValidator.
@@ -467,7 +467,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 * @param description
 	 *            the description
 	 */
-	public ExperimentPlan(final IDescription description) {
+	public ExperimentSpecies(final IDescription description) {
 		super(description);
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
@@ -1020,7 +1020,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method getController()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#getController()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#getController()
 	 */
 	@Override
 	public IExperimentController getController() {
@@ -1033,7 +1033,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method setController()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#setController()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#setController()
 	 */
 	@Override
 	public void setController(final IExperimentController ec) {
@@ -1047,7 +1047,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method refreshAllOutputs()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#refreshAllOutputs()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#refreshAllOutputs()
 	 */
 	@Override
 	public void refreshAllOutputs() {
@@ -1080,7 +1080,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method getOriginalSimulationOutputs()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#getOriginalSimulationOutputs()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#getOriginalSimulationOutputs()
 	 */
 	@Override
 	public IOutputManager getOriginalSimulationOutputs() { return originalSimulationOutputs; }

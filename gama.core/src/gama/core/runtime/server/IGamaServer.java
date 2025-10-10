@@ -11,7 +11,7 @@ package gama.core.runtime.server;
 
 import org.java_websocket.WebSocket;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.util.IMap;
 
@@ -69,7 +69,7 @@ public interface IGamaServer {
 	 * @return the experiment
 	 * @date 15 oct. 2023
 	 */
-	IExperimentPlan getExperiment(String socket, String expid);
+	IExperimentSpecies getExperiment(String socket, String expid);
 
 	/**
 	 * Execute.
@@ -91,7 +91,7 @@ public interface IGamaServer {
 	 *            the experiment id
 	 * @date 3 nov. 2023
 	 */
-	void addExperiment(String socketId, String experimentId, IExperimentPlan plan);
+	void addExperiment(String socketId, String experimentId, IExperimentSpecies plan);
 
 	/**
 	 * Obtain gui server configuration.
@@ -117,7 +117,7 @@ public interface IGamaServer {
 	 *             the command exception
 	 * @date 5 déc. 2023
 	 */
-	IExperimentPlan retrieveExperimentPlan(WebSocket socket, IMap<String, Object> map) throws CommandException;
+	IExperimentSpecies retrieveExperimentPlan(WebSocket socket, IMap<String, Object> map) throws CommandException;
 
 	/**
 	 * Stop

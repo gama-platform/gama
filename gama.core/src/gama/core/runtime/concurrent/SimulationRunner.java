@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.core.common.interfaces.GeneralSynchronizer;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
@@ -59,7 +59,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	public static SimulationRunner of(final SimulationPopulation pop) {
 		int concurrency = 0;
-		final IExperimentPlan plan = pop.getHost().getSpecies();
+		final IExperimentSpecies plan = pop.getHost().getSpecies();
 		if (plan.isHeadless() && !plan.isBatch()) {
 			concurrency = 1;
 		} else {

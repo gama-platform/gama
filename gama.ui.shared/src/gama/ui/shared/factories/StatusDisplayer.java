@@ -20,7 +20,7 @@ import gama.core.common.IStatusMessage.StatusType;
 import gama.core.common.StatusMessageFactory;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
@@ -149,7 +149,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 *            the state
 	 */
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		updateExperimentStatus();
 	}
 

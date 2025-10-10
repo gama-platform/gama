@@ -29,7 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.outputs.AbstractOutputManager;
 import gama.core.util.GamaMapFactory;
 import gama.gaml.compilation.ISymbol;
@@ -118,10 +118,10 @@ import gama.gaml.types.IType;
 public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
 	/** The experiments. */
-	protected final Map<String, IExperimentPlan> experiments = GamaMapFactory.create();
+	protected final Map<String, IExperimentSpecies> experiments = GamaMapFactory.create();
 
 	/** The titled experiments. */
-	protected final Map<String, IExperimentPlan> titledExperiments = GamaMapFactory.create();
+	protected final Map<String, IExperimentSpecies> titledExperiments = GamaMapFactory.create();
 
 	/** The all species. */
 	protected Map<String, ISpecies> allSpecies;
@@ -161,7 +161,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	 * @param exp
 	 *            the exp
 	 */
-	protected void addExperiment(final IExperimentPlan exp) {
+	protected void addExperiment(final IExperimentSpecies exp) {
 		if (exp == null) return;
 		experiments.put(exp.getName(), exp);
 		titledExperiments.put(exp.getFacet(IKeyword.TITLE).literalValue(), exp);
@@ -169,9 +169,9 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	}
 
 	@Override
-	public IExperimentPlan getExperiment(final String s) {
+	public IExperimentSpecies getExperiment(final String s) {
 		// First we try to get it using its "internal" name
-		IExperimentPlan e = experiments.get(s);
+		IExperimentSpecies e = experiments.get(s);
 		if (e == null) {
 			// Otherwise with its title
 			e = titledExperiments.get(s);
@@ -187,12 +187,12 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	}
 
 	@Override
-	public Iterable<IExperimentPlan> getExperiments() { return experiments.values(); }
+	public Iterable<IExperimentSpecies> getExperiments() { return experiments.values(); }
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (final IExperimentPlan exp : experiments.values()) { exp.dispose(); }
+		for (final IExperimentSpecies exp : experiments.values()) { exp.dispose(); }
 		experiments.clear();
 		titledExperiments.clear();
 		if (allSpecies != null) { allSpecies.clear(); }
@@ -293,12 +293,12 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();
-		final List<IExperimentPlan> theExperiments = new ArrayList<>();
+		final List<IExperimentSpecies> theExperiments = new ArrayList<>();
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {
 			final ISymbol s = it.next();
 
-			if (s instanceof IExperimentPlan) {
-				theExperiments.add((IExperimentPlan) s);
+			if (s instanceof IExperimentSpecies) {
+				theExperiments.add((IExperimentSpecies) s);
 				it.remove();
 			} else if (s instanceof AbstractOutputManager) {
 				forExperiment.add(s);
@@ -312,7 +312,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 		// Add the variables, etc. to the model
 		super.setChildren(children);
 		// Add the experiments and the default outputs to all experiments
-		for (final IExperimentPlan exp : theExperiments) {
+		for (final IExperimentSpecies exp : theExperiments) {
 			addExperiment(exp);
 			exp.setChildren(forExperiment);
 		}

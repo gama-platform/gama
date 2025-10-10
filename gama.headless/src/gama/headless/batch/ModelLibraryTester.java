@@ -24,7 +24,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
 import gama.core.kernel.model.IModelSpecies;
@@ -123,7 +123,7 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 				return;
 			}
 			for (final String expName : testExpNames) {
-				final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
+				final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 				if (exp != null) {
 					System.setOut(nullStream);
 					final TestAgent agent = (TestAgent) exp.getAgent();

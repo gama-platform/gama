@@ -36,8 +36,8 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.ICreateDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.ExperimentPlan.ExperimentPopulation;
+import gama.core.kernel.experiment.ExperimentSpecies;
+import gama.core.kernel.experiment.ExperimentSpecies.ExperimentPopulation;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.IAgent;
@@ -427,7 +427,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		IPopulation pop = executor.getPopulationFor(s);
 		// hqnghi population of micro-model's experiment is not exist, we
 		// must create the new one
-		if (pop == null && s instanceof ExperimentPlan ep && executor instanceof IMacroAgent) {
+		if (pop == null && s instanceof ExperimentSpecies ep && executor instanceof IMacroAgent) {
 			pop = ep.new ExperimentPopulation(s);
 			final IScope sc = ep.getExperimentScope();
 			pop.initializeFor(sc);

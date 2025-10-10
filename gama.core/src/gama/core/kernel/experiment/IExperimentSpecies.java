@@ -35,7 +35,7 @@ import gama.gaml.types.Types;
  * @todo Description
  *
  */
-public interface IExperimentPlan extends ISpecies {
+public interface IExperimentSpecies extends ISpecies {
 
 	/** The test category name. */
 	String TEST_CATEGORY_NAME = "Configuration of tests";

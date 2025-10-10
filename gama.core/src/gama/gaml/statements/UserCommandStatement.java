@@ -25,7 +25,7 @@ import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
 import gama.core.kernel.experiment.IExperimentDisplayable;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
@@ -222,9 +222,9 @@ public class UserCommandStatement extends AbstractStatementSequence
 			boolean isWorkaroundForIssue1595 = false;
 			if (executer == null) {
 				// See Issue #1595
-				if (!(context instanceof ExperimentPlan))
+				if (!(context instanceof ExperimentSpecies))
 					throw GamaRuntimeException.error("Unknown action: " + actionName, scope);
-				context = ((ExperimentPlan) context).getModel();
+				context = ((ExperimentSpecies) context).getModel();
 				executer = context.getAction(actionName);
 				isWorkaroundForIssue1595 = true;
 			}

@@ -40,7 +40,7 @@ import org.java_websocket.WebSocket;
 import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModelSpecies;
@@ -156,7 +156,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage PAUSE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -180,7 +180,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage STEP(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -218,7 +218,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage BACK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -273,7 +273,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage RELOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -304,7 +304,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage EVAL(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -381,7 +381,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage ASK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -620,7 +620,7 @@ public class DefaultServerCommands {
 	private static List<Map<String, Object>> getExperiments(final IModelSpecies model) {
 		List<Map<String, Object>> resAllExperiments = new ArrayList<>();
 		// Get the experiments informations
-		for (IExperimentPlan ittExp : model.getExperiments()) {
+		for (IExperimentSpecies ittExp : model.getExperiments()) {
 			// Get the parameters
 			Map<String, Object> resExp = new HashMap<>();
 			resExp.put(IKeyword.NAME, ittExp.getName());

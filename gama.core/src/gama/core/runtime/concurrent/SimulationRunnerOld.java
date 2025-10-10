@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
@@ -58,7 +58,7 @@ public class SimulationRunnerOld implements ISimulationRunner {
 	 */
 	public static ISimulationRunner of(final SimulationPopulation pop) {
 		int concurrency = 0;
-		final IExperimentPlan plan = pop.getHost().getSpecies();
+		final IExperimentSpecies plan = pop.getHost().getSpecies();
 		if (plan.isHeadless() && !plan.isBatch()) {
 			concurrency = 1;
 		} else {

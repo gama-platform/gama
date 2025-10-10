@@ -22,10 +22,10 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.PoolUtils;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.ExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentController;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.ParametersSet;
@@ -141,12 +141,12 @@ public class GAMA {
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
 		// DEBUG.OUT("Launching experiment " + id + " of model " +
 		// model.getFilePath());
-		final IExperimentPlan newExperiment = model.getExperiment(id);
+		final IExperimentSpecies newExperiment = model.getExperiment(id);
 		if (newExperiment == null) // model " + model.getFilePath());
 			return;
 		IExperimentController controller = getFrontmostController();
 		if (controller != null) {
-			final IExperimentPlan existingExperiment = controller.getExperiment();
+			final IExperimentSpecies existingExperiment = controller.getExperiment();
 			if (existingExperiment != null) {
 				controller.processPause(true);
 				if (!getGui().confirmClose(existingExperiment)) return;
@@ -178,10 +178,10 @@ public class GAMA {
 	 * @param id
 	 * @param model
 	 */
-	public static synchronized IExperimentPlan addHeadlessExperiment(final IModelSpecies model, final String expName,
+	public static synchronized IExperimentSpecies addHeadlessExperiment(final IModelSpecies model, final String expName,
 			final ParametersSet params, final Double seed) {
 
-		final ExperimentPlan currentExperiment = (ExperimentPlan) model.getExperiment(expName);
+		final ExperimentSpecies currentExperiment = (ExperimentSpecies) model.getExperiment(expName);
 
 		if (currentExperiment == null) throw GamaRuntimeException
 				.error("Experiment " + expName + " does not exist. Please check its name.", getRuntimeScope());
@@ -209,7 +209,7 @@ public class GAMA {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public static void closeExperiment(final IExperimentPlan experiment) {
+	public static void closeExperiment(final IExperimentSpecies experiment) {
 		if (experiment == null) return;
 		closeController(experiment.getController());
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
@@ -261,7 +261,7 @@ public class GAMA {
 	 *
 	 * @return the experiment
 	 */
-	public static IExperimentPlan getExperiment() {
+	public static IExperimentSpecies getExperiment() {
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null) return null;
 		return controller.getExperiment();
@@ -275,7 +275,7 @@ public class GAMA {
 	 * @date 4 oct. 2023
 	 */
 	public static IExperimentAgent getExperimentAgent() {
-		IExperimentPlan plan = getExperiment();
+		IExperimentSpecies plan = getExperiment();
 		if (plan == null) return null;
 		return plan.getAgent();
 	}
@@ -561,7 +561,7 @@ public class GAMA {
 	 */
 	public static final void runAndUpdateAll(final Runnable r) {
 		r.run();
-		IExperimentPlan exp = getExperiment();
+		IExperimentSpecies exp = getExperiment();
 		if (exp != null) { exp.refreshAllOutputs(); }
 	}
 
@@ -706,7 +706,7 @@ public class GAMA {
 	 * @date 14 août 2023
 	 */
 	private static ITopLevelAgent computeCurrentTopLevelAgent() {
-		IExperimentPlan plan = getExperiment();
+		IExperimentSpecies plan = getExperiment();
 		if (plan == null) return getPlatformAgent();
 		IExperimentAgent exp = plan.getAgent();
 		if (exp == null || exp.dead()) return getPlatformAgent();
@@ -733,7 +733,7 @@ public class GAMA {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public static void startBenchmark(final IExperimentPlan experiment) {
+	public static void startBenchmark(final IExperimentSpecies experiment) {
 		if (experiment.shouldBeBenchmarked()) { benchmarkAgent = new Benchmark(experiment); }
 	}
 
@@ -743,7 +743,7 @@ public class GAMA {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public static void stopBenchmark(final IExperimentPlan experiment) {
+	public static void stopBenchmark(final IExperimentSpecies experiment) {
 		if (benchmarkAgent != null) { benchmarkAgent.saveAndDispose(experiment); }
 		benchmarkAgent = null;
 	}
@@ -822,7 +822,7 @@ public class GAMA {
 	 * @return the experiment state
 	 * @date 26 oct. 2023
 	 */
-	public static State getExperimentState(final IExperimentPlan exp) {
+	public static State getExperimentState(final IExperimentSpecies exp) {
 		final IExperimentController controller = exp == null ? GAMA.getFrontmostController() : exp.getController();
 		if (controller != null) {
 			if (controller.isPaused()) return State.PAUSED;
@@ -841,7 +841,7 @@ public class GAMA {
 	 *            the state
 	 * @date 26 oct. 2023
 	 */
-	public static void updateExperimentState(final IExperimentPlan exp, final IExperimentStateListener.State state) {
+	public static void updateExperimentState(final IExperimentSpecies exp, final IExperimentStateListener.State state) {
 		for (IExperimentStateListener listener : experimentStateListeners) { listener.updateStateTo(exp, state); }
 		getGui().getStatus().updateExperimentStatus();
 	}
@@ -854,7 +854,7 @@ public class GAMA {
 	 *            the exp
 	 * @date 26 oct. 2023
 	 */
-	public static void updateExperimentState(final IExperimentPlan exp) {
+	public static void updateExperimentState(final IExperimentSpecies exp) {
 		updateExperimentState(exp, getExperimentState(exp));
 	}
 

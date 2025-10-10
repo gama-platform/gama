@@ -567,7 +567,7 @@ public class BatchAgent extends ExperimentAgent {
 				final ExperimentParameter p = new ExperimentParameter(getScope(), v);
 				if (p.canBeExplored()) {
 					p.setEditable(false);
-					p.setCategory(IExperimentPlan.EXPLORABLE_CATEGORY_NAME);
+					p.setCategory(IExperimentSpecies.EXPLORABLE_CATEGORY_NAME);
 					params.add(p);
 				}
 			}

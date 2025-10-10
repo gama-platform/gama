@@ -28,7 +28,7 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 * @return the species
 	 */
 	@Override
-	IExperimentPlan getSpecies();
+	IExperimentSpecies getSpecies();
 
 	/**
 	 * Gets the working path.

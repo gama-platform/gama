@@ -27,7 +27,7 @@ import org.java_websocket.server.WebSocketServer;
 import gama.core.common.interfaces.IConsoleListener;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.util.IMap;
@@ -210,7 +210,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			for (Listener listener : listeners) { if (!listener.process(received)) return; }
 			final String expId = received.getOrDefault(EXP_ID, "").toString();
 			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
-			IExperimentPlan exp = getExperiment(socketId, expId);
+			IExperimentSpecies exp = getExperiment(socketId, expId);
 			if (exp != null) {
 				processInSyncWithExperiment(socket, received, exp);
 			} else {
@@ -234,7 +234,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 *            the exp
 	 */
 	private void processInSyncWithExperiment(final WebSocket socket, final ReceivedMessage received,
-			final IExperimentPlan exp) {
+			final IExperimentSpecies exp) {
 		ExperimentAgent agent = exp.getAgent();
 		if (agent == null || exp.getController().isPaused()) {
 			cmdHelper.process(this, socket, received);
@@ -267,7 +267,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public abstract IExperimentPlan getExperiment(final String socket, final String expid);
+	public abstract IExperimentSpecies getExperiment(final String socket, final String expid);
 
 	/**
 	 * Execute.
@@ -291,7 +291,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public abstract void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan);
+	public abstract void addExperiment(final String socketId, final String experimentId, final IExperimentSpecies plan);
 
 	/**
 	 * Obtain gui server configuration.
@@ -319,7 +319,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 5 déc. 2023
 	 */
 	@Override
-	public abstract IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
+	public abstract IExperimentSpecies retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
 			throws CommandException;
 
 }
