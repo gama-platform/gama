@@ -26,7 +26,6 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.matrix.IMatrix;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
@@ -49,14 +48,6 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 */
 	@Override
 	IContainer<KeyType, ValueType> copy(IScope scope) throws GamaRuntimeException;
-
-	/**
-	 * Gets the gaml type.
-	 *
-	 * @return the gaml type
-	 */
-	@Override
-	IContainerType<?> getGamlType();
 
 	/**
 	 * List value.

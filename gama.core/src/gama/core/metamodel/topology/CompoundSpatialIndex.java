@@ -258,9 +258,9 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	 * @return the iterable
 	 */
 	private Iterable<ISpatialIndex> add(final IScope scope, final IAgentFilter filter) {
-		if (filter instanceof IPopulationSet) return Iterables.transform(
-				(Collection<IPopulation<? extends IAgent>>) ((IPopulationSet) filter).getPopulations(scope),
-				each -> add(each, true));
+		if (filter instanceof IPopulationSet ps)
+			return Iterables.transform((Collection<IPopulation<? extends IAgent>>) ps.getPopulations(scope),
+					each -> add(each, true));
 		ISpecies species = filter.getSpecies();
 		if (species == null || IKeyword.AGENT.equals(species.getName())) return spatialIndexes.values();
 		if (!cachedSpeciesIndices.containsKey(species)) {

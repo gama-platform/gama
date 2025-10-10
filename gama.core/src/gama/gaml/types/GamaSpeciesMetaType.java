@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaSpeciesType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaSpeciesMetaType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -40,7 +40,7 @@ import gama.gaml.species.ISpecies;
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the species present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaSpeciesType extends GamaMetaClassType<ISpecies> implements IContainerType<ISpecies> {
+public class GamaSpeciesMetaType extends GamaMetaClassType<ISpecies> {
 
 	@Override
 	@doc (
@@ -119,24 +119,13 @@ public class GamaSpeciesType extends GamaMetaClassType<ISpecies> implements ICon
 		return false;
 	}
 
-	@Override
-	public IContainerType<?> of(final IType<?> sub1) {
-		return this;
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public IContainerType<?> of(final IType<?> sub1, final IType<?> sub2) {
-		return this;
-	}
-
 	/**
 	 * Gets the gaml type.
 	 *
 	 * @return the gaml type
 	 */
 	@Override
-	public GamaSpeciesType getGamlType() { return this; }
+	public GamaSpeciesMetaType getGamlType() { return this; }
 
 	/**
 	 * Type if casting.

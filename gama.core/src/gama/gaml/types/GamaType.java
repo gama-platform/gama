@@ -458,7 +458,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public static IType<?> from(final IType<?> t, final IType<?> keyType, final IType<?> contentType) {
 		if (keyType == null || contentType == null) return t;
 		if (t instanceof IContainerType) {
-			if (!(t instanceof GamaSpeciesType) && contentType.isAssignableFrom(t.getContentType())
+			if (!(t instanceof GamaSpeciesMetaType) && contentType.isAssignableFrom(t.getContentType())
 					&& keyType.isAssignableFrom(t.getKeyType()))
 				return t;
 			return from((IContainerType) t, keyType, contentType);
