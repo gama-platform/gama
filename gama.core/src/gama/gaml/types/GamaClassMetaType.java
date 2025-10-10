@@ -42,7 +42,7 @@ import gama.gaml.species.IClass;
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the classes present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaClassType extends GamaMetaClassType<IClass> {
+public class GamaClassMetaType extends GamaMetaClassType<IClass> {
 
 	@Override
 	@doc (

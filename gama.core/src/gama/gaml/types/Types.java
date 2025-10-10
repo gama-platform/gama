@@ -111,7 +111,7 @@ public class Types {
 	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
 
 	/** The class. */
-	public static GamaClassType CLASS;
+	public static GamaClassMetaType CLASS;
 
 	/** The Constant CLASSES_TYPES_CORRESPONDANCE. */
 	public static final IMap<Class, String> CLASSES_TYPES_CORRESPONDANCE = GamaMapFactory.createUnordered();
@@ -193,7 +193,7 @@ public class Types {
 				TYPE = instance;
 				break;
 			case IType.CLASS:
-				CLASS = (GamaClassType) instance;
+				CLASS = (GamaClassMetaType) instance;
 				break;
 			case IType.ACTION:
 				ACTION = instance;
