@@ -790,12 +790,6 @@ public class GamlSpecies extends GamlClass implements ISpecies {
 	}
 
 	@Override
-	public IAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
-		final IPopulation<? extends IAgent> pop = getPopulation(scope);
-		return pop == null ? null : pop.get(scope, index);
-	}
-
-	@Override
 	public boolean contains(final IScope scope, final Object o) throws GamaRuntimeException {
 		final IPopulation<? extends IAgent> pop = getPopulation(scope);
 		return pop == null ? false : pop.contains(scope, o);
@@ -849,12 +843,6 @@ public class GamlSpecies extends GamlClass implements ISpecies {
 			final GamaPoint preferredSize, final boolean copy) throws GamaRuntimeException {
 		final IPopulation<? extends IAgent> pop = getPopulation(scope);
 		return pop == null ? null : pop.matrixValue(scope, contentsType, preferredSize, copy);
-	}
-
-	@Override
-	public IAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
-		final IPopulation<? extends IAgent> pop = getPopulation(scope);
-		return pop == null ? null : pop.getFromIndicesList(scope, indices);
 	}
 
 	@Override

@@ -21,7 +21,6 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationSet;
 import gama.core.runtime.IScope;
-import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.architecture.IArchitecture;
@@ -57,8 +56,7 @@ import gama.gaml.types.IType;
 				type = IType.LIST,
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
-public interface ISpecies
-		extends IClass, IPopulationSet<IAgent>, IAddressableContainer<Integer, IAgent, Integer, IAgent> {
+public interface ISpecies extends IClass, IPopulationSet<IAgent> {
 
 	/** The step action name. */
 	String stepActionName = "_step_";

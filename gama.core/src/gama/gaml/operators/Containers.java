@@ -1130,7 +1130,7 @@ public class Containers {
 	@doc ("the agent at the right operand index of the given species")
 	@no_test
 	public static IAgent at(final IScope scope, final ISpecies species, final Integer key) {
-		return species.get(scope, key);
+		return species.getPopulation(scope).get(scope, key);
 	}
 
 	/**
