@@ -26,7 +26,7 @@ import org.java_websocket.WebSocket;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.compilation.GamaCompilationFailedException;
@@ -104,7 +104,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
 		final List<GamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
+		final IModelSpecies mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);
 	}

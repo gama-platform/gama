@@ -30,7 +30,7 @@ import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.IExperimentStateListener.State;
@@ -138,7 +138,7 @@ public class GAMA {
 	 * @param id
 	 * @param model
 	 */
-	public static void runGuiExperiment(final String id, final IModel model) {
+	public static void runGuiExperiment(final String id, final IModelSpecies model) {
 		// DEBUG.OUT("Launching experiment " + id + " of model " +
 		// model.getFilePath());
 		final IExperimentPlan newExperiment = model.getExperiment(id);
@@ -178,7 +178,7 @@ public class GAMA {
 	 * @param id
 	 * @param model
 	 */
-	public static synchronized IExperimentPlan addHeadlessExperiment(final IModel model, final String expName,
+	public static synchronized IExperimentPlan addHeadlessExperiment(final IModelSpecies model, final String expName,
 			final ParametersSet params, final Double seed) {
 
 		final ExperimentPlan currentExperiment = (ExperimentPlan) model.getExperiment(expName);
@@ -285,7 +285,7 @@ public class GAMA {
 	 *
 	 * @return the model
 	 */
-	public static IModel getModel() {
+	public static IModelSpecies getModel() {
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null)
 			return GamaMetaModel.INSTANCE.getAbstractModelSpecies();

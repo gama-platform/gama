@@ -36,7 +36,7 @@ import com.google.inject.Singleton;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
@@ -118,7 +118,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 	@Override
 	public List<TestExperimentSummary> runHeadlessTests(final Object object) {
 		// final StringBuilder sb = new StringBuilder();
-		final IModel model = findModel(object);
+		final IModelSpecies model = findModel(object);
 		if (model == null) return null;
 		final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 				.filter(e -> model.getExperiment(e).isTest()).toList();
@@ -142,13 +142,13 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 	 * @param object
 	 * @return
 	 */
-	private IModel findModel(final Object object) {
+	private IModelSpecies findModel(final Object object) {
 		switch (object) {
 			case null -> {
 				DEBUG.LOG("Cannot find a model from a null object");
 				return null;
 			}
-			case IModel model -> {
+			case IModelSpecies model -> {
 				return model;
 			}
 			case WrappedGamaFile wrapped -> {
@@ -169,7 +169,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 			}
 			case URI uri -> {
 				final List<GamlCompilationError> errors = new ArrayList<>();
-				final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
+				final IModelSpecies model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
 				if (model == null) {
 					GAMA.getGui().error("File " + uri.lastSegment() + " cannot be built because of " + errors.size()
 							+ " compilation errors");
@@ -177,7 +177,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 				return model;
 			}
 			case IXtextDocument doc -> {
-				IModel model = null;
+				IModelSpecies model = null;
 				try {
 					model = doc.readOnly(state -> GamlModelBuilder.getDefaultInstance().compile(state.getURI(), null));
 				} catch (final GamaRuntimeException ex) {
@@ -196,7 +196,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 
 	@Override
 	public void runModel(final Object object, final String exp) {
-		final IModel model = findModel(object);
+		final IModelSpecies model = findModel(object);
 		if (model == null) return;
 		GAMA.runGuiExperiment(exp, model);
 	}

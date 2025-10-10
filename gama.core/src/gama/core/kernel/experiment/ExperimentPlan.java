@@ -32,7 +32,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.ExperimentPlan.BatchValidator;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.GamaPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -344,7 +344,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	protected final Scope myScope = new Scope("in ExperimentPlan");
 
 	/** The model. */
-	protected IModel model;
+	protected IModelSpecies model;
 
 	/** The exploration. */
 	protected IExploration exploration;
@@ -579,10 +579,10 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	}
 
 	@Override
-	public IModel getModel() { return model; }
+	public IModelSpecies getModel() { return model; }
 
 	@Override
-	public void setModel(final IModel model) {
+	public void setModel(final IModelSpecies model) {
 		this.model = model;
 		if (!isBatch()) {
 			// We look first in the experiment itself

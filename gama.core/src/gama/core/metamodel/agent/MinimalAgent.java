@@ -23,7 +23,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShapeFactory;
@@ -557,7 +557,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	@Override
-	public IModel getModel() {
+	public IModelSpecies getModel() {
 		final IMacroAgent a = getHost();
 		if (a == null) return GAMA.getModel();
 		return a.getModel();

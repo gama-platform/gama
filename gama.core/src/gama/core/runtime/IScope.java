@@ -20,7 +20,7 @@ import gama.core.common.interfaces.IStepable;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
@@ -757,7 +757,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return The model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Sets the current flow status for this scope. The flow status controls how execution proceeds, including special
@@ -1026,7 +1026,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The types manager, or the built-in types if no model is available
 	 */
 	default ITypesManager getTypes() {
-		IModel m = getModel();
+		IModelSpecies m = getModel();
 		if (m == null) return Types.builtInTypes;
 		return m.getDescription().getTypesManager();
 	}

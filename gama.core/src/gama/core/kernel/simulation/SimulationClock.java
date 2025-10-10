@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaDate;
@@ -95,7 +95,7 @@ public class SimulationClock {
 	 *            the scope
 	 */
 	public SimulationClock(final IScope scope) {
-		final IModel model = scope.getModel();
+		final IModelSpecies model = scope.getModel();
 		outputAsDuration = model == null ? true : !model.getDescription().isStartingDateDefined();
 		this.clockScope = scope;
 	}

@@ -29,7 +29,7 @@ import gama.gaml.statements.test.TestStatement;
  * @todo Description
  *
  */
-public interface IModel extends ISpecies {
+public interface IModelSpecies extends ISpecies {
 
 	/**
 	 * Gets the class.

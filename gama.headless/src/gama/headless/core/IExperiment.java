@@ -11,7 +11,7 @@
 package gama.headless.core;
 
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.util.IList;
 import gama.gaml.expressions.IExpression;
@@ -27,7 +27,7 @@ public interface IExperiment {
 	 *
 	 * @return the model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Gets the experiment plan.

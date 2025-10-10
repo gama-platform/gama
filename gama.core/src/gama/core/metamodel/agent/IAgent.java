@@ -22,7 +22,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IScoped;
 import gama.core.common.interfaces.IStepable;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -292,7 +292,7 @@ public interface IAgent extends IObject<ISpecies>, IDelegatingShape, INamed, Com
 	 *
 	 * @return the model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Checks if is instance of.

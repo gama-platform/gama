@@ -13,7 +13,7 @@ package gama.headless.core;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.MonitorOutput;
@@ -40,7 +40,7 @@ public class Experiment implements IExperiment {
 	protected ParametersSet params = new ParametersSet();
 
 	/** The model. */
-	final protected IModel model;
+	final protected IModelSpecies model;
 
 	/** The experiment name. */
 	protected String experimentName = null;
@@ -57,7 +57,7 @@ public class Experiment implements IExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	public Experiment(final IModel mdl) {
+	public Experiment(final IModelSpecies mdl) {
 		this.model = mdl;
 	}
 
@@ -189,7 +189,7 @@ public class Experiment implements IExperiment {
 	}
 
 	@Override
-	public IModel getModel() { return this.model; }
+	public IModelSpecies getModel() { return this.model; }
 
 	@Override
 	public IExperimentPlan getExperimentPlan() { return this.currentExperiment; }

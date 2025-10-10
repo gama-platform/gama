@@ -115,7 +115,7 @@ import gama.gaml.types.IType;
 		omissible = IKeyword.NAME)
 @doc ("A model is a species that is used to specify the 'world' of all the agents in the model. The corresponding population is hosted by experiments and accessible by the keyword 'simulations' (or 'simulation' to get the most recently created one)")
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamlModelSpecies extends GamlSpecies implements IModel {
+public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
 	/** The experiments. */
 	protected final Map<String, IExperimentPlan> experiments = GamaMapFactory.create();

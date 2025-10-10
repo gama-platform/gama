@@ -48,7 +48,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -283,7 +283,7 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public final boolean openSimulationPerspective(final IModel model, final String experimentName) {
+	public final boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
 		return PerspectiveHelper.openSimulationPerspective(model, experimentName);
 	}
 

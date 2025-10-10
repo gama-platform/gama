@@ -41,7 +41,7 @@ import com.google.inject.Injector;
 import gama.core.common.GamlFileExtension;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.NullGuiHandler;
 import gama.core.runtime.concurrent.GamaExecutorService;
@@ -657,7 +657,7 @@ public class HeadlessApplication implements IApplication {
 		} catch (Exception e) {
 			uri = URI.createURI(pathToModel);
 		}
-		final IModel mdl = builder.compile(uri, errors);
+		final IModelSpecies mdl = builder.compile(uri, errors);
 
 		if (mdl == null) {
 			DEBUG.LOG(

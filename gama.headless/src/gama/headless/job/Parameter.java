@@ -11,7 +11,7 @@
 package gama.headless.job;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.operators.BinaryOperator;
@@ -65,7 +65,7 @@ public class Parameter {
 	 * @param model the model
 	 * @return the parameter
 	 */
-	public static Parameter loadAndBuildParameter(final IDescription paramDesc, final IModel model) {
+	public static Parameter loadAndBuildParameter(final IDescription paramDesc, final IModelSpecies model) {
 		final String name = paramDesc.getLitteral(IKeyword.NAME);
 		final String varName = paramDesc.getLitteral(IKeyword.VAR);
 		final IExpression exp = paramDesc.getFacetExpr(IKeyword.INIT);

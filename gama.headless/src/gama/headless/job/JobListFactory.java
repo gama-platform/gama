@@ -19,7 +19,7 @@ import java.util.Map;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.descriptions.ExperimentDescription;
@@ -50,7 +50,7 @@ public class JobListFactory {
 	 */
 	public static List<IExperimentJob> constructAllJobs(final String modelPath, final long[] seeds,
 			final long finalStep, final Integer numberOfCores) throws IOException, GamaCompilationFailedException {
-		IModel model = GamlModelBuilder.getDefaultInstance().compile(new File(modelPath), null, null);
+		IModelSpecies model = GamlModelBuilder.getDefaultInstance().compile(new File(modelPath), null, null);
 		Map<JobPlanExperimentID, IExperimentJob> originalJobs = new LinkedHashMap<>();
 		if (numberOfCores != null && numberOfCores > 0) {
 			for (IExperimentPlan exp : model.getExperiments()) {

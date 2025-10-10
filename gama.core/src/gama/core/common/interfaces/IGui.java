@@ -19,7 +19,7 @@ import org.eclipse.emf.common.util.URI;
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -315,7 +315,7 @@ public interface IGui {
 	 *            the experiment id
 	 * @return true, if successful
 	 */
-	default boolean openSimulationPerspective(final IModel model, final String experimentId) {
+	default boolean openSimulationPerspective(final IModelSpecies model, final String experimentId) {
 		return true;
 	}
 

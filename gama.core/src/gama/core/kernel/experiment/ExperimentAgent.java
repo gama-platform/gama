@@ -32,7 +32,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
@@ -542,7 +542,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	@SuppressWarnings ("unchecked")
 	protected void createSimulationPopulation() {
-		final IModel model = getModel();
+		final IModelSpecies model = getModel();
 		SimulationPopulation pop = (SimulationPopulation) this.getMicroPopulation(model);
 		if (pop == null) {
 			pop = new SimulationPopulation(this, model);
@@ -566,7 +566,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @return the model
 	 */
 	@Override
-	public IModel getModel() { return getSpecies().getModel(); }
+	public IModelSpecies getModel() { return getSpecies().getModel(); }
 
 	/**
 	 * Gets the experiment.

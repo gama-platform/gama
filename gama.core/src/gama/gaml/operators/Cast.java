@@ -22,7 +22,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.shape.GamaPoint;
@@ -150,7 +150,7 @@ public class Cast {
 	public static IType asType(final IScope scope, final IExpression expr) throws GamaRuntimeException {
 		final Object value = expr.value(scope);
 		if (value instanceof String) {
-			final IModel m = scope.getModel();
+			final IModelSpecies m = scope.getModel();
 			return m.getDescription().getTypeNamed((String) value);
 		}
 		if (value instanceof ISpecies) return ((ISpecies) value).getDescription().getGamlType();

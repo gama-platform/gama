@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.outputs.AbstractOutputManager;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
@@ -32,7 +32,7 @@ public class RichExperiment extends Experiment implements IRichExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	public RichExperiment(final IModel mdl) {
+	public RichExperiment(final IModelSpecies mdl) {
 		super(mdl);
 	}
 

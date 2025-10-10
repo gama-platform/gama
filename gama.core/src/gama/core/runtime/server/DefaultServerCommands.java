@@ -43,7 +43,7 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.metamodel.agent.AgentReference;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.ExecutionResult;
@@ -106,7 +106,7 @@ public class DefaultServerCommands {
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
-		IModel model = null;
+		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
@@ -119,7 +119,7 @@ public class DefaultServerCommands {
 		if (!model.getDescription().hasExperiment(nameOfExperiment)) return new CommandResponse(UnableToExecuteRequest,
 				"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
 				false);
-		final IModel mm = model;
+		final IModelSpecies mm = model;
 		GAMA.getGui().run("Opening experiment " + nameOfExperiment, () -> GAMA.runGuiExperiment(nameOfExperiment, mm),
 				false);
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
@@ -499,7 +499,7 @@ public class DefaultServerCommands {
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
-		IModel model = null;
+		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
@@ -591,7 +591,7 @@ public class DefaultServerCommands {
 	 *            the readspecies variables
 	 * @return the list
 	 */
-	private static List<Map<String, Object>> readSpecies(final IModel model, final boolean readSpeciesActions,
+	private static List<Map<String, Object>> readSpecies(final IModelSpecies model, final boolean readSpeciesActions,
 			final boolean readspeciesVariables) {
 		List<Map<String, Object>> resAllSpecies = new ArrayList<>();
 		for (ISpecies species : model.getAllSpecies().values()) {
@@ -617,7 +617,7 @@ public class DefaultServerCommands {
 	 *            the model
 	 * @return the experiments
 	 */
-	private static List<Map<String, Object>> getExperiments(final IModel model) {
+	private static List<Map<String, Object>> getExperiments(final IModelSpecies model) {
 		List<Map<String, Object>> resAllExperiments = new ArrayList<>();
 		// Get the experiments informations
 		for (IExperimentPlan ittExp : model.getExperiments()) {

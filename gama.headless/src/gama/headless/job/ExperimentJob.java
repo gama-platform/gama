@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -266,7 +266,7 @@ public class ExperimentJob implements IExperimentJob {
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
 		final List<GamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
+		final IModelSpecies mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);
 	}
@@ -499,7 +499,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the experiment job
 	 */
 	public static ExperimentJob loadAndBuildJob(final ExperimentDescription expD, final String path,
-			final IModel model) {
+			final IModelSpecies model) {
 		final String expName = expD.getName();
 		final IExpressionDescription seedDescription = expD.getFacet(IKeyword.SEED);
 		double mseed = 0.0;
