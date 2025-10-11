@@ -365,9 +365,9 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
 		final TypeDescription sd = theType.getSpecies();
 		if (sd instanceof ModelDescription md) return md;
-		if (sd == null) return Types.AGENT.getDenotedSpecies();
+		if (sd == null) return (SpeciesDescription) Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();
-		if (speciesName == null) return Types.AGENT.getDenotedSpecies();
+		if (speciesName == null) return (SpeciesDescription) Types.AGENT.getDenotedSpecies();
 		return rootAgent.getSpecies().getDescription().getMicroSpecies(speciesName);
 	}
 

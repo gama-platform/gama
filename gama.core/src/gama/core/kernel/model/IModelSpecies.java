@@ -1,6 +1,7 @@
 /*******************************************************************************************************
  *
- * IModel.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * IModelSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -30,6 +31,34 @@ import gama.gaml.statements.test.TestStatement;
  *
  */
 public interface IModelSpecies extends ISpecies {
+
+	/**
+	 * Gets the class or species.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the class or species
+	 */
+	default IClass getClassOrSpecies(final String name) {
+		IClass c = getClass(name);
+		if (c == null) { c = getSpecies(name); }
+		return c;
+	}
+
+	/**
+	 * Gets the class or species.
+	 *
+	 * @param name
+	 *            the name
+	 * @param origin
+	 *            the origin
+	 * @return the class or species
+	 */
+	default IClass getClassOrSpecies(final String name, final String origin) {
+		IClass c = getClass(name, origin);
+		if (c == null) { c = getSpecies(name, origin); }
+		return c;
+	}
 
 	/**
 	 * Gets the class.

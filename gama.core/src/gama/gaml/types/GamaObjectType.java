@@ -11,14 +11,12 @@
 package gama.gaml.types;
 
 import gama.core.metamodel.agent.GamlObject;
-import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.species.IClass;
-import gama.gaml.species.ISpecies;
 
 /**
  * The type used to represent an object of a class. Should be used by the class for all the operations relative to
@@ -30,7 +28,7 @@ import gama.gaml.species.ISpecies;
  *
  */
 @SuppressWarnings ("unchecked")
-public class GamaObjectType extends GamaType<IObject> {
+public class GamaObjectType extends GamaInstanceType<IObject> {
 
 	/** The species. */
 	ClassDescription species;
@@ -49,26 +47,8 @@ public class GamaObjectType extends GamaType<IObject> {
 	 */
 	public GamaObjectType(final ClassDescription species, final String name, final int speciesId,
 			final Class<IObject> base) {
-		this.species = species;
-		this.name = name;
-		id = speciesId;
-		support = base;
-		// supports = new Class[] { base };
-		if (species != null) { setDefiningPlugin(species.getDefiningPlugin()); }
+		super(species, name, speciesId, base);
 	}
-
-	// @Override
-	// public boolean isAssignableFrom(final IType<?> t) {
-	// final boolean assignable = super.isAssignableFrom(t);
-	// // Hack to circumvent issue #1999. Should be better handled by
-	// // letting type managers of comodels inherit from the type managers
-	// // of imported models.
-	// if (!assignable && t.isAgentType() && t.getSpecies() == getSpecies()) return true;
-	// return assignable;
-	// }
-
-	@Override
-	public String getDefiningPlugin() { return species.getDefiningPlugin(); }
 
 	@Override
 	public IObject cast(final IScope scope, final Object obj, final Object param, final boolean copy)
@@ -82,48 +62,7 @@ public class GamaObjectType extends GamaType<IObject> {
 	}
 
 	@Override
-	public IAgent getDefault() { return null; }
-
-	@Override
 	public boolean isObjectType() { return true; }
-
-	@Override
-	public String getSpeciesName() { return name; }
-
-	@Override
-	public ClassDescription getSpecies() { return species; }
-
-	@Override
-	public boolean canCastToConst() {
-		return false;
-	}
-
-	@Override
-	public boolean canBeTypeOf(final IScope scope, final Object obj) {
-		final boolean b = super.canBeTypeOf(scope, obj);
-		if (b) return true;
-		if (obj instanceof IAgent) {
-			final ISpecies s = scope.getModel().getSpecies(getSpeciesName());
-			return ((IAgent) obj).isInstanceOf(s, false);
-		}
-		return false;
-	}
-
-	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc("Represents instances of species " + species.getName());
-		species.documentAttributes(result);
-		return result;
-	}
-
-	@Override
-	public IType<String> getKeyType() { return Types.STRING; }
-
-	@Override
-	public boolean isFixedLength() { return false; }
-
-	@Override
-	public boolean isDrawable() { return true; }
 
 	/**
 	 * Deserialize from json.
@@ -138,5 +77,8 @@ public class GamaObjectType extends GamaType<IObject> {
 	public GamlObject deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		return new GamlObject(scope, scope.getModel().getClass(name), map2);
 	}
+
+	@Override
+	public boolean isDrawable() { return false; }
 
 }

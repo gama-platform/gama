@@ -27,10 +27,7 @@ import gama.gaml.species.ISpecies;
  *
  */
 @SuppressWarnings ("unchecked")
-public class GamaAgentType extends GamaType<IAgent> {
-
-	/** The species. */
-	SpeciesDescription species;
+public class GamaAgentType extends GamaInstanceType<IAgent> {
 
 	/**
 	 * Instantiates a new gama agent type.
@@ -46,12 +43,7 @@ public class GamaAgentType extends GamaType<IAgent> {
 	 */
 	public GamaAgentType(final SpeciesDescription species, final String name, final int speciesId,
 			final Class<IAgent> base) {
-		this.species = species;
-		this.name = name;
-		id = speciesId;
-		support = base;
-		// supports = new Class[] { base };
-		if (species != null) { setDefiningPlugin(species.getDefiningPlugin()); }
+		super(species, name, speciesId, base);
 	}
 
 	@Override
@@ -63,9 +55,6 @@ public class GamaAgentType extends GamaType<IAgent> {
 		if (!assignable && t.isAgentType() && t.getSpecies() == getSpecies()) return true;
 		return assignable;
 	}
-
-	@Override
-	public String getDefiningPlugin() { return species.getDefiningPlugin(); }
 
 	@Override
 	public IAgent cast(final IScope scope, final Object obj, final Object param, final boolean copy)
@@ -84,45 +73,10 @@ public class GamaAgentType extends GamaType<IAgent> {
 	}
 
 	@Override
-	public IAgent getDefault() { return null; }
-
-	@Override
 	public boolean isAgentType() { return true; }
 
 	@Override
-	public String getSpeciesName() { return name; }
-
-	@Override
-	public SpeciesDescription getSpecies() { return species; }
-
-	@Override
-	public boolean canCastToConst() {
-		return false;
-	}
-
-	@Override
-	public boolean canBeTypeOf(final IScope scope, final Object obj) {
-		final boolean b = super.canBeTypeOf(scope, obj);
-		if (b) return true;
-		if (obj instanceof IAgent) {
-			final ISpecies s = scope.getModel().getSpecies(getSpeciesName());
-			return ((IAgent) obj).isInstanceOf(s, false);
-		}
-		return false;
-	}
-
-	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc("Represents instances of species " + species.getName());
-		species.documentAttributes(result);
-		return result;
-	}
-
-	@Override
-	public IType<String> getKeyType() { return Types.STRING; }
-
-	@Override
-	public boolean isFixedLength() { return false; }
+	public boolean isObjectType() { return false; }
 
 	@Override
 	public boolean isDrawable() { return true; }

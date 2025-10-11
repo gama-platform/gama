@@ -76,7 +76,4 @@ public class GamaGenericAgentType extends GamaAgentType {
 		return type != this && type instanceof GamaAgentType;
 	}
 
-	@Override
-	public SpeciesDescription getDenotedSpecies() { return species; }
-
 }
