@@ -32,6 +32,10 @@ import gama.gaml.species.ISpecies;
  * @todo Description
  *
  */
+
+/**
+ * The Class GamaSpeciesMetaType.
+ */
 @type (
 		name = IKeyword.SPECIES,
 		id = IType.SPECIES,
@@ -126,17 +130,5 @@ public class GamaSpeciesMetaType extends GamaMetaClassType<ISpecies> {
 	 */
 	@Override
 	public GamaSpeciesMetaType getGamlType() { return this; }
-
-	/**
-	 * Type if casting.
-	 *
-	 * @param exp
-	 *            the exp
-	 * @return the i container type
-	 */
-	@Override
-	public IContainerType<?> typeIfCasting(final IExpression exp) {
-		return (IContainerType<?>) super.typeIfCasting(exp);
-	}
 
 }

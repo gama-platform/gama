@@ -52,6 +52,10 @@ import one.util.streamex.StreamEx;
 /**
  * The Class Types.
  */
+
+/**
+ * The Class Types.
+ */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Types {
 
@@ -108,10 +112,12 @@ public class Types {
 	public static GamaGenericObjectType OBJECT;
 
 	/** The species. */
-	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
+	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER;
 
 	/** The class. */
 	public static GamaClassMetaType CLASS;
+	/** The species. */
+	public static GamaSpeciesMetaType SPECIES;
 
 	/** The Constant CLASSES_TYPES_CORRESPONDANCE. */
 	public static final IMap<Class, String> CLASSES_TYPES_CORRESPONDANCE = GamaMapFactory.createUnordered();
@@ -181,7 +187,7 @@ public class Types {
 				CONTAINER = (IContainerType) instance;
 				break;
 			case IType.SPECIES:
-				SPECIES = (IContainerType) instance;
+				SPECIES = (GamaSpeciesMetaType) instance;
 				break;
 			case IType.FONT:
 				FONT = instance;

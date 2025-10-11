@@ -406,7 +406,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @return the i type
 	 */
 	public static IType<?> from(final TypeDescription species) {
-		return from(Types.SPECIES, Types.INT, species.getGamlType());
+		return from(Types.LIST, Types.INT, species.getGamlType());
 	}
 
 	/**

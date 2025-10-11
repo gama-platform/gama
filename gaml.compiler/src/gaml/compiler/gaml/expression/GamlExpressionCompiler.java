@@ -630,11 +630,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IExpression owner = compile(leftExpr);
 		if (owner == null) return null;
 		final IType type = owner.getGamlType();
-		if (type.isParametricFormOf(Types.SPECIES)) {
-			final TypeDescription sd = type.getContentType().getSpecies();
-			if (sd instanceof ModelDescription md && md.hasExperiment(name))
-				return getFactory().createConst(name, GamaType.from(md.getExperiment(name)));
-		}
+		if (type.isParametricFormOf(Types.LIST) && type.getContentType().getSpecies() instanceof ModelDescription md
+				&& md.hasExperiment(name))
+			return getFactory().createConst(name, GamaType.from(md.getExperiment(name)));
 		getContext().error("Only experiments can be accessed using their plain name", IGamlIssue.UNKNOWN_FIELD);
 		return null;
 	}
@@ -656,8 +654,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final String var = EGaml.getInstance().getKeyOf(fieldExpr);
 		final IType type = owner.getGamlType();
 		// hqnghi 28-05-14 search input variable from model, not experiment
-		if (type instanceof ParametricType pt && pt.getGamlType().id() == IType.SPECIES
-				&& pt.getContentType().getSpecies() instanceof ModelDescription md && md.hasExperiment(var))
+		if (type instanceof ParametricType pt && pt.getContentType().getSpecies() instanceof ModelDescription md
+				&& md.hasExperiment(var))
 			return getFactory().createConst(var, GamaType.from(md.getExperiment(var)));
 		// end-hqnghi
 		// If the owner has no species...
