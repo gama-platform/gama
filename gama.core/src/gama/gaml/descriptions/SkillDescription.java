@@ -202,4 +202,7 @@ public class SkillDescription extends TypeDescription {
 		return (SkillConstantExpression) constantExpr;
 	}
 
+	@Override
+	public IType<?> getTypeOfVar() { return getGamlType(); }
+
 }

@@ -78,16 +78,21 @@ public abstract class GamaType<Support> implements IType<Support> {
 	protected String plugin;
 
 	/** The expression. */
-	final IExpression expression;
+	IExpression expression;
+
+	@Override
+	public IExpression getExpression() {
+		if (expression == null) { expression = createExpression(); }
+		return expression;
+	}
 
 	/**
-	 * Instantiates a new gama type.
+	 * Creates the expression.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 6 janv. 2024
+	 * @return the i expression
 	 */
-	public GamaType() {
-		this.expression = new TypeExpression(this);
+	protected IExpression createExpression() {
+		return new TypeExpression(this);
 	}
 
 	@Override
@@ -401,17 +406,6 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * From.
 	 *
-	 * @param species
-	 *            the species
-	 * @return the i type
-	 */
-	public static IType<?> from(final TypeDescription species) {
-		return from(Types.LIST, Types.INT, species.getGamlType());
-	}
-
-	/**
-	 * From.
-	 *
 	 * @param t
 	 *            the t
 	 * @param keyType
@@ -453,6 +447,30 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 *            the content type
 	 * @return the i type
 	 * @date 27 déc. 2023
+	 */
+
+	/**
+	 * From.
+	 *
+	 * @param t
+	 *            the t
+	 * @param keyType
+	 *            the key type
+	 * @param contentType
+	 *            the content type
+	 * @return the i type
+	 */
+
+	/**
+	 * From.
+	 *
+	 * @param t
+	 *            the t
+	 * @param keyType
+	 *            the key type
+	 * @param contentType
+	 *            the content type
+	 * @return the i type
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	public static IType<?> from(final IType<?> t, final IType<?> keyType, final IType<?> contentType) {
@@ -615,8 +633,5 @@ public abstract class GamaType<Support> implements IType<Support> {
 		throw GamaRuntimeException
 				.error("The deserialization of " + getName() + " objects has not yet been implemented", scope);
 	}
-
-	@Override
-	public IExpression getExpression() { return expression; }
 
 }

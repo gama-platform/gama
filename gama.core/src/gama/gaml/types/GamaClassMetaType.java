@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaClassType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaClassMetaType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -39,7 +39,7 @@ import gama.gaml.species.IClass;
 		id = IType.CLASS,
 		wraps = { IClass.class },
 		kind = ISymbolKind.Variable.REGULAR,
-		concept = { IConcept.TYPE, IConcept.SPECIES },
+		concept = { IConcept.TYPE, IConcept.CLASS },
 		doc = @doc ("Meta-type of the classes present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class GamaClassMetaType extends GamaMetaClassType<IClass> {
@@ -62,34 +62,22 @@ public class GamaClassMetaType extends GamaMetaClassType<IClass> {
 
 	public IClass cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		// TODO Add a more general cast with list of agents to find a common
-		// species.
-		return obj == null ? getDefault() : obj instanceof IClass c ? c : obj instanceof IObject o ? o.getSpecies()
-				: obj instanceof String
-						? scope.getModel() != null ? scope.getModel().getClass((String) obj) : getDefault()
-				: getDefault();
+		// TODO Add a more general cast with list of objects to find a common species.
+
+		return switch (obj) {
+			case IClass c -> c;
+			case IObject o -> o.getSpecies();
+			case String s -> scope.getModel() != null ? scope.getModel().getClass(s) : getDefault();
+			default -> getDefault();
+		};
 	}
 
 	@Override
 	public IClass cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) {
-
 		final IClass result = cast(scope, obj, param, copy);
-		if (result == null && contentType.isAgentType()) return scope.getModel().getSpecies(contentType.getName());
+		if (result == null && contentType.isObjectType()) return scope.getModel().getClass(contentType.getName());
 		return result;
-	}
-
-	// TODO Verify that we dont need to declare the other cast method
-
-	@Override
-	public IClass getDefault() { return null; }
-
-	@Override
-	public boolean isDrawable() { return true; }
-
-	@Override
-	public boolean canCastToConst() {
-		return false;
 	}
 
 }

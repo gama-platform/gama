@@ -60,9 +60,6 @@ public abstract class GamaInstanceType<T extends IObject> extends GamaType<T> {
 	public T getDefault() { return null; }
 
 	@Override
-	public abstract boolean isObjectType();
-
-	@Override
 	public String getSpeciesName() { return name; }
 
 	@Override
@@ -89,14 +86,5 @@ public abstract class GamaInstanceType<T extends IObject> extends GamaType<T> {
 		species.documentAttributes(result);
 		return result;
 	}
-
-	@Override
-	public IType<String> getKeyType() { return Types.STRING; }
-
-	@Override
-	public boolean isFixedLength() { return false; }
-
-	@Override
-	public abstract boolean isDrawable();
 
 }

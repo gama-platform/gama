@@ -94,18 +94,6 @@ public class GamaSpeciesMetaType extends GamaMetaClassType<ISpecies> {
 	// TODO Verify that we dont need to declare the other cast method
 
 	@Override
-	public ISpecies getDefault() { return null; }
-
-	@Override
-	public IType getContentType() { return Types.get(IType.AGENT); }
-
-	@Override
-	public IType getKeyType() { return Types.INT; }
-
-	@Override
-	public boolean isDrawable() { return true; }
-
-	@Override
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return itemType;
@@ -117,18 +105,5 @@ public class GamaSpeciesMetaType extends GamaMetaClassType<ISpecies> {
 		}
 		return exp.getGamlType();
 	}
-
-	@Override
-	public boolean canCastToConst() {
-		return false;
-	}
-
-	/**
-	 * Gets the gaml type.
-	 *
-	 * @return the gaml type
-	 */
-	@Override
-	public GamaSpeciesMetaType getGamlType() { return this; }
 
 }

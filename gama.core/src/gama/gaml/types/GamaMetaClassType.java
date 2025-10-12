@@ -27,4 +27,12 @@ import gama.gaml.species.IClass;
 
 public abstract class GamaMetaClassType<T extends IClass> extends GamaType<T> {
 
+	@Override
+	public boolean canCastToConst() {
+		return true;
+	}
+
+	@Override
+	public T getDefault() { return null; }
+
 }

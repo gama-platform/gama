@@ -1013,8 +1013,18 @@ public abstract class TypeDescription extends SymbolDescription {
 	public boolean isExperiment() { return false; }
 
 	/**
-	 * @return
+	 * Gets the species expr.
+	 *
+	 * @return the species expr
 	 */
-	public abstract TypeConstantExpression getConstantExpr();
+	public TypeConstantExpression getConstantExpr() {
+		if (constantExpr == null) { constantExpr = (TypeConstantExpression) getGamlType().getExpression(); }
+		return constantExpr;
+	}
+
+	/**
+	 * @return the type of the variable corresponding to this type description
+	 */
+	public abstract IType<?> getTypeOfVar();
 
 }

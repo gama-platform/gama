@@ -632,7 +632,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IType type = owner.getGamlType();
 		if (type.isParametricFormOf(Types.LIST) && type.getContentType().getSpecies() instanceof ModelDescription md
 				&& md.hasExperiment(name))
-			return getFactory().createConst(name, GamaType.from(md.getExperiment(name)));
+			return getFactory().createConst(name, md.getExperiment(name).getTypeOfVar());
 		getContext().error("Only experiments can be accessed using their plain name", IGamlIssue.UNKNOWN_FIELD);
 		return null;
 	}
@@ -648,6 +648,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	private IExpression compileFieldExpr(final Expression leftExpr, final Expression fieldExpr) {
 		// If the owner cannot be determined (or leads to a previous error) we quit
+
 		final IExpression owner = compile(leftExpr);
 		if (owner == null) return null;
 		// We gather the name of the "field"
@@ -656,7 +657,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// hqnghi 28-05-14 search input variable from model, not experiment
 		if (type instanceof ParametricType pt && pt.getContentType().getSpecies() instanceof ModelDescription md
 				&& md.hasExperiment(var))
-			return getFactory().createConst(var, GamaType.from(md.getExperiment(var)));
+			return getFactory().createConst(var, md.getExperiment(var).getTypeOfVar());
 		// end-hqnghi
 		// If the owner has no species...
 		final TypeDescription species = type.getSpecies();
@@ -916,7 +917,6 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	public IExpression caseTypeRef(final TypeRef object) {
 		final IType t = fromTypeRef(object);
 		if (t == null) return null;
-		if (t.isAgentType()) return t.getSpecies().getConstantExpr();
 		return getFactory().createTypeExpression(t);
 	}
 

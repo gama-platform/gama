@@ -38,7 +38,6 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
 import gama.gaml.expressions.types.SkillConstantExpression;
-import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Strings;
@@ -46,6 +45,7 @@ import gama.gaml.skills.ISkill;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * The Class SpeciesDescription.
@@ -638,18 +638,6 @@ public class SpeciesDescription extends TypeDescription {
 	}
 
 	/**
-	 * Returns the constant expression representing this species
-	 */
-	@Override
-	public SpeciesConstantExpression getConstantExpr() {
-		if (constantExpr == null) {
-			final IType type = GamaType.from(SpeciesDescription.this);
-			constantExpr = GAML.getExpressionFactory().createSpeciesConstant(type);
-		}
-		return (SpeciesConstantExpression) constantExpr;
-	}
-
-	/**
 	 * Visit micro species.
 	 *
 	 * @param visitor
@@ -1006,5 +994,8 @@ public class SpeciesDescription extends TypeDescription {
 		if (skills == null) return base;
 		return Iterables.concat(skills, base);
 	}
+
+	@Override
+	public IType<?> getTypeOfVar() { return GamaType.from(Types.LIST, Types.INT, getGamlType()); }
 
 }
