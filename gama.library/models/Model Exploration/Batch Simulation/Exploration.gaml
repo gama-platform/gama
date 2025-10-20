@@ -16,7 +16,7 @@ import "../../Tutorials/Predator Prey/models/Model 13.gaml"
 global {
 	int end_cycle <- 500;
 	reflex save_result when: (nb_preys > 0) and (nb_predators > 0){ } // Overload method so we do not have any saved output
-	bool stop_sim { return (nb_preys = 0) or (nb_predators = 0); } 
+	bool stop_sim { float tmp <- time; return (nb_preys = 0) or (nb_predators = 0); } 
 }
 
 /* 
@@ -57,7 +57,7 @@ experiment 'Run 5 simulations' parent: batch_abstract type: batch repeat: 5 keep
 // 2. coefficient of variation 
 experiment replication_analysis parent: batch_abstract type: batch until: world.stop_sim() or ( time > end_cycle ) 
 	repeat:40 keep_simulations:false {
-	method stochanalyse outputs:["nb_preys", "nb_predators"] report:"Results/stochanalysis.txt" results:"Results/stochanalysis_raw.csv" sample:3;
+	method stochanalyse outputs:[nb_preys, nb_predators] report:"Results/stochanalysis.txt" results:"Results/stochanalysis_raw.csv" sample:3;
 } 
 
 // This experiment explores the four parameters with an exhaustive strategy (default sampling method for exploration),
@@ -82,15 +82,20 @@ experiment exhaustive_exploration parent: batch_abstract type: batch repeat: 3 k
 	}
 }
 
-// This experiment tests two explicit parameters sets,
+// This experiment tests explicit parameters sets combining 2 parameters in 4 different configurations,
 // repeating each simulation three times (the aggregated fitness correspond to the mean fitness), 
 experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration with: [
-		["prey_max_transfer"::0.1, "predator_energy_transfer":: 0.01],
-		["prey_max_transfer"::0.5, "predator_energy_transfer":: 0.2],
-		["prey_max_transfer"::1.0, "predator_energy_transfer":: 0.05],
-		["prey_max_transfer"::0.5, "predator_energy_transfer":: 0.1]
+		[prey_max_transfer::0.1, predator_energy_transfer:: 0.01],
+		[prey_max_transfer::0.5, predator_energy_transfer:: 0.2],
+		[prey_max_transfer::1.0, predator_energy_transfer:: 0.05],
+		[prey_max_transfer::0.5, predator_energy_transfer:: 0.1]
 	];
+}
+
+// Conducted the same experiment plan but explicitly defined using a csv file
+experiment explicit_from_file parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
+	method exploration from:"includes/ParameterSets.csv" outputs:[nb_preys,nb_predators,time];
 }
 
 // This experiment iterate over point of the parameter space choosen following
@@ -106,7 +111,7 @@ experiment exploration_with_factorial  parent: batch_abstract repeat:3 type: bat
 // This experiment iterate over 100 point randomly drawn from the parameter space
 // Then the model global variables "nb_preys" and "nb_predators" are saved un a csv for each simulation run (including potential replicates)
 experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
-	method exploration sampling:"uniform" sample:10 outputs:["nb_preys","nb_predators"] results:"Results/exploration.csv";
+	method exploration sampling:"uniform" sample:10 outputs:[nb_preys,nb_predators,time] results:"Results/exploration.csv";
 }
 
 // This experiment samples from the parameter space (Saltelli methods) to establish
@@ -114,14 +119,14 @@ experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3
 // observed variance for outcomes of interest, 
 // more on this see https://www.jasss.org/19/1/5.html and http://moeaframework.org for the API
 experiment Sobol parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method sobol outputs:["nb_preys","nb_predators"] sample:10 report:"Results/sobol.csv" results:"Results/sobol_raw.csv";
+	method sobol outputs:[nb_preys,nb_predators] sample:10 report:"Results/sobol.csv" results:"Results/sobol_raw.csv";
 }
 
 // This experiment perform a Morris analysis (see Morris 1991, doi:10.1080/00401706.1991.10484804)
 // to screen and rank parameters based on elementary effect (changes on outputs due to a small modification of 
 // one paameter value)
 experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method morris outputs:["nb_preys","nb_predators"] sample:10 levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
+	method morris outputs:[nb_preys,nb_predators] sample:10 levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
 }
 
 // This experiment computed beta d kuiper statistics to estimate the impact of parameters
@@ -133,5 +138,5 @@ experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) 
 // Hence, final sample size is 'sample + sample * bootstrap * |parameter|', with default sample and bootstrap, respectively 132 and 4
 // Sampled point should be high and at least 2 times higher than bootstrap
 experiment Beta_distribution parent: batch_abstract type: batch until:( time > end_cycle ) {
-	method betad outputs:["nb_preys","nb_predators"] sampling:"uniform" sample:10 bootstrap:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
+	method betad outputs:[nb_preys,nb_predators] sampling:"uniform" sample:10 bootstrap:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
 }

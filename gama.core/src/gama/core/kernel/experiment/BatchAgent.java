@@ -200,10 +200,8 @@ public class BatchAgent extends ExperimentAgent {
 			// if (output != null) { getSpecies().getLog().doRefreshWriteAndClose(sol, out); }
 		} else {
 			AExplorationAlgorithm exp = (AExplorationAlgorithm) getSpecies().getExplorationAlgorithm();
-			final IExpression outputs = exp.getOutputs();
-			if (outputs != null) {
-				final List<String> outputVals = GamaListFactory.create(sim.getScope(), Types.STRING,
-						Cast.asList(sim.getScope(), outputs.value(sim.getScope())));
+			if (exp.getOutputs() != null) {
+				final List<String> outputVals = exp.getLitteralOutputs();
 				for (String s : outputVals) {
 					Object v = sim.hasAttribute(s) ? sim.getDirectVarValue(getScope(), s) : null;
 					trackedValues.put(s, v);
