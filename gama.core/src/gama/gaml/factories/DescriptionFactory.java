@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * DescriptionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.gaml.factories;
 import static gama.annotations.precompiler.ISymbolKind.ACTION;
 import static gama.annotations.precompiler.ISymbolKind.BATCH_METHOD;
 import static gama.annotations.precompiler.ISymbolKind.BEHAVIOR;
+import static gama.annotations.precompiler.ISymbolKind.CLASS;
 import static gama.annotations.precompiler.ISymbolKind.EXPERIMENT;
 import static gama.annotations.precompiler.ISymbolKind.LAYER;
 import static gama.annotations.precompiler.ISymbolKind.MODEL;
@@ -26,6 +27,7 @@ import static gama.annotations.precompiler.ISymbolKind.Variable.CONTAINER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.NUMBER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.REGULAR;
 import static gama.core.common.interfaces.IKeyword.AGENT;
+import static gama.core.common.interfaces.IKeyword.OBJECT;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,9 +46,11 @@ import gama.core.util.ICollector;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IAgentConstructor;
+import gama.gaml.compilation.IObjectConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.gaml.compilation.ast.SyntacticFactory;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -67,6 +71,24 @@ public class DescriptionFactory {
 
 	/** The factories. */
 	static Map<Integer, SymbolFactory> FACTORIES = new HashMap();
+
+	/** The species factory. */
+	private static SpeciesFactory speciesFactory = new SpeciesFactory();
+
+	/** The model factory. */
+	private static ModelFactory modelFactory = new ModelFactory();
+
+	/** The experiment factory. */
+	private static ExperimentFactory experimentFactory = new ExperimentFactory();
+
+	/** The platform factory. */
+	private static PlatformFactory platformFactory = new PlatformFactory();
+
+	/** The statement factory. */
+	private static StatementFactory statementFactory = new StatementFactory();
+
+	/** The variable factory. */
+	private static VariableFactory variableFactory = new VariableFactory();
 
 	/** The statement keywords protos. */
 	static Map<String, SymbolProto> STATEMENT_KEYWORDS_PROTOS = new HashMap();
@@ -96,13 +118,12 @@ public class DescriptionFactory {
 	 * Initialize.
 	 */
 	public static void initialize() {
-		add(new ExperimentFactory(), EXPERIMENT);
-		add(new ModelFactory(), MODEL);
-		add(new PlatformFactory(), PLATFORM);
-		add(new SpeciesFactory(), SPECIES);
-		add(new StatementFactory(), SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD,
-				OUTPUT);
-		add(new VariableFactory(), CONTAINER, NUMBER, REGULAR, PARAMETER);
+		add(experimentFactory, EXPERIMENT);
+		add(modelFactory, MODEL);
+		add(platformFactory, PLATFORM);
+		add(speciesFactory, SPECIES, CLASS);
+		add(statementFactory, SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD, OUTPUT);
+		add(variableFactory, CONTAINER, NUMBER, REGULAR, PARAMETER);
 	}
 
 	/**
@@ -154,6 +175,7 @@ public class DescriptionFactory {
 			if (md == null) return null;
 			final IType t = md.getTypesManager().get(keyword);
 			if (t.isAgentType()) return getVarProto(AGENT, null);
+			if (t.isObjectType()) return getVarProto(OBJECT, null);
 		}
 		return p;
 	}
@@ -248,7 +270,7 @@ public class DescriptionFactory {
 		if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
 		final SymbolProto p = KINDS_PROTOS.get(kind);
 		if (p != null) {
-			if ("species".equals(s)) {
+			if (IKeyword.SPECIES.equals(s)) {
 				VAR_KEYWORDS_PROTOS.put(SyntacticFactory.SPECIES_VAR, p);
 			} else {
 				VAR_KEYWORDS_PROTOS.put(s, p);
@@ -279,6 +301,16 @@ public class DescriptionFactory {
 		if (!AGENT.equals(name) && !IKeyword.EXPERIMENT.equals(name)) {
 			VAR_KEYWORDS_PROTOS.putIfAbsent(name, VAR_KEYWORDS_PROTOS.get(AGENT));
 		}
+	}
+
+	/**
+	 * Adds the species name as type.
+	 *
+	 * @param name
+	 *            the name
+	 */
+	public static void addClassNameAsType(final String name) {
+		if (!OBJECT.equals(name)) { VAR_KEYWORDS_PROTOS.putIfAbsent(name, VAR_KEYWORDS_PROTOS.get(OBJECT)); }
 	}
 
 	/**
@@ -383,13 +415,6 @@ public class DescriptionFactory {
 	}
 
 	/**
-	 * Gets the model factory.
-	 *
-	 * @return the model factory
-	 */
-	public static ModelFactory getModelFactory() { return (ModelFactory) getFactory(MODEL); }
-
-	/**
 	 * Gets the allowed facets for.
 	 *
 	 * @param keys
@@ -429,8 +454,33 @@ public class DescriptionFactory {
 	public static SpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
-		return ((SpeciesFactory) getFactory(SPECIES)).createBuiltInSpeciesDescription(name, clazz, superDesc, parent,
-				helper, skills, null, plugin);
+		return speciesFactory.createBuiltInSpeciesDescription(name, clazz, superDesc, parent, helper, skills, null,
+				plugin);
+	}
+
+	/**
+	 * Creates a new Description object.
+	 *
+	 * @param name
+	 *            the name
+	 * @param clazz
+	 *            the clazz
+	 * @param superDesc
+	 *            the super desc
+	 * @param parent
+	 *            the parent
+	 * @param helper
+	 *            the helper
+	 * @param skills
+	 *            the skills
+	 * @param plugin
+	 *            the plugin
+	 * @return the species description
+	 */
+	public static ClassDescription createBuiltInClassDescription(final String name, final Class clazz,
+			final ModelDescription macro, final ClassDescription parent, final IObjectConstructor helper,
+			final String plugin) {
+		return speciesFactory.createBuiltInClassDescription(name, clazz, macro, parent);
 	}
 
 	/**
@@ -455,8 +505,8 @@ public class DescriptionFactory {
 	public static SpeciesDescription createPlatformSpeciesDescription(final String name, final Class clazz,
 			final SpeciesDescription macro, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> allSkills, final String plugin) {
-		return ((SpeciesFactory) getFactory(PLATFORM)).createBuiltInSpeciesDescription(name, clazz, macro, parent,
-				helper, allSkills, null, plugin);
+		return platformFactory.createBuiltInSpeciesDescription(name, clazz, macro, parent, helper, allSkills, null,
+				plugin);
 	}
 
 	/**
@@ -481,8 +531,8 @@ public class DescriptionFactory {
 	public static SpeciesDescription createBuiltInExperimentDescription(final String name, final Class clazz,
 			final SpeciesDescription superDesc, final SpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
-		return ((ExperimentFactory) getFactory(EXPERIMENT)).createBuiltInSpeciesDescription(name, clazz, superDesc,
-				parent, helper, skills, null, plugin);
+		return experimentFactory.createBuiltInSpeciesDescription(name, clazz, superDesc, parent, helper, skills, null,
+				plugin);
 	}
 
 	/**
@@ -541,6 +591,7 @@ public class DescriptionFactory {
 			};
 			source.visitChildren(visitor);
 			source.visitGrids(visitor);
+			source.visitClasses(visitor);
 			source.visitSpecies(visitor);
 			source.visitExperiments(visitor);
 			children = childrenList.items();

@@ -110,7 +110,7 @@ public class TestAgent extends BatchAgent implements WithTestSummary<TestExperim
 
 	@Override
 	public void addSpecificParameters(final List<IParameter.Batch> params) {
-		params.add(new ParameterAdapter("Stop condition", IExperimentPlan.TEST_CATEGORY_NAME, IType.STRING) {
+		params.add(new ParameterAdapter("Stop condition", IExperimentSpecies.TEST_CATEGORY_NAME, IType.STRING) {
 
 			@Override
 			public String value() {
@@ -119,7 +119,7 @@ public class TestAgent extends BatchAgent implements WithTestSummary<TestExperim
 
 		});
 
-		params.add(new ParameterAdapter("Parameter space", IExperimentPlan.TEST_CATEGORY_NAME, "", IType.STRING) {
+		params.add(new ParameterAdapter("Parameter space", IExperimentSpecies.TEST_CATEGORY_NAME, "", IType.STRING) {
 
 			@Override
 			public String value() {

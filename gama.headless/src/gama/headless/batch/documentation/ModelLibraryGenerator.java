@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryGenerator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryGenerator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,6 @@ package gama.headless.batch.documentation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,6 +35,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.headless.common.Globals;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.runtime.HeadlessApplication;
@@ -52,7 +52,6 @@ public class ModelLibraryGenerator {
 	/** The source folder. */
 	static String sourceFolder = "F:/Gama/GamaSource/";
 
-
 	/** The input path to model library. */
 	static String[] inputPathToModelLibrary =
 			{ sourceFolder + "gama.library/models/", sourceFolder + "gama.extension.maths/models", };
@@ -68,7 +67,6 @@ public class ModelLibraryGenerator {
 
 	/** The input model screenshot. */
 	static String inputModelScreenshot = wikiFolder + "modelScreenshot.xml";
-
 
 	/** The list no screenshot. */
 	static String[] listNoScreenshot =
@@ -101,7 +99,6 @@ public class ModelLibraryGenerator {
 																// and
 																// if
 																// all
-
 
 	/**
 	 * Update path.
@@ -234,8 +231,8 @@ public class ModelLibraryGenerator {
 				if (gamlFilePath.contains(sourceFolder + folderWithoutScreenshot)) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
-				if (   "include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
-					|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
+				if ("include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
+						|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
 			}
@@ -259,15 +256,13 @@ public class ModelLibraryGenerator {
 	 */
 	public static boolean deleteDirectoryAndItsContent(final File file) {
 
-		File[] flist = null;
-
 		if (file == null) return false;
 
 		if (file.isFile()) return file.delete();
 
 		if (!file.isDirectory()) return false;
 
-		flist = file.listFiles();
+		File[] flist = file.listFiles();
 		if (flist != null && flist.length > 0) {
 			for (final File f : flist) { if (!deleteDirectoryAndItsContent(f)) return false; }
 		}
@@ -387,7 +382,8 @@ public class ModelLibraryGenerator {
 
 			String line = null;
 
-			final String[] categoryKeywords = { "operator", "type", "statement", "skill", "architecture", "constant" };
+			final String[] categoryKeywords =
+					{ "operator", IKeyword.TYPE, "statement", IKeyword.SKILL, "architecture", "constant" };
 
 			while ((line = br.readLine()) != null) {
 				for (final String catKeywords : categoryKeywords) {
@@ -420,7 +416,7 @@ public class ModelLibraryGenerator {
 
 			doc.getDocumentElement().normalize();
 
-			final NodeList nList = doc.getElementsByTagName("experiment");
+			final NodeList nList = doc.getElementsByTagName(IKeyword.EXPERIMENT);
 
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 
@@ -433,8 +429,8 @@ public class ModelLibraryGenerator {
 					final String id = eElement.getAttribute("id");
 					final ScreenshotStructure screenshot = new ScreenshotStructure(id);
 					for (int i = 0; i < eElement.getElementsByTagName("display").getLength(); i++) {
-						final String displayName =
-								((Element) eElement.getElementsByTagName("display").item(i)).getAttribute("name");
+						final String displayName = ((Element) eElement.getElementsByTagName("display").item(i))
+								.getAttribute(IKeyword.NAME);
 						int cycleNumber = Integer.parseInt(((Element) eElement.getElementsByTagName("display").item(i))
 								.getAttribute("cycle_number"));
 						if (cycleNumber == 0) { cycleNumber = 10; }
@@ -624,16 +620,14 @@ public class ModelLibraryGenerator {
 			// extract the header properties
 			final MetadataStructure metaStruct = new MetadataStructure(header);
 
-			if ( ! "".equals(metaStruct.getName())) {
+			if (!"".equals(metaStruct.getName())) {
 				// search if there are some images linked
 				final ArrayList<File> listScreenshot = new ArrayList<>();
 				Utils.getFilesFromFolder(
 						gamlFile.getAbsolutePath().substring(0, gamlFile.getAbsolutePath().length() - 4),
 						listScreenshot);
 
-				// prepare the output file
-				String fileName = "";
-				fileName = gamlFile.getAbsolutePath().replace("\\", "/");
+				String fileName = gamlFile.getAbsolutePath().replace("\\", "/");
 				boolean isAdditionnalPlugin = false;
 				for (final String path : inputPathToModelLibrary) {
 					if (fileName.contains(path)) {
@@ -905,8 +899,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static String getModelCode(final File gamlFile) throws IOException {
 		// write the code
-		String result = "";
-		result = "```\n";
+		StringBuilder result = new StringBuilder("```\n");
 		try (final InputStream fis = Files.newInputStream(gamlFile.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 			String line = null;
@@ -914,19 +907,19 @@ public class ModelLibraryGenerator {
 			while ((line = br.readLine()) != null) {
 				if (!inHeader) {
 					// we are in the code
-					result += line + "\n";
+					result.append(line).append("\n");
 				} else if (line.startsWith("*/") || line.startsWith(" */")) {
 					// we are out of the header
 					inHeader = false;
 				} else if (line.startsWith("model")) {
 					// we are in the code
 					inHeader = false;
-					result += line + "\n";
+					result.append(line).append("\n");
 				}
 			}
-			result += "```\n";
+			result.append("```\n");
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**

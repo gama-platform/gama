@@ -10,34 +10,22 @@
  ********************************************************************************************************/
 package gama.core.metamodel.population;
 
-import static com.google.common.collect.Iterators.transform;
 import static gama.core.common.interfaces.IKeyword.EDGE_SPECIES;
-import static gama.core.common.interfaces.IKeyword.EXPERIMENT;
 import static gama.core.common.interfaces.IKeyword.LOCATION;
 import static gama.core.common.interfaces.IKeyword.MIRRORS;
 import static gama.core.common.interfaces.IKeyword.SHAPE;
 import static gama.core.common.interfaces.IKeyword.TARGET;
-import static gama.gaml.descriptions.VariableDescription.INIT_DEPENDENCIES_FACETS;
-import static gama.gaml.descriptions.VariableDescription.UPDATE_DEPENDENCIES_FACETS;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
@@ -45,20 +33,15 @@ import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.continuous.ContinuousTopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.metamodel.topology.filter.In;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.metamodel.topology.graph.GraphTopology;
-import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.runtime.FlowStatus;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaList;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IContainer;
@@ -66,9 +49,6 @@ import gama.core.util.IList;
 import gama.core.util.graph.AbstractGraphNodeAgent;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.IAgentConstructor;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
@@ -76,7 +56,6 @@ import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.GamaTopologyType;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
 
 /**
@@ -85,53 +64,17 @@ import gama.gaml.variables.IVariable;
  * @todo Description
  *
  */
-public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPopulation<T> {
+public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> implements IPopulation<T> {
 
 	static {
 		DEBUG.OFF();
 	}
 
-	/** The is disposing. */
-	private volatile boolean isDisposing = false;
-
-	/**
-	 * The agent hosting this population which is considered as the direct macro-agent.
-	 */
-	protected IMacroAgent host;
-
-	/**
-	 * The object describing how the agents of this population are spatially organized
-	 */
-	protected ITopology topology;
-
-	/** The species. */
-	protected final ISpecies species;
-
-	/** The updatable vars. */
-	protected final IVariable[] orderedVars, updatableVars;
-
-	/** The current agent index. */
-	protected int currentAgentIndex;
-
-	/** The hash code. */
-	private final int hashCode;
-
-	/** The is step overriden. */
-	private final boolean isInitOverriden, isStepOverriden;
+	/** The agents container. */
+	private final IList<T> agentsContainer;
 
 	/** The mirror management. */
 	private final MirrorPopulationManagement mirrorManagement;
-
-	/**
-	 * Listeners, created in a lazy way
-	 */
-	private final PopulationNotifier notifier = new PopulationNotifier();
-
-	/** The ordered var names. */
-	public final LinkedHashSet<String> orderedVarNames = new LinkedHashSet<>();
-
-	/** The Constant isLiving. */
-	public final static IPopulation.IsLiving isLiving = new IPopulation.IsLiving();
 
 	/**
 	 * The Class MirrorPopulationManagement.
@@ -156,7 +99,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 			final IPopulation<T> pop = GamaPopulation.this;
 			final Set<IAgent> targets = new HashSet<IAgent>(Cast.asList(scope, listOfTargetAgents.value(scope)));
 			final List<IAgent> toKill = new ArrayList<>();
-			for (final IAgent agent : pop.iterable(scope)) {
+			for (final IAgent agent : pop) {
 				final IAgent target = Cast.asAgent(scope, agent.getAttribute(TARGET));
 				if (targets.contains(target)) {
 					targets.remove(target);
@@ -177,104 +120,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	}
 
 	/**
-	 * Try add.
-	 *
-	 * @param graph
-	 *            the graph
-	 * @param v
-	 *            the v
-	 * @param existing
-	 *            the existing
-	 */
-	private static void tryAdd(final DirectedAcyclicGraph<String, Object> graph, final String v,
-			final String existing) {
-		graph.addVertex(v);
-		try {
-			graph.addEdge(v, existing);
-		} catch (IllegalArgumentException e) {
-			// AD Revision in Aug 2021 for Issue #3068: edge is not added if it creates a cycle
-		}
-	}
-
-	/**
-	 * Checks if is disposing.
-	 *
-	 * @return true, if is disposing
-	 */
-	@Override
-	public boolean isDisposing() { return isDisposing; }
-
-	/**
-	 * Order attributes.
-	 *
-	 * @param ecd
-	 *            the ecd
-	 * @param keep
-	 *            the keep
-	 * @param facetsToConsider
-	 *            the facets to consider
-	 * @return the i variable[]
-	 */
-	public static IVariable[] orderAttributes(final IPopulation pop, final TypeDescription ecd,
-			final Predicate<VariableDescription> keep, final Set<String> facetsToConsider) {
-		// AD Revised in Aug 2019 for Issue #2869: keep constraints between superspecies and subspecies
-		// AD Revised in Aug 2021 for Issue #3068: do not introduce cycles (which might exist in update blocks) in order
-		// to obtain a correct topological order
-		final DirectedAcyclicGraph<String, Object> graph = new VariableOrderingGraph();
-
-		// if (this instanceof SimulationPopulation) { DEBUG.OUT("Species to order: " +
-		// DEBUG.TO_STRING(Iterables.toArray(Iterables.transform(subs, v->v.getName()), String.class))); }
-		ecd.visitAllAttributes(d -> {
-			VariableDescription var = (VariableDescription) d;
-			if (keep.apply(var)) {
-				String name = var.getName();
-				graph.addVertex(name);
-				for (final VariableDescription dep : var.getDependencies(facetsToConsider, false, true)) {
-					if (keep.apply(dep)) { tryAdd(graph, dep.getName(), name); }
-				}
-				// Adding a constraint between the shape of the macrospecies and the populations of microspecies
-				if (var.isSyntheticSpeciesContainer()) {
-					// SpeciesDescription sd = var.getGamlType().getSpecies();
-					// if (sd != null && graph.containsVertex(sd.getParentName())) {
-					// tryAdd(graph, sd.getParentName(), name);
-					// }
-					tryAdd(graph, SHAPE, name);
-				}
-			}
-			return true;
-		});
-
-		// AD Revised in Dec 2022 for Issue #3526: the order in which the sub-species is declared in the variables is
-		// kept if possible, so that 'agents' returns the agents in the same order
-		final List<VariableDescription> subs = new ArrayList<>();
-		ecd.visitAllAttributes(d -> {
-			VariableDescription var = (VariableDescription) d;
-			if (var.isSyntheticSpeciesContainer()) { subs.add(var); }
-			return true;
-		});
-		for (int i = 0; i < subs.size() - 1; i++) {
-			VariableDescription vs = subs.get(i);
-			if (keep.apply(vs)) {
-				VariableDescription vt = subs.get(i + 1);
-				if (keep.apply(vt)) {
-					String source = vs.getName();
-					String target = vt.getName();
-					if (!graph.containsEdge(target, source)) { tryAdd(graph, source, target); }
-				}
-			}
-		}
-		// End revision
-		// if (this instanceof SimulationPopulation) {
-		// DEBUG.OUT("After ordering: " + DEBUG.TO_STRING(Iterators.toArray(
-		// Iterators.filter(graph.iterator(),
-		// s -> ((VariableDescription) getVar(s).getDescription()).isSyntheticSpeciesContainer()),
-		// String.class)));
-		// }
-		return Iterators.toArray(transform(graph.iterator(), s -> pop.getVar(s)), IVariable.class);
-
-	}
-
-	/**
 	 * Instantiates a new gama population.
 	 *
 	 * @param host
@@ -283,69 +128,15 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	 *            the species
 	 */
 	public GamaPopulation(final IMacroAgent host, final ISpecies species) {
-		super(0, host == null ? Types.get(EXPERIMENT)
-				: host.getModel().getDescription().getTypeNamed(species.getName()));
-		this.host = host;
-		this.species = species;
-		final TypeDescription ecd = species.getDescription();
-		orderedVars = orderAttributes(this, ecd, Predicates.alwaysTrue(), INIT_DEPENDENCIES_FACETS);
-		for (IVariable v : orderedVars) { orderedVarNames.add(v.getName()); }
-		updatableVars = orderAttributes(this, ecd, VariableDescription::isUpdatable, UPDATE_DEPENDENCIES_FACETS);
-		if (species.isMirror() && host != null) {
-			mirrorManagement = new MirrorPopulationManagement(species.getFacet(MIRRORS));
-		} else {
-			mirrorManagement = null;
-		}
-
-		/*
-		 * PATRICK TAILLANDIER: the problem of having the host here is that depending on the simulation the hashcode
-		 * will be different... and this hashcode is very important for the manipulation of GamaMap thus, having two
-		 * different hashcodes depending on the simulation ensures the replication of simulation. So I remove the host
-		 * for the moment.
-		 */
-		/*
-		 * AD: Reverting this as different populations in different hosts should not have the same hash code ! See
-		 * discussion in https://github.com/gama-platform/gama/issues/3339
-		 */
-		hashCode = Objects.hash(getSpecies(), getHost());
-		final boolean[] result = { false, false };
-		species.getDescription().visitChildren(d -> {
-			if (d instanceof ActionDescription && !d.isBuiltIn()) {
-				final String name = d.getName();
-				if (ISpecies.initActionName.equals(name)) {
-					result[0] = true;
-				} else if (ISpecies.stepActionName.equals(name)) { result[1] = true; }
-			}
-			return true;
-		});
-		isInitOverriden = result[0];
-		isStepOverriden = result[1];
-
+		super(host, species);
+		agentsContainer = GamaListFactory.create(type.getContentType(), 10);
+		mirrorManagement =
+				species.isMirror() && host != null ? new MirrorPopulationManagement(species.getFacet(MIRRORS)) : null;
 	}
 
-	/**
-	 * Step.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return true, if successful
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 * @date 17 sept. 2023
-	 */
 	@Override
-	public boolean step(final IScope scope) throws GamaRuntimeException {
-		final IExpression frequencyExp = species.getFrequency();
-		if (frequencyExp != null) {
-			final int frequency = Cast.asInt(scope, frequencyExp.value(scope));
-			final int step = scope.getClock().getCycle();
-			if (frequency == 0 || step % frequency != 0) return true;
-		}
+	protected void manageMirror(final IScope scope) {
 		if (mirrorManagement != null) { mirrorManagement.executeOn(scope); }
-		getSpecies().getArchitecture().preStep(scope, this);
-		return stepAgents(scope);
-
 	}
 
 	/**
@@ -355,127 +146,15 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	 *            the scope
 	 * @return true, if successful
 	 */
+	@Override
 	protected boolean stepAgents(final IScope scope) {
 		return GamaExecutorService.step(scope, this, getSpecies());
 	}
-
-	/**
-	 * Take copy into account and always creates a list (necessary for #2254)
-	 */
-	@Override
-	public IList<T> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (copy) return GamaListFactory.create(scope, contentsType, this);
-		return this;
-	}
-
-	/**
-	 * Explicity copy (necessary for #2254)
-	 */
-	@Override
-	public IList<T> copy(final IScope scope) {
-		return listValue(scope, getGamlType().getContentType(), true);
-	}
-
-	@Override
-	public void updateVariables(final IScope scope, final IAgent a) {
-		for (final IVariable v : updatableVars) {
-			try (StopWatch w = GAMA.benchmark(scope, v)) {
-				scope.setCurrentSymbol(v);
-				scope.setAgentVarValue(a, v.getName(), v.getUpdatedValue(scope));
-			}
-		}
-		scope.setCurrentSymbol(null);
-	}
-
-	/**
-	 * Inits the.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return true, if successful
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public boolean init(final IScope scope) {
-		// See #2933
-		if (mirrorManagement != null) { mirrorManagement.executeOn(scope); }
-		return true;
-		// // Do whatever the population has to do at the first step ?
-	}
-
-	@Override
-	public void createVariablesFor(final IScope scope, final T agent) throws GamaRuntimeException {
-		for (final IVariable var : orderedVars) { var.initializeWith(scope, agent, null); }
-	}
-
-	@Override
-	public T getAgent(final Integer index) {
-		return Iterables.find(this, each -> each.getIndex() == index, null);
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public T getOrCreateAgent(final IScope scope, final Integer index) {
-		T agent = getAgent(index);
-		return agent == null ? (T) createAgentAt(scope, index, Collections.EMPTY_MAP, false, true) : agent;
-	}
-
-	/**
-	 * Compare to.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param o
-	 *            the o
-	 * @return the int
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public int compareTo(final IPopulation<T> o) {
-		return getName().compareTo(o.getName());
-	}
-
-	@Override
-	public ITopology getTopology() { return topology; }
-
-	@Override
-	public String getName() { return species.getName(); }
-
-	@Override
-	public boolean isGrid() { return species.isGrid(); }
-
-	@Override
-	public ISpecies getSpecies() { return species; }
 
 	@SuppressWarnings ("unchecked")
 	@Override
 	public Iterable<T> iterable(final IScope scope) {
 		return (Iterable<T>) getAgents(scope);
-	}
-
-	/**
-	 * Dispose.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public void dispose() {
-		isDisposing = true;
-		killMembers();
-		final IScope scope = getHost() == null ? GAMA.getRuntimeScope() : getHost().getScope();
-		firePopulationCleared(scope);
-		if (topology != null) {
-			topology.dispose();
-			topology = null;
-		}
-		clear();
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public T[] toArray() {
-		return (T[]) super.toArray(new IAgent[0]);
 	}
 
 	/**
@@ -516,23 +195,6 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		fireAgentsAdded(scope, list);
 		return list;
 
-	}
-
-	@Override
-	public T createAgentAt(final IScope scope, final int index, final Map<String, Object> initialValues,
-			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
-
-		final List<Map<String, Object>> mapInitialValues = new ArrayList<>();
-		mapInitialValues.add(initialValues);
-
-		// TODO : think to another solution... it is ugly
-		final int tempIndexAgt = currentAgentIndex;
-
-		currentAgentIndex = index;
-		final IList<T> listAgt = createAgents(scope, 1, mapInitialValues, isRestored, toBeScheduled, null);
-		currentAgentIndex = tempIndexAgt;
-
-		return listAgt.firstValue(scope);
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -638,46 +300,11 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		return true;
 	}
 
-	@Override
-	public void initializeFor(final IScope scope) throws GamaRuntimeException {
-		computeTopology(scope);
-		if (topology != null) { topology.initialize(scope, this); }
-	}
-
-	@Override
-	public boolean hasVar(final String n) {
-		return species.getVar(n) != null;
-	}
-
-	@Override
-	public boolean hasAspect(final String default1) {
-		return species.hasAspect(default1);
-	}
-
-	@Override
-	public IExecutable getAspect(final String default1) {
-		return species.getAspect(default1);
-	}
-
-	@Override
-	public Collection<String> getAspectNames() { return species.getAspectNames(); }
-
-	@Override
-	public IVariable getVar(final String s) {
-		return species.getVar(s);
-	}
-
-	@Override
-	public boolean hasUpdatableVariables() {
-		return updatableVars.length > 0;
-	}
-
 	@SuppressWarnings ("unchecked")
 	@Override
 	public T getAgent(final IScope scope, final GamaPoint coord) {
 		final IAgentFilter filter = In.list(scope, this);
 		if (filter == null) return null;
-
 		return topology == null ? null : (T) topology.getAgentClosestTo(scope, coord, filter);
 	}
 
@@ -688,20 +315,19 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	 * @return
 	 * @throws GamaRuntimeException
 	 */
+	@Override
 	protected void computeTopology(final IScope scope) throws GamaRuntimeException {
 		final IExpression expr = species.getFacet(IKeyword.TOPOLOGY);
-		final boolean fixed = species.isGraph() || species.isGrid();
+		final boolean isGraph = species.isGraph();
 		if (expr != null) {
-			if (!fixed) {
+			if (!isGraph) {
 				topology = GamaTopologyType.staticCast(scope, scope.evaluate(expr, host).getValue(), false);
 				return;
 			}
 			throw GamaRuntimeException.warning(
 					"Impossible to assign a topology to " + species.getName() + " as it already defines one.", scope);
 		}
-		if (species.isGrid()) {
-			topology = GridPopulation.buildGridTopology(scope, species, getHost());
-		} else if (species.isGraph()) {
+		if (isGraph) {
 			final IExpression spec = species.getFacet(EDGE_SPECIES);
 			final String edgeName = spec == null ? "base_edge" : spec.literalValue();
 			final ISpecies edgeSpecies = scope.getModel().getSpecies(edgeName);
@@ -719,210 +345,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 	}
 
-	@Override
-	public IMacroAgent getHost() { return host; }
-
-	@Override
-	public void setHost(final IMacroAgent agt) { host = agt; }
-
-	@Override
-	public final boolean equals(final Object o) {
-		return o == this;
-	}
-
-	@Override
-	public final int hashCode() {
-		return hashCode;
-	}
-
-	@Override
-	public void killMembers() throws GamaRuntimeException {
-		final T[] ag = toArray();
-		for (final IAgent a : ag) { if (a != null) { a.dispose(); } }
-	}
-
-	@Override
-	public String toString() {
-		return "Population of " + species.getName();
-	}
-
-	@Override
-	public void addValue(final IScope scope, final T value) {
-		fireAgentAdded(scope, value);
-		add(value);
-	}
-
-	@Override
-	public void addValueAtIndex(final IScope scope, final Object index, final T value) {
-		fireAgentAdded(scope, value);
-		super.addValueAtIndex(scope, index, value);
-	}
-
-	@Override
-	public void addValues(final IScope scope, final IContainer values) {
-		for (final T o : (java.lang.Iterable<T>) values.iterable(scope)) { addValue(scope, o); }
-	}
-
-	@Override
-	public void removeValue(final IScope scope, final Object value) {
-		if (value instanceof IAgent && super.remove(value)) {
-			if (topology != null) { topology.removeAgent((IAgent) value); }
-			fireAgentRemoved(scope, (IAgent) value);
-		}
-	}
-
-	@Override
-	public void removeValues(final IScope scope, final IContainer values) {
-		for (final Object o : values.iterable(scope)) { removeValue(scope, o); }
-	}
-
-	@Override
-	public void removeAllOccurrencesOfValue(final IScope scope, final Object value) {
-		removeValue(scope, value);
-	}
-
-	@Override
-	public boolean remove(final Object a) {
-		removeValue(null, a);
-		return true;
-	}
-
-	@Override
-	public boolean contains(final IScope scope, final Object o) {
-		if (!(o instanceof IAgent)) return false;
-		return ((IAgent) o).getPopulation() == this;
-	}
-
-	@Override
-	public void addListener(final IPopulation.Listener listener) {
-		notifier.addListener(listener);
-	}
-
-	@Override
-	public void removeListener(final IPopulation.Listener listener) {
-		notifier.removeListener(listener);
-	}
-
-	/**
-	 * Fire agent added.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param agent
-	 *            the agent
-	 */
-	protected void fireAgentAdded(final IScope scope, final IAgent agent) {
-		notifier.notifyAgentAdded(scope, this, agent);
-	}
-
-	/**
-	 * Fire agents added.
-	 *
-	 * @param <T>
-	 *            the generic type
-	 * @param scope
-	 *            the scope
-	 * @param container
-	 *            the container
-	 */
-	@Override
-	public <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {
-		notifier.notifyAgentsAdded(scope, this, agents);
-	}
-
-	/**
-	 * Fire agent removed.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param agent
-	 *            the agent
-	 */
-	protected void fireAgentRemoved(final IScope scope, final IAgent agent) {
-		notifier.notifyAgentRemoved(scope, this, agent);
-	}
-
-	/**
-	 * Fire population cleared.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
-	protected void firePopulationCleared(final IScope scope) {
-		notifier.notifyPopulationCleared(scope, this);
-	}
-
 	// Filter methods
-
-	/**
-	 * Method getAgents()
-	 *
-	 * @see gama.core.metamodel.topology.filter.IAgentFilter#getAgents()
-	 */
-	@Override
-	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
-		return GamaListFactory.create(scope, getGamlType().getContentType(), allLivingAgents(this));
-	}
-
-	/**
-	 * Checks for agent list.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return true, if successful
-	 * @date 17 sept. 2023
-	 */
-	@Override
-	public boolean hasAgentList() {
-		return true;
-	}
-
-	/**
-	 * Method accept()
-	 *
-	 * @see gama.core.metamodel.topology.filter.IAgentFilter#accept(gama.core.runtime.IScope,
-	 *      gama.core.metamodel.shape.IShape, gama.core.metamodel.shape.IShape)
-	 */
-	@Override
-	public boolean accept(final IScope scope, final IShape source, final IShape a) {
-		final IAgent agent = a.getAgent();
-		if (agent == null || agent.getPopulation() != this || agent.dead()) return false;
-		final IAgent as = source.getAgent();
-		if (agent == as) return false;
-		// }
-		return true;
-	}
-
-	/**
-	 * Method filter()
-	 *
-	 * @see gama.core.metamodel.topology.filter.IAgentFilter#filter(gama.core.runtime.IScope,
-	 *      gama.core.metamodel.shape.IShape, java.util.Collection)
-	 */
-	@Override
-	public void filter(final IScope scope, final IShape source, final Collection<? extends IShape> results) {
-		final IAgent sourceAgent = source == null ? null : source.getAgent();
-		results.remove(sourceAgent);
-		final Predicate<IShape> toRemove = each -> {
-			final IAgent a = each.getAgent();
-			return a == null || a.dead()
-					|| a.getPopulation() != this
-							&& (a.getPopulation().getGamlType().getContentType() != this.getGamlType().getContentType()
-									|| !this.contains(a));
-		};
-		results.removeIf(toRemove);
-	}
-
-	/**
-	 * Gets the populations.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the populations
-	 */
-	@Override
-	public Collection<? extends IPopulation<? extends IAgent>> getPopulations(final IScope scope) {
-		return Collections.singleton(this);
-	}
 
 	@Override
 	public T getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -930,7 +353,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		final int size = indices.size();
 		return switch (size) {
 			case 0 -> null;
-			case 1 -> super.getFromIndicesList(scope, indices);
+			case 1 -> (T) agentsContainer.getFromIndicesList(scope, indices);
 			case 2 -> this.getAgent(scope,
 					new GamaPoint(Cast.asFloat(scope, indices.get(0)), Cast.asFloat(scope, indices.get(1))));
 			default -> throw GamaRuntimeException.error("Populations cannot be accessed with 3 or more indexes", scope);
@@ -938,29 +361,11 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 	}
 
-	/**
-	 * @param actionScope
-	 * @param iterable
-	 * @return
-	 */
-	public static <T extends IAgent> Iterable<T> allLivingAgents(final Iterable<T> iterable) {
-		return Iterables.filter(iterable, isLiving);
+	@Override
+	public List<T> internalListOfAgents(final boolean makeCopy, final boolean onlyLiving) {
+		if (onlyLiving) return Lists.newArrayList(Iterables.filter(agentsContainer, a -> a != null && !a.dead()));
+		if (!makeCopy) return agentsContainer;
+		return new ArrayList<>(agentsContainer);
 	}
-
-	/**
-	 * Method isInitOverriden()
-	 *
-	 * @see gama.gaml.species.ISpecies#isInitOverriden()
-	 */
-	@Override
-	public boolean isInitOverriden() { return isInitOverriden; }
-
-	/**
-	 * Method isStepOverriden()
-	 *
-	 * @see gama.gaml.species.ISpecies#isStepOverriden()
-	 */
-	@Override
-	public boolean isStepOverriden() { return isStepOverriden; }
 
 }

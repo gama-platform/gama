@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.core.util.file.json;
 
+import gama.core.common.interfaces.IKeyword;
+
 /**
  * The Interface IJsonConstants.
  *
@@ -34,10 +36,10 @@ public interface IJsonConstants {
 	String NAME_PROPERTIES = "properties";
 
 	/** The Constant NAME_NAME. */
-	String NAME_NAME = "name";
+	String NAME_NAME = IKeyword.NAME;
 
 	/** The Constant NAME_TYPE. */
-	String NAME_TYPE = "type";
+	String NAME_TYPE = IKeyword.TYPE;
 
 	/** The Constant NAME_POINT. */
 	String NAME_POINT = "Point";

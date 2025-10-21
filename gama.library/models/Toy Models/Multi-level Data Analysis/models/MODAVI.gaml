@@ -92,8 +92,8 @@ global {
 		int i<-1;
 		//Creation of the macronode according to the number of value per class
 		create macroNode number: nbValuePerClass{	 
-			class <-i;
-			location <- {(cos (((class-1)/nbValuePerClass)*360)*50 +50),(sin (((class-1)/nbValuePerClass)*360)*50+50),0};
+			the_class <-i;
+			location <- {(cos (((the_class-1)/nbValuePerClass)*360)*50 +50),(sin (((the_class-1)/nbValuePerClass)*360)*50+50),0};
 			color <- hsb (i/nbValuePerClass,1.0,1.0);
 			do updatemyNodes;
 			i<-i+1;	
@@ -165,7 +165,7 @@ species edge_agent {
 //Species representing the macro node agents
 species macroNode{
 	rgb color;
-	int class;
+	int the_class;
 	//List of all the aggregated nodes
 	list<int> nbAggregatedNodes <- list_with(nbTypeOfClass,0);
 	//List of all the position
@@ -180,7 +180,7 @@ species macroNode{
 		loop i from:0 to: nbTypeOfClass-1{			
 			nbAggregatedNodes[i]<-0;
 			ask node_agent as list{
-			  if	(classVector[i] = myself.class) {
+			  if	(classVector[i] = myself.the_class) {
 				myself.nbAggregatedNodes[i] <- myself.nbAggregatedNodes[i]+1;
 			  }	 
 		    }
@@ -202,7 +202,7 @@ species macroNode{
 	//This action only works when having nbTypeOfClass=1
 	action removeMicroNode{
 		ask node_agent as list{
-			  if	(classVector[0] = myself.class) {
+			  if	(classVector[0] = myself.the_class) {
 			      do die;
 			  }	 
          }
@@ -232,7 +232,7 @@ species macroEdge  {
 	//Action to remove a micro edge
 	action removeMicroEdge{
 		ask edge_agent as list{
-			  if	((self.src.classVector[0] =  myself.src.class) and (self.dest.classVector[0] =  myself.dest.class)) {
+			  if	((self.src.classVector[0] =  myself.src.the_class) and (self.dest.classVector[0] =  myself.dest.the_class)) {
 			      do die;
 			  }	 
          }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ValuedDisplayOutputFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,6 +20,7 @@ import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.species.ISpecies;
 
@@ -111,9 +112,9 @@ public class ValuedDisplayOutputFactory {
 	 *            the expr
 	 */
 	public static void browse(final IMacroAgent root, final IExpression expr, final IExpression attributes) {
-		final SpeciesDescription species = expr.getGamlType().isContainer()
+		final TypeDescription species = expr.getGamlType().isContainer()
 				? expr.getGamlType().getContentType().getSpecies() : expr.getGamlType().getSpecies();
-		if (species == null) throw GamaRuntimeException
+		if (!(species instanceof SpeciesDescription)) throw GamaRuntimeException
 				.error("Expression '" + expr.serializeToGaml(true) + "' does not reference agents", root.getScope());
 		final ISpecies rootSpecies = root.getSpecies();
 		if (rootSpecies.getMicroSpecies(species.getName()) == null) {

@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * SpeciesConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SpeciesConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.expressions.types;
 
-import gama.annotations.precompiler.GamlProperties;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
@@ -20,7 +19,6 @@ import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IVarDescriptionUser;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.VariableDescription;
-import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.types.IType;
 
 /**
@@ -30,7 +28,7 @@ import gama.gaml.types.IType;
  * @date 16 janv. 2024
  */
 @SuppressWarnings ({ "rawtypes" })
-public class SpeciesConstantExpression extends ConstantExpression {
+public class SpeciesConstantExpression extends TypeConstantExpression {
 
 	static {
 		DEBUG.OFF();
@@ -96,26 +94,6 @@ public class SpeciesConstantExpression extends ConstantExpression {
 		getGamlType().getContentType().getSpecies().documentThis(result);
 		return result;
 	}
-
-	/**
-	 * Method collectPlugins()
-	 *
-	 * @see gama.gaml.interfaces.IGamlDescription#collectPlugins(java.util.Set)
-	 */
-	@Override
-	public void collectMetaInformation(final GamlProperties meta) {
-		final SpeciesDescription sd = getGamlType().getContentType().getSpecies();
-		if (sd != null) {
-			meta.put(GamlProperties.PLUGINS, sd.getDefiningPlugin());
-			if (sd.isBuiltIn()) { meta.put(GamlProperties.SPECIES, (String) value); }
-		}
-	}
-
-	@Override
-	public boolean isContextIndependant() { return false; }
-
-	@Override
-	public boolean isAllowedInParameters() { return true; } // verify this
 
 	@Override
 	public void collectUsedVarsOf(final SpeciesDescription species,

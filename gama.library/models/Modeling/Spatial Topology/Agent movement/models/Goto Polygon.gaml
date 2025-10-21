@@ -15,8 +15,8 @@ global {
 	geometry shape <- envelope(shape_file_in);
 	
 	init {    
-		create object from: shape_file_in ;
-		object the_object <- first(object);
+		create objects from: shape_file_in ;
+		objects the_object <- first(objects);
 		
 		//triangulation of the object to get the different triangles of the polygons
 		list<geometry> triangles <- list(triangulate(the_object, 0.01));
@@ -52,7 +52,7 @@ global {
 	}
 }
 
-species object  {
+species objects  {
 	aspect default {
 		draw shape color: #gray ;
 	}
@@ -94,7 +94,7 @@ experiment goto_polygon type: gui {
 	
 	output {
 		display objects_display {
-			species object aspect: default ;
+			species objects aspect: default ;
 			species triangle_obj aspect: default ;
 			species skeleton aspect: default ;
 			species people aspect: default ;

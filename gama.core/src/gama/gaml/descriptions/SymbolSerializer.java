@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SymbolSerializer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -155,7 +155,7 @@ public class SymbolSerializer<C extends SymbolDescription> implements IKeyword {
 		@Override
 		protected void serializeChildren(final SymbolDescription d, final StringBuilder sb,
 				final boolean includingBuiltIn) {
-			final SpeciesDescription desc = (SpeciesDescription) d;
+			final ModelDescription desc = (ModelDescription) d;
 			sb.append(' ').append('{').append(Strings.LN);
 			Iterable<? extends IDescription> children = desc.getAttributes();
 			sb.append(Strings.LN);
@@ -181,8 +181,15 @@ public class SymbolSerializer<C extends SymbolDescription> implements IKeyword {
 					serializeChild(s, sb, includingBuiltIn);
 				}
 			}
+			if (desc.hasClasses()) {
+				children = desc.getClasses().values();
+				for (final IDescription s : children) {
+					sb.append(Strings.LN);
+					serializeChild(s, sb, includingBuiltIn);
+				}
+			}
 
-			children = ((ModelDescription) desc).getExperiments();
+			children = desc.getExperiments();
 			for (final IDescription s : children) {
 				sb.append(Strings.LN);
 				serializeChild(s, sb, includingBuiltIn);
@@ -197,7 +204,6 @@ public class SymbolSerializer<C extends SymbolDescription> implements IKeyword {
 		}
 
 	}
-
 
 	/**
 	 * The Class StatementSerializer.

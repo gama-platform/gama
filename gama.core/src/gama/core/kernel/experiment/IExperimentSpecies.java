@@ -15,7 +15,7 @@ import java.util.Map;
 
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.IOutputManager;
 import gama.core.runtime.GAMA;
@@ -35,7 +35,7 @@ import gama.gaml.types.Types;
  * @todo Description
  *
  */
-public interface IExperimentPlan extends ISpecies {
+public interface IExperimentSpecies extends ISpecies {
 
 	/** The test category name. */
 	String TEST_CATEGORY_NAME = "Configuration of tests";
@@ -51,7 +51,7 @@ public interface IExperimentPlan extends ISpecies {
 	 *
 	 * @return the model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Sets the model.
@@ -59,7 +59,7 @@ public interface IExperimentPlan extends ISpecies {
 	 * @param model
 	 *            the new model
 	 */
-	void setModel(final IModel model);
+	void setModel(final IModelSpecies model);
 
 	/**
 	 * Gets the original simulation outputs.

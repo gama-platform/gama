@@ -87,7 +87,7 @@ import gama.gaml.types.Types;
 	@variable(name = IKeyword.REAL_SPEED, type = IType.FLOAT, init = "0.0", doc = @doc("Represents the actual speed of the agent (in meter/second)")), })
 @skill(name = IKeyword.MOVING_SKILL, concept = { IConcept.SKILL, IConcept.AGENT_MOVEMENT })
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class MovingSkill extends Skill {
+public class MovingSkill extends GamlSkill {
 
     /**
      * Gets the heading.

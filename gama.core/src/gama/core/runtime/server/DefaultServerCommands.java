@@ -40,10 +40,10 @@ import org.java_websocket.WebSocket;
 import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.metamodel.agent.AgentReference;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.ExecutionResult;
@@ -90,10 +90,9 @@ public class DefaultServerCommands {
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		if (!GAMA.isInHeadLessMode()
-				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY
-			) {
-				return new CommandResponse(MessageType.UnableToExecuteRequest, "Unable to start new experiment, another one is loading", map, false);
-		}
+				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
+					"Unable to start new experiment, another one is loading", map, false);
 
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
@@ -107,7 +106,7 @@ public class DefaultServerCommands {
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
-		IModel model = null;
+		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
@@ -120,7 +119,7 @@ public class DefaultServerCommands {
 		if (!model.getDescription().hasExperiment(nameOfExperiment)) return new CommandResponse(UnableToExecuteRequest,
 				"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
 				false);
-		final IModel mm = model;
+		final IModelSpecies mm = model;
 		GAMA.getGui().run("Opening experiment " + nameOfExperiment, () -> GAMA.runGuiExperiment(nameOfExperiment, mm),
 				false);
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
@@ -157,7 +156,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage PAUSE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -181,7 +180,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage STEP(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -219,7 +218,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage BACK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -274,7 +273,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage RELOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -305,7 +304,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage EVAL(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -324,7 +323,9 @@ public class DefaultServerCommands {
 		} else {
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
-				if (expression != null) { res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString(); }
+				if (expression != null) {
+					res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString();
+				}
 			} catch (final Exception e) {
 				// error = true;
 				res = "> Error: " + e.getMessage();
@@ -359,11 +360,10 @@ public class DefaultServerCommands {
 		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
-		if (entered.isBlank()) {
-			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
-		}
+		if (entered.isBlank()) return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, new GamaCompilationFailedException(errors).toJsonString(), map, true);
+		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
+				new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
 		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
 	}
@@ -381,7 +381,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage ASK(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {
@@ -462,7 +462,7 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage UPLOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		final String filepath = map.containsKey("file") ? map.get("file").toString() : null;
+		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
 		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
@@ -489,7 +489,7 @@ public class DefaultServerCommands {
 	public static GamaServerMessage DESCRIBE(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		// Check the parameters
-		final Object modelPath = map.get("model");
+		final Object modelPath = map.get(IKeyword.MODEL);
 		if (modelPath == null)
 			return new CommandResponse(MalformedRequest, "For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
@@ -499,7 +499,7 @@ public class DefaultServerCommands {
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
-		IModel model = null;
+		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
@@ -525,10 +525,12 @@ public class DefaultServerCommands {
 
 		if (readExperiments) { res.put("experiments", getExperiments(model)); }
 
-		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
+		if (readSpeciesNames) {
+			res.put(IKeyword.SPECIES, readSpecies(model, readSpeciesActions, readspeciesVariables));
+		}
 
-		res.put("name", model.getName());
-		res.put("path", pathToModel);
+		res.put(IKeyword.NAME, model.getName());
+		res.put(IKeyword.PATH, pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
 
@@ -543,8 +545,8 @@ public class DefaultServerCommands {
 		List<Map<String, String>> allVariables = new ArrayList<>();
 		for (IVariable variable : species.getVars()) {
 			Map<String, String> resVariable = new HashMap<>();
-			resVariable.put("name", variable.getName());
-			resVariable.put("type", variable.getType().getName());
+			resVariable.put(IKeyword.NAME, variable.getName());
+			resVariable.put(IKeyword.TYPE, variable.getType().getName());
 			allVariables.add(resVariable);
 		}
 		return allVariables;
@@ -561,18 +563,18 @@ public class DefaultServerCommands {
 		List<Map<String, Object>> allActions = new ArrayList<>();
 		for (ActionStatement action : species.getActions()) {
 			Map<String, Object> resAction = new HashMap<>();
-			resAction.put("name", action.getName());
+			resAction.put(IKeyword.NAME, action.getName());
 			List<Map<String, String>> resAllCommands = new ArrayList<>();
 			var actionDescription = action.getDescription();
 			for (var arg : actionDescription.getFormalArgs()) {
 				Map<String, String> command = new HashMap<>();
-				command.put("name", arg.getName());
-				command.put("type", arg.getGamlType().getName());
+				command.put(IKeyword.NAME, arg.getName());
+				command.put(IKeyword.TYPE, arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
 
 			resAction.put("parameters", resAllCommands);
-			resAction.put("type", actionDescription.getGamlType().getName());
+			resAction.put(IKeyword.TYPE, actionDescription.getGamlType().getName());
 			allActions.add(resAction);
 		}
 		return allActions;
@@ -589,13 +591,13 @@ public class DefaultServerCommands {
 	 *            the readspecies variables
 	 * @return the list
 	 */
-	private static List<Map<String, Object>> readSpecies(final IModel model, final boolean readSpeciesActions,
+	private static List<Map<String, Object>> readSpecies(final IModelSpecies model, final boolean readSpeciesActions,
 			final boolean readspeciesVariables) {
 		List<Map<String, Object>> resAllSpecies = new ArrayList<>();
 		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
 			Map<String, Object> resSpecie = new HashMap<>();
-			resSpecie.put("name", species.getName());
+			resSpecie.put(IKeyword.NAME, species.getName());
 
 			// Variables
 			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
@@ -615,20 +617,20 @@ public class DefaultServerCommands {
 	 *            the model
 	 * @return the experiments
 	 */
-	private static List<Map<String, Object>> getExperiments(final IModel model) {
+	private static List<Map<String, Object>> getExperiments(final IModelSpecies model) {
 		List<Map<String, Object>> resAllExperiments = new ArrayList<>();
 		// Get the experiments informations
-		for (IExperimentPlan ittExp : model.getExperiments()) {
+		for (IExperimentSpecies ittExp : model.getExperiments()) {
 			// Get the parameters
 			Map<String, Object> resExp = new HashMap<>();
-			resExp.put("name", ittExp.getName());
+			resExp.put(IKeyword.NAME, ittExp.getName());
 			List<Map<String, String>> resAllParams = new ArrayList<>();
 			for (Map.Entry<String, IParameter> paramEntry : ittExp.getParameters().entrySet()) {
 				Map<String, String> resParam = new HashMap<>();
 				IParameter param = paramEntry.getValue();
-				resParam.put("name", param.getName());
+				resParam.put(IKeyword.NAME, param.getName());
 				resParam.put("description", param.getTitle());
-				resParam.put("type", param.getType().toString());
+				resParam.put(IKeyword.TYPE, param.getType().toString());
 				resAllParams.add(resParam);
 			}
 			resExp.put("parameters", resAllParams);

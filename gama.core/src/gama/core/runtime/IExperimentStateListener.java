@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.runtime;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 
 /**
  * The class ISimulationStateProvider.
@@ -104,6 +104,6 @@ public interface IExperimentStateListener {
      * Change the UI state based on the state of the simulation (NONE, PAUSED,
      * RUNNING, FINISHED or NOTREADY)
      */
-    void updateStateTo(IExperimentPlan experiment, final State state);
+    void updateStateTo(IExperimentSpecies experiment, final State state);
 
 }

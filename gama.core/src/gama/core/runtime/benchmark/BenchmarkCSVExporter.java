@@ -17,7 +17,7 @@ import java.util.List;
 
 import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -44,7 +44,7 @@ public class BenchmarkCSVExporter {
 	 * @param records
 	 *            the records
 	 */
-	public void save(final IExperimentPlan experiment, final Benchmark records) throws GamaRuntimeException {
+	public void save(final IExperimentSpecies experiment, final Benchmark records) throws GamaRuntimeException {
 		final IScope scope = experiment.getExperimentScope();
 		try {
 			Files.newFolder(scope, exportFolder);

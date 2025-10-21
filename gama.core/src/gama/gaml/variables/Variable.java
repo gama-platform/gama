@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Variable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Variable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,11 +27,11 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.common.util.JavaUtils;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.StopWatch;
@@ -45,6 +45,7 @@ import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.compilation.annotations.validator;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
@@ -56,7 +57,8 @@ import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.units.TimeUnitConstantExpression;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Cast;
-import gama.gaml.species.AbstractSpecies;
+import gama.gaml.skills.ISkill;
+import gama.gaml.species.GamlSpecies;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.GamaListType;
 import gama.gaml.types.IType;
@@ -153,7 +155,8 @@ import gama.gaml.types.Types;
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.CLASS, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL,
+				ISymbolKind.SKILL })
 @doc ("Declaration of an attribute of a species or an experiment")
 @validator (gama.gaml.variables.Variable.VarValidator.class)
 @SuppressWarnings ({ "rawtypes" })
@@ -211,14 +214,22 @@ public class Variable extends Symbol implements IVariable {
 					final IExpression expr = cd.getFacetExpr(INIT);
 					if (expr.findAny(e -> e instanceof TimeUnitConstantExpression tu && !tu.isConst())) {
 						cd.warning(
-								"Time dependent constants used to define the step at initialization are computed once based on the current_date. "
-										+ "The resulting durations may be irrelevant after a few cycles. "
-										+ "An 'update:' facet should be defined with the same expression to recompute the step every cycle",
+								"""
+										Time dependent constants used to define the step at initialization are computed once based on the current_date. \
+										The resulting durations may be irrelevant after a few cycles. \
+										An 'update:' facet should be defined with the same expression to recompute the step every cycle""",
 								IGamlIssue.CONFLICTING_FACETS, INIT);
 					}
 				}
 			}
 			// The name is ok. Now verifying the logic of facets
+
+			// If the attribute is defined in a class, it cannot be updated
+			if (cd.getEnclosingDescription() instanceof ClassDescription && cd.hasFacet(UPDATE)) {
+				cd.error("Attributes defined in a class cannot be updated", IGamlIssue.WRONG_CONTEXT, UPDATE);
+				return;
+			}
+
 			// Verifying that 'function' is not used in conjunction with other
 			// "value" facets
 			if (cd.hasFacet(FUNCTION) && (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {
@@ -537,7 +548,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @param species
 	 *            the species
 	 */
-	private void buildHelpers(final AbstractSpecies species) {
+	private void buildHelpers(final GamlSpecies species) {
 		getter = getDescription().getGetter();
 		if (getter != null) { gSkill = species.getSkillInstanceFor(getter.getSkillClass()); }
 		initer = getDescription().getIniter();
@@ -551,7 +562,7 @@ public class Variable extends Symbol implements IVariable {
 	/**
 	 * // AD 2021: addition of the listeners
 	 */
-	private void addListeners(final AbstractSpecies species) {
+	private void addListeners(final GamlSpecies species) {
 		// if (IKeyword.LOCATION.equals(getName())) {
 
 		// DEBUG.OUT("Adding listeners to " + this.getName());
@@ -604,7 +615,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Object coerce(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
+	protected Object coerce(final IObject agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		return type.cast(scope, v, null, false);
 	}
 
@@ -648,16 +659,28 @@ public class Variable extends Symbol implements IVariable {
 	@Override
 	public IType getType() { return type; }
 
+	/**
+	 * Initialize with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param v
+	 *            the v
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
-	public void initializeWith(final IScope scope, final IAgent a, final Object v) throws GamaRuntimeException {
+	public void initializeWith(final IScope scope, final IObject a, final Object v) throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
 			scope.setCurrentSymbol(this);
 			if (v != null) {
 				_setVal(a, scope, v);
 			} else if (initExpression != null) {
 				_setVal(a, scope, scope.evaluate(initExpression, a).getValue());
-			} else if (initer != null) {
-				final Object val = initer.run(scope, a, gSkill == null ? a : gSkill);
+			} else if (initer != null && a instanceof IAgent agent) {
+				final Object val = initer.run(scope, agent, gSkill == null ? a : gSkill);
 				_setVal(a, scope, val);
 			} else {
 				_setVal(a, scope, getType().getDefault());
@@ -707,8 +730,20 @@ public class Variable extends Symbol implements IVariable {
 	@Override
 	public void setName(final String name) { this.name = name; }
 
+	/**
+	 * Sets the val.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @param v
+	 *            the v
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
-	public final void setVal(final IScope scope, final IAgent agent, final Object v) throws GamaRuntimeException {
+	public final void setVal(final IScope scope, final IObject agent, final Object v) throws GamaRuntimeException {
 		if (isNotModifiable) return;
 		final Object oldValue = !mustNotifyOfChanges ? null : value(scope, agent);
 		_setVal(agent, scope, v);
@@ -729,16 +764,16 @@ public class Variable extends Symbol implements IVariable {
 	 * @param newValue
 	 *            the new value
 	 */
-	private void internalNotifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue,
+	private void internalNotifyOfValueChange(final IScope scope, final IObject obj, final Object oldValue,
 			final Object newValue) {
-		if (onChangeExpression != null) {
+		if (onChangeExpression != null && obj instanceof IAgent agent) {
 			if (on_changer == null) {
 				on_changer = agent.getSpecies().getAction(Cast.asString(scope, onChangeExpression.value(scope)));
 			}
 			scope.execute(on_changer, agent, null);
 		}
 
-		if (listeners != null) {
+		if (listeners != null && obj instanceof IAgent agent) {
 			listeners.forEach(
 					(listener, skill) -> { listener.run(scope, agent, skill == null ? agent : skill, newValue); });
 		}
@@ -755,7 +790,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @param newValue
 	 */
 	@Override
-	public final void notifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue,
+	public final void notifyOfValueChange(final IScope scope, final IObject agent, final Object oldValue,
 			final Object newValue) {
 		// so as to block internal notifications, since notifications are produced somewhere else in GAMA.
 		mustNotifyOfChanges = false;
@@ -774,14 +809,13 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected void _setVal(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
-		Object val;
-		val = coerce(agent, scope, v);
-		val = checkAmong(agent, scope, val);
-		if (setter != null) {
+	protected void _setVal(final IObject obj, final IScope scope, final Object v) throws GamaRuntimeException {
+		Object val = coerce(obj, scope, v);
+		val = checkAmong(obj, scope, val);
+		if (setter != null && obj instanceof IAgent agent) {
 			setter.run(scope, agent, sSkill == null ? agent : sSkill, val);
 		} else {
-			agent.setAttribute(name, val);
+			obj.setAttribute(name, val);
 		}
 		// if (isSpeciesConst) {
 		// speciesWideValue = val;
@@ -801,7 +835,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected Object checkAmong(final IAgent agent, final IScope scope, final Object val) throws GamaRuntimeException {
+	protected Object checkAmong(final IObject agent, final IScope scope, final Object val) throws GamaRuntimeException {
 		if (amongExpression == null) return val;
 		final List among = Cast.asList(scope, scope.evaluate(amongExpression, agent).getValue());
 		if (among == null || among.contains(val)) return val;
@@ -815,17 +849,29 @@ public class Variable extends Symbol implements IVariable {
 		return value(scope, scope.getAgent());
 	}
 
+	/**
+	 * Value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
-	public Object value(final IScope scope, final IAgent agent) throws GamaRuntimeException {
+	public Object value(final IScope scope, final IObject obj) throws GamaRuntimeException {
 		// if (isSpeciesConst) { return speciesWideValue; }
-		if (getter != null) return getter.run(scope, agent, gSkill == null ? agent : gSkill);
-		if (functionExpression != null) return scope.evaluate(functionExpression, agent).getValue();
+		if (getter != null && obj instanceof IAgent agent)
+			return getter.run(scope, agent, gSkill == null ? agent : gSkill);
+		if (functionExpression != null) return scope.evaluate(functionExpression, obj).getValue();
 		// Var not yet initialized. May happen when asking for its value while initializing an editor
 		// See Issue #2781 + Issue #3920
-		if (!agent.hasAttribute(name) && (isNotModifiable || initExpression != null && initExpression.isConst())
+		if (!obj.hasAttribute(name) && (isNotModifiable || initExpression != null && initExpression.isConst())
 				&& !description.isBuiltIn())
 			return getInitialValue(scope);
-		return agent.getAttribute(name);
+		return obj.getAttribute(name);
 	}
 
 	@Override
@@ -908,7 +954,7 @@ public class Variable extends Symbol implements IVariable {
 
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
-		if (enclosing instanceof AbstractSpecies) { buildHelpers((AbstractSpecies) enclosing); }
+		if (enclosing instanceof GamlSpecies gs) { buildHelpers(gs); }
 	}
 
 	@Override

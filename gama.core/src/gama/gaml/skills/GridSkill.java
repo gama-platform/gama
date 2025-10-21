@@ -1,30 +1,32 @@
 /*******************************************************************************************************
  *
- * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.grid.IGrid;
-import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
+import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 24 juin 2010
@@ -72,7 +74,7 @@ import gama.gaml.types.IType;
 		name = GridSkill.SKILL_NAME,
 		concept = { IConcept.GRID, IConcept.SKILL },
 		internal = true)
-public class GridSkill extends Skill {
+public class GridSkill extends GamlSkill {
 
 	/** The Constant SKILL_NAME. */
 	public static final String SKILL_NAME = "grid";
@@ -97,7 +99,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_x")
 	public final int getX(final IAgent agent) {
-		return ((IGridAgent) agent).getX();
+		return getGrid(agent).getX(agent);
 	}
 
 	/**
@@ -111,7 +113,7 @@ public class GridSkill extends Skill {
 			value = "grid_value",
 			initializer = true)
 	public final double getValue(final IAgent agent) {
-		return ((IGridAgent) agent).getValue();
+		return getGrid(agent).getValue(agent.getIndex());
 	}
 
 	/**
@@ -124,8 +126,13 @@ public class GridSkill extends Skill {
 	@getter (
 			value = "bands",
 			initializer = true)
-	public final IList<Double> getBands(final IAgent agent) {
-		return ((IGridAgent) agent).getBands();
+	public final IList<Double> getBands(final IScope scope, final IAgent agent) {
+		if (getGrid(agent).getBandsNumber(scope) == 1) {
+			final IList<Double> bd = GamaListFactory.create(null, Types.FLOAT);
+			bd.add(getGrid(agent).getValue(agent.getIndex()));
+			return bd;
+		}
+		return GamaListFactory.create(scope, Types.FLOAT, getGrid(agent).getBand(scope, agent.getIndex()));
 	}
 
 	/**
@@ -150,7 +157,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_y")
 	public final int getY(final IAgent agent) {
-		return ((IGridAgent) agent).getY();
+		return getGrid(agent).getY(agent);
 	}
 
 	/**
@@ -174,7 +181,7 @@ public class GridSkill extends Skill {
 	 */
 	@setter ("grid_value")
 	public final void setValue(final IAgent agent, final Double d) {
-		((IGridAgent) agent).setValue(d);
+		getGrid(agent).setValue(agent.getIndex(), d);
 	}
 
 	/**
@@ -199,7 +206,8 @@ public class GridSkill extends Skill {
 			value = "color",
 			initializer = true)
 	public GamaColor getColor(final IAgent agent) {
-		return ((IGridAgent) agent).getColor();
+		if (getGrid(agent).isHexagon()) return (GamaColor) agent.getAttribute(IKeyword.COLOR);
+		return GamaColor.get(getGrid(agent).supportImagePixels()[agent.getIndex()]);
 	}
 
 	/**
@@ -212,7 +220,11 @@ public class GridSkill extends Skill {
 	 */
 	@setter ("color")
 	public void setColor(final IAgent agent, final GamaColor color) {
-		((IGridAgent) agent).setColor(color);
+		if (getGrid(agent).isHexagon()) {
+			agent.setAttribute(IKeyword.COLOR, color);
+		} else {
+			getGrid(agent).supportImagePixels()[agent.getIndex()] = color.getRGB();
+		}
 	}
 
 	/**
@@ -228,7 +240,7 @@ public class GridSkill extends Skill {
 			value = IKeyword.NEIGHBORS,
 			initializer = true)
 	public IList<IAgent> getNeighbors(final IScope scope, final IAgent agent) {
-		return ((IGridAgent) agent).getNeighbors(scope);
+		return Cast.asList(scope, getGrid(agent).getNeighborhood().getNeighborsIn(scope, agent.getIndex(), 1));
 	}
 
 }

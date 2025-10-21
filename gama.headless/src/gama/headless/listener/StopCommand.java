@@ -12,7 +12,7 @@ package gama.headless.listener;
 
 import org.java_websocket.WebSocket;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
@@ -30,7 +30,7 @@ public class StopCommand implements ISocketCommand {
 	@Override
 	public CommandResponse execute(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
-		IExperimentPlan plan;
+		IExperimentSpecies plan;
 		try {
 			plan = server.retrieveExperimentPlan(socket, map);
 		} catch (CommandException e) {

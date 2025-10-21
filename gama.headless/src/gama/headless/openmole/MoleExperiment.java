@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.headless.openmole;
 
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
@@ -28,7 +28,7 @@ public class MoleExperiment extends Experiment implements IMoleExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	MoleExperiment(final IModel mdl) {
+	MoleExperiment(final IModelSpecies mdl) {
 		super(mdl);
 	}
 

@@ -31,8 +31,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.batch.exploration.Exploration;
-import gama.core.kernel.experiment.ExperimentPlan.BatchValidator;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.experiment.ExperimentSpecies.BatchValidator;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.GamaPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -183,7 +183,7 @@ import gama.gaml.variables.IVariable;
 		kinds = { ISymbolKind.MODEL })
 @validator (BatchValidator.class)
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
+public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies {
 
 	/**
 	 * The Class BatchValidator.
@@ -344,7 +344,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	protected final Scope myScope = new Scope("in ExperimentPlan");
 
 	/** The model. */
-	protected IModel model;
+	protected IModelSpecies model;
 
 	/** The exploration. */
 	protected IExploration exploration;
@@ -467,7 +467,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	 * @param description
 	 *            the description
 	 */
-	public ExperimentPlan(final IDescription description) {
+	public ExperimentSpecies(final IDescription description) {
 		super(description);
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
@@ -579,10 +579,10 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	}
 
 	@Override
-	public IModel getModel() { return model; }
+	public IModelSpecies getModel() { return model; }
 
 	@Override
-	public void setModel(final IModel model) {
+	public void setModel(final IModelSpecies model) {
 		this.model = model;
 		if (!isBatch()) {
 			// We look first in the experiment itself
@@ -690,7 +690,6 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		}
 		displayables.addAll(getUserCommands());
 	}
-
 
 	/**
 	 * Open.
@@ -1021,7 +1020,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method getController()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#getController()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#getController()
 	 */
 	@Override
 	public IExperimentController getController() {
@@ -1034,7 +1033,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method setController()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#setController()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#setController()
 	 */
 	@Override
 	public void setController(final IExperimentController ec) {
@@ -1048,7 +1047,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method refreshAllOutputs()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#refreshAllOutputs()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#refreshAllOutputs()
 	 */
 	@Override
 	public void refreshAllOutputs() {
@@ -1081,7 +1080,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 	/**
 	 * Method getOriginalSimulationOutputs()
 	 *
-	 * @see gama.core.kernel.experiment.IExperimentPlan#getOriginalSimulationOutputs()
+	 * @see gama.core.kernel.experiment.IExperimentSpecies#getOriginalSimulationOutputs()
 	 */
 	@Override
 	public IOutputManager getOriginalSimulationOutputs() { return originalSimulationOutputs; }
@@ -1142,22 +1141,21 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 			var scope = getExperimentScope();
 			for (var param : p.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get("type") != null ? m.get("type").toString() : "";
+				String type = m.get(IKeyword.TYPE) != null ? m.get(IKeyword.TYPE).toString() : "";
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }
 
-				final IParameter.Batch b = getParameterByTitle(m.get("name").toString());
+				final IParameter.Batch b = getParameterByTitle(m.get(IKeyword.NAME).toString());
 				if (b != null) {
-					setParameterValueByTitle(scope, m.get("name").toString(), v);
-				} else if (getParameter(m.get("name").toString()) != null) {
-					setParameterValue(scope, m.get("name").toString(), v);
+					setParameterValueByTitle(scope, m.get(IKeyword.NAME).toString(), v);
+				} else if (getParameter(m.get(IKeyword.NAME).toString()) != null) {
+					setParameterValue(scope, m.get(IKeyword.NAME).toString(), v);
 				}
 			}
 		}
 	}
-	
-	
+
 	@Override
 	public void refreshAllParameters() {
 		GAMA.getGui().updateParameters(true);

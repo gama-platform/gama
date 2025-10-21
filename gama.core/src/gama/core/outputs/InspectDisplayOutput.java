@@ -42,6 +42,7 @@ import gama.gaml.compilation.SymbolTracer;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.species.ISpecies;
@@ -362,11 +363,11 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		if (valueExpr == null) return null;
 		final IType theType = valueExpr.getGamlType().getContentType();
 		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
-		final SpeciesDescription sd = theType.getSpecies();
-		if (sd instanceof ModelDescription) return sd;
-		if (sd == null) return Types.AGENT.getDenotedSpecies();
+		final TypeDescription sd = theType.getSpecies();
+		if (sd instanceof ModelDescription md) return md;
+		if (sd == null) return (SpeciesDescription) Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();
-		if (speciesName == null) return Types.AGENT.getDenotedSpecies();
+		if (speciesName == null) return (SpeciesDescription) Types.AGENT.getDenotedSpecies();
 		return rootAgent.getSpecies().getDescription().getMicroSpecies(speciesName);
 	}
 

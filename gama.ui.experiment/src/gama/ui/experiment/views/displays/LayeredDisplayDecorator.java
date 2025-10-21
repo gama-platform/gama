@@ -40,7 +40,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.outputs.LayeredDisplayData.Changes;
 import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
 import gama.core.runtime.GAMA;
@@ -663,7 +663,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * @date 26 oct. 2023
 	 */
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
 
 		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {

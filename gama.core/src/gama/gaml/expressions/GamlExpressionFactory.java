@@ -32,6 +32,7 @@ import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StringBasedExpressionDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.data.MapExpression;
 import gama.gaml.expressions.operators.PrimitiveOperator;
@@ -139,15 +140,15 @@ public class GamlExpressionFactory implements IExpressionFactory {
 
 	@Override
 	public SpeciesConstantExpression createSpeciesConstant(final IType type) {
-		if (type.getGamlType() != Types.SPECIES) return null;
-		final SpeciesDescription sd = type.getContentType().getSpecies();
+		// if (type.getGamlType() != Types.SPECIES) return null;
+		final TypeDescription sd = type.getContentType().getSpecies();
 		if (sd == null) return null;
 		return new SpeciesConstantExpression(sd.getName(), type, sd);
 	}
 
 	@Override
 	public ConstantExpression createConst(final Object val, final IType type, final String name) {
-		if (type.getGamlType() == Types.SPECIES) return createSpeciesConstant(type);
+		// if (type.getGamlType() == Types.SPECIES) return createSpeciesConstant(type);
 		if (type == Types.SKILL) return new SkillConstantExpression((String) val, type);
 		if (val == null) return NIL_EXPR;
 		if (val instanceof Boolean) return (Boolean) val ? TRUE_EXPR : FALSE_EXPR;
@@ -218,6 +219,18 @@ public class GamlExpressionFactory implements IExpressionFactory {
 
 	@Override
 	public IExpression createMap(final Iterable<? extends IExpression> elements) {
+		return MapExpression.create(elements);
+	}
+
+	/**
+	 * Creates a new GamlExpression object.
+	 *
+	 * @param elements
+	 *            the elements
+	 * @return the i expression
+	 */
+	@Override
+	public IExpression createMap(final Map<String, IExpression> elements) {
 		return MapExpression.create(elements);
 	}
 

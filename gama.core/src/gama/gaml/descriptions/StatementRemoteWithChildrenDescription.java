@@ -72,7 +72,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	@Override
 	public Iterable<? extends ISymbol> compileChildren() {
 
-		final SpeciesDescription sd = getGamlType().getDenotedSpecies();
+		final TypeDescription sd = getGamlType().getDenotedSpecies();
 		if (sd != null) {
 			final IType t = getSpeciesContext().getGamlType();
 			addTemp(this, null, MYSELF, t);
@@ -131,7 +131,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	 * @return the i description
 	 */
 	public IDescription pushRemoteContext() {
-		final SpeciesDescription denotedSpecies = getGamlType().getDenotedSpecies();
+		final TypeDescription denotedSpecies = getGamlType().getDenotedSpecies();
 		IDescription previousEnclosingDescription = null;
 		if (denotedSpecies != null) {
 			final SpeciesDescription s = getSpeciesContext();

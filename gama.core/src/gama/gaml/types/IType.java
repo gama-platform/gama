@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,7 @@ import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IJsonable;
@@ -143,11 +143,17 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** The field. */
 	int FIELD = 31;
 
+	/** The class. Metatype of classes */
+	int CLASS = 32;
+
+	/** The object. Generic object type */
+	int OBJECT = 33;
+
 	/** The available types. */
 	int AVAILABLE_TYPES = 50;
 
 	/** The species types. */
-	int SPECIES_TYPES = 100;
+	int USER_DEFINED_TYPES = 100;
 
 	/**
 	 * Cast.
@@ -232,21 +238,28 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return true, if is agent type
 	 */
-	boolean isAgentType();
+	default boolean isAgentType() { return false; }
+
+	/**
+	 * Checks if is object type.
+	 *
+	 * @return true, if is object type
+	 */
+	default boolean isObjectType() { return false; }
 
 	/**
 	 * Checks if is skill type.
 	 *
 	 * @return true, if is skill type
 	 */
-	boolean isSkillType();
+	default boolean isSkillType() { return false; }
 
 	/**
 	 * Checks if is parametric type.
 	 *
 	 * @return true, if is parametric type
 	 */
-	boolean isParametricType();
+	default boolean isParametricType() { return false; }
 
 	/**
 	 * Checks if is parametric form of.
@@ -269,7 +282,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return the species
 	 */
-	SpeciesDescription getSpecies();
+	TypeDescription getSpecies();
 
 	/**
 	 * Checks if is assignable from.
@@ -357,7 +370,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 */
 	// public abstract boolean hasContents();
 
-	boolean isContainer();
+	default boolean isContainer() { return false; }
 
 	/**
 	 * Whether or not this type can be used in add or remove statements
@@ -452,7 +465,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return the denoted species
 	 */
-	SpeciesDescription getDenotedSpecies();
+	TypeDescription getDenotedSpecies();
 
 	/**
 	 * Denotes a type that has components which can be exctracted when casting it to a container (for instance, points

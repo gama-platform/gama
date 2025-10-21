@@ -18,7 +18,7 @@ import java.util.List;
 import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.precompiler.GamlProperties;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 
 /**
  * The Interface IGamlModelBuilder.
@@ -49,7 +49,7 @@ public interface IGamlModelBuilder {
 	 * @return the i model
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final URI uri, final List<GamlCompilationError> errors);
+	IModelSpecies compile(final URI uri, final List<GamlCompilationError> errors);
 
 	/**
 	 * Compiles a file to a GAMA model ready to be experimented
@@ -69,7 +69,7 @@ public interface IGamlModelBuilder {
 	 *             Signals that errors occured
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final File myFile, final List<GamlCompilationError> errors, final GamlProperties metaProperties)
+	IModelSpecies compile(final File myFile, final List<GamlCompilationError> errors, final GamlProperties metaProperties)
 			throws IOException, GamaCompilationFailedException;
 
 	/**
@@ -83,6 +83,6 @@ public interface IGamlModelBuilder {
 	 * @return the i model
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final URL url, final List<GamlCompilationError> errors);
+	IModelSpecies compile(final URL url, final List<GamlCompilationError> errors);
 
 }

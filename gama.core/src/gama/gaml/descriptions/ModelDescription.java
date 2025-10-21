@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -58,6 +58,9 @@ public class ModelDescription extends SpeciesDescription {
 
 	/** The experiments. */
 	private IMap<String, ExperimentDescription> experiments;
+
+	/** The classes. */
+	private IMap<String, ClassDescription> classes;
 
 	/** The types. */
 	final ITypesManager types;
@@ -328,20 +331,29 @@ public class ModelDescription extends SpeciesDescription {
 	@Override
 	public IDescription addChild(final IDescription child) {
 		if (child == null) return null;
-		if (child instanceof ModelDescription md) {
-			md.getTypesManager().setParent(getTypesManager());
-			if (microModels == null) { microModels = GamaMapFactory.create(); }
-			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
-		} // no else as models are also species, which should be added after.
-
-		if (child instanceof ExperimentDescription) {
-			final String s = child.getName();
-			if (experiments == null) { experiments = GamaMapFactory.createOrdered(); }
-			experiments.put(s, (ExperimentDescription) child);
-		} else {
-			super.addChild(child);
+		switch (child) {
+			case ModelDescription md -> {
+				md.getTypesManager().setParent(getTypesManager());
+				if (microModels == null) { microModels = GamaMapFactory.create(); }
+				microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
+				// no return as the species md must also be added as a child
+			}
+			case ClassDescription cd -> {
+				final String s = child.getName();
+				if (classes == null) { classes = GamaMapFactory.createOrdered(); }
+				classes.put(s, cd);
+				return cd;
+			}
+			case ExperimentDescription ed -> {
+				final String s = ed.getName();
+				if (experiments == null) { experiments = GamaMapFactory.createOrdered(); }
+				experiments.put(s, ed);
+				return ed;
+			}
+			default -> {
+			}
 		}
-
+		super.addChild(child);
 		return child;
 	}
 
@@ -383,7 +395,12 @@ public class ModelDescription extends SpeciesDescription {
 		if (spec.equals(getName()) || importedModelNames != null && importedModelNames.contains(spec)) return this;
 		if (EXPERIMENT.equals(spec) && gama.core.runtime.GAMA.getExperiment() != null)
 			return gama.core.runtime.GAMA.getExperiment().getDescription();
-		if (getTypesManager() != null) return getTypesManager().get(spec).getSpecies();
+		ITypesManager tm = getTypesManager();
+		if (tm != null) {
+			IType t = tm.get(spec);
+			TypeDescription td = t.getSpecies();
+			if (td instanceof SpeciesDescription sd) return sd;
+		}
 		if (hasMicroSpecies()) return getMicroSpecies().get(spec);
 		return null;
 	}
@@ -455,12 +472,15 @@ public class ModelDescription extends SpeciesDescription {
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
 		boolean result = super.visitChildren(visitor);
 		if (result && experiments != null) { result &= experiments.forEachValue(visitor); }
+		if (result && classes != null) { result &= classes.forEachValue(visitor); }
 		return result;
 	}
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		if (!super.visitOwnChildren(visitor) || experiments != null && !experiments.forEachValue(visitor)) return false;
+		if (!super.visitOwnChildren(visitor) || experiments != null && !experiments.forEachValue(visitor)
+				|| classes != null && !classes.forEachValue(visitor))
+			return false;
 		return true;
 	}
 
@@ -471,7 +491,8 @@ public class ModelDescription extends SpeciesDescription {
 			return each.visitOwnChildrenRecursively(visitor);
 		};
 		if (!super.visitOwnChildrenRecursively(visitor)
-				|| experiments != null && !experiments.forEachValue(recursiveVisitor))
+				|| experiments != null && !experiments.forEachValue(recursiveVisitor)
+				|| classes != null && !classes.forEachValue(visitor))
 			return false;
 		return true;
 	}
@@ -537,6 +558,17 @@ public class ModelDescription extends SpeciesDescription {
 	}
 
 	/**
+	 * Visit all classes.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 */
+	public void visitAllClasses(final ConsumerWithPruning<ClassDescription> visitor) {
+		if (classes == null) return;
+		classes.forEachValue(desc -> visitor.process(desc));
+	}
+
+	/**
 	 * Gets the all species.
 	 *
 	 * @param accumulator
@@ -551,12 +583,49 @@ public class ModelDescription extends SpeciesDescription {
 		visitAllSpecies(visitor);
 	}
 
+	/**
+	 * Gets the all classes.
+	 *
+	 * @param accumulator
+	 *            the accumulator
+	 * @return the all classes
+	 */
+	public void getAllClasses(final List<ClassDescription> accumulator) {
+		final DescriptionVisitor<ClassDescription> visitor = desc -> {
+			accumulator.add(desc);
+			return true;
+		};
+		visitAllClasses(visitor);
+	}
+
 	@Override
 	protected boolean parentIsVisible() {
 		if (!getParent().isModel()) return false;
 		if (parent.isBuiltIn()) return true;
-
 		return false;
+	}
+
+	/**
+	 * @param p
+	 * @return
+	 */
+	public ClassDescription getClassDescription(final String p) {
+		if (classes == null) return null;
+		return classes.get(p);
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean hasClasses() {
+		return classes != null && !classes.isEmpty();
+	}
+
+	/**
+	 * @return
+	 */
+	public HashMap<String, ClassDescription> getClasses() {
+		return classes == null ? new HashMap<>() : new HashMap(classes);
 	}
 
 }

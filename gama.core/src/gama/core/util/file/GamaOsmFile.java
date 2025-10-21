@@ -50,6 +50,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
@@ -650,7 +651,7 @@ public class GamaOsmFile extends GamaGisFile {
 				if (RESERVED_KEYS.contains(key)) { continue; }
 				values.put(key, tg.getValue());
 			}
-			String type = (String) values.get("type");
+			String type = (String) values.get(IKeyword.TYPE);
 			if ("polygon".equals(type) || "multipolygon".equals(type)) {
 
 				managePolygonRelation(scope, relation, geometries, geomMap, values, nodesPt, intersectionNodes, atts);

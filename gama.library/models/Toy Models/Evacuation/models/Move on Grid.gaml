@@ -44,7 +44,7 @@ global {
 			remove current_cell from: free_cell;
 			location <- current_cell.location;
 			target_cell <- the_target_cell;
-			memory << current_cell;
+			my_memory << current_cell;
 			
 		}
 	}
@@ -63,7 +63,7 @@ species people {
 	//Evacuation cell of the agent
 	cell target_cell;
 	//List of the cells already passed by the agents and mesmorized
-	list<cell> memory;
+	list<cell> my_memory;
 	//Size of the agent
 	float size <- people_size;
 	rgb color <- rgb(rnd(255),rnd(255),rnd(255));
@@ -77,7 +77,7 @@ species people {
 	//Reflex to move the agent
 	reflex move {
 		//List of all the cells possible (which aren't obstacles, without people on it and on which the agent hasn't already passed
-		list<cell> possible_cells <- current_cell.neighbors where (not (each.is_obstacle) and each.is_free and not (each in memory));
+		list<cell> possible_cells <- current_cell.neighbors where (not (each.is_obstacle) and each.is_free and not (each in my_memory));
 		//If there is possible cell, the agent move on the closest one to the evacuation point
 		if not empty(possible_cells) {
 			current_cell.is_free <- true;
@@ -85,9 +85,9 @@ species people {
 			location <- current_cell.location;
 			current_cell.is_free <- false;
 			//Management of the memory of the agents
-			memory << current_cell; 
-			if (length(memory) > max_memory) {
-				remove memory[0] from: memory;
+			my_memory << current_cell; 
+			if (length(my_memory) > max_memory) {
+				remove my_memory[0] from: my_memory;
 			}
 		}
 	}

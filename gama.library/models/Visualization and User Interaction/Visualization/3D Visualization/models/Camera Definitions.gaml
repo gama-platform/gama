@@ -9,12 +9,12 @@ model camera_locationition
 global {
 
 	init {
-		create object;
+		create objects;
 	}
 
 }
 
-species object skills: [moving] {
+species objects skills: [moving] {
 
 	reflex move {
 		do wander amplitude: 20.0 speed: 1.0;
@@ -29,7 +29,7 @@ species object skills: [moving] {
 experiment Display type: gui autorun: true {
 	float w -> simulation.shape.width; 
 	float h -> simulation.shape.height;
-	point p -> first(object).location;
+	point p -> first(objects).location;
 	float factor <- 1.0;
 	parameter "Shared zoom" var: factor min: 0.01 max: 10.0;
 	float minimum_cycle_duration <- 0.01;
@@ -37,7 +37,7 @@ experiment Display type: gui autorun: true {
 		layout #split;
 		display shared type: 3d virtual: true {
 			image "../includes/wood.jpg";
-			species object;
+			species objects;
 		}
 		display "Changing every 500" parent: shared camera: [#from_up_front, #from_up_left, #from_up_right, #from_above, #from_front, #from_left, #from_right] at ((cycle / 500) mod 7) {
 		}
@@ -52,8 +52,8 @@ experiment Display type: gui autorun: true {
 		}
 		display "First person" type: opengl{
 			image "../includes/wood.jpg";
-			camera #default dynamic: true location: {int(first(object).location.x), int(first(object).location.y), 5/factor} target:
-			{cos(first(object).heading) * first(object).speed + int(first(object).location.x), sin(first(object).heading) * first(object).speed + int(first(object).location.y), 5/factor};
+			camera #default dynamic: true location: {int(first(objects).location.x), int(first(objects).location.y), 5/factor} target:
+			{cos(first(objects).heading) * first(objects).speed + int(first(objects).location.x), sin(first(objects).heading) * first(objects).speed + int(first(objects).location.y), 5/factor};
 		}
 		display "Camera & rotation" parent: shared {
 			rotation angle: 1.0 axis: {0,1,0} dynamic: true;

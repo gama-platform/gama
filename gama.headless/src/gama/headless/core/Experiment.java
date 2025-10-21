@@ -1,21 +1,20 @@
 /*******************************************************************************************************
  *
  * Experiment.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.outputs.AbstractOutputManager;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.GAMA;
@@ -35,13 +34,13 @@ public class Experiment implements IExperiment {
 	public static final double DEFAULT_SEED_VALUE = 0;
 
 	/** The current experiment. */
-	protected IExperimentPlan currentExperiment = null;
+	protected IExperimentSpecies currentExperiment = null;
 
 	/** The params. */
 	protected ParametersSet params = new ParametersSet();
 
 	/** The model. */
-	final protected IModel model;
+	final protected IModelSpecies model;
 
 	/** The experiment name. */
 	protected String experimentName = null;
@@ -58,7 +57,7 @@ public class Experiment implements IExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	public Experiment(final IModel mdl) {
+	public Experiment(final IModelSpecies mdl) {
 		this.model = mdl;
 	}
 
@@ -98,7 +97,8 @@ public class Experiment implements IExperiment {
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	public synchronized void setup(final String expName, final double sd, final IList params, final GamaServerExperimentJob ec) {
+	public synchronized void setup(final String expName, final double sd, final IList params,
+			final GamaServerExperimentJob ec) {
 		this.seed = sd;
 		this.loadCurrentExperiment(expName, params, ec);
 	}
@@ -109,12 +109,12 @@ public class Experiment implements IExperiment {
 	 * @param expName
 	 *            the exp name
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings ("rawtypes")
 	private void loadCurrentExperiment(final String expName, final IList p, final GamaServerExperimentJob ec) {
 		this.experimentName = expName;
 		this.currentStep = 0;
 
-		final ExperimentPlan curExperiment = (ExperimentPlan) model.getExperiment(expName);
+		final ExperimentSpecies curExperiment = (ExperimentSpecies) model.getExperiment(expName);
 		curExperiment.setHeadless(true);
 		curExperiment.setController(ec.controller);
 		curExperiment.setParameterValues(p);
@@ -160,8 +160,7 @@ public class Experiment implements IExperiment {
 
 	@Override
 	public Object getOutput(final String parameterName) {
-		final IOutput output =
-				((AbstractOutputManager) getSimulation().getOutputManager()).getOutputWithOriginalName(parameterName);
+		final IOutput output = getSimulation().getOutputManager().getOutputWithOriginalName(parameterName);
 		if (output == null) throw GamaRuntimeException.error("Output does not exist: " + parameterName, getScope());
 		if (!(output instanceof MonitorOutput))
 			throw GamaRuntimeException.error("Output " + parameterName + " is not an alphanumeric data.", getScope());
@@ -190,10 +189,10 @@ public class Experiment implements IExperiment {
 	}
 
 	@Override
-	public IModel getModel() { return this.model; }
+	public IModelSpecies getModel() { return this.model; }
 
 	@Override
-	public IExperimentPlan getExperimentPlan() { return this.currentExperiment; }
+	public IExperimentSpecies getExperimentPlan() { return this.currentExperiment; }
 
 	@Override
 	public IExpression compileExpression(final String expression) {

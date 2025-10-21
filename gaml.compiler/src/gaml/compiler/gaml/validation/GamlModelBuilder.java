@@ -24,7 +24,7 @@ import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
 import gama.annotations.precompiler.GamlProperties;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
@@ -83,7 +83,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URL url, final List<GamlCompilationError> errors) {
+	public IModelSpecies compile(final URL url, final List<GamlCompilationError> errors) {
 		try {
 			final java.net.URI uri = new java.net.URI(url.getProtocol(), url.getPath(), null).normalize();
 			final URI resolvedURI = URI.createURI(uri.toString());
@@ -113,14 +113,14 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public synchronized IModel compile(final File myFile, final List<GamlCompilationError> errors,
+	public synchronized IModelSpecies compile(final File myFile, final List<GamlCompilationError> errors,
 			final GamlProperties metaProperties) throws IOException, GamaCompilationFailedException {
 		if (myFile == null) throw new IOException("Model file is null");
 		final String fileName = myFile.getAbsolutePath();
 		if (!myFile.exists()) throw new IOException("Model file does not exist: " + fileName);
 		DEBUG.LOG(fileName + " model is being compiled...");
 
-		final IModel model = GamlModelBuilder.getDefaultInstance().compile(URI.createFileURI(fileName), errors);
+		final IModelSpecies model = GamlModelBuilder.getDefaultInstance().compile(URI.createFileURI(fileName), errors);
 		if (model == null) {
 			DEBUG.LOG("Model didn't compile because of the following compilation errors: \n"
 					+ (errors == null ? "" : StreamEx.of(errors).joining("\n")));
@@ -140,11 +140,11 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URI uri, final List<GamlCompilationError> errors) {
+	public IModelSpecies compile(final URI uri, final List<GamlCompilationError> errors) {
 		// We build the description and fill the errors list
 		final ModelDescription model = buildModelDescription(uri, errors);
 		// And compile it before returning it, unless it is null.
-		return model == null ? null : (IModel) model.compile();
+		return model == null ? null : (IModelSpecies) model.compile();
 	}
 
 	/**

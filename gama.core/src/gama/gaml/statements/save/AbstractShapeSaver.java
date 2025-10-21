@@ -47,6 +47,7 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
@@ -158,7 +159,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 		final String geomType = GeometryUtils.getGeometryStringType(agents);
 		specs.append("geometry:" + geomType);
 		try {
-			final SpeciesDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
+			final TypeDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
 					: agents.getGamlType().getContentType().getSpecies();
 
 			final Map<String, IExpression> attributes = computeInits(scope, species, attributesToSave);
@@ -278,7 +279,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected final Map<String, IExpression> computeInits(final IScope scope, final SpeciesDescription species,
+	protected final Map<String, IExpression> computeInits(final IScope scope, final TypeDescription species,
 			final Object attributes) throws GamaRuntimeException {
 		if (attributes == null) return Collections.EMPTY_MAP;
 		final Map<String, IExpression> result = GamaMapFactory.create();

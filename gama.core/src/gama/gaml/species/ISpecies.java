@@ -1,79 +1,51 @@
 /*******************************************************************************************************
  *
- * ISpecies.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ISpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.species;
 
 import java.util.Collection;
-import java.util.List;
 
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationSet;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IAddressableContainer;
 import gama.core.util.IList;
+import gama.core.util.IMap;
 import gama.gaml.architecture.IArchitecture;
-import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Containers;
 import gama.gaml.statements.ActionStatement;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
-import gama.gaml.variables.IVariable;
-import one.util.streamex.StreamEx;
 
 /**
+ * The {@code ISpecies} interface represents a species in the GAMA modeling platform. It defines the structure and
+ * behavior of species, including their aspects, micro-species, population management, and associated actions.
+ *
  * Written by drogoul Modified on 25 avr. 2010
  *
  * @todo Description
  *
  */
 @vars ({ @variable (
-		name = ISpecies.ACTIONS,
+		name = ISpecies.ASPECTS,
 		type = IType.LIST,
 		of = IType.STRING,
-		doc = @doc ("A list of the names of the actions defined in this species")),
-		@variable (
-				name = ISpecies.ASPECTS,
-				type = IType.LIST,
-				of = IType.STRING,
-				doc = @doc ("A list of the names of the aspects defined in this species")),
-		@variable (
-				name = IKeyword.ATTRIBUTES,
-				type = IType.LIST,
-				of = IType.STRING,
-				doc = @doc ("A list of the names of the attributes of this species")),
-		@variable (
-				name = IKeyword.PARENT,
-				type = IType.SPECIES,
-				doc = @doc ("The parent (if any) of this species")),
-		@variable (
-				name = IKeyword.NAME,
-				type = IType.STRING,
-				doc = @doc ("The name of the species")),
-		@variable (
-				name = ISpecies.SUBSPECIES,
-				type = IType.LIST,
-				of = IType.SPECIES,
-				doc = @doc ("A list of the names of subspecies of this species")),
+		doc = @doc ("A list of the names of the aspects defined in this species")),
 		@variable (
 				name = ISpecies.MICROSPECIES,
 				type = IType.LIST,
@@ -84,27 +56,20 @@ import one.util.streamex.StreamEx;
 				type = IType.LIST,
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
-public interface ISpecies
-		extends ISymbol, IAddressableContainer<Integer, IAgent, Integer, IAgent>, IPopulationSet<IAgent> {
+public interface ISpecies extends IClass, IPopulationSet<IAgent> {
 
 	/** The step action name. */
 	String stepActionName = "_step_";
-	
+
 	/** The init action name. */
 	String initActionName = "_init_";
-	
+
 	/** The population. */
 	String POPULATION = "population";
-	
-	/** The subspecies. */
-	String SUBSPECIES = "subspecies";
-	
+
 	/** The microspecies. */
 	String MICROSPECIES = "microspecies";
-	
-	/** The actions. */
-	String ACTIONS = "actions";
-	
+
 	/** The aspects. */
 	String ASPECTS = "aspects";
 
@@ -130,14 +95,6 @@ public interface ISpecies
 	IExpression getConcurrency();
 
 	/**
-	 * Extends species.
-	 *
-	 * @param s the s
-	 * @return true, if successful
-	 */
-	boolean extendsSpecies(final ISpecies s);
-
-	/**
 	 * Checks if is grid.
 	 *
 	 * @return true, if is grid
@@ -150,37 +107,6 @@ public interface ISpecies
 	 * @return true, if is graph
 	 */
 	boolean isGraph();
-
-	/**
-	 * Return all the direct subspecies of this species, properly typed for GAMA
-	 *
-	 * @return
-	 */
-
-	IList<ISpecies> getSubSpecies(IScope scope);
-
-	/**
-	 * Gets the sub species names.
-	 *
-	 * @param scope the scope
-	 * @return the sub species names
-	 */
-	@SuppressWarnings ("unchecked")
-	@getter (SUBSPECIES)
-	@doc ("Returns all the direct subspecies names of this species")
-	default IList<String> getSubSpeciesNames(final IScope scope) {
-		return StreamEx.of(getSubSpecies(scope)).map((each) -> each.getName())
-				.toCollection(Containers.listOf(Types.STRING));
-	}
-
-	/**
-	 * Gets the name.
-	 *
-	 * @return the name
-	 */
-	@Override
-	@getter (IKeyword.NAME)
-	String getName();
 
 	/**
 	 * Returns all the micro-species. Micro-species includes: 1. the "direct" micro-species; 2. the micro-species of the
@@ -218,6 +144,7 @@ public interface ISpecies
 	 *
 	 * @return
 	 */
+	@Override
 	@getter (IKeyword.PARENT)
 	@doc ("Returns the direct parent of the species. Experiments, models and species with no explicit parents will return nil")
 	ISpecies getParentSpecies();
@@ -231,13 +158,6 @@ public interface ISpecies
 	boolean isPeer(ISpecies other);
 
 	/**
-	 * Gets the self with parents.
-	 *
-	 * @return the self with parents
-	 */
-	List<ISpecies> getSelfWithParents();
-
-	/**
 	 * Gets the user commands.
 	 *
 	 * @return the user commands
@@ -247,46 +167,22 @@ public interface ISpecies
 	/**
 	 * Gets the statement.
 	 *
-	 * @param <T> the generic type
-	 * @param clazz the clazz
-	 * @param name the name
+	 * @param <T>
+	 *            the generic type
+	 * @param clazz
+	 *            the clazz
+	 * @param name
+	 *            the name
 	 * @return the statement
 	 */
 	// Huynh Quang Nghi 29/01/13
 	<T extends IStatement> T getStatement(Class<T> clazz, String name);
 
 	/**
-	 * Gets the action.
-	 *
-	 * @param name the name
-	 * @return the action
-	 */
-	IStatement.WithArgs getAction(final String name);
-
-	/**
-	 * Gets the action names.
-	 *
-	 * @param scope the scope
-	 * @return the action names
-	 */
-	@getter (ACTIONS)
-	@doc ("retuns the list of actions defined in this species (incl. the ones inherited from its parent)")
-	default IList<String> getActionNames(final IScope scope) {
-		return GamaListFactory.create(scope, Types.STRING,
-				StreamEx.of(getActions()).map((each) -> each.getName()).toList());
-	}
-
-	/**
-	 * Gets the actions.
-	 *
-	 * @return the actions
-	 */
-	Collection<ActionStatement> getActions();
-
-	/**
 	 * Gets the aspect.
 	 *
-	 * @param n the n
+	 * @param n
+	 *            the n
 	 * @return the aspect
 	 */
 	IExecutable getAspect(final String n);
@@ -329,66 +225,19 @@ public interface ISpecies
 	ISpecies getMacroSpecies();
 
 	/**
-	 * Gets the parent name.
-	 *
-	 * @return the parent name
-	 */
-	String getParentName();
-
-	/**
-	 * Gets the var.
-	 *
-	 * @param n the n
-	 * @return the var
-	 */
-	IVariable getVar(final String n);
-
-	/**
-	 * Gets the var names.
-	 *
-	 * @return the var names
-	 */
-	Collection<String> getVarNames();
-
-	/**
-	 * Similar to getVarNames(), but returns a correctly initialized IList of attribute names
-	 *
-	 * @param scope
-	 * @return the list of all the attributes defined in this species
-	 */
-	@getter (IKeyword.ATTRIBUTES)
-	@doc ("retuns the list of attributes defined in this species (incl. the ones inherited from its parent)")
-	default IList<String> getAttributeNames(final IScope scope) {
-		return GamaListFactory.create(scope, Types.STRING, getVarNames());
-	}
-
-	/**
-	 * Gets the vars.
-	 *
-	 * @return the vars
-	 */
-	Collection<IVariable> getVars();
-
-	/**
 	 * Checks for aspect.
 	 *
-	 * @param n the n
+	 * @param n
+	 *            the n
 	 * @return true, if successful
 	 */
 	boolean hasAspect(final String n);
 
 	/**
-	 * Checks for var.
-	 *
-	 * @param name the name
-	 * @return true, if successful
-	 */
-	boolean hasVar(final String name);
-
-	/**
 	 * Sets the macro species.
 	 *
-	 * @param macroSpecies the new macro species
+	 * @param macroSpecies
+	 *            the new macro species
 	 */
 	void setMacroSpecies(final ISpecies macroSpecies);
 
@@ -402,7 +251,8 @@ public interface ISpecies
 	/**
 	 * Implements skill.
 	 *
-	 * @param skill the skill
+	 * @param skill
+	 *            the skill
 	 * @return the boolean
 	 */
 	Boolean implementsSkill(String skill);
@@ -431,7 +281,8 @@ public interface ISpecies
 	/**
 	 * Adds the temporary action.
 	 *
-	 * @param a the a
+	 * @param a
+	 *            the a
 	 */
 	void addTemporaryAction(ActionStatement a);
 
@@ -454,5 +305,19 @@ public interface ISpecies
 	 */
 	@Override
 	SpeciesDescription getDescription();
+
+	/**
+	 * Creates the instance.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param args
+	 *            the args
+	 * @return the i agent
+	 */
+	@Override
+	default IAgent createInstance(final IScope scope, final IMap<String, Object> args) {
+		return getPopulation(scope).createOneAgent(scope, args);
+	}
 
 }

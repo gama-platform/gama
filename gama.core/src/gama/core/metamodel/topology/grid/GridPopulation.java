@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GridPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,62 +16,39 @@ import static gama.core.common.interfaces.IKeyword.FILE;
 import static gama.core.common.interfaces.IKeyword.FILES;
 import static gama.core.common.interfaces.IKeyword.NEIGHBORS;
 import static gama.core.common.interfaces.IKeyword.WIDTH;
-import static gama.gaml.descriptions.VariableDescription.INIT_DEPENDENCIES_FACETS;
-import static gama.gaml.descriptions.VariableDescription.UPDATE_DEPENDENCIES_FACETS;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.GamaPopulation;
+import gama.core.metamodel.agent.MinimalAgent;
+import gama.core.metamodel.population.AbstractPopulation;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.population.PopulationNotifier;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.IContainer;
 import gama.core.util.IList;
 import gama.core.util.file.GamaGridFile;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonObject;
 import gama.core.util.matrix.IMatrix;
-import gama.dev.DEBUG;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
-import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.RemoteSequence;
-import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.gaml.variables.IVariable;
-import one.util.streamex.StreamEx;
 
 /**
  * Class GridPopulation.
@@ -81,14 +58,13 @@ import one.util.streamex.StreamEx;
  *
  */
 @SuppressWarnings ("unchecked")
-public class GridPopulation implements IPopulation<IGridAgent> {
+public class GridPopulation extends AbstractPopulation<IAgent> implements IPopulation<IAgent> {
 
-	static {
-		DEBUG.OFF();
-	}
+	/** The agentsContainer. */
+	GamaSpatialMatrix agentsContainer;
 
 	/**
-	 * Builds the grid topology.
+	 * Builds the agentsContainer topology.
 	 *
 	 * @param scope
 	 *            the scope
@@ -98,7 +74,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 *            the host
 	 * @return the i topology
 	 */
-	public static ITopology buildGridTopology(final IScope scope, final ISpecies species, final IAgent host) {
+	@Override
+	public void computeTopology(final IScope scope) {
 		IExpression exp = species.getFacet(WIDTH);
 		final Envelope3D env = scope.getSimulation().getGeometry().getEnvelope();
 		final int rows = exp == null
@@ -127,68 +104,23 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 		exp = species.getFacet(FILES);
 		IList<GamaGridFile> files = null;
 		if (exp != null) { files = Cast.asList(scope, exp.value(scope)); }
-		GridTopology result;
 		if (files != null && !files.isEmpty()) {
-			result = new GridTopology(scope, host, files, isTorus, usesVN, useIndividualShapes, useNeighborsCache,
+			topology = new GridTopology(scope, host, files, isTorus, usesVN, useIndividualShapes, useNeighborsCache,
 					optimizer);
 		} else {
 			exp = species.getFacet(FILE);
 			final GamaGridFile file = (GamaGridFile) (exp != null ? exp.value(scope) : null);
 			if (file == null) {
-				result = new GridTopology(scope, host, rows, columns, isTorus, usesVN, isHexagon, horizontalOrientation,
-						useIndividualShapes, useNeighborsCache, optimizer);
+				topology = new GridTopology(scope, host, rows, columns, isTorus, usesVN, isHexagon,
+						horizontalOrientation, useIndividualShapes, useNeighborsCache, optimizer);
 			} else {
-				result = new GridTopology(scope, host, file, isTorus, usesVN, useIndividualShapes, useNeighborsCache,
+				topology = new GridTopology(scope, host, file, isTorus, usesVN, useIndividualShapes, useNeighborsCache,
 						optimizer);
 			}
 
 		}
-		// Reverts the modification of the world envelope (see #1953 and #1939)
-		//
-		// final Envelope3D env =
-		// result.getPlaces().getEnvironmentFrame().getEnvelope();
-		// final Envelope3D world = host.getEnvelope();
-		// final Envelope3D newEnvelope = new Envelope3D(0,
-		// Math.max(env.getWidth(), world.getWidth()), 0,
-		// Math.max(env.getHeight(), world.getHeight()), 0,
-		// Math.max(env.getDepth(), world.getDepth()));
-		// host.setGeometry(GamaShapeFactory.createFrom(newEnvelope));
-		return result;
+		agentsContainer = (GamaSpatialMatrix) topology.getPlaces();
 	}
-
-	/**
-	 * Notifier
-	 */
-	private final PopulationNotifier notifier = new PopulationNotifier();
-
-	/** The grid. */
-	GamaSpatialMatrix grid;
-	/**
-	 * The agent hosting this population which is considered as the direct macro-agent.
-	 */
-	protected IMacroAgent host;
-	/**
-	 * The object describing how the agents of this population are spatially organized
-	 */
-	protected ITopology topology;
-
-	/** The species. */
-	protected final ISpecies species;
-
-	/** The updatable vars. */
-	protected final IVariable[] orderedVars, updatableVars;
-
-	/** The type. */
-	protected final IContainerType<?> type;
-
-	/** The hash code. */
-	private final int hashCode;
-
-	/** The is step overriden. */
-	private final boolean isInitOverriden, isStepOverriden;
-
-	/** The ordered var names. */
-	public final LinkedHashSet<String> orderedVarNames = new LinkedHashSet<>();
 
 	/**
 	 * Instantiates a new grid population.
@@ -200,95 +132,13 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 *            the species.
 	 * @date 28 août 2023
 	 */
-	private GridPopulation(final IMacroAgent host, final ISpecies species) {
-
-		this.host = host;
-		this.species = species;
-		final TypeDescription ecd = species.getDescription();
-		orderedVars = GamaPopulation.orderAttributes(this, ecd, Predicates.alwaysTrue(), INIT_DEPENDENCIES_FACETS);
-		for (IVariable v : orderedVars) { orderedVarNames.add(v.getName()); }
-		updatableVars =
-				GamaPopulation.orderAttributes(this, ecd, VariableDescription::isUpdatable, UPDATE_DEPENDENCIES_FACETS);
-		this.type = Types.LIST.of(ecd.getModelDescription().getTypeNamed(species.getName()));
-
-		/*
-		 * PATRICK TAILLANDIER: the problem of having the host here is that depending on the simulation the hashcode
-		 * will be different... and this hashcode is very important for the manipultion of GamaMap thus, having two
-		 * different hashcodes depending on the simulation makes ensure the repication of simulation So I remove the
-		 * host for the moment.
-		 */
-		/*
-		 * AD: Reverting this as different populations in different hosts should not have the same hash code ! See
-		 * discussion in https://github.com/gama-platform/gama/issues/3339
-		 */
-		hashCode = Objects.hash(getSpecies(), getHost());
-		final boolean[] result = { false, false };
-		species.getDescription().visitChildren(d -> {
-			if (d instanceof ActionDescription && !d.isBuiltIn()) {
-				final String name = d.getName();
-				if (ISpecies.initActionName.equals(name)) {
-					result[0] = true;
-				} else if (ISpecies.stepActionName.equals(name)) { result[1] = true; }
-			}
-			return true;
-		});
-		isInitOverriden = result[0];
-		isStepOverriden = result[1];
-
-	}
-
-	/**
-	 * Instantiates a new grid population.
-	 *
-	 * @param t
-	 *            the t
-	 * @param host
-	 *            the host
-	 * @param species
-	 *            the species
-	 * @param gamaSpatialMatrix
-	 *            TODO
-	 */
-	public GridPopulation(final GamaSpatialMatrix gamaSpatialMatrix, final ITopology t, final IMacroAgent host,
-			final ISpecies species) {
-		this(host, species);
-		grid = gamaSpatialMatrix;
-		topology = t;
-	}
-
-	/**
-	 * Stream.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the stream
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public Stream<IGridAgent> stream() {
-		Stream s = StreamEx.of(grid.matrix);
-		return s;
-	}
-
-	/**
-	 * Stream.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return the stream ex
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public StreamEx<IGridAgent> stream(final IScope scope) {
-		StreamEx s = StreamEx.of(grid.matrix);
-		return s;
+	public GridPopulation(final IMacroAgent host, final ISpecies species) {
+		super(host, species);
 	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IList<IGridAgent> createAgents(final IScope scope, final int number,
+	public IList<IAgent> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) throws GamaRuntimeException {
 
@@ -301,47 +151,31 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public IList<IGridAgent> createAgents(final IScope scope, final IContainer<?, ? extends IShape> geometries) {
-		for (int i = 0; i < grid.actualNumberOfCells; i++) {
-			final IShape s = grid.matrix[i];
+	public IList<IAgent> createAgents(final IScope scope, final IContainer<?, ? extends IShape> geometries) {
+		for (int i = 0; i < agentsContainer.actualNumberOfCells; i++) {
+			final IShape s = agentsContainer.matrix[i];
 			final Class javaBase = species.getDescription().getJavaBase();
-
 			final boolean usesRegularAgents = GamlAgent.class.isAssignableFrom(javaBase);
 			if (s != null) {
-				final IAgent g = usesRegularAgents ? new GamlGridAgent(this, i) : new MinimalGridAgent(this, i);
-				grid.matrix[i] = g;
+				final IAgent g = usesRegularAgents ? new GamlAgent(this, i, s) : new MinimalAgent(this, i, s);
+				agentsContainer.matrix[i] = g;
 			}
 		}
 
 		for (final IVariable var : orderedVars) {
-
-			for (int i = 0; i < grid.actualNumberOfCells; i++) {
-				final IAgent a = (IAgent) grid.matrix[i];
+			for (int i = 0; i < agentsContainer.actualNumberOfCells; i++) {
+				final IAgent a = (IAgent) agentsContainer.matrix[i];
 				if (a != null) { var.initializeWith(scope, a, null); }
 			}
 		}
 
-		for (int i = 0; i < grid.actualNumberOfCells; i++) {
-			final IAgent a = (IAgent) grid.matrix[i];
+		for (int i = 0; i < agentsContainer.actualNumberOfCells; i++) {
+			final IAgent a = (IAgent) agentsContainer.matrix[i];
 			if (a != null) { a.schedule(scope); }
 		}
-		notifier.notifyAgentsAdded(scope, this, (IList) getAgents(scope));
+		fireAgentsAdded(scope, (IList) getAgents(scope));
 		return null;
 
-	}
-
-	/**
-	 * Serialize.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param includingBuiltIn
-	 *            the including built in
-	 * @return the string
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public String serializeToGaml(final boolean includingBuiltIn) {
-		return getName();
 	}
 
 	/**
@@ -354,8 +188,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 28 août 2023
 	 */
 	// @Override
+	@Override
 	protected boolean stepAgents(final IScope scope) {
-		return GamaExecutorService.step(scope, grid.matrix, getSpecies());
+		return GamaExecutorService.step(scope, agentsContainer.matrix, getSpecies());
 	}
 
 	/**
@@ -363,14 +198,14 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 *
 	 * @return the nb cols
 	 */
-	public int getNbCols() { return grid.numCols; }
+	public int getNbCols() { return agentsContainer.numCols; }
 
 	/**
 	 * Gets the nb rows.
 	 *
 	 * @return the nb rows
 	 */
-	public int getNbRows() { return grid.numRows; }
+	public int getNbRows() { return agentsContainer.numRows; }
 
 	/**
 	 * Gets the agent.
@@ -383,34 +218,29 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	public IAgent getAgent(final Integer col, final Integer row) {
 		if (col >= getNbCols() || col < 0 || row >= getNbRows() || row < 0) return null;
-		final IShape s = grid.get(null, col, row);
+		final IShape s = agentsContainer.get(null, col, row);
 		return s == null ? null : s.getAgent();
 	}
 
 	/**
-	 * Gets the grid value.
+	 * Gets the agentsContainer value.
 	 *
 	 * @param col
 	 *            the col
 	 * @param row
 	 *            the row
-	 * @return the grid value
+	 * @return the agentsContainer value
 	 */
 	public Double getGridValue(final Integer col, final Integer row) {
 		if (col >= getNbCols() || col < 0 || row >= getNbRows() || row < 0) return 0.0;
-		return grid.getGridValue(col, row);
+		return agentsContainer.getGridValue(col, row);
 	}
 
 	@Override
-	public IGridAgent getAgent(final Integer index) {
+	public IAgent getAgent(final Integer index) {
 		if (index >= size() || index < 0) return null;
-		final IShape s = grid.matrix[index];
-		return (IGridAgent) (s == null ? null : s.getAgent());
-	}
-
-	@Override
-	public IGridAgent getOrCreateAgent(final IScope scope, final Integer index) {
-		return getAgent(index);
+		final IShape s = agentsContainer.matrix[index];
+		return s == null ? null : s.getAgent();
 	}
 
 	@Override
@@ -420,40 +250,13 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	public GridTopology getTopology() { return (GridTopology) topology; }
 
 	@Override
-	public void initializeFor(final IScope scope) throws GamaRuntimeException {
-		topology.initialize(scope, this);
+	public IAgent getAgent(final IScope scope, final GamaPoint coord) {
+		return agentsContainer.getAgentAt(coord);
 	}
 
 	@Override
-	public IGridAgent getAgent(final IScope scope, final GamaPoint coord) {
-		return (IGridAgent) grid.getAgentAt(coord);
-	}
-
-	@Override
-	public void killMembers() throws GamaRuntimeException {
-		for (final IShape a : grid.matrix) { if (a != null) { a.dispose(); } }
-	}
-
-	@Override
-	public synchronized IGridAgent[] toArray() {
-		return Arrays.copyOf(grid.matrix, grid.matrix.length, IGridAgent[].class);
-	}
-
-	/**
-	 * Dispose.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public void dispose() {
-		isDisposing = true;
-		killMembers();
-		clear();
-		if (topology != null) {
-			topology.dispose();
-			topology = null;
-		}
+	public synchronized IAgent[] toArray() {
+		return Arrays.copyOf(agentsContainer.matrix, agentsContainer.matrix.length, IAgent[].class);
 	}
 
 	/**
@@ -465,7 +268,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public int size() {
-		return grid.actualNumberOfCells;
+		return agentsContainer.actualNumberOfCells;
 	}
 
 	/**
@@ -482,16 +285,16 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
+	public IAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null) return null;
 		final int n = indices.length(scope);
 		if (n == 0) return null;
 		final int x = Cast.asInt(scope, indices.get(scope, 0));
 		if (n == 1) return getAgent(Cast.asInt(scope, x));
 		final int y = Cast.asInt(scope, indices.get(scope, 1));
-		final IShape s = grid.get(scope, x, y);
+		final IShape s = agentsContainer.get(scope, x, y);
 		if (s == null) return null;
-		return (IGridAgent) s.getAgent();
+		return s.getAgent();
 	}
 
 	/**
@@ -502,15 +305,15 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 *            the scope
 	 * @param index
 	 *            the index
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
+	public IAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
 		// WARNING False if the matrix is not dense
-		return (IGridAgent) grid.matrix[index];
+		return (IAgent) agentsContainer.matrix[index];
 	}
 
 	/**
@@ -519,14 +322,14 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope
 	 *            the scope
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent firstValue(final IScope scope) throws GamaRuntimeException {
-		return (IGridAgent) grid._first(scope);
+	public IAgent firstValue(final IScope scope) throws GamaRuntimeException {
+		return (IAgent) agentsContainer._first(scope);
 	}
 
 	/**
@@ -535,14 +338,14 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope
 	 *            the scope
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent lastValue(final IScope scope) throws GamaRuntimeException {
-		return (IGridAgent) grid._last(scope);
+	public IAgent lastValue(final IScope scope) throws GamaRuntimeException {
+		return (IAgent) agentsContainer._last(scope);
 	}
 
 	/**
@@ -556,7 +359,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public int length(final IScope scope) {
-		return grid.actualNumberOfCells;
+		return agentsContainer.actualNumberOfCells;
 	}
 
 	/**
@@ -565,26 +368,12 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope
 	 *            the scope
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent anyValue(final IScope scope) {
-		return (IGridAgent) grid.anyValue(scope);
-	}
-
-	/**
-	 * Iterator.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the iterator
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public Iterator<IGridAgent> iterator() {
-		Iterator i = Iterators.forArray(grid.getMatrix());
-		return i;
+	public IAgent anyValue(final IScope scope) {
+		return (IAgent) agentsContainer.anyValue(scope);
 	}
 
 	/**
@@ -601,7 +390,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) {
 		if (o instanceof Integer i) return IPopulation.super.containsKey(scope, i);
-		if (o instanceof GamaPoint) return grid.containsKey(scope, o);
+		if (o instanceof GamaPoint) return agentsContainer.containsKey(scope, o);
 		return false;
 	}
 
@@ -615,9 +404,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public java.lang.Iterable<IGridAgent> iterable(final IScope scope) {
-		return listValue(scope, Types.NO_TYPE, false); // TODO Types.AGENT
-		// ??
+	public java.lang.Iterable<IAgent> iterable(final IScope scope) {
+		return listValue(scope, getGamlType().getContentType(), false);
 	}
 
 	/**
@@ -628,7 +416,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean isEmpty() { return grid._isEmpty(null); }
+	public boolean isEmpty() { return agentsContainer._isEmpty(null); }
 
 	/**
 	 * Checks if is empty.
@@ -641,7 +429,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public boolean isEmpty(final IScope scope) {
-		return grid._isEmpty(scope);
+		return agentsContainer._isEmpty(scope);
 	}
 
 	/**
@@ -660,9 +448,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IList<IGridAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
+	public IList<IAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
 			throws GamaRuntimeException {
-		return grid._listValue(scope, contentsType, false);
+		return agentsContainer._listValue(scope, contentsType, false);
 	}
 
 	/**
@@ -686,8 +474,8 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 			throws GamaRuntimeException {
 		if (contentsType == null || contentsType.id() == IType.NONE || contentsType.getSpeciesName() != null
 				&& contentsType.getSpeciesName().equals(getSpecies().getName()))
-			return grid;
-		return grid.matrixValue(scope, contentsType, copy);
+			return agentsContainer;
+		return agentsContainer.matrixValue(scope, contentsType, copy);
 	}
 
 	/**
@@ -713,53 +501,30 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 			throws GamaRuntimeException {
 		if (type == null || type.id() == IType.NONE
 				|| type.getSpeciesName() != null && type.getSpeciesName().equals(getSpecies().getName()))
-			return grid;
-		return grid.matrixValue(scope, type, copy);
+			return agentsContainer;
+		return agentsContainer.matrixValue(scope, type, copy);
 	}
 
 	/**
-	 * Sets the grid.
+	 * Sets the agentsContainer.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param matrix
-	 *            the new grid
+	 *            the new agentsContainer
 	 * @date 28 août 2023
 	 */
 	public void setGrid(final IGrid matrix) {
 		// DEBUG.OUT("Setting a new GamaSpatialMatrix. Are the display data different ? "
-		// + !Arrays.equals(grid.getDisplayData(), matrix.getDisplayData()));
-		// DEBUG.OUT("Are the grid values equal in both grids ? " + Arrays.equals(grid.gridValue,
+		// + !Arrays.equals(agentsContainer.getDisplayData(), matrix.getDisplayData()));
+		// DEBUG.OUT("Are the agentsContainer values equal in both grids ? " + Arrays.equals(agentsContainer.gridValue,
 		// matrix.getGridValue()));
-		// System.arraycopy(matrix.getDisplayData(), 0, grid.supportImagePixels, 0, grid.supportImagePixels.length);
+		// System.arraycopy(matrix.getDisplayData(), 0, agentsContainer.supportImagePixels, 0,
+		// agentsContainer.supportImagePixels.length);
 		// just for debug purposes
-		grid = (GamaSpatialMatrix) matrix;
+		agentsContainer = (GamaSpatialMatrix) matrix;
 		getTopology().setPlaces(matrix);
 
 	}
-
-	/**
-	 * Compare to.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param o
-	 *            the o
-	 * @return the int
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public int compareTo(final IPopulation<IGridAgent> o) {
-		return species == o.getSpecies() ? 0 : 1;
-	}
-
-	/**
-	 * Gets the gaml type.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the gaml type
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public IContainerType<?> getGamlType() { return type; }
 
 	/**
 	 * Contains.
@@ -772,7 +537,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@Override
 	public boolean contains(final Object o) {
-		return o instanceof IGridAgent ga && ga.getPopulation() == this;
+		return o instanceof IAgent ga && ga.getPopulation() == this;
 	}
 
 	/**
@@ -789,7 +554,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public <T> T[] toArray(final T[] a) {
-		return (T[]) grid.matrix;
+		return (T[]) agentsContainer.matrix;
 	}
 
 	/**
@@ -802,7 +567,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean add(final IGridAgent e) {
+	public boolean add(final IAgent e) {
 		return false;
 	}
 
@@ -821,22 +586,6 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	/**
-	 * Contains all.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param c
-	 *            the c
-	 * @return true, if successful
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean containsAll(final Collection<?> c) {
-		for (Object o : c)
-			if (!contains(o)) return false;
-		return true;
-	}
-
-	/**
 	 * Adds the all.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -846,7 +595,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean addAll(final Collection<? extends IGridAgent> c) {
+	public boolean addAll(final Collection<? extends IAgent> c) {
 		return false;
 	}
 
@@ -862,7 +611,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public boolean addAll(final int index, final Collection<? extends IGridAgent> c) {
+	public boolean addAll(final int index, final Collection<? extends IAgent> c) {
 		return false;
 	}
 
@@ -895,26 +644,17 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	/**
-	 * Clear.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public void clear() {}
-
-	/**
 	 * Gets the.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param index
 	 *            the index
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent get(final int index) {
-		return (IGridAgent) grid.matrix[index];
+	public IAgent get(final int index) {
+		return (IAgent) agentsContainer.matrix[index];
 	}
 
 	/**
@@ -925,12 +665,12 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 *            the index
 	 * @param element
 	 *            the element
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent set(final int index, final IGridAgent element) {
-		grid.matrix[index] = element;
+	public IAgent set(final int index, final IAgent element) {
+		agentsContainer.matrix[index] = element;
 		return element;
 	}
 
@@ -945,7 +685,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void add(final int index, final IGridAgent element) {}
+	public void add(final int index, final IAgent element) {}
 
 	/**
 	 * Removes the.
@@ -953,325 +693,12 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param index
 	 *            the index
-	 * @return the i grid agent
+	 * @return the i agentsContainer agent
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public IGridAgent remove(final int index) {
+	public IAgent remove(final int index) {
 		return null;
-	}
-
-	/**
-	 * Index of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param o
-	 *            the o
-	 * @return the int
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public int indexOf(final Object o) {
-		for (int i = 0; i < grid.actualNumberOfCells; i++) { if (grid.matrix[i] == o) return i; }
-		return -1;
-	}
-
-	/**
-	 * Last index of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param o
-	 *            the o
-	 * @return the int
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public int lastIndexOf(final Object o) {
-		return indexOf(o);
-	}
-
-	/**
-	 * List iterator.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the list iterator
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public ListIterator<IGridAgent> listIterator() {
-		ListIterator it = Arrays.asList(grid.matrix).listIterator(0);
-		return it;
-	}
-
-	/**
-	 * List iterator.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param index
-	 *            the index
-	 * @return the list iterator
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public ListIterator<IGridAgent> listIterator(final int index) {
-		ListIterator it = Arrays.asList(grid.matrix).listIterator(index);
-		return it;
-	}
-
-	/**
-	 * Sub list.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param fromIndex
-	 *            the from index
-	 * @param toIndex
-	 *            the to index
-	 * @return the list
-	 * @date 21 sept. 2023
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public List<IGridAgent> subList(final int fromIndex, final int toIndex) {
-		List l = Arrays.asList(grid.matrix).subList(fromIndex, toIndex);
-		return l;
-	}
-
-	/**
-	 * Inits the.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return true, if successful
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean init(final IScope scope) throws GamaRuntimeException {
-		return true;
-	}
-
-	/**
-	 * Step.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @return true, if successful
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean step(final IScope scope) throws GamaRuntimeException {
-		final IExpression frequencyExp = species.getFrequency();
-		if (frequencyExp != null) {
-			final int frequency = Cast.asInt(scope, frequencyExp.value(scope));
-			final int step = scope.getClock().getCycle();
-			if (frequency == 0 || step % frequency != 0) return true;
-		}
-		getSpecies().getArchitecture().preStep(scope, this);
-		return stepAgents(scope);
-
-	}
-
-	/**
-	 * Gets the populations.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the populations
-	 */
-	@Override
-	public Collection<? extends IPopulation<? extends IAgent>> getPopulations(final IScope scope) {
-		return Collections.singleton(this);
-	}
-
-	/**
-	 * Checks for agent list.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return true, if successful
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean hasAgentList() {
-		return true;
-	}
-
-	/**
-	 * Gets the agents.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the agents
-	 */
-	@SuppressWarnings ("unchecked")
-	@Override
-	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
-		IContainer c = GamaListFactory.create(scope, getGamlType().getContentType(), grid.matrix);
-		return c;
-	}
-
-	/**
-	 * Accept.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @param source
-	 *            the source
-	 * @param a
-	 *            the a
-	 * @return true, if successful
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public boolean accept(final IScope scope, final IShape source, final IShape a) {
-		final IAgent agent = a.getAgent();
-		if (agent == null || agent.getPopulation() != this || agent.dead()) return false;
-		final IAgent as = source.getAgent();
-		if (agent == as) return false;
-		return true;
-	}
-
-	/**
-	 * Filter.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param scope
-	 *            the scope
-	 * @param source
-	 *            the source
-	 * @param results
-	 *            the results
-	 * @date 21 sept. 2023
-	 */
-	@Override
-	public void filter(final IScope scope, final IShape source, final Collection<? extends IShape> results) {
-		final IAgent sourceAgent = source == null ? null : source.getAgent();
-		results.remove(sourceAgent);
-		final Predicate<IShape> toRemove = each -> {
-			final IAgent a = each.getAgent();
-			return a == null || a.dead()
-					|| a.getPopulation() != this
-							&& (a.getPopulation().getGamlType().getContentType() != this.getGamlType().getContentType()
-									|| !this.contains(a));
-		};
-		results.removeIf(toRemove);
-	}
-
-	@Override
-	public void createVariablesFor(final IScope scope, final IGridAgent agent) throws GamaRuntimeException {
-		for (final IVariable var : orderedVars) { var.initializeWith(scope, agent, null); }
-	}
-
-	@Override
-	public boolean hasVar(final String n) {
-		return species.getVar(n) != null;
-	}
-
-	/** The current agent index. */
-	protected int currentAgentIndex;
-
-	private boolean isDisposing = false;
-
-	@Override
-	public IGridAgent createAgentAt(final IScope s, final int index, final Map<String, Object> initialValues,
-			final boolean isRestored, final boolean toBeScheduled) throws GamaRuntimeException {
-
-		final List<Map<String, Object>> mapInitialValues = new ArrayList<>();
-		mapInitialValues.add(initialValues);
-
-		// TODO : think to another solution... it is ugly
-		final int tempIndexAgt = currentAgentIndex;
-
-		currentAgentIndex = index;
-		final IList<IGridAgent> listAgt = createAgents(s, 1, mapInitialValues, isRestored, toBeScheduled, null);
-		currentAgentIndex = tempIndexAgt;
-
-		return listAgt.firstValue(s);
-	}
-
-	@Override
-	public String getName() { return species.getName(); }
-
-	@Override
-	public boolean hasAspect(final String default1) {
-		return species.hasAspect(default1);
-	}
-
-	@Override
-	public IExecutable getAspect(final String default1) {
-		return species.getAspect(default1);
-	}
-
-	@Override
-	public Collection<String> getAspectNames() { return species.getAspectNames(); }
-
-	@Override
-	public ISpecies getSpecies() { return species; }
-
-	@Override
-	public IVariable getVar(final String s) {
-		return species.getVar(s);
-	}
-
-	@Override
-	public boolean hasUpdatableVariables() {
-		return updatableVars.length > 0;
-	}
-
-	@Override
-	public IMacroAgent getHost() { return host; }
-
-	@Override
-	public void setHost(final IMacroAgent agt) { host = agt; }
-
-	@Override
-	public void addListener(final Listener listener) {
-		notifier.addListener(listener);
-	}
-
-	@Override
-	public void removeListener(final Listener listener) {
-		notifier.removeListener(listener);
-	}
-
-	@Override
-	public void updateVariables(final IScope scope, final IAgent a) {
-		for (final IVariable v : updatableVars) {
-			try (StopWatch w = GAMA.benchmark(scope, v)) {
-				scope.setCurrentSymbol(v);
-				scope.setAgentVarValue(a, v.getName(), v.getUpdatedValue(scope));
-			}
-		}
-		scope.setCurrentSymbol(null);
-
-	}
-
-	@Override
-	public String toString() {
-		return "Population of " + species.getName();
-	}
-
-	@Override
-	public boolean isInitOverriden() { return isInitOverriden; }
-
-	@Override
-	public boolean isStepOverriden() { return isStepOverriden; }
-
-	@Override
-	public final int hashCode() {
-		return hashCode;
-	}
-
-	@Override
-	public final boolean equals(final Object o) {
-		return o == this;
 	}
 
 	/**
@@ -1339,7 +766,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void addValueAtIndex(final IScope scope, final Object index, final IGridAgent value) {}
+	public void addValueAtIndex(final IScope scope, final Object index, final IAgent value) {}
 
 	/**
 	 * Adds the value.
@@ -1352,7 +779,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 * @date 21 sept. 2023
 	 */
 	@Override
-	public void addValue(final IScope scope, final IGridAgent value) {}
+	public void addValue(final IScope scope, final IAgent value) {}
 
 	@Override
 	public JsonObject serializeToJson(final Json json) {
@@ -1361,7 +788,9 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public boolean isDisposing() { // TODO Auto-generated method stub
-	return isDisposing; }
+	public List<IAgent> internalListOfAgents(final boolean makeCopy, final boolean onlyLiving) {
+		List l = !makeCopy ? Arrays.asList(agentsContainer.matrix) : Lists.newArrayList(agentsContainer.matrix);
+		return l;
+	}
 
 }

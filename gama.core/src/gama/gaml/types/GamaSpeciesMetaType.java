@@ -1,21 +1,21 @@
 /*******************************************************************************************************
  *
- * GamaSpeciesType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaSpeciesMetaType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.types;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationSet;
@@ -32,6 +32,10 @@ import gama.gaml.species.ISpecies;
  * @todo Description
  *
  */
+
+/**
+ * The Class GamaSpeciesMetaType.
+ */
 @type (
 		name = IKeyword.SPECIES,
 		id = IType.SPECIES,
@@ -40,7 +44,7 @@ import gama.gaml.species.ISpecies;
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the species present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class GamaSpeciesType extends GamaContainerType<ISpecies> {
+public class GamaSpeciesMetaType extends GamaMetaClassType<ISpecies> {
 
 	@Override
 	@doc (
@@ -90,33 +94,16 @@ public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 	// TODO Verify that we dont need to declare the other cast method
 
 	@Override
-	public ISpecies getDefault() { return null; }
-
-	@Override
-	public IType getContentType() { return Types.get(AGENT); }
-
-	@Override
-	public IType getKeyType() { return Types.INT; }
-
-	@Override
-	public boolean isDrawable() { return true; }
-
-	@Override
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return itemType;
 		switch (exp.getGamlType().id()) {
-			case SPECIES:
+			case IType.SPECIES:
 				return itemType.getContentType();
 			case IType.STRING:
 				return Types.AGENT;
 		}
 		return exp.getGamlType();
-	}
-
-	@Override
-	public boolean canCastToConst() {
-		return false;
 	}
 
 }

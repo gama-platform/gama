@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Graphs.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * Graphs.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -61,7 +61,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
 import gama.core.metamodel.topology.graph.ISpatialGraph;
-import gama.core.metamodel.topology.grid.IGridAgent;
+import gama.core.metamodel.topology.grid.IGrid;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
@@ -127,8 +127,7 @@ public class Graphs {
 
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			return SpatialProperties.intersects(
-					SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
+			return SpatialProperties.intersects(SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
 					SpatialTransformations.enlarged_by(scope, p2.getGeometry(), tolerance));
 		}
 
@@ -150,8 +149,9 @@ public class Graphs {
 
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			if (!(p1 instanceof IGridAgent)) return false;
-			return ((IGridAgent) p1).getNeighbors(scope).contains(p2);
+			if (!(p1 instanceof IAgent ag)) return false;
+			return ((IGrid) ag.getPopulation().getTopology().getPlaces()).getNeighborhood()
+					.getNeighborsIn(scope, ag.getIndex(), 1).contains(p2);
 		}
 
 		@Override
@@ -764,9 +764,10 @@ public class Graphs {
 					equals = "edge1",
 					isExecutable = false) },
 			see = { "out_edges_of", "in_edges_of" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),"
-			+ "edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r\n"
-			+ "(g edge_between ({10,5}::{20,3})) = g.edges[0]")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),\
+			edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r
+			(g edge_between ({10,5}::{20,3})) = g.edges[0]""")
 	public static Object edgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key) && graph.containsVertex(verticePair.value))
@@ -939,13 +940,14 @@ public class Graphs {
 							equals = "the list of all the components as list",
 							test = false) },
 			see = { "alpha_index", "connectivity_index", "nb_cycles" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " list comp <- connected_components_of(g); " + " length(comp) = 1")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
+			 list comp <- connected_components_of(g); \
+			 length(comp) = 1""")
 	public static IList<IList> connectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
-		ConnectivityInspector ci;
-		ci = new ConnectivityInspector(graph);
+		ConnectivityInspector ci = new ConnectivityInspector(graph);
 		final IList<IList> results = GamaListFactory.create(Types.LIST);
 		for (final Object obj : ci.connectedSets()) {
 			results.add(GamaListFactory.create(scope, graph.getGamlType().getKeyType(), (Set) obj));
@@ -980,13 +982,14 @@ public class Graphs {
 							equals = "the list of all the components as list",
 							test = false) },
 			see = { "alpha_index", "connectivity_index", "nb_cycles" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " list comp <- connected_components_of(g, true); " + " length(comp) = 1")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
+			 list comp <- connected_components_of(g, true); \
+			 length(comp) = 1""")
 	public static IList<IList> connectedComponentOf(final IScope scope, final IGraph graph, final boolean edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
-		ConnectivityInspector ci;
-		ci = new ConnectivityInspector(graph);
+		ConnectivityInspector ci = new ConnectivityInspector(graph);
 		final IList<IList> results = GamaListFactory.create(Types.LIST);
 		for (final Object obj : ci.connectedSets()) {
 			if (edge) {
@@ -1580,9 +1583,10 @@ public class Graphs {
 			concept = { IConcept.GRAPH, IConcept.CAST, IConcept.MAP, IConcept.LIST, IConcept.EDGE })
 	@doc (
 			usages = @usage (
-					value = "if the operand is a list and a tolerance (max distance in meters to consider that 2 points are the same node) is given, "
-							+ "the graph will be built with elements of the list as edges and two edges will be connected by a node if the distance between their "
-							+ "extremity (first or last points) are at distance lower or equal to the tolerance",
+					value = """
+							if the operand is a list and a tolerance (max distance in meters to consider that 2 points are the same node) is given, \
+							the graph will be built with elements of the list as edges and two edges will be connected by a node if the distance between their \
+							extremity (first or last points) are at distance lower or equal to the tolerance""",
 					examples = { @example (
 							value = "as_edge_graph([line([{1,5},{12,45}]),line([{13,45},{34,56}])],1)",
 							equals = "a graph with two edges and three vertices",
@@ -1819,39 +1823,6 @@ public class Graphs {
 
 		return createdGraph;
 	}
-	//
-	// /**
-	// * Spatial distance graph.
-	// *
-	// * @param scope
-	// * the scope
-	// * @param vertices
-	// * the vertices
-	// * @param params
-	// * the params
-	// * @return the i graph
-	// */
-	// @operator (
-	// value = "as_distance_graph",
-	// category = { IOperatorCategory.GRAPH },
-	// concept = {})
-	// @doc (
-	// value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of
-	// vertices close enough (less than a distance, right-hand operand).",
-	// see = { "as_intersection_graph", "as_edge_graph" })
-	// @no_test
-	// public static IGraph spatialDistanceGraph(final IScope scope, final IContainer vertices, final IMap params) {
-	// final Double distance = (Double) params.get("distance");
-	// final ISpecies edgeSpecies = (ISpecies) params.get("species");
-	// final IType edgeType = edgeSpecies == null ? Types.GEOMETRY : scope.getType(edgeSpecies.getName());
-	// final IGraph createdGraph = new GamaSpatialGraph(vertices, false, false, new DistanceRelation(distance),
-	// edgeSpecies, scope, vertices.getGamlType().getContentType(), edgeType);
-	//
-	// if (vertices.getGamlType().getContentType().isAgentType()) {
-	// GraphFromAgentContainerSynchronizer.synchronize(scope, vertices, edgeSpecies, createdGraph);
-	// }
-	// return createdGraph;
-	// }
 
 	/**
 	 * Spatial graph.
@@ -2183,7 +2154,6 @@ public class Graphs {
 		return graph;
 	}
 
-
 	/**
 	 * Adds the node.
 	 *
@@ -2209,8 +2179,10 @@ public class Graphs {
 
 					isExecutable = false),
 			see = { "add_edge", "graph" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ "g <- g add_node {10,40} ;" + " length(g.vertices) = 6")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
+			g <- g add_node {10,40} ;\
+			 length(g.vertices) = 6""")
 	public static IGraph addNode(final IGraph g, final IShape node) {
 		g.addVertex(node);
 		return g;
@@ -2238,8 +2210,10 @@ public class Graphs {
 					value = "node(0) remove_node_from graphEpidemio",
 					equals = "the graph without node(0)",
 					isExecutable = false))
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ "g <- geometry({10,5}) remove_node_from g; " + " length(g.vertices) = 4 and length(g.edges) = 2")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
+			g <- geometry({10,5}) remove_node_from g; \
+			 length(g.vertices) = 4 and length(g.edges) = 2""")
 	public static IGraph removeNodeFrom(final IShape node, final IGraph g) {
 		g.removeVertex(node);
 
@@ -2302,8 +2276,10 @@ public class Graphs {
 					value = "graph <- graph add_edge (source::target);",
 					isExecutable = false),
 			see = { "add_node", "graph" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ "g <- g add_edge ({40,60}::{50,50}); " + " length(g.edges) = 6")
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
+			g <- g add_edge ({40,60}::{50,50}); \
+			 length(g.edges) = 6""")
 	public static IGraph addEdge(final IGraph g, final GamaPair nodes) {
 		g.addEdge(nodes.first(), nodes.last());
 		g.getPathComputer().incVersion();
@@ -2556,10 +2532,11 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Force model (in a given spatial  bound and given coeff_force, cooling_rate, max_iteration, and equilibirum criterion parameters). ",
 			masterDoc = true,
-			special_cases = "usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration, equilibirum criterion). graph is the graph to which "
-					+ "applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficien use to compute the force, typical value is 0.4; "
-					+ "cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations; equilibirum criterion is the maximal"
-					+ "distance of displacement for a vertice to be considered as in equilibrium")
+			special_cases = """
+					usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration, equilibirum criterion). graph is the graph to which \
+					applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficien use to compute the force, typical value is 0.4; \
+					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations; equilibirum criterion is the maximal\
+					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
 	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration, final double criterion) {
@@ -2594,9 +2571,10 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Fruchterman and Reingold Force-Directed Placement Algorithm (in a given spatial bound, normalization factor and max_iteration parameters). ",
 			masterDoc = true,
-			special_cases = "usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which "
-					+ "applied the layout;  bounds is the shape (geometry) in which the graph should be located; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; "
-					+ "  max_iteration is the maximal number of iterations")
+			special_cases = """
+					usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which \
+					applied the layout;  bounds is the shape (geometry) in which the graph should be located; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
+					  max_iteration is the maximal number of iterations""")
 	@no_test
 	public static IGraph layoutForceFR(final IScope scope, final GamaGraph graph, final IShape bounds,
 			final double normalization_factor, final int maxIteration) {
@@ -2634,9 +2612,10 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Fruchterman and Reingold Force-Directed Placement Algorithm with The Barnes-Hut indexing technique(in a given spatial bound, theta, normalization factor and max_iteration parameters). ",
 			masterDoc = true,
-			special_cases = "usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which "
-					+ "applied the layout;  bounds is the shape (geometry) in which the graph should be located; theta value for approximation using the Barnes-Hut technique, typical value is 0.5; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; "
-					+ "  max_iteration is the maximal number of iterations")
+			special_cases = """
+					usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which \
+					applied the layout;  bounds is the shape (geometry) in which the graph should be located; theta value for approximation using the Barnes-Hut technique, typical value is 0.5; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
+					  max_iteration is the maximal number of iterations""")
 	@no_test
 	public static IGraph indexedFRLayout(final IScope scope, final GamaGraph graph, final IShape bounds,
 			final double theta, final double normalizationFactor, final int maxIteration) {
@@ -2713,10 +2692,11 @@ public class Graphs {
 			concept = { IConcept.GRAPH })
 	@doc (
 			value = "layouts a GAMA graph using Force model (in a given spatial  bound and given coeff_force, cooling_rate, and max_iteration parameters).",
-			special_cases = "usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration). graph is the graph to which "
-					+ "applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficient used to compute the force, typical value is 0.4; "
-					+ "cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations"
-					+ "distance of displacement for a vertice to be considered as in equilibrium")
+			special_cases = """
+					usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration). graph is the graph to which \
+					applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficient used to compute the force, typical value is 0.4; \
+					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations\
+					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
 	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration) {
@@ -2780,9 +2760,10 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH })
 	@doc (
-			value = "layouts a Gama graph based on a grid latice. usage: layoutForce(graph, bounds, coeff_nb_cells). graph is the graph to which"
-					+ "	the layout is applied;  bounds is the shape (geometry) in which the graph should be located; coeff_nb_cells"
-					+ "the coefficient for the number of cells to locate the vertices (nb of places = coeff_nb_cells * nb of vertices). ",
+			value = """
+					layouts a Gama graph based on a grid latice. usage: layoutForce(graph, bounds, coeff_nb_cells). graph is the graph to which\
+						the layout is applied;  bounds is the shape (geometry) in which the graph should be located; coeff_nb_cells\
+					the coefficient for the number of cells to locate the vertices (nb of places = coeff_nb_cells * nb of vertices).\s""",
 			examples = { @example (
 					value = "layout_grid(graph, world.shape);",
 					isExecutable = false) })
@@ -3341,15 +3322,18 @@ public class Graphs {
 	@doc (
 			value = "returns a random scale-free network (following Barabasi-Albert (BA) model).",
 			masterDoc = true,
-			comment = "The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. "
-					+ "A scale-free network is a network whose degree distribution follows a power law, at least asymptotically."
-					+ "Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. \
+					A scale-free network is a network whose degree distribution follows a power law, at least asymptotically.\
+					Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbInitNodes\": number of initial nodes; "
-							+ "\"nbEdgesAdded\": number of edges of each new node added during the network growth; "
-							+ "\"nbNodes\": final number of nodes; " + "\"directed\": is the graph directed or not; "
-							+ "\"node_species\": the species of vertices; \"edges_species\": the species of edges",
+					value = """
+							"nbInitNodes": number of initial nodes; \
+							"nbEdgesAdded": number of edges of each new node added during the network growth; \
+							"nbNodes": final number of nodes; \
+							"directed": is the graph directed or not; \
+							"node_species": the species of vertices; "edges_species": the species of edges""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3411,15 +3395,17 @@ public class Graphs {
 	@doc (
 			value = "returns a random scale-free network (following Barabasi-Albert (BA) model).",
 			masterDoc = false,
-			comment = "The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. "
-					+ "A scale-free network is a network whose degree distribution follows a power law, at least asymptotically."
-					+ "Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. \
+					A scale-free network is a network whose degree distribution follows a power law, at least asymptotically.\
+					Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbInitNodes\": number of initial nodes; "
-							+ "\"nodes\": list of existing nodes to connect (agents or geometries); "
-							+ "\"nbEdgesAdded\": number of edges of each new node added during the network growth; "
-							+ "\"directed\": is the graph directed or not; ",
+					value = """
+							"nbInitNodes": number of initial nodes; \
+							"nodes": list of existing nodes to connect (agents or geometries); \
+							"nbEdgesAdded": number of edges of each new node added during the network growth; \
+							"directed": is the graph directed or not;\s""",
 					examples = { @example (
 							value = "graph myGraph <- generate_watts_strogatz(people, 10,1,false);",
 							isExecutable = false) }) },
@@ -3466,15 +3452,18 @@ public class Graphs {
 	@doc (
 			value = "returns a random scale-free network (following Barabasi-Albert (BA) model).",
 			masterDoc = false,
-			comment = "The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. "
-					+ "A scale-free network is a network whose degree distribution follows a power law, at least asymptotically."
-					+ "Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. \
+					A scale-free network is a network whose degree distribution follows a power law, at least asymptotically.\
+					Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbInitNodes\": number of initial nodes; "
-							+ "\"nbEdgesAdded\": number of edges of each new node added during the network growth; "
-							+ "\"nbNodes\": final number of nodes; " + "\"directed\": is the graph directed or not; "
-							+ "\"node_species\": the species of vertices; \"edges_species\": the species of edges",
+					value = """
+							"nbInitNodes": number of initial nodes; \
+							"nbEdgesAdded": number of edges of each new node added during the network growth; \
+							"nbNodes": final number of nodes; \
+							"directed": is the graph directed or not; \
+							"node_species": the species of vertices; "edges_species": the species of edges""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3524,14 +3513,17 @@ public class Graphs {
 	@doc (
 			value = "returns a random scale-free network (following Barabasi-Albert (BA) model).",
 			masterDoc = false,
-			comment = "The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. "
-					+ "A scale-free network is a network whose degree distribution follows a power law, at least asymptotically."
-					+ "Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. \
+					A scale-free network is a network whose degree distribution follows a power law, at least asymptotically.\
+					Such networks are widely observed in natural and human-made systems, including the Internet, the world wide web, citation networks, and some social networks. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbInitNodes\": number of initial nodes; "
-							+ "\"nbEdgesAdded\": number of edges of each new node added during the network growth; "
-							+ "\"nbNodes\": final number of nodes; " + "\"directed\": is the graph directed or not; ",
+					value = """
+							"nbInitNodes": number of initial nodes; \
+							"nbEdgesAdded": number of edges of each new node added during the network growth; \
+							"nbNodes": final number of nodes; \
+							"directed": is the graph directed or not;\s""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3582,15 +3574,17 @@ public class Graphs {
 	@doc (
 			value = "returns a random small-world network (following Watts-Strogatz model).",
 			masterDoc = true,
-			comment = "The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering."
-					+ "A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering.\
+					A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbNodes\": the graph will contain (size + 1) nodes (size must be greater than k); "
-							+ "\"p\": probability to \"rewire\" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); "
-							+ "\"k\": the base degree of each node (k must be greater than 2 and even); "
-							+ "\"directed\": is the graph directed or not; "
-							+ "\"node_species\": the species of vertices; \"edges_species\": the species of edges",
+					value = """
+							"nbNodes": the graph will contain (size + 1) nodes (size must be greater than k); \
+							"p": probability to "rewire" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); \
+							"k": the base degree of each node (k must be greater than 2 and even); \
+							"directed": is the graph directed or not; \
+							"node_species": the species of vertices; "edges_species": the species of edges""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3652,15 +3646,17 @@ public class Graphs {
 	@doc (
 			value = "returns a random small-world network (following Watts-Strogatz model).",
 			masterDoc = false,
-			comment = "The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering."
-					+ "A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering.\
+					A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbNodes\": the graph will contain (size + 1) nodes (size must be greater than k); "
-							+ "\"p\": probability to \"rewire\" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); "
-							+ "\"k\": the base degree of each node (k must be greater than 2 and even); "
-							+ "\"directed\": is the graph directed or not; "
-							+ "\"node_species\": the species of vertices",
+					value = """
+							"nbNodes": the graph will contain (size + 1) nodes (size must be greater than k); \
+							"p": probability to "rewire" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); \
+							"k": the base degree of each node (k must be greater than 2 and even); \
+							"directed": is the graph directed or not; \
+							"node_species": the species of vertices""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3711,14 +3707,16 @@ public class Graphs {
 	@doc (
 			value = "returns a random small-world network (following Watts-Strogatz model).",
 			masterDoc = false,
-			comment = "The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering."
-					+ "A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering.\
+					A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nbNodes\": the graph will contain (size + 1) nodes (size must be greater than k); "
-							+ "\"p\": probability to \"rewire\" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); "
-							+ "\"k\": the base degree of each node (k must be greater than 2 and even); "
-							+ "\"directed\": is the graph directed or not",
+					value = """
+							"nbNodes": the graph will contain (size + 1) nodes (size must be greater than k); \
+							"p": probability to "rewire" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); \
+							"k": the base degree of each node (k must be greater than 2 and even); \
+							"directed": is the graph directed or not""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -3766,14 +3764,16 @@ public class Graphs {
 	@doc (
 			value = "returns a random small-world network (following Watts-Strogatz model).",
 			masterDoc = false,
-			comment = "The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering."
-					+ "A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]"
-					+ "The map operand should includes following elements:",
+			comment = """
+					The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering.\
+					A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]\
+					The map operand should includes following elements:""",
 			usages = { @usage (
-					value = "\"nodes\": the list of nodes to connect; "
-							+ "\"p\": probability to \"rewire\" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); "
-							+ "\"k\": the base degree of each node (k must be greater than 2 and even); "
-							+ "\"directed\": is the graph directed or not",
+					value = """
+							"nodes": the list of nodes to connect; \
+							"p": probability to "rewire" an edge (so it must be between 0 and 1, the parameter is often called beta in the literature); \
+							"k": the base degree of each node (k must be greater than 2 and even); \
+							"directed": is the graph directed or not""",
 
 					examples = { @example (
 							value = "graph<myVertexSpecy,myEdgeSpecy> myGraph <- generate_watts_strogatz(",
@@ -4199,10 +4199,11 @@ public class Graphs {
 			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
-			value = "The algorithm finds a minimum spanning tree T using Prim's algorithm, then executes Kruskal's"
-					+ " algorithm only on the edges of T until k trees are formed. The resulting trees are the final"
-					+ " clusters."
-					+ "It returns a list of list of vertices and takes as operand the graph and the number of clusters")
+			value = """
+					The algorithm finds a minimum spanning tree T using Prim's algorithm, then executes Kruskal's\
+					 algorithm only on the edges of T until k trees are formed. The resulting trees are the final\
+					 clusters.\
+					It returns a list of list of vertices and takes as operand the graph and the number of clusters""")
 	@no_test
 	public static IList KSpanningTreeClusteringAfl(final IScope scope, final IGraph graph, final int numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
@@ -4236,10 +4237,11 @@ public class Graphs {
 			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
-			value = "The algorithm is a near linear time algorithm capable of discovering communities in large graphs."
-					+ " It is described in detail in the following: Raghavan, U. N., Albert, R., and Kumara, S. (2007). Near linear time algorithm to detect\r\n"
-					+ " * community structures in large-scale networks. Physical review E, 76(3), 036106."
-					+ "It returns a list of list of vertices and takes as operand the graph and maximal number of iteration")
+			value = """
+					The algorithm is a near linear time algorithm capable of discovering communities in large graphs.\
+					 It is described in detail in the following: Raghavan, U. N., Albert, R., and Kumara, S. (2007). Near linear time algorithm to detect\r
+					 * community structures in large-scale networks. Physical review E, 76(3), 036106.\
+					It returns a list of list of vertices and takes as operand the graph and maximal number of iteration""")
 	@no_test
 	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {

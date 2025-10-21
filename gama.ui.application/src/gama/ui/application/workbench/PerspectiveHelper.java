@@ -34,7 +34,7 @@ import org.eclipse.ui.internal.registry.PerspectiveRegistry;
 
 import gama.core.common.interfaces.IGui;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.dev.DEBUG;
 
 /**
@@ -250,7 +250,7 @@ public class PerspectiveHelper {
 	 *            the experiment name
 	 * @return true, if successful
 	 */
-	public static final boolean openSimulationPerspective(final IModel model, final String experimentName) {
+	public static final boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
 		if (model == null) return false;
 		final String name = getNewPerspectiveName(model.getName(), experimentName);
 		return openPerspective(name, true, false, true);

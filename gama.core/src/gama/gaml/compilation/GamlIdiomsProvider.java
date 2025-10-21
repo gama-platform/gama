@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.util.IMap;
 import gama.core.util.file.GamlFileInfo;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
@@ -73,7 +74,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 			GamlIdiomsProvider<GamlFileInfo> FILES =
 					new GamlIdiomsProvider<>("models", "Models (title & tags)", GamlFileInfo.getAllModels());
 			GamlIdiomsProvider<SpeciesDescription> SPECIES =
-					new GamlIdiomsProvider<>("species", "Built-in species", Types.getBuiltInSpecies().values());
+					new GamlIdiomsProvider<>(IKeyword.SPECIES, "Built-in species", Types.getBuiltInSpecies().values());
 
 			GamlIdiomsProvider<VariableDescription> SPECIES_ATTRIBUTES =
 					new GamlIdiomsProvider<>("variables", "Built-in species attribute", Iterables.concat(Iterables

@@ -31,7 +31,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.types.IType;
 
 /**
@@ -89,7 +89,7 @@ import gama.gaml.types.IType;
  * @author Alexis Drogoul 2021
  *
  */
-public class StaticBodySkill extends Skill implements IPhysicalConstants {
+public class StaticBodySkill extends GamlSkill implements IPhysicalConstants {
 
 	/**
 	 * Gets the body.

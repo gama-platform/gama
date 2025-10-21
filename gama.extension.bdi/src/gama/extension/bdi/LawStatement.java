@@ -260,7 +260,7 @@ public class LawStatement extends AbstractStatement {
 				final Predicate newObl = (Predicate) newObligation.value(scope);
 				if (all != null && Cast.asBool(scope, all.value(scope))) {
 					for (Predicate p : predBeliefList) {
-						addNewObligation(scope, newObl, (IMap<String, Object>) System.opCopy(scope, p.getValues()));
+						addNewObligation(scope, newObl, (IMap<String, Object>) System.copy(scope, p.getValues()));
 					}
 				} else {
 					addNewObligation(scope, newObl, null);

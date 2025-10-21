@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractSyntacticElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AbstractSyntacticElement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,9 +15,9 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IKeyword;
+import gama.gaml.descriptions.IDescription.IFacetVisitor;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.descriptions.IDescription.IFacetVisitor;
 import gama.gaml.statements.Facets;
 
 /**
@@ -194,22 +194,6 @@ public abstract class AbstractSyntacticElement implements ISyntacticElement {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#isSpecies()
-	 */
-	@Override
-	public boolean isSpecies() { return false; }
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#isExperiment()
-	 */
-	@Override
-	public boolean isExperiment() { return false; }
-
-	/*
-	 * (non-Javadoc)
-	 *
 	 * @see gama.gaml.compilation.ast.ISyntacticElement#computeStats(java.util.Map)
 	 */
 	@Override
@@ -259,42 +243,6 @@ public abstract class AbstractSyntacticElement implements ISyntacticElement {
 	public void visitThisAndAllChildrenRecursively(final SyntacticVisitor visitor) {
 		visitor.visit(this);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#visitChildren(gama.gaml.compilation.ast.ISyntacticElement.
-	 * SyntacticVisitor)
-	 */
-	@Override
-	public void visitChildren(final SyntacticVisitor visitor) {}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#visitSpecies(gama.gaml.compilation.ast.ISyntacticElement.
-	 * SyntacticVisitor)
-	 */
-	@Override
-	public void visitSpecies(final SyntacticVisitor visitor) {}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#visitExperiments(gama.gaml.compilation.ast.ISyntacticElement.
-	 * SyntacticVisitor)
-	 */
-	@Override
-	public void visitExperiments(final SyntacticVisitor visitor) {}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.gaml.compilation.ast.ISyntacticElement#visitGrids(gama.gaml.compilation.ast.ISyntacticElement.
-	 * SyntacticVisitor)
-	 */
-	@Override
-	public void visitGrids(final SyntacticVisitor visitor) {}
 
 	/*
 	 * (non-Javadoc)

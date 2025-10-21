@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlProposalProvider.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamlProposalProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,10 +32,11 @@ import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 import com.google.common.base.Function;
 import com.google.inject.Inject;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.factories.DescriptionFactory;
-import gaml.compiler.ui.labeling.GamlLabelProvider;
 import gaml.compiler.services.GamlGrammarAccess;
+import gaml.compiler.ui.labeling.GamlLabelProvider;
 
 /**
  * see http://www.eclipse.org/Xtext/documentation/latest/xtext.html#contentAssist on how to customize content assistant
@@ -99,22 +100,31 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			if (cp != null) {
 				cp.setAdditionalProposalInfo("<b>" + title + "</b><p/><p>" + doc + "</p>");
 
-				final String type = candidate.getUserData("type");
+				final String type = candidate.getUserData(IKeyword.TYPE);
 				if (type != null) {
 					cp.setDisplayString(cp.getDisplayString().concat(" (Built-in " + type + ") "));
-					if ("operator".equals(type)) {
-						isOperator = true;
-						cp.setImage(actionImage);
-					} else if ("variable".equals(type) || "field".equals(type)) {
-						cp.setImage(varImage);
-					} else if ("action".equals(type)) {
-						cp.setImage(actionImage);
-					} else if ("unit".equals(type)) {
-						isOperator = true;
-						cp.setImage(null);
-					} else if ("type".equals(type)) {
-						isOperator = true;
-						cp.setImage(typeImage);
+					switch (type) {
+						case "operator":
+							isOperator = true;
+							cp.setImage(actionImage);
+							break;
+						case "variable":
+						case "field":
+							cp.setImage(varImage);
+							break;
+						case IKeyword.ACTION:
+							cp.setImage(actionImage);
+							break;
+						case "unit":
+							isOperator = true;
+							cp.setImage(null);
+							break;
+						case IKeyword.TYPE:
+							isOperator = true;
+							cp.setImage(typeImage);
+							break;
+						default:
+							break;
 					}
 					cp.setPriority(1000);
 				}

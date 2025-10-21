@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IShape.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IShape.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,6 +29,7 @@ import gama.core.runtime.IScope;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
+import gama.core.util.file.json.IJsonConstants;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonGeometryObject;
 import gama.core.util.file.json.JsonValue;
@@ -569,12 +570,10 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 			result.add("inner_type", getGeometricalType().name());
 			if (getAgent() != null) { result.add("agent", json.valueOf(getAgent())); }
 			if (getDepth() != null) { result.add("depth", json.valueOf(getDepth())); }
-			// DEBUG.LOG("GAMA: " + result.toString());
-			// DEBUG.LOG("JTS : " + new GeoJsonWriter().write(getInnerGeometry()));
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return Json.NULL;
+			return IJsonConstants.NULL;
 		}
 
 	}

@@ -194,7 +194,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 *
 	 * @return the i skill
 	 */
-	public TypeMirror getISkill() { return getType("gama.core.common.interfaces.ISkill"); }
+	public TypeMirror getISkill() { return getType("gama.gaml.skills.ISkill"); }
 
 	/**
 	 * Gets the i scope.

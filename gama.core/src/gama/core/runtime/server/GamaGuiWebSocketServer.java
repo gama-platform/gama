@@ -13,7 +13,7 @@ package gama.core.runtime.server;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.server.ISocketCommand.CommandException;
@@ -139,7 +139,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public IExperimentPlan getExperiment(final String socket, final String expid) {
+	public IExperimentSpecies getExperiment(final String socket, final String expid) {
 		return GAMA.getExperiment();
 	}
 
@@ -157,7 +157,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	}
 
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		if (state != currentState) {
 			currentState = state;
 			WebSocket ws = currentServerConfig.socket();
@@ -180,7 +180,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	}
 
 	@Override
-	public void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan) {}
+	public void addExperiment(final String socketId, final String experimentId, final IExperimentSpecies plan) {}
 
 	/**
 	 * Retrieve experiment plan.
@@ -198,9 +198,9 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 5 déc. 2023
 	 */
 	@Override
-	public IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
+	public IExperimentSpecies retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
 			throws CommandException {
-		IExperimentPlan plan = GAMA.getExperiment();
+		IExperimentSpecies plan = GAMA.getExperiment();
 		if (plan == null || plan.getAgent() == null || plan.getAgent().dead() || plan.getCurrentSimulation() == null)
 			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));

@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -268,7 +269,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// The unary "unit" operator should let the value of its child pass
 		// through
 		if ("#".equals(op)) return expr;
-		if (isSpeciesName(op)) return getFactory().createAs(getContext(), expr, getSpeciesContext(op).getSpeciesExpr());
+		if (isSpeciesName(op))
+			return getFactory().createAs(getContext(), expr, getSpeciesContext(op).getConstantExpr());
 		// if ( isSkillName(op) ) { return factory.createOperator(AS, context,
 		// e, expr, skill(op)); }
 		OperatorProto proto = expr.getGamlType().getGetter(op);
@@ -416,11 +418,13 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	private IExpression binary(final String op, final IExpression left, final Expression originalExpression) {
 		if (left == null) return null;
+		// We check that the operator is known
 		if (!GAML.OPERATORS.containsKey(op)) {
 			getContext().error("Unknown operator: " + op, IGamlIssue.UNKNOWN_ACTION, originalExpression.eContainer(),
 					op);
 			return null;
 		}
+		// We keep a reference to the right-hand expression
 		Expression rightMember = originalExpression;
 		// if the operator is an iterator, we must initialize the context
 		// sensitive "each" variable
@@ -429,6 +433,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (isIterator) {
 			// Finding the name of 'each' if redefined
 			if (rightMember instanceof ExpressionList params) {
+
 				final List<Expression> exprs = EGaml.getInstance().getExprsOf(params);
 				if (!exprs.isEmpty()) {
 					final Expression arg = exprs.get(0);
@@ -590,7 +595,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private boolean isTypeName(final String s) {
 		final IType t = currentTypesManager.get(s, null);
 		if (t == null) return false;
-		final SpeciesDescription sd = t.getSpecies();
+		final TypeDescription sd = t.getSpecies();
 		if (sd != null && sd.isExperiment()) return false;
 		return true;
 	}
@@ -607,7 +612,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private IType getType(final String s) {
 		final IType t = currentTypesManager.get(s, null);
 		if (t == null) return null;
-		final SpeciesDescription sd = t.getSpecies();
+		final TypeDescription sd = t.getSpecies();
 		if (sd != null && sd.isExperiment()) return null;
 		return t;
 	}
@@ -625,11 +630,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IExpression owner = compile(leftExpr);
 		if (owner == null) return null;
 		final IType type = owner.getGamlType();
-		if (type.isParametricFormOf(Types.SPECIES)) {
-			final SpeciesDescription sd = type.getContentType().getSpecies();
-			if (sd instanceof ModelDescription md && md.hasExperiment(name))
-				return getFactory().createConst(name, GamaType.from(md.getExperiment(name)));
-		}
+		if (type.isParametricFormOf(Types.LIST) && type.getContentType().getSpecies() instanceof ModelDescription md
+				&& md.hasExperiment(name))
+			return getFactory().createConst(name, md.getExperiment(name).getTypeOfVar());
 		getContext().error("Only experiments can be accessed using their plain name", IGamlIssue.UNKNOWN_FIELD);
 		return null;
 	}
@@ -645,15 +648,16 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	private IExpression compileFieldExpr(final Expression leftExpr, final Expression fieldExpr) {
 		// If the owner cannot be determined (or leads to a previous error) we quit
+
 		final IExpression owner = compile(leftExpr);
 		if (owner == null) return null;
 		// We gather the name of the "field"
 		final String var = EGaml.getInstance().getKeyOf(fieldExpr);
 		final IType type = owner.getGamlType();
 		// hqnghi 28-05-14 search input variable from model, not experiment
-		if (type instanceof ParametricType pt && pt.getGamlType().id() == IType.SPECIES
-				&& pt.getContentType().getSpecies() instanceof ModelDescription md && md.hasExperiment(var))
-			return getFactory().createConst(var, GamaType.from(md.getExperiment(var)));
+		if (type instanceof ParametricType pt && pt.getContentType().getSpecies() instanceof ModelDescription md
+				&& md.hasExperiment(var))
+			return getFactory().createConst(var, md.getExperiment(var).getTypeOfVar());
 		// end-hqnghi
 		// If the owner has no species...
 		final TypeDescription species = type.getSpecies();
@@ -818,6 +822,52 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		return argMap;
 	}
 
+	/**
+	 * Parses the attributes.
+	 *
+	 * @param action
+	 *            the action
+	 * @param o
+	 *            the o
+	 * @return the facets
+	 */
+	public IExpression parseAttributes(final TypeDescription type, final EObject o,
+			final IDescription constructorStatement) {
+		List<Expression> parameters = Collections.EMPTY_LIST;
+		EGaml egaml = EGaml.getInstance();
+		if (o instanceof Array array) {
+			parameters = egaml.getExprsOf(array.getExprs());
+		} else if (o instanceof ExpressionList) { parameters = egaml.getExprsOf(o); }
+		final Map<String, IExpression> argMap = GamaMapFactory.createUnordered();
+
+		for (final Expression exp : parameters) {
+			String arg = null;
+			IExpressionDescription ed = null;
+			if (exp instanceof ArgumentPair p) {
+				arg = egaml.getKeyOfArgumentPair(p);
+				ed = builder.create(p.getRight());
+			} else if (exp instanceof Parameter p) {
+				arg = egaml.getKeyOfParameter(p);
+				ed = builder.create(p.getRight());
+			}
+			if (!type.hasAttribute(arg)) {
+				constructorStatement.error("Attribute " + arg + " does not belong to " + type.getName());
+				return null;
+			}
+			if (ed != null) {
+				ed.compile(constructorStatement);
+				IType attrType = type.getAttribute(arg).getGamlType();
+				if (!ed.getExpression().getGamlType().isAssignableFrom(attrType)) {
+					constructorStatement.error("Attribute " + arg + " of " + type.getName() + " is of type " + attrType
+							+ " and cannot receive a value of type " + ed.getExpression().getGamlType());
+					return null;
+				}
+				argMap.put(arg, ed.getExpression());
+			}
+		}
+		return getFactory().createMap(argMap);
+	}
+
 	@Override
 	public IExpression caseSkillRef(final SkillRef object) {
 		return skill(EGaml.getInstance().getKeyOf(object));
@@ -867,7 +917,6 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	public IExpression caseTypeRef(final TypeRef object) {
 		final IType t = fromTypeRef(object);
 		if (t == null) return null;
-		if (t.isAgentType()) return t.getSpecies().getSpeciesExpr();
 		return getFactory().createTypeExpression(t);
 	}
 
@@ -933,6 +982,11 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 	@Override
 	public IExpression caseArgumentPair(final ArgumentPair object) {
+		return binary("::", caseVar(EGaml.getInstance().getKeyOf(object), object), object.getRight());
+	}
+
+	@Override
+	public IExpression caseParameter(final Parameter object) {
 		return binary("::", caseVar(EGaml.getInstance().getKeyOf(object), object), object.getRight());
 	}
 
@@ -1069,6 +1123,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (result != null) return result;
 		result = tryActionCall(op, object);
 		if (result != null) return result;
+		// If not a casting or an action call, we try to compile it as an operator
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
 		return switch (args.size()) {
 			case 0 -> {
@@ -1104,6 +1159,11 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			return null;
 		}
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
+		// If the argument list is composed only of Parameter or ArgumentPair, then it cannot be a casting, but more
+		// likely a constructor.
+		if ((t.isObjectType() || t.isAgentType())
+				&& (args.isEmpty() || Iterables.all(args, e -> e instanceof Parameter || e instanceof ArgumentPair)))
+			return tryConstructor(op, t, object);
 		return switch (args.size()) {
 			case 0 -> null;
 			case 1 -> {
@@ -1147,6 +1207,24 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (action == null) return null;
 		final ExpressionList params = object.getRight();
 		return action(op, caseVar(isSuper ? SUPER : SELF, object), params, action);
+	}
+
+	/**
+	 * Try constructor.
+	 *
+	 * @param op
+	 *            the op
+	 * @param object
+	 *            the object
+	 * @param args
+	 * @return the i expression
+	 */
+	private IExpression tryConstructor(final String op, final IType t, final Function object) {
+		final TypeDescription sd = t.getSpecies();
+		if (sd == null) return null;
+		IExpression exprMap = parseAttributes(sd, object.getRight(), getContext());
+		return getFactory().createOperator(IKeyword.INSTANTIATE, getContext(), object,
+				getFactory().createTypeExpression(t), exprMap);
 	}
 
 	@Override
@@ -1243,11 +1321,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IVarDescriptionProvider temp_sd = context == null ? null : context.getDescriptionDeclaringVar(varName);
 
 		if (temp_sd != null) {
-			if (!(temp_sd instanceof SpeciesDescription)) return temp_sd.getVarExpr(varName, false);
+			if (!(temp_sd instanceof TypeDescription)) return temp_sd.getVarExpr(varName, false);
 			final SpeciesDescription remote_sd = getContext().getSpeciesContext();
 			if (remote_sd != null) {
-				final SpeciesDescription found_sd = (SpeciesDescription) temp_sd;
-				if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && !remote_sd.hasMacroSpecies(found_sd)) {
+				final TypeDescription found_sd = (TypeDescription) temp_sd;
+				if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && found_sd instanceof SpeciesDescription fsd
+						&& !remote_sd.hasMacroSpecies(fsd)) {
 					getContext().error("The variable " + varName + " is not accessible in this context ("
 							+ remote_sd.getName() + "), but in the context of " + found_sd.getName()
 							+ ". It should be preceded by 'myself.'", IGamlIssue.UNKNOWN_VAR, object, varName);
@@ -1261,7 +1340,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// See Issue #3085
 		if (isSpeciesName(varName)) {
 			final SpeciesDescription sd = getSpeciesContext(varName);
-			return sd == null ? null : sd.getSpeciesExpr();
+			return sd == null ? null : sd.getConstantExpr();
 		}
 		IType t = getType(varName);
 		if (t != null) return getFactory().createTypeExpression(t);

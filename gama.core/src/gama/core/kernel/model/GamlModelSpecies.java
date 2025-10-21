@@ -29,7 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.outputs.AbstractOutputManager;
 import gama.core.util.GamaMapFactory;
 import gama.gaml.compilation.ISymbol;
@@ -37,6 +37,7 @@ import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.species.GamlSpecies;
+import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.test.TestStatement;
@@ -114,16 +115,19 @@ import gama.gaml.types.IType;
 		omissible = IKeyword.NAME)
 @doc ("A model is a species that is used to specify the 'world' of all the agents in the model. The corresponding population is hosted by experiments and accessible by the keyword 'simulations' (or 'simulation' to get the most recently created one)")
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamlModelSpecies extends GamlSpecies implements IModel {
+public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
 	/** The experiments. */
-	protected final Map<String, IExperimentPlan> experiments = GamaMapFactory.create();
+	protected final Map<String, IExperimentSpecies> experiments = GamaMapFactory.create();
 
 	/** The titled experiments. */
-	protected final Map<String, IExperimentPlan> titledExperiments = GamaMapFactory.create();
+	protected final Map<String, IExperimentSpecies> titledExperiments = GamaMapFactory.create();
 
 	/** The all species. */
 	protected Map<String, ISpecies> allSpecies;
+
+	/** The classes. */
+	protected final Map<String, IClass> classes = GamaMapFactory.create();
 
 	/**
 	 * Instantiates a new gaml model species.
@@ -157,7 +161,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	 * @param exp
 	 *            the exp
 	 */
-	protected void addExperiment(final IExperimentPlan exp) {
+	protected void addExperiment(final IExperimentSpecies exp) {
 		if (exp == null) return;
 		experiments.put(exp.getName(), exp);
 		titledExperiments.put(exp.getFacet(IKeyword.TITLE).literalValue(), exp);
@@ -165,9 +169,9 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	}
 
 	@Override
-	public IExperimentPlan getExperiment(final String s) {
+	public IExperimentSpecies getExperiment(final String s) {
 		// First we try to get it using its "internal" name
-		IExperimentPlan e = experiments.get(s);
+		IExperimentSpecies e = experiments.get(s);
 		if (e == null) {
 			// Otherwise with its title
 			e = titledExperiments.get(s);
@@ -183,12 +187,12 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	}
 
 	@Override
-	public Iterable<IExperimentPlan> getExperiments() { return experiments.values(); }
+	public Iterable<IExperimentSpecies> getExperiments() { return experiments.values(); }
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (final IExperimentPlan exp : experiments.values()) { exp.dispose(); }
+		for (final IExperimentSpecies exp : experiments.values()) { exp.dispose(); }
 		experiments.clear();
 		titledExperiments.clear();
 		if (allSpecies != null) { allSpecies.clear(); }
@@ -220,6 +224,30 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 			}
 		}
 		return sp;
+	}
+
+	/**
+	 * Gets the class.
+	 *
+	 * @param className
+	 *            the class name
+	 * @return the class
+	 */
+	@Override
+	public IClass getClass(final String className) {
+		if (className == null) return null;
+		if (IKeyword.OBJECT.equals(className)) return GamaMetaModel.INSTANCE.getAbstractObjectClass();
+		return classes.get(className);
+	}
+
+	@Override
+	public IClass getClass(final String speciesName, final String origin) {
+		if (speciesName == null) return null;
+		for (final Map.Entry<String, ISpecies> entry : getAllSpecies().entrySet()) {
+			final ISpecies mm = entry.getValue();
+			if (mm instanceof GamlModelSpecies gms && origin.equals(mm.getName())) return gms.getClass(speciesName);
+		}
+		return getClass(speciesName);
 	}
 
 	@Override
@@ -265,24 +293,26 @@ public class GamlModelSpecies extends GamlSpecies implements IModel {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();
-
-		final List<IExperimentPlan> theExperiments = new ArrayList<>();
-
+		final List<IExperimentSpecies> theExperiments = new ArrayList<>();
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {
 			final ISymbol s = it.next();
 
-			if (s instanceof IExperimentPlan) {
-				theExperiments.add((IExperimentPlan) s);
+			if (s instanceof IExperimentSpecies) {
+				theExperiments.add((IExperimentSpecies) s);
 				it.remove();
 			} else if (s instanceof AbstractOutputManager) {
 				forExperiment.add(s);
+				it.remove();
+			} else if (s instanceof IClass c && !(s instanceof ISpecies)) {
+				classes.put(c.getName(), c);
+				c.setMacroSpecies(this);
 				it.remove();
 			}
 		}
 		// Add the variables, etc. to the model
 		super.setChildren(children);
 		// Add the experiments and the default outputs to all experiments
-		for (final IExperimentPlan exp : theExperiments) {
+		for (final IExperimentSpecies exp : theExperiments) {
 			addExperiment(exp);
 			exp.setChildren(forExperiment);
 		}

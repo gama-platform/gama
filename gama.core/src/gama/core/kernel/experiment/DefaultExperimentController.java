@@ -40,7 +40,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * @param experiment
 	 *            the experiment
 	 */
-	public DefaultExperimentController(final IExperimentPlan experiment) {
+	public DefaultExperimentController(final IExperimentSpecies experiment) {
 		commands = new ArrayBlockingQueue<>(10);
 		this.experiment = experiment;
 		executionThread = new Thread(() -> { while (experimentAlive) { step(); } }, "Front end scheduler");

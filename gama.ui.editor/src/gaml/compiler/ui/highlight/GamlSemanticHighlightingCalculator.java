@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlSemanticHighlightingCalculator.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * GamlSemanticHighlightingCalculator.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,11 +42,12 @@ import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
 
+import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.ArgumentPair;
+import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
@@ -144,7 +145,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 					setStyle(object, ASSIGN_ID, 0);
 				} else {
 					setStyle(object, FACET_ID, 0);
-					if (key.startsWith("type")) {
+					if (key.startsWith(IKeyword.TYPE)) {
 						setStyle(TYPE_ID, NodeModelUtils.getNode(f.getExpr()));
 					} else if (f.getName() != null) { setStyle(object, VARDEF_ID, 1); }
 				}

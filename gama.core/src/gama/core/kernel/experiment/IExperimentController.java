@@ -55,7 +55,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @return the experiment
 	 * @date 24 oct. 2023
 	 */
-	IExperimentPlan getExperiment();
+	IExperimentSpecies getExperiment();
 
 	/**
 	 * Checks if is disposing.

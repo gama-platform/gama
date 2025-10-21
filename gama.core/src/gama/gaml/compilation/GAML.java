@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,8 +35,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
@@ -67,6 +66,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.ModelFactory;
+import gama.gaml.skills.ISkill;
 import gama.gaml.types.IType;
 import gama.gaml.types.Signature;
 import gama.gaml.types.Types;
@@ -286,7 +286,7 @@ public class GAML {
 	 * @return the model context
 	 */
 	public static ModelDescription getModelContext() {
-		IExperimentPlan experiment = GAMA.getExperiment();
+		IExperimentSpecies experiment = GAMA.getExperiment();
 		if (experiment == null) return null;
 		return experiment.getModel().getDescription();
 	}
@@ -555,7 +555,8 @@ public class GAML {
 		List<GamlCompilationError> errors = new ArrayList<>();
 		if (entered.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
-		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)) {
+		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)
+				|| entered.startsWith(IKeyword.CLASS) || entered.startsWith(IKeyword.SKILL)) {
 			gamlTextValidator.validateSpecies(entered, errors, syntaxOnly);
 		} else if (entered.lines().count() > 1) {
 			gamlTextValidator.validateStatements(entered, errors, syntaxOnly);

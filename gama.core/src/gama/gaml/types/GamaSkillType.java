@@ -15,11 +15,11 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
+import gama.gaml.skills.ISkill;
 
 /**
  * The type used for representing species objects (since they can be manipulated in a model)

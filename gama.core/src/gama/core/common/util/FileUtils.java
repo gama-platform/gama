@@ -41,7 +41,7 @@ import com.google.common.collect.Iterables;
 import gama.core.common.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
@@ -145,7 +145,7 @@ public class FileUtils {
 		if (isAbsolutePath(fp)) {
 			URI modelBase = null;
 			if (scope != null) {
-				final IModel m = scope.getModel();
+				final IModelSpecies m = scope.getModel();
 				if (m != null) { modelBase = m.getURI(); }
 			}
 			final String file = findOutsideWorkspace(fp, modelBase, mustExist);

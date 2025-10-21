@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * ExperimentDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ExperimentDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -70,7 +71,7 @@ public class ExperimentDescription extends SpeciesDescription {
 	}
 
 	/**
-	 * Instantiates a new experiment description.
+	 * Instantiates a new experiment description. Only for built-in experiments.
 	 *
 	 * @param name
 	 *            the name
@@ -279,6 +280,11 @@ public class ExperimentDescription extends SpeciesDescription {
 	 */
 	public Boolean isMemorize() { return isSet(Flag.isMemorize); }
 
+	/**
+	 * Checks if is batch.
+	 *
+	 * @return the boolean
+	 */
 	public Boolean isBatch() { return isSet(Flag.isBatch); }
 
 	@Override

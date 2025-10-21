@@ -30,10 +30,12 @@ experiment overlay type: gui
             {
             	//for each possible type, we draw a square with the corresponding color and we write the name of the type
                 float y <- 30#px;
-                loop type over: color_per_type.keys
+                loop tt over: color_per_type.keys
                 {
-                    draw square(10#px) at: { 20#px, y } color: color_per_type[type] border: #white;
-                    draw type at: { 40#px, y + 4#px } color: # white font: font("Helvetica", 18, #bold);
+                    draw square(10#px) at: { 20#px, y } color: color_per_type[tt
+                    	
+                    ] border: #white;
+                    draw tt at: { 40#px, y + 4#px } color: # white font: font("Helvetica", 18, #bold);
                     y <- y + 25#px;
                 }
 

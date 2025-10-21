@@ -24,8 +24,8 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.experiment.IExperimentSpecies;
+import gama.core.kernel.model.IModelSpecies;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 import gama.gaml.compilation.GamlCompilationError;
@@ -116,7 +116,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 		STRINGS.PAD("", 80, '=');
 
 		final List<GamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = builder.compile(pathToModel, errors);
+		final IModelSpecies mdl = builder.compile(pathToModel, errors);
 
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
@@ -133,7 +133,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 		}
 
 		for (final String expName : mdl.getDescription().getExperimentNames()) {
-			final IExperimentPlan exp = mdl.getExperiment(expName);
+			final IExperimentSpecies exp = mdl.getExperiment(expName);
 			if (!exp.isBatch() || !expGUIOnly) {
 				DEBUG.OUT("*********** Run experiment " + exp + " from model: " + mdl.getName());
 				if (experiment != null) {

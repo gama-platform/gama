@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ITypesManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import java.util.Set;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.metamodel.agent.IAgent;
 import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.descriptions.TypeDescription;
 
 /**
  * The Interface ITypesManager.
@@ -72,7 +72,7 @@ public interface ITypesManager extends IDisposable {
 	 *            the species
 	 * @return the i type<? extends I agent>
 	 */
-	IType<? extends IAgent> addSpeciesType(SpeciesDescription species);
+	IType<? extends IAgent> addUserDefinedType(TypeDescription species);
 
 	/**
 	 * Inits the.
@@ -109,7 +109,7 @@ public interface ITypesManager extends IDisposable {
 	 *            the plugin name
 	 * @return the i type
 	 */
-	<Support> IType<Support> initType(String keyword, IType<Support> typeInstance, int id, int varKind,
+	<Support> IType<Support> initBuiltInType(String keyword, IType<Support> typeInstance, int id, int varKind,
 			Class<Support> support, String pluginName);
 
 	/**

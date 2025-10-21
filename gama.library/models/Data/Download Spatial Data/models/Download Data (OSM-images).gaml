@@ -132,18 +132,18 @@ global {
 			
 			write "OSM data retrieved";
 			create OSM_agent from: osmfile  where (each != nil);
-			loop type over: osm_data_to_generate.keys {
+			loop tt over: osm_data_to_generate.keys {
 		 		rgb col <- rnd_color(255);
-		 		list<OSM_agent> ags <-  OSM_agent where (each.shape.attributes[type] != nil);
+		 		list<OSM_agent> ags <-  OSM_agent where (each.shape.attributes[tt] != nil);
 		 		ask ags {color <- col;}
 		 		list<OSM_agent> pts <- ags where (each.shape.perimeter = 0);
-		 		do save_data(pts,type,"point");
+		 		do save_data(pts,tt,"point");
 		 		
 		 		list<OSM_agent> lines <- ags where ((each.shape.perimeter > 0) and (each.shape.area = 0)) ;
-		 		do save_data(lines,type,"line");
+		 		do save_data(lines,tt,"line");
 		 		
 		 		list<OSM_agent> polys <- ags where (each.shape.area > 0);
-		 		do save_data(polys,type,"polygon");
+		 		do save_data(polys,tt,"polygon");
 		 	}
 		}	 	
 	 	if (do_load_satellite_image) {
@@ -255,8 +255,8 @@ global {
 		
 		
 		//for each type of marker, create the marker agents from the google image and use to it to give a type to the closest building (of the bottom of the marker)
-		loop type over: google_map_type.keys {
-			list<rgb> col <- google_map_type[type];
+		loop tt over: google_map_type.keys {
+			list<rgb> col <- google_map_type[tt];
 			
 			//select the pixel of the given color 
 			list<geometry> cells_type <- keep_cell(rectangles, colors, col);
@@ -267,14 +267,14 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: [type::type];
+				create marker from: geom_markers with: [type::tt];
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	
 					//keep only the marker that are not too small (to take into account only "complete" markers)
 					if (shape.area < (min_area * 0.5)) {do die;}
 					else {
-						color <- (type in google_map_type.keys) ? first(google_map_type[type]) : rnd_color(255);
+						color <- (tt in google_map_type.keys) ? first(google_map_type[tt]) : rnd_color(255);
 					}
 				}
 			}

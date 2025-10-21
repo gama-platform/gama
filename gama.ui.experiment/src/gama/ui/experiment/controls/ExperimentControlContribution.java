@@ -28,7 +28,7 @@ import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -252,7 +252,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (agent.getScope().isOnUserHold()) {
 			text.append(" (waiting)");
 		} else if (nbThreads > 1) { text.append(" (" + nbThreads + " threads)"); }
-		final IExperimentPlan plan = exp.getSpecies();
+		final IExperimentSpecies plan = exp.getSpecies();
 		if (plan.shouldBeBenchmarked()) { text.append(" [benchmarking]"); }
 		return text.toString();
 	}

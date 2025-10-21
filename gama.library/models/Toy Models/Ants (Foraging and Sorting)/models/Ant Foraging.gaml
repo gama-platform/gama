@@ -120,22 +120,22 @@ species ant skills: [moving] control: fsm {
 	}
 	//Reflex to drop food once the ant is in the nest
 	reflex drop when: has_food and (ant_grid(location)).is_nest {
-		do drop();
+		self.drop();
 	}
 	//Reflex to pick food when there is one at the same location
 	reflex pick when: !has_food and (ant_grid(location)).food > 0 {
-		do pick(1);
+		self.pick(1);
 	}
 	//Initial state to make the ant wander 
 	state wandering initial: true {
-		do wander(amplitude: 90.0);
+		self.wander(amplitude: 90.0);
 		float pr <- (ant_grid(location)).road;
 		transition to: carryingFood when: has_food;
 		transition to: followingRoad when: (pr > 0.05) and (pr < 4);
 	}
 	//State to carry food once it has been found
 	state carryingFood {
-		do goto(target: center);
+		self.goto(target: center);
 		transition to: wandering when: !has_food;
 	}
 	//State to follow a pheromon road if once has been found

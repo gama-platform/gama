@@ -97,25 +97,8 @@ public class NetworkSkill extends MessagingSkill {
 					value = "Action that executes a command in the OS, as if it is executed from a terminal.",
 					returns = "The error message if any"))
 	public String systemExec(final IScope scope) {
-		// final IAgent agent = scope.getAgent();
 		final String commandToExecute = (String) scope.getArg("command", IType.STRING);
-
-		return gama.gaml.operators.System.console(scope, commandToExecute);
-
-		// // String res = "";
-		//
-		// Process p;
-		// try {
-		// p = Runtime.getRuntime().exec(commandToExecute);
-		//
-		// final BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		// return stdError.readLine();
-		// } catch (final IOException e) {
-		//
-		// e.printStackTrace();
-		// }
-		// return "";
-
+		return gama.gaml.operators.User.console(scope, commandToExecute);
 	}
 
 	/**

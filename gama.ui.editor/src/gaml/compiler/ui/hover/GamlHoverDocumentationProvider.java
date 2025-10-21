@@ -24,6 +24,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IGamaFileMetaData;
+import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
@@ -69,6 +70,10 @@ import gaml.compiler.ui.editor.GamlHyperlinkDetector;
  *
  */
 public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription> {
+
+	static {
+		DEBUG.ON();
+	}
 
 	/** The detector. */
 	@Inject protected GamlHyperlinkDetector detector;

@@ -32,12 +32,13 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.RandomUtils;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.metamodel.population.DefaultPopulationFactory;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationFactory;
@@ -303,7 +304,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	public String getDefinedRng() {
 		if (GamaPreferences.Runtime.CORE_RND_EDITABLE.getValue())
-			return (String) ((ExperimentPlan) getSpecies()).parameters.get(IKeyword.RNG).value(ownScope);
+			return (String) ((ExperimentSpecies) getSpecies()).parameters.get(IKeyword.RNG).value(ownScope);
 		return GamaPreferences.External.CORE_RNG.getValue();
 	}
 
@@ -314,7 +315,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	public Double getDefinedSeed() {
 		if (GamaPreferences.Runtime.CORE_RND_EDITABLE.getValue()) {
-			final IParameter.Batch p = (Batch) ((ExperimentPlan) getSpecies()).parameters.get(IKeyword.SEED);
+			final IParameter.Batch p = (Batch) ((ExperimentSpecies) getSpecies()).parameters.get(IKeyword.SEED);
 			return p.isDefined() ? (Double) p.value(ownScope) : null;
 		}
 		return GamaPreferences.External.CORE_SEED_DEFINED.getValue() ? GamaPreferences.External.CORE_SEED.getValue()
@@ -541,7 +542,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	@SuppressWarnings ("unchecked")
 	protected void createSimulationPopulation() {
-		final IModel model = getModel();
+		final IModelSpecies model = getModel();
 		SimulationPopulation pop = (SimulationPopulation) this.getMicroPopulation(model);
 		if (pop == null) {
 			pop = new SimulationPopulation(this, model);
@@ -565,7 +566,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @return the model
 	 */
 	@Override
-	public IModel getModel() { return getSpecies().getModel(); }
+	public IModelSpecies getModel() { return getSpecies().getModel(); }
 
 	/**
 	 * Gets the experiment.
@@ -578,7 +579,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public IExperimentAgent getExperiment() { return this; }
 
 	@Override
-	public IExperimentPlan getSpecies() { return (IExperimentPlan) super.getSpecies(); }
+	public IExperimentSpecies getSpecies() { return (IExperimentSpecies) super.getSpecies(); }
 
 	/**
 	 * Sets the location.
@@ -634,7 +635,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *
 	 * @return the experiment parameters category
 	 */
-	protected String getExperimentParametersCategory() { return IExperimentPlan.SYSTEM_CATEGORY_PREFIX; }
+	protected String getExperimentParametersCategory() { return IExperimentSpecies.SYSTEM_CATEGORY_PREFIX; }
 
 	@Override
 	@getter (
@@ -1006,7 +1007,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				for (SimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
 						recorder.restore(sim);
-						if (!((ExperimentPlan) this.getSpecies()).keepsSeed()) {
+						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
 							sim.setRandomGenerator(
 									new RandomUtils(random.next(), sim.getRandomGenerator().getRngName()));
 						}
@@ -1192,7 +1193,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 *            the value
 		 */
 		@Override
-		public void setAgentVarValue(final IAgent a, final String name, final Object value) {
+		public void setAgentVarValue(final IObject a, final String name, final Object value) {
 			if (a == ExperimentAgent.this) {
 				setGlobalVarValue(name, value);
 			} else {
@@ -1210,7 +1211,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @return the agent var value
 		 */
 		@Override
-		public Object getAgentVarValue(final IAgent a, final String varName) {
+		public Object getAgentVarValue(final IObject a, final String varName) {
 			if (a == ExperimentAgent.this) return getGlobalVarValue(varName);
 			return super.getAgentVarValue(a, varName);
 		}

@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
-import gama.core.kernel.model.IModel;
+import gama.core.kernel.model.IModelSpecies;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
@@ -71,10 +71,10 @@ import gama.gaml.types.Types;
 		concept = { IConcept.FILE },
 		doc = @doc ("Represents GAML model files"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamlFile extends GamaFile<IList<IModel>, IModel> {
+public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 
 	/** The mymodel. */
-	private IModel model;
+	private IModelSpecies model;
 
 	/** The alias name. */
 	private final String aliasName;

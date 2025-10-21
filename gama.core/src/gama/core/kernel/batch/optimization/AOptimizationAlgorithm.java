@@ -23,7 +23,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.batch.IExploration;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
@@ -338,7 +338,7 @@ public abstract class AOptimizationAlgorithm extends Symbol implements IExplorat
 	 * @date 1 sept. 2023
 	 */
 	protected BatchAgent getCurrentExperiment() {
-		IExperimentPlan plan = GAMA.getExperiment();
+		IExperimentSpecies plan = GAMA.getExperiment();
 		if (plan == null) return null; // can happen when closing
 		IExperimentAgent agent = plan.getAgent();
 		if (agent instanceof BatchAgent batch) return batch;

@@ -17,6 +17,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.metamodel.agent.IObject;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.IDescription;
@@ -192,9 +193,9 @@ public class BinaryOperator extends AbstractNAryOperator {
 
 		@Override
 		public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
-			final IAgent agent = Cast.asAgent(scope, exprs[0].value(scope));
-			if (agent == null || agent.dead()) return;
-			scope.setAgentVarValue(agent, exprs[1].literalValue(), v);
+			final IObject object = Cast.asObject(scope, exprs[0].value(scope));
+			if (object == null || object instanceof IAgent agent && agent.dead()) return;
+			scope.setAgentVarValue(object, exprs[1].literalValue(), v);
 		}
 
 		@Override

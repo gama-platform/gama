@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * IModel.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IModelSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,8 +18,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import gama.core.kernel.experiment.IExperimentPlan;
+import gama.core.kernel.experiment.IExperimentSpecies;
 import gama.gaml.descriptions.ModelDescription;
+import gama.gaml.species.IClass;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.test.TestStatement;
 
@@ -28,7 +30,55 @@ import gama.gaml.statements.test.TestStatement;
  * @todo Description
  *
  */
-public interface IModel extends ISpecies {
+public interface IModelSpecies extends ISpecies {
+
+	/**
+	 * Gets the class or species.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the class or species
+	 */
+	default IClass getClassOrSpecies(final String name) {
+		IClass c = getClass(name);
+		if (c == null) { c = getSpecies(name); }
+		return c;
+	}
+
+	/**
+	 * Gets the class or species.
+	 *
+	 * @param name
+	 *            the name
+	 * @param origin
+	 *            the origin
+	 * @return the class or species
+	 */
+	default IClass getClassOrSpecies(final String name, final String origin) {
+		IClass c = getClass(name, origin);
+		if (c == null) { c = getSpecies(name, origin); }
+		return c;
+	}
+
+	/**
+	 * Gets the class.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the class
+	 */
+	IClass getClass(String name);
+
+	/**
+	 * Gets the class.
+	 *
+	 * @param name
+	 *            the name
+	 * @param origin
+	 *            the origin
+	 * @return the class
+	 */
+	IClass getClass(String name, String origin);
 
 	/**
 	 * Gets the species.
@@ -57,14 +107,14 @@ public interface IModel extends ISpecies {
 	 *            the s
 	 * @return the experiment
 	 */
-	IExperimentPlan getExperiment(final String s);
+	IExperimentSpecies getExperiment(final String s);
 
 	/**
 	 * Gets the experiments.
 	 *
 	 * @return the experiments
 	 */
-	Iterable<IExperimentPlan> getExperiments();
+	Iterable<IExperimentSpecies> getExperiments();
 
 	/**
 	 * Gets the working path.

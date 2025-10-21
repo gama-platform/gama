@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AgentVariableExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AgentVariableExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -52,12 +52,12 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 
 	@Override
 	public Object _value(final IScope scope) throws GamaRuntimeException {
-		return scope.getAgentVarValue(scope.getAgent(), getName());
+		return scope.getCurrentAgentOrObjectAttributeValue(getName());
 	}
 
 	@Override
 	public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
-		scope.setAgentVarValue(scope.getAgent(), getName(), v);
+		scope.setCurrentAgentOrObjectAttributeValue(getName(), v);
 	}
 
 	@Override

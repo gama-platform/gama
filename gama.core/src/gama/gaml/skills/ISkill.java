@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
- * ISkill.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ISkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
-package gama.core.common.interfaces;
+package gama.gaml.skills;
 
+import gama.core.common.interfaces.IVarAndActionSupport;
+import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.interfaces.IGamlDescription;
 
@@ -18,12 +19,13 @@ import gama.gaml.interfaces.IGamlDescription;
  *
  * @author drogoul 4 juil. 07
  */
-public interface ISkill extends IGamlDescription, IVarAndActionSupport {
+public interface ISkill extends IGamlDescription, IVarAndActionSupport, ISymbol {
 
 	/**
 	 * Gets the description.
 	 *
 	 * @return the description
 	 */
+	@Override
 	SkillDescription getDescription();
 }

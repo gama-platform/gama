@@ -20,7 +20,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 public class HeadlessExperimentController implements IExperimentController {
 
 	/** The experiment. */
-	private final IExperimentPlan experiment;
+	private final IExperimentSpecies experiment;
 
 	/** The agent. */
 	private ExperimentAgent agent;
@@ -31,12 +31,12 @@ public class HeadlessExperimentController implements IExperimentController {
 	 * @param experiment
 	 *            the experiment.
 	 */
-	public HeadlessExperimentController(final IExperimentPlan experiment) {
+	public HeadlessExperimentController(final IExperimentSpecies experiment) {
 		this.experiment = experiment;
 	}
 
 	@Override
-	public IExperimentPlan getExperiment() { return experiment; }
+	public IExperimentSpecies getExperiment() { return experiment; }
 
 	@Override
 	public void close() {

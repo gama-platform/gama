@@ -158,19 +158,39 @@ public class DoDescription extends StatementWithChildrenDescription {
 		if (action == null) {
 			final String actionName = getLitteral(ACTION);
 			if (actionName == null) return null;
-			declarationContext = (TypeDescription) getDescriptionDeclaringAction(actionName, isSuperInvocation());
-			if (declarationContext != null) { action = declarationContext.getAction(actionName); }
+			TypeDescription context = (TypeDescription) getDescriptionDeclaringAction(actionName, isSuperInvocation());
+			if (context != null) { action = context.getAction(actionName); }
 		}
 		return action;
 	}
 
 	/**
-	 * Gets the declaration context name.
+	 * Gets the description that declares an action with the given name. Searches first if a target is given, otherwise
+	 * searches in the enclosing description.
 	 *
-	 * @return the declaration context name
+	 * @param aName
+	 *            the action name to find
+	 * @param superInvocation
+	 *            whether to check super types
+	 * @return the description that declares the action, or null if not found
 	 */
-	private String getDeclarationContextName() {
-		return declarationContext == null ? getSpeciesContext().getName() : declarationContext.getName();
+	@Override
+	public IDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
+		if (declarationContext == null) {
+			final IExpression target = getFacetExpr(TARGET_AGENT);
+			if (target != null) {
+				final IType<?> t = target.getGamlType();
+				if (t.isAgentType() || t.isObjectType()) { declarationContext = t.getSpecies(); }
+				if (declarationContext == null) {
+					error("The target of an action call must be an agent", IGamlIssue.WRONG_TYPE);
+					return null;
+				}
+			} else {
+				declarationContext = (TypeDescription) super.getDescriptionDeclaringAction(aName, superInvocation);
+			}
+
+		}
+		return declarationContext;
 	}
 
 	@Override
@@ -179,9 +199,11 @@ public class DoDescription extends StatementWithChildrenDescription {
 		if (result == null) return null;
 		ActionDescription a = getAction();
 		if (a == null) {
+			String declarationContextName =
+					declarationContext == null ? getSpeciesContext().getName() : declarationContext.getName();
 			String actionName = getLitteral(ACTION);
-			error("Action " + actionName + " does not exist in " + getDeclarationContextName(),
-					IGamlIssue.UNKNOWN_ACTION, ACTION, actionName, getDeclarationContextName());
+			error("Action " + actionName + " does not exist in " + declarationContextName, IGamlIssue.UNKNOWN_ACTION,
+					ACTION, actionName, declarationContextName);
 			return null;
 		}
 		if (a instanceof PrimitiveDescription pd) {

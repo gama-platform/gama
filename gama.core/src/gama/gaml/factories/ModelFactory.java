@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * ModelFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,14 +38,16 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.gaml.compilation.ast.SyntacticClassElement;
 import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;
 import gama.gaml.compilation.ast.SyntacticSpeciesElement;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.descriptions.ClassDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
@@ -54,6 +56,7 @@ import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolProto;
+import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.descriptions.ValidationContext;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
@@ -141,11 +144,14 @@ public class ModelFactory extends SymbolFactory {
 		/** The species nodes. */
 		final LinkedHashMap<String, ISyntacticElement> speciesNodes = new LinkedHashMap<>();
 
+		/** The species nodes. */
+		final LinkedHashMap<String, ISyntacticElement> classesNodes = new LinkedHashMap<>();
+
 		/** The experiment nodes. */
 		final LinkedHashMap<String, ISyntacticElement> experimentNodes = new LinkedHashMap<>();
 
 		/** The temp species cache. */
-		final LinkedHashMap<String, SpeciesDescription> tempSpeciesCache = new LinkedHashMap<>();
+		final LinkedHashMap<String, TypeDescription> tempSpeciesCache = new LinkedHashMap<>();
 
 		final ISyntacticElement source = get(models, 0);
 
@@ -155,7 +161,7 @@ public class ModelFactory extends SymbolFactory {
 		ISyntacticElement globalNodes = SyntacticFactory.create(GLOBAL, (EObject) null, true);
 		for (int i = Iterables.size(models); i-- > 0;) {
 			globalFacets = extractAndAssembleElementsOf(collector, globalFacets, get(models, i), globalNodes,
-					speciesNodes, experimentNodes);
+					speciesNodes, classesNodes, experimentNodes);
 		}
 
 		final String modelName = buildModelName(source.getName());
@@ -178,11 +184,11 @@ public class ModelFactory extends SymbolFactory {
 		// end-hqnghi
 		// recursively add user-defined species to world and down on to the
 		// hierarchy
-		addSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
+		addSpeciesAndExperiments(model, speciesNodes, classesNodes, experimentNodes, tempSpeciesCache);
 
 		// Parent the species and the experiments of the model (all are now
 		// known).
-		parentSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
+		parentSpeciesAndExperiments(model, speciesNodes, classesNodes, experimentNodes, tempSpeciesCache);
 
 		// Initialize the hierarchy of types
 		model.buildTypes();
@@ -196,7 +202,7 @@ public class ModelFactory extends SymbolFactory {
 		// actions....
 		complementSpecies(model, globalNodes);
 
-		complementSpeciesAndExperiments(model, speciesNodes, experimentNodes);
+		complementSpeciesAndExperiments(model, speciesNodes, classesNodes, experimentNodes);
 
 		// Complement recursively the different species (incl. the world). The
 		// recursion is hierarchical
@@ -229,7 +235,10 @@ public class ModelFactory extends SymbolFactory {
 	 * @date 26 déc. 2023
 	 */
 	private void complementSpeciesAndExperiments(final ModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classesNodes,
+			final Map<String, ISyntacticElement> experimentNodes) {
+		classesNodes.forEach(
+				(s, classNode) -> { complementSpecies(model.getClassDescription(classNode.getName()), classNode); });
 		speciesNodes.forEach((s, speciesNode) -> {
 			complementSpecies(model.getMicroSpecies(speciesNode.getName()), speciesNode);
 		});
@@ -253,9 +262,10 @@ public class ModelFactory extends SymbolFactory {
 	 * @date 26 déc. 2023
 	 */
 	private void addSpeciesAndExperiments(final ModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
-			final Map<String, SpeciesDescription> tempSpeciesCache) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classesNodes,
+			final Map<String, ISyntacticElement> experimentNodes, final Map<String, TypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { addMicroSpecies(model, speciesNode, tempSpeciesCache); });
+		classesNodes.forEach((s, classNode) -> addClass(model, classNode, tempSpeciesCache));
 		experimentNodes.forEach((s, experimentNode) -> { addExperiment(s, model, experimentNode, tempSpeciesCache); });
 	}
 
@@ -274,9 +284,10 @@ public class ModelFactory extends SymbolFactory {
 	 * @date 26 déc. 2023
 	 */
 	private void parentSpeciesAndExperiments(final ModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
-			final Map<String, SpeciesDescription> tempSpeciesCache) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classesNodes,
+			final Map<String, ISyntacticElement> experimentNodes, final Map<String, TypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { parentSpecies(model, speciesNode, model, tempSpeciesCache); });
+		classesNodes.forEach((s, classNode) -> { parentClass(model, classNode, tempSpeciesCache); });
 		experimentNodes.forEach((s, experimentNode) -> { parentExperiment(model, experimentNode); });
 	}
 
@@ -312,9 +323,7 @@ public class ModelFactory extends SymbolFactory {
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
 			ModelDescription parentBuiltInModels = BUILT_IN_MODELS.get(parentModel);
-			if (parentBuiltInModels != null){ 
-				parent = parentBuiltInModels;
-			}
+			if (parentBuiltInModels != null) { parent = parentBuiltInModels; }
 		}
 		final ModelDescription model =
 				new ModelDescription(modelName, null, projectPath, modelPath, source.getElement(), null, parent, null,
@@ -369,7 +378,8 @@ public class ModelFactory extends SymbolFactory {
 	 */
 	private Facets extractAndAssembleElementsOf(final ValidationContext collector, Facets globalFacets,
 			final ISyntacticElement cm, final ISyntacticElement globalNodes,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classNodes,
+			final Map<String, ISyntacticElement> experimentNodes) {
 		final SyntacticModelElement currentModel = (SyntacticModelElement) cm;
 		if (currentModel != null) {
 			if (currentModel.hasFacets()) {
@@ -385,14 +395,12 @@ public class ModelFactory extends SymbolFactory {
 			});
 			SyntacticVisitor visitor = element -> addSpeciesNode(element, collector, speciesNodes);
 			currentModel.visitSpecies(visitor);
-
 			// We input the species so that grids are always the last ones
 			// (see DiffusionStatement)
 			currentModel.visitGrids(visitor);
-			visitor = element -> {
-				addExperimentNode(element, currentModel.getName(), collector, experimentNodes);
-
-			};
+			visitor = element -> addClassNode(element, collector, classNodes);
+			currentModel.visitClasses(visitor);
+			visitor = element -> { addExperimentNode(element, currentModel.getName(), collector, experimentNodes); };
 			currentModel.visitExperiments(visitor);
 
 		}
@@ -411,18 +419,14 @@ public class ModelFactory extends SymbolFactory {
 	private boolean applyPragmas(final ValidationContext collector, final ISyntacticElement source) {
 		final Map<String, List<String>> pragmas = source.getPragmas();
 		collector.resetInfoAndWarning();
-		if (pragmas == null) {
-			return true;
-		}
+		if (pragmas == null) return true;
 		List<String> requiresList = pragmas.get(IKeyword.PRAGMA_REQUIRES);
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_INFO)) { collector.setNoInfo(); }
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_WARNING)) { collector.setNoWarning(); }
 		if (pragmas.containsKey(IKeyword.PRAGMA_NO_EXPERIMENT)) { collector.setNoExperiment(); }
-		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue()
-				&& requiresList != null
-				&& !collector.verifyPlugins(requiresList)) {
-			return false;			
-		}
+		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue() && requiresList != null
+				&& !collector.verifyPlugins(requiresList))
+			return false;
 		return true;
 	}
 
@@ -502,7 +506,7 @@ public class ModelFactory extends SymbolFactory {
 	 *            the cache
 	 */
 	void addExperiment(final String origin, final ModelDescription model, final ISyntacticElement experiment,
-			final Map<String, SpeciesDescription> cache) {
+			final Map<String, TypeDescription> cache) {
 		// Create the experiment description
 		final IDescription desc = DescriptionFactory.create(experiment, model, Collections.EMPTY_LIST);
 		final ExperimentDescription eDesc = (ExperimentDescription) desc;
@@ -528,7 +532,7 @@ public class ModelFactory extends SymbolFactory {
 			final Map<String, ISyntacticElement> experimentNodes) {
 		// First we verify that this experiment has not been declared previously
 		final String experimentName = element.getName();
-		ISyntacticElement elm = experimentNodes.get(experimentName); 
+		ISyntacticElement elm = experimentNodes.get(experimentName);
 		if (elm != null) {
 			EObject object = elm.getElement();
 			if (object != null && object.eResource() != null) {
@@ -558,9 +562,8 @@ public class ModelFactory extends SymbolFactory {
 	 *            the cache
 	 */
 	void addMicroSpecies(final SpeciesDescription macro, final ISyntacticElement micro,
-			final Map<String, SpeciesDescription> cache) {
-		// Create the species description without any children. Passing
-		// explicitly an empty list and not null;
+			final Map<String, TypeDescription> cache) {
+		// Create the class description without any children. Passing explicitly an empty list and not null;
 		final SpeciesDescription mDesc =
 				(SpeciesDescription) DescriptionFactory.create(micro, macro, Collections.EMPTY_LIST);
 		cache.put(mDesc.getName(), mDesc);
@@ -571,6 +574,26 @@ public class ModelFactory extends SymbolFactory {
 		final SyntacticVisitor visitor = element -> addMicroSpecies(mDesc, element, cache);
 		micro.visitSpecies(visitor);
 		micro.visitExperiments(visitor);
+	}
+
+	/**
+	 * Adds the class.
+	 *
+	 * @param macro
+	 *            the macro
+	 * @param micro
+	 *            the micro
+	 * @param cache
+	 *            the cache
+	 */
+	void addClass(final ModelDescription macro, final ISyntacticElement micro,
+			final Map<String, TypeDescription> cache) {
+		// Create the class description without any children. Passing explicitly an empty list and not null;
+		final ClassDescription mDesc =
+				(ClassDescription) DescriptionFactory.create(micro, macro, Collections.EMPTY_LIST);
+		cache.put(mDesc.getName(), mDesc);
+		// Add it to its macro-species
+		macro.addChild(mDesc);
 	}
 
 	/**
@@ -598,6 +621,30 @@ public class ModelFactory extends SymbolFactory {
 	}
 
 	/**
+	 * Adds the class node.
+	 *
+	 * @param sse
+	 *            the sse
+	 * @param collector
+	 *            the collector
+	 * @param classNodes
+	 *            the species nodes
+	 */
+	void addClassNode(final ISyntacticElement sse, final ValidationContext collector,
+			final Map<String, ISyntacticElement> classNodes) {
+		if (!(sse instanceof SyntacticClassElement element)) return;
+		final String name = element.getName();
+		ISyntacticElement node = classNodes.get(name);
+		if (node != null) {
+			collector.add(new GamlCompilationError("Class " + name + " is declared twice",
+					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationErrorType.Error));
+			collector.add(new GamlCompilationError("Class " + name + " is declared twice",
+					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), GamlCompilationErrorType.Error));
+		}
+		classNodes.put(name, element);
+	}
+
+	/**
 	 * Recursively complements a species and its micro-species. Add variables, behaviors (actions, reflex, task, states,
 	 * ...), aspects to species.
 	 *
@@ -606,7 +653,7 @@ public class ModelFactory extends SymbolFactory {
 	 * @param micro
 	 *            the structure of micro-species
 	 */
-	void complementSpecies(final SpeciesDescription species, final ISyntacticElement node) {
+	void complementSpecies(final TypeDescription species, final ISyntacticElement node) {
 		if (species == null) return;
 		species.copyJavaAdditions();
 		node.visitChildren(element -> {
@@ -614,10 +661,12 @@ public class ModelFactory extends SymbolFactory {
 			if (childDesc != null) { species.addChild(childDesc); }
 		});
 		// recursively complement micro-species
-		node.visitSpecies(element -> {
-			final SpeciesDescription sd = species.getMicroSpecies(element.getName());
-			if (sd != null) { complementSpecies(sd, element); }
-		});
+		if (species instanceof SpeciesDescription macro) {
+			node.visitSpecies(element -> {
+				final SpeciesDescription sd = macro.getMicroSpecies(element.getName());
+				if (sd != null) { complementSpecies(sd, element); }
+			});
+		}
 
 	}
 
@@ -654,18 +703,41 @@ public class ModelFactory extends SymbolFactory {
 	 *            the cache
 	 */
 	void parentSpecies(final SpeciesDescription macro, final ISyntacticElement micro, final ModelDescription model,
-			final Map<String, SpeciesDescription> cache) {
+			final Map<String, TypeDescription> cache) {
 		// Gather the previously created species
-		final SpeciesDescription mDesc = cache.get(micro.getName());
-		if (mDesc == null || mDesc.isExperiment()) return;
-		String p = mDesc.getLitteral(IKeyword.PARENT);
+		final TypeDescription mDesc = cache.get(micro.getName());
+		if (!(mDesc instanceof SpeciesDescription sd) || sd.isExperiment()) return;
+		String p = sd.getLitteral(IKeyword.PARENT);
 		// If no parent is defined, we assume it is "agent"
 		if (p == null) { p = IKeyword.AGENT; }
 		SpeciesDescription parent = lookupSpecies(p, cache);
 		if (parent == null) { parent = model.getSpeciesDescription(p); }
-		mDesc.setParent(parent);
-		micro.visitSpecies(element -> parentSpecies(mDesc, element, model, cache));
+		sd.setParent(parent);
+		micro.visitSpecies(element -> parentSpecies(sd, element, model, cache));
 
+	}
+
+	/**
+	 * Parent class.
+	 *
+	 * @param model
+	 *            the model
+	 * @param micro
+	 *            the micro
+	 * @param cache
+	 *            the cache
+	 */
+	void parentClass(final ModelDescription model, final ISyntacticElement micro,
+			final Map<String, TypeDescription> cache) {
+		// Gather the previously created species
+		final TypeDescription mDesc = cache.get(micro.getName());
+		if (!(mDesc instanceof ClassDescription cd)) return;
+		String p = cd.getLitteral(IKeyword.PARENT);
+		// If no parent is defined, we assume it is "agent"
+		if (p == null) { p = IKeyword.OBJECT; }
+		ClassDescription parent = lookupClass(p, cache);
+		if (parent == null) { parent = model.getClassDescription(p); }
+		cd.setParent(parent);
 	}
 
 	/**
@@ -674,10 +746,25 @@ public class ModelFactory extends SymbolFactory {
 	 * @param cache
 	 * @return
 	 */
-	SpeciesDescription lookupSpecies(final String name, final Map<String, SpeciesDescription> cache) {
-		SpeciesDescription result = cache.get(name);
-		if (result == null) { result = Types.getBuiltInSpecies().get(name); }
-		return result;
+	SpeciesDescription lookupSpecies(final String name, final Map<String, TypeDescription> cache) {
+		TypeDescription result = cache.get(name);
+		if (!(result instanceof SpeciesDescription sd)) return Types.getBuiltInSpecies().get(name);
+		return sd;
+	}
+
+	/**
+	 * Lookup class.
+	 *
+	 * @param name
+	 *            the name
+	 * @param cache
+	 *            the cache
+	 * @return the class description
+	 */
+	ClassDescription lookupClass(final String name, final Map<String, TypeDescription> cache) {
+		TypeDescription result = cache.get(name);
+		if (!(result instanceof ClassDescription cd)) return Types.getBuiltInClasses().get(name);
+		return cd;
 	}
 
 	/**

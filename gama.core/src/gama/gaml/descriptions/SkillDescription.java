@@ -16,9 +16,11 @@ import java.util.Collections;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.gaml.architecture.IArchitecture;
-import gama.gaml.skills.Skill;
+import gama.gaml.expressions.types.SkillConstantExpression;
+import gama.gaml.skills.GamlSkill;
+import gama.gaml.skills.ISkill;
+import gama.gaml.types.IType;
 
 /**
  * The Class SkillDescription.
@@ -26,7 +28,10 @@ import gama.gaml.skills.Skill;
 public class SkillDescription extends TypeDescription {
 
 	/** The instance. */
-	Skill instance;
+	GamlSkill instance;
+
+	/** The constant expression. */
+	SkillConstantExpression constantExpression;
 
 	/** The is control. */
 	// final boolean isControl;
@@ -95,10 +100,10 @@ public class SkillDescription extends TypeDescription {
 	 *
 	 * @return the skill
 	 */
-	public Skill createInstance() {
-		Skill instance = null;
+	public GamlSkill createInstance() {
+		GamlSkill instance = null;
 		try {
-			instance = (Skill) getJavaBase().newInstance();
+			instance = (GamlSkill) getJavaBase().newInstance();
 			instance.setDescription(this);
 		} catch (InstantiationException | IllegalAccessException e) {}
 		return instance;
@@ -109,7 +114,7 @@ public class SkillDescription extends TypeDescription {
 	 *
 	 * @return single instance of SkillDescription
 	 */
-	public Skill getInstance() {
+	public GamlSkill getInstance() {
 		if (instance == null) { instance = createInstance(); }
 		return instance;
 	}
@@ -146,6 +151,18 @@ public class SkillDescription extends TypeDescription {
 
 	}
 
+	@Override
+	public void documentThis(final Doc sb) {
+		// final String parentName = getParent() == null ? "nil" : getParent().getName();
+		// final String hostName = getMacroSpecies() == null ? null : getMacroSpecies().getName();
+		// sb.append("<b>Subspecies of:</b> ").append(parentName).append("<br>");
+		// if (hostName != null) { sb.append("<b>Microspecies of:</b> ").append(hostName).append("<br>"); }
+		// final Iterable<String> skills = getSkillsNames();
+		// if (!Iterables.isEmpty(skills)) { sb.append("<b>Skills:</b> ").append(skills.toString()).append("<br>"); }
+		documentAttributes(sb);
+		documentActions(sb);
+	}
+
 	/**
 	 * Gets the doc annotation.
 	 *
@@ -163,6 +180,9 @@ public class SkillDescription extends TypeDescription {
 		return d;
 	}
 
+	@Override
+	public IType<ISkill> getGamlType() { return (IType<ISkill>) super.getGamlType(); }
+
 	/**
 	 * Gets the deprecated.
 	 *
@@ -175,5 +195,14 @@ public class SkillDescription extends TypeDescription {
 		if (s == null || s.isEmpty()) return null;
 		return s;
 	}
+
+	@Override
+	public SkillConstantExpression getConstantExpr() {
+		if (constantExpr == null) { constantExpr = new SkillConstantExpression(name, getGamlType()); }
+		return (SkillConstantExpression) constantExpr;
+	}
+
+	@Override
+	public IType<?> getTypeOfVar() { return getGamlType(); }
 
 }

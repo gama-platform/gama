@@ -25,7 +25,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IList;
-import gama.gaml.skills.Skill;
+import gama.gaml.skills.GamlSkill;
 import gama.gaml.types.IType;
 
 /**
@@ -41,7 +41,7 @@ import gama.gaml.types.IType;
 		type = IType.LIST,
 		of = IType.MESSAGE,
 		doc = @doc ("The list of messages that can be consulted by the agent")) })
-public class MessagingSkill extends Skill {
+public class MessagingSkill extends GamlSkill {
 
 	/** The Constant SKILL_NAME. */
 	public static final String SKILL_NAME = "messaging";

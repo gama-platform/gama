@@ -18,7 +18,6 @@ import com.google.common.base.Function;
 import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.common.interfaces.ITyped;
 import gama.core.util.BiConsumerWithPruning;
 import gama.core.util.ConsumerWithPruning;
@@ -30,6 +29,7 @@ import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
 import gama.gaml.descriptions.SymbolSerializer.VarSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.skills.ISkill;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
 
@@ -775,5 +775,11 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 	 * @date 10 janv. 2024
 	 */
 	boolean isInvocation();
+
+	/**
+	 * @param classDescription
+	 * @return
+	 */
+	boolean canBeDefinedIn(IDescription desc);
 
 }

@@ -123,7 +123,7 @@ public abstract class AbstractGamlAdditions implements IGamlAdditions {
 	 */
 	protected void _type(final String keyword, final IType typeInstance, final int id, final int varKind,
 			final Class... wraps) {
-		final IType<?> type = builtInTypes.initType(keyword, typeInstance, id, varKind, wraps[0], CURRENT_PLUGIN_NAME);
+		final IType<?> type = builtInTypes.initBuiltInType(keyword, typeInstance, id, varKind, wraps[0], CURRENT_PLUGIN_NAME);
 		for (final Class cc : wraps) { Types.CLASSES_TYPES_CORRESPONDANCE.put(cc, type.getName()); }
 		Types.cache(id, typeInstance);
 	}
@@ -263,7 +263,8 @@ public abstract class AbstractGamlAdditions implements IGamlAdditions {
 			final Map<Signature, OperatorProto> map = GAML.OPERATORS.get(kw);
 			if (!map.containsKey(signature)) {
 				OperatorProto proto;
-				if (nbParameters == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType()) {
+				if (nbParameters == 2 && (OF.equals(kw) || _DOT.equals(kw))
+						&& (signature.get(0).isAgentType() || signature.get(0).isObjectType())) {
 					proto = new OperatorProto(kw, method, null, helper, c, true, rt, signature, t, content, index,
 							contentContentType, expectedContentTypes, plugin);
 				} else {

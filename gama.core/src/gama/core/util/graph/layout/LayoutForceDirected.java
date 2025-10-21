@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * LayoutForceDirected.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * LayoutForceDirected.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.graph.layout;
 
@@ -179,7 +179,7 @@ public class LayoutForceDirected {
 			if (!bounds.intersects(l)) { loc.put(v, SpatialPunctal._closest_point_to(l, bounds)); }
 
 		}
-		final GamaPoint center = (GamaPoint) Containers.opMean(scope, GamaListFactory.wrap(Types.POINT, loc.values()));
+		final GamaPoint center = (GamaPoint) Containers.mean(scope, GamaListFactory.wrap(Types.POINT, loc.values()));
 		if (center.distance3D(bounds.getCentroid()) > toleranceCenter) {
 			final GamaPoint d = Points.subtract(bounds.getCentroid(), center);
 			d.multiplyBy(0.5);

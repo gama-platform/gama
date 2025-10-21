@@ -175,7 +175,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 
 		}
 		String first = "Attribute ";
-		if (type.contains("file")) { type = "file"; }
+		if (type != null && type.contains("file")) { type = "file"; }
 		if (Types.get(type) == Types.NO_TYPE) { first = Strings.capitalize(null, type) + " "; }
 
 		return first + (name == null ? "" : name)

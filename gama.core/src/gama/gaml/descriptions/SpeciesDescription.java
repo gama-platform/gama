@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
-import static com.google.common.collect.Iterables.transform;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -24,13 +22,10 @@ import com.google.common.collect.Iterables;
 
 import gama.annotations.precompiler.GamlProperties;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.agent.MinimalAgent;
-import gama.core.metamodel.topology.grid.GamlGridAgent;
-import gama.core.metamodel.topology.grid.MinimalGridAgent;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
@@ -43,13 +38,14 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
 import gama.gaml.expressions.types.SkillConstantExpression;
-import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.operators.Strings;
+import gama.gaml.skills.ISkill;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * The Class SpeciesDescription.
@@ -80,9 +76,6 @@ public class SpeciesDescription extends TypeDescription {
 
 	/** The agent constructor. */
 	private IAgentConstructor agentConstructor;
-
-	/** The species expr. */
-	private SpeciesConstantExpression speciesExpr;
 
 	/** The java base. */
 	protected Class javaBase;
@@ -289,13 +282,6 @@ public class SpeciesDescription extends TypeDescription {
 		return controlName;
 	}
 
-	/**
-	 * Gets the parent name.
-	 *
-	 * @return the parent name
-	 */
-	public String getParentName() { return getLitteral(PARENT); }
-
 	@Override
 	public IExpression getVarExpr(final String n, final boolean asField) {
 		IExpression result = super.getVarExpr(n, asField);
@@ -308,79 +294,17 @@ public class SpeciesDescription extends TypeDescription {
 		return result;
 	}
 
-	/**
-	 * Copy java additions.
-	 */
-	public void copyJavaAdditions() {
-		final Class clazz = getJavaBase();
-		if (clazz == null) {
-			error("This species cannot be compiled as its Java base is unknown. ", IGamlIssue.UNKNOWN_SPECIES);
-			return;
-		}
-		Class<? extends IAgent> base = getJavaBase();
-		Iterable<Class<? extends ISkill>> skillClasses = transform(getSkills(), TO_CLASS);
-		Iterable<IDescription> javaChildren = GAML.getAllChildrenOf(base, skillClasses);
-		for (final IDescription v : javaChildren) { addJavaChild(v); }
-	}
-
-	/**
-	 * Adds the java child.
-	 *
-	 * @param v
-	 *            the v
-	 */
-	private void addJavaChild(final IDescription v) {
-		if (isBuiltIn()) { v.setOriginName("built-in species " + getName()); }
-		if (v instanceof VariableDescription) {
-			boolean toAdd = false;
-			if (this.isBuiltIn() && !hasAttribute(v.getName()) || ((VariableDescription) v).isContextualType()) {
-				toAdd = true;
-			} else if (parent != null && parent != this) {
-				final VariableDescription existing = parent.getAttribute(v.getName());
-				if (existing == null || !existing.getOriginName().equals(v.getOriginName())) { toAdd = true; }
-			} else {
-				toAdd = true;
-			}
-			if (toAdd) {
-				// Fixes a problem where built-in attributes were not linked with their declaring class
-				// Class<?> c = VariableDescription.CLASS_DEFINITIONS.remove(v);
-				final VariableDescription var = (VariableDescription) v.copy(this);
-				addOwnAttribute(var);
-				// var.builtInDoc = ((VariableDescription) v).getBuiltInDoc();
-				// VariableDescription.CLASS_DEFINITIONS.put(var, c);
-			}
-
-		} else {
-			boolean toAdd = false;
-			if (parent == null) {
-				toAdd = true;
-			} else if (parent != this) {
-				final StatementDescription existing = parent.getAction(v.getName());
-				if (existing == null || !existing.getOriginName().equals(v.getOriginName())) { toAdd = true; }
-			}
-			if (toAdd) {
-
-				// v.setEnclosingDescription(this);
-				addAction((ActionDescription) v);
-			}
-		}
-	}
-
 	@Override
 	public IDescription addChild(final IDescription child) {
 		final IDescription desc = super.addChild(child);
 		if (desc == null) return null;
 		if (desc instanceof StatementDescription statement) {
 			final String kw = desc.getKeyword();
-			if (PRIMITIVE.equals(kw) || ACTION.equals(kw)) {
-				addAction((ActionDescription) statement);
-			} else if (ASPECT.equals(kw)) {
+			if (ASPECT.equals(kw)) {
 				addAspect(statement);
 			} else {
 				addBehavior(statement);
 			}
-		} else if (desc instanceof VariableDescription) {
-			addOwnAttribute((VariableDescription) desc);
 		} else if (desc instanceof SpeciesDescription) { addMicroSpecies((SpeciesDescription) desc); }
 		return desc;
 	}
@@ -627,7 +551,7 @@ public class SpeciesDescription extends TypeDescription {
 		// Takes care of invalid species (see Issue 711)
 		// built-in parents are not considered as their actions/variables are
 		// normally already copied as java additions
-		if ((parentSpecies == null) || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
+		if (parentSpecies == null || !verifyJavaBase(parentSpecies) || !verifyJavaBase(this)) return;
 		tryInheritMicroSpecies(parentSpecies);
 		super.inheritFromParent();
 	}
@@ -671,6 +595,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return true, if is grid
 	 */
+	@Override
 	public boolean isGrid() { return isSet(Flag.isGrid); }
 
 	@Override
@@ -689,6 +614,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return the documentation without meta
 	 */
+	@Override
 	public void documentThis(final Doc sb) {
 		final String parentName = getParent() == null ? "nil" : getParent().getName();
 		final String hostName = getMacroSpecies() == null ? null : getMacroSpecies().getName();
@@ -712,17 +638,6 @@ public class SpeciesDescription extends TypeDescription {
 	}
 
 	/**
-	 * Returns the constant expression representing this species
-	 */
-	public SpeciesConstantExpression getSpeciesExpr() {
-		if (speciesExpr == null) {
-			final IType type = GamaType.from(SpeciesDescription.this);
-			speciesExpr = GAML.getExpressionFactory().createSpeciesConstant(type);
-		}
-		return speciesExpr;
-	}
-
-	/**
 	 * Visit micro species.
 	 *
 	 * @param visitor
@@ -734,22 +649,9 @@ public class SpeciesDescription extends TypeDescription {
 		return getMicroSpecies().forEachValue(visitor);
 	}
 
-	// public boolean visitSortedMicroSpecies(final DescriptionVisitor<SpeciesDescription> visitor) {
-	// if (!hasMicroSpecies()) { return true; }
-	// final Iterable<SpeciesDescription> all = getSortedMicroSpecies();
-	// for (final SpeciesDescription sd : all) {
-	// if (!visitor.process(sd)) { return false; }
-	// }
-	// return true;
-	// }
-
 	@Override
 	public void setParent(final TypeDescription parent) {
 		super.setParent(parent);
-		if (!isBuiltIn() && !verifyParent()) {
-			super.setParent(null);
-			return;
-		}
 		if (parent instanceof SpeciesDescription && parent != this && !isSet(Flag.CanUseMinimalAgents)
 				&& !parent.isBuiltIn()) {
 			((SpeciesDescription) parent).invalidateMinimalAgents();
@@ -770,8 +672,10 @@ public class SpeciesDescription extends TypeDescription {
 	 * @throws GamlException
 	 *             if the species with the specified name can not be a parent of this species.
 	 */
+	@Override
 	protected boolean verifyParent() {
 		if (parent == null) return true;
+		if (!super.verifyParent()) return false;
 		if (this == parent) {
 			error(getName() + " species can't be a sub-species of itself", IGamlIssue.GENERAL);
 			return false;
@@ -783,10 +687,6 @@ public class SpeciesDescription extends TypeDescription {
 		if (!parentIsVisible()) {
 			error(parent.getName() + " can't be a parent species of " + this.getName() + " species.",
 					IGamlIssue.WRONG_PARENT, PARENT);
-			return false;
-		}
-		if (hierarchyContainsSelf()) {
-			error(this.getName() + " species and " + parent.getName() + " species can't be sub-species of each other.");
 			return false;
 		}
 		return true;
@@ -812,22 +712,6 @@ public class SpeciesDescription extends TypeDescription {
 			}
 		});
 		return result[0];
-	}
-
-	/**
-	 * Hierarchy contains self.
-	 *
-	 * @return true, if successful
-	 */
-	private boolean hierarchyContainsSelf() {
-		SpeciesDescription currentSpeciesDesc = this;
-		while (currentSpeciesDesc != null) {
-			final SpeciesDescription p = currentSpeciesDesc.getParent();
-			// Takes care of invalid species (see Issue 711)
-			if (p == currentSpeciesDesc || p == this) return true;
-			currentSpeciesDesc = p;
-		}
-		return false;
 	}
 
 	/**
@@ -940,20 +824,6 @@ public class SpeciesDescription extends TypeDescription {
 	}
 
 	/**
-	 * Checks if is experiment.
-	 *
-	 * @return true, if is experiment
-	 */
-	public boolean isExperiment() { return false; }
-
-	/**
-	 * Checks if is model.
-	 *
-	 * @return true, if is model
-	 */
-	public boolean isModel() { return false; }
-
-	/**
 	 * Checks for micro species.
 	 *
 	 * @return true, if successful
@@ -1002,9 +872,9 @@ public class SpeciesDescription extends TypeDescription {
 			if (parent != null && parent != this && !AGENT.equals(getParent().getName())) {
 				javaBase = getParent().getJavaBase();
 			} else if (useMinimalAgents()) {
-				javaBase = isGrid() ? MinimalGridAgent.class : MinimalAgent.class;
+				javaBase = MinimalAgent.class;
 			} else {
-				javaBase = isGrid() ? GamlGridAgent.class : GamlAgent.class;
+				javaBase = GamlAgent.class;
 			}
 		}
 		return javaBase;
@@ -1117,11 +987,15 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return the skills
 	 */
+	@Override
 	public Iterable<SkillDescription> getSkills() {
 		final List<SkillDescription> base =
 				control == null ? Collections.EMPTY_LIST : Collections.singletonList(control);
 		if (skills == null) return base;
 		return Iterables.concat(skills, base);
 	}
+
+	@Override
+	public IType<?> getTypeOfVar() { return GamaType.from(Types.LIST, Types.INT, getGamlType()); }
 
 }

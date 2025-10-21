@@ -18,7 +18,7 @@ import java.util.Set;
 import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.ExperimentPlan;
+import gama.core.kernel.experiment.ExperimentSpecies;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.ISerialisedAgent;
@@ -144,7 +144,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 				boolean isBatch = getHost().getSpecies().isBatch();
 				// Batch experiments now dont allow their simulations to have outputs
 
-				if (!isBatch) { sim.setOutputs(((ExperimentPlan) host.getSpecies()).getOriginalSimulationOutputs()); }
+				if (!isBatch) { sim.setOutputs(((ExperimentSpecies) host.getSpecies()).getOriginalSimulationOutputs()); }
 				if (!scope.interrupted()) {
 					// Necessary to set it early -- see Issue #3872
 					setCurrentSimulation(sim);
