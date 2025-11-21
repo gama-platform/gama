@@ -834,6 +834,8 @@ Bundle-ClassPath: .,
  jts/jts-core-1.20.0.jar,
  jts/jts-io-common-1.20.0.jar,
  jfreechart/jfreechart-1.5.5.jar,
- streamex/streamex-0.8.3.jar
+ streamex/streamex-0.8.3.jar,
+ geotools/gt-epsg-hsql-25.0.jar,
+ geotools/hsqldb-2.4.1.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.dependencies
