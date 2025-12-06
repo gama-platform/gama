@@ -18,8 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.util.GamaData;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
@@ -93,6 +95,17 @@ public class TypesManager implements ITypesManager {
 	}
 
 	@Override
+	public IType<GamaData> addDataType(final DataTypeDescription data) {
+		final String name = data.getName();
+		if (containsType(name)) {
+			data.error("Data type " + name + " already declared. Data type names must be unique",
+					IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), name);
+			return (IType<GamaData>) this.get(name);
+		}
+		return addDataType(new GamaDataType(data, data.getName(), ++CURRENT_INDEX, data.getJavaBase()), GamaData.class);
+	}
+
+	@Override
 	public <Support> IType<Support> initType(final String keyword, final IType<Support> originalType, final int id,
 			final int varKind, final Class<Support> support, final String plugin) {
 		IType<Support> typeInstance = originalType;
@@ -121,6 +134,27 @@ public class TypesManager implements ITypesManager {
 		// for (final Class cc : wraps) {
 		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
 		// }
+		return t;
+	}
+
+	/**
+	 * Adds the data type.
+	 *
+	 * @param t
+	 *            the t
+	 * @param clazz
+	 *            the clazz
+	 * @return the i type
+	 */
+	private IType<GamaData> addDataType(final IType<GamaData> t, final Class<GamaData> clazz) {
+		final int i = t.id();
+		final String name = t.toString();
+		types.put(name, t);
+		// Hack to allow types to be declared with their id as string
+		types.put(String.valueOf(i), t);
+		Types.CLASSES_TYPES_CORRESPONDANCE.put(clazz, name);
+		// GAML.VARTYPE2KEYWORDS.put(t.getVarKind(), name);
+		// DescriptionFactory.addNewTypeName(name, t.getVarKind());
 		return t;
 	}
 
@@ -163,6 +197,22 @@ public class TypesManager implements ITypesManager {
 				final TypeDescription parent = entry.getParent();
 				// Takes care of invalid species (see Issue 711)
 				type.setParent(parent == null || parent == entry ? get(IKeyword.AGENT) : get(parent.getName()));
+			}
+			return true;
+		});
+
+		// We add the user-defined data types
+		model.visitAllDataTypes(entry -> {
+			addDataType(entry);
+			return true;
+		});
+		// Then we parent the data types
+		model.visitAllDataTypes(entry -> {
+			final IType type = get(entry.getName());
+			if (type != null) {
+				final DataTypeDescription parent = entry.getParent();
+				// Takes care of invalid data types
+				type.setParent(parent == null || parent == entry ? get(IKeyword.DATA_TYPE) : get(parent.getName()));
 			}
 			return true;
 		});

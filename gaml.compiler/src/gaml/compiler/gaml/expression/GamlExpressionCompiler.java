@@ -78,6 +78,7 @@ import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.expressions.operators.TypeFieldExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
+import gama.gaml.expressions.types.DenotedSkillExpression;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.expressions.variables.CurrentExperimentExpression;
 import gama.gaml.expressions.variables.EachExpression;
@@ -102,6 +103,7 @@ import gaml.compiler.gaml.EquationRef;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Function;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.If;
 import gaml.compiler.gaml.IntLiteral;
 import gaml.compiler.gaml.Parameter;
@@ -343,7 +345,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (object == null) return null;
 		String primary = EGaml.getInstance().getKeyOf(object);
 		if (primary == null) {
-			primary = object.getRef().getName();
+			primary = GamlDefinitionUtils.getName(object.getRef());
 		} else if (SyntacticFactory.SPECIES_VAR.equals(primary)) { primary = SPECIES; }
 
 		final IType t = currentTypesManager.get(primary);
@@ -530,10 +532,14 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 					yield getFactory().createOperator(IS, getContext(), right.eContainer(), left,
 							getFactory().createConst(type, Types.STRING));
 				}
-				if (isSkillName(type)) {
+				if (isBuiltInSkillName(type)) {
 					yield getFactory().createOperator(IS_SKILL, getContext(), right.eContainer(), left,
 							getFactory().createConst(type, Types.SKILL));
 				}
+				if (isUserDefinedSkillName(type, getContext())) {
+					yield getFactory().createOperator(IS_SKILL, getContext(), right.eContainer(), left,
+							new DenotedSkillExpression(getContext().getModelDescription().getSkillDescription(type)));
+				} 
 				getContext().error(
 						"'is' must be followed by a type, species or skill name. " + type + " is neither of these.",
 						IGamlIssue.NOT_A_TYPE, right, type);
@@ -576,8 +582,13 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 *            the s
 	 * @return true, if is skill name
 	 */
-	private boolean isSkillName(final String s) {
+	private boolean isBuiltInSkillName(final String s) {
 		return GamaSkillRegistry.INSTANCE.hasSkill(s);
+	}
+	
+	private boolean isUserDefinedSkillName(final String s, IDescription context) {
+		var modelDesc = context.getModelDescription();
+		return modelDesc.hasSkill(s);
 	}
 
 	/**
@@ -910,7 +921,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 	@Override
 	public IExpression caseTypeDefinition(final TypeDefinition object) {
-		return caseVar(object.getName(), object);
+		return caseVar(GamlDefinitionUtils.getName(object), object);
 	}
 
 	@Override
@@ -1265,7 +1276,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		}
 		IType t = getType(varName);
 		if (t != null) return getFactory().createTypeExpression(t);
-		if (isSkillName(varName)) return skill(varName);
+		if (isBuiltInSkillName(varName)) return skill(varName);
 		if (context != null) {
 
 			// An experimental possibility is that the variable refers to a
@@ -1275,7 +1286,9 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			if (sd.hasAction(varName, false)) return new DenotedActionExpression(sd.getAction(varName));
 			if (sd.hasBehavior(varName)) return new DenotedActionExpression(sd.getBehavior(varName));
 			if (sd.hasAspect(varName)) return new DenotedActionExpression(sd.getAspect(varName));
-
+			if (isUserDefinedSkillName(varName, context)) {
+				return new DenotedSkillExpression(context.getModelDescription().getSkillDescription(varName));
+			}
 			// A last possibility is to offer some transition guidance to users who used to write event layer names as
 			// labels (neither as string or constant). For instance : mouse_move instead of "mouse_move" or #mouse_move.
 			// For that, we emit simply a warning (not an error) and we return the corresponding constant.

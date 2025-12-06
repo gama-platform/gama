@@ -77,7 +77,9 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.STATEMENT: return createStatement();
       case GamlPackage.SGLOBAL: return createS_Global();
       case GamlPackage.SSPECIES: return createS_Species();
+      case GamlPackage.SDATA: return createS_Data();
       case GamlPackage.SEXPERIMENT: return createS_Experiment();
+      case GamlPackage.SSKILL: return createS_Skill();
       case GamlPackage.SDO: return createS_Do();
       case GamlPackage.SLOOP: return createS_Loop();
       case GamlPackage.SIF: return createS_If();
@@ -291,10 +293,34 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
+  public S_Data createS_Data()
+  {
+    S_DataImpl s_Data = new S_DataImpl();
+    return s_Data;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public S_Experiment createS_Experiment()
   {
     S_ExperimentImpl s_Experiment = new S_ExperimentImpl();
     return s_Experiment;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_Skill createS_Skill()
+  {
+    S_SkillImpl s_Skill = new S_SkillImpl();
+    return s_Skill;
   }
 
   /**

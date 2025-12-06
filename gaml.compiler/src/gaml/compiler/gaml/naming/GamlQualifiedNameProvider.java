@@ -18,6 +18,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.gaml.descriptions.ModelDescription;
 import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.GamlDefinition;
+import gaml.compiler.gaml.GamlDefinitionUtils;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.speciesOrGridDisplayStatement;
@@ -58,7 +59,7 @@ public class GamlQualifiedNameProvider extends IQualifiedNameProvider.AbstractIm
 
 		@Override
 		public String caseGamlDefinition(final GamlDefinition object) {
-			return object.getName();
+			return GamlDefinitionUtils.getName(object);
 		}
 
 		@Override

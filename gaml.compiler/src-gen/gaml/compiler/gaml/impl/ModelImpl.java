@@ -351,7 +351,6 @@ public class ModelImpl extends EntryImpl implements Model
     {
       switch (derivedFeatureID)
       {
-        case GamlPackage.MODEL__NAME: return GamlPackage.GAML_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -359,6 +358,7 @@ public class ModelImpl extends EntryImpl implements Model
     {
       switch (derivedFeatureID)
       {
+        case GamlPackage.MODEL__NAME: return GamlPackage.VAR_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -377,7 +377,6 @@ public class ModelImpl extends EntryImpl implements Model
     {
       switch (baseFeatureID)
       {
-        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.MODEL__NAME;
         default: return -1;
       }
     }
@@ -385,6 +384,7 @@ public class ModelImpl extends EntryImpl implements Model
     {
       switch (baseFeatureID)
       {
+        case GamlPackage.VAR_DEFINITION__NAME: return GamlPackage.MODEL__NAME;
         default: return -1;
       }
     }

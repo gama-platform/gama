@@ -152,13 +152,15 @@ public class SkillDescription extends TypeDescription {
 	 * @return the doc annotation
 	 */
 	public doc getDocAnnotation() {
-		skill s = javaBase.getAnnotation(skill.class);
-		doc[] docs = s.doc();
 		doc d = null;
-		if (docs.length == 0) {
-			if (javaBase.isAnnotationPresent(doc.class)) { d = javaBase.getAnnotation(doc.class); }
-		} else {
-			d = docs[0];
+		if (javaBase.isAnnotationPresent(skill.class)) {
+			skill s = javaBase.getAnnotation(skill.class);
+			doc[] docs = s.doc();
+			if (docs.length == 0) {
+				if (javaBase.isAnnotationPresent(doc.class)) { d = javaBase.getAnnotation(doc.class); }
+			} else {
+				d = docs[0];
+			}
 		}
 		return d;
 	}

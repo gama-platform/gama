@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * TypeDescription.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * TypeDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.descriptions;
 
@@ -128,6 +128,7 @@ public abstract class TypeDescription extends SymbolDescription {
 			result.set("Actions:", f.getName(), f.getShortDocumentation(true));
 		}
 	}
+
 
 	@Override
 	public String getDefiningPlugin() {
@@ -375,7 +376,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 *            the vd
 	 */
 	public void addInheritedAttribute(final VariableDescription vd) {
-		// We dont inherit from previously added variables, as a child and its
+		// We don't inherit from previously added variables, as a child and its
 		// parent should share the same javaBase
 
 		final String inheritedVarName = vd.getName();
@@ -804,6 +805,7 @@ public abstract class TypeDescription extends SymbolDescription {
 		if (attributes == null) return true;
 		return attributes.forEachValue(visitor);
 	}
+
 
 	/**
 	 * Visit own actions.

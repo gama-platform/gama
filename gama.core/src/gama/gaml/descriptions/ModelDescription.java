@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,6 +30,7 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -61,6 +62,11 @@ public class ModelDescription extends SpeciesDescription {
 
 	/** The types. */
 	final ITypesManager types;
+	
+	/** The data types. */
+	protected IMap<String, DataTypeDescription> declaredDataTypes;
+
+	protected IMap<String, SkillDescription> declaredSkills;
 
 	/** The model file path. */
 	private String modelFilePath;
@@ -293,6 +299,8 @@ public class ModelDescription extends SpeciesDescription {
 		if (isBuiltIn()) return;
 		super.dispose();
 		experiments = null;
+		declaredDataTypes = null;
+		declaredSkills = null;
 		types.dispose();
 
 	}
@@ -328,21 +336,65 @@ public class ModelDescription extends SpeciesDescription {
 	@Override
 	public IDescription addChild(final IDescription child) {
 		if (child == null) return null;
-		if (child instanceof ModelDescription md) {
-			md.getTypesManager().setParent(getTypesManager());
+		if (child instanceof DataTypeDescription data) {
+			addDataType(data);
+		} else if (child instanceof ModelDescription modelD) {
+			modelD.getTypesManager().setParent(getTypesManager());
 			if (microModels == null) { microModels = GamaMapFactory.create(); }
-			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
+			microModels.put(modelD.getAlias(), modelD);
 		} // no else as models are also species, which should be added after.
 
-		if (child instanceof ExperimentDescription) {
+		if (child instanceof ExperimentDescription expD) {
 			final String s = child.getName();
 			if (experiments == null) { experiments = GamaMapFactory.createOrdered(); }
-			experiments.put(s, (ExperimentDescription) child);
-		} else {
+			experiments.put(s, expD);
+		} else if (child instanceof SkillDescription skillD) {
+			addSkill(skillD);
+		}
+		else {
 			super.addChild(child);
 		}
 
 		return child;
+	}
+	
+
+	/**
+	 * Adds the data type.
+	 *
+	 * @param data
+	 *            the data
+	 */
+	protected void addDataType(final DataTypeDescription data) {
+
+		final String dataName = data.getName();
+		if (declaredDataTypes == null) {
+			declaredDataTypes = GamaMapFactory.create();
+		} else if (declaredDataTypes.get(dataName) != null) {
+			data.error("Data type " + dataName + " already declared. Data type names must be unique",
+					IGamlIssue.DUPLICATE_NAME, data.getUnderlyingElement(), dataName);
+			return;
+		}
+
+		declaredDataTypes.put(data.getName(), data);
+	}
+	
+	/**
+	 * Adds a skill declaration as a child of the model description.
+	 * @param skill
+	 */
+	protected void addSkill(final SkillDescription skill) {
+
+		final String skillName = skill.getName();
+		if (declaredSkills == null) {
+			declaredSkills = GamaMapFactory.create();
+		} else if (declaredSkills.get(skillName) != null) {
+			skill.error("Skill " + skillName + " already declared. Skill names must be unique",
+					IGamlIssue.DUPLICATE_NAME, skill.getUnderlyingElement(), skillName);
+			return;
+		}
+
+		declaredSkills.put(skill.getName(), skill);
 	}
 
 	@Override
@@ -374,6 +426,16 @@ public class ModelDescription extends SpeciesDescription {
 		}
 		return false;
 	}
+	//TODO use it somewhere
+	public boolean hasDataType(final String dataTypeName) {
+		if (declaredDataTypes == null) return false;
+		return declaredDataTypes.containsKey(dataTypeName);
+	}
+	
+	public boolean hasSkill(final String skillName) {
+		if (declaredSkills == null) return false;
+		return declaredSkills.containsKey(skillName);
+	}
 
 	@Override
 	public ModelDescription getModelDescription() { return this; }
@@ -388,6 +450,23 @@ public class ModelDescription extends SpeciesDescription {
 		return null;
 	}
 
+	/**
+	 * Gets the data description.
+	 *
+	 * @param data
+	 *            the data
+	 * @return the data description
+	 */
+	public DataTypeDescription getDataDescription(final String data) {
+		if (getTypesManager() != null) return getTypesManager().get(data).getData();
+		return null;
+	}
+
+	public SkillDescription getSkillDescription(final String skill) {
+		if (declaredSkills == null) return null;
+		return declaredSkills.get(skill);
+	}
+	
 	@Override
 	public IType getTypeNamed(final String s) {
 		if (types == null) return Types.NO_TYPE;
@@ -412,6 +491,17 @@ public class ModelDescription extends SpeciesDescription {
 	public Set<String> getExperimentNames() {
 		if (experiments == null) return Collections.EMPTY_SET;
 		return new LinkedHashSet(experiments.keySet());
+	}
+	
+	//TODO: create corresponding operators to get it later 
+	public Set<String> getSkillNames() {
+		if (declaredSkills == null) return Collections.EMPTY_SET;
+		return new LinkedHashSet(declaredSkills.keySet());
+	}
+	
+	public Set<String> getDataTypeNames() {
+		if (declaredDataTypes == null) return Collections.EMPTY_SET;
+		return new LinkedHashSet(declaredDataTypes.keySet());
 	}
 
 	/**
@@ -551,6 +641,64 @@ public class ModelDescription extends SpeciesDescription {
 		visitAllSpecies(visitor);
 	}
 
+	/**
+	 * Gets the all data.
+	 *
+	 * @param accumulator
+	 *            the accumulator
+	 * @return the all data
+	 */
+	public void getAllData(final List<DataTypeDescription> accumulator) {
+		final DescriptionVisitor<DataTypeDescription> visitor = desc -> {
+			accumulator.add(desc);
+			return true;
+		};
+
+		visitAllDataTypes(visitor);
+
+	}
+	
+	public void getAllSkills(final List<SkillDescription> accumulator) {
+		final DescriptionVisitor<SkillDescription> visitor = desc -> {
+			accumulator.add(desc);
+			return true;
+		};
+		visitAllSkills(visitor);
+	}
+
+	
+	public boolean visitAllDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
+		if (visitor == null || declaredDataTypes == null) return true;
+
+		for (var dataType : declaredDataTypes.values()) { if (!visitor.process(dataType)) return false; }
+//		if (experiments != null) { experiments.forEachValue(e -> e.visitAllDataTypes(visitor)); }
+		if (microModels != null) { microModels.forEachValue(md -> md.visitAllDataTypes(visitor)); }
+		return true;
+	}
+
+	
+	public void visitAllSkills(final DescriptionVisitor<SkillDescription> visitor) {
+		if (visitor == null || declaredSkills == null) return;
+
+		for (var skill : declaredSkills.values()) { visitor.process(skill); }
+	}
+	
+
+	/**
+	 * Visit own data types.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 * @return true, if successful
+	 */
+	public boolean visitOwnDataTypes(final DescriptionVisitor<DataTypeDescription> visitor) {
+		if (declaredDataTypes == null) return true;
+		return declaredDataTypes.forEachValue(each -> {
+			if (!visitor.process(each)) return false;
+			return true;
+		});
+	}
+	
 	@Override
 	protected boolean parentIsVisible() {
 		if (!getParent().isModel()) return false;
@@ -558,5 +706,7 @@ public class ModelDescription extends SpeciesDescription {
 
 		return false;
 	}
+
+
 
 }

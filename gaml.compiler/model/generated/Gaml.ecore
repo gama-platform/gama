@@ -57,7 +57,13 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Global" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Species" eSuperTypes="#//Statement #//S_Declaration #//TypeDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Data" eSuperTypes="#//Statement #//TypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Experiment" eSuperTypes="#//Statement #//VarDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Skill" eSuperTypes="#//Statement #//TypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Loop" eSuperTypes="#//S_Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_If" eSuperTypes="#//Statement">
@@ -130,17 +136,27 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="second" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="GamlDefinition">
+  <eClassifiers xsi:type="ecore:EClass" name="GamlDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EquationDefinition" eSuperTypes="#//GamlDefinition">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EquationDefinition" eSuperTypes="#//GamlDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDefinition" eSuperTypes="#//GamlDefinition #//ActionDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="VarDefinition" eSuperTypes="#//GamlDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VarDefinition" eSuperTypes="#//GamlDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActionDefinition" eSuperTypes="#//GamlDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="UnitFakeDefinition" eSuperTypes="#//GamlDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeFakeDefinition" eSuperTypes="#//TypeDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ActionFakeDefinition" eSuperTypes="#//ActionDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="SkillFakeDefinition" eSuperTypes="#//GamlDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UnitFakeDefinition" eSuperTypes="#//GamlDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeFakeDefinition" eSuperTypes="#//TypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionFakeDefinition" eSuperTypes="#//ActionDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SkillFakeDefinition" eSuperTypes="#//GamlDefinition">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VarFakeDefinition" eSuperTypes="#//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="EquationFakeDefinition" eSuperTypes="#//EquationDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="TerminalExpression" eSuperTypes="#//Expression">
