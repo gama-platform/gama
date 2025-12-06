@@ -639,25 +639,6 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	}
 
 	/**
-	 * Sets the time.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param t
-	 *            the t
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@setter (TIME)
-	public void setTime(final IScope scope, final double t) throws GamaRuntimeException {
-
-		// final SimulationClock clock = getClock();
-		// if (clock != null) {
-		// clock.setTime(t);
-		// }
-	}
-
-	/**
 	 * Gets the duration.
 	 *
 	 * @return the duration

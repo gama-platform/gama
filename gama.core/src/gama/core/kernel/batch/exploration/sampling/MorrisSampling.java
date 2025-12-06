@@ -30,8 +30,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
  *
  */
 public class MorrisSampling extends SamplingUtils {
-
-	public static int DEFAULT_LEVEL = 4;
 	
 	public static class Trajectory {
 		List<List<Double>> points;

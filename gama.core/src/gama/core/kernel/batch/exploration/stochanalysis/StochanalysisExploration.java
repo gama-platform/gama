@@ -33,7 +33,6 @@ import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.exploration.Exploration;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.IParameter.Batch;
-import gama.core.kernel.experiment.ParameterAdapter;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -43,7 +42,6 @@ import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
 
@@ -111,7 +109,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 	/** Theoretical inputs */
 	private List<Batch> parameters;
 	/** Theoretical outputs */
-	private IList<Object> outputs;
+	private IList<String> outputs;
 	/** Actual input / output map */
 	protected IMap<ParametersSet, Map<String, List<Object>>> res_outputs;
 
@@ -142,13 +140,12 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 
 		res_outputs = currentExperiment.runSimulationsAndReturnResults(sets);
 
-		IExpression outputFacet = getFacet(IKeyword.BATCH_VAR_OUTPUTS);
-		outputs = Cast.asList(scope, scope.evaluate(outputFacet, currentExperiment).getValue());
+		outputs = getLitteralOutputs();
 		Map<String, Map<ParametersSet, Map<String, List<Double>>>> MapOutput = new LinkedHashMap<>();
-		for (Object out : outputs) {
+		for (String out : outputs) {
 
 			IMap<ParametersSet, List<Object>> sp = GamaMapFactory.create();
-			for (ParametersSet ps : res_outputs.keySet()) { sp.put(ps, res_outputs.get(ps).get(out.toString())); }
+			for (ParametersSet ps : res_outputs.keySet()) { sp.put(ps, res_outputs.get(ps).get(out)); }
 
 			Map<ParametersSet, Map<String, List<Double>>> res_val = GamaMapFactory.create();
 			for (String m : Stochanalysis.SA) {
@@ -162,7 +159,7 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 				}
 
 			}
-			MapOutput.put(out.toString(), res_val);
+			MapOutput.put(out, res_val);
 		}
 
 		// Build report
@@ -182,30 +179,13 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("Facet "
 					+ (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_OUTPUT : IKeyword.BATCH_VAR_OUTPUTS)
-					+ " is missing - raw results won't be saved", scope), false);
+					+ " is missing - corresponding results won't be saved", scope), false);
 		}
 	}
 
 	@Override
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
-
-		exp.add(new ParameterAdapter("Sampling method", IKeyword.STO, IType.STRING) {
-			@Override
-			public Object value() {
-				return hasFacet(Exploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
-						: Exploration.DEFAULT_SAMPLING;
-			}
-		});
-
-		exp.add(new ParameterAdapter("Sample size", IKeyword.STO, IType.STRING) {
-			@Override
-			public Object value() {
-				return sample_size;
-			}
-		});
-
 	}
 
 }

@@ -70,21 +70,21 @@ import gama.gaml.types.IType;
 				internal = true,
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
-						name = Exploration.SAMPLE_SIZE,
-						type = IType.ID,
-						optional = false,
-						doc = @doc ("The size of the sample for Morris samples")),
-				@facet (
 						name = MorrisExploration.NB_LEVELS,
 						type = IType.ID,
-						optional = false,
-						doc = @doc ("Number of level for the Morris method, can't be 1")),
+						optional = true,
+						doc = @doc ("Number of level each trajectories is made of, can't be 1 / should be even - 4 by default")),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
 						of = IType.STRING,
 						optional = false,
 						doc = @doc ("The list of output variables to analyze through morris method")),
+				@facet (
+						name = Exploration.SAMPLE_SIZE,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of trajectories , 10 by default - usually between 5 and 15 but should be relative (positive correlation) to the number of parameters")),
 				@facet (
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
@@ -106,7 +106,7 @@ import gama.gaml.types.IType;
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (
-						value = "method morris sample_size:100 nb_levels:4 outputs:['my_var'] report:'../path/to/report.txt;",
+						value = "method morris nb_levels:4 outputs:['my_var'] report:'../path/to/report.txt;",
 						isExecutable = false) }) })
 
 public class MorrisExploration extends AExplorationAlgorithm {
@@ -163,8 +163,9 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void explore(final IScope scope) {
-		this.sample = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
-		this.nb_levels = Cast.asInt(scope, getFacet(NB_LEVELS).value(scope));
+		this.sample =  hasFacet(Exploration.SAMPLE_SIZE) ? 
+				Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
+		this.nb_levels = hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
 			String path =
@@ -222,7 +223,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		List<String> names = new ArrayList<>();
 		for (int i = 0; i < parameters.size(); i++) { names.add(parameters.get(i).getName()); }
 		this.ParametersNames = names;
-		outputs = Cast.asList(scope, getFacet(IKeyword.BATCH_VAR_OUTPUTS).value(scope));
+		outputs = getLitteralOutputs();
 
 		// Puck Fython
 		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
@@ -239,20 +240,10 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 
-		int s = Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope()));
-		int l = Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
-
 		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
 			@Override
 			public Object value() {
-				return l;
-			}
-		});
-
-		exp.add(new ParameterAdapter("Morris sample", IKeyword.MORRIS, IType.STRING) {
-			@Override
-			public Object value() {
-				return solutions == null ? s * l : solutions.size() == 0 ? sample : solutions.size();
+				return Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));
 			}
 		});
 
