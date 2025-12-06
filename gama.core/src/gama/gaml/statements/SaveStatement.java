@@ -416,7 +416,7 @@ public class SaveStatement extends AbstractStatementSequence{
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		// if item is null, there's nothing to write
-		if (item == null) return null;
+		if (item == null || item.value(scope) == null) return null;
 		
 		// First case: we have no destination file, so it means the item is a file;
 		if (file == null) {
