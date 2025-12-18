@@ -40,8 +40,10 @@ import org.jfree.data.general.Dataset;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.runtime.IScope;
+import gama.core.util.GamaColor;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
+import gama.gaml.operators.Colors;
 
 /**
  * The Class ChartJFreeChartOutput.
@@ -249,6 +251,9 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				case IKeyword.TOP:
 					legend.setPosition(RectangleEdge.TOP);
 					break;
+				case "none":
+					legend.setVisible(false);
+					break;
 				case "onchart":
 					if (plot instanceof XYPlot p) {
 						// Place the legend inside the chart area at the corner specified by the anchor
@@ -259,8 +264,8 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 						ta.setMaxHeight(0.5);
 						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 						legend.setVerticalAlignment(VerticalAlignment.CENTER);
-						// legend.setBackgroundPaint(Colors.rgb(scope, GamaColor.get(backgroundColor), 0.5));
 						// Legend with 50% transparency by default
+						legend.setBackgroundPaint(Colors.rgb(scope, GamaColor.get(backgroundColor), 0.5));
 						p.addAnnotation(ta);
 						// Remove the default legend
 						chart.removeLegend();

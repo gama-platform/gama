@@ -677,7 +677,10 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		// Legend position and anchor
 		expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
-		if (expr != null) { chartOutput.setSeriesLabelPosition(scope, Cast.asString(scope, expr.value(scope))); }
+		if (expr != null) {
+			String pos = Cast.asString(scope, expr.value(scope));
+			chartOutput.setSeriesLabelPosition(scope, pos);
+		}
 		expr = getFacet(IKeyword.ANCHOR);
 		if (expr != null) {
 			final GamaPoint pt = Cast.asPoint(scope, expr.value(scope));
