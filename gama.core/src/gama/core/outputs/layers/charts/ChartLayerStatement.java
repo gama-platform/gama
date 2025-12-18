@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
+import static gama.core.common.interfaces.IKeyword.ANCHOR;
+
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -222,9 +224,15 @@ import gama.gaml.types.Types;
 				@facet (
 						name = ChartLayerStatement.SERIES_LABEL_POSITION,
 						type = IType.ID,
-						values = { "default", "none", "legend", "onchart", "yaxis", "xaxis" },
+						values = { "default", "none", "legend", "onchart", "yaxis", "xaxis", "left", "right", "top",
+								"bottom" },
 						optional = true,
-						doc = @doc ("Position of the Series names: default (best guess), none, legend, onchart, xaxis (for category plots) or yaxis (uses the first serie name).")),
+						doc = @doc ("Position of the legend: default (best guess), none, legend, onchart, xaxis (for category plots) or yaxis (uses the first serie name). 'left', 'right', 'top' and 'bottom' can also be used to force the position of the legend (default is bottom).")),
+				@facet (
+						name = ANCHOR,
+						type = IType.POINT,
+						optional = true,
+						doc = @doc ("Only used when 'series_label_position' is set to 'onchart'. Represents the position of the center of the legend box, can take one of the following values: #center, #top_left, #left_center, #bottom_left, #bottom_center, #bottom_right, #right_center, #top_right, #top_center; or any point between {0,0} (#bottom_left) and {1,1} (#top_right)")),
 				@facet (
 						name = ChartLayerStatement.LABELBACKGROUNDCOLOR,
 						type = IType.COLOR,
@@ -526,6 +534,15 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		chartOutput.initChart_post_data_init(scope);
 		chartOutput.updateOutput(scope);
 
+		// Legend position and anchor
+		// expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
+		// if (expr != null) { chartOutput.setSeriesLabelPosition(scope, Cast.asString(scope, expr.value(scope))); }
+		// expr = getFacet(IKeyword.ANCHOR);
+		// if (expr != null) {
+		// final GamaPoint pt = Cast.asPoint(scope, expr.value(scope));
+		// chartOutput.setSeriesLabelAnchor(scope, pt);
+		// }
+
 		return true;
 	}
 
@@ -558,9 +575,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		string1 = getFacet(ChartLayerStatement.Y2LABEL);
 		if (string1 != null) { chartOutput.setY2Label(scope, Cast.asString(scope, string1.value(scope))); }
-
-		string1 = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
-		if (string1 != null) { chartOutput.setSeriesLabelPosition(scope, Cast.asString(scope, string1.value(scope))); }
 
 		IExpression expr = getFacet(XRANGE);
 		if (expr != null) {
@@ -660,6 +674,16 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (string1 != null) { chartOutput.setYTickLineVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet("lines");
 		if (string1 != null) { chartOutput.setGridLinesVisible(scope, Cast.asBool(scope, string1.value(scope))); }
+
+		// Legend position and anchor
+		expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
+		if (expr != null) { chartOutput.setSeriesLabelPosition(scope, Cast.asString(scope, expr.value(scope))); }
+		expr = getFacet(IKeyword.ANCHOR);
+		if (expr != null) {
+			final GamaPoint pt = Cast.asPoint(scope, expr.value(scope));
+			chartOutput.setSeriesLabelAnchor(scope, pt);
+		}
+
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);

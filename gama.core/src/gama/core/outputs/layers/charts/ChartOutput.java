@@ -20,6 +20,7 @@ import org.jfree.chart.JFreeChart;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.simulation.SimulationClock;
+import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.gaml.expressions.IExpression;
@@ -166,10 +167,13 @@ public abstract class ChartOutput {
 	int titleFontStyle = Font.BOLD;
 
 	/** The series label position. */
-	String series_label_position = "default";
+	protected String series_label_position = IKeyword.DEFAULT;
+
+	/** The series label anchor. */
+	protected GamaPoint series_label_anchor = new GamaPoint(1, 1);
 
 	/** The style. */
-	String style = IKeyword.DEFAULT;
+	protected String style = IKeyword.DEFAULT;
 
 	/** The gap. */
 	double gap = -1; // only used in bar charts? copied the code, don't
@@ -1487,5 +1491,13 @@ public abstract class ChartOutput {
 	 *            the scope
 	 */
 	public void dispose(final IScope scope) {}
+
+	/**
+	 * @param scope
+	 * @param pt
+	 */
+	public void setSeriesLabelAnchor(final IScope scope, final GamaPoint pt) {
+		series_label_anchor = pt;
+	}
 
 }

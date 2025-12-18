@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,12 +22,19 @@ import java.util.List;
 
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.event.ChartProgressEvent;
 import org.jfree.chart.event.ChartProgressListener;
 import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.ui.HorizontalAlignment;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
 
 import gama.core.common.interfaces.IKeyword;
@@ -226,9 +233,43 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(bg); }
 		}
 		if (chart.getLegend() != null) {
-			chart.getLegend().setItemFont(getLegendFont());
-			chart.getLegend().setFrame(BlockBorder.NONE);
-			if (textColor != null) { chart.getLegend().setItemPaint(textColor); }
+			LegendTitle legend = chart.getLegend(); // Get the existing legend
+			legend.setItemFont(getLegendFont());
+			legend.setFrame(BlockBorder.NONE);
+			legend.setPosition(RectangleEdge.BOTTOM);
+			// legend.setPadding(5, 5, 5, 5);
+			// Set legend position
+			switch (series_label_position) {
+				case IKeyword.LEFT:
+					legend.setPosition(RectangleEdge.LEFT);
+					break;
+				case IKeyword.RIGHT:
+					legend.setPosition(RectangleEdge.RIGHT);
+					break;
+				case IKeyword.TOP:
+					legend.setPosition(RectangleEdge.TOP);
+					break;
+				case "onchart":
+					if (plot instanceof XYPlot p) {
+						// Place the legend inside the chart area at the corner specified by the anchor
+						double x = series_label_anchor.x / 2 + 0.25; // Normalize to [0.25, 0.75]
+						double y = series_label_anchor.y / 2 + 0.25;
+						XYTitleAnnotation ta = new XYTitleAnnotation(x, y, legend, RectangleAnchor.CENTER);
+						ta.setMaxWidth(0.5); // Legend will take up to 50% of the chart width by default
+						ta.setMaxHeight(0.5);
+						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
+						legend.setVerticalAlignment(VerticalAlignment.CENTER);
+						// legend.setBackgroundPaint(Colors.rgb(scope, GamaColor.get(backgroundColor), 0.5));
+						// Legend with 50% transparency by default
+						p.addAnnotation(ta);
+						// Remove the default legend
+						chart.removeLegend();
+					}
+			}
+
+			// Set legend text color
+			if (textColor != null) { legend.setItemPaint(textColor); }
+
 		}
 
 	}

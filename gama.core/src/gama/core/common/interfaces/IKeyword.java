@@ -1278,4 +1278,10 @@ public interface IKeyword {
 	String[] METHODS =
 			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
 
+	/** The bottom. */
+	String BOTTOM = "bottom";
+
+	/** The top. */
+	String TOP = "top";
+
 }
