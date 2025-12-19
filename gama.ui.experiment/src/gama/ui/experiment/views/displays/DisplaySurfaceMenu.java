@@ -33,11 +33,14 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolItem;
 
+import com.google.common.collect.Iterables;
+
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.ILayer;
 import gama.core.common.interfaces.ILayer.IGridLayer;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.layers.AgentLayer;
+import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.GraphicLayer;
 import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
@@ -84,6 +87,7 @@ public class DisplaySurfaceMenu {
 		layer_images.put(SpeciesLayer.class, GamaIcon.named(IGamaIcons.LAYER_SPECIES).image());
 		layer_images.put(ChartLayer.class, GamaIcon.named(IGamaIcons.LAYER_CHART).image());
 		layer_images.put(GraphicLayer.class, GamaIcon.named(IGamaIcons.LAYER_GRAPHICS).image());
+		layer_images.put(EventLayer.class, GamaIcon.named(IGamaIcons.LAYER_EVENT).image());
 	}
 
 	/** The menu. */
@@ -365,10 +369,10 @@ public class DisplaySurfaceMenu {
 
 				if (filteredList != null) { pop.retainAll(filteredList); }
 				// if (pop.isEmpty()) { continue; }
+				if (!layer.isControllable()) { continue; }
 				final MenuItem layerMenu = new MenuItem(menu, SWT.CASCADE);
 				layerMenu.setText(layer.getType() + ": " + layer.getName());
 				layerMenu.setImage(layer_images.get(layer.getClass()));
-				if (!layer.isControllable()) { continue; }
 				final Menu submenu = new Menu(layerMenu);
 				layerMenu.setMenu(submenu);
 				GamaMenu.separate(submenu, "Actions");
@@ -429,6 +433,14 @@ public class DisplaySurfaceMenu {
 					final MenuAction[] actions2 = { focus };
 					Menu agentsMenu = GamaMenu.sub(submenu, "Agents", "", (IGamaIcons.MENU_POPULATION));
 					AgentsMenu.fillPopulationSubMenu(agentsMenu, pop, actions2);
+				}
+			}
+			Iterable<EventLayer> eventLayers = Iterables.filter(surface.getManager().getItems(), EventLayer.class);
+			if (Iterables.size(eventLayers) > 0) {
+				Menu mm = GamaMenu.sub(menu, "Event Layers","", IGamaIcons.LAYER_EVENT);
+				for (final ILayer layer : eventLayers) {
+					final MenuItem layerMenu = new MenuItem(mm, SWT.CASCADE);
+					layerMenu.setText(layer.getType() + ": " + layer.getName());
 				}
 			}
 		}

@@ -250,6 +250,9 @@ public interface IGamaIcons {
 	/** The layer graphics. */
 	String LAYER_GRAPHICS = "layer/layer.graphics";
 
+	/** The layer event. */
+	String LAYER_EVENT = "layer/layer.event";
+
 	/** The layer grid. */
 	String LAYER_GRID = "layer/layer.grid";
 
