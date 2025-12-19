@@ -1,22 +1,22 @@
 /*******************************************************************************************************
  *
- * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -753,7 +753,11 @@ public class Maths {
 					equals = "1.0"),
 			see = "exp")
 	public static Double ln(final IScope scope, final Double x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x);
 	}
@@ -778,7 +782,11 @@ public class Maths {
 					value = "ln(1)",
 					equals = "0.0"))
 	public static Double ln(final IScope scope, final Integer x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x);
 	}
@@ -806,7 +814,11 @@ public class Maths {
 					equals = "1.0"),
 			see = "ln")
 	public static Double log(final IScope scope, final Double x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x.doubleValue());
 	}
@@ -831,12 +843,26 @@ public class Maths {
 					value = "log(1)",
 					equals = "0.0"))
 	public static Double log(final IScope scope, final Integer x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x);
 	}
 
-	
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -848,11 +874,26 @@ public class Maths {
 					value = "log(100, 100)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Integer x, final Integer b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		return Math.log(x) / Math.log(b);
 	}
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -864,11 +905,26 @@ public class Maths {
 					value = "log(100, 100.0)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Integer x, final Double b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		return Math.log(x) / Math.log(b);
 	}
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -880,12 +936,26 @@ public class Maths {
 					value = "log(100.0, 100.0)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Double x, final Double b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		return Math.log(x) / Math.log(b);
 	}
-	
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -897,12 +967,15 @@ public class Maths {
 					value = "log(100.0, 100)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Double x, final Integer b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		return Math.log(x) / Math.log(b);
 	}
-	
-	
+
 	/**
 	 * Negate.
 	 *
@@ -1734,7 +1807,7 @@ public class Maths {
 	 * @return the double
 	 */
 	@operator (
-			value = "ceil",
+			value = { "ceil", "ceiling" },
 			can_be_const = true,
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
@@ -1749,8 +1822,8 @@ public class Maths {
 							value = "ceil(-4.7)",
 							equals = "-4.0") },
 			see = { "floor", "round" })
-	public static final double ceil(final double d) {
-		return Math.ceil(d);
+	public static final int ceil(final double d) {
+		return (int) Math.ceil(d);
 	}
 
 	/**
@@ -1949,7 +2022,7 @@ public class Maths {
 			value = "the atan2 value of the two operands.",
 			comment = "The function atan2 is the arctangent function with two arguments. The purpose of using two arguments instead of one is to gather information on the signs of the inputs in order to return the appropriate quadrant of the computed angle, which is not possible for the single-argument arctangent function. Beware: the first argument is y and the second is x",
 			masterDoc = true,
-			examples = {@example (
+			examples = { @example (
 					value = "atan2 (0,0)",
 					equals = "0.0"),
 					@example (
@@ -1975,8 +2048,7 @@ public class Maths {
 							equals = "-45.0"),
 					@example (
 							value = "atan2 (-1,-1)",
-							equals = "-135.0"),
-			},
+							equals = "-135.0"), },
 			see = { "atan", "acos", "asin" })
 	public static double atan2(final double y, final double x) {
 		return Math.atan2(y, x) * toDeg;
