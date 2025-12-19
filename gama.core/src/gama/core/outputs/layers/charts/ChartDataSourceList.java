@@ -33,7 +33,6 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	@Override
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
-
 		currentseries = ((ChartDataSourceList) source).currentseries;
 		legendExp = ((ChartDataSourceList) source).legendExp;
 		return super.cloneMe(scope, chartCycle, source);

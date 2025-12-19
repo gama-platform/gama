@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartDataSource.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -170,19 +170,15 @@ public class ChartDataSource {
 	 * @return true, if successful
 	 */
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
-
 		value = source.value;
-
 		valueyerr = source.valueyerr;
 		valuexerr = source.valuexerr;
 		valueyminmax = source.valueyminmax;
 		colorexp = source.colorexp;
 		sizeexp = source.sizeexp;
 		markershapeexp = source.markershapeexp;
-
 		uniqueMarkerName = source.uniqueMarkerName;
 		style = source.style;
-
 		myDataset = source.myDataset;
 		isCumulative = source.isCumulative;
 		isCumulativeY = source.isCumulativeY;
@@ -191,9 +187,7 @@ public class ChartDataSource {
 		useMarker = source.useMarker;
 		fillMarker = source.fillMarker;
 		showLine = source.showLine;
-
 		useSize = source.useSize;
-
 		useYErrValues = source.useYErrValues;
 		useXErrValues = source.useXErrValues;
 		useYMinMaxValues = source.useYMinMaxValues;
@@ -201,7 +195,6 @@ public class ChartDataSource {
 		useMarkerShapeExp = source.useMarkerShapeExp;
 		lineThickness = source.lineThickness;
 		isBoxAndWhiskerData = source.isBoxAndWhiskerData;
-
 		return true;
 	}
 
@@ -677,8 +670,10 @@ public class ChartDataSource {
 						case ChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
-							myserie.addxyvalue(scope,/* getDataset().getXSeriesValues().get(0) */ getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()), dvalue, chartCycle,
-									barvalues, listvalue);
+							myserie.addxyvalue(
+									scope, /* getDataset().getXSeriesValues().get(0) */ getDataset().getXSeriesValues()
+											.get(getDataset().getCommonXIndex()),
+									dvalue, chartCycle, barvalues, listvalue);
 							break;
 
 						}

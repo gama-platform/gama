@@ -752,7 +752,7 @@ public class LayeredDisplayData {
 	/**
 	 * Adds the camera definition.
 	 *
-	 * @param name
+	 * @param legend
 	 *            the name
 	 * @param definition
 	 *            the definition

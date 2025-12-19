@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ChartDataSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ChartDataSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +14,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
@@ -26,8 +26,6 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Files;
 import gama.gaml.operators.Strings;
-
-import java.util.Set;
 
 /**
  * The Class ChartDataSet.
@@ -478,7 +476,6 @@ public class ChartDataSet {
 		final ArrayList<ChartDataSource> sourcestoadd = new ArrayList<>();
 		for (final ChartDataSource source : sources) {
 			if (source.isCumulative() || source.isCumulativeY) {
-
 				final ChartDataSource newsource = source.getClone(scope, chartCycle);
 				newsource.createInitialSeries(scope);
 				sourcestoremove.add(source);

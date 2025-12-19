@@ -146,9 +146,6 @@ public class ChartDataListStatement extends AbstractStatement {
 			throws GamaRuntimeException {
 
 		final ChartDataSourceList data = new ChartDataSourceList();
-
-		// IExpression string1 = getFacet(IKeyword.TYPE);
-
 		data.setDataset(scope, graphdataset);
 
 		String stval = getLiteral(IKeyword.STYLE);

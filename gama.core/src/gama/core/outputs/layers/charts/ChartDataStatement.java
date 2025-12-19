@@ -212,8 +212,6 @@ public class ChartDataStatement extends AbstractStatement {
 
 		final ChartDataSourceUnique data = new ChartDataSourceUnique();
 
-		// final IExpression string1 = getFacet(IKeyword.TYPE);
-
 		data.setDataset(scope, graphdataset);
 
 		String stval = getLiteral(IKeyword.STYLE);
@@ -230,7 +228,6 @@ public class ChartDataStatement extends AbstractStatement {
 		data.setUseSecondYAxis(scope, boolval);
 
 		stval = Cast.asString(scope, getFacetValue(scope, IKeyword.LEGEND));
-
 		data.setLegend(scope, stval);
 
 		IExpression expval = getFacet(IKeyword.VALUE).resolveAgainst(scope);
