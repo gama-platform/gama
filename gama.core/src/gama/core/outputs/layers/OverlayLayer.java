@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * OverlayLayer.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * OverlayLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
@@ -32,7 +31,8 @@ public class OverlayLayer extends GraphicLayer {
 	/**
 	 * Instantiates a new overlay layer.
 	 *
-	 * @param layer the layer
+	 * @param layer
+	 *            the layer
 	 */
 	public OverlayLayer(final ILayerStatement layer) {
 		super(layer);
@@ -68,6 +68,11 @@ public class OverlayLayer extends GraphicLayer {
 	@Override
 	public boolean isProvidingCoordinates() {
 		return false; // by default
+	}
+
+	@Override
+	public boolean stayProportional() {
+		return false;
 	}
 
 	@Override
