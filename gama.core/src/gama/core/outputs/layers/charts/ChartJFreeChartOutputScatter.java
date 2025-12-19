@@ -294,10 +294,11 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, serieid);
+
 		// newr.setSeriesStroke(0, new BasicStroke(0));
 		newr.setDefaultCreateEntities(true);
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-
+		if (myserie.getName() == null || myserie.getName().isEmpty()) { newr.setSeriesVisibleInLegend(0, false); }
 		if (newr instanceof XYLineAndShapeRenderer xy) {
 			xy.setSeriesLinesVisible(0, myserie.getMysource().showLine);
 			xy.setSeriesShapesFilled(0, myserie.getMysource().fillMarker);

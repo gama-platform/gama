@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ChartDataSourceList.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ChartDataSourceList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
@@ -16,6 +16,7 @@ import java.util.HashMap;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.IList;
+import gama.dev.DEBUG;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 
@@ -103,7 +104,7 @@ public class ChartDataSourceList extends ChartDataSource {
 	 *            the chart cycle
 	 */
 	private void updateserielist(final IScope scope, final int chartCycle) {
-		final IList<String> legends = Cast.asList(scope, legendExp.value(scope));
+		final IList<String> legends = legendExp == null ? null : Cast.asList(scope, legendExp.value(scope));
 		if (legends == null) return;
 		final IList<?> values = Cast.asList(scope, getValue().value(scope));
 		final ArrayList<String> previousSeries = currentseries;
@@ -158,10 +159,7 @@ public class ChartDataSourceList extends ChartDataSource {
 	 */
 	private void newSerie(final IScope scope, final String myname) {
 		if (this.getDataset().getDataSeriesIds(scope).contains(myname)) {
-			// TODO
-			// DO SOMETHING? create id and store correspondance
-			// DEBUG.LOG("Serie "+myname+"s already exists... Will
-			// replace old one!!");
+			DEBUG.LOG("Serie " + myname + "s already exists... Will replace old one!!");
 		}
 		final ChartDataSeries myserie = myDataset.createOrGetSerie(scope, myname, this);
 		mySeries.put(myname, myserie);
@@ -171,20 +169,16 @@ public class ChartDataSourceList extends ChartDataSource {
 	@Override
 	public void createInitialSeries(final IScope scope) {
 
-		final Object on = legendExp.value(scope);
+		final Object on = legendExp == null ? null : legendExp.value(scope);
 
-		if (on instanceof IList) {
-			final IList<?> lval = Cast.asList(scope, on);
+		if (on instanceof IList lval) {
 			currentseries = new ArrayList<>();
-
-			if (lval.size() > 0) {
-				for (int i = 0; i < lval.size(); i++) {
-					final Object no = lval.get(i);
-					if (no != null) {
-						final String myname = Cast.asString(scope, no);
-						newSerie(scope, myname);
-						currentseries.add(i, myname);
-					}
+			for (int i = 0; i < lval.size(); i++) {
+				final Object no = lval.get(i);
+				if (no != null) {
+					final String myname = Cast.asString(scope, no);
+					newSerie(scope, myname);
+					currentseries.add(i, myname);
 				}
 			}
 		}
