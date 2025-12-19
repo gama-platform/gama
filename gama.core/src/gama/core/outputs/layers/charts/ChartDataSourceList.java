@@ -26,20 +26,20 @@ import gama.gaml.operators.Cast;
 public class ChartDataSourceList extends ChartDataSource {
 
 	/** The currentseries. */
-	ArrayList<String> currentseries;
+	ArrayList<String> currentSeriesNames;
 
 	/** The legend exp. */
 	IExpression legendExp;
 
 	@Override
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
-		currentseries = ((ChartDataSourceList) source).currentseries;
+		currentSeriesNames = ((ChartDataSourceList) source).currentSeriesNames;
 		legendExp = ((ChartDataSourceList) source).legendExp;
 		return super.cloneMe(scope, chartCycle, source);
 	}
 
 	@Override
-	public ChartDataSource getClone(final IScope scope, final int chartCycle) {
+	public ChartDataSourceList getClone(final IScope scope, final int chartCycle) {
 		final ChartDataSourceList res = new ChartDataSourceList();
 		res.cloneMe(scope, chartCycle, this);
 		return res;
@@ -86,7 +86,8 @@ public class ChartDataSourceList extends ChartDataSource {
 				for (int i = 0; i < lval.size(); i++) {
 					final Object no = lval.get(i);
 					if (no != null) {
-						updateseriewithvalue(scope, mySeries.get(currentseries.get(i)), no, chartCycle, barvalues, i);
+						updateseriewithvalue(scope, mySeries.get(currentSeriesNames.get(i)), no, chartCycle, barvalues,
+								i);
 					}
 				}
 			}
@@ -106,15 +107,15 @@ public class ChartDataSourceList extends ChartDataSource {
 		final IList<String> legends = legendExp == null ? null : Cast.asList(scope, legendExp.value(scope));
 		if (legends == null) return;
 		final IList<?> values = Cast.asList(scope, getValue().value(scope));
-		final ArrayList<String> previousSeries = currentseries;
-		currentseries = new ArrayList<>();
+		final ArrayList<String> previousSeries = currentSeriesNames;
+		currentSeriesNames = new ArrayList<>();
 		boolean somethingChanged = false;
 		if (legends.size() > 0) {
 			// value list case
 			for (int i = 0; i < Math.min(values.size(), legends.size()); i++) {
 				final String name = legends.get(i);
 				if (name != null) {
-					currentseries.add(name);
+					currentSeriesNames.add(name);
 					if (i >= previousSeries.size() || !previousSeries.get(i).equals(name)) {
 						somethingChanged = true;
 						if (previousSeries.contains(name)) {
@@ -127,22 +128,12 @@ public class ChartDataSourceList extends ChartDataSource {
 				}
 			}
 		}
-		if (currentseries.size() != previousSeries.size()) { somethingChanged = true; }
+		if (currentSeriesNames.size() != previousSeries.size()) { somethingChanged = true; }
 		if (somethingChanged) {
-			for (int i = 0; i < previousSeries.size(); i++) {
-				if (!currentseries.contains(previousSeries.get(i))) {
-					// series i deleted
-					this.getDataset().removeserie(scope, previousSeries.get(i));
-				}
-
+			for (String s : previousSeries) {
+				if (!currentSeriesNames.contains(s)) { getDataset().removeserie(scope, s); }
 			}
-			ChartDataSeries s;
-
-			for (String element : currentseries) {
-				s = this.getDataset().getDataSeries(scope, element);
-				this.getDataset().series.remove(element);
-				this.getDataset().series.put(element, s);
-			}
+			for (String element : currentSeriesNames) { getDataset().addSerieAtTheEnd(scope, element); }
 
 		}
 
@@ -171,33 +162,18 @@ public class ChartDataSourceList extends ChartDataSource {
 		final Object on = legendExp == null ? null : legendExp.value(scope);
 
 		if (on instanceof IList lval) {
-			currentseries = new ArrayList<>();
+			currentSeriesNames = new ArrayList<>();
 			for (int i = 0; i < lval.size(); i++) {
 				final Object no = lval.get(i);
 				if (no != null) {
 					final String myname = Cast.asString(scope, no);
 					newSerie(scope, myname);
-					currentseries.add(i, myname);
+					currentSeriesNames.add(i, myname);
 				}
 			}
 		}
 		inferDatasetProperties(scope);
 	}
-
-	// public void inferDatasetProperties(final IScope scope) {
-	// int type_val = ChartDataSource.DATA_TYPE_NULL;
-	// final IExpression value = getValue();
-	// if (value != null) {
-	// if (Types.LIST.isAssignableFrom(value.getType()) && value instanceof ListExpression
-	// && ((ListExpression) value).getElements().length > 0) {
-	// type_val = computeTypeOfData(scope, value);
-	// }
-	//
-	// }
-	//
-	// getDataset().getOutput().setDefaultPropertiesFromType(scope, this, type_val);
-	//
-	// }
 
 	/**
 	 * Infer dataset properties.

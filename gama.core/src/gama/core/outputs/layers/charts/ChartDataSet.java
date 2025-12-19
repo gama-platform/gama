@@ -43,7 +43,7 @@ public class ChartDataSet {
 	final ArrayList<ChartDataSource> sources = new ArrayList<>();
 
 	/** The series. */
-	final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
+	private final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
 
 	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
@@ -432,7 +432,6 @@ public class ChartDataSet {
 	 * @return the data series
 	 */
 	public ChartDataSeries getDataSeries(final IScope scope, final String serieid) {
-
 		return series.get(serieid);
 	}
 
@@ -926,6 +925,16 @@ public class ChartDataSet {
 			}
 		}
 
+	}
+
+	/**
+	 * @param scope
+	 * @param element
+	 */
+	public void addSerieAtTheEnd(final IScope scope, final String element) {
+		ChartDataSeries serie = getDataSeries(scope, element);
+		this.series.remove(element);
+		this.series.put(element, serie);
 	}
 
 }
