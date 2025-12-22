@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jp2k-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-netcdf-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/netcdf4-5.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar"/>
@@ -18,7 +17,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-graph-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-cql-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-beanutils-1.11.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-text-1.13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-app-schema-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-app-schema-resolver-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-pool-1.5.4.jar"/>
@@ -61,12 +59,8 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/bigint-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/bufr-5.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/cdm-core-5.5.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-cli-1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-collections4-4.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-dbcp-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-digester-1.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-httpclient-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-io-2.19.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/disruptor-1.2.15.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/ehcache-3.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/ejml-core-0.41.jar"/>
@@ -74,7 +68,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/geo-0.7.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/geodb-0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/GeographicLib-Java-1.49.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/grib-5.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-api-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-arcgrid-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-brewer-33.4.jar"/>
