@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jp2k-33.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-netcdf-33.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/netcdf4-5.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/slf4j 2.0.9/slf4j-api-2.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/slf4j 2.0.9/slf4j-nop-2.0.9.jar"/>

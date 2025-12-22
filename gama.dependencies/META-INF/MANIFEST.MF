@@ -313,7 +313,9 @@ Require-Bundle: org.eclipse.osgi,
  com.google.guava;visibility:=reexport,
  org.eclipse.xsd,
  org.apache.commons.lang3;bundle-version="3.20.0";visibility:=reexport,
- org.apache.commons.commons-compress;bundle-version="1.28.0"
+ org.apache.commons.commons-compress;bundle-version="1.28.0",
+ com.sun.jna;bundle-version="5.18.1",
+ com.sun.jna.platform;bundle-version="5.18.1"
 Bundle-ClassPath: .,
  libs/geotools 33.4/aws-java-sdk-s3-1.11.36.jar,
  libs/geotools 33.4/bigint-0.7.1.jar,
@@ -523,6 +525,9 @@ Bundle-ClassPath: .,
  libs/moeaframework 5.1/moeaframework-5.1.jar,
  libs/slf4j 2.0.9/slf4j-api-2.0.9.jar,
  libs/slf4j 2.0.9/slf4j-nop-2.0.9.jar,
- libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar
+ libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar,
+ libs/geotools 33.4/gt-jp2k-33.4.jar,
+ libs/geotools 33.4/gt-netcdf-33.4.jar,
+ libs/geotools 33.4/netcdf4-5.5.3.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.dependencies
