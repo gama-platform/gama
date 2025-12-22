@@ -104,6 +104,7 @@
 --add-opens=java.base/java.text=ALL-UNNAMED
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
+--enable-native-access=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>-Dswt.enable.autoScale=true
 -Dswt.autoScale=quarter

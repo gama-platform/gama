@@ -35,8 +35,8 @@ import gama.core.common.preferences.Pref.ValueProvider;
 import gama.core.common.util.FileUtils;
 import gama.core.common.util.RandomUtils;
 import gama.core.common.util.StringUtils;
+import gama.core.kernel.root.SystemInfo;
 import gama.core.outputs.layers.properties.ICameraDefinition;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.core.runtime.concurrent.BufferingController;
 import gama.core.util.GamaColor;
@@ -1230,7 +1230,7 @@ public class GamaPreferences {
 						.append(StringUtils.toGaml(e.getValue(), false)).append(";").append(Strings.LN)
 						.append(Strings.LN);
 			}
-			os.append("// ").append(GAMA.VERSION).append(" Preferences saved on ")
+			os.append("// ").append(SystemInfo.VERSION).append(" Preferences saved on ")
 					.append(LocalDateTime.now().toString()).append(Strings.LN).append(Strings.LN);
 			os.append("model preferences").append(Strings.LN).append(Strings.LN);
 			os.append("experiment 'Display Preferences' type: gui {").append(Strings.LN);

@@ -59,12 +59,6 @@ public class GAMA {
 		DEBUG.OFF();
 	}
 
-	/** The Constant VERSION_NUMBER. */
-	public static final String VERSION_NUMBER = "0.0.0-SNAPSHOT";
-
-	/** The Constant VERSION. */
-	public static final String VERSION = "GAMA " + VERSION_NUMBER;
-
 	/** The agent. */
 	private static volatile PlatformAgent agent;
 

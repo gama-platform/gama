@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ImageDataLoader.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ImageDataLoader.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,6 +33,12 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.style.ColorMap;
+import org.geotools.api.style.ColorMapEntry;
+import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.StyleFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.factory.CommonFactoryFinder;
@@ -40,13 +46,7 @@ import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleFactory;
-import org.opengis.filter.FilterFactory2;
 
 import gama.dev.DEBUG;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi;
@@ -221,7 +221,7 @@ public class ImageDataLoader {
 	 */
 	private static Style createStyle(final int band, final double min, final double max) {
 
-		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+		FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 		StyleFactory sf = CommonFactoryFinder.getStyleFactory();
 
 		RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
@@ -311,17 +311,15 @@ public class ImageDataLoader {
 			}
 
 			infile.useLocale(Locale.US);
-			int cols = 0;
-			int rows = 0;
 			double nodata = 0d;
 
 			// process the top 6 or 5 header lines
 			// ncols
 			infile.next();
-			cols = infile.nextInt();
+			int cols = infile.nextInt();
 			// nrows
 			infile.next();
-			rows = infile.nextInt();
+			int rows = infile.nextInt();
 			infile.nextLine();
 			// xllcorner
 			infile.nextLine();

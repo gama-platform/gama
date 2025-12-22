@@ -1,17 +1,13 @@
 /*******************************************************************************************************
  *
- * SystemInfo.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * SystemInfo.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.kernel.root;
-
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_NAME;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VENDOR;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VERSION;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -28,9 +24,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.apache.commons.lang3.SystemUtils;
-
-import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 
@@ -38,6 +31,30 @@ import gama.dev.STRINGS;
  * The Class SystemInfo.
  */
 public class SystemInfo {
+
+	/** The Constant VERSION_NUMBER. */
+	public static final String VERSION_NUMBER = "0.0.0-SNAPSHOT";
+
+	/** The Constant VERSION. */
+	public static final String VERSION = "GAMA " + VERSION_NUMBER;
+
+	/** The java vm name. */
+	public static final String JAVA_VM_NAME = System.getProperty("java.vm.name");
+
+	/** The java vm vendor. */
+	public static final String JAVA_VM_VENDOR = System.getProperty("java.vm.vendor");
+
+	/** The java vm version. */
+	public static final String JAVA_VM_VERSION = System.getProperty("java.vm.version");
+
+	/** The os name. */
+	public static final String OS_NAME = System.getProperty("os.name");
+
+	/** The os version. */
+	public static final String OS_VERSION = System.getProperty("os.version");
+
+	/** The os arch. */
+	public static final String OS_ARCH = System.getProperty("os.arch");
 
 	/**
 	 * Binary prefixes, used in IEC Standard for naming bytes.
@@ -79,13 +96,13 @@ public class SystemInfo {
 	 * @return Rounded string representation of the byte size.
 	 */
 	public static String formatBytes(final long bytes) {
-		if (bytes == 1L) { return String.format(Locale.ROOT, "%d byte", bytes); }
-		if (bytes < KIBI) { return String.format(Locale.ROOT, "%d bytes", bytes); }
-		if (bytes < MEBI) { return formatUnits(bytes, KIBI, "KB"); }
-		if (bytes < GIBI) { return formatUnits(bytes, MEBI, "MB"); }
-		if (bytes < TEBI) { return formatUnits(bytes, GIBI, "GB"); }
-		if (bytes < PEBI) { return formatUnits(bytes, TEBI, "TB"); }
-		if (bytes < EXBI) { return formatUnits(bytes, PEBI, "PB"); }
+		if (bytes == 1L) return String.format(Locale.ROOT, "%d byte", bytes);
+		if (bytes < KIBI) return String.format(Locale.ROOT, "%d bytes", bytes);
+		if (bytes < MEBI) return formatUnits(bytes, KIBI, "KB");
+		if (bytes < GIBI) return formatUnits(bytes, MEBI, "MB");
+		if (bytes < TEBI) return formatUnits(bytes, GIBI, "GB");
+		if (bytes < PEBI) return formatUnits(bytes, TEBI, "TB");
+		if (bytes < EXBI) return formatUnits(bytes, PEBI, "PB");
 		return formatUnits(bytes, EXBI, "EiB");
 	}
 
@@ -101,7 +118,7 @@ public class SystemInfo {
 	 * @return A string with the value
 	 */
 	private static String formatUnits(final long value, final long prefix, final String unit) {
-		if (value % prefix == 0) { return String.format(Locale.ROOT, "%d %s", value / prefix, unit); }
+		if (value % prefix == 0) return String.format(Locale.ROOT, "%d %s", value / prefix, unit);
 		return String.format(Locale.ROOT, "%.1f %s", (double) value / prefix, unit);
 	}
 
@@ -146,11 +163,10 @@ public class SystemInfo {
 		INFO = new ArrayList<>();
 		INFO.add("\n");
 		INFO.add(STRINGS.PAD("GAMA VERSION:", 20)
-				+ System.getProperty("gama.version", GAMA.VERSION_NUMBER).replace("-SNAPSHOT", "") + " commit "
+				+ System.getProperty("gama.version", VERSION_NUMBER).replace("-SNAPSHOT", "") + " commit "
 				+ System.getProperty("gama.commit", "Not available"));
-		INFO.add(STRINGS.PAD("COMPUTER:", 20) + SystemUtils.OS_NAME + " " + SystemUtils.OS_VERSION + " on "
-				+ SystemUtils.OS_ARCH + " (" + Runtime.getRuntime().availableProcessors() + " cores, " + physicalMemory
-				+ ")");
+		INFO.add(STRINGS.PAD("COMPUTER:", 20) + OS_NAME + " " + OS_VERSION + " on " + OS_ARCH + " ("
+				+ Runtime.getRuntime().availableProcessors() + " cores, " + physicalMemory + ")");
 		INFO.add(STRINGS.PAD("VIRTUAL MACHINE:", 20) + JAVA_VM_NAME + " " + JAVA_VM_VENDOR + " version "
 				+ JAVA_VM_VERSION);
 		INFO.add(STRINGS.PAD("AVAILABLE MEMORY:", 20) + formatBytes(Runtime.getRuntime().freeMemory()) + " / "

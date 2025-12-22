@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractShapeSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.feature.SchemaException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.FactoryException;
 
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.ITyped;
@@ -41,7 +41,6 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.SimpleScalingProjection;
 import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
@@ -94,7 +93,8 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 *             the gama runtime exception
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws GamaRuntimeException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
+			throws GamaRuntimeException {
 		save(scope, item, file, saveOptions.code, saveOptions.attributesToSave);
 	}
 
@@ -391,11 +391,13 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 
 			for (int i = 0; i < nb; i++) {
 				final Geometry g = gc.getGeometryN(i);
-				if (g instanceof Polygon p) {
-					polys.add(p);
-				} else if (g instanceof LineString ls) {
-					lines.add(ls);
-				} else if (g instanceof Point p) { points.add(p); }
+				switch (g) {
+					case Polygon p -> polys.add(p);
+					case LineString ls -> lines.add(ls);
+					case Point p -> points.add(p);
+					case null, default -> {
+					}
+				}
 			}
 			if (!polys.isEmpty()) {
 				if (polys.size() == 1) return polys.get(0);

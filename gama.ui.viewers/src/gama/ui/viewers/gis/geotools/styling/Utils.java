@@ -1,35 +1,33 @@
 /*******************************************************************************************************
  *
- * Utils.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Utils.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis.geotools.styling;
 
 import java.awt.Color;
 
 import org.eclipse.swt.graphics.Rectangle;
-import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.style.FeatureTypeStyle;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.LineSymbolizer;
+import org.geotools.api.style.Mark;
+import org.geotools.api.style.PointSymbolizer;
+import org.geotools.api.style.PolygonSymbolizer;
+import org.geotools.api.style.Rule;
+import org.geotools.api.style.Stroke;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.StyleFactory;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.LineSymbolizer;
-import org.geotools.styling.Mark;
-import org.geotools.styling.PointSymbolizer;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.Rule;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleFactory;
 import org.geotools.util.factory.GeoTools;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.FilterFactory;
-
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
@@ -79,15 +77,12 @@ public class Utils {
 		final SimpleFeatureType schema = featureSource.getSchema();
 		final Class<?> geomType = schema.getGeometryDescriptor().getType().getBinding();
 
-		if (Polygon.class.isAssignableFrom(geomType) || MultiPolygon.class.isAssignableFrom(geomType)) {
+		if (Polygon.class.isAssignableFrom(geomType) || MultiPolygon.class.isAssignableFrom(geomType))
 			return createPolygonStyle();
-
-		} else if (LineString.class.isAssignableFrom(geomType) || MultiLineString.class.isAssignableFrom(geomType)) {
+		if (LineString.class.isAssignableFrom(geomType) || MultiLineString.class.isAssignableFrom(geomType))
 			return createLineStyle();
-
-		} else {
+		else
 			return createPointStyle();
-		}
 	}
 
 	/**
@@ -111,7 +106,7 @@ public class Utils {
 
 		final Rule rule = styleFactory.createRule();
 		rule.symbolizers().add(sym);
-		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(new Rule[] { rule });
+		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(rule);
 		final Style style = styleFactory.createStyle();
 		style.featureTypeStyles().add(fts);
 
@@ -133,7 +128,7 @@ public class Utils {
 
 		final Rule rule = styleFactory.createRule();
 		rule.symbolizers().add(sym);
-		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(new Rule[] { rule });
+		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(rule);
 		final Style style = styleFactory.createStyle();
 		style.featureTypeStyles().add(fts);
 
@@ -160,7 +155,7 @@ public class Utils {
 
 		final Rule rule = styleFactory.createRule();
 		rule.symbolizers().add(sym);
-		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(new Rule[] { rule });
+		final FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(rule);
 		final Style style = styleFactory.createStyle();
 		style.featureTypeStyles().add(fts);
 

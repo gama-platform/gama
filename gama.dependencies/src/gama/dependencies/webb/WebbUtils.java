@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * WebbUtils.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform .
+ * WebbUtils.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -96,83 +96,6 @@ public class WebbUtils {
 	}
 
 	/**
-	 * Convert a byte array to a JSONObject.
-	 *
-	 * @param bytes
-	 *            a UTF-8 encoded string representing a JSON object.
-	 * @return the parsed object
-	 * @throws WebbException
-	 *             in case of error (usually a parsing error due to invalid JSON)
-	 */
-	// public static JSONObject toJsonObject(final byte[] bytes) {
-	// String json;
-	// try {
-	// json = new String(bytes, Const.UTF8);
-	// new JSONObject().
-	// return new JSONObject(json);
-	// } catch (final UnsupportedEncodingException e) {
-	// throw new WebbException(e);
-	// } catch (final JSONException e) {
-	// throw new WebbException("payload is not a valid JSON object", e);
-	// }
-	// }
-
-	/**
-	 * Convert a byte array to a JSONArray.
-	 *
-	 * @param bytes
-	 *            a UTF-8 encoded string representing a JSON array.
-	 * @return the parsed JSON array
-	 * @throws WebbException
-	 *             in case of error (usually a parsing error due to invalid JSON)
-	 */
-	// public static JSONArray toJsonArray(final byte[] bytes) {
-	// String json;
-	// try {
-	// json = new String(bytes, Const.UTF8);
-	// return new JSONArray(json);
-	// } catch (final UnsupportedEncodingException e) {
-	// throw new WebbException(e);
-	// } catch (final JSONException e) {
-	// throw new WebbException("payload is not a valid JSON array", e);
-	// }
-	// }
-
-	/**
-	 * Read an <code>InputStream</code> into <code>byte[]</code> until EOF. <br>
-	 * Does not close the InputStream!
-	 *
-	 * @param is
-	 *            the stream to read the bytes from
-	 * @return all read bytes as an array
-	 * @throws IOException
-	 *             when read or write operation fails
-	 */
-	public static byte[] readBytes(final InputStream is) throws IOException {
-		if (is == null) return null;
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		copyStream(is, baos);
-		return baos.toByteArray();
-	}
-
-	/**
-	 * Copy complete content of <code>InputStream</code> to <code>OutputStream</code> until EOF. <br>
-	 * Does not close the InputStream nor OutputStream!
-	 *
-	 * @param input
-	 *            the stream to read the bytes from
-	 * @param output
-	 *            the stream to write the bytes to
-	 * @throws IOException
-	 *             when read or write operation fails
-	 */
-	public static void copyStream(final InputStream input, final OutputStream output) throws IOException {
-		final byte[] buffer = new byte[1024];
-		int count;
-		while ((count = input.read(buffer)) != -1) { output.write(buffer, 0, count); }
-	}
-
-	/**
 	 * Creates a new instance of a <code>DateFormat</code> for RFC1123 compliant dates. <br>
 	 * Should be stored for later use but be aware that this DateFormat is not Thread-safe! <br>
 	 * If you have to deal with dates in this format with JavaScript, it's easy, because the JavaScript Date object has
@@ -199,21 +122,6 @@ public class WebbUtils {
 			return URLEncoder.encode(value, "UTF-8");
 		} catch (final UnsupportedEncodingException e) {
 			return value;
-		}
-	}
-
-	/**
-	 * Adds the request properties.
-	 *
-	 * @param connection
-	 *            the connection
-	 * @param map
-	 *            the map
-	 */
-	static void addRequestProperties(final HttpURLConnection connection, final Map<String, Object> map) {
-		if (map == null || map.isEmpty()) return;
-		for (final Map.Entry<String, Object> entry : map.entrySet()) {
-			addRequestProperty(connection, entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -405,7 +313,7 @@ public class WebbUtils {
 			return;
 		}
 
-		final byte[] responseBody = WebbUtils.readBytes(responseBodyStream);
+		final byte[] responseBody = responseBodyStream.readAllBytes();
 		// we are ignoring headers describing the content type of the response, instead
 		// try to force the content based on the type the client is expecting it (clazz)
 		if (clazz == String.class) {
@@ -444,7 +352,7 @@ public class WebbUtils {
 			return;
 		}
 
-		final byte[] responseBody = WebbUtils.readBytes(responseBodyStream);
+		final byte[] responseBody = responseBodyStream.readAllBytes();
 		final String contentType = response.connection.getContentType();
 		if (contentType == null || contentType.startsWith(Webb.APP_BINARY) || clazz == Webb.BYTE_ARRAY_CLASS) {
 			response.errorBody = responseBody;

@@ -44,6 +44,7 @@ import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 
 import gama.core.common.interfaces.IKeyword;
+import gama.core.kernel.root.SystemInfo;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
@@ -172,7 +173,7 @@ public class Application implements IApplication {
 		// System.setProperty("swt.autoScale", FLAGS.USE_PRECISE_SCALING ? "quarter" : "integer"); // cf DPIUtil
 		final Display display = PlatformUI.createDisplay();
 		Display.setAppName("Gama Platform");
-		Display.setAppVersion(GAMA.VERSION_NUMBER);
+		Display.setAppVersion(SystemInfo.VERSION_NUMBER);
 
 		Monitor primary = display.getPrimaryMonitor();
 

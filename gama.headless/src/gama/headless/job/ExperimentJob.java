@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -358,15 +358,14 @@ public class ExperimentJob implements IExperimentJob {
 	 */
 	protected void exportVariables() {
 		final int size = this.listenedVariables.length;
-		if (size == 0) {
-			return;
-		}
+		if (size == 0) return;
 		for (int i = 0; i < size; i++) {
 			final ListenedVariable v = this.listenedVariables[i];
 			if (this.step % v.getFrameRate() == 0) {
 				final RichOutput out = simulator.getRichOutput(v);
 				if (out == null || out.getValue() == null) {} else if (out.getValue() instanceof BufferedImage) {
-					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), out.getType());
+					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()),
+							out.getType());
 				} else {
 					v.setValue(out.getValue(), out.getType());
 				}
@@ -395,7 +394,7 @@ public class ExperimentJob implements IExperimentJob {
 	protected Display2D writeImageInFile(final BufferedImage img, final String name, final String outputPath) {
 		final String fileName = name + this.getExperimentID() + "-" + step + ".png";
 		String fileFullName = Globals.IMAGES_PATH + "/" + fileName;
-		if (!"".equals(outputPath)  && outputPath != null) {
+		if (!"".equals(outputPath) && outputPath != null) {
 			// a specific output path has been specified with the "output_path"
 			// keyword in the xml
 			fileFullName = outputPath + "-" + step + ".png";
@@ -542,9 +541,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the parameter
 	 */
 	private Parameter getParameter(final String name) {
-		for (final Parameter p : parameters) { if (p.getName().equals(name)) {
-			return p;
-		} }
+		for (final Parameter p : parameters) { if (p.getName().equals(name)) return p; }
 		return null;
 	}
 
@@ -559,9 +556,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the output
 	 */
 	private Output getOutput(final String name) {
-		for (final Output p : outputs) { if (p.getName().equals(name)) {
-			return p;
-		} }
+		for (final Output p : outputs) { if (p.getName().equals(name)) return p; }
 		return null;
 	}
 

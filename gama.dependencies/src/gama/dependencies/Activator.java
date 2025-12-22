@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * Activator.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform .
+ * Activator.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,16 +29,6 @@ import one.util.streamex.StreamEx;
  */
 public class Activator implements BundleActivator {
 
-	/** The context. */
-	private static BundleContext context;
-
-	/**
-	 * Gets the context.
-	 *
-	 * @return the context
-	 */
-	static BundleContext getContext() { return context; }
-
 	/*
 	 * (non-Javadoc)
 	 *
@@ -45,7 +36,6 @@ public class Activator implements BundleActivator {
 	 */
 	@Override
 	public void start(final BundleContext bundleContext) throws Exception {
-		Activator.context = bundleContext;
 		// Forces early initialisation of operation registry of JAI. It fixes initialisation problems in some third
 		// party equinox x@applications such as OpenMOLE.
 		final JAI jaiDef = JAI.getDefaultInstance();
@@ -53,7 +43,7 @@ public class Activator implements BundleActivator {
 			jaiDef.setOperationRegistry(ConcurrentOperationRegistry.initializeRegistry());
 		}
 		ImageIO.scanForPlugins();
-		Hints.putSystemDefault(Hints.FILTER_FACTORY, CommonFactoryFinder.getFilterFactory2(null));
+		Hints.putSystemDefault(Hints.FILTER_FACTORY, CommonFactoryFinder.getFilterFactory(null));
 		Hints.putSystemDefault(Hints.STYLE_FACTORY, CommonFactoryFinder.getStyleFactory(null));
 		Hints.putSystemDefault(Hints.FEATURE_FACTORY, CommonFactoryFinder.getFeatureFactory(null));
 		Hints.putSystemDefault(Hints.USE_JAI_IMAGEREAD, true);
@@ -79,7 +69,7 @@ public class Activator implements BundleActivator {
 	 */
 	@Override
 	public void stop(final BundleContext bundleContext) throws Exception {
-		Activator.context = null;
+		// Activator.context = null;
 	}
 
 	/**

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ProjectionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,13 +25,13 @@ import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
 
 import org.apache.commons.io.FilenameUtils;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.cs.CartesianCS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultProjectedCRS;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.CartesianCS;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.preferences.GamaPreferences;
@@ -77,12 +77,11 @@ public class ProjectionFactory {
 	public static CoordinateReferenceSystem EPSG3857 = null;
 
 	static {
-		//have to use a tmp variable because EPSG3857 is final
+		// have to use a tmp variable because EPSG3857 is final
 		CoordinateReferenceSystem tmp = null;
 		try {
 			tmp = CRS.decode("EPSG:3857");
-		} catch (FactoryException e) {
-		}
+		} catch (FactoryException e) {}
 		EPSG3857 = tmp;
 	}
 
@@ -282,7 +281,8 @@ public class ProjectionFactory {
 	 *            the longitude first
 	 * @return the crs
 	 */
-	public CoordinateReferenceSystem getCRS(final IScope scope, final String code, final boolean longitudeFirst) throws GamaRuntimeException {
+	public CoordinateReferenceSystem getCRS(final IScope scope, final String code, final boolean longitudeFirst)
+			throws GamaRuntimeException {
 		try {
 			CoordinateReferenceSystem crs = CRSCache.get(code);
 			if (crs == null) {

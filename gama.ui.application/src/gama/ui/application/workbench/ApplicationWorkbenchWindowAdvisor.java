@@ -27,7 +27,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
-import gama.core.runtime.GAMA;
+import gama.core.kernel.root.SystemInfo;
 import gama.dev.DEBUG;
 
 /**
@@ -113,7 +113,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		configurer.setShowStatusLine(true);
 		configurer.setShowProgressIndicator(true);
 		configurer.setShowPerspectiveBar(false);
-		configurer.setTitle(GAMA.VERSION);
+		configurer.setTitle(SystemInfo.VERSION);
 
 		PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
 		ThemeHelper.applyCSSWhenWindowOpens();

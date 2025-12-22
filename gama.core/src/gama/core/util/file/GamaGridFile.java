@@ -25,27 +25,27 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import org.geotools.api.coverage.grid.GridCoverageWriter;
+import org.geotools.api.data.DataSourceException;
+import org.geotools.api.geometry.Position;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.data.DataSourceException;
 import org.geotools.data.PrjFileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.arcgrid.ArcGridWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffReader;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.Envelope2DArchived;
+import org.geotools.geometry.GeneralBounds;
+import org.geotools.geometry.Position2D;
 import org.geotools.util.factory.Hints;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.coverage.grid.GridCoverageWriter;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.ProjectedCRS;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -131,7 +131,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	Number noData = IField.NO_NO_DATA;
 
 	/** The genv. */
-	GeneralEnvelope genv;
+	GeneralBounds genv;
 
 	/** The records. */
 	Records records;
@@ -349,8 +349,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					} else if (nbRows == null && line.contains("nrows")) {
 						nbRows = intVal(line);
 					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-						
-						noDataD = line.contains("nan")? Double.NaN :doubleVal(line);
+
+						noDataD = line.contains("nan") ? Double.NaN : doubleVal(line);
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
@@ -400,13 +400,12 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 							try {
 								v = Double.valueOf(l[i]);
 							} catch (Exception e) {
-								v = Double.NaN; 
+								v = Double.NaN;
 							}
 							ascData.set(scope, i, j, v);
 						} else {
 							ascData.set(scope, i, j, Double.valueOf(l[i]));
 						}
- 						
 
 					}
 					j++;
@@ -458,7 +457,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
 
-		Envelope2D refEnvelope = new Envelope2D(getTargetCRSOrDefault(scope), x, y, width, height);
+		Envelope2DArchived refEnvelope = new Envelope2DArchived(getTargetCRSOrDefault(scope), x, y, width, height);
 
 		coverage = new GridCoverageFactory().create("data", imagePixelData, refEnvelope);
 
@@ -542,8 +541,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private double[] getValue(final IScope scope, final Double locX, final Double locY, final int i, final int j) {
-		if (coverage != null)
-			return coverage.evaluate((DirectPosition) new DirectPosition2D(locX, locY), (double[]) null);
+		if (coverage != null) return coverage.evaluate((Position) new Position2D(locX, locY), (double[]) null);
 		double[] v = new double[1];
 		v[0] = ascData.get(scope, i, j);
 		return v;
@@ -782,7 +780,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		if (getBuffer() == null) { fillBuffer(scope); }
 		Object vals = null;
 		try {
-			vals = coverage.evaluate(new DirectPosition2D(x, y));
+			vals = coverage.evaluate(new Position2D(x, y));
 		} catch (final Exception e) {
 			vals = noData.doubleValue();
 		}

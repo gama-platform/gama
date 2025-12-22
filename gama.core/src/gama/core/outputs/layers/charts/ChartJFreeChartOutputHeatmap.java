@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutputHeatmap.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,6 +36,7 @@ import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.category.CategoryDataset;
@@ -123,22 +124,16 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
 		AbstractRenderer newr;
 		switch (style) {
-			case IKeyword.SPLINE:
-			case IKeyword.STEP:
-			case IKeyword.DOT:
-			case IKeyword.WHISKER:
-			case IKeyword.AREA:
-			case IKeyword.BAR:
-			case IKeyword.STACK:
-			case IKeyword.RING:
-			case IKeyword.EXPLODED:
-			case IKeyword.THREE_D:
-			default: {
+			case IKeyword.SPLINE, IKeyword.STEP, IKeyword.DOT, IKeyword.WHISKER, IKeyword.AREA, IKeyword.BAR, IKeyword.STACK, IKeyword.RING, IKeyword.EXPLODED, IKeyword.THREE_D -> {
 				newr = new XYBlockRenderer();
 				break;
-
+			}
+			default -> {
+				newr = new XYBlockRenderer();
+				break;
 			}
 		}
+		;
 		return newr;
 	}
 
@@ -166,7 +161,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 						{ med.getRed() / 255f, med.getGreen() / 255f, med.getBlue() / 255f, med.getAlpha() / 255f },
 						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
 		final float[] limits = { 0, 0.5f, 1 };
-		if (vmin >= vmax) { return new LookupPaintScale(); } 
+		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, med);
 		float val;
 		float r, g, b, a;
@@ -205,7 +200,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 				{ { start.getRed() / 255f, start.getGreen() / 255f, start.getBlue() / 255f, start.getAlpha() / 255f },
 						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
 		final float[] limits = { 0, 1 };
-		if (vmin >= vmax) { return new LookupPaintScale(); } 
+		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, start);
 		float val;
 		float r, g, b, a;
@@ -341,7 +336,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	@Override
 	public void preResetSeries(final IScope scope) {
 		this.clearDataSet(scope);
-		final ArrayList<PaintScaleLegend> caxe = new ArrayList<>();
+		final ArrayList<Title> caxe = new ArrayList<>();
 		chart.setSubtitles(caxe);
 
 	}
@@ -568,38 +563,44 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		final int y = yOnScreen - positionInPixels.y;
 		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
 		// getChart().handleClick(x, y, info);
-		if (entity instanceof XYItemEntity xyie) {
-			final XYDataset data = xyie.getDataset();
-			final int index = xyie.getItem();
-			final int series = xyie.getSeriesIndex();
-			final double xx = data.getXValue(series, index);
-			final double yy = data.getYValue(series, index);
-			final XYPlot plot = (XYPlot) getJFChart().getPlot();
-			final ValueAxis xAxis = plot.getDomainAxis(series);
-			final ValueAxis yAxis = plot.getRangeAxis(series);
-			final boolean xInt = xx % 1 == 0;
-			final boolean yInt = yy % 1 == 0;
-			String xTitle = xAxis.getLabel();
-			if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-			String yTitle = yAxis.getLabel();
-			if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-			sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-		} else if (entity instanceof PieSectionEntity pse) {
-			final String title = pse.getSectionKey().toString();
-			final PieDataset data = pse.getDataset();
-			final int index = pse.getSectionIndex();
-			final double xx = data.getValue(index).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-		} else if (entity instanceof CategoryItemEntity cie) {
-			final Comparable<?> columnKey = cie.getColumnKey();
-			final String title = columnKey.toString();
-			final CategoryDataset data = cie.getDataset();
-			final Comparable<?> rowKey = cie.getRowKey();
-			final double xx = data.getValue(rowKey, columnKey).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+		switch (entity) {
+			case XYItemEntity xyie -> {
+				final XYDataset data = xyie.getDataset();
+				final int index = xyie.getItem();
+				final int series = xyie.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis.getLabel();
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis.getLabel();
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+			}
+			case PieSectionEntity pse -> {
+				final String title = pse.getSectionKey().toString();
+				final PieDataset data = pse.getDataset();
+				final int index = pse.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity cie -> {
+				final Comparable<?> columnKey = cie.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = cie.getDataset();
+				final Comparable<?> rowKey = cie.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {
+			}
 		}
 	}
 

@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -2009,12 +2009,11 @@ public class Stats {
 		final DataSet x = new DataSet();
 		DataSet y = null, z = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint) {
+			if (o instanceof final GamaPoint p) {
 				if (y == null) {
 					y = new DataSet();
 					z = new DataSet();
 				}
-				final GamaPoint p = (GamaPoint) o;
 				x.addValue(p.getX());
 				y.addValue(p.getY());
 				z.addValue(p.getZ());
@@ -2333,7 +2332,7 @@ public class Stats {
 		Sobol sob = new Sobol(f, nb_parameters, scope);
 		sob.evaluate();
 		sob.saveResult(f_report);
-		return sob.buildReportString(FileNameUtils.getExtension(f_report.getPath()));
+		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));
 	}
 
 	/**
@@ -2365,7 +2364,7 @@ public class Stats {
 		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
 		Morris momo = new Morris(f, nb_parameters, nb_levels, scope);
 		momo.evaluate();
-		return momo.buildReportString(FileNameUtils.getExtension(path));
+		return momo.buildReportString(FilenameUtils.getExtension(path));
 
 	}
 

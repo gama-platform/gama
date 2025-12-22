@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * MorrisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * MorrisExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -163,9 +164,10 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void explore(final IScope scope) {
-		this.sample =  hasFacet(Exploration.SAMPLE_SIZE) ? 
-				Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
-		this.nb_levels = hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
+		this.sample = hasFacet(Exploration.SAMPLE_SIZE)
+				? Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
+		this.nb_levels =
+				hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
 			String path =
@@ -284,7 +286,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	 */
 	private void saveResults(final File file, final IScope scope) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, StandardCharsets.UTF_8, false)) {
-			fw.write(momo.buildReportString(FileNameUtils.getExtension(file.getPath())));
+			fw.write(momo.buildReportString(FilenameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
 		}
@@ -334,7 +336,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			ParametersSet p = new ParametersSet();
 			for (String v : parameterSet.keySet()) {
 				Object val = parameterSet.get(v);
-				p.put(v, val instanceof IExpression ? ((IExpression) val).value(scope) : val);
+				p.put(v, val instanceof IExpression i ? i.value(scope) : val);
 			}
 			sets.add(p);
 		}

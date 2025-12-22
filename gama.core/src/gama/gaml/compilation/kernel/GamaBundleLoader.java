@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaBundleLoader.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,12 +12,6 @@ package gama.gaml.compilation.kernel;
 
 import static gama.dev.DEBUG.TIMER;
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_NAME;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VENDOR;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VM_VERSION;
-import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
-import static org.apache.commons.lang3.SystemUtils.OS_NAME;
-import static org.apache.commons.lang3.SystemUtils.OS_VERSION;
 
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -35,7 +30,6 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.emf.common.util.WrappedException;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -45,6 +39,7 @@ import gama.core.common.interfaces.ICreateDelegate;
 import gama.core.common.interfaces.IDrawDelegate;
 import gama.core.common.interfaces.IEventLayerDelegate;
 import gama.core.common.interfaces.ISaveDelegate;
+import gama.core.kernel.root.SystemInfo;
 import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
@@ -55,7 +50,6 @@ import gama.gaml.statements.CreateStatement;
 import gama.gaml.statements.SaveStatement;
 import gama.gaml.statements.draw.DrawStatement;
 import gama.gaml.types.Types;
-import one.util.streamex.StreamEx;
 
 /**
  * The class GamaBundleLoader.
@@ -82,6 +76,24 @@ public class GamaBundleLoader {
 		ERRORED = true;
 		DEBUG.ERR(message, e);
 	}
+
+	/** The java vm name. */
+	public static final String JAVA_VM_NAME = System.getProperty("java.vm.name");
+
+	/** The java vm vendor. */
+	public static final String JAVA_VM_VENDOR = System.getProperty("java.vm.vendor");
+
+	/** The java vm version. */
+	public static final String JAVA_VM_VERSION = System.getProperty("java.vm.version");
+
+	/** The os name. */
+	public static final String OS_NAME = System.getProperty("os.name");
+
+	/** The os version. */
+	public static final String OS_VERSION = System.getProperty("os.version");
+
+	/** The os arch. */
+	public static final String OS_ARCH = System.getProperty("os.arch");
 
 	/** The Constant LINE. */
 	public static final String LINE =
@@ -185,18 +197,22 @@ public class GamaBundleLoader {
 	 */
 	public static void preBuildContributions() throws Exception {
 
-		DEBUG.BANNER("GAMA", "version " + GAMA.VERSION_NUMBER, "loading on", OS_NAME + " " + OS_VERSION + ", processor "
-				+ OS_ARCH + ", JDK " + JAVA_VM_NAME + " " + JAVA_VM_VENDOR + " version " + JAVA_VM_VERSION);
+		DEBUG.BANNER("GAMA", "version " + SystemInfo.VERSION_NUMBER, "loading on",
+				OS_NAME + " " + OS_VERSION + ", processor " + OS_ARCH + ", JDK " + JAVA_VM_NAME + " " + JAVA_VM_VENDOR
+						+ " version " + JAVA_VM_VERSION);
 
 		TIMER("GAML", "Plugins with language additions", "loaded in", () -> {
 			final IExtensionRegistry registry = Platform.getExtensionRegistry();
 			// We retrieve the elements declared as extensions to the GAML language,
 			// either with the new or the deprecated extension, and add their contributor plugin to GAMA_PLUGINS
 			try {
-				StreamEx.of(registry.getExtensionPoint(GRAMMAR_EXTENSION).getExtensions())
-						.append(StreamEx.of(registry.getExtensionPoint(GRAMMAR_EXTENSION_DEPRECATED).getExtensions()))
+				// append two streams: the new and the deprecated extension points
+				Stream.concat(Stream.of(registry.getExtensionPoint(GRAMMAR_EXTENSION).getExtensions()),
+						Stream.of(registry.getExtensionPoint(GRAMMAR_EXTENSION_DEPRECATED).getExtensions()))
 						.map(e -> Platform.getBundle(e.getContributor().getName()))
-						.sorted(Comparator.comparing(Bundle::getSymbolicName)).into(GAMA_PLUGINS);
+						.sorted(Comparator.comparing(Bundle::getSymbolicName)).distinct().forEach(b -> {
+							if (!GAMA_PLUGINS.contains(b)) { GAMA_PLUGINS.add(b); }
+						});
 			} catch (final InvalidRegistryObjectException e) {
 				ERROR("Error in retrieving GAMA plugins. One is invalid. ", e);
 			}
@@ -462,17 +478,17 @@ public class GamaBundleLoader {
 				clazz.getConstructor().newInstance().initialize();
 			} catch (final ClassNotFoundException e) {
 				DEBUG.LOG(error + "found.");
-				throw new WrappedException(error + "found.", e);
+				throw new RuntimeException(error + "found.", e);
 			} catch (final SecurityException | NoSuchMethodException e) {
 				DEBUG.LOG(error + "initialized.");
-				throw new WrappedException(error + "initialized.", e);
+				throw new RuntimeException(error + "initialized.", e);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				DEBUG.LOG(error + "instantiated.");
-				throw new WrappedException(error + "instantiated.", e);
-			} catch (Exception e) {
+				throw new RuntimeException(error + "instantiated.", e);
+			} catch (Throwable e) {
 				DEBUG.LOG(e.getMessage());
-				throw new WrappedException(error + "run.", e);
+				throw new RuntimeException(error + "run.", e);
 			}
 		});
 	}

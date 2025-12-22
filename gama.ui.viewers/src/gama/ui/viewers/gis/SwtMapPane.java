@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SwtMapPane.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SwtMapPane.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis;
 
@@ -36,7 +36,9 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.Layer;
@@ -50,9 +52,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.locationtech.jts.geom.Envelope;
 
 import gama.ui.viewers.gis.geotools.styling.Utils;
 
@@ -88,28 +88,28 @@ public class SwtMapPane extends Canvas
 
 	/** The content. */
 	MapContent content;
-	
+
 	/** The renderer. */
 	private GTRenderer renderer;
-	
+
 	/** The layer table. */
 	private MapLayerComposite layerTable;
-	
+
 	/** The world to screen. */
 	private AffineTransform worldToScreen;
-	
+
 	/** The screen to world. */
 	private AffineTransform screenToWorld;
-	
+
 	/** The cur paint area. */
 	Rectangle curPaintArea;
-	
+
 	/** The base image. */
 	private BufferedImage baseImage;
-	
+
 	/** The image origin. */
 	private final Point imageOrigin;
-	
+
 	/** The redraw base image. */
 	private boolean redrawBaseImage;
 
@@ -117,31 +117,31 @@ public class SwtMapPane extends Canvas
 	 * swt image used to draw
 	 */
 	private Image swtImage;
-	
+
 	/** The gc. */
 	private GC gc;
-	
+
 	/** The mouse down. */
 	private boolean mouseDown = false;
-	
+
 	/** The start X. */
 	private int startX;
-	
+
 	/** The start Y. */
 	private int startY;
-	
+
 	/** The end X. */
 	private int endX;
-	
+
 	/** The end Y. */
 	private int endY;
-	
+
 	/** The is dragging. */
 	private boolean isDragging = false;
-	
+
 	/** The pane pos. */
 	private final org.eclipse.swt.graphics.Point panePos = new org.eclipse.swt.graphics.Point(0, 0);
-	
+
 	/** The panning. */
 	boolean panning;
 
@@ -150,7 +150,7 @@ public class SwtMapPane extends Canvas
 
 	/** The white. */
 	private final Color white;
-	
+
 	/** The yellow. */
 	private final Color yellow;
 
@@ -194,6 +194,9 @@ public class SwtMapPane extends Canvas
 
 	}
 
+	/**
+	 * Toggle lock.
+	 */
 	public void toggleLock() {
 		locked = !locked;
 	}
@@ -206,13 +209,11 @@ public class SwtMapPane extends Canvas
 			panePos.y = e.y;
 		}
 
-		if (mouseDown) {
-			if(!locked) {
-				endX = e.x;
-				endY = e.y;
-				isDragging = true;
-				if (!isDisposed()) { redraw(); }
-			}
+		if (mouseDown && !locked) {
+			endX = e.x;
+			endY = e.y;
+			isDragging = true;
+			if (!isDisposed()) { redraw(); }
 		}
 
 	}
@@ -222,7 +223,7 @@ public class SwtMapPane extends Canvas
 
 	@Override
 	public void mouseDown(final MouseEvent e) {
-		if(!locked) {
+		if (!locked) {
 			panePos.x = e.x;
 			panePos.y = e.y;
 			panning = true;
@@ -256,9 +257,7 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @return live reference to the renderer being used
 	 */
-	public GTRenderer getRenderer() {
-		return renderer;
-	}
+	public GTRenderer getRenderer() { return renderer; }
 
 	/**
 	 * Set the renderer for this map pane.
@@ -268,10 +267,7 @@ public class SwtMapPane extends Canvas
 	 */
 	public void setRenderer(final GTRenderer renderer) {
 
-		if (renderer instanceof StreamingRenderer) {
-			if (this.content != null) { renderer.setMapContent(this.content); }
-
-		}
+		if (renderer instanceof StreamingRenderer && this.content != null) { renderer.setMapContent(this.content); }
 
 		this.renderer = renderer;
 	}
@@ -281,9 +277,7 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @return a live reference to the current map context
 	 */
-	public MapContent getMapContent() {
-		return content;
-	}
+	public MapContent getMapContent() { return content; }
 
 	/**
 	 * Set the map context for this map pane to display
@@ -303,9 +297,7 @@ public class SwtMapPane extends Canvas
 				this.content.addMapBoundsListener(this);
 
 				// set all layers as selected by default for the info tool
-				for (final Layer layer : content.layers()) {
-					layer.setSelected(true);
-				}
+				for (final Layer layer : content.layers()) { layer.setSelected(true); }
 
 				setFullExtent();
 			}
@@ -345,7 +337,8 @@ public class SwtMapPane extends Canvas
 	/**
 	 * Sets the crs.
 	 *
-	 * @param crs the new crs
+	 * @param crs
+	 *            the new crs
 	 */
 	public void setCrs(final CoordinateReferenceSystem crs) {
 		try {
@@ -385,17 +378,11 @@ public class SwtMapPane extends Canvas
 	 * @throws IllegalStateException
 	 *             if a map context is not set
 	 */
-	public void setDisplayArea(final Envelope envelope) {
-		if (content != null) {
-			if (curPaintArea == null || curPaintArea.isEmpty())
-				return;
-			else {
-				doSetDisplayArea(envelope);
-				if (!isDisposed()) { redraw(); }
-			}
-
-		} else
-			throw new IllegalStateException("Map context must be set before setting the display area");
+	public void setDisplayArea(final ReferencedEnvelope envelope) {
+		if (content == null) throw new IllegalStateException("Map context must be set before setting the display area");
+		if (curPaintArea == null || curPaintArea.isEmpty()) return;
+		doSetDisplayArea(envelope);
+		if (!isDisposed()) { redraw(); }
 	}
 
 	/**
@@ -405,7 +392,7 @@ public class SwtMapPane extends Canvas
 	 * @param envelope
 	 *            requested display area
 	 */
-	void doSetDisplayArea(final Envelope envelope) {
+	void doSetDisplayArea(final ReferencedEnvelope envelope) {
 		assert content != null && curPaintArea != null && !curPaintArea.isEmpty();
 
 		if (equalsFullExtent(envelope)) {
@@ -437,16 +424,16 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @todo My logic here seems overly complex - I'm sure there must be a simpler way for the map pane to handle this.
 	 */
-	private boolean equalsFullExtent(final Envelope envelope) {
+	private boolean equalsFullExtent(final ReferencedEnvelope envelope) {
 		if (fullExtent == null || envelope == null) return false;
 
 		final double TOL = 1.0e-6d * (fullExtent.getWidth() + fullExtent.getHeight());
 
 		boolean touch = false;
 		if (Math.abs(envelope.getMinimum(0) - fullExtent.getMinimum(0)) < TOL) { touch = true; }
-		if (Math.abs(envelope.getMaximum(0) - fullExtent.getMaximum(0)) < TOL) { if (touch) return true; }
+		if (Math.abs(envelope.getMaximum(0) - fullExtent.getMaximum(0)) < TOL && touch) return true;
 		if (Math.abs(envelope.getMinimum(1) - fullExtent.getMinimum(1)) < TOL) { touch = true; }
-		if (Math.abs(envelope.getMaximum(1) - fullExtent.getMaximum(1)) < TOL) { if (touch) return true; }
+		if (Math.abs(envelope.getMaximum(1) - fullExtent.getMaximum(1)) < TOL && touch) return true;
 
 		return false;
 	}
@@ -475,9 +462,7 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @return a live reference to the current base image
 	 */
-	public RenderedImage getBaseImage() {
-		return this.baseImage;
-	}
+	public RenderedImage getBaseImage() { return this.baseImage; }
 
 	/**
 	 * Get a (copy of) the screen to world coordinate transform being used by this map pane.
@@ -485,30 +470,18 @@ public class SwtMapPane extends Canvas
 	 * @return a copy of the screen to world coordinate transform
 	 */
 	public AffineTransform getScreenToWorldTransform() {
-		if (screenToWorld != null)
-			return new AffineTransform(screenToWorld);
-		else
-			return null;
+		return screenToWorld != null ? new AffineTransform(screenToWorld) : null;
 	}
 
 	/**
 	 * Get a (copy of) the world to screen coordinate transform being used by this map pane. This method can be used to
-	 * determine the current drawing scale...
 	 *
-	 * <pre>
-	 *
-	 * {
-	 * 	&#64;code double scale = mapPane.getWorldToScreenTransform().getScaleX();
-	 * }
-	 * </pre>
+	 * @@ -504,12 +484,7 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @return a copy of the world to screen coordinate transform
 	 */
 	public AffineTransform getWorldToScreenTransform() {
-		if (worldToScreen != null)
-			return new AffineTransform(worldToScreen);
-		else
-			return null;
+		return worldToScreen != null ? new AffineTransform(worldToScreen) : null;
 	}
 
 	/**
@@ -540,7 +513,7 @@ public class SwtMapPane extends Canvas
 		if (env == null) return;
 		final int dx = imageOrigin.x;
 		final int dy = imageOrigin.y;
-		final DirectPosition2D newPos = new DirectPosition2D(dx, dy);
+		final Position2D newPos = new Position2D(dx, dy);
 		screenToWorld.transform(newPos, newPos);
 
 		env.translate(env.getMinimum(0) - newPos.x, env.getMaximum(1) - newPos.y);
@@ -601,7 +574,7 @@ public class SwtMapPane extends Canvas
 
 		if (reason == MapLayerEvent.DATA_CHANGED) { setFullExtent(); }
 
-		if (reason != MapLayerEvent.SELECTION_CHANGED) { if (!isDisposed()) { redraw(); } }
+		if (reason != MapLayerEvent.SELECTION_CHANGED && !isDisposed()) { redraw(); }
 	}
 
 	/**
@@ -674,7 +647,7 @@ public class SwtMapPane extends Canvas
 	private void setTransforms(final Envelope envelope, final Rectangle paintArea) {
 		ReferencedEnvelope refEnv = null;
 		if (envelope != null) {
-			refEnv = new ReferencedEnvelope(envelope);
+			refEnv = new ReferencedEnvelope(envelope, DefaultGeographicCRS.WGS84); // This fix is probably wrong AD
 		} else {
 			refEnv = worldEnvelope();
 			// FIXME
@@ -722,9 +695,7 @@ public class SwtMapPane extends Canvas
 	 *
 	 * @return the visible rect
 	 */
-	public Rectangle getVisibleRect() {
-		return getClientArea();
-	}
+	public Rectangle getVisibleRect() { return getClientArea(); }
 
 	/**
 	 * Sets the transparency value for the base image (overlays not considered).
@@ -732,9 +703,7 @@ public class SwtMapPane extends Canvas
 	 * @param alpha
 	 *            the transparency value (0 - 255).
 	 */
-	public void setBaseImageAlpha(final int alpha) {
-		this.alpha = alpha;
-	}
+	public void setBaseImageAlpha(final int alpha) { this.alpha = alpha; }
 
 	@Override
 	@SuppressWarnings ("deprecation")
@@ -743,96 +712,95 @@ public class SwtMapPane extends Canvas
 		curPaintArea = getVisibleRect();
 
 		// DEBUG.LOG("event: " + event.type);
-		if (event.type == SWT.MouseDown) {
-			startX = event.x;
-			startY = event.y;
-			// start mouse activity
-			mouseDown = true;
-		} else if (event.type == SWT.MouseUp) {
-			endX = event.x;
-			endY = event.y;
-
-			final boolean mouseWasMoved = startX != endX || startY != endY;
-			if (mouseWasMoved) {
-				// if the tool is able to move draw the moved image
-				afterImageMove();
-			}
-			// stop mouse activity
-			mouseDown = false;
-			isDragging = false;
-		} else if (event.type == SWT.Paint) {
-			// DEBUG.LOG("PAINT CALLED (DOESN'T MEAN I'M DRAWING)");
-
-			gc = event.gc;
-
-			/*
-			 * if the mouse is dragging and the current tool can move the map we just draw what we already have on white
-			 * background. At the end of the moving we will take care of adding the missing pieces.
-			 */
-			if (isDragging) {
-				// DEBUG.LOG("toolCanMove && isDragging");
-				if (gc != null && !gc.isDisposed() && swtImage != null) {
-					/*
-					 * double buffer necessary, since the SWT.NO_BACKGROUND needed by the canvas to properly draw
-					 * background, doesn't clean the parts outside the bounds of the moving panned image, giving a
-					 * spilling image effect.
-					 */
-					final Image tmpImage = new Image(getDisplay(), curPaintArea.width, curPaintArea.height);
-					final GC tmpGc = new GC(tmpImage);
-					tmpGc.setBackground(white);
-					tmpGc.fillRectangle(0, 0, curPaintArea.width, curPaintArea.height);
-					tmpGc.drawImage(swtImage, imageOrigin.x, imageOrigin.y);
-					gc.drawImage(tmpImage, 0, 0);
-					tmpImage.dispose();
+		switch (event.type) {
+			case SWT.MouseDown:
+				startX = event.x;
+				startY = event.y;
+				// start mouse activity
+				mouseDown = true;
+				break;
+			case SWT.MouseUp: {
+				endX = event.x;
+				endY = event.y;
+				final boolean mouseWasMoved = startX != endX || startY != endY;
+				if (mouseWasMoved) {
+					// if the tool is able to move draw the moved image
+					afterImageMove();
 				}
-				return;
+				// stop mouse activity
+				mouseDown = false;
+				isDragging = false;
+				break;
 			}
-
-			if (curPaintArea == null || content == null || renderer == null) return;
-
-			if (content.layers().size() == 0) {
-				// if no layers available, return only if there are also no
-				// overlays
-
-				gc.setForeground(yellow);
-				gc.fillRectangle(0, 0, curPaintArea.width + 1, curPaintArea.height + 1);
-
-			}
-
-			final ReferencedEnvelope mapAOI = content.getViewport().getBounds();
-			if (mapAOI == null) return;
-
-			if (redrawBaseImage) {
-
-				baseImage =
-						new BufferedImage(curPaintArea.width + 1, curPaintArea.height + 1, BufferedImage.TYPE_INT_ARGB);
-				final Graphics2D g2d = baseImage.createGraphics();
-				g2d.fillRect(0, 0, curPaintArea.width + 1, curPaintArea.height + 1);
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-				// renderer.setContext(context);
-				final java.awt.Rectangle awtRectangle = Utils.toAwtRectangle(curPaintArea);
-				renderer.paint(g2d, awtRectangle, mapAOI, getWorldToScreenTransform());
-				// swtImage.dispose();
-
-				if (swtImage != null && !swtImage.isDisposed()) {
-					swtImage.dispose();
-					swtImage = null;
+			case SWT.Paint: {
+				gc = event.gc;
+				/*
+				 * if the mouse is dragging and the current tool can move the map we just draw what we already have on
+				 * white background. At the end of the moving we will take care of adding the missing pieces.
+				 */
+				if (isDragging) {
+					// DEBUG.LOG("toolCanMove && isDragging");
+					if (gc != null && !gc.isDisposed() && swtImage != null) {
+						/*
+						 * double buffer necessary, since the SWT.NO_BACKGROUND needed by the canvas to properly draw
+						 * background, doesn't clean the parts outside the bounds of the moving panned image, giving a
+						 * spilling image effect.
+						 */
+						final Image tmpImage = new Image(getDisplay(), curPaintArea.width, curPaintArea.height);
+						final GC tmpGc = new GC(tmpImage);
+						tmpGc.setBackground(white);
+						tmpGc.fillRectangle(0, 0, curPaintArea.width, curPaintArea.height);
+						tmpGc.drawImage(swtImage, imageOrigin.x, imageOrigin.y);
+						gc.drawImage(tmpImage, 0, 0);
+						tmpImage.dispose();
+					}
+					return;
 				}
-				swtImage =
-						new Image(getDisplay(), awtToSwt(baseImage, curPaintArea.width + 1, curPaintArea.height + 1));
+				if (curPaintArea == null || content == null || renderer == null) return;
+				if (content.layers().size() == 0) {
+					// if no layers available, return only if there are also no
+					// overlays
+
+					gc.setForeground(yellow);
+					gc.fillRectangle(0, 0, curPaintArea.width + 1, curPaintArea.height + 1);
+
+				}
+				final ReferencedEnvelope mapAOI = content.getViewport().getBounds();
+				if (mapAOI == null) return;
+				if (redrawBaseImage) {
+
+					baseImage = new BufferedImage(curPaintArea.width + 1, curPaintArea.height + 1,
+							BufferedImage.TYPE_INT_ARGB);
+					final Graphics2D g2d = baseImage.createGraphics();
+					g2d.fillRect(0, 0, curPaintArea.width + 1, curPaintArea.height + 1);
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+					// renderer.setContext(context);
+					final java.awt.Rectangle awtRectangle = Utils.toAwtRectangle(curPaintArea);
+					renderer.paint(g2d, awtRectangle, mapAOI, getWorldToScreenTransform());
+					// swtImage.dispose();
+
+					if (swtImage != null && !swtImage.isDisposed()) {
+						swtImage.dispose();
+						swtImage = null;
+					}
+					swtImage = new Image(getDisplay(),
+							awtToSwt(baseImage, curPaintArea.width + 1, curPaintArea.height + 1));
+				}
+				if (swtImage != null) { drawFinalImage(swtImage); }
+				redrawBaseImage = false;
+				break;
 			}
-
-			if (swtImage != null) { drawFinalImage(swtImage); }
-
-			redrawBaseImage = false;
+			default:
+				break;
 		}
 	}
 
 	/**
 	 * Draw final image.
 	 *
-	 * @param swtImage the swt image
+	 * @param swtImage
+	 *            the swt image
 	 */
 	private void drawFinalImage(final Image swtImage) {
 		final Image tmpImage = new Image(getDisplay(), curPaintArea.width, curPaintArea.height);
@@ -870,9 +838,7 @@ public class SwtMapPane extends Canvas
 			int idx = (0 + i) * swtImageData.bytesPerLine + 0 * step;
 			for (int j = 0; j < width; j++) {
 				final int rgb = awtPixels[j + i * width];
-				for (int k = swtImageData.depth - 8; k >= 0; k -= 8) {
-					data[idx++] = (byte) (rgb >> k & 0xFF);
-				}
+				for (int k = swtImageData.depth - 8; k >= 0; k -= 8) { data[idx++] = (byte) (rgb >> k & 0xFF); }
 			}
 		}
 

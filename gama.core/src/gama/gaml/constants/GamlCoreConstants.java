@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlCoreConstants.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,14 +12,14 @@ package gama.gaml.constants;
 
 import java.awt.Font;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IConstantCategory;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IConstantCategory;
 import gama.core.metamodel.shape.GamaPoint;
 
 /**
- * The Interface IUnits.
+ * The Interface GamlCoreConstants.
  */
 public interface GamlCoreConstants {
 
@@ -389,6 +389,7 @@ public interface GamlCoreConstants {
 			doc = @doc ("This unit permanently holds the mouse's location in the world's coordinates. If it is outside a display window, its last position is used.")) GamaPoint user_location =
 					new GamaPoint();
 
+	/** The user location in display. */
 	@constant (
 			value = "user_location_in_display",
 			category = IConstantCategory.GRAPHIC,

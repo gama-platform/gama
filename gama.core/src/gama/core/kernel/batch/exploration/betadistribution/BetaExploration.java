@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * BetaExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * BetaExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -113,8 +114,11 @@ import gama.gaml.types.IType;
 						value = "method sobol sample_size:100 outputs:['my_var'] report:'../path/to/report/file.txt'; ",
 						isExecutable = false) }) })
 public class BetaExploration extends AExplorationAlgorithm {
-	
+
+	/** The bootstrap. */
 	private int bootstrap = Betadistribution.DEFAULT_BOOTSTRAP;
+
+	/** The Constant BOOTSTRAP. */
 	public static final String BOOTSTRAP = "bootstrap";
 
 	/** Theoretical inputs */
@@ -180,7 +184,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 		if (!parent.exists()) { parent.mkdirs(); }
 		if (f.exists()) { f.delete(); }
 		try (FileWriter fw = new FileWriter(f, false)) {
-			fw.write(buildReportString(res, FileNameUtils.getExtension(f.getPath())));
+			fw.write(buildReportString(res, FilenameUtils.getExtension(f.getPath())));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);
 		}
@@ -191,19 +195,19 @@ public class BetaExploration extends AExplorationAlgorithm {
 	public void addParametersTo(final List<Batch> exp, final BatchAgent agent) {
 		super.addParametersTo(exp, agent);
 	}
-	
+
 	// ================================== //
-	
+
 	/**
 	 * Get back the list of 'explorable' parameters (numerical variable with min and max values)
-	 *  
+	 * 
 	 * @param xp
 	 * @return
 	 */
-	private List<Batch> getParams(BatchAgent xp) {
+	private List<Batch> getParams(final BatchAgent xp) {
 		return xp.getParametersToExplore().stream().map(p -> p).toList();
 	}
-	
+
 	/**
 	 * Duplicates values of parameter to put them in various context
 	 *
@@ -214,9 +218,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 	private List<ParametersSet> expendExperimentPlan(final List<ParametersSet> sets, final IScope scope) {
 
 		List<ParametersSet> returnedSet = new ArrayList<>(sets);
-		
-		if (hasFacet(BOOTSTRAP)) {bootstrap = Cast.asInt(scope, getFacet(BOOTSTRAP).value(scope));}
-		
+
+		if (hasFacet(BOOTSTRAP)) { bootstrap = Cast.asInt(scope, getFacet(BOOTSTRAP).value(scope)); }
+
 		// For each parameter, duplicates 'fact' times all sampled values
 		for (Batch b : parameters) {
 
@@ -224,8 +228,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 			for (ParametersSet ps : sets) {
 				List<ParametersSet> subspace = new ArrayList<>(sets);
 				subspace.remove(ps);
-				for (int i=0; i<bootstrap; i++) {
-					ParametersSet cross = new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
+				for (int i = 0; i < bootstrap; i++) {
+					ParametersSet cross =
+							new ParametersSet(subspace.remove((int) scope.getRandom().next() * subspace.size()));
 					cross.addValueAtIndex(scope, b, ps.get(b.getName()));
 					returnedSet.add(cross);
 				}
@@ -234,9 +239,9 @@ public class BetaExploration extends AExplorationAlgorithm {
 
 		return returnedSet;
 	}
-	
+
 	// ================================== //
-	
+
 	/**
 	 * Builds the report string.
 	 *
