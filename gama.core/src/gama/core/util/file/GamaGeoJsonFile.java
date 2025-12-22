@@ -17,7 +17,6 @@ import java.util.Map;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryType;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geojson.feature.FeatureJSON;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -29,6 +28,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
+import gama.dependencies.geojson.feature.FeatureJSON;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

@@ -23,13 +23,13 @@ import org.geotools.data.DataUtilities;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geojson.geom.GeometryJSON;
 
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.dependencies.geojson.feature.FeatureJSON;
+import gama.dependencies.geojson.geom.GeometryJSON;
 import gama.gaml.expressions.IExpression;
 
 /**
