@@ -359,8 +359,9 @@ public class BufferingController {
 
 		// If the last element of the list is not of the same color as the currently requested color we append a new
 		// task with the new color
-		if (requests.size() != 0 && (requests.get(requests.size() - 1).color == null
-				|| requests.get(requests.size() - 1).color.equals(color))) {
+		if (requests.size() != 0 && ((requests.get(requests.size() - 1).color == null && color == null)
+				|| (requests.get(requests.size() - 1).color != null
+						&& requests.get(requests.size() - 1).color.equals(color)))) {
 			requests.get(requests.size() - 1).content.append(content);
 			return true;
 		}
@@ -389,8 +390,13 @@ public class BufferingController {
 	protected static boolean directWriteFile(final String fileId, final CharSequence content, final Charset charset,
 			final boolean append) {
 		try {
-			Files.write(Paths.get(fileId), content.toString().getBytes(charset),
-					append ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+			if (append) {
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
+						StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			} else {
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
+						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+			}
 			// FileUtils.write(new File(fileId), content, charset, append);
 			return true;
 		} catch (IOException e) {
