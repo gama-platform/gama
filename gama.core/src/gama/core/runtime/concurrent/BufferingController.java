@@ -359,8 +359,9 @@ public class BufferingController {
 
 		// If the last element of the list is not of the same color as the currently requested color we append a new
 		// task with the new color
-		if (requests.size() != 0 && (requests.get(requests.size() - 1).color == null
-				|| requests.get(requests.size() - 1).color.equals(color))) {
+		if (requests.size() != 0 && ((requests.get(requests.size() - 1).color == null && color == null)
+				|| (requests.get(requests.size() - 1).color != null
+						&& requests.get(requests.size() - 1).color.equals(color)))) {
 			requests.get(requests.size() - 1).content.append(content);
 			return true;
 		}
