@@ -211,7 +211,7 @@ public class GamaBundleLoader {
 						Stream.of(registry.getExtensionPoint(GRAMMAR_EXTENSION_DEPRECATED).getExtensions()))
 						.map(e -> Platform.getBundle(e.getContributor().getName()))
 						.sorted(Comparator.comparing(Bundle::getSymbolicName)).distinct().forEach(b -> {
-							if (!GAMA_PLUGINS.contains(b)) { GAMA_PLUGINS.add(b); }
+							GAMA_PLUGINS.add(b);
 						});
 			} catch (final InvalidRegistryObjectException e) {
 				ERROR("Error in retrieving GAMA plugins. One is invalid. ", e);
