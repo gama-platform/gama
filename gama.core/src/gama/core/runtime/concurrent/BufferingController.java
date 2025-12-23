@@ -390,8 +390,13 @@ public class BufferingController {
 	protected static boolean directWriteFile(final String fileId, final CharSequence content, final Charset charset,
 			final boolean append) {
 		try {
-			Files.write(Paths.get(fileId), content.toString().getBytes(charset),
-					append ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+			if (append) {
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
+						StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			} else {
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
+						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+			}
 			// FileUtils.write(new File(fileId), content, charset, append);
 			return true;
 		} catch (IOException e) {
