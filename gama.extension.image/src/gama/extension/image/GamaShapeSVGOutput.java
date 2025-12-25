@@ -116,6 +116,7 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 	 * @param transform
 	 *            the transform
 	 */
+	@SuppressWarnings ("restriction")
 	private void append(final Shape shape, final AffineTransform transform) {
 		AffineTransform at = new AffineTransform(currentTransform);
 		at.concatenate(transform);
@@ -128,6 +129,7 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 	 * @param shape
 	 *            the shape
 	 */
+	@SuppressWarnings ("restriction")
 	private void append(final Shape shape) {
 		addShape(ShapeUtil.transformShape(shape, currentTransform));
 	}

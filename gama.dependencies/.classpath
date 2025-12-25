@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="gama/dependencies/kabeja/dxf/|gama/dependencies/kabeja/dxf/helpers/|gama/dependencies/kabeja/dxf/objects/|gama/dependencies/kabeja/io/|gama/dependencies/kabeja/math/|gama/dependencies/kabeja/parser/|gama/dependencies/kabeja/parser/dxf/|gama/dependencies/kabeja/parser/dxf/filter/|gama/dependencies/kabeja/parser/entities/|gama/dependencies/kabeja/parser/header/|gama/dependencies/kabeja/parser/objects/|gama/dependencies/kabeja/parser/table/|gama/dependencies/kabeja/processing/|gama/dependencies/kabeja/processing/event/|gama/dependencies/kabeja/processing/helper/|gama/dependencies/kabeja/tools/|gama/dependencies/kabeja/xml/" kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="libs/jak 3.0.11/javaapiforkml-3.0.11.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/kabeja 0.5/kabeja-0.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-netcdf-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/netcdf4-5.5.3.jar"/>
@@ -55,7 +56,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmpbf-1.6.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/streamex 0.8.4/streamex-0.8.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Java-WebSocket 1.6.0/Java-WebSocket-1.6.0.jar" sourcepath="libs/Java-WebSocket 1.6.0/Java-WebSocket-1.6.0-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jak-3.0.11/javaapiforkml-3.0.11.jar" sourcepath="libs/jak-3.0.11/javaapiforkml-3.0.11-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/aws-java-sdk-s3-1.11.36.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/bigint-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/bufr-5.5.3.jar"/>

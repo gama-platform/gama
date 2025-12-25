@@ -490,7 +490,6 @@ Bundle-ClassPath: .,
  libs/geotools 33.4/spatial4j-0.6.jar,
  libs/geotools 33.4/sqlite-jdbc-3.41.2.2.jar,
  libs/geotools 33.4/xpp3_min-1.1.4c.jar,
- libs/jak-3.0.11/javaapiforkml-3.0.11.jar,
  libs/Java-WebSocket 1.6.0/Java-WebSocket-1.6.0.jar,
  libs/jfreechart 1.5.6/jfreechart-1.5.6.jar,
  libs/jgrapht 1.5.2/antlr4-runtime-4.12.0.jar,
@@ -544,6 +543,7 @@ Bundle-ClassPath: .,
  libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar,
  libs/geotools 33.4/gt-netcdf-33.4.jar,
  libs/geotools 33.4/netcdf4-5.5.3.jar,
- libs/kabeja 0.5/kabeja-0.5.0.jar
+ libs/kabeja 0.5/kabeja-0.5.0.jar,
+ libs/jak 3.0.11/javaapiforkml-3.0.11.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.dependencies

@@ -15,7 +15,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: gama.extension.database.Activator
 Automatic-Module-Name: gama.extension.database
 Bundle-ClassPath: .,
- lib/jena-base-5.5.0.jar,
- lib/jena-core-5.5.0.jar,
- lib/jena-arq-5.5.0.jar,
- lib/jena-iri-5.5.0.jar
+ libs/jena 5.5.0/jena-arq-5.5.0.jar,
+ libs/jena 5.5.0/jena-base-5.5.0.jar,
+ libs/jena 5.5.0/jena-core-5.5.0.jar,
+ libs/jena 5.5.0/jena-iri-5.5.0.jar
