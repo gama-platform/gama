@@ -7,7 +7,7 @@ Require-Bundle: gama.core,
  gama.dependencies,
  org.eclipse.osgi
 Bundle-ClassPath: .,
- lib/Libbulletjme-21.2.1.jar
+ libs/Libbulletjme 21.2.1/Libbulletjme-21.2.1.jar
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.physics
