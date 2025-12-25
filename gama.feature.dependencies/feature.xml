@@ -492,4 +492,8 @@
          id="org.apache.commons.commons-collections4"
          version="0.0.0"/>
 
+   <plugin
+         id="com.github.weisj.jsvg"
+         version="0.0.0"/>
+
 </feature>

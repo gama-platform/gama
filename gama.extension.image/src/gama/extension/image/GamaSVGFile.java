@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaSVGFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaSVGFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,12 +22,12 @@ import java.nio.file.Files;
 import java.util.Map;
 
 import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.attributes.ViewBox;
-import com.github.weisj.jsvg.geometry.size.FloatSize;
 import com.github.weisj.jsvg.parser.DocumentLimits;
 import com.github.weisj.jsvg.parser.LoaderContext;
 import com.github.weisj.jsvg.parser.SVGLoader;
-import com.github.weisj.jsvg.renderer.awt.NullPlatformSupport;
+import com.github.weisj.jsvg.renderer.NullPlatformSupport;
+import com.github.weisj.jsvg.view.FloatSize;
+import com.github.weisj.jsvg.view.ViewBox;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -64,6 +65,8 @@ import gama.gaml.types.Types;
 		concept = { IConcept.SVG },
 		doc = @doc ("Represents 2D geometries described in a SVG file. The internal representation is a list of geometries. Using the 'image' operator on the file allows to retrieve the full image"))
 public class GamaSVGFile extends GamaGeometryFile {
+
+	/** The render hints. */
 	static RenderingHints RENDER_HINTS = new RenderingHints(null);
 	static {
 		DEBUG.OFF();
@@ -110,6 +113,8 @@ public class GamaSVGFile extends GamaGeometryFile {
 
 	/** The document. */
 	private SVGDocument document;
+
+	/** The lc. */
 	static LoaderContext lc =
 			LoaderContext.builder().documentLimits(new DocumentLimits(MAX_VALUE, MAX_VALUE, MAX_VALUE)).build();
 
