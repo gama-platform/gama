@@ -8,7 +8,7 @@
       <perspective
             class="gama.ui.experiment.perspective.SimulationPerspective"
             fixed="false"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.simulation.svg"
             id="gama.ui.application.perspectives.SimulationPerspective"
             name="Simulation">
          <description>
@@ -37,7 +37,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.console.ConsoleView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.console.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.console.svg"
             id="gama.ui.application.view.ConsoleView"
             name="Console"
             restorable="true">
@@ -46,7 +46,7 @@
             allowMultiple="true"
             category="gama.ui.category.gama" 
             class="gama.ui.experiment.views.inspectors.PopulationInspectView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.browser.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.browser.svg"
             id="gama.ui.application.view.TableAgentInspectView"
             name="Browser" 
             restorable="false">
@@ -55,7 +55,7 @@
             allowMultiple="true"
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.inspectors.AgentInspectView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.inspector.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.inspector.svg"
             id="gama.ui.application.view.AgentInspectView"
             name="Inspector"
             restorable="false">
@@ -64,7 +64,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.inspectors.MonitorView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.monitors.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.monitors.svg"
             id="gama.ui.application.view.MonitorView"
             name="Monitors"
             restorable="false">
@@ -73,7 +73,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.inspectors.ExperimentParametersView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.parameters.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.parameters.svg"
             id="gama.ui.application.view.ParameterView"
             name="Parameters"
             restorable="false">
@@ -82,7 +82,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.ErrorView"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.errors.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.errors.svg"
             id="gama.ui.application.view.ErrorView"
             name="Errors"
             restorable="false">
@@ -91,7 +91,7 @@
             category="gama.ui.category.gama"
             class="gama.ui.experiment.views.user.UserControlView"
             fastViewWidthRatio="0.2"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.panel.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.panel.svg"
             id="gama.ui.application.view.userControlView"
             name="User Control"
             restorable="false"> 
@@ -112,8 +112,8 @@
             </visibleWhen>
             <command
                   commandId="gama.application.commands.PlaySimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.run_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.run.svg"
                   label="Run Experiment"
                   style="push">
                <visibleWhen
@@ -125,8 +125,8 @@
             </command>
             <command
                   commandId="gama.application.commands.PauseSimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause.png"
-                   disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.pause.svg"
+                   disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.pause_disabled.svg"
                   label="Pause Experiment"
                   mnemonic="M1+P"
                   style="push">
@@ -139,8 +139,8 @@
             </command>
             <command
                   commandId="gama.application.commands.StepByStepSimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.svg"
                   label="Step Experiment"
                   style="push"
                   tooltip="Advance the experiment step by step">
@@ -153,8 +153,8 @@
             </command>
             <command
                   commandId="gama.application.commands.StepBackSimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.back.png"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.back_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.back.svg"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.back_disabled.svg"
                   label="Step Back Experiment"
                   style="push"
                   tooltip="Make One step back in the simulation">
@@ -176,8 +176,8 @@
             </separator>
             <command
                   commandId="gama.application.commands.ReloadSimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.reload.png"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.reload_disabled.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.reload.svg"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.reload_disabled.svg"
                   label="Reload Experiment"
                   mnemonic="M1+M2+R"
                   style="push">
@@ -188,19 +188,19 @@
             </separator>
             <command
                   commandId="gama.application.commands.PauseAndEdit"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/errors.stop.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/errors.stop.svg"
                   label="Stop at First Error"
                   style="toggle">
             </command>
             <command
                   commandId="gama.application.commands.WarningsAsErrors"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/errors.warnings.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/errors.warnings.svg"
                   label="Treat Warnings Like Errors"
                   style="toggle">
             </command>
             <command
                   commandId="gama.application.ShowErrors"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/errors.show.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/errors.show.svg"
                   label="Display Errors and Warnings"
                   style="toggle"> 
             </command>
@@ -209,7 +209,7 @@
                   visible="true">
             </separator>
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.simulations.menu.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.simulations.menu.svg"
                   id="gama.application.simulations.submenu"
                   label="Simulations...">
                <dynamic
@@ -223,8 +223,8 @@
             </separator>
             <command
                   commandId="gama.application.commands.Cancel"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.stop_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.stop.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop.svg"
                   label="Close Experiment"
                   style="push"
                   tooltip="Stops the current experiment and dispose of it.">
@@ -258,7 +258,7 @@
                id="viewMenu"
                label="Views">
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/views.menu.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/views.menu.svg"
                   id="windowMenu"
                   label="Window">
                <command
@@ -295,7 +295,7 @@
             </separator>
             <command
                   commandId="gama.application.commands.ShowHideParametersView"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/open.parameters.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.parameters.svg"
                   label="Parameters"
                   style="push">
                <visibleWhen
@@ -307,7 +307,7 @@
             </command>
             <command
                   commandId="gama.application.commands.ShowHideConsoleView"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/open.console.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.console.svg"
                   label="Console"
                   style="push">
                <visibleWhen
@@ -319,7 +319,7 @@
             </command>
             <command
                   commandId="gama.application.commands.AddMonitor"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/open.monitor.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.monitor.svg"
                   label="Add Monitor"
                   style="push">
                <visibleWhen
@@ -334,7 +334,7 @@
                   visible="true">
             </separator>
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.stack.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.stack.svg"
                   label="Manage Outputs...">
                <visibleWhen
                      checkEnabled="false">
@@ -348,11 +348,11 @@
                </dynamic>
             </menu>
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.menu.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.menu.svg"
                   label="Layout Displays... ">
                <command
                      commandId="gama.application.layoutDisplays"
-                     icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.stack.png"
+                     icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.stack.svg"
                      label="Stacked"
                      style="push">
                   <parameter
@@ -362,7 +362,7 @@
                </command>
                <command
                      commandId="gama.application.layoutDisplays"
-                     icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.grid.png"
+                     icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.grid.svg"
                      label="Split"
                      style="push">
                   <parameter
@@ -372,7 +372,7 @@
                </command>
                <command
                      commandId="gama.application.layoutDisplays"
-                     icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.horizontal.png"
+                     icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.horizontal.svg"
                      label="Horizontally"
                      style="push">
                   <parameter
@@ -382,7 +382,7 @@
                </command>
                <command
                      commandId="gama.application.layoutDisplays"
-                     icon="platform:/plugin/gama.ui.shared/icons/light/views/layout.vertical.png"
+                     icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/layout.vertical.svg"
                      label="Vertically"
                      style="push">
                   <parameter
@@ -422,8 +422,8 @@
             </separator>
             <command
                   commandId="gama.application.goto.simulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.simulation_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.simulation.svg"
                   label="Switch to Simulation Perspective"
                   style="push"
                   tooltip="Open simulation perspective">
@@ -446,8 +446,8 @@
             </command>
             <command
                   commandId="gama.application.goto.modeling"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg"
                   label="Switch to Modeling Perspective"
                   style="push"
                   tooltip="Open modeling perspective">
@@ -462,7 +462,7 @@
             </command>
             <command
                   commandId="gama.ui.resetPerspective"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.reset.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.reset.svg"
                   label="Reset Perspective (restart required)..."
                   style="push">
                <visibleWhen
@@ -477,7 +477,7 @@
                   visible="true">
             </separator>
             <menu
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/open.view.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.view.svg"
                   label="Show View...">
                <dynamic
                      class="gama.ui.shared.commands.ShowViewContributionItem"
@@ -496,22 +496,22 @@
             </separator>
             <command
                   commandId="org.eclipse.ui.ToggleCoolbarAction"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/display/toolbar.regular_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/display/toolbar.regular.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/display/toolbar.regular_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/display/toolbar.regular.svg"
                   label="Hide/Show Toolbar"
                   style="push"
                   tooltip="Toggle the main toolbar on and off">
             </command>
             <command
                   commandId="org.eclipse.ui.window.togglestatusbar"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/display/toolbar.fullscreen_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/display/toolbar.fullscreen.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/display/toolbar.fullscreen_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/display/toolbar.fullscreen.svg"
                   label="Hide/Show Status Bar"
                   style="push">
             </command>
             <command
                   commandId="gama.ui.hideShowEditors"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/show.editors.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/show.editors.svg"
                   label="Hide/Show Editor Area"
                   style="push"
                   tooltip="Hide or show the editors">
@@ -524,8 +524,8 @@
                id="gama.ui.toolbar">
             <command
                   commandId="gama.application.goto.modeling"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg"
                   label="Modeling perspective"
                   style="push"
                   tooltip="Open modeling perspective">
@@ -540,8 +540,8 @@
             </command>
             <command
                   commandId="gama.application.goto.simulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.simulation.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.simulation_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.simulation.svg"
                   label="Simulation perspective"
                   style="push"
                   tooltip="Open simulation perspective">
@@ -581,8 +581,8 @@
             </control>
             <command
                   commandId="gama.application.commands.StepBackSimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.back_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.back.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.back_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.back.svg"
                   label="Step Back"
                   style="push"
                   tooltip="Make One step back in the simulation">
@@ -600,8 +600,8 @@
             </command>
             <command
                   commandId="gama.application.commands.PlaySimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.run.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.run_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.run.svg"
                   label="Run Experiment"
                   style="push"
                   tooltip="Run the currently opened experiment">
@@ -614,8 +614,8 @@
             </command>
             <command
                   commandId="gama.application.commands.PauseSimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.pause.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.pause_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.pause.svg"
                   label="Pause Experiment"
                   style="push"
                   tooltip="Pause the currently opened experiment">
@@ -628,8 +628,8 @@
             </command>
             <command
                   commandId="gama.application.commands.StepByStepSimulation"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.step.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.step.svg"
                   label="Step Experiment"
                   style="push"
                   tooltip="Advance the experiment step by step">
@@ -652,7 +652,7 @@
             </control>
             <command
                   commandId="gama.application.commands.SynchronizeExperiment"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.sync.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.sync.svg"
                   label="Synchronize Experiment"
                   style="toggle">
                <visibleWhen
@@ -669,7 +669,7 @@
             </command>
             <command
                   commandId="gama.application.commands.ReloadSimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.reload.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.reload.svg"
                   label="Reload Experiment"
                   mnemonic="M1+M2+R"
                   style="push">
@@ -687,8 +687,8 @@
             </command>
             <command
                   commandId="gama.application.commands.Cancel"
-                  disabledIcon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.stop_disabled.png"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/experiment/experiment.stop.png"
+                  disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop_disabled.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop.svg"
                   label="Close Experiment"
                   style="push"
                   tooltip="Stops the currently opened experiment and closes its perspective">

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-381.83047 -3314.1597 25.000035 25" width="25.000035" height="25">
+  <defs/>
+  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
+    <title>SOURCES</title>
+    <g id="SOURCES_Dark">
+      <title>Dark</title>
+      <g id="Graphic_11490">
+        <circle cx="-369.33045" cy="-3301.6597" r="12.0000278184556" fill="#666"/>
+        <circle cx="-369.33045" cy="-3301.6597" r="12.0000278184556" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width=".2500004"/>
+      </g>
+      <g id="Graphic_11489">
+        <path d="M -374.83045 -3301.1597 C -375.11045 -3301.1597 -375.33045 -3301.3797 -375.33045 -3301.6597 C -375.33045 -3301.9397 -375.11045 -3302.1597 -374.83045 -3302.1597 L -363.83045 -3302.1597 C -363.55045 -3302.1597 -363.33045 -3301.9397 -363.33045 -3301.6597 C -363.33045 -3301.3797 -363.55045 -3301.1597 -363.83045 -3301.1597 Z" fill="#e3e6e1"/>
+      </g>
+    </g>
+  </g>
+</svg>

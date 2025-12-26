@@ -49,6 +49,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
+import org.osgi.framework.Bundle;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -100,7 +101,8 @@ public class GamaIcon implements IGamaIcons {
 				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
 					if (attrs.isRegularFile()) {
 						String s = FilenameUtils.separatorsToUnix(PATH_TO_ICONS.relativize(file).toString());
-						if (FilenameUtils.isExtension(s, "png") && !s.contains("@") && !s.contains(DISABLED_SUFFIX)) {
+						if ((FilenameUtils.isExtension(s, "png") || FilenameUtils.isExtension(s, "svg"))
+								&& !s.contains("@") && !s.contains(DISABLED_SUFFIX)) {
 							named(FilenameUtils.removeExtension(s));
 						}
 
@@ -450,8 +452,20 @@ public class GamaIcon implements IGamaIcons {
 	 * @return the url
 	 */
 	public static URL computeURL(final String code) {
+		Bundle bundle = Platform.getBundle(PLUGIN_ID);
+		String ext = ".svg";
+		URL url = bundle.getEntry(ICONS_PATH + code + ext);
+		if (url == null) {
+			ext = ".png";
+			url = bundle.getEntry(ICONS_PATH + code + ext);
+		}
+		if (url == null) {
+			if (code.equals(MISSING)) return null;
+			return computeURL(MISSING);
+		}
+
 		IPath uriPath =
-				new org.eclipse.core.runtime.Path("/plugin").append(PLUGIN_ID).append(ICONS_PATH + code + ".png");
+				new org.eclipse.core.runtime.Path("/plugin").append(PLUGIN_ID).append(ICONS_PATH + code + ext);
 		try {
 			URI uri = new URI("platform", null, uriPath.toPortableString(), null);
 			return uri.toURL();

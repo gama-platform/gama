@@ -35,11 +35,8 @@ public interface IGamaIcons {
 	/** The Constant THEME_PATH. */
 	String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
 
-	/** The icons segment. */
-	String ICONS_SEGMENT = "/icons/";
-
 	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons/" + THEME_PATH;
+	String ICONS_PATH = "/icons_svg/" + THEME_PATH;
 
 	/** The Constant GAML_PATH. */
 	String GAML_PATH = "gaml/";

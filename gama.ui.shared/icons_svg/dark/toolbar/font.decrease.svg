@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" viewBox="-762.457 -2876.2282 24.75 24.75" width="24.75" height="24.75">
+  <defs/>
+  <g id="SOURCES" stroke-dasharray="none" stroke-opacity="1" stroke="none" fill="none" fill-opacity="1">
+    <title>SOURCES</title>
+    <g id="SOURCES_Dark">
+      <title>Dark</title>
+      <g id="Group_12299">
+        <g id="Graphic_12302">
+          <circle cx="-750.082" cy="-2863.8532" r="8.00000702080162" fill="#666"/>
+          <circle cx="-750.082" cy="-2863.8532" r="8.00000702080162" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="0"/>
+        </g>
+        <g id="Graphic_12301"/>
+        <g id="Graphic_12300">
+          <circle cx="-750.082" cy="-2863.8532" r="8.00000702080162" fill="#666"/>
+          <circle cx="-750.082" cy="-2863.8532" r="8.00000702080162" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="0"/>
+        </g>
+      </g>
+      <g id="Group_12308">
+        <title>minus-circle</title>
+        <g id="Graphic_12309">
+          <path d="M -750.082 -2855.8532 C -754.5011 -2855.8532 -758.082 -2859.434 -758.082 -2863.8532 C -758.082 -2868.2722 -754.5011 -2871.8532 -750.082 -2871.8532 C -745.663 -2871.8532 -742.082 -2868.2722 -742.082 -2863.8532 C -742.082 -2859.434 -745.663 -2855.8532 -750.082 -2855.8532 Z M -750.082 -2856.615 C -746.082 -2856.615 -742.8439 -2859.8532 -742.8439 -2863.8532 C -742.8439 -2867.8532 -746.082 -2871.0913 -750.082 -2871.0913 C -754.082 -2871.0913 -757.3201 -2867.8532 -757.3201 -2863.8532 C -757.3201 -2859.8532 -754.082 -2856.615 -750.082 -2856.615 Z M -753.12965 -2863.4722 C -753.343 -2863.4722 -753.5106 -2863.64 -753.5106 -2863.8532 C -753.5106 -2864.0665 -753.343 -2864.234 -753.12965 -2864.234 L -747.0344 -2864.234 C -746.8211 -2864.234 -746.65346 -2864.0665 -746.65346 -2863.8532 C -746.65346 -2863.64 -746.8211 -2863.4722 -747.0344 -2863.4722 Z" fill="#c0e0ff"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

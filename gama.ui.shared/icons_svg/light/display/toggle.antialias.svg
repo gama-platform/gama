@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-617.7847 -3727.0294 25 25" width="25" height="25">
+  <defs/>
+  <g id="SOURCES" stroke-dasharray="none" stroke="none" stroke-opacity="1" fill="none" fill-opacity="1">
+    <title>SOURCES</title>
+    <g id="SOURCES_Calque_2">
+      <title>Calque 2</title>
+      <g id="Graphic_8965">
+        <path d="M -613.4447 -3726.5294 L -597.1247 -3726.5294 C -595.00394 -3726.5294 -593.2847 -3724.81 -593.2847 -3722.6894 L -593.2847 -3706.3694 C -593.2847 -3704.2486 -595.00394 -3702.5294 -597.1247 -3702.5294 L -613.4447 -3702.5294 C -615.5655 -3702.5294 -617.2847 -3704.2486 -617.2847 -3706.3694 L -617.2847 -3722.6894 C -617.2847 -3724.81 -615.5655 -3726.5294 -613.4447 -3726.5294 Z" fill="white"/>
+        <path d="M -613.4447 -3726.5294 L -597.1247 -3726.5294 C -595.00394 -3726.5294 -593.2847 -3724.81 -593.2847 -3722.6894 L -593.2847 -3706.3694 C -593.2847 -3704.2486 -595.00394 -3702.5294 -597.1247 -3702.5294 L -613.4447 -3702.5294 C -615.5655 -3702.5294 -617.2847 -3704.2486 -617.2847 -3706.3694 L -617.2847 -3722.6894 C -617.2847 -3724.81 -615.5655 -3726.5294 -613.4447 -3726.5294 Z" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".25"/>
+      </g>
+      <g id="Group_9970">
+        <g id="Group_9965">
+          <g id="Graphic_9962">
+            <path d="M -605.10405 -3714.5294 L -605.10405 -3720.974 C -601.5448 -3720.974 -598.6595 -3718.0886 -598.6595 -3714.5294 C -598.6595 -3710.97 -601.5448 -3708.085 -605.10405 -3708.085 L -605.10405 -3714.5294 Z" stroke="#66727e" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
+          </g>
+          <g id="Graphic_9963">
+            <path d="M -605.4654 -3714.5294 L -605.4654 -3708.085 C -609.0246 -3708.085 -611.90995 -3710.97 -611.90995 -3714.5294 C -611.90995 -3718.0886 -609.0246 -3720.974 -605.4654 -3720.974 L -605.4654 -3714.5294 Z" stroke="#66727e" stroke-linecap="butt" stroke-linejoin="bevel" stroke-width="1"/>
+          </g>
+        </g>
+        <g id="Line_9969">
+          <line x1="-605.0736" y1="-3722.5294" x2="-605.0736" y2="-3706.5294" stroke="#66727e" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

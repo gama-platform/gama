@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-270.2741 -3115.658 16.000008 16.000008" width="16.000008" height="16.000008">
+  <defs/>
+  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
+    <title>SOURCES</title>
+    <g id="SOURCES_Dark">
+      <title>Dark</title>
+      <g id="Graphic_11261"/>
+      <g id="Graphic_11260">
+        <path d="M -260.74736 -3106.131 L -256.2741 -3106.131 L -256.2741 -3109.1846 L -260.74736 -3109.1846 L -260.74736 -3113.658 L -263.80084 -3113.658 L -263.80084 -3109.1846 L -268.2741 -3109.1846 L -268.2741 -3106.131 L -263.80084 -3106.131 L -263.80084 -3101.658 L -260.74736 -3101.658 Z" fill="#999"/>
+        <path d="M -260.74736 -3106.131 L -256.2741 -3106.131 L -256.2741 -3109.1846 L -260.74736 -3109.1846 L -260.74736 -3113.658 L -263.80084 -3113.658 L -263.80084 -3109.1846 L -268.2741 -3109.1846 L -268.2741 -3106.131 L -263.80084 -3106.131 L -263.80084 -3101.658 L -260.74736 -3101.658 Z" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
+      </g>
+    </g>
+  </g>
+</svg>

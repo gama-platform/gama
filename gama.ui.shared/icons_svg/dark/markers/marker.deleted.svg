@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-885.9828 -3737.405 12 12" width="12" height="12">
+  <defs/>
+  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
+    <title>SOURCES</title>
+    <g id="SOURCES_New">
+      <title>New</title>
+      <g id="Group_8256">
+        <title>markers/marker.deleted</title>
+        <g id="Graphic_8258">
+          <circle cx="-879.9828" cy="-3731.405" r="5.00000798950937" fill="#8494b4"/>
+        </g>
+        <g id="Graphic_8257">
+          <path d="M -879.9828 -3737.405 C -883.3008 -3737.405 -885.9828 -3734.723 -885.9828 -3731.405 C -885.9828 -3728.087 -883.3008 -3725.405 -879.9828 -3725.405 C -876.6648 -3725.405 -873.9828 -3728.087 -873.9828 -3731.405 C -873.9828 -3734.723 -876.6648 -3737.405 -879.9828 -3737.405 Z M -876.9828 -3729.251 L -877.8288 -3728.405 L -879.9828 -3730.559 L -882.1368 -3728.405 L -882.9828 -3729.251 L -880.8288 -3731.405 L -882.9828 -3733.559 L -882.1368 -3734.405 L -879.9828 -3732.251 L -877.8288 -3734.405 L -876.9828 -3733.559 L -879.1368 -3731.405 L -876.9828 -3729.251 Z" fill="#9da9b5"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" viewBox="-763.1328 -2877.423 24.75 24.75" width="24.75" height="24.75">
+  <defs/>
+  <g id="SOURCES" stroke-dasharray="none" stroke-opacity="1" stroke="none" fill="none" fill-opacity="1">
+    <title>SOURCES</title>
+    <g id="SOURCES_Calque_4">
+      <title>Calque 4</title>
+      <g id="Graphic_12326">
+        <circle cx="-750.7578" cy="-2865.048" r="8.00000702080156" fill="#666"/>
+        <circle cx="-750.7578" cy="-2865.048" r="8.00000702080156" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="0"/>
+      </g>
+      <g id="Graphic_12325"/>
+      <g id="Graphic_12324">
+        <circle cx="-750.7578" cy="-2865.048" r="8.00000702080156" fill="white"/>
+        <circle cx="-750.7578" cy="-2865.048" r="8.00000702080156" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="0"/>
+      </g>
+      <g id="Graphic_12311">
+        <path d="M -750.7578 -2857.048 C -755.17685 -2857.048 -758.7578 -2860.629 -758.7578 -2865.048 C -758.7578 -2869.467 -755.17685 -2873.048 -750.7578 -2873.048 C -746.3388 -2873.048 -742.7578 -2869.467 -742.7578 -2865.048 C -742.7578 -2860.629 -746.3388 -2857.048 -750.7578 -2857.048 Z M -750.7578 -2857.81 C -746.7578 -2857.81 -743.5197 -2861.048 -743.5197 -2865.048 C -743.5197 -2869.048 -746.7578 -2872.286 -750.7578 -2872.286 C -754.7578 -2872.286 -757.9959 -2869.048 -757.9959 -2865.048 C -757.9959 -2861.048 -754.7578 -2857.81 -750.7578 -2857.81 Z M -753.8054 -2864.667 C -754.0188 -2864.667 -754.1864 -2864.8347 -754.1864 -2865.048 C -754.1864 -2865.2613 -754.0188 -2865.429 -753.8054 -2865.429 L -747.7102 -2865.429 C -747.49685 -2865.429 -747.3292 -2865.2613 -747.3292 -2865.048 C -747.3292 -2864.8347 -747.49685 -2864.667 -747.7102 -2864.667 Z" fill="#5c76a1"/>
+      </g>
+    </g>
+  </g>
+</svg>
