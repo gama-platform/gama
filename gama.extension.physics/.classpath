@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jbox2d 2.2.1.1/jbox2d-library-2.2.1.1.jar" sourcepath="libs/jbox2d 2.2.1.1/jbox2d-library-2.2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/Libbulletjme 21.2.1/Libbulletjme-21.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21">
 		<attributes>
@@ -7,7 +8,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry excluding="test/" kind="src" path="src"/>
+	<classpathentry excluding="test/|org/jbox2d/callbacks/|org/jbox2d/collision/|org/jbox2d/collision/broadphase/|org/jbox2d/collision/shapes/|org/jbox2d/common/|org/jbox2d/dynamics/|org/jbox2d/dynamics/contacts/|org/jbox2d/dynamics/joints/|org/jbox2d/particle/|org/jbox2d/pooling/|org/jbox2d/pooling/arrays/|org/jbox2d/pooling/normal/|org/jbox2d/pooling/stacks/" kind="src" path="src"/>
 	<classpathentry kind="src" path="gaml">
 		<attributes>
 			<attribute name="optional" value="true"/>
