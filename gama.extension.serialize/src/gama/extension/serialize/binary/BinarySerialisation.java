@@ -22,8 +22,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.nustaq.serialization.FSTConfiguration;
-
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -31,6 +29,7 @@ import gama.core.metamodel.agent.SerialisedAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.extension.serialize.fst.FSTConfiguration;
 
 /**
  * The Class BinarySerialisationReader.

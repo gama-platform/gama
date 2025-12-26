@@ -15,12 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.locationtech.jts.geom.Geometry;
-import org.nustaq.serialization.FSTBasicObjectSerializer;
-import org.nustaq.serialization.FSTClazzInfo;
-import org.nustaq.serialization.FSTClazzInfo.FSTFieldInfo;
-import org.nustaq.serialization.FSTConfiguration;
-import org.nustaq.serialization.FSTObjectInput;
-import org.nustaq.serialization.FSTObjectOutput;
 
 import gama.core.common.geometry.GamaCoordinateSequenceFactory;
 import gama.core.common.geometry.GamaGeometryFactory;
@@ -45,6 +39,12 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
+import gama.extension.serialize.fst.FSTBasicObjectSerializer;
+import gama.extension.serialize.fst.FSTClazzInfo;
+import gama.extension.serialize.fst.FSTConfiguration;
+import gama.extension.serialize.fst.FSTObjectInput;
+import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
