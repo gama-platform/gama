@@ -13,54 +13,40 @@ package gama.ui.shared.resources;
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import static org.eclipse.core.runtime.FileLocator.toFileURL;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
-import java.awt.image.RescaleOp;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-import javax.imageio.ImageIO;
-
 import org.apache.commons.io.FilenameUtils;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.internal.DPIUtil.ElementAtZoom;
+import org.eclipse.swt.internal.NativeImageLoader;
+import org.osgi.framework.Bundle;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
-import gama.extension.image.GamaImage;
-import gama.extension.image.ImageOperators;
 import gama.ui.application.workbench.ThemeHelper;
 
 /**
- * The Class GamaIcon.
+ * The Class GamaSVGIcon.
  */
 public class GamaIcon implements IGamaIcons {
 
@@ -78,32 +64,28 @@ public class GamaIcon implements IGamaIcons {
 		// we need to use a tmp variable because PATH_TO_ICONS is final
 		Path tmp = null;
 		try {
-			URL pngFolderURL = toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH));
-			tmp = Path.of(new URI(pngFolderURL.getProtocol(), pngFolderURL.getPath(), null).normalize());
+			URL folderURL = toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH));
+			tmp = Path.of(new URI(folderURL.getProtocol(), folderURL.getPath(), null).normalize());
 		} catch (Exception e) {}
 		PATH_TO_ICONS = tmp;
 	}
 
 	/**
-	 * Preload icons.
+	 * Preload all icons.
 	 *
-	 * @param bundle
-	 *            the bundle
 	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	public static void preloadAllIcons() throws IOException {
-
 		TIMER_WITH_EXCEPTIONS("GAMA", "Preloading icons", "done in", () -> {
+			if (PATH_TO_ICONS == null) return;
 			Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
 
 				@Override
 				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
 					if (attrs.isRegularFile()) {
 						String s = FilenameUtils.separatorsToUnix(PATH_TO_ICONS.relativize(file).toString());
-						if (FilenameUtils.isExtension(s, "png") && !s.contains("@") && !s.contains(DISABLED_SUFFIX)) {
-							named(FilenameUtils.removeExtension(s));
-						}
-
+						if (FilenameUtils.isExtension(s, "svg")) { named(FilenameUtils.removeExtension(s)); }
 					}
 					return FileVisitResult.CONTINUE;
 				}
@@ -112,79 +94,60 @@ public class GamaIcon implements IGamaIcons {
 	}
 
 	/**
-	 * Returns the icon named after the path (eg "templates/square.template")
+	 * Named.
 	 *
-	 * @param path
-	 *            the path
-	 * @return the gama icon
+	 * @param s
+	 *            the s
+	 * @return the gama SVG icon
 	 */
 	public static GamaIcon named(final String s) {
-
 		try {
-
-			if (s != null && s.contains("\\")) {
-
-				DEBUG.OUT("Looking for icon " + s);
-			}
-
 			if (s != null) return ICON_CACHE.get(s, () -> new GamaIcon(s));
 		} catch (ExecutionException e) {}
+		if (MISSING.equals(s)) return null;
 		return named(MISSING);
 	}
 
 	/**
-	 * Creates a transparent icon of the desired and width (and 1px wide)
+	 * Of size.
 	 *
+	 * @param width
+	 *            the width
+	 * @param height
+	 *            the height
+	 * @return the gama SVG icon
 	 */
-
 	public static GamaIcon ofSize(final int width, final int height) {
 		final String name = "size" + width + "x" + height;
 		try {
 			return ICON_CACHE.get(name, () -> {
-				// DEBUG.OUT(name + " not found. Building it");
-				GamaImage bi = GamaImage.ofDimensions(width, height, true);
-				return new GamaIcon(name, bi);
+				String svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " + width + " " + height
+						+ "\" width=\"" + width + "\" height=\"" + height + "\"></svg>";
+				return new GamaIcon(name, svg);
 			});
 		} catch (Exception e) {
 			return null;
 		}
 	}
 
-	/** The color template. */
-	static GamaImage COLOR_TEMPLATE;
-
-	/** The transparent. */
-	static Color TRANSPARENT = new Color(0, 0, 0, 0);
-
-	static {
-		try {
-			COLOR_TEMPLATE = GamaImage.from(ImageIO.read(computeURL("spacer")), true);
-		} catch (IOException e) {}
-	}
-
 	/**
-	 * Of color size 24.
+	 * Of color.
 	 *
 	 * @param gcolor
 	 *            the gcolor
-	 * @return the gama icon
+	 * @return the gama SVG icon
 	 */
 	public static GamaIcon ofColor(final GamaColor gcolor) {
 		String name = COLOR_PATH + "circle.color." + String.format("%X", gcolor.getRGB()) + ".24";
 		try {
 			return ICON_CACHE.get(name, () -> {
-				Graphics2D gc = COLOR_TEMPLATE.createGraphics();
-				gc.setRenderingHints(HINTS);
-				gc.setColor(gcolor);
-				gc.fillOval(5, 5, 15, 15);
-				gc.setColor(ThemeHelper.isDark() ? GamaColor.get(227, 230, 225) : Color.gray);
-				gc.setStroke(new BasicStroke((float) 0.3));
-				gc.drawOval(5, 5, 14, 14);
-				GamaIcon result = new GamaIcon(name, COLOR_TEMPLATE);
-				gc.setBackground(TRANSPARENT);
-				gc.clearRect(0, 0, 25, 25);
-				gc.dispose();
-				return result;
+				String hex = String.format("#%02x%02x%02x", gcolor.getRed(), gcolor.getGreen(), gcolor.getBlue());
+				String stroke = ThemeHelper.isDark() ? "#E3E6E1" : "gray";
+				String svg =
+						"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"24\" height=\"24\">"
+								+ "<circle cx=\"12.5\" cy=\"12.5\" r=\"7.5\" fill=\"" + hex + "\" stroke=\"" + stroke
+								+ "\" stroke-width=\"0.3\"/>" + "</svg>";
+				return new GamaIcon(name, svg);
 			});
 		} catch (Exception e) {
 			return null;
@@ -194,180 +157,122 @@ public class GamaIcon implements IGamaIcons {
 	/** The code. */
 	final String code;
 
-	/** The url. */
-	final URL url, disabledUrl;
-
 	/** The descriptor. */
-	final ImageDescriptor descriptor, disabledDescriptor;
+	final SVGImageDescriptor descriptor, disabledDescriptor;
 
 	/**
-	 * Constructor for images loaded from a plugin
+	 * Instantiates a new gama SVG icon.
 	 *
-	 * @param c
+	 * @param code
 	 *            the code
-	 * @param p
-	 *            the path (in the 'icons' folder)
-	 * @param plugin
-	 *            the id of the plugin in which the 'icons' folder resides
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
-	private GamaIcon(final String c) {
-		DEBUG.OUT("Creation of icon " + c, false);
-		code = c;
-		url = computeURL(code);
-		DEBUG.OUT(" with URL " + url);
-		disabledUrl = computeURL(code + DISABLED_SUFFIX);
-		descriptor = new SimplifiedURLImageDescriptor(url);
-		disabledDescriptor = new SimplifiedURLImageDescriptor(disabledUrl);
-	}
-
-	/**
-	 * Instantiates a new gama icon directly from an image. We do not produce disabled versions
-	 *
-	 * @param name
-	 *            the name
-	 * @param im
-	 *            the im
-	 */
-	private GamaIcon(final String path, final Image im, final Image disabled) {
-		code = path;
-		url = computeURL(code);
-		disabledUrl = url;
-		descriptor = ImageDescriptor.createFromImage(im);
-		disabledDescriptor = ImageDescriptor.createFromImage(disabled);
-	}
-
-	/**
-	 * Instantiates a new gama icon.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param path
-	 *            the path
-	 * @param im
-	 *            the im
-	 * @date 13 sept. 2023
-	 */
-	private GamaIcon(final String path, final GamaImage im) {
-		this(path, toSWTImage(im), toDisabledSWTImage(im));
-	}
-
-	/**
-	 * Creates a SWT image from a Java BufferedImage.
-	 *
-	 * @param bufferedImage
-	 *            the image.
-	 * @return returns a SWT image.
-	 */
-	public static Image toSWTImage(final GamaImage im) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			ImageIO.write(im, "png", out);
-		} catch (IOException e) {}
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		return new Image(Display.getCurrent(), new ImageData(in));
-	}
-
-	/**
-	 * The Class DisabledFilter.
-	 */
-	private static class DisabledFilter extends RGBImageFilter {
-
-		/** The min. */
-		private final float min;
-
-		/** The factor. */
-		private final float factor;
-
-		/**
-		 * Instantiates a new disabled filter.
-		 *
-		 * @param min
-		 *            the min
-		 * @param max
-		 *            the max
-		 */
-		DisabledFilter() {
-			canFilterIndexColorModel = true;
-			this.min = 160;
-			this.factor = (255 - min) / 255f;
+	private GamaIcon(final String code) throws IOException {
+		this.code = code;
+		URL url = computeURL(code);
+		if (url == null) throw new IOException("Icon not found: " + code);
+		String svgContent = "";
+		try (InputStream in = url.openStream()) {
+			svgContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 		}
-
-		@Override
-		public int filterRGB(final int x, final int y, final int rgb) {
-			// Coefficients are from the sRGB color space:
-			int gray = Math.min(255,
-					(int) ((0.2125f * (rgb >> 16 & 0xFF) + 0.7154f * (rgb >> 8 & 0xFF) + 0.0721f * (rgb & 0xFF) + .5f)
-							* factor + min));
-			return rgb & 0xff000000 | gray << 16 | gray << 8 | gray << 0;
-		}
-	}
-
-	/** The Constant filter. */
-	static final DisabledFilter FILTER = new DisabledFilter();
-
-	/**
-	 * To buffered image.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param img
-	 *            the img
-	 * @return the buffered image
-	 * @date 15 sept. 2023
-	 */
-	public static BufferedImage toBufferedImage(final java.awt.Image img) {
-		if (img instanceof BufferedImage) return (BufferedImage) img;
-		BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-		Graphics2D bGr = bimage.createGraphics();
-		bGr.drawImage(img, 0, 0, null);
-		bGr.dispose();
-		return bimage;
+		this.descriptor = new SVGImageDescriptor(svgContent);
+		this.disabledDescriptor = new SVGImageDescriptor(createDisabledSVG(svgContent));
 	}
 
 	/**
-	 * Creates a SWT image from a Java BufferedImage.
+	 * Instantiates a new gama SVG icon.
 	 *
-	 * @param bufferedImage
-	 *            the image.
-	 * @return returns a SWT image.
+	 * @param code
+	 *            the code
+	 * @param content
+	 *            the content
 	 */
-	public static Image toDisabledSWTImage(final BufferedImage im) {
-		ImageProducer prod = new FilteredImageSource(im.getSource(), FILTER);
-		java.awt.Image gray = Toolkit.getDefaultToolkit().createImage(prod);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			ImageIO.write(toBufferedImage(gray), "png", out);
-		} catch (IOException e) {}
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		return new Image(Display.getCurrent(), new ImageData(in));
+	private GamaIcon(final String code, final String content) {
+		this.code = code;
+		String svgContent = content;
+		this.descriptor = new SVGImageDescriptor(svgContent);
+		this.disabledDescriptor = new SVGImageDescriptor(createDisabledSVG(svgContent));
 	}
 
-	/** The hints. */
-	static RenderingHints HINTS =
-			new RenderingHints(Map.of(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON,
-					RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC,
-					RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
-
 	/**
-	 * A {@link RescaleOp} used to make any input image 10% darker.
-	 */
-	RescaleOp OP_DARKER = new RescaleOp(0.9f, 0, HINTS);
-
-	/**
-	 * To checked SWT image.
+	 * Creates the disabled SVG.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param im
-	 *            the im
+	 * @param original
+	 *            the original
+	 * @return the string
+	 */
+	private String createDisabledSVG(final String original) {
+		// We inject opacity and a grayscale filter (if supported by the renderer)
+		// into the root svg tag
+		return original.replace("<svg ", "<svg opacity=\"0.5\" style=\"filter:grayscale(100%);\" ");
+	}
+
+	/**
+	 * Creates the darker SVG.
+	 *
+	 * @param original
+	 *            the original
+	 * @return the string
+	 */
+	private String createDarkerSVG(final String original) {
+		int endTag = original.lastIndexOf("</svg>");
+		if (endTag != -1) return original.substring(0, endTag)
+				+ "<rect width=\"100%\" height=\"100%\" fill=\"black\" fill-opacity=\"0.5\"/></svg>";
+		return original;
+	}
+
+	/**
+	 * Image.
+	 *
+	 * @param key
+	 *            the key
+	 * @param imageCreator
+	 *            the image creator
 	 * @return the image
-	 * @date 15 sept. 2023
 	 */
-	public static Image toCheckedSWTImage(final GamaImage im) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			ImageIO.write(ImageOperators.darker(null, im, 0.5), "png", out);
-		} catch (IOException e) {}
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		return new Image(Display.getCurrent(), new ImageData(in));
+	private Image image(final String key, final Callable<Image> imageCreator) {
+		Image image = JFaceResources.getImage(key);
+		if (image == null) {
+			try {
+				image = imageCreator.call();
+			} catch (Exception e) {}
+			if (image == null && !MISSING.equals(key)) { image = named(MISSING).image(); }
+			if (JFaceResources.getImageRegistry().get(key) == null) {
+				JFaceResources.getImageRegistry().put(key, image);
+			}
+		}
+		return image;
+	}
 
+	/**
+	 * Image.
+	 *
+	 * @return the image
+	 */
+	public Image image() {
+		return image(code, () -> descriptor.createImage(false));
+	}
+
+	/**
+	 * Disabled.
+	 *
+	 * @return the image
+	 */
+	public Image disabled() {
+		return image(code + "_disabled", () -> disabledDescriptor.createImage(false));
+	}
+
+	/**
+	 * Checked.
+	 *
+	 * @return the image
+	 */
+	public Image checked() {
+		return image(code + "_checked", () -> {
+			String darker = createDarkerSVG(descriptor.data);
+			return new SVGImageDescriptor(darker).createImage();
+		});
 	}
 
 	/**
@@ -389,55 +294,6 @@ public class GamaIcon implements IGamaIcons {
 	}
 
 	/**
-	 * Image.
-	 *
-	 * @return the image
-	 */
-	private Image image(final String key, final Callable<Image> imageCreator) {
-		Image image = JFaceResources.getImage(key);
-		if (image == null) {
-			try {
-				image = imageCreator.call();
-			} catch (Exception e) {}
-			if (image == null) { image = named(MISSING).image(); }
-			if (JFaceResources.getImageRegistry().get(key) == null) {
-				JFaceResources.getImageRegistry().put(key, image);
-			}
-		}
-		return image;
-	}
-
-	/**
-	 * Image.
-	 *
-	 * @return the image
-	 */
-	public Image image() {
-		return image(url.toString(), () -> descriptor.createImage(false));
-	}
-
-	/**
-	 * Disabled.
-	 *
-	 * @return the image
-	 */
-	public Image disabled() {
-		return image(disabledUrl.toString(), () -> disabledDescriptor.createImage(false));
-	}
-
-	/**
-	 * Checked.
-	 *
-	 * @return the image
-	 */
-	public Image checked() {
-		return image(code + "_checked", () -> {
-			GamaImage bi = GamaImage.from(ImageIO.read(url), true);
-			return toCheckedSWTImage(bi);
-		});
-	}
-
-	/**
 	 * Gets the code.
 	 *
 	 * @return the code
@@ -447,25 +303,55 @@ public class GamaIcon implements IGamaIcons {
 	/**
 	 * Compute URL.
 	 *
+	 * @param code
+	 *            the code
 	 * @return the url
 	 */
 	public static URL computeURL(final String code) {
-		IPath uriPath =
-				new org.eclipse.core.runtime.Path("/plugin").append(PLUGIN_ID).append(ICONS_PATH + code + ".png");
-		try {
-			URI uri = new URI("platform", null, uriPath.toPortableString(), null);
-			return uri.toURL();
-		} catch (MalformedURLException | URISyntaxException e) {
-			return computeURL(MISSING);
-		}
+		Bundle bundle = Platform.getBundle(PLUGIN_ID);
+		URL url = bundle.getEntry(ICONS_PATH + code + ".svg");
+		if (url == null && !MISSING.equals(code)) return computeURL(MISSING);
+		return url;
 	}
 
 	/**
-	 * @param string
-	 * @return
+	 * Exist.
+	 *
+	 * @param code
+	 *            the code
+	 * @return true, if successful
 	 */
 	public static boolean exist(final String code) {
-		return ICON_CACHE.getIfPresent(code) != null;
+		if (ICON_CACHE.getIfPresent(code) != null) return true;
+		return computeURL(code) != null;
+	}
+
+	/**
+	 * The Class SVGImageDescriptor.
+	 */
+	private static class SVGImageDescriptor extends ImageDescriptor {
+
+		/** The data. */
+		private final String data;
+
+		/**
+		 * Instantiates a new SVG image descriptor.
+		 *
+		 * @param data
+		 *            the data
+		 */
+		SVGImageDescriptor(final String data) {
+			this.data = data;
+		}
+
+		@Override
+		public ImageData getImageData(final int zoom) {
+			return NativeImageLoader
+					.load(new ElementAtZoom<>(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)), 100),
+							new ImageLoader(), zoom)
+					.get(0).element();
+		}
+
 	}
 
 }

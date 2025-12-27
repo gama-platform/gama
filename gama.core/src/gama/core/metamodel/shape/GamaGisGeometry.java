@@ -1,19 +1,18 @@
 /*******************************************************************************************************
  *
- * GamaGisGeometry.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaGisGeometry.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.shape;
 
-import org.opengis.feature.Feature;
-import org.opengis.feature.Property;
-import org.opengis.feature.type.GeometryType;
-
+import org.geotools.api.feature.Feature;
+import org.geotools.api.feature.Property;
+import org.geotools.api.feature.type.GeometryType;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -30,8 +29,10 @@ public class GamaGisGeometry extends GamaShape {
 	/**
 	 * Instantiates a new gama gis geometry.
 	 *
-	 * @param g the g
-	 * @param feature the feature
+	 * @param g
+	 *            the g
+	 * @param feature
+	 *            the feature
 	 */
 	public GamaGisGeometry(final Geometry g, final Feature feature) {
 		super(g);
@@ -42,12 +43,15 @@ public class GamaGisGeometry extends GamaShape {
 					final String type = p.getDescriptor().getType().getBinding().getSimpleName();
 					if ("String".equals(type)) {
 						String val = (String) p.getValue();
-						if (val != null && ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith("\"") && val.endsWith("\""))))
+						if (val != null && (val.startsWith("'") && val.endsWith("'")
+								|| val.startsWith("\"") && val.endsWith("\""))) {
 							val = val.substring(1, val.length() - 1);
+						}
 						setAttribute(p.getName().getLocalPart(), val);
 
-					} else
+					} else {
 						setAttribute(p.getName().getLocalPart(), p.getValue());
+					}
 				}
 			}
 		}

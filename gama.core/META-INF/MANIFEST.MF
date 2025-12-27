@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Core of GAMA
 Bundle-SymbolicName: gama.core;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: gama.dependencies,
+ org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
- gama.dependencies,
  org.eclipse.core.resources,
  gama.annotations;visibility:=reexport,
  gama.processor;visibility:=reexport,
@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.operations,
  org.eclipse.equinox.p2.engine,
- org.eclipse.xtext
+ org.eclipse.xtext,
+ org.apache.commons.commons-compress
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.core.common;
   uses:="org.osgi.framework,

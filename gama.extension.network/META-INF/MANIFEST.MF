@@ -19,9 +19,8 @@ Require-Bundle: gama.core,
  gama.extension.serialize,
  gama.dependencies
 Bundle-ClassPath: .,
- ext/arduino.jar,
- ext/jSerialComm-2.9.3.jar,
- ext/org.eclipse.paho.client.mqttv3-1.2.5.jar
+ libs/jSerialComm 2.11.4/jSerialComm-2.11.4.jar,
+ libs/Paho 1.2.5/org.eclipse.paho.client.mqttv3-1.2.5.jar
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: gama.extension.network
  

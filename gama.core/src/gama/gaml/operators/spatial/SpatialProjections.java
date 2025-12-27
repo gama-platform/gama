@@ -1,11 +1,21 @@
+/*******************************************************************************************************
+ *
+ * SpatialProjections.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
@@ -247,8 +257,7 @@ public class SpatialProjections {
 			transform = CRS.findMathTransform(sourceCRS, targetCRS);
 			targetGeometry = JTS.transform(g.getInnerGeometry(), transform);
 		} catch (final Exception e) {
-			throw GamaRuntimeException.error("No transformation found from " + sourceCode + " to " + targetcode,
-					scope);
+			throw GamaRuntimeException.error("No transformation found from " + sourceCode + " to " + targetcode, scope);
 		}
 		if (targetGeometry == null) return null;
 		final IShape s = GamaShapeFactory.createFrom(targetGeometry);

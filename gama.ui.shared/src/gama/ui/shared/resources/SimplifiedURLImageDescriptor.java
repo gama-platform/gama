@@ -23,11 +23,18 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.Policy;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageDataProvider;
 import org.eclipse.swt.graphics.ImageFileNameProvider;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.internal.DPIUtil.ElementAtZoom;
+import org.eclipse.swt.internal.NativeImageLoader;
+import org.eclipse.swt.internal.image.FileFormat;
 
 import gama.dev.DEBUG;
 
@@ -76,7 +83,9 @@ public class SimplifiedURLImageDescriptor extends ImageDescriptor
 	 * Gets the image data.
 	 *
 	 * @return the image data
+	 * @deprecated
 	 */
+	@Deprecated
 	@Override
 	public ImageData getImageData() { return getImageData(url); }
 
@@ -90,10 +99,10 @@ public class SimplifiedURLImageDescriptor extends ImageDescriptor
 	@Override
 	public ImageData getImageData(final int zoom) {
 		if (url != null) {
-			if (zoom == 100) return getImageData(url);
+			if (zoom == 100 || canLoadAtZoom(url, zoom)) return getImageData(url, 100, zoom);
 			URL xUrl = getxURL(url, zoom);
 			if (xUrl != null) {
-				ImageData xdata = getImageData(xUrl);
+				ImageData xdata = getImageData(xUrl, zoom, zoom);
 				if (xdata != null) return xdata;
 			}
 		}
@@ -109,10 +118,79 @@ public class SimplifiedURLImageDescriptor extends ImageDescriptor
 	 */
 	private static ImageData getImageData(final URL url) {
 		if (url == null) return null;
-		try (InputStream in = new BufferedInputStream(FileLocator.find(url).openStream())) {
+		try (InputStream in = getStream(url)) {
 			return new ImageData(in);
 		} catch (Exception e) {}
 		return null;
+	}
+
+	/**
+	 * Can load at zoom.
+	 *
+	 * @param url
+	 *            the url
+	 * @param zoom
+	 *            the zoom
+	 * @return true, if successful
+	 */
+	@SuppressWarnings ("restriction")
+	private static boolean canLoadAtZoom(final URL url, final int zoom) {
+		try (InputStream in = getStream(url)) {
+			if (in != null) return FileFormat.canLoadAtZoom(new ElementAtZoom<>(in, 100), zoom);
+		} catch (IOException e) {
+			Policy.logException(e);
+		}
+		return false;
+	}
+
+	/**
+	 * @param url2
+	 * @return
+	 * @throws IOException
+	 */
+	@SuppressWarnings ("resource")
+	private static InputStream getStream(final URL url) throws IOException {
+		return new BufferedInputStream(FileLocator.find(url).openStream());
+	}
+
+	/**
+	 * Gets the image data.
+	 *
+	 * @param url
+	 *            the url
+	 * @param fileZoom
+	 *            the file zoom
+	 * @param targetZoom
+	 *            the target zoom
+	 * @return the image data
+	 */
+	private static ImageData getImageData(final URL url, final int fileZoom, final int targetZoom) {
+		try (InputStream in = getStream(url)) {
+			if (in != null) return loadImageFromStream(new BufferedInputStream(in), fileZoom, targetZoom);
+		} catch (SWTException e) {
+			if (e.code != SWT.ERROR_INVALID_IMAGE) throw e;
+			// fall through otherwise
+		} catch (IOException e) {
+			Policy.logException(e);
+		}
+		return null;
+	}
+
+	/**
+	 * Load image from stream.
+	 *
+	 * @param stream
+	 *            the stream
+	 * @param fileZoom
+	 *            the file zoom
+	 * @param targetZoom
+	 *            the target zoom
+	 * @return the image data
+	 */
+	@SuppressWarnings ("restriction")
+	private static ImageData loadImageFromStream(final InputStream stream, final int fileZoom, final int targetZoom) {
+		return NativeImageLoader.load(new ElementAtZoom<>(stream, fileZoom), new ImageLoader(), targetZoom).get(0)
+				.element();
 	}
 
 	/**
@@ -136,6 +214,7 @@ public class SimplifiedURLImageDescriptor extends ImageDescriptor
 	 */
 	static URL getxURL(final URL url, final int zoom) {
 		String path = url.getPath();
+		if (path.endsWith(".svg")) return url;
 		int dot = path.lastIndexOf('.');
 		if (dot != -1 && zoom > 100) {
 			String lead = path.substring(0, dot);

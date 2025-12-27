@@ -26,9 +26,9 @@ import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.data.PrjFileReader;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.FactoryException;
 
 import com.google.common.io.Files;
 
@@ -402,21 +402,20 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		String val = null;
 		String geodataFile = getPath(scope).replaceAll(extension, "");
 		switch (extension) {
-			case "jpg":
-				geodataFile = geodataFile + "jgw";
-				break;
-			case "png":
-				geodataFile = geodataFile + "pgw";
-				break;
-			case "tiff":
-			case "tif":
+			case "jpg" -> geodataFile = geodataFile + "jgw";
+			case "png" -> geodataFile = geodataFile + "pgw";
+			case "tiff", "tif" -> {
 				geodataFile = geodataFile + "tfw";
 				val = "";
-				break;
-			case null:
-			default:
+			}
+			case null -> {
 				return null;
+			}
+			default -> {
+				return null;
+			}
 		}
+		;
 		final File infodata = new File(geodataFile);
 		if (infodata.exists()) return geodataFile;
 		return val;

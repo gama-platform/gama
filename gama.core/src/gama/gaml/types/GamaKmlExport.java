@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaKmlExport.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,40 +11,40 @@
 package gama.gaml.types;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
+import de.micromata.opengis.kml.v_2_2_0.AltitudeMode;
+import de.micromata.opengis.kml.v_2_2_0.ColorMode;
+import de.micromata.opengis.kml.v_2_2_0.Document;
+import de.micromata.opengis.kml.v_2_2_0.Feature;
+import de.micromata.opengis.kml.v_2_2_0.Folder;
+import de.micromata.opengis.kml.v_2_2_0.IconStyle;
+import de.micromata.opengis.kml.v_2_2_0.Kml;
+import de.micromata.opengis.kml.v_2_2_0.LineString;
+import de.micromata.opengis.kml.v_2_2_0.LinearRing;
+import de.micromata.opengis.kml.v_2_2_0.Link;
+import de.micromata.opengis.kml.v_2_2_0.Location;
+import de.micromata.opengis.kml.v_2_2_0.Model;
+import de.micromata.opengis.kml.v_2_2_0.MultiGeometry;
+import de.micromata.opengis.kml.v_2_2_0.Orientation;
+import de.micromata.opengis.kml.v_2_2_0.Placemark;
+import de.micromata.opengis.kml.v_2_2_0.Point;
+import de.micromata.opengis.kml.v_2_2_0.Polygon;
+import de.micromata.opengis.kml.v_2_2_0.Scale;
+import de.micromata.opengis.kml.v_2_2_0.Style;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaDate;
-import gama.dependencies.kml.AltitudeMode;
-import gama.dependencies.kml.ColorMode;
-import gama.dependencies.kml.Document;
-import gama.dependencies.kml.Feature;
-import gama.dependencies.kml.Folder;
-import gama.dependencies.kml.IconStyle;
-import gama.dependencies.kml.Kml;
-import gama.dependencies.kml.Link;
-import gama.dependencies.kml.Location;
-import gama.dependencies.kml.Model;
-import gama.dependencies.kml.MultiGeometry;
-import gama.dependencies.kml.Orientation;
-import gama.dependencies.kml.Placemark;
-import gama.dependencies.kml.Scale;
-import gama.dependencies.kml.Style;
 import gama.dev.DEBUG;
 import gama.gaml.operators.spatial.SpatialProjections;
 
@@ -216,7 +216,7 @@ public class GamaKmlExport {
 			} else {
 				DEBUG.OUT("Failed to save the kml file : no valid file name was provided.");
 			}
-		} catch (final FileNotFoundException e) {
+		} catch (final IOException e) {
 			throw GamaRuntimeException.error("Failed to open " + filename + " for saving to KML.", scope);
 		}
 	}
@@ -421,7 +421,7 @@ public class GamaKmlExport {
 				final String name, final String description, final String styleName) {
 			final Placemark placemark = fold.createAndAddPlacemark().withStyleUrl("#" + styleName);
 			placemark.createAndSetTimeSpan().withBegin(beginDate).withEnd(endDate);
-			final gama.dependencies.kml.Point ls = placemark.createAndSetPoint();
+			final Point ls = placemark.createAndSetPoint();
 			ls.setExtrude(true);
 			ls.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
 			final GamaPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
@@ -492,17 +492,16 @@ public class GamaKmlExport {
 			final IShape shapeTM = SpatialProjections.transform_CRS(scope, shape, EPSG_4326);
 			final Geometry geom = shapeTM.getInnerGeometry();
 
-			if (geom instanceof Point p) {
-				addPoint(placemark, p, height);
-			} else if (geom instanceof LineString ls) {
-				addLine(placemark, ls, height);
-			} else if (geom instanceof Polygon p) {
-				addPolygon(placemark, p, height);
-			} else if (geom instanceof MultiPoint mp) {
-				addMultiPoint(placemark, mp, height);
-			} else if (geom instanceof MultiLineString mls) {
-				addMultiLine(placemark, mls, height);
-			} else if (geom instanceof MultiPolygon mp) { addMultiPolygon(placemark, mp, height); }
+			switch (geom) {
+				case org.locationtech.jts.geom.Point p -> addPoint(placemark, p, height);
+				case org.locationtech.jts.geom.LineString ls -> addLine(placemark, ls, height);
+				case org.locationtech.jts.geom.Polygon p -> addPolygon(placemark, p, height);
+				case MultiPoint mp -> addMultiPoint(placemark, mp, height);
+				case MultiLineString mls -> addMultiLine(placemark, mls, height);
+				case MultiPolygon mp -> addMultiPolygon(placemark, mp, height);
+				case null, default -> {
+				}
+			}
 		}
 
 		/**
@@ -526,8 +525,8 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addPoint(final Placemark pm, final Point point, final double height) {
-			final gama.dependencies.kml.Point kmlpoint = pm.createAndSetPoint();
+		public void addPoint(final Placemark pm, final org.locationtech.jts.geom.Point point, final double height) {
+			final Point kmlpoint = pm.createAndSetPoint();
 			fillPoint(kmlpoint, point, height);
 		}
 
@@ -541,7 +540,7 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void fillPoint(final gama.dependencies.kml.Point kmlpoint, final Point point, final double height) {
+		public void fillPoint(final Point kmlpoint, final org.locationtech.jts.geom.Point point, final double height) {
 			final Coordinate pos = point.getCoordinate();
 			if (height > 0.0) {
 				kmlpoint.setExtrude(true);
@@ -562,8 +561,8 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addLine(final Placemark pm, final LineString line, final double height) {
-			final gama.dependencies.kml.LineString kmlline = pm.createAndSetLineString();
+		public void addLine(final Placemark pm, final org.locationtech.jts.geom.LineString line, final double height) {
+			final LineString kmlline = pm.createAndSetLineString();
 			fillLine(kmlline, line, height);
 		}
 
@@ -577,7 +576,8 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void fillLine(final gama.dependencies.kml.LineString kmlline, final LineString line, final double height) {
+		public void fillLine(final LineString kmlline, final org.locationtech.jts.geom.LineString line,
+				final double height) {
 			if (height > 0.0) {
 				kmlline.setExtrude(true);
 				kmlline.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
@@ -597,8 +597,8 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addPolygon(final Placemark pm, final Polygon poly, final double height) {
-			final gama.dependencies.kml.Polygon kmlpoly = pm.createAndSetPolygon();
+		public void addPolygon(final Placemark pm, final org.locationtech.jts.geom.Polygon poly, final double height) {
+			final Polygon kmlpoly = pm.createAndSetPolygon();
 			fillPolygon(kmlpoly, poly, height);
 		}
 
@@ -612,10 +612,11 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void fillPolygon(final gama.dependencies.kml.Polygon kmlpoly, final Polygon poly, final double height) {
+		public void fillPolygon(final Polygon kmlpoly, final org.locationtech.jts.geom.Polygon poly,
+				final double height) {
 
 			// Shell ring
-			final gama.dependencies.kml.LinearRing kmlring = kmlpoly.createAndSetOuterBoundaryIs().createAndSetLinearRing();
+			final LinearRing kmlring = kmlpoly.createAndSetOuterBoundaryIs().createAndSetLinearRing();
 			if (height > 0.0) {
 				kmlpoly.setExtrude(true);
 				kmlpoly.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
@@ -631,8 +632,7 @@ public class GamaKmlExport {
 
 			// Holes
 			for (int hi = 0; hi < poly.getNumInteriorRing(); hi++) {
-				final gama.dependencies.kml.LinearRing kmlhole =
-						kmlpoly.createAndAddInnerBoundaryIs().createAndSetLinearRing();
+				final LinearRing kmlhole = kmlpoly.createAndAddInnerBoundaryIs().createAndSetLinearRing();
 				if (height > 0.0) {
 					kmlpoly.setExtrude(true);
 					kmlpoly.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
@@ -658,12 +658,13 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addMultiPoint(final Placemark pm, final MultiPoint mpoint, final double height) {
+		public void addMultiPoint(final Placemark pm, final org.locationtech.jts.geom.MultiPoint mpoint,
+				final double height) {
 			final int ng = mpoint.getNumGeometries();
 			final MultiGeometry mg = pm.createAndSetMultiGeometry();
 			for (int gx = 0; gx < ng; gx++) {
-				final gama.dependencies.kml.Point kmlpoint = mg.createAndAddPoint();
-				fillPoint(kmlpoint, (Point) mpoint.getGeometryN(gx), height);
+				final Point kmlpoint = mg.createAndAddPoint();
+				fillPoint(kmlpoint, (org.locationtech.jts.geom.Point) mpoint.getGeometryN(gx), height);
 			}
 		}
 
@@ -677,12 +678,13 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addMultiLine(final Placemark pm, final MultiLineString mline, final double height) {
+		public void addMultiLine(final Placemark pm, final org.locationtech.jts.geom.MultiLineString mline,
+				final double height) {
 			final int ng = mline.getNumGeometries();
 			final MultiGeometry mg = pm.createAndSetMultiGeometry();
 			for (int gx = 0; gx < ng; gx++) {
-				final gama.dependencies.kml.LineString kmlline = mg.createAndAddLineString();
-				fillLine(kmlline, (LineString) mline.getGeometryN(gx), height);
+				final LineString kmlline = mg.createAndAddLineString();
+				fillLine(kmlline, (org.locationtech.jts.geom.LineString) mline.getGeometryN(gx), height);
 			}
 		}
 
@@ -696,12 +698,13 @@ public class GamaKmlExport {
 		 * @param height
 		 *            the height
 		 */
-		public void addMultiPolygon(final Placemark pm, final MultiPolygon mpoly, final double height) {
+		public void addMultiPolygon(final Placemark pm, final org.locationtech.jts.geom.MultiPolygon mpoly,
+				final double height) {
 			final int ng = mpoly.getNumGeometries();
 			final MultiGeometry mg = pm.createAndSetMultiGeometry();
 			for (int gx = 0; gx < ng; gx++) {
-				final gama.dependencies.kml.Polygon kmlpoly = mg.createAndAddPolygon();
-				fillPolygon(kmlpoly, (Polygon) mpoly.getGeometryN(gx), height);
+				final Polygon kmlpoly = mg.createAndAddPolygon();
+				fillPolygon(kmlpoly, (org.locationtech.jts.geom.Polygon) mpoly.getGeometryN(gx), height);
 			}
 		}
 	}

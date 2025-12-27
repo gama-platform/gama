@@ -12,7 +12,6 @@ package gama.core.util.file;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,21 +29,34 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
+import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
+import org.openstreetmap.osmosis.core.domain.v0_6.Node;
+import org.openstreetmap.osmosis.core.domain.v0_6.Relation;
+import org.openstreetmap.osmosis.core.domain.v0_6.RelationMember;
+import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
+import org.openstreetmap.osmosis.core.domain.v0_6.Way;
+import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
+import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
+import org.openstreetmap.osmosis.core.task.v0_6.Sink;
+import org.openstreetmap.osmosis.xml.v0_6.impl.OsmHandler;
 
+import crosby.binary.osmosis.OsmosisReader;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
@@ -61,19 +73,6 @@ import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.dependencies.osmosis.Bound;
-import gama.dependencies.osmosis.Entity;
-import gama.dependencies.osmosis.EntityContainer;
-import gama.dependencies.osmosis.Node;
-import gama.dependencies.osmosis.OsmHandler;
-import gama.dependencies.osmosis.OsmosisReader;
-import gama.dependencies.osmosis.Relation;
-import gama.dependencies.osmosis.RelationMember;
-import gama.dependencies.osmosis.RunnableSource;
-import gama.dependencies.osmosis.Sink;
-import gama.dependencies.osmosis.Tag;
-import gama.dependencies.osmosis.Way;
-import gama.dependencies.osmosis.WayNode;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;
@@ -406,6 +405,9 @@ public class GamaOsmFile extends GamaGisFile {
 
 			@Override
 			public void initialize(final Map<String, Object> arg0) {}
+
+			@Override
+			public void close() {}
 		};
 		readFile(scope, sinkImplementation, getFile(scope));
 
@@ -694,9 +696,8 @@ public class GamaOsmFile extends GamaGisFile {
 		IList<IShape> inner = GamaListFactory.create();
 		for (final RelationMember member : relation.getMembers()) {
 			final Entity entity = geomMap.get(member.getMemberId());
-			if (entity instanceof Way) {
+			if (entity instanceof final Way way) {
 				IList<IShape> pts = GamaListFactory.create();
-				final Way way = (Way) entity;
 				for (final WayNode node : way.getWayNodes()) {
 					final GamaShape pp = nodesPt.get(node.getNodeId());
 					if (pp == null) { continue; }
@@ -920,18 +921,14 @@ public class GamaOsmFile extends GamaGisFile {
 		final String ext = getExtension(scope);
 		RunnableSource reader = null;
 		switch (ext) {
-			case "pbf":
-				try (InputStream stream = Files.newInputStream(osmFile.toPath())) {
-					reader = new OsmosisReader(stream);
-					reader.setSink(sink);
-					reader.run();
-				} catch (final IOException e) {
-					throw GamaRuntimeException.create(e, scope);
-				}
-				break;
-			default:
-				readXML(scope, sink);
+			case "pbf" -> {
+				reader = new OsmosisReader(osmFile);
+				reader.setSink(sink);
+				reader.run();
+			}
+			default -> readXML(scope, sink);
 		}
+		;
 
 	}
 

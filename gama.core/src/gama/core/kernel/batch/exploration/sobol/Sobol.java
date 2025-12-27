@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Sobol.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * Sobol.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.moeaframework.util.sequence.Saltelli;
 
@@ -229,19 +229,20 @@ public class Sobol {
 	public Map<String, Map<String, List<Double>>> evaluate() {
 		if (outputs.isEmpty()) { System.err.println("no output porivded call setOutputs before calling evaluate"); }
 
-
 		// Output from the original parameters.
-		double[]A = new double[sample];
+		double[] A = new double[sample];
 
 		// Output from the resampled parameters.
 		double[] B = new double[sample];
 
-		// Output from the original samples where the j-th parameter is replaced by the corresponding resampled parameter.
+		// Output from the original samples where the j-th parameter is replaced by the corresponding resampled
+		// parameter.
 		double[][] C_A = new double[sample][this.parameters.size()];
-		
+
 		// Commented out as not used
-		// Output from the resampled samples where the j-th parameter is replaced by the corresponding original parameter.
-		//double[][] C_B = new double[sample][this.parameters.size()];
+		// Output from the resampled samples where the j-th parameter is replaced by the corresponding original
+		// parameter.
+		// double[][] C_B = new double[sample][this.parameters.size()];
 
 		for (String output : outputs.keySet()) {
 			Iterator<Object> it = outputs.get(output).iterator();
@@ -257,7 +258,7 @@ public class Sobol {
 
 				for (int j = 0; j < this.parameters.size(); j++) {
 					it.next();
-//					C_B[i][j] = Double.parseDouble(it.next().toString());
+					// C_B[i][j] = Double.parseDouble(it.next().toString());
 				}
 
 				B[i] = Double.parseDouble(it.next().toString());
@@ -300,7 +301,7 @@ public class Sobol {
 	 */
 	public void saveResult(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
-			fw.write(this.buildReportString(FileNameUtils.getExtension(file.getPath())));
+			fw.write(this.buildReportString(FilenameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
 			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
 		}
@@ -322,7 +323,6 @@ public class Sobol {
 			}
 		}
 	}
-	
 
 	/**
 	 * Build the string that contains the report of the Sobol analysis

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GraphicViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GraphicViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis.geotools.styling;
 
@@ -22,13 +22,13 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.Mark;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.GraphicalSymbol;
+import org.geotools.api.style.Mark;
+import org.geotools.api.style.Stroke;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Stroke;
 import org.geotools.styling.StyleBuilder;
-import org.opengis.style.GraphicalSymbol;
 
 /**
  * Allows editing/viewing of a Style Layer Descriptor "Graphic".
@@ -71,19 +71,19 @@ public class GraphicViewer {
 
 	/** The enabled. */
 	boolean enabled;
-	
+
 	/** The type. */
 	String type;
-	
+
 	/** The width. */
 	double width;
 
 	/** The on. */
 	Button on;
-	
+
 	/** The name. */
 	Combo name;
-	
+
 	/** The size. */
 	Combo size;
 
@@ -95,22 +95,23 @@ public class GraphicViewer {
 		@Override
 		public void widgetSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void widgetDefaultSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void modifyText(final ModifyEvent e) {
 			sync(SimpleConfigurator.selectionEvent(e));
-		};
+		}
 
 		/**
 		 * Sync.
 		 *
-		 * @param selectionEvent the selection event
+		 * @param selectionEvent
+		 *            the selection event
 		 */
 		private void sync(final SelectionEvent selectionEvent) {
 			try {
@@ -130,11 +131,11 @@ public class GraphicViewer {
 			}
 		}
 
-	};
+	}
 
 	/** The sync. */
 	Listener sync = new Listener();
-	
+
 	/** The listener. */
 	private SelectionListener listener;
 
@@ -153,7 +154,7 @@ public class GraphicViewer {
 	 * @param event
 	 */
 	protected void fire(final SelectionEvent event) {
-		if (this.listener == null) { return; }
+		if (this.listener == null) return;
 		this.listener.widgetSelected(event);
 	}
 
@@ -171,7 +172,7 @@ public class GraphicViewer {
 		this.on = new Button(part, SWT.CHECK);
 
 		this.size = new Combo(part, SWT.DROP_DOWN);
-		this.size.setItems(new String[] { "1", "2", "3", "5", "10", "15" });
+		this.size.setItems("1", "2", "3", "5", "10", "15");
 		this.size.setTextLimit(2);
 		this.size.addKeyListener(klisten);
 		this.size.setToolTipText("Graphic size");
@@ -234,25 +235,24 @@ public class GraphicViewer {
 		if (graphic != null && graphic.graphicalSymbols() != null && !graphic.graphicalSymbols().isEmpty()) {
 
 			for (final GraphicalSymbol symbol : graphic.graphicalSymbols()) {
-				if (symbol instanceof Mark) {
-					final Mark mark = (Mark) symbol;
+				if (symbol instanceof final Mark mark) {
 					setMark(mark, mode);
 					marked = true;
 					break;
 				}
 			}
 		}
-		if (!marked) {
-			setMark(null, mode);
-		}
+		if (!marked) { setMark(null, mode); }
 		this.enabled = this.enabled && enabled;
 	}
 
 	/**
 	 * Sets the mark.
 	 *
-	 * @param mark the mark
-	 * @param mode the mode
+	 * @param mark
+	 *            the mark
+	 * @param mode
+	 *            the mode
 	 */
 	private void setMark(final Mark mark, final Mode mode) {
 		listen(false);
@@ -279,7 +279,8 @@ public class GraphicViewer {
 	/**
 	 * Listen.
 	 *
-	 * @param listen the listen
+	 * @param listen
+	 *            the listen
 	 */
 	void listen(final boolean listen) {
 		if (listen) {

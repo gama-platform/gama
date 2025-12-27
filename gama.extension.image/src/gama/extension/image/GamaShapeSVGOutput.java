@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * GamaShapeSVGOutput.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.extension.image;
 
 import java.awt.BasicStroke;
@@ -16,13 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.locationtech.jts.awt.ShapeReader;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
-import com.github.weisj.jsvg.renderer.Output;
-import com.github.weisj.jsvg.util.Provider;
+import com.github.weisj.jsvg.renderer.output.Output;
 import com.github.weisj.jsvg.util.ShapeUtil;
 
 import gama.core.common.geometry.GeometryUtils;
@@ -30,20 +40,38 @@ import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaListFactory;
 
+/**
+ * The Class GamaShapeSVGOutput.
+ */
 class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 
+	/** The shapes. */
 	List<IShape> shapes = GamaListFactory.create();
 
+	/** The current transform. */
 	private AffineTransform currentTransform;
+
+	/** The current stroke. */
 	private Stroke currentStroke;
+
+	/** The current clip. */
 	private Shape currentClip;
 
+	/**
+	 * Instantiates a new gama shape SVG output.
+	 */
 	public GamaShapeSVGOutput() {
 		currentStroke = new BasicStroke();
 		currentTransform = new AffineTransform();
 		currentClip = null;
 	}
 
+	/**
+	 * Instantiates a new gama shape SVG output.
+	 *
+	 * @param parent
+	 *            the parent
+	 */
 	private GamaShapeSVGOutput(final GamaShapeSVGOutput parent) {
 		shapes = parent.shapes;
 		currentStroke = parent.currentStroke;
@@ -51,6 +79,13 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		currentClip = parent.currentClip != null ? new Area(parent.currentClip) : null;
 	}
 
+	/**
+	 * Adds the shape.
+	 *
+	 * @param shape
+	 *            the shape
+	 */
+	@SuppressWarnings ("restriction")
 	private void addShape(final Shape shape) {
 		// NOTE: ShapeUtil.transformShape always returns a new shape hence we can safely modify shape.
 		Shape s = currentClip != null ? ShapeUtil.intersect(currentClip, shape, true, false) : shape;
@@ -58,6 +93,12 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		addShape(g);
 	}
 
+	/**
+	 * Adds the shape.
+	 *
+	 * @param g
+	 *            the g
+	 */
 	private void addShape(final Geometry g) {
 		if (g instanceof GeometryCollection gc) {
 			int n = gc.getNumGeometries();
@@ -67,12 +108,28 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		}
 	}
 
+	/**
+	 * Append.
+	 *
+	 * @param shape
+	 *            the shape
+	 * @param transform
+	 *            the transform
+	 */
+	@SuppressWarnings ("restriction")
 	private void append(final Shape shape, final AffineTransform transform) {
 		AffineTransform at = new AffineTransform(currentTransform);
 		at.concatenate(transform);
 		addShape(ShapeUtil.transformShape(shape, at));
 	}
 
+	/**
+	 * Append.
+	 *
+	 * @param shape
+	 *            the shape
+	 */
+	@SuppressWarnings ("restriction")
 	private void append(final Shape shape) {
 		addShape(ShapeUtil.transformShape(shape, currentTransform));
 	}
@@ -107,8 +164,14 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		// Not supported. Do nothing
 	}
 
+	/**
+	 * Sets the paint.
+	 *
+	 * @param paintProvider
+	 *            the new paint
+	 */
 	@Override
-	public void setPaint(final Provider<Paint> paintProvider) {
+	public void setPaint(final Supplier<Paint> paintProvider) {
 		// Not supported. Do nothing
 	}
 
@@ -120,6 +183,7 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		return currentStroke;
 	}
 
+	@SuppressWarnings ("restriction")
 	@Override
 	public void applyClip(final Shape clipShape) {
 		Shape transformedShape = ShapeUtil.transformShape(clipShape, currentTransform);
@@ -130,6 +194,7 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		}
 	}
 
+	@SuppressWarnings ("restriction")
 	@Override
 	public void setClip(final Shape shape) {
 		currentClip = shape != null ? ShapeUtil.transformShape(shape, currentTransform) : null;
@@ -238,12 +303,29 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 		return false;
 	}
 
+	/**
+	 * The Class ShapeOutputSafeState.
+	 */
 	private static class ShapeOutputSafeState implements SafeState {
+
+		/** The shape output. */
 		private final GamaShapeSVGOutput shapeOutput;
+
+		/** The old stroke. */
 		private final Stroke oldStroke;
+
+		/** The old transform. */
 		private final AffineTransform oldTransform;
+
+		/** The old clip. */
 		private final Area oldClip;
 
+		/**
+		 * Instantiates a new shape output safe state.
+		 *
+		 * @param shapeOutput
+		 *            the shape output
+		 */
 		private ShapeOutputSafeState(final GamaShapeSVGOutput shapeOutput) {
 			this.shapeOutput = shapeOutput;
 			this.oldStroke = shapeOutput.stroke();

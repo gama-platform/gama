@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.kabeja.dxf.DXFArc;
+import org.kabeja.dxf.DXFBlock;
+import org.kabeja.dxf.DXFCircle;
+import org.kabeja.dxf.DXFDocument;
+import org.kabeja.dxf.DXFEntity;
+import org.kabeja.dxf.DXFLayer;
+import org.kabeja.dxf.DXFLine;
+import org.kabeja.dxf.DXFPolyline;
+import org.kabeja.dxf.DXFSolid;
+import org.kabeja.dxf.DXFVertex;
+import org.kabeja.parser.DXFParser;
+import org.kabeja.parser.Parser;
+import org.kabeja.parser.ParserBuilder;
 import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -29,19 +42,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
-import gama.dependencies.kabeja.dxf.DXFArc;
-import gama.dependencies.kabeja.dxf.DXFBlock;
-import gama.dependencies.kabeja.dxf.DXFCircle;
-import gama.dependencies.kabeja.dxf.DXFDocument;
-import gama.dependencies.kabeja.dxf.DXFEntity;
-import gama.dependencies.kabeja.dxf.DXFLayer;
-import gama.dependencies.kabeja.dxf.DXFLine;
-import gama.dependencies.kabeja.dxf.DXFPolyline;
-import gama.dependencies.kabeja.dxf.DXFSolid;
-import gama.dependencies.kabeja.dxf.DXFVertex;
-import gama.dependencies.kabeja.parser.DXFParser;
-import gama.dependencies.kabeja.parser.Parser;
-import gama.dependencies.kabeja.parser.ParserBuilder;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.GamaGeometryType;

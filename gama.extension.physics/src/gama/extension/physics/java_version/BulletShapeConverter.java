@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * BulletShapeConverter.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * BulletShapeConverter.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,6 +33,7 @@ import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.TriangleShape;
 import com.bulletphysics.collision.shapes.UniformScalingShape;
 import com.bulletphysics.dom.HeightfieldTerrainShape;
+import com.bulletphysics.util.ObjectArrayList;
 
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.agent.IAgent;
@@ -100,10 +101,8 @@ public class BulletShapeConverter implements IShapeConverter<CollisionShape, Vec
 				// oriented on the Y or on the X (default) axis
 				LineString line = (LineString) shape.getInnerGeometry();
 				LineSegment seg = new LineSegment(line.getCoordinateN(0), line.getCoordinateN(1));
-				if (seg.isVertical())
-					return new CylinderShape(new Vector3f(depth, (float) seg.getLength() / 2f, depth));
-				else
-					return new CylinderShapeX(new Vector3f((float) seg.getLength() / 2f, depth, depth));
+				return seg.isVertical() ? new CylinderShape(new Vector3f(depth, (float) seg.getLength() / 2f, depth))
+						: new CylinderShapeX(new Vector3f((float) seg.getLength() / 2f, depth, depth));
 			case CYLINDER:
 				// always oriented on the Z axis
 				return new CylinderShapeZ(new Vector3f(shape.getWidth().floatValue() / 2f,
@@ -131,13 +130,13 @@ public class BulletShapeConverter implements IShapeConverter<CollisionShape, Vec
 						return new BU_Simplex1to4(toVector(points[0]), toVector(points[1]), toVector(points[2]),
 								toVector(points[3]));
 					default:
-						ConvexHullShape result = new ConvexHullShape();
-						// ObjectArrayList<Vector3f> vertices = new ObjectArrayList<>(points.length);
+						// ConvexHullShape result = new ConvexHullShape();
+						ObjectArrayList<Vector3f> vertices = new ObjectArrayList<>(points.length);
 						for (final GamaPoint p : points) {
-							// vertices.add(toVector(p));
-							result.addPoint(toVector(p));
+							vertices.add(toVector(p));
+							// result.addPoint(toVector(p));
 						}
-						// ConvexHullShape result = new ConvexHullShape(vertices);
+						ConvexHullShape result = new ConvexHullShape(vertices);
 						return result;
 				}
 

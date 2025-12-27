@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="libs/basicplayer 3.0.0.0/basicplayer-3.0.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jlayer-decoder 2024-04-19/jlayer-decoder-2024.04.19.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/mp3spi 2024-04-19/mp3spi-2024.04.19.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/tritonus-share 2024-04-19/tritonus-share-2024.04.19.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/jlayer-1.0.1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/mp3spi-1.9.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/tritonus-share-0.3.7.4.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gaml">
 		<attributes>

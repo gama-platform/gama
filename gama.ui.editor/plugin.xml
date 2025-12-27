@@ -7,7 +7,7 @@
             class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
 	            default="true"
             extensions="gaml,experiment"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.model.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.model.svg"
             id="gaml.compiler.Gaml"
             name="Gaml Editor">
          <contentTypeBinding
@@ -202,8 +202,8 @@
         locationURI="menu:file?before=save.ext">
      <command
            commandId="ummisco.command.clean.build"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/validation/compile.all_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/validation/compile.all.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/validation/compile.all_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/validation/compile.all.svg"
            label="Clean and Validate All"
            style="push"> 
         <visibleWhen
@@ -215,8 +215,8 @@
         locationURI="popup:#TextEditorContext?after=group.edit">
      <command
            commandId="org.eclipse.xtext.ui.editor.FindReferences"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/editor/find.references_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/editor/find.references.png">
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/find.references_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/find.references.svg">
         <visibleWhen
               checkEnabled="false">
            <reference
@@ -226,8 +226,8 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/editor/open.declaration_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/editor/open.declaration.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/open.declaration_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/open.declaration.svg"
            id="xtext.ui.openDeclaration"
            style="push">
         <visibleWhen
@@ -239,8 +239,8 @@
      </command>
      <command
            commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/editor/content.assist_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/editor/content.assist.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/content.assist_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/content.assist.svg"
            style="push">
         <visibleWhen
               checkEnabled="false">
@@ -255,8 +255,8 @@
      </separator>
      <command
            commandId="org.eclipse.xtext.ui.ToggleCommentAction"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/editor/toggle.comment_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/editor/toggle.comment.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/toggle.comment_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/toggle.comment.svg"
            label="Toggle Comments"
            style="push">
         <visibleWhen
@@ -268,8 +268,8 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.FormatAction"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/editor/command.format_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/editor/command.format.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.format_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.format.svg"
            style="push">
         <visibleWhen
               checkEnabled="false">
@@ -280,8 +280,8 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons/light/navigator/file.rename_disabled.png"
-           icon="platform:/plugin/gama.ui.shared/icons/light/navigator/file.rename.png"
+           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.rename_disabled.svg"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.rename.svg"
            style="push">
         <visibleWhen
               checkEnabled="false">
@@ -403,7 +403,7 @@
           allowMultiple="false"
           category="gama.ui.category.gama"
           class="gama.ui.views.GamaOutlineView"
-          icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.outline.png"
+          icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.outline.svg"
           id="gama.ui.application.view.outline"
           name="Model Outline"
           restorable="true">
@@ -412,7 +412,7 @@
           allowMultiple="false"
           category="gama.ui.category.gama"
           class="org.eclipse.ui.internal.views.markers.SyntaxErrorsView"
-          icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.problems.png"
+          icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.problems.svg"
           id="gama.ui.application.view.problems"
           name="Validation"
           restorable="true">
@@ -420,7 +420,7 @@
     <view
           category="gama.ui.category.gama"
           class="gaml.compiler.ui.templates.TemplatesView"
-          icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.templates.png"
+          icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.templates.svg"
           id="gama.ui.application.view.templates"
           name="Templates"
           restorable="true">
@@ -429,7 +429,7 @@
           allowMultiple="false"
           category="gama.ui.category.gama"
           class="gama.ui.views.GamaMinimapView"
-          icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.minimap.png"
+          icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.minimap.svg"
           id="gama.ui.application.view.minimap"
           name="Model Navigation"
           restorable="true">
@@ -701,7 +701,7 @@
              visible="true">
           <action
                 class="gaml.compiler.ui.editor.DelegateForAllElements"
-                icon="platform:/plugin/gama.ui.shared/icons/light/generic/menu.searchtext.png"
+                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.searchtext.svg"
                 id="gama.ui.action.gaml.elements"
                 label="GAML elements in models..."
                 menubarPath="org.eclipse.search.menu/extraSearchGroup"
@@ -713,7 +713,7 @@
     <extension 
           point="org.eclipse.ui.perspectiveExtensions">
        <perspectiveExtension
-             editorOnboardingImage="onboarding.icon.png"
+             editorOnboardingImage="onboarding.icon.svg"
              editorOnboardingText="Select a model in the navigator, create a new model file or consult the documentation to get started !"
              targetID="gama.ui.application.perspectives.ModelingPerspective">
           <view
@@ -817,7 +817,7 @@
        <perspective
              class="gama.ui.perspective.ModelingPerspective"
              fixed="false"
-             icon="platform:/plugin/gama.ui.shared/icons/light/views/perspective.modeling.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg"
              id="gama.ui.application.perspectives.ModelingPerspective"
              name="Modeling">
           <description> 

@@ -1,26 +1,25 @@
 /*******************************************************************************************************
  *
- * Projection.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Projection.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.topology.projection;
 
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.NoninvertibleTransformException;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.geometry.jts.DefaultCoordinateSequenceTransformer;
 import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.referencing.operation.TransformException;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
@@ -33,24 +32,26 @@ public class Projection implements IProjection {
 
 	/** The factory. */
 	private final ProjectionFactory factory;
-	
+
 	/** The inverse transformer. */
 	private GeometryCoordinateSequenceTransformer transformer, inverseTransformer;
-	
+
 	/** The initial CRS. */
 	CoordinateReferenceSystem initialCRS;
-	
+
 	/** The projected env. */
 	Envelope3D projectedEnv;
-	
+
 	/** The reference projection. */
 	final IProjection referenceProjection;
 
 	/**
 	 * Instantiates a new projection.
 	 *
-	 * @param world the world
-	 * @param fact the fact
+	 * @param world
+	 *            the world
+	 * @param fact
+	 *            the fact
 	 */
 	Projection(final IProjection world, final ProjectionFactory fact) {
 		referenceProjection = world;
@@ -60,11 +61,16 @@ public class Projection implements IProjection {
 	/**
 	 * Instantiates a new projection.
 	 *
-	 * @param scope the scope
-	 * @param world the world
-	 * @param crs the crs
-	 * @param env the env
-	 * @param fact the fact
+	 * @param scope
+	 *            the scope
+	 * @param world
+	 *            the world
+	 * @param crs
+	 *            the crs
+	 * @param env
+	 *            the env
+	 * @param fact
+	 *            the fact
 	 */
 	Projection(final IScope scope, final IProjection world, final CoordinateReferenceSystem crs, final Envelope3D env,
 			final ProjectionFactory fact) {
@@ -108,8 +114,10 @@ public class Projection implements IProjection {
 	/**
 	 * Transform.
 	 *
-	 * @param g the g
-	 * @param translate the translate
+	 * @param g
+	 *            the g
+	 * @param translate
+	 *            the translate
 	 * @return the geometry
 	 */
 	public Geometry transform(final Geometry g, final boolean translate) {
@@ -131,7 +139,8 @@ public class Projection implements IProjection {
 	/**
 	 * Transform.
 	 *
-	 * @param g the g
+	 * @param g
+	 *            the g
 	 * @return the envelope 3 D
 	 */
 	Envelope3D transform(final Envelope3D g) {
@@ -157,7 +166,8 @@ public class Projection implements IProjection {
 	/**
 	 * Compute projection.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the math transform
 	 */
 	MathTransform computeProjection(final IScope scope) {
@@ -178,9 +188,7 @@ public class Projection implements IProjection {
 	}
 
 	@Override
-	public Envelope3D getProjectedEnvelope() {
-		return projectedEnv;
-	}
+	public Envelope3D getProjectedEnvelope() { return projectedEnv; }
 
 	/**
 	 * Method getTargetCRS()

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Webb.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform .
+ * Webb.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -317,8 +317,12 @@ public class Webb {
 			connection.setUseCaches(request.useCaches);
 			setTimeouts(request, connection);
 			if (request.ifModifiedSince != null) { connection.setIfModifiedSince(request.ifModifiedSince); }
-
-			WebbUtils.addRequestProperties(connection, mergeHeaders(request.headers));
+			Map<String, Object> map = mergeHeaders(request.headers);
+			if (map != null) {
+				for (final Map.Entry<String, Object> entry : map.entrySet()) {
+					WebbUtils.addRequestProperty(connection, entry.getKey(), entry.getValue());
+				}
+			}
 			if (clazz == JSONObject.class || clazz == JSONArray.class) {
 				WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);
 			}
@@ -452,7 +456,7 @@ public class Webb {
 		// see comments about this problem in #writeBody()
 		try (final OutputStream os =
 				compress ? new GZIPOutputStream(connection.getOutputStream()) : connection.getOutputStream();) {
-			WebbUtils.copyStream(is, os);
+			is.transferTo(os);
 			os.flush();
 		} finally {
 			if (is != null && closeStream) {
@@ -470,7 +474,8 @@ public class Webb {
 	 *            the connection
 	 */
 	private void prepareSslConnection(final HttpURLConnection connection) {
-		if ((hostnameVerifier != null || sslSocketFactory != null) && connection instanceof HttpsURLConnection sslConnection) {
+		if ((hostnameVerifier != null || sslSocketFactory != null)
+				&& connection instanceof HttpsURLConnection sslConnection) {
 			if (hostnameVerifier != null) { sslConnection.setHostnameVerifier(hostnameVerifier); }
 			if (sslSocketFactory != null) { sslConnection.setSSLSocketFactory(sslSocketFactory); }
 		}

@@ -42,6 +42,7 @@ import gama.core.common.GamlFileExtension;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.model.IModel;
+import gama.core.kernel.root.SystemInfo;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.NullGuiHandler;
 import gama.core.runtime.concurrent.GamaExecutorService;
@@ -90,9 +91,7 @@ public class HeadlessApplication implements IApplication {
 	 * @return the injector
 	 */
 	private static Injector configureInjector() {
-		if (INJECTOR != null) {
-			return INJECTOR;
-		}
+		if (INJECTOR != null) return INJECTOR;
 		DEBUG.LOG("GAMA configuring and loading...");
 		System.setProperty("java.awt.headless", "true");
 		GAMA.setHeadLessMode(isServer);
@@ -204,7 +203,7 @@ public class HeadlessApplication implements IApplication {
 	 */
 	private static void showVersion() {
 		DEBUG.ON();
-		DEBUG.LOG("Welcome to Gama-platform.org version " + GAMA.VERSION + "\n");
+		DEBUG.LOG("Welcome to Gama-platform.org version " + SystemInfo.VERSION + "\n");
 		DEBUG.OFF();
 	}
 
@@ -215,7 +214,7 @@ public class HeadlessApplication implements IApplication {
 		showVersion();
 		DEBUG.ON();
 		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
-				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)" 
+				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)"
 				+ "\n\t\t-ws [./path/to/ws]            -- manually set a workspace" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
 				+ VERBOSE_PARAMETER + "                            -- verbose mode" + "\n\t\t" + THREAD_PARAMETER
@@ -321,12 +320,10 @@ public class HeadlessApplication implements IApplication {
 
 		// Runner verification
 		// ========================
-		if (mustContainInFile && mustContainOutFolder && size < 2) {
+		if (mustContainInFile && mustContainOutFolder && size < 2)
 			return showError(HeadLessErrors.INPUT_NOT_DEFINED, null);
-		}
-		if (!mustContainInFile && mustContainOutFolder && size < 1) {
+		if (!mustContainInFile && mustContainOutFolder && size < 1)
 			return showError(HeadLessErrors.OUTPUT_NOT_DEFINED, null);
-		}
 
 		// In/out files
 		// ========================
@@ -334,22 +331,18 @@ public class HeadlessApplication implements IApplication {
 			// Check and create output folder
 			Globals.OUTPUT_PATH = args.get(args.size() - 1);
 			final File output = new File(Globals.OUTPUT_PATH);
-			if (!output.exists() && !output.mkdir()) {
+			if (!output.exists() && !output.mkdir())
 				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.OUTPUT_PATH);
-			}
 			// Check and create output image folder
 			Globals.IMAGES_PATH = Globals.OUTPUT_PATH + "/snapshot";
 			final File images = new File(Globals.IMAGES_PATH);
-			if (!images.exists() && !images.mkdir()) {
+			if (!images.exists() && !images.mkdir())
 				return showError(HeadLessErrors.PERMISSION_ERROR, Globals.IMAGES_PATH);
-			}
 		}
 		if (mustContainInFile) {
 			final int inIndex = args.size() - (mustContainOutFolder ? 2 : 1);
 			final File input = new File(args.get(inIndex));
-			if (!input.exists()) {
-				return showError(HeadLessErrors.NOT_EXIST_FILE_ERROR, args.get(inIndex));
-			}
+			if (!input.exists()) return showError(HeadLessErrors.NOT_EXIST_FILE_ERROR, args.get(inIndex));
 		}
 		return true;
 	}
@@ -450,12 +443,8 @@ public class HeadlessApplication implements IApplication {
 	 * @return the string
 	 */
 	public String after(final List<String> args, final String arg) {
-		if (args == null || args.size() < 2) {
-			return null;
-		}
-		for (int i = 0; i < args.size() - 1; i++) { if (args.get(i).equals(arg)) {
-			return args.get(i + 1);
-		} }
+		if (args == null || args.size() < 2) return null;
+		for (int i = 0; i < args.size() - 1; i++) { if (args.get(i).equals(arg)) return args.get(i + 1); }
 		return null;
 	}
 
@@ -709,9 +698,7 @@ public class HeadlessApplication implements IApplication {
 				break;
 			}
 		}
-		if (selectedJob == null) {
-			return;
-		}
+		if (selectedJob == null) return;
 		Globals.OUTPUT_PATH = argOutDir;
 
 		selectedJob.setBufferedWriter(new XMLWriter(Globals.OUTPUT_PATH + "/" + Globals.OUTPUT_FILENAME + ".xml"));

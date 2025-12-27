@@ -8,9 +8,9 @@ Bundle-Activator: gama.extension.image.Activator
 Bundle-Vendor: UMMISCO
 Require-Bundle: org.eclipse.core.runtime,
  gama.core,
- gama.dependencies
-Bundle-ClassPath: .,
- lib/jsvg-1.7.0.jar
+ gama.dependencies,
+ com.github.weisj.jsvg;bundle-version="2.0.0"
+Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy

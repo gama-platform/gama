@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * JsonGeometryObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,7 @@ import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
@@ -27,7 +28,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.referencing.FactoryException;
 
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
@@ -104,21 +104,20 @@ public class JsonGeometryObject extends JsonGamlObject {
 		String key = NAME_COORDINATES;
 		if (geometry instanceof Point || geometry instanceof LineString) {
 			components = (JsonArray) json.valueOf(GeometryUtils.getContourCoordinates(geometry));
-		} else if (geometry instanceof Polygon polygon) {
-			components = toJsonArray(polygon, json);
-		} else if (geometry instanceof MultiPoint multiPoint) {
-			components = toJsonArray(multiPoint, json);
-		} else if (geometry instanceof MultiLineString multiLineString) {
-			components = toJsonArray(multiLineString, json);
-		} else if (geometry instanceof MultiPolygon multiPolygon) {
-			components = toJsonArray(multiPolygon, json);
-		} else if (geometry instanceof GeometryCollection geometryCollection) {
-			for (int i = 0; i < geometryCollection.getNumGeometries(); i++) {
-				components.add(toGeoJsonObject(geometryCollection.getGeometryN(i), json));
-			}
-			key = NAME_GEOMETRIES;
 		} else
-			throw new IllegalArgumentException("Unable to encode geometry " + geometry.getGeometryType());
+			switch (geometry) {
+				case Polygon polygon -> components = toJsonArray(polygon, json);
+				case MultiPoint multiPoint -> components = toJsonArray(multiPoint, json);
+				case MultiLineString multiLineString -> components = toJsonArray(multiLineString, json);
+				case MultiPolygon multiPolygon -> components = toJsonArray(multiPolygon, json);
+				case GeometryCollection geometryCollection -> {
+					for (int i = 0; i < geometryCollection.getNumGeometries(); i++) {
+						components.add(toGeoJsonObject(geometryCollection.getGeometryN(i), json));
+					}
+					key = NAME_GEOMETRIES;
+				}
+				case null, default -> throw new IllegalArgumentException("Unable to encode geometry " + geometry.getGeometryType());
+			}
 		result.add(key, components);
 		return result;
 	}
@@ -272,7 +271,6 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @date 5 nov. 2023
 	 */
 	private static Geometry buildMultiPolygon(final JsonGeometryObject geometryMap) {
-		Geometry result = null;
 		JsonArray polygonsList = geometryMap.get(NAME_COORDINATES).asArray();
 		Polygon[] polygons = new Polygon[polygonsList.size()];
 		int p = 0;
@@ -293,7 +291,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 			polygons[p] = GEOMETRY_FACTORY.createPolygon(outer, inner);
 			++p;
 		}
-		result = GEOMETRY_FACTORY.createMultiPolygon(polygons);
+		Geometry result = GEOMETRY_FACTORY.createMultiPolygon(polygons);
 		return result;
 	}
 
@@ -347,7 +345,6 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @date 5 nov. 2023
 	 */
 	private static Geometry buildPolygon(final JsonGeometryObject geometryMap) {
-		Geometry result = null;
 		JsonArray ringsList = geometryMap.get(NAME_COORDINATES).asArray();
 		if (ringsList.isEmpty()) return GEOMETRY_FACTORY.createPolygon();
 		List<CoordinateSequence> rings = new ArrayList<>();
@@ -358,7 +355,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 			inner = new LinearRing[rings.size() - 1];
 			for (int i = 1; i < rings.size(); i++) { inner[i - 1] = GEOMETRY_FACTORY.createLinearRing(rings.get(i)); }
 		}
-		result = GEOMETRY_FACTORY.createPolygon(outer, inner);
+		Geometry result = GEOMETRY_FACTORY.createPolygon(outer, inner);
 		return result;
 	}
 

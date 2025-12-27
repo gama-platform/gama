@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * MySqlConnection.java, in gama.extension.database, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MySqlConnection.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.database.utils.sql.mysql;
 
@@ -20,10 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.Transaction;
+import org.geotools.api.data.DataStoreFinder;
+import org.geotools.api.data.Transaction;
 import org.geotools.data.mysql.MySQLDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
+import org.geotools.jdbc.JDBCDataStoreFactory;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -40,7 +41,7 @@ import gama.extension.database.utils.sql.SqlUtils;
 /**
  * The Class MySqlConnection.
  */
- /*
+/*
  * @Author TRUONG Minh Thai Fredric AMBLARD Benoit GAUDOU Christophe Sibertin-BLANC Created date: 19-Apr-2013 Modified:
  *
  * 15-Jan-2014 Fix null error of getInsertString methods Fix date/time error of getInsertString methods
@@ -51,51 +52,59 @@ public class MySqlConnection extends SqlConnection {
 
 	/** The Constant MYSQL. */
 	public static final String MYSQL = "mysql";
-	
+
 	/** The Constant WKT2GEO. */
 	private static final String WKT2GEO = "GeomFromText";
-	
+
 	/** The Constant PREFIX_TIMESTAMP. */
 	private static final String PREFIX_TIMESTAMP = "cast('";
-	
+
 	/** The Constant MID_TIMESTAMP. */
 	private static final String MID_TIMESTAMP = "' as ";
-	
+
 	/** The Constant SUPFIX_TIMESTAMP. */
 	private static final String SUPFIX_TIMESTAMP = ")";
 
-	//  TODO :check : keep here or move to  SqlConnection ?
-	JDBCDataStore dataStore;	
-	
+	/** The data store. */
+	// TODO :check : keep here or move to SqlConnection ?
+	JDBCDataStore dataStore;
+
 	/**
 	 * Instantiates a new my sql connection.
 	 *
-	 * @param venderName the vender name
-	 * @param url the url
-	 * @param port the port
-	 * @param dbName the db name
-	 * @param userName the user name
-	 * @param password the password
-	 * @param transformed the transformed
+	 * @param venderName
+	 *            the vender name
+	 * @param url
+	 *            the url
+	 * @param port
+	 *            the port
+	 * @param dbName
+	 *            the db name
+	 * @param userName
+	 *            the user name
+	 * @param password
+	 *            the password
+	 * @param transformed
+	 *            the transformed
 	 */
-	public MySqlConnection(final IScope scope, final String venderName, final String url, final String port, final String dbName,
-			final String userName, final String password, final Boolean transformed) {
+	public MySqlConnection(final IScope scope, final String venderName, final String url, final String port,
+			final String dbName, final String userName, final String password, final Boolean transformed) {
 		super(venderName, url, port, dbName, userName, password, transformed);
-		
-		Map<String,String> params = new HashMap<>();
+
+		Map<String, String> params = new HashMap<>();
 		params.put(MySQLDataStoreFactory.DBTYPE.key, vender);
-		params.put(MySQLDataStoreFactory.HOST.key, url);
+		params.put(JDBCDataStoreFactory.HOST.key, url);
 		params.put(MySQLDataStoreFactory.PORT.key, port);
-		params.put(MySQLDataStoreFactory.DATABASE.key, dbName);
-		params.put(MySQLDataStoreFactory.USER.key, userName);
-		params.put(MySQLDataStoreFactory.PASSWD.key, password);
+		params.put(JDBCDataStoreFactory.DATABASE.key, dbName);
+		params.put(JDBCDataStoreFactory.USER.key, userName);
+		params.put(JDBCDataStoreFactory.PASSWD.key, password);
 
 		try {
 			dataStore = (JDBCDataStore) DataStoreFinder.getDataStore(params);
 		} catch (IOException e) {
-			throw GamaRuntimeException.error("Error in  creating the MySQL connection.",scope);
+			throw GamaRuntimeException.error("Error in  creating the MySQL connection.", scope);
 		}
-		
+
 	}
 
 	@Override
@@ -105,7 +114,7 @@ public class MySqlConnection extends SqlConnection {
 		try {
 			conn = dataStore.getConnection(Transaction.AUTO_COMMIT);
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		}
 		return conn;
@@ -139,10 +148,9 @@ public class MySqlConnection extends SqlConnection {
 	}
 
 	@Override
-	protected boolean colIsGeometryType(final ResultSetMetaData rsmd, int colNb) throws SQLException {
+	protected boolean colIsGeometryType(final ResultSetMetaData rsmd, final int colNb) throws SQLException {
 		return MYSQL.equalsIgnoreCase(vender) && (rsmd.getColumnType(colNb) == -2 || rsmd.getColumnType(colNb) == -4);
 	}
-	
 
 	@Override
 	protected IList<Object> getColumnTypeName(final ResultSetMetaData rsmd) throws SQLException {
@@ -163,14 +171,13 @@ public class MySqlConnection extends SqlConnection {
 	protected String getInsertString(final IScope scope, final Connection conn, final String table_name,
 			final IList<Object> cols, final IList<Object> values) throws GamaRuntimeException {
 		final int col_no = cols.size();
-		String insertStr = "INSERT INTO ";
+		StringBuilder insertStr = new StringBuilder("INSERT INTO ");
 		String selectStr = "SELECT ";
 		String colStr = "";
 		String valueStr = "";
 		// Check size of parameters
-		if (values.size() != col_no) {
+		if (values.size() != col_no)
 			throw new IndexOutOfBoundsException("Size of columns list and values list are not equal");
-		}
 		// Get column name
 		for (int i = 0; i < col_no; i++) {
 			if (i == col_no - 1) {
@@ -182,9 +189,7 @@ public class MySqlConnection extends SqlConnection {
 		// create SELECT statement string
 		selectStr = selectStr + colStr + " FROM " + table_name + " LIMIT 1 ;";
 
-		if (DEBUG.IS_ON()) {
-			DEBUG.OUT("MySqlConnection.getInsertString.select command:" + selectStr);
-		}
+		if (DEBUG.IS_ON()) { DEBUG.OUT("MySqlConnection.getInsertString.select command:" + selectStr); }
 
 		try {
 			// get column type;
@@ -212,17 +217,15 @@ public class MySqlConnection extends SqlConnection {
 					final WKTReader wkt = new WKTReader();
 					Geometry geo = wkt.read(values.get(i).toString());
 					// DEBUG.LOG(geo.toString());
-					if (transformed) {
-						geo = saveGis.inverseTransform(geo);
-					}
+					if (transformed) { geo = saveGis.inverseTransform(geo); }
 					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
 
-				} else if (isTextType((String)col_Types.get(i))) { // for
-																					// String
-																					// type
+				} else if (isTextType((String) col_Types.get(i))) { // for
+																	// String
+																	// type
 					// Correct error string
 					String temp = values.get(i).toString();
-					temp = temp.replaceAll("'", "''");
+					temp = temp.replace("'", "''");
 					// Add to value:
 					valueStr = valueStr + "'" + temp + "'";
 				} else if (TIMESTAMP.equalsIgnoreCase((String) col_Types.get(i))) {
@@ -248,23 +251,21 @@ public class MySqlConnection extends SqlConnection {
 				// end--------------------------------------------------------
 
 			}
-			insertStr = insertStr + table_name + "(" + colStr + ") " + "VALUES(" + valueStr + ")";
+			insertStr.append(table_name).append("(").append(colStr).append(") ").append("VALUES(").append(valueStr)
+					.append(")");
 
-		} catch (final SQLException e) {
-			e.printStackTrace();
-			throw GamaRuntimeException.error("MySqlConection.getInsertString:" + e.toString(), scope);
-		} catch (final ParseException e) {
+		} catch (final SQLException | ParseException e) {
 			e.printStackTrace();
 			throw GamaRuntimeException.error("MySqlConection.getInsertString:" + e.toString(), scope);
 		}
 
-		return insertStr;
+		return insertStr.toString();
 	}
 
 	@Override
 	protected String getInsertString(final IScope scope, final Connection conn, final String table_name,
 			final IList<Object> values) throws GamaRuntimeException {
-		String insertStr = "INSERT INTO ";
+		StringBuilder insertStr = new StringBuilder("INSERT INTO ");
 		String selectStr = "SELECT ";
 		String colStr = "";
 		String valueStr = "";
@@ -282,9 +283,8 @@ public class MySqlConnection extends SqlConnection {
 			final IList<Object> col_Types = getColumnTypeName(rsmd);
 			final int col_no = col_Names.size();
 			// Check size of parameters
-			if (values.size() != col_Names.size()) {
+			if (values.size() != col_Names.size())
 				throw new IndexOutOfBoundsException("Size of columns list and values list are not equal");
-			}
 
 			// Insert command
 			// set parameter value
@@ -298,9 +298,7 @@ public class MySqlConnection extends SqlConnection {
 					// 23/Jul/2013 - Transform GAMA GIS TO NORMAL
 					final WKTReader wkt = new WKTReader();
 					Geometry geo = wkt.read(values.get(i).toString());
-					if (transformed) {
-						geo = getSavingGisProjection(scope).inverseTransform(geo);
-					}
+					if (transformed) { geo = getSavingGisProjection(scope).inverseTransform(geo); }
 					valueStr = valueStr + WKT2GEO + "('" + geo.toString() + "')";
 
 				} else if (CHAR.equalsIgnoreCase((String) col_Types.get(i))
@@ -309,7 +307,7 @@ public class MySqlConnection extends SqlConnection {
 						|| TEXT.equalsIgnoreCase((String) col_Types.get(i))) {
 
 					String temp = values.get(i).toString();
-					temp = temp.replaceAll("'", "''");
+					temp = temp.replace("'", "''");
 					// Add to value:
 					valueStr = valueStr + "'" + temp + "'";
 				} else if (TIMESTAMP.equalsIgnoreCase((String) col_Types.get(i))) {
@@ -339,17 +337,15 @@ public class MySqlConnection extends SqlConnection {
 				}
 			}
 
-			insertStr = insertStr + table_name + "(" + colStr + ") " + "VALUES(" + valueStr + ")";
+			insertStr.append(table_name).append("(").append(colStr).append(") ").append("VALUES(").append(valueStr)
+					.append(")");
 
-		} catch (final SQLException e) {
-			e.printStackTrace();
-			throw GamaRuntimeException.error("MySqlConection.getInsertString:" + e.toString(), scope);
-		} catch (final ParseException e) {
+		} catch (final SQLException | ParseException e) {
 			e.printStackTrace();
 			throw GamaRuntimeException.error("MySqlConection.getInsertString:" + e.toString(), scope);
 		}
 
-		return insertStr;
+		return insertStr.toString();
 	}
 
 	@Override
