@@ -35,7 +35,7 @@ public class GamlMarkerImageProvider implements IMarkerImageProvider {
 	public String getImagePath(final IMarker marker) {
 		GamaIcon icon = getImage(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING));
 		if (icon == null) return null;
-		return "/icons/" + icon.getCode() + ".png";
+		return "/icons/" + icon.getCode() + ".svg";
 	}
 
 	/**

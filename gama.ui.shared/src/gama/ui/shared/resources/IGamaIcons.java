@@ -24,19 +24,16 @@ public interface IGamaIcons {
 	// Constants for producing icons
 
 	/** The light path. */
-	String LIGHT_PATH = "light/";
+	String LIGHT_PATH = "light";
 
 	/** The dark path. */
-	String DARK_PATH = "dark/";
+	String DARK_PATH = "dark";
 
 	/** The Constant COLORS. */
 	String COLOR_PATH = "colors/";
 
-	/** The Constant THEME_PATH. */
-	String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
-
 	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons_svg/" + THEME_PATH;
+	String ICONS_PATH = "/icons_svg/" + (ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH) + "/";
 
 	/** The Constant GAML_PATH. */
 	String GAML_PATH = "gaml/";
@@ -46,9 +43,6 @@ public interface IGamaIcons {
 
 	/** The Constant PLUGIN_ID. */
 	String PLUGIN_ID = "gama.ui.shared";
-
-	/** The Constant DISABLED_SUFFIX. */
-	String DISABLED_SUFFIX = "_disabled";
 
 	// Constants corresponding to common icons
 
