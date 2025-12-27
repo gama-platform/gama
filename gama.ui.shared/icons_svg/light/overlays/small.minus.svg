@@ -1,18 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-192.00004 -3551.091 16.000008 16.000008" width="16.000008" height="16.000008">
-  <defs/>
-  <g id="SOURCES" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1" stroke-opacity="1">
-    <title>SOURCES</title>
-    <g id="SOURCES_Calque_2">
-      <title>Calque 2</title>
-      <g id="Group_9403">
-        <g id="Graphic_9401">
-          <rect x="-190.00006" y="-3544.591" width="12.000048" height="3" fill="white"/>
-          <rect x="-190.00006" y="-3544.591" width="12.000048" height="3" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
-        </g>
-        <g id="Graphic_9402"/>
-      </g>
-    </g>
-  </g>
-</svg>
+<svg height="16" viewBox="-192 -3551.091 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><g fill="none"><path d="m-190.00006-3544.591h12.000048v3h-12.000048z" fill="#fff"/><path d="m-190.00006-3544.591h12.000048v3h-12.000048z" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/></g></svg>

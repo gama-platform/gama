@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-214.2741 -3115.658 16.000008 16.000008" width="16.000008" height="16.000008">
-  <defs/>
-  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
-    <title>SOURCES</title>
-    <g id="SOURCES_Dark">
-      <title>Dark</title>
-      <g id="Graphic_11250"/>
-      <g id="Graphic_11249">
-        <path d="M -208.54437 -3107.658 L -212.2741 -3103.928 L -210.00383 -3101.658 L -206.2741 -3105.3876 L -202.54437 -3101.658 L -200.2741 -3103.928 L -204.00383 -3107.658 L -200.2741 -3111.3876 L -202.54437 -3113.658 L -206.2741 -3109.928 L -210.00383 -3113.658 L -212.2741 -3111.3876 Z" fill="#999"/>
-        <path d="M -208.54437 -3107.658 L -212.2741 -3103.928 L -210.00383 -3101.658 L -206.2741 -3105.3876 L -202.54437 -3101.658 L -200.2741 -3103.928 L -204.00383 -3107.658 L -200.2741 -3111.3876 L -202.54437 -3113.658 L -206.2741 -3109.928 L -210.00383 -3113.658 L -212.2741 -3111.3876 Z" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
-      </g>
-    </g>
-  </g>
-</svg>
+<svg height="16" viewBox="-214.274 -3115.658 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><g fill="none"><path d="m-208.54437-3107.658-3.72973 3.73 2.27027 2.27 3.72973-3.7296 3.72973 3.7296 2.27027-2.27-3.72973-3.73 3.72973-3.7296-2.27027-2.2704-3.72973 3.73-3.72973-3.73-2.27027 2.2704z" fill="#999"/><path d="m-208.54437-3107.658-3.72973 3.73 2.27027 2.27 3.72973-3.7296 3.72973 3.7296 2.27027-2.27-3.72973-3.73 3.72973-3.7296-2.27027-2.2704-3.72973 3.73-3.72973-3.73-2.27027 2.2704z" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/></g></svg>

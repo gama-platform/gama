@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-746.2741 -3115.658 16.000008 16.000008" width="16.000008" height="16.000008">
-  <defs/>
-  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
-    <title>SOURCES</title>
-    <g id="SOURCES_Dark">
-      <title>Dark</title>
-      <g id="Graphic_11235"/>
-      <g id="Graphic_11236">
-        <path d="M -739.9464 -3106.36 L -743.2278 -3109.6413 L -745.2382 -3107.631 L -739.9373 -3102.33 L -737.9268 -3104.3404 L -737.93595 -3104.3495 L -731.31 -3110.9754 L -733.3204 -3112.986 Z" fill="#999"/>
-        <path d="M -739.9464 -3106.36 L -743.2278 -3109.6413 L -745.2382 -3107.631 L -739.9373 -3102.33 L -737.9268 -3104.3404 L -737.93595 -3104.3495 L -731.31 -3110.9754 L -733.3204 -3112.986 Z" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
-      </g>
-    </g>
-  </g>
-</svg>
+<svg height="16" viewBox="-746.274 -3115.658 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><g fill="none"><path d="m-739.9464-3106.36-3.2814-3.2813-2.0104 2.0103 5.3009 5.301 2.0105-2.0104-.00915-.0091 6.62595-6.6259-2.0104-2.0106z" fill="#999"/><path d="m-739.9464-3106.36-3.2814-3.2813-2.0104 2.0103 5.3009 5.301 2.0105-2.0104-.00915-.0091 6.62595-6.6259-2.0104-2.0106z" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/></g></svg>

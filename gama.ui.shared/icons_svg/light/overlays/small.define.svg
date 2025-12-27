@@ -1,18 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-752.7641 -3548.5753 16.000008 16.000008" width="16.000008" height="16.000008">
-  <defs/>
-  <g id="SOURCES" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1" stroke-opacity="1">
-    <title>SOURCES</title>
-    <g id="SOURCES_Calque_2">
-      <title>Calque 2</title>
-      <g id="Group_9429">
-        <g id="Graphic_9427">
-          <path d="M -746.4364 -3539.2773 L -749.7178 -3542.5586 L -751.7282 -3540.548 L -746.4273 -3535.2473 L -744.41685 -3537.2577 L -744.426 -3537.267 L -737.8 -3543.893 L -739.8105 -3545.9033 Z" fill="white"/>
-          <path d="M -746.4364 -3539.2773 L -749.7178 -3542.5586 L -751.7282 -3540.548 L -746.4273 -3535.2473 L -744.41685 -3537.2577 L -744.426 -3537.267 L -737.8 -3543.893 L -739.8105 -3545.9033 Z" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/>
-        </g>
-        <g id="Graphic_9428"/>
-      </g>
-    </g>
-  </g>
-</svg>
+<svg height="16" viewBox="-752.764 -3548.575 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><g fill="none"><path d="m-746.4364-3539.2773-3.2814-3.2813-2.0104 2.0106 5.3009 5.3007 2.01045-2.0104-.00915-.0093 6.626-6.626-2.0105-2.0103z" fill="#fff"/><path d="m-746.4364-3539.2773-3.2814-3.2813-2.0104 2.0106 5.3009 5.3007 2.01045-2.0104-.00915-.0093 6.626-6.626-2.0105-2.0103z" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5"/></g></svg>

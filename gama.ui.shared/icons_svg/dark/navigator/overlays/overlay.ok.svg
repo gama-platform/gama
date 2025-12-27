@@ -1,14 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-829.4828 -3448.101 8 8" width="8" height="8">
-  <defs/>
-  <g id="SOURCES" stroke-opacity="1" fill="none" stroke="none" fill-opacity="1" stroke-dasharray="none">
-    <title>SOURCES</title>
-    <g id="SOURCES_Dark">
-      <title>Dark</title>
-      <g id="Graphic_12119">
-        <circle cx="-825.4828" cy="-3444.101" r="3.50000559265662" fill="#8eed62"/>
-      </g>
-    </g>
-  </g>
-</svg>
+<svg height="8" viewBox="-829.483 -3448.101 8 8" width="8" xmlns="http://www.w3.org/2000/svg"><circle cx="-825.483" cy="-3444.101" fill="#8eed62" r="3.5"/></svg>
