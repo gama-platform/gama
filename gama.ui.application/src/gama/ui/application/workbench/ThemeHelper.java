@@ -13,8 +13,6 @@ package gama.ui.application.workbench;
 import static gama.core.common.preferences.GamaPreferences.create;
 import static gama.core.common.preferences.GamaPreferences.Theme.NAME;
 import static gama.core.common.preferences.GamaPreferences.Theme.UI;
-import static java.util.Map.entry;
-import static org.eclipse.emf.common.util.URI.createURI;
 import static org.eclipse.swt.widgets.Display.isSystemDarkTheme;
 
 import java.io.IOException;
@@ -22,14 +20,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.core.contexts.RunAndTrack;
-import org.eclipse.e4.core.internal.contexts.EclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.css.core.dom.ExtendedDocumentCSS;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
@@ -37,12 +32,7 @@ import org.eclipse.e4.ui.css.swt.internal.theme.ThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
-import org.eclipse.e4.ui.internal.workbench.swt.ResourceUtility;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.workbench.IResourceUtilities;
 import org.eclipse.e4.ui.workbench.UIEvents;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -68,51 +58,9 @@ import gama.gaml.types.IType;
  */
 public class ThemeHelper {
 
-	static {
-		DEBUG.OFF();
-	}
-
 	/**
 	 * The Class GamaResourceUtilities.
 	 */
-	public static final class GamaResourceUtilities extends ResourceUtility {
-
-		/**
-		 * The dynamic substitions. Not used for the moment. Kept for reference
-		 */
-		final static Map<String, String> DYNAMIC_SUBSTITIONS = Map.ofEntries(entry(
-				"platform:/plugin/org.eclipse.ui.workbench.texteditor/$nl$/icons/full/etool16/block_selection_mode.png",
-				""), entry("platform:/plugin/org.eclipse.search/icons/full/eview16/searchres.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.ide/icons/full/eview16/bkmrk_nav.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.console/icons/full/cview16/console_view.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.views.log/icons/eview16/error_log.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.browser/icons/obj16/internal_browser.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.workbench.texteditor/icons/full/eview16/minimap.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.views/icons/full/eview16/outline_co.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.ide/icons/full/eview16/problems_view.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.ide/icons/full/eview16/pview.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.views/icons/full/eview16/prop_ps.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.ide/icons/full/eview16/tasks_tsk.png", ""),
-				entry("platform:/plugin/org.eclipse.ui/icons/full/eview16/defaultview_misc.png", ""),
-				entry("platform:/plugin/org.eclipse.ui.ide/$nl$/icons/full/etool16/importdir_wiz.png", ""),
-				entry("platform:/plugin/org.eclipse.e4.ui.workbench.renderers.swt/icons/full/elcl16/view_menu.png", ""),
-				entry("platform:/plugin/org.eclipse.e4.ui.workbench.renderers.swt/icons/full/ovr16/pinned_ovr.png",
-						""));
-
-		/** The light prefix uri. */
-		static final String LIGHT_SEGMENT = "icons/light/";
-
-		/** The dark prefix uri. */
-		static final String DARK_SEGMENT = "icons/dark/";
-
-		@Override
-		public ImageDescriptor imageDescriptorFromURI(final URI path) {
-			return super.imageDescriptorFromURI(createURI(path.toString().replace(LIGHT_SEGMENT, DARK_SEGMENT)));
-		}
-	}
-
-	/** The Constant RES_UTIL. */
-	public static final IResourceUtilities RES_UTIL = new GamaResourceUtilities();
 
 	/** The Constant E4_DARK_THEME_ID. */
 	public static final String E4_DARK_THEME_ID = "org.eclipse.e4.ui.css.theme.e4_dark";
@@ -146,10 +94,6 @@ public class ThemeHelper {
 
 	/** The bundle. */
 	private static Bundle bundle = Platform.getBundle("gama.ui.application");
-
-	static {
-		DEBUG.OFF();
-	}
 
 	/** The Constant CORE_THEME_FOLLOW. */
 	public static final Pref<Boolean> CORE_THEME_FOLLOW = create("pref_theme_follow",
@@ -263,26 +207,7 @@ public class ThemeHelper {
 			eventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED, themeChangedHandler);
 		}
 		chooseThemeBasedOnPreferences();
-		final MApplication a = PlatformUI.getWorkbench().getService(MApplication.class);
-		EclipseContext context = (EclipseContext) a.getContext();
-		if (context != null && isDark()) {
 
-			context.runAndTrack(new RunAndTrack() {
-
-				@Override
-				public boolean changed(final IEclipseContext eContext) {
-					IResourceUtilities utils = eContext.get(IResourceUtilities.class);
-					// If there are no utilites present, of if it is already
-					// substituted, do nothing
-					if (utils == null || utils == RES_UTIL) return true;
-					// Otherwise, inject the resource utilities that will
-					// forward all calls to the original, but change
-					// the URI to dark
-					eContext.set(IResourceUtilities.class, RES_UTIL);
-					return true;
-				}
-			});
-		}
 	}
 
 	/**
