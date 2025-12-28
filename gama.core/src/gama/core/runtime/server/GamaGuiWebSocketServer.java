@@ -64,10 +64,15 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 16 oct. 2023
 	 */
 	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval, final boolean noDelay) {
-		GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
-		server.currentServerConfig = GamaServerExperimentConfiguration.GUI;
-		server.start();
-		return server;
+		try {
+			GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
+			server.currentServerConfig = GamaServerExperimentConfiguration.GUI;
+			server.start();
+			return server;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**

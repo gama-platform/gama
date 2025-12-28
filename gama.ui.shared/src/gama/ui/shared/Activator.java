@@ -306,9 +306,10 @@ public class Activator extends AbstractUIPlugin {
 		if (!disabled) {
 			JFaceResources.getImageRegistry().put(id, GamaIcon.named(gamlImage).image());
 			WorkbenchImages.declareImage(id, GamaIcon.named(gamlImage).descriptor(), true);
+		} else {
+			JFaceResources.getImageRegistry().put(id, GamaIcon.named(gamlImage).disabled());
+			WorkbenchImages.declareImage(id, GamaIcon.named(gamlImage).disabledDescriptor(), true);
 		}
-		JFaceResources.getImageRegistry().put(id, GamaIcon.named(gamlImage).disabled());
-		WorkbenchImages.declareImage(id, GamaIcon.named(gamlImage).disabledDescriptor(), true);
 	}
 
 }

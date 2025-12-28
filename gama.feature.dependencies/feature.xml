@@ -473,10 +473,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="slf4j.api"
-         version="0.0.0"/>
-
-   <plugin
          id="jakarta.inject.jakarta.inject-api"
          version="0.0.0"/>
 
@@ -494,6 +490,22 @@
 
    <plugin
          id="com.github.weisj.jsvg"
+         version="0.0.0"/>
+
+   <plugin
+         id="com.google.guava"
+         version="0.0.0"/>
+
+   <plugin
+         id="slf4j.api"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.apache.aries.spifly.dynamic.bundle"
+         version="0.0.0"/>
+
+   <plugin
+         id="slf4j.simple"
          version="0.0.0"/>
 
 </feature>

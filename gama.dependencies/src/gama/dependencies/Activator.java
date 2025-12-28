@@ -20,7 +20,8 @@ import org.geotools.util.factory.Hints;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import gama.dev.STRINGS;
+import gama.dev.BANNER_CATEGORY;
+import gama.dev.DEBUG;
 import it.geosolutions.jaiext.ConcurrentOperationRegistry;
 import one.util.streamex.StreamEx;
 
@@ -55,7 +56,7 @@ public class Activator implements BundleActivator {
 		// See FLAGS.java
 		String log = System.getProperty("enable_logging");
 		if (log == null || "true".equals(log)) {
-			BANNER("JAI", "ImageIO extensions", "loaded for",
+			DEBUG.BANNER(BANNER_CATEGORY.JAI, "ImageIO extensions", "loaded for",
 					StreamEx.of(ImageIO.getReaderFileSuffixes()).remove(String::isBlank).sorted().joining("|"));
 		}
 		// Installs the new RelateNG JTS library (supposedly more efficient that RelateOp).
@@ -70,41 +71,6 @@ public class Activator implements BundleActivator {
 	@Override
 	public void stop(final BundleContext bundleContext) throws Exception {
 		// Activator.context = null;
-	}
-
-	/**
-	 * Pad.
-	 *
-	 * @param string
-	 *            the string
-	 * @param minLength
-	 *            the min length
-	 * @param pad
-	 *            the pad
-	 * @return the string
-	 */
-	// See DEBUG.java
-	public static String PAD(final String string, final int minLength, final char pad) {
-		if (string.length() >= minLength) return string;
-		final StringBuilder sb = new StringBuilder(minLength);
-		sb.append(string);
-		for (int i = string.length(); i < minLength; i++) { sb.append(pad); }
-		return sb.toString();
-	}
-
-	/**
-	 * Banner.
-	 *
-	 * @param title
-	 *            the title
-	 * @param state
-	 *            the state
-	 * @param result
-	 *            the result
-	 */
-	public static void BANNER(final String category, final String title, final String state, final String result) {
-		String cat = STRINGS.PAD("> " + category, 8, ' ') + ": ";
-		System.out.println(STRINGS.PAD(cat + title + " ", 55, ' ') + STRINGS.PAD(" " + state, 15, '_') + " " + result);
 	}
 
 }

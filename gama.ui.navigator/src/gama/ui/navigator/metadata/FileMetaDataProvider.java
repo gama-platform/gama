@@ -55,6 +55,7 @@ import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
@@ -634,7 +635,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		if (started) return;
 		started = true;
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		DEBUG.TIMER("GAMA", "Retrieving workspace metadata", "done in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "done in", () -> {
 			try {
 				workspace.getRoot().accept(resource -> {
 					if (resource.isAccessible()) {
@@ -665,7 +666,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			public void saving(final ISaveContext context) throws CoreException {
 				if (context.getKind() != ISaveContext.FULL_SAVE) return;
 
-				TIMER_WITH_EXCEPTIONS("GAMA", "workspace metadata ", "saved in", () -> {
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "workspace metadata ", "saved in", () -> {
 					ResourcesPlugin.getWorkspace().getRoot().accept(resource -> {
 						String toSave = null;
 						try {

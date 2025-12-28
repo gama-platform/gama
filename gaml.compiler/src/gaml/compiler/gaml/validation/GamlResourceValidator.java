@@ -26,9 +26,10 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.google.inject.Inject;
 
-import gama.core.common.StatusMessage;
+import gama.core.common.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.GamlResourceServices;
@@ -78,9 +79,9 @@ public class GamlResourceValidator implements IResourceValidator {
 		// DEBUG.OUT("GamlResourceValidator beginning validation job of " + resource.getURI().lastSegment());
 		String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
 		ArrayList<Issue> result = new ArrayList<>();
-		GAMA.getGui().getStatus().setStatus("Compilation of " + name, StatusMessage.COMPILE_ICON,
+		GAMA.getGui().getStatus().setStatus("Compilation of " + name, IStatusMessage.COMPILE_ICON,
 				GamaColor.get(200, 200, 200));
-		DEBUG.TIMER("COMPIL", name, "in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.COMPIL, name, "in", () -> {
 			final IAcceptor<Issue> acceptor = issue -> {
 				if (issue.getMessage() != null && !issue.getMessage().isEmpty()) { result.add(issue); }
 			};

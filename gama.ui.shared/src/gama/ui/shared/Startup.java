@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * Startup.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * Startup.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,6 +16,7 @@ import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.utils.CleanupHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class Startup.
@@ -29,10 +29,10 @@ public class Startup implements IStartup {
 
 	@Override
 	public void earlyStartup() {
-		DEBUG.OUT("Startup of ui plugin begins");
-		CleanupHelper.run();
-		GamaKeyBindings.install();
-		DEBUG.OUT("Startup of ui plugin finished");
+		WorkbenchHelper.runInUI("Configuring GAMA UI", 0, e -> {
+			CleanupHelper.run();
+			GamaKeyBindings.install();
+		});
 		if (GamaPreferences.Runtime.START_TESTS.getValue()) { TestsRunner.start(); }
 
 	}

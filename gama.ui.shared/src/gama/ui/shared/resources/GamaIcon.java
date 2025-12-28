@@ -42,6 +42,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import gama.core.util.GamaColor;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 
@@ -77,7 +78,7 @@ public class GamaIcon implements IGamaIcons {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	public static void preloadAllIcons() throws IOException {
-		TIMER_WITH_EXCEPTIONS("GAMA", "Preloading icons", "done in", () -> {
+		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "done in", () -> {
 			if (PATH_TO_ICONS == null) return;
 			Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
 

@@ -32,6 +32,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
 /**
@@ -122,16 +123,16 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 16 oct. 2023
 	 */
 	private void configureErrorStream() {
-		// error handling should not rely on this as we don't know when the error starts and ends, 
+		// error handling should not rely on this as we don't know when the error starts and ends,
 		// making it hard to handle on the client side. This is a last resort option
 		PrintStream errorStream = new PrintStream(System.err) {
-			
-			//This is actually probably never called, because printErrorStack uses print(String)
+
+			// This is actually probably never called, because printErrorStack uses print(String)
 			@Override
 			public void println(final String x) {
 				super.println(x);
 				broadcast(jsonErr.valueOf(new GamaServerMessage(MessageType.GamaServerError, x)).toString());
-			}			
+			}
 		};
 		System.setErr(errorStream);
 	}
@@ -151,7 +152,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	@Override
 	public void onStart() {
-		DEBUG.BANNER("GAMA", "Server started", "at port", "" + this.getPort());
+		DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Server started", "at port", "" + this.getPort());
 	}
 
 	@Override

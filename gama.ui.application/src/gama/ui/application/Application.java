@@ -46,6 +46,7 @@ import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.root.SystemInfo;
 import gama.core.runtime.GAMA;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
@@ -56,8 +57,22 @@ import gama.ui.application.workspace.WorkspacePreferences;
 /** This class controls all aspects of the application's execution */
 public class Application implements IApplication {
 
+	/**
+	 * Instantiates a new application.
+	 */
+	public Application() {
+		// try (InputStream inputStream =
+		// new ByteArrayInputStream(".level = SEVERE\r\n".getBytes(StandardCharsets.UTF_8))) {
+		// LogManager.getLogManager().updateConfiguration(inputStream, null);
+		// LogManager.getLogManager().getLogger("").setLevel(java.util.logging.Level.SEVERE);
+		// } catch (IOException e) {
+		// DEBUG.ERR("Could not set logging level to SEVERE", e);
+		// }
+
+	}
+
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The processor. */
@@ -177,18 +192,18 @@ public class Application implements IApplication {
 
 		Monitor primary = display.getPrimaryMonitor();
 
-		DEBUG.BANNER("GAMA", "Primary monitor resolution", "defined as",
+		DEBUG.BANNER(BANNER_CATEGORY.GUI, "Primary monitor resolution", "defined as",
 				"" + primary.getBounds().width + "x" + primary.getBounds().height);
-		DEBUG.BANNER("GAMA", "Primary monitor zoom ", "defined as", "" + primary.getZoom() + "%");
+		DEBUG.BANNER(BANNER_CATEGORY.GUI, "Primary monitor zoom ", "defined as", "" + primary.getZoom() + "%");
 		Monitor[] monitors = display.getMonitors();
 		if (monitors.length > 1) {
 			int i = 0;
 			for (Monitor m : monitors) {
 				if (m.equals(primary)) { continue; }
 				i++;
-				DEBUG.BANNER("GAMA", "Monitor #" + i + " resolution ", "defined as",
+				DEBUG.BANNER(BANNER_CATEGORY.GUI, "Monitor #" + i + " resolution ", "defined as",
 						"" + m.getBounds().width + "x" + m.getBounds().height);
-				DEBUG.BANNER("GAMA", "Monitor #" + i + " zoom", "defined as", "" + m.getZoom() + "%");
+				DEBUG.BANNER(BANNER_CATEGORY.GUI, "Monitor #" + i + " zoom", "defined as", "" + m.getZoom() + "%");
 			}
 		}
 

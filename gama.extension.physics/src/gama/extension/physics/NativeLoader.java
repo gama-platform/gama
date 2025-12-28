@@ -16,6 +16,7 @@ import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import com.jme3.system.JmeSystem;
 import com.jme3.system.Platform;
 
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
 /**
@@ -53,7 +54,7 @@ public class NativeLoader {
 		if (NATIVE_BULLET_LIBRARY_LOADED == null) {
 			NATIVE_BULLET_LIBRARY_LOADED = false;
 			if (LOAD_NATIVE_BULLET_LIBRARY) {
-				TIMER_WITH_EXCEPTIONS("GAMA", "Native Bullet library", "loaded in", () -> {
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Native Bullet library", "loaded in", () -> {
 					try {
 						Platform platform = JmeSystem.getPlatform();
 						String name = switch (platform) {

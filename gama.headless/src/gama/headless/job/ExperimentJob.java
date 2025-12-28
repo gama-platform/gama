@@ -28,6 +28,7 @@ import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
@@ -281,7 +282,7 @@ public class ExperimentJob implements IExperimentJob {
 
 	@Override
 	public void playAndDispose() {
-		DEBUG.TIMER("GAMA", "Simulation running ", "for: ", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Simulation running ", "for: ", () -> {
 			play();
 			dispose();
 		});

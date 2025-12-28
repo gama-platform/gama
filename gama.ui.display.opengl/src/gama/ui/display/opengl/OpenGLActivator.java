@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OpenGLActivator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,6 +31,7 @@ import com.jogamp.opengl.GLProfile;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.root.SystemInfo;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
@@ -47,7 +48,7 @@ public class OpenGLActivator extends AbstractUIPlugin {
 		// //
 		// http://forum.jogamp.org/Return-of-the-quot-java-lang-UnsatisfiedLinkError-Can-t-load-library-System-Library-Frameworks-glueg-td4034549.html)
 		CompletableFuture.runAsync(() -> {
-			DEBUG.TIMER("OpenGL", "Subsystem preloaded", "in", () -> {
+			DEBUG.TIMER(BANNER_CATEGORY.OpenGL, "Subsystem preloaded", "in", () -> {
 
 				JarUtil.setResolver(url -> {
 					try {
@@ -84,7 +85,7 @@ public class OpenGLActivator extends AbstractUIPlugin {
 		GL gl = null;
 		GLOffscreenAutoDrawable offscreen = null;
 		String property = "Loading";
-		String prefix = "OpenGL";
+		BANNER_CATEGORY prefix = BANNER_CATEGORY.OpenGL;
 		try {
 			GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
 			cap.setDepthBits(24);

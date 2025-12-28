@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Listener;
 
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
@@ -98,7 +99,7 @@ public class GamaKeyBindings implements Listener {
 			}
 			return;
 		}
-		if (event.stateMask == 0) { return; }
+		if (event.stateMask == 0) return;
 
 		switch (event.keyCode) {
 
@@ -175,7 +176,10 @@ public class GamaKeyBindings implements Listener {
 	 * Install.
 	 */
 	public static void install() {
-		WorkbenchHelper.run(() -> WorkbenchHelper.getDisplay().addFilter(SWT.KeyDown, BINDINGS));
+		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Installing key bindings", "done in", () -> {
+			WorkbenchHelper.getDisplay().addFilter(SWT.KeyDown, BINDINGS);
+		});
+
 	}
 
 	/**

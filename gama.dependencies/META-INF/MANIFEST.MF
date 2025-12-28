@@ -7,12 +7,18 @@ Bundle-Vendor: UMMISCO
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.dependencies.Activator
 Import-Package: org.osgi.framework
+Implementation-Title: slf4j-gama
+Implementation-Version: 1.0.0
+Provide-Capability: osgi.service;objectClass:List<String>="org.slf4j.spi
+ .SLF4JServiceProvider";type=gama;effective:=active,osgi.serviceloader
+ ;osgi.serviceloader="org.slf4j.spi.SLF4JServiceProvider";register:="gama.dependencies.logging.GamaLoggingServiceProvider";type=gama
 Export-Package: com.sun.media.jai.codec,
  crosby.binary.osmosis,
  de.micromata.opengis.kml.v_2_2_0,
  gama.dependencies.geojson,
  gama.dependencies.geojson.feature,
  gama.dependencies.geojson.geom,
+ gama.dependencies.logging,
  gama.dependencies.webb,
  it.geosolutions.imageioimpl.plugins.tiff,
  javax.measure,
@@ -319,16 +325,13 @@ Export-Package: com.sun.media.jai.codec,
  org.openstreetmap.osmosis.core.domain.v0_6,
  org.openstreetmap.osmosis.core.task.v0_6,
  org.openstreetmap.osmosis.xml.v0_6.impl,
- org.slf4j,
- org.slf4j.event,
- org.slf4j.helpers,
- org.slf4j.nop,
- org.slf4j.spi,
  org.sqlite,
  tech.units.indriya.unit
-Require-Bundle: org.eclipse.osgi,
+Require-Bundle: slf4j.api,
+ slf4j.simple,
+ org.eclipse.osgi,
  gama.annotations,
- com.google.guava;visibility:=reexport,
+ com.google.guava;bundle-version="33.5.0";visibility:=reexport,
  org.eclipse.xsd,
  org.apache.commons.lang3;visibility:=reexport,
  org.apache.commons.commons-compress;visibility:=reexport,
@@ -538,11 +541,6 @@ Bundle-ClassPath: .,
  libs/geotools 33.4/systems-common-2.1.jar,
  libs/geotools 33.4/xml-commons-resolver-1.2.jar,
  libs/moeaframework 5.1/moeaframework-5.1.jar,
- libs/slf4j 2.0.9/slf4j-api-2.0.9.jar,
- libs/slf4j 2.0.9/slf4j-nop-2.0.9.jar,
- libs/geotools 33.4/log4j-over-slf4j-1.6.4.jar,
- libs/geotools 33.4/gt-netcdf-33.4.jar,
- libs/geotools 33.4/netcdf4-5.5.3.jar,
  libs/kabeja 0.5/kabeja-0.5.0.jar,
  libs/jak 3.0.11/javaapiforkml-3.0.11.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-21

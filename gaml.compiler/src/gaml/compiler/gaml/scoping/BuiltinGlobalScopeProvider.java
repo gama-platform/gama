@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * BuiltinGlobalScopeProvider.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * BuiltinGlobalScopeProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,6 +38,7 @@ import com.google.inject.Singleton;
 
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
@@ -45,10 +46,10 @@ import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.types.Types;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
-import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gaml.compiler.gaml.resource.GamlResource;
 
 /**
  * Global GAML scope provider supporting built-in definitions.
@@ -168,7 +169,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		eAction = GamlPackage.eINSTANCE.getActionDefinition();
 		eUnit = GamlPackage.eINSTANCE.getUnitFakeDefinition();
 		eEquation = GamlPackage.eINSTANCE.getEquationDefinition();
-		DEBUG.TIMER("GAML", "Artifacts", "built in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAML, "Language artifacts", "built in", () -> {
 			scopes.put(eType, new EClassBasedScope("types.xmi"));
 			scopes.put(eVar, new EClassBasedScope("vars.xmi"));
 			scopes.put(eSkill, new EClassBasedScope("skills.xmi"));

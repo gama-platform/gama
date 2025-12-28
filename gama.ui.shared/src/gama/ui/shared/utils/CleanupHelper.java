@@ -32,11 +32,10 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.ActionSetContributionItem;
 import org.eclipse.ui.internal.CoolBarToTrimManager;
 import org.eclipse.ui.internal.Workbench;
@@ -48,6 +47,7 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.wizards.IWizardCategory;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -65,11 +65,16 @@ public class CleanupHelper {
 	 * Run.
 	 */
 	public static void run() {
-		RemoveUnwantedWizards.run();
-		RemoveUnwantedActionSets.run();
-		RearrangeMenus.run();
-		ForceMaximizeRestoration.run();
-		LockToolbars.run();
+		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Cleanup UI", "done in", () -> {
+			Workbench workbench = WorkbenchHelper.getWorkbench();
+			WorkbenchWindow window = (WorkbenchWindow) workbench.getActiveWorkbenchWindow();
+			if (window == null) return;
+			RemoveUnwantedWizards.run(workbench);
+			RemoveUnwantedActionSets.run(window);
+			RearrangeMenus.run(window);
+			ForceMaximizeRestoration.run(window);
+			LockToolbars.run(window);
+		});
 	}
 
 	/**
@@ -80,50 +85,31 @@ public class CleanupHelper {
 		/**
 		 * Run.
 		 */
-		static void run() {
-			WorkbenchHelper.runInUI("Locking Toolbars", 0, e -> {
-				WorkbenchWindow window = WorkbenchHelper.getWindow();
-				MTrimmedWindow winModel = window.getService(MTrimmedWindow.class);
-				EModelService modelService = window.getService(EModelService.class);
+		static void run(final WorkbenchWindow window) {
+			MTrimmedWindow winModel = window.getService(MTrimmedWindow.class);
+			EModelService modelService = window.getService(EModelService.class);
 
-				ICoolBarManager coolBarManager = window.getCoolBarManager2();
-				if (coolBarManager != null) {
-					// lock is the opposite of the original value before toggle
-					final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
-					for (MToolBar el : children) {
-						// locks the toolbars
-						if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
-							el.getTags().add(IPresentationEngine.NO_MOVE);
-						}
-						if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
-							el.getTags().remove(IPresentationEngine.DRAGGABLE);
-						}
-						// }
-						// Force the render, and then the call of
-						// frameMeIfPossible.
-						el.setToBeRendered(false);
-						el.setToBeRendered(true);
+			ICoolBarManager coolBarManager = window.getCoolBarManager2();
+			if (coolBarManager != null) {
+				// lock is the opposite of the original value before toggle
+				final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
+				for (MToolBar el : children) {
+					// locks the toolbars
+					if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
+						el.getTags().add(IPresentationEngine.NO_MOVE);
 					}
-					coolBarManager.setContextMenuManager(null);
+					if (el.getTags().contains(IPresentationEngine.DRAGGABLE)) {
+						el.getTags().remove(IPresentationEngine.DRAGGABLE);
+					}
+					// Force the rendering update
+					el.setToBeRendered(false);
+					el.setToBeRendered(true);
 				}
+				coolBarManager.setContextMenuManager(null);
+			}
 
-			});
 		}
 	}
-
-	/**
-	 * The Class RemoveActivities.
-	 */
-	// static class RemoveActivities {
-	//
-	// /**
-	// * Run.
-	// */
-	// static void run() {
-	// final IWorkbenchActivitySupport was = PlatformUI.getWorkbench().getActivitySupport();
-	// was.setEnabledActivityIds(new HashSet<>());
-	// }
-	// }
 
 	/**
 	 * The Class ForceMaximizeRestoration.
@@ -133,35 +119,32 @@ public class CleanupHelper {
 		/**
 		 * Run.
 		 */
-		public static void run() {
+		public static void run(final WorkbenchWindow window) {
+			final IWorkbenchPage page = window.getActivePage();
+			if (page != null) {
+				page.addPartListener(new IPartListener2() {
 
-			final IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
-			for (final IWorkbenchWindow window : windows) {
-				final IWorkbenchPage page = window.getActivePage();
-				if (page != null) {
-					page.addPartListener(new IPartListener2() {
-
-						@Override
-						public void partActivated(final IWorkbenchPartReference partRef) {
-							final IViewReference[] refs = page.getViewReferences();
-							final IEditorReference[] eds = page.getEditorReferences();
-							for (final IViewReference ref : refs) {
-								if (!partRef.equals(ref) && page.getPartState(ref) == IWorkbenchPage.STATE_MAXIMIZED) {
-									page.toggleZoom(ref);
-									break;
-								}
+					@Override
+					public void partActivated(final IWorkbenchPartReference partRef) {
+						final IViewReference[] refs = page.getViewReferences();
+						final IEditorReference[] eds = page.getEditorReferences();
+						for (final IViewReference ref : refs) {
+							if (!partRef.equals(ref) && page.getPartState(ref) == IWorkbenchPage.STATE_MAXIMIZED) {
+								page.toggleZoom(ref);
+								break;
 							}
-							for (final IEditorReference ref : eds) {
-								if (!partRef.equals(ref) && page.getPartState(ref) == IWorkbenchPage.STATE_MAXIMIZED) {
-									page.toggleZoom(ref);
-									break;
-								}
-							}
-
 						}
-					});
-				}
+						for (final IEditorReference ref : eds) {
+							if (!partRef.equals(ref) && page.getPartState(ref) == IWorkbenchPage.STATE_MAXIMIZED) {
+								page.toggleZoom(ref);
+								break;
+							}
+						}
+
+					}
+				});
 			}
+
 		}
 	}
 
@@ -180,14 +163,12 @@ public class CleanupHelper {
 		/**
 		 * Run.
 		 */
-		public static void run() {
+		public static void run(final WorkbenchWindow window) {
 			final RemoveUnwantedActionSets remove = new RemoveUnwantedActionSets();
-			final IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
-			for (final IWorkbenchWindow window : windows) {
-				final IWorkbenchPage page = window.getActivePage();
-				if (page != null) { remove.perspectiveActivated(page, null); }
-				window.addPerspectiveListener(remove);
-			}
+			final IWorkbenchPage page = window.getActivePage();
+			if (page != null) { remove.perspectiveActivated(page, null); }
+			window.addPerspectiveListener(remove);
+
 		}
 
 		@Override
@@ -261,14 +242,13 @@ public class CleanupHelper {
 		/**
 		 * Run.
 		 */
-		static void run() {
+		static void run(final IWorkbench workbench) {
 			final List<IWizardCategory> cats = new ArrayList<>();
-			AbstractExtensionWizardRegistry r =
-					(AbstractExtensionWizardRegistry) PlatformUI.getWorkbench().getNewWizardRegistry();
+			AbstractExtensionWizardRegistry r = (AbstractExtensionWizardRegistry) workbench.getNewWizardRegistry();
 			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			r = (AbstractExtensionWizardRegistry) PlatformUI.getWorkbench().getImportWizardRegistry();
+			r = (AbstractExtensionWizardRegistry) workbench.getImportWizardRegistry();
 			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			r = (AbstractExtensionWizardRegistry) PlatformUI.getWorkbench().getExportWizardRegistry();
+			r = (AbstractExtensionWizardRegistry) workbench.getExportWizardRegistry();
 			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
 			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
 				final String catId = wizard.getCategory().getId();
@@ -341,26 +321,19 @@ public class CleanupHelper {
 		/**
 		 * Run.
 		 */
-		public static void run() {
-			WorkbenchHelper.runInUI("Rearranging menus", 0, e -> {
-				final IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
-				if (window instanceof WorkbenchWindow) {
-					final IMenuManager menuManager = ((WorkbenchWindow) window).getMenuManager();
-					for (final IContributionItem item : menuManager.getItems()) {
-						IMenuManager menu = null;
-						if (item instanceof MenuManager) {
-							menu = (MenuManager) item;
-						} else if (item instanceof ActionSetContributionItem
-								&& ((ActionSetContributionItem) item).getInnerItem() instanceof MenuManager) {
-							menu = (MenuManager) ((ActionSetContributionItem) item).getInnerItem();
-						}
-						if (menu != null) { processItems(menu); }
-					}
-					menuManager.updateAll(true);
+		public static void run(final WorkbenchWindow window) {
+			final IMenuManager menuManager = window.getMenuManager();
+			for (final IContributionItem item : menuManager.getItems()) {
+				IMenuManager menu = null;
+				if (item instanceof MenuManager) {
+					menu = (MenuManager) item;
+				} else if (item instanceof ActionSetContributionItem
+						&& ((ActionSetContributionItem) item).getInnerItem() instanceof MenuManager) {
+					menu = (MenuManager) ((ActionSetContributionItem) item).getInnerItem();
 				}
-
-			});
-
+				if (menu != null) { processItems(menu); }
+			}
+			menuManager.updateAll(true);
 		}
 
 		/**

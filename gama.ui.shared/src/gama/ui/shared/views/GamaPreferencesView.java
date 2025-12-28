@@ -38,6 +38,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
@@ -109,7 +110,7 @@ public class GamaPreferencesView {
 	 * Preload.
 	 */
 	public static void preload() {
-		DEBUG.TIMER("GAMA", "Preloading preferences view", "done in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "done in", () -> {
 			WorkbenchHelper.run(() -> {
 				if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 					instance = new GamaPreferencesView(WorkbenchHelper.getShell());
@@ -236,7 +237,7 @@ public class GamaPreferencesView {
 	 *            the value
 	 */
 	void checkRefreshables(final Pref e) {
-		if (!WorkbenchHelper.isDisplayThread()) { return; }
+		if (!WorkbenchHelper.isDisplayThread()) return;
 		for (final String activable : e.getRefreshment()) {
 			final var ed = editors.get(activable);
 			if (ed != null && WorkbenchHelper.isDisplayThread()) { ed.updateWithValueOfParameter(false, false); }
@@ -368,9 +369,9 @@ public class GamaPreferencesView {
 		buttonImport.setToolTipText("Import preferences from a file...");
 		buttonImport.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.OPEN);
-			fd.setFilterExtensions(new String[] { "*.prefs" });
+			fd.setFilterExtensions("*.prefs");
 			final var path = fd.open();
-			if (path == null) { return; }
+			if (path == null) return;
 			GamaPreferences.applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		});
@@ -380,10 +381,10 @@ public class GamaPreferencesView {
 		buttonExportToGaml.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
 			fd.setFileName("Preferences.gaml");
-			fd.setFilterExtensions(new String[] { "*.gaml" });
+			fd.setFilterExtensions("*.gaml");
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) { return; }
+			if (path == null) return;
 			GamaPreferences.savePreferencesToGAML(path);
 		});
 
@@ -393,10 +394,10 @@ public class GamaPreferencesView {
 		buttonExport.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
 			fd.setFileName("gama.prefs");
-			fd.setFilterExtensions(new String[] { "*.prefs" });
+			fd.setFilterExtensions("*.prefs");
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) { return; }
+			if (path == null) return;
 			GamaPreferences.savePreferencesToProperties(path);
 		});
 
@@ -441,9 +442,8 @@ public class GamaPreferencesView {
 
 		buttonRevert.setSelectionListener(e -> {
 			if (!Messages.question("Revert to default",
-					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately")) {
+					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
 				return;
-			}
 			GamaPreferences.revertToDefaultValues(modelValues);
 			PlatformUI.getWorkbench().restart(true);
 		});
@@ -496,7 +496,7 @@ public class GamaPreferencesView {
 	 * Save dialog properties.
 	 */
 	private void saveDialogProperties() {
-		if (shell.isDisposed()) { return; }
+		if (shell.isDisposed()) return;
 		saveLocation();
 		saveSize();
 		saveTab();
@@ -520,7 +520,7 @@ public class GamaPreferencesView {
 		Rectangle savedBounds = new Rectangle(x, y, width, height);
 		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
 		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
-		if (!(savedBounds.intersects(monitorBounds))) {
+		if (!savedBounds.intersects(monitorBounds)) {
 			final var p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 			x = shellBounds.x + 100;
 			y = shellBounds.y + 100;

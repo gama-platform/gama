@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * WorkspacePreferences.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,6 +31,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
 import gama.core.common.preferences.GamaPreferences;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.Application;
 
@@ -169,7 +170,7 @@ public class WorkspacePreferences {
 			LocalDateTime localDateTime = Files.getLastModifiedTime(modelsRep.toPath()).toInstant()
 					.atZone(ZoneId.systemDefault()).toLocalDateTime();
 			String date = localDateTime.format(DateTimeFormatter.ofPattern("MMM dd,yyyy HH:mm:ss"));
-			DEBUG.BANNER("GAMA", "Checking date of models library", "modified", "" + date);
+			DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Checking date of models library", "modified", "" + date);
 		} catch (final IOException | URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -279,7 +280,7 @@ public class WorkspacePreferences {
 	 */
 	public static boolean testWorkspaceSanity(final Path workspacePath) {
 
-		return DEBUG.TIMER("GAMA", "Workspace checked", "in", () -> {
+		return DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Workspace sanity", "checked in", () -> {
 			File workspace = workspacePath.toFile();
 			// In light of issue #3445, allows a .rebuild file to trigger the rebuild
 			File[] files = workspace.listFiles((FileFilter) file -> ".rebuild".equals(file.getName()));

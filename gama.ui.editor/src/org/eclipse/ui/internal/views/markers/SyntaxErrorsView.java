@@ -41,6 +41,7 @@ import org.eclipse.ui.views.markers.MarkerSupportView;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.ValidationContext;
 import gama.ui.shared.commands.TestsRunner;
@@ -194,7 +195,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		GamlResourceIndexer.eraseIndex();
 
 		try {
-			DEBUG.BANNER("COMPIL", "Last compilation of all models", "in", String.valueOf(DURATION()));
+			DEBUG.BANNER(BANNER_CATEGORY.COMPIL, "Last compilation of all models", "in", String.valueOf(DURATION()));
 			GamlResourceValidator.RESET();
 			ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
 		} catch (CoreException e) {
