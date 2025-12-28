@@ -37,7 +37,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.activities.IWorkbenchActivitySupport;
 import org.eclipse.ui.internal.ActionSetContributionItem;
 import org.eclipse.ui.internal.CoolBarToTrimManager;
 import org.eclipse.ui.internal.Workbench;
@@ -54,7 +53,7 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
 /**
- * The Class CleanupHelper.
+ * The Class CleanupHelper. This class contains various static methods to clean up and customize the Eclipse UI.
  */
 public class CleanupHelper {
 
@@ -70,50 +69,8 @@ public class CleanupHelper {
 		RemoveUnwantedActionSets.run();
 		RearrangeMenus.run();
 		ForceMaximizeRestoration.run();
-		RemoveActivities.run();
 		LockToolbars.run();
-		// MonitorChange.run();
-
-		// return null;
-		// }
-		// Job prefs = new Job("Preloading preferences") {
-		//
-		// @Override
-		// protected IStatus run(final IProgressMonitor monitor) {
-		// GamaPreferencesView.preload();
-		// return Status.OK_STATUS;
-		// }
-		// };
-		// prefs.setUser(true);
-		// prefs.setPriority(Job.DECORATE);
-		// prefs.schedule();
-
 	}
-
-	// static class MonitorChange {
-	//
-	// /**
-	// *
-	// */
-	// public static void run() {
-	// if (PlatformHelper.isWindows()) {
-	// DPIZoomChangeRegistry.registerHandler(new DPIZoomChangeHandler() {
-	//
-	// @Override
-	// public void handleDPIChange(Widget widget, int newZoom, float scalingFactor) {
-	// if (widget instanceof MenuItem mi) {
-	//
-	// String image = (String) mi.getData("image");
-	// DEBUG.OUT("Scaling of " + mi.getText() + " with new zoom =" + newZoom + " scaling by "
-	// + scalingFactor + (image == null ? " -- no image" : " -- image found " + image));
-	// if (image != null) { mi.setImage(GamaIcon.named(image).image()); }
-	// }
-	// }
-	// }, MenuItem.class);
-	// }
-	//
-	// }
-	// }
 
 	/**
 	 * The Class LockToolbars.
@@ -134,7 +91,6 @@ public class CleanupHelper {
 					// lock is the opposite of the original value before toggle
 					final List<MToolBar> children = modelService.findElements(winModel, null, MToolBar.class);
 					for (MToolBar el : children) {
-						// if (!el.getTags().contains("toolbarSeparator")) {
 						// locks the toolbars
 						if (!el.getTags().contains(IPresentationEngine.NO_MOVE)) {
 							el.getTags().add(IPresentationEngine.NO_MOVE);
@@ -158,16 +114,16 @@ public class CleanupHelper {
 	/**
 	 * The Class RemoveActivities.
 	 */
-	static class RemoveActivities {
-
-		/**
-		 * Run.
-		 */
-		static void run() {
-			final IWorkbenchActivitySupport was = PlatformUI.getWorkbench().getActivitySupport();
-			was.setEnabledActivityIds(new HashSet<>());
-		}
-	}
+	// static class RemoveActivities {
+	//
+	// /**
+	// * Run.
+	// */
+	// static void run() {
+	// final IWorkbenchActivitySupport was = PlatformUI.getWorkbench().getActivitySupport();
+	// was.setEnabledActivityIds(new HashSet<>());
+	// }
+	// }
 
 	/**
 	 * The Class ForceMaximizeRestoration.
@@ -184,27 +140,6 @@ public class CleanupHelper {
 				final IWorkbenchPage page = window.getActivePage();
 				if (page != null) {
 					page.addPartListener(new IPartListener2() {
-
-						@Override
-						public void partVisible(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partOpened(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partInputChanged(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partHidden(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partDeactivated(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partClosed(final IWorkbenchPartReference partRef) {}
-
-						@Override
-						public void partBroughtToTop(final IWorkbenchPartReference partRef) {}
 
 						@Override
 						public void partActivated(final IWorkbenchPartReference partRef) {
@@ -250,25 +185,18 @@ public class CleanupHelper {
 			final IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
 			for (final IWorkbenchWindow window : windows) {
 				final IWorkbenchPage page = window.getActivePage();
-				if (page != null) {
-					// Doing the initial cleanup on the default perspective
-					// (modeling)
-					remove.perspectiveActivated(page, null);
-				}
+				if (page != null) { remove.perspectiveActivated(page, null); }
 				window.addPerspectiveListener(remove);
 			}
 		}
 
 		@Override
 		public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
-			// if (perspective != null) {
-			// DEBUG.OUT("Perspective " + perspective.getId() + " activated");
-			// }
 			final WorkbenchWindow w = (WorkbenchWindow) page.getWorkbenchWindow();
-			if (w.isClosing()) { return; }
+			if (w.isClosing()) return;
 			WorkbenchHelper.runInUI("Cleaning menus", 0, e -> {
 				try {
-					if (w.isClosing()) { return; }
+					if (w.isClosing()) return;
 					final CoolBarToTrimManager cm = (CoolBarToTrimManager) w.getCoolBarManager2();
 					final IContributionItem[] items = cm.getItems();
 					// We remove all contributions to the toolbar that do not
@@ -284,8 +212,6 @@ public class CleanupHelper {
 							}
 						}
 					}
-
-					// exploreMenus(w.getMenuBarManager(), "");
 					for (final String s2 : MENUS_TO_REMOVE) {
 						w.getMenuBarManager().remove(s2);
 						w.getMenuManager().remove(s2);
@@ -293,7 +219,6 @@ public class CleanupHelper {
 					w.getMenuManager().update(true);
 					w.getMenuBarManager().update(true);
 					cm.resetItemOrder();
-					// WorkaroundForIssue3210.run(cm);
 				} catch (final Exception e1) {}
 			});
 
@@ -333,12 +258,6 @@ public class CleanupHelper {
 						"org.eclipse.team.ui.ProjectSetImportWizard", "org.eclipse.equinox.p2.replication.export",
 						"org.eclipse.team.ui.ProjectSetExportWizard"));
 
-		/** The wizards images to replace. */
-		// private static Map<String, String> WIZARDS_IMAGES_TO_REPLACE =
-		// Map.of("org.eclipse.ui.wizards.new.file",
-		// "navigator/files/wizard.file", "org.eclipse.ui.wizards.new.folder",
-		// "navigator/files/wizard.folder");
-
 		/**
 		 * Run.
 		 */
@@ -353,19 +272,11 @@ public class CleanupHelper {
 			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
 			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
 				final String catId = wizard.getCategory().getId();
-				// final String wizId = wizard.getId();
 				if (CATEGORIES_TO_REMOVE.contains(catId) || IDS_TO_REMOVE.contains(wizard.getId())) {
-					// DEBUG.LOG("Removing wizard " + wizard.getId() +
-					// " in category " + id);
 					final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
 					r.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
 							new Object[] { element });
 				}
-				// else if(WIZARDS_IMAGES_TO_REPLACE.containsKey(wizId)) {
-				// final WorkbenchWizardElement element =
-				// (WorkbenchWizardElement) wizard;
-				// element.
-				// }
 			}
 
 		}
@@ -405,25 +316,25 @@ public class CleanupHelper {
 		/** The Constant MENU_IMAGES. */
 		public final static Map<String, String> MENU_IMAGES = new HashMap<>() {
 			{
-				put("print", "generic/menu.print");
-				put("save", "generic/menu.save");
-				put("saveAs", "generic/menu.saveas");
-				put("saveAll", "generic/menu.saveall");
-				put("revert", "generic/menu.revert");
+				put("print", IGamaIcons.MENU_PRINT);
+				put("save", IGamaIcons.MENU_SAVE);
+				put("saveAs", IGamaIcons.SAVE_AS);
+				put("saveAll", IGamaIcons.MENU_SAVE_ALL);
+				put("revert", IGamaIcons.MENU_REVERT);
 				put("refresh", IGamaIcons.FILE_REFRESH);
-				put("new", "navigator/navigator.new2");
-				put("import", "navigator/menu.import");
-				put("export", "navigator/menu.export");
-				put("undo", "generic/menu.undo");
-				put("redo", "generic/menu.redo");
-				put("cut", "generic/menu.cut");
-				put("copy", "generic/menu.copy");
-				put("paste", "generic/menu.paste");
-				put("delete", "generic/menu.delete");
-				put("helpContents", "generic/menu.help");
-				put("org.eclipse.search.OpenSearchDialog", "generic/menu.search");
-				put("org.eclipse.ui.openLocalFile", "navigator/navigator.open2");
-				put("converstLineDelimitersTo", "editor/menu.delimiter");
+				put("new", IGamaIcons.MENU_NEW);
+				put("import", IGamaIcons.MENU_IMPORT);
+				put("export", IGamaIcons.MENU_EXPORT);
+				put("undo", IGamaIcons.MENU_UNDO);
+				put("redo", IGamaIcons.MENU_REDO);
+				put("cut", IGamaIcons.CUT);
+				put("copy", IGamaIcons.COPY);
+				put("paste", IGamaIcons.PASTE);
+				put("delete", IGamaIcons.DELETE);
+				put("helpContents", IGamaIcons.MENU_HELP);
+				put("org.eclipse.search.OpenSearchDialog", IGamaIcons.MENU_SEARCH);
+				put("org.eclipse.ui.openLocalFile", IGamaIcons.MENU_OPEN);
+				put("converstLineDelimitersTo", IGamaIcons.MENU_DELIMITER);
 			}
 		};
 
@@ -480,7 +391,7 @@ public class CleanupHelper {
 		 *            the id
 		 */
 		public static void changeIcon(final IMenuManager menu, final IContributionItem item, final String id) {
-			if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) { return; }
+			if (item.isGroupMarker() || item.isSeparator() || !item.isVisible()) return;
 			String imageName = MENU_IMAGES.get(id);
 			if (imageName != null) { changeIcon(menu, item, GamaIcon.named(imageName).descriptor()); }
 		}

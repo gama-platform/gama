@@ -538,4 +538,34 @@ public interface IGamaIcons {
 	/** The browse populations. */
 	String BROWSE_POPULATIONS = MENU_POPULATION;
 
+	/** The menu print. */
+	String MENU_PRINT = "generic/menu.print";
+
+	/** The menu save. */
+	String MENU_SAVE = "generic/menu.save";
+
+	/** The menu save all. */
+	String MENU_SAVE_ALL = "generic/menu.saveall";
+
+	/** The menu revert. */
+	String MENU_REVERT = "generic/menu.revert";
+
+	/** The menu new. */
+	String MENU_NEW = "navigator/navigator.new2";
+
+	/** The menu import. */
+	String MENU_IMPORT = "navigator/menu.import";
+
+	/** The menu export. */
+	String MENU_EXPORT = "navigator/menu.export";
+
+	/** The menu search. */
+	String MENU_SEARCH = "generic/menu.search";
+
+	/** The menu open. */
+	String MENU_OPEN = "navigator/navigator.open2";
+
+	/** The menu delimiter. */
+	String MENU_DELIMITER = "editor/menu.delimiter";
+
 }
