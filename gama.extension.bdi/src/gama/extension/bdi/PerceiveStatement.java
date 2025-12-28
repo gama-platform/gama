@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PerceiveStatement.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PerceiveStatement.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -202,33 +202,25 @@ public class PerceiveStatement extends AbstractStatementSequence {
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		
-		if (_when != null && ! Cast.asBool(scope, _when.value(scope))){
+
+		if (_when != null && !Cast.asBool(scope, _when.value(scope))
+				|| emotion != null && !BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope)))
 			return null;
-		}
-		if (emotion != null && !BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+		if (threshold != null && (emotion == null || BdiUtils.getEmotion(scope,
+				(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope)))
 			return null;
-		}
-		if (threshold != null && (emotion == null || BdiUtils.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
-			return null;
-		}
-		
-		
+
 		final Object obj = target.value(scope);
 		Object inArg = null;
 		final IAgent ag = scope.getAgent();
-		if (_in != null) { 
-			inArg = _in.value(scope); 
-		}
+		if (_in != null) { inArg = _in.value(scope); }
 
 		if (inArg instanceof Number n) {
 			IList temp = GamaListFactory.create();
 			final double dist = Cast.asFloat(scope, n);
 			if (obj instanceof IContainer container) {
 				temp = SpatialQueries.at_distance(scope, container, Cast.asFloat(scope, inArg));
-			} else if (obj instanceof IAgent agent && ag.euclidianDistanceTo(agent) <= dist) {
-				temp.add(obj);
-			}
+			} else if (obj instanceof IAgent agent && ag.euclidianDistanceTo(agent) <= dist) { temp.add(obj); }
 			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
 			return this;
 
@@ -238,20 +230,16 @@ public class PerceiveStatement extends AbstractStatementSequence {
 			final IShape geom = Cast.asGeometry(scope, inArg);
 			if (obj instanceof IContainer container) {
 				temp = SpatialQueries.overlapping(scope, container, geom);
-			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { 
-				temp.add(obj); 
-			}
+			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { temp.add(obj); }
 			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
 			return this;
 		}
 		ExecutionResult result = null;
-		final Iterator<IAgent> runners =	obj instanceof IContainer c 
-										? c.iterable(scope).iterator()
-										: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
+		final Iterator<? extends IAgent> runners = obj instanceof IContainer c ? c.iterable(scope).iterator()
+				: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
 		if (runners != null) {
-			while (		runners.hasNext()
-					&& (result = scope.execute(sequence, runners.next(), null)).passed()) {
-				
+			while (runners.hasNext() && (result = scope.execute(sequence, runners.next(), null)).passed()) {
+
 			}
 		}
 		if (result != null) return result.getValue();
@@ -269,10 +257,10 @@ public class PerceiveStatement extends AbstractStatementSequence {
 	 *            the scope
 	 * @return the iterator
 	 */
-	Iterator<IAgent> transformAgentToList(final IAgent temp, final IScope scope) {
+	Iterator<? extends IAgent> transformAgentToList(final IAgent temp, final IScope scope) {
 		final IList<IAgent> tempList = GamaListFactory.create();
 		tempList.add(temp);
-		return ((IContainer) tempList).iterable(scope).iterator();
+		return tempList.iterable(scope).iterator();
 	}
 
 	/**

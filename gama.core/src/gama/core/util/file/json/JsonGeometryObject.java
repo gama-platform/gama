@@ -104,7 +104,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 		String key = NAME_COORDINATES;
 		if (geometry instanceof Point || geometry instanceof LineString) {
 			components = (JsonArray) json.valueOf(GeometryUtils.getContourCoordinates(geometry));
-		} else
+		} else {
 			switch (geometry) {
 				case Polygon polygon -> components = toJsonArray(polygon, json);
 				case MultiPoint multiPoint -> components = toJsonArray(multiPoint, json);
@@ -116,8 +116,10 @@ public class JsonGeometryObject extends JsonGamlObject {
 					}
 					key = NAME_GEOMETRIES;
 				}
-				case null, default -> throw new IllegalArgumentException("Unable to encode geometry " + geometry.getGeometryType());
+				default -> throw new IllegalArgumentException(
+						"Unable to encode geometry " + geometry.getGeometryType());
 			}
+		}
 		result.add(key, components);
 		return result;
 	}

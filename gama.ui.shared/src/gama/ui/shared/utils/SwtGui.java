@@ -329,7 +329,7 @@ public class SwtGui implements IGui {
 		final IMap<String, IMap<String, Object>> result = GamaMapFactory.create();
 		final IList<GamaWizardPage> wizardPages = GamaListFactory.create();
 		for (IMap<String, Object> l : pages) {
-			GamaFont f = (GamaFont) l.get(IKeyword.FONT);
+			// GamaFont f = (GamaFont) l.get(IKeyword.FONT);
 			String t = (String) l.get(IKeyword.TITLE);
 			String d = (String) l.get(IKeyword.DESCRIPTION);
 			@SuppressWarnings ("unchecked") List<IParameter> ps = (List<IParameter>) l.get(IKeyword.PARAMETERS);

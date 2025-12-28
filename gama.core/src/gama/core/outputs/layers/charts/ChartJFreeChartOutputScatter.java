@@ -653,39 +653,18 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
 					serierenderer.setSeriesShapesVisible(0, false);
 				} else {
-					Shape myshape = defaultmarkers[0];
-					switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE:
-							myshape = defaultmarkers[1];
-							break;
-						case ChartDataStatement.MARKER_UP_TRIANGLE:
-							myshape = defaultmarkers[2];
-							break;
-						case ChartDataStatement.MARKER_DIAMOND:
-							myshape = defaultmarkers[3];
-							break;
-						case ChartDataStatement.MARKER_HOR_RECTANGLE:
-							myshape = defaultmarkers[4];
-							break;
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
-							myshape = defaultmarkers[5];
-							break;
-						case ChartDataStatement.MARKER_HOR_ELLIPSE:
-							myshape = defaultmarkers[6];
-							break;
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
-							myshape = defaultmarkers[7];
-							break;
-						case ChartDataStatement.MARKER_VERT_RECTANGLE:
-							myshape = defaultmarkers[8];
-							break;
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
-							myshape = defaultmarkers[9];
-							break;
-						case null:
-						default:
-							break;
-					}
+					Shape myshape = switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
+						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
+						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
+						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
+						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
+						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+						default -> defaultmarkers[0];
+					};
 					serierenderer.setSeriesShape(0, myshape);
 
 				}
@@ -697,39 +676,18 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
 					serierenderer.setSeriesShape(0, null);
 				} else {
-					Shape myshape = defaultmarkers[0];
-					switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE:
-							myshape = defaultmarkers[1];
-							break;
-						case ChartDataStatement.MARKER_UP_TRIANGLE:
-							myshape = defaultmarkers[2];
-							break;
-						case ChartDataStatement.MARKER_DIAMOND:
-							myshape = defaultmarkers[3];
-							break;
-						case ChartDataStatement.MARKER_HOR_RECTANGLE:
-							myshape = defaultmarkers[4];
-							break;
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
-							myshape = defaultmarkers[5];
-							break;
-						case ChartDataStatement.MARKER_HOR_ELLIPSE:
-							myshape = defaultmarkers[6];
-							break;
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
-							myshape = defaultmarkers[7];
-							break;
-						case ChartDataStatement.MARKER_VERT_RECTANGLE:
-							myshape = defaultmarkers[8];
-							break;
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
-							myshape = defaultmarkers[9];
-							break;
-						case null:
-						default:
-							break;
-					}
+					Shape myshape = switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
+						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
+						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
+						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
+						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
+						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+						default -> defaultmarkers[0];
+					};
 					serierenderer.setSeriesShape(0, myshape);
 
 				}

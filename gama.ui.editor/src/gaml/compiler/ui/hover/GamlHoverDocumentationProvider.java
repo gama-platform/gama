@@ -325,7 +325,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		// CASE do run_thread (interval: 2#s); unknown aa <- self.run_thread (interval: 2#s); aa <- run_thread
 		// (interval: 2#s);
 		if (var.eContainer() instanceof Parameter param && param.eContainer() instanceof ExpressionList el
-				&& el.eContainer() instanceof Function function && function.getLeft() instanceof ActionRef ar) {
+				&& el.eContainer() instanceof Function function && function.getLeft() instanceof ActionRef) {
 			final IGamlDescription description = documenter.getGamlDocumentation(function);
 			if (description != null) {
 				VarDefinition vd = var.getRef();

@@ -1,23 +1,17 @@
 /*******************************************************************************************************
  *
- * SearchResultStyle.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SearchResultStyle.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.csv.text;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.widgets.Display;
-
-import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  *
@@ -32,13 +26,9 @@ public class SearchResultStyle {
 	 * @return
 	 */
 	public static int[] getSearchTermOccurrences(final String searchTerm, final String content) {
-		List<Integer> ranges;
-		final Display disp = WorkbenchHelper.getDisplay();
-		final StyleRange myStyleRange = new StyleRange(0, 0, null, disp.getSystemColor(SWT.COLOR_YELLOW));
+		List<Integer> ranges = new ArrayList<>(); // reset the ranges-array
 
-		// reset the StyleRange-Array for each new field
-		ranges = new ArrayList<Integer>(); // reset the ranges-array
-		if ("".equals(searchTerm)) { return new int[] {}; }
+		if ("".equals(searchTerm)) return new int[] {};
 
 		// determine all occurrences of the searchText and write the beginning
 		// and length of each occurrence into an array
@@ -56,14 +46,11 @@ public class SearchResultStyle {
 		final int[] intRanges = new int[ranges.size()];
 		int arrayIndexCounter = 0;
 		for (int listIndexCounter = 0; listIndexCounter < ranges.size(); listIndexCounter++) {
-			if (listIndexCounter % 2 == 0) {
-				if (searchTerm.length() > 1 && listIndexCounter != 0 && ranges.get(listIndexCounter - 2)
-						+ ranges.get(listIndexCounter - 1) >= ranges.get(listIndexCounter)) {
-					intRanges[arrayIndexCounter - 1] = 0 - ranges.get(listIndexCounter - 2)
-							+ ranges.get(listIndexCounter) + ranges.get(++listIndexCounter);
-				} else {
-					intRanges[arrayIndexCounter++] = ranges.get(listIndexCounter);
-				}
+			if (listIndexCounter % 2 == 0 && searchTerm.length() > 1 && listIndexCounter != 0
+					&& ranges.get(listIndexCounter - 2) + ranges.get(listIndexCounter - 1) >= ranges
+							.get(listIndexCounter)) {
+				intRanges[arrayIndexCounter - 1] = 0 - ranges.get(listIndexCounter - 2) + ranges.get(listIndexCounter)
+						+ ranges.get(++listIndexCounter);
 			} else {
 				intRanges[arrayIndexCounter++] = ranges.get(listIndexCounter);
 			}

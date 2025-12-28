@@ -1201,7 +1201,7 @@ public class GamaPreferences {
 	public static void applyPreferencesFrom(final String path, final Map<String, Object> modelValues) {
 		// DEBUG.OUT("Apply preferences from " + path);
 		getStore().loadFromProperties(path);
-		final List<Pref<?>> entries = new ArrayList(prefs.values());
+		final List<Pref<?>> entries = new ArrayList<>(prefs.values());
 		for (final Pref<?> e : entries) {
 			register(e);
 			modelValues.put(e.key, e.getValue());

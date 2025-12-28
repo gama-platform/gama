@@ -713,7 +713,7 @@
     <extension 
           point="org.eclipse.ui.perspectiveExtensions">
        <perspectiveExtension
-             editorOnboardingImage="onboarding.icon.svg"
+             editorOnboardingImage="onboarding.icon.png"
              editorOnboardingText="Select a model in the navigator, create a new model file or consult the documentation to get started !"
              targetID="gama.ui.application.perspectives.ModelingPerspective">
           <view

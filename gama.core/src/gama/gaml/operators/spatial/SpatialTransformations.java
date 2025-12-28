@@ -442,7 +442,7 @@ public class SpatialTransformations {
 	@test ("inverse_rotation(38.0::{1,1,1}) = (-38.0::{1,1,1})")
 	public static GamaPair<Double, GamaPoint> inverse_rotation(final IScope scope,
 			final GamaPair<Double, GamaPoint> rotation) {
-		return new GamaPair(-rotation.key, rotation.value, Types.FLOAT, Types.POINT);
+		return new GamaPair<>(-rotation.key, rotation.value, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -478,7 +478,7 @@ public class SpatialTransformations {
 		axis.x = Math.signum(rot.getKey()) * axis.x / norm;
 		axis.y = Math.signum(rot.getKey()) * axis.y / norm;
 		axis.z = Math.signum(rot.getKey()) * axis.z / norm;
-		return new GamaPair(Math.signum(rot.getKey()) * rot.getKey(), axis, Types.FLOAT, Types.POINT);
+		return new GamaPair<>(Math.signum(rot.getKey()) * rot.getKey(), axis, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -522,7 +522,7 @@ public class SpatialTransformations {
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
 			rotation = rotation.applyTo(new Rotation3D(rot.value, 2 * Math.PI / 360 * rot.key));
 		}
-		return new GamaPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
+		return new GamaPair<>(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -1643,7 +1643,8 @@ public class SpatialTransformations {
 			} else {
 				comp = (o1, o2) -> Double.compare(o1.getLocation().getY(), o2.getLocation().getY());
 			}
-			ArrayList<IShape> listSq = new ArrayList(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
+			ArrayList<IShape> listSq =
+					new ArrayList<>(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
 			final Double sum = (Double) Containers.sum(scope, rates);
 			final int totalNumber = listSq.size();
 			for (final Double rate : rates) {

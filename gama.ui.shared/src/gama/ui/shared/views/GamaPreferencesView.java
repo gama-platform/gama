@@ -521,7 +521,7 @@ public class GamaPreferencesView {
 		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
 		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
 		if (!savedBounds.intersects(monitorBounds)) {
-			final var p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+			// final Point p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 			x = shellBounds.x + 100;
 			y = shellBounds.y + 100;
 			width = shellBounds.width - 200;

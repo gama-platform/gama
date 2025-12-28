@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * RichExperiment.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,6 @@
 package gama.headless.core;
 
 import gama.core.kernel.model.IModel;
-import gama.core.outputs.AbstractOutputManager;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.MonitorOutput;
@@ -48,8 +47,7 @@ public class RichExperiment extends Experiment implements IRichExperiment {
 	public RichOutput getRichOutput(final ListenedVariable v) {
 		final String parameterName = v.getName();
 		if (getSimulation() == null || getSimulation().dead()) return null;
-		final IOutput output =
-				((AbstractOutputManager) getSimulation().getOutputManager()).getOutputWithOriginalName(parameterName);
+		final IOutput output = getSimulation().getOutputManager().getOutputWithOriginalName(parameterName);
 		if (output == null)
 			throw GamaRuntimeException.error("Output unresolved", currentExperiment.getExperimentScope());
 		output.update();

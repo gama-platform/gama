@@ -74,7 +74,7 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 		GamaIcon result = null;
 		if (annotation.isMarkedDeleted()) {
 			result = deleted.get(annotation.getType());
-		} else if (annotation instanceof MarkerAnnotation ma) {
+		} else if (annotation instanceof MarkerAnnotation) {
 			result = getImage(annotation.getType());
 			// if (ma.isQuickFixableStateSet() && ma.isQuickFixable()) {
 			// result = fixables.get(annotation.getType());
@@ -90,7 +90,7 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 		// } else {
 		// return GamaIcons.create ("marker.expanded2").image();
 		// }
-		else if (annotation instanceof XtextAnnotation ma) {
+		else if (annotation instanceof XtextAnnotation) {
 			result = getImage(annotation.getType());
 			// if (ma.isQuickFixable()) {
 			// result = fixables.get(annotation.getType());

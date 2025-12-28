@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelRunner.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,7 +42,6 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.statements.test.TestExperimentSummary;
-import gama.gaml.statements.test.WithTestSummary;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.interfaces.IModelRunner;
@@ -112,7 +111,7 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 				final TestAgent agent = (TestAgent) exp.getAgent();
 				// exp.getController().getScheduler().resume();
 				agent.step(agent.getScope());
-				result.add(((WithTestSummary<TestExperimentSummary>) agent).getSummary());
+				result.add(agent.getSummary());
 				GAMA.closeExperiment(exp);
 			}
 		}
@@ -126,38 +125,41 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 	private IModel findModel(final Object object) {
 		if (object instanceof IModel) return (IModel) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());
-		if (object instanceof IFile file) {
-			try {
-				if (file.findMaxProblemSeverity(IMarker.PROBLEM, true,
-						IResource.DEPTH_ZERO) == IMarker.SEVERITY_ERROR) {
-					GAMA.getGui().error("Model " + file.getFullPath() + " has errors and cannot be launched");
-					return null;
+		switch (object) {
+			case IFile file -> {
+				try {
+					if (file.findMaxProblemSeverity(IMarker.PROBLEM, true,
+							IResource.DEPTH_ZERO) == IMarker.SEVERITY_ERROR) {
+						GAMA.getGui().error("Model " + file.getFullPath() + " has errors and cannot be launched");
+						return null;
+					}
+				} catch (final CoreException e) {
+					e.printStackTrace();
 				}
-			} catch (final CoreException e) {
-				e.printStackTrace();
+				final URI uri = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+				return findModel(uri);
 			}
-			final URI uri = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
-			return findModel(uri);
-		}
-		if (object instanceof URI uri) {
-			final List<GamlCompilationError> errors = new ArrayList<>();
-			final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
-			if (model == null) {
-				GAMA.getGui().error("File " + uri.lastSegment() + " cannot be built because of " + errors.size()
-						+ " compilation errors");
+			case URI uri -> {
+				final List<GamlCompilationError> errors = new ArrayList<>();
+				final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
+				if (model == null) {
+					GAMA.getGui().error("File " + uri.lastSegment() + " cannot be built because of " + errors.size()
+							+ " compilation errors");
+				}
+				return model;
 			}
-			return model;
-		}
-		if (object instanceof IXtextDocument doc) {
-			IModel model = null;
-			try {
-				model = doc.readOnly(state -> GamlModelBuilder.getDefaultInstance().compile(state.getURI(), null));
-			} catch (final GamaRuntimeException ex) {
-				GAMA.getGui()
-						.error("Experiment cannot be instantiated because of the following error: " + ex.getMessage());
+			case IXtextDocument doc -> {
+				IModel model = null;
+				try {
+					model = doc.readOnly(state -> GamlModelBuilder.getDefaultInstance().compile(state.getURI(), null));
+				} catch (final GamaRuntimeException ex) {
+					GAMA.getGui()
+							.error("Experiment cannot be instantiated because of the following error: " + ex.getMessage());
+				}
+				return model;
 			}
-			return model;
-
+			case null, default -> {
+			}
 		}
 		return null;
 	}

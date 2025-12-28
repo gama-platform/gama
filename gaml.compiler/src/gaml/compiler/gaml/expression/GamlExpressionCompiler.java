@@ -831,7 +831,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		ActionDescription ad = sd.getAction(s);
 		// If it is not found, maybe it is in the host ?
 		if (ad == null) {
-			boolean isExp = sd instanceof ExperimentDescription ed;
+			boolean isExp = sd instanceof ExperimentDescription;
 			// If we are in an experiment, we cannot call an action defined in the model (see #
 			if (!isExp) {
 				IDescription host = sd.getEnclosingDescription();
