@@ -335,7 +335,8 @@ Require-Bundle: slf4j.api,
  org.apache.commons.commons-collections4;visibility:=reexport,
  org.apache.commons.commons-io;visibility:=reexport,
  org.apache.commons.httpclient;visibility:=reexport,
- org.apache.commons.text;visibility:=reexport
+ org.apache.commons.text;visibility:=reexport,
+ gama.dev;visibility:=reexport
 Bundle-ClassPath: .,
  libs/geotools 33.4/aws-java-sdk-s3-1.11.36.jar,
  libs/geotools 33.4/bigint-0.7.1.jar,

@@ -7,6 +7,5 @@ Bundle-Vendor: UMMISCO
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: gama.annotations.precompiler,
  gama.annotations.precompiler.constants,
- gama.annotations.precompiler.doc.utils;uses:="org.w3c.dom",
- gama.dev
+ gama.annotations.precompiler.doc.utils;uses:="org.w3c.dom"
 Automatic-Module-Name: gama.annotations

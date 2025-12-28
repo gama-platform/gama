@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.dependencies.logging;
+package gama.dev.logging;
 
 import org.slf4j.Logger;
 import org.slf4j.Marker;

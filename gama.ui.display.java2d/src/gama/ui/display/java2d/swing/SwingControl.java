@@ -57,9 +57,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	public static Composite create(final Composite parent, final AWTDisplayView view,
 			final Java2DDisplaySurface surface, final int style) {
-		if (PlatformHelper.isLinux()) { return new SwingControlLinux(parent, view, surface, style); }
-		if (PlatformHelper.isWindows()) { return new SwingControlWin(parent, view, surface, style); }
-		if (PlatformHelper.isMac()) { return new SwingControlMac(parent, view, surface, style); }
+		if (PlatformHelper.isLinux()) return new SwingControlLinux(parent, view, surface, style);
+		if (PlatformHelper.isWindows()) return new SwingControlWin(parent, view, surface, style);
+		if (PlatformHelper.isMac()) return new SwingControlMac(parent, view, surface, style);
 		return null;
 	}
 
@@ -81,6 +81,10 @@ public abstract class SwingControl extends Composite {
 	/** The visible. */
 	volatile boolean visible = false;
 
+	/**
+	 * Removes the all references.
+	 */
+	@SuppressWarnings ("restriction")
 	protected void removeAllReferences() {
 		surface = null;
 		frame = null;

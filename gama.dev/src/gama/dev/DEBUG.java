@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * DEBUG.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * DEBUG.java, in gama.dev, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -74,7 +74,7 @@ public class DEBUG {
 	 */
 	static String findCallingClassName() {
 		Optional<String> caller = STACK_WALKER.walk(frames -> frames.map(StackFrame::getClassName)
-				.filter(s -> !s.contains("gama.dev") && !s.contains("gama.dependencies.logging")).findFirst());
+				.filter(s -> !s.contains("gama.dev") && !s.contains("org.slf4j")).findFirst());
 		if (caller.isEmpty()) return SECURITY_MANAGER.getCallerClassName(3);
 		return caller.get();
 	}

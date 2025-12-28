@@ -38,6 +38,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.swt.IFocusService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gama.core.runtime.PlatformHelper;
 import gama.ui.shared.bindings.GamaKeyBindings;
@@ -54,6 +56,9 @@ import gaml.compiler.ui.editor.GamlEditor;
  *
  */
 public class EditorSearchControls {
+
+	/** The logger. */
+	Logger logger;
 
 	/** The Constant EMPTY. */
 	static final String EMPTY = "Find... (" + GamaKeyBindings.format(SWT.MOD1, 'G') + ")"; //$NON-NLS-1$
@@ -85,6 +90,7 @@ public class EditorSearchControls {
 	 * @return the editor search controls
 	 */
 	public EditorSearchControls fill(final GamaToolbarSimple toolbar) {
+		logger = LoggerFactory.getLogger(EditorSearchControls.class);
 		Composite parent = toolbar;
 		Color c = parent.getBackground();
 		if (PlatformHelper.isWindows()) {
@@ -131,6 +137,7 @@ public class EditorSearchControls {
 
 			@Override
 			public void keyPressed(final KeyEvent e) {
+				logger.info("Key pressed in find control: char=" + e.character + " code=" + e.keyCode);
 				if (e.character == SWT.ESC) { editor.setFocus(); }
 				if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) { findNext(); }
 			}

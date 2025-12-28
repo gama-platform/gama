@@ -57,20 +57,6 @@ import gama.ui.application.workspace.WorkspacePreferences;
 /** This class controls all aspects of the application's execution */
 public class Application implements IApplication {
 
-	/**
-	 * Instantiates a new application.
-	 */
-	public Application() {
-		// try (InputStream inputStream =
-		// new ByteArrayInputStream(".level = SEVERE\r\n".getBytes(StandardCharsets.UTF_8))) {
-		// LogManager.getLogManager().updateConfiguration(inputStream, null);
-		// LogManager.getLogManager().getLogger("").setLevel(java.util.logging.Level.SEVERE);
-		// } catch (IOException e) {
-		// DEBUG.ERR("Could not set logging level to SEVERE", e);
-		// }
-
-	}
-
 	static {
 		DEBUG.ON();
 	}

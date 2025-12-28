@@ -40,6 +40,7 @@ import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.SwtGui;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class Activator.
@@ -213,12 +214,14 @@ public class Activator extends AbstractUIPlugin {
 		}
 		GAMA.setRegularGui(new SwtGui());
 
-		try {
-			FieldDecorationRegistry.setDefault(new GamlFieldDecorationRegistry());
-			replaceImages();
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+		WorkbenchHelper.runInUI("Replace Field Decorations", 0, p -> {
+			try {
+				FieldDecorationRegistry.setDefault(new GamlFieldDecorationRegistry());
+				replaceImages();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	/**
