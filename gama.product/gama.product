@@ -11,7 +11,7 @@
 (c) 2007-2008 IRD-UR GEODES (France) &amp; IFI-MSI (Vietnam)
 (c) 2009-2011 UMI 209 UMMISCO IRD/UPMC - MSI (Vietnam)
 (c) 2012-2017 UMI 209 UMMISCO IRD/UPMC &amp; Partners
-(c) 2018-2025 UMI 209 UMMISCO IRD/SU &amp; Partners
+(c) 2018-2026 UMI 209 UMMISCO IRD/SU &amp; Partners
       </text>
    </aboutInfo>
 
@@ -61,7 +61,7 @@
 -Dosgi.locking=none
 -Dswt.enable.themedScrollBar=true
 -Dosgi.checkConfiguration=false
--Dosgi.requiredJavaVersion=21
+-Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
@@ -74,9 +74,7 @@
 -Duse_old_tabs=true
 -Duse_legacy_drawers=false
 -Duse_delayed_resize=false
--Dorg.slf4j.simpleLogger.defaultLogLevel=off
 -Declipse.e4.inject.javax.disabled=true
--Djava.util.logging.config.file=configuration/logging.properties
 -Djts.relate=ng
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt=ALL-UNNAMED
@@ -142,6 +140,7 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
 
@@ -184,10 +183,10 @@
    </configurations>
 
    <repositories>
-      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="" enabled="true" />
-      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="" enabled="true" />
-      <repository location="https://anb0s.github.io/EasyShell/release/" name="" enabled="true" />
-      <repository location="https://download.eclipse.org/egit/updates/" name="" enabled="true" />
+      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="Gama" enabled="true" />
+      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="Experimental" enabled="true" />
+      <repository location="https://anb0s.github.io/EasyShell/release/" name="EasyShell" enabled="true" />
+      <repository location="https://download.eclipse.org/egit/updates/" name="EGit" enabled="true" />
    </repositories>
 
    <preferencesInfo>

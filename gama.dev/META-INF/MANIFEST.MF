@@ -7,8 +7,8 @@ Export-Package: gama.dev,
  gama.dev.logging
 Bundle-Activator: gama.dev.Activator
 Bundle-Vendor: UMMISCO
-Require-Bundle: slf4j.api;bundle-version="2.0.17"
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Require-Bundle: slf4j.api
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.dev
 Bundle-ActivationPolicy: lazy
-Import-Package: org.osgi.framework;version="[1.10.0,2.0.0)"
+Import-Package: org.osgi.framework

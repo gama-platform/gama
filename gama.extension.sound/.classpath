@@ -4,7 +4,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/jlayer-decoder 2024-04-19/jlayer-decoder-2024.04.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/mp3spi 2024-04-19/mp3spi-2024.04.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/tritonus-share 2024-04-19/tritonus-share-2024.04.19.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gaml">

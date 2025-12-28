@@ -11,6 +11,6 @@ Require-Bundle: org.eclipse.core.runtime,
  gama.dependencies,
  com.github.weisj.jsvg;bundle-version="2.0.0"
 Bundle-ClassPath: .
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy

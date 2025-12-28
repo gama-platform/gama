@@ -10,5 +10,5 @@ Bundle-ActivationPolicy: lazy
 Export-Package: gama.extension.stats
 Bundle-ClassPath: .,
  libs/colt 2.1.4/colt-2.1.4.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.stats

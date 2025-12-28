@@ -13,5 +13,5 @@ Bundle-ClassPath: .,
  libs/basicplayer 3.0.0.0/basicplayer-3.0.0.0.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.sound

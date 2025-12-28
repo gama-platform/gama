@@ -201,7 +201,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/spatial4j-0.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/sqlite-jdbc-3.41.2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/xpp3_min-1.1.4c.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
