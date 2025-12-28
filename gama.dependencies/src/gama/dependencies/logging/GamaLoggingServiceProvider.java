@@ -31,19 +31,17 @@ public class GamaLoggingServiceProvider implements SLF4JServiceProvider {
 	public static String REQUESTED_API_VERSION = "2.0.17";
 
 	/** The logger factory. */
-	private ILoggerFactory loggerFactory;
+	private final ILoggerFactory loggerFactory = new GamaLoggerFactory();
 
 	/** The marker factory. */
-	private final IMarkerFactory markerFactory;
+	private final IMarkerFactory markerFactory = new BasicMarkerFactory();
 	/** The mdc adapter. */
-	private final MDCAdapter mdcAdapter;
+	private final MDCAdapter mdcAdapter = new NOPMDCAdapter();
 
 	/**
 	 * Instantiates a new simple service provider.
 	 */
 	public GamaLoggingServiceProvider() {
-		markerFactory = new BasicMarkerFactory();
-		mdcAdapter = new NOPMDCAdapter();
 		DEBUG.BANNER("Logging facilities", "provided by", "Gama");
 	}
 
@@ -60,9 +58,6 @@ public class GamaLoggingServiceProvider implements SLF4JServiceProvider {
 	public String getRequestedApiVersion() { return REQUESTED_API_VERSION; }
 
 	@Override
-	public void initialize() {
-		loggerFactory = new GamaLoggerFactory();
-
-	}
+	public void initialize() {}
 
 }

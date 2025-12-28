@@ -7,11 +7,6 @@ Bundle-Vendor: UMMISCO
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.dependencies.Activator
 Import-Package: org.osgi.framework
-Implementation-Title: slf4j-gama
-Implementation-Version: 1.0.0
-Provide-Capability: osgi.service;objectClass:List<String>="org.slf4j.spi
- .SLF4JServiceProvider";type=gama;effective:=active,osgi.serviceloader
- ;osgi.serviceloader="org.slf4j.spi.SLF4JServiceProvider";register:="gama.dependencies.logging.GamaLoggingServiceProvider";type=gama
 Export-Package: com.sun.media.jai.codec,
  crosby.binary.osmosis,
  de.micromata.opengis.kml.v_2_2_0,
@@ -328,7 +323,6 @@ Export-Package: com.sun.media.jai.codec,
  org.sqlite,
  tech.units.indriya.unit
 Require-Bundle: slf4j.api,
- slf4j.simple,
  org.eclipse.osgi,
  gama.annotations,
  com.google.guava;bundle-version="33.5.0";visibility:=reexport,

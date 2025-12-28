@@ -165,6 +165,7 @@
    </features>
 
    <configurations>
+      <plugin id="gama.dependencies" autoStart="true" startLevel="3" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="1" />
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
@@ -173,7 +174,6 @@
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="slf4j.api" autoStart="true" startLevel="0" />
-      <plugin id="slf4j.simple" autoStart="true" startLevel="0" />
       <property name="org.eclipse.update.reconcile" value="false" />
       <property name="eclipse.buildId" value="${build.id}" />
       <property name="gama.version" value="SNAPSHOT" />
