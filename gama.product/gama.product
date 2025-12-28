@@ -107,6 +107,7 @@
 --enable-native-access=ALL-UNNAMED
 --sun-misc-unsafe-memory-access=allow
 --add-modules jdk.incubator.vector
+--enable-preview
       </vmArgs>
       <vmArgsLin>-Dswt.enable.autoScale=true
 -Dswt.autoScale=quarter
