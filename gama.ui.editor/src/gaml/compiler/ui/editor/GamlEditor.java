@@ -147,7 +147,7 @@ import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.utils.CleanupHelper;
+import gama.ui.shared.utils.UICleanupTasks;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -239,9 +239,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		BUTTON_IMAGES.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
 		BUTTON_IMAGES.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
 		BUTTON_IMAGES.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
-		MENU_IMAGES.put(IKeyword.BATCH, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH));
-		MENU_IMAGES.put(IKeyword.RECORD, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK));
-		MENU_IMAGES.put("regular", (ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI));
+		MENU_IMAGES.put(IKeyword.BATCH, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH);
+		MENU_IMAGES.put(IKeyword.RECORD, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK);
+		MENU_IMAGES.put("regular", ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI);
 
 		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
@@ -319,7 +319,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 			@Override
 			public int getLayer(final Annotation annotation) {
-				if (annotation.isMarkedDeleted()) { return IAnnotationAccessExtension.DEFAULT_LAYER; }
+				if (annotation.isMarkedDeleted()) return IAnnotationAccessExtension.DEFAULT_LAYER;
 				return super.getLayer(annotation);
 			}
 
@@ -336,7 +336,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 			@Override
 			public boolean isPaintable(final Annotation annotation) {
-				if (imageProvider.getManagedImage(annotation) != null) { return true; }
+				if (imageProvider.getManagedImage(annotation) != null) return true;
 				return super.isPaintable(annotation);
 			}
 
@@ -517,7 +517,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final var issues = getDocument().readOnly(resource -> {
-					if (resource.isValidationDisabled()) { return Collections.emptyList(); }
+					if (resource.isValidationDisabled()) return Collections.emptyList();
 					return validator.validate(resource, getCheckMode(), null);
 				});
 				processor.processIssues((List<Issue>) issues, monitor);
@@ -532,7 +532,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	public boolean isOverviewRulerVisible() {
 		final var viewer = getInternalSourceViewer();
-		if (viewer == null) { return super.isOverviewRulerVisible(); }
+		if (viewer == null) return super.isOverviewRulerVisible();
 		return viewer.isOverviewVisible();
 	}
 
@@ -558,9 +558,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
-		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed()) {
+		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
-		}
 		super.handleCursorPositionChanged();
 		this.markInNavigationHistory();
 	}
@@ -591,7 +590,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
-				if (toolbar == null || toolbar.isDisposed()) { return; }
+				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, 1);
 				boolean showExperiments =
 						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
@@ -689,7 +688,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	private void displayExperimentButtons(final GamlEditorState state, final Selector listener) {
 		var index = 0;
 		for (final String text : state.abbreviations) {
-			if (text == null) { return; }
+			if (text == null) return;
 			final var expType = state.types.get(index++);
 			final var type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
@@ -734,7 +733,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			private void fillMenu() {
 				var index = 0;
 				for (final String text : state.abbreviations) {
-					if (text == null) { return; }
+					if (text == null) return;
 					final var expType = state.types.get(index++);
 					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
@@ -802,9 +801,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		@Override
 		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
 			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
-			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) { return strategies; }
+			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) return strategies;
 			for (IAutoEditStrategy strategy : strategies) {
-				if (strategy instanceof SurroundWithBracketsStrategy) { return strategies; }
+				if (strategy instanceof SurroundWithBracketsStrategy) return strategies;
 			}
 			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
 		}
@@ -836,7 +835,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		@Override
 		public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(final ITextViewer viewer,
 				final IProgressMonitor monitor) {
-			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) { return EMPTY; }
+			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) return EMPTY;
 			return super.provideCodeMinings(viewer, monitor);
 		}
 
@@ -869,7 +868,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Before save.
 	 */
 	private void beforeSave() {
-		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) { return; }
+		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) return;
 		final SourceViewer sv = getInternalSourceViewer();
 		final var p = sv.getSelectedRange();
 		sv.setSelectedRange(0, sv.getDocument().getLength());
@@ -909,7 +908,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public String getSelectedText() {
 		final var sel = (ITextSelection) getSelectionProvider().getSelection();
 		final var length = sel.getLength();
-		if (length == 0) { return ""; }
+		if (length == 0) return "";
 		final IDocument doc = getDocument();
 		try {
 			return doc.get(sel.getOffset(), length);
@@ -1159,8 +1158,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				menu.remove(item);
 				continue;
 			}
-			DEBUG.OUT("Item " + item);
-			CleanupHelper.RearrangeMenus.changeIcon(menu, item, item.getId());
+			// DEBUG.OUT("Item " + item);
+			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
 		menu.add(new Separator());
 		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
