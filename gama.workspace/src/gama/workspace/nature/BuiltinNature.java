@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.ui.application.projects;
+package gama.workspace.nature;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectNature;

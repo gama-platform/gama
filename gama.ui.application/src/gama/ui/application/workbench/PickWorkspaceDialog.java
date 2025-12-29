@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.application.workspace;
+package gama.ui.application.workbench;
 
 // import java.awt.GridLayout;
 import java.io.File;
@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import gama.core.runtime.GAMA;
+import gama.workspace.manager.WorkspaceHelper;
 
 /**
  * Dialog that lets/forces a user to enter/select a workspace that will be used when saving all configuration files and
@@ -48,18 +49,7 @@ import gama.core.runtime.GAMA;
  */
 public class PickWorkspaceDialog extends TitleAreaDialog {
 
-	/*
-	 * This are our preferences we will be using as the IPreferenceStore is not available yet
-	 */
-	// FIX: Removed the static reference in case it was causing trouble. Issue
-	// 240.
-
-	/** The Constant ERROR. */
-	private static final String ERROR = "Error";
-
-	// static Preferences preferences = Preferences.userRoot().node("gama");
 	/** The Constant strMsg. */
-	/* Various dialog messages */
 	private static final String strMsg =
 			"Your workspace is where settings and files of your Gama models will be stored.";
 
@@ -93,6 +83,9 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 
 	/** The initial check. */
 	private final boolean initialCheck;
+
+	/** The result workspace. */
+	private String resultWorkspace;
 
 	/**
 	 * Creates a new workspace dialog with a specific image as title-area image.
@@ -174,13 +167,6 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			return null;
 		}
 	}
-
-	/**
-	 * Returns whatever path the user selected in the dialog.
-	 *
-	 * @return Path
-	 */
-	public String getSelectedWorkspaceLocation() { return WorkspaceHelper.getSelectedWorkspaceRootLocation(); }
 
 	@Override
 	protected void createButtonsForButtonBar(final Composite parent) {
@@ -264,6 +250,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		final String str = workspacePathCombo.getText();
 		// scope.getGui().debug("Directory to create " + str);
 		if (str.length() == 0) {
+			resultWorkspace = null;
 			setMessage(strError, IMessageProvider.ERROR);
 			return;
 		}
@@ -307,7 +294,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		}
 
 		/* Here we set the location so that we can later fetch it again */
-		WorkspaceHelper.setSelectedWorkspaceRootLocation(str);
+		resultWorkspace = str;
 
 		/* And on our preferences as well */
 		// scope.getGui().debug("Writing " + str + " in the preferences");
@@ -372,5 +359,12 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 
 	@Override
 	protected boolean isResizable() { return true; }
+
+	/**
+	 * Gets the result workspace.
+	 *
+	 * @return the result workspace
+	 */
+	public String getResultWorkspace() { return resultWorkspace; }
 
 }

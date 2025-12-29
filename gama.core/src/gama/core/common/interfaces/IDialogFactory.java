@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
+import org.eclipse.core.runtime.IPath;
+
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.gaml.architecture.user.UserPanelStatement;
@@ -173,5 +175,25 @@ public interface IDialogFactory {
 	 * Disconnects and closes the user dialog if any.
 	 */
 	default void closeUserDialog() {}
+
+	/**
+	 * Opens the workspace selection dialog.
+	 *
+	 * @return true, if successful and false if cancelled (i.e. no workspace selected)
+	 */
+	default String openWorkspaceSelectionDialog(final boolean performInitialCheck) {
+		return "";
+	}
+
+	/**
+	 * Opens a container selection dialog.
+	 *
+	 * @param title
+	 *            the title
+	 * @return a container (folder, project...) or null if cancelled
+	 */
+	default IPath openContainerSelectionDialog(final String title, final String message) {
+		return null;
+	}
 
 }

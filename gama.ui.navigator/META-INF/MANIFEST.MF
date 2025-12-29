@@ -27,5 +27,6 @@ Export-Package: gama.ui.navigator.commands,
  gama.ui.navigator.view.contents,
  gama.ui.navigator.view.properties,
  gama.ui.navigator.wizards
-Import-Package: org.eclipse.core.filesystem
+Import-Package: gama.workspace.manager,
+ org.eclipse.core.filesystem
 Automatic-Module-Name: gama.ui.navigator

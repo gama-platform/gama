@@ -1,20 +1,16 @@
 /*******************************************************************************************************
  *
- * WorkspaceHelper.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * WorkspaceHelper.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.application.workspace;
+package gama.workspace.manager;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
-import static org.eclipse.ui.PlatformUI.isWorkbenchRunning;
-import static org.eclipse.ui.internal.util.PrefUtil.getInternalPreferenceStore;
-import static org.eclipse.ui.internal.util.PrefUtil.saveInternalPrefs;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -65,9 +61,6 @@ public class WorkspaceHelper {
 
 	/** The model identifier. */
 	private static String MODEL_IDENTIFIER = null;
-
-	/** The selected workspace root location. */
-	static String selectedWorkspaceRootLocation;
 
 	/**
 	 * Returns whether the user selected "remember workspace" in the preferences
@@ -141,21 +134,6 @@ public class WorkspaceHelper {
 		return GamaPreferences.Interface.CORE_ASK_OUTDATED.getValue();
 		// return getStore().getBoolean(KEY_ASK_OUTDATED, true);
 	}
-
-	/**
-	 * Gets the selected workspace root location.
-	 *
-	 * @return the selected workspace root location
-	 */
-	public static String getSelectedWorkspaceRootLocation() { return selectedWorkspaceRootLocation; }
-
-	/**
-	 * Sets the selected workspace root location.
-	 *
-	 * @param s
-	 *            the new selected workspace root location
-	 */
-	public static void setSelectedWorkspaceRootLocation(final String s) { selectedWorkspaceRootLocation = s; }
 
 	/**
 	 * Gets the current gama stamp string.
@@ -372,8 +350,7 @@ public class WorkspaceHelper {
 				// if ( ret.equals("Restart") ) { return EXIT_RESTART; }
 				/* If we don't or can't remember and the location is set, we can't do anything as we need a workspace */
 				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
-				if (isWorkbenchRunning()) { getWorkbench().close(); }
-				System.exit(0);
+				GAMA.getGui().exit();
 				return IApplication.EXIT_OK;
 			}
 		} else {
@@ -402,12 +379,9 @@ public class WorkspaceHelper {
 
 		/* If we don't remember the workspace, show the dialog */
 		if (!remember) {
-			final int pick = new PickWorkspaceDialog(true).open();
-			/* If the user cancelled, we can't do anything as we need a workspace */
-			String wr = getSelectedWorkspaceRootLocation();
-			if (pick == 1 /* Window.CANCEL */ || wr == null) {
+			String wr = GAMA.getGui().getDialogFactory().openWorkspaceSelectionDialog(true);
+			if (wr == null) {
 				GAMA.getGui().getDialogFactory().error("GAMA can not start without a workspace and will now exit.");
-				// System.exit(0);
 				return IApplication.EXIT_OK;
 			}
 			/* Tell Eclipse what the selected location was and continue */
@@ -431,8 +405,7 @@ public class WorkspaceHelper {
 	 *            the clear
 	 */
 	public static void clearWorkspace(final boolean clear) {
-		getInternalPreferenceStore().setValue(CLEAR_WORKSPACE, Boolean.toString(clear));
-		saveInternalPrefs();
+		getStore().putBoolean(CLEAR_WORKSPACE, clear);
 	}
 
 }

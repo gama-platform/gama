@@ -38,9 +38,9 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import gama.core.runtime.GAMA;
-import gama.ui.application.workspace.WorkspaceModelsManager;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * The Class NewProjectWizard.

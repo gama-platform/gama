@@ -19,7 +19,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.ui.internal.AbstractEnabledHandler;
 
 import gama.core.runtime.GAMA;
-import gama.ui.application.workspace.WorkspaceHelper;
+import gama.workspace.manager.WorkspaceHelper;
 
 /**
  * The Class InstallHandler.

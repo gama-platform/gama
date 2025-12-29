@@ -581,8 +581,8 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 						</buildSpec>
 						<natures>
 							<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
-							<nature>gama.ui.application.gamaNature</nature>
-							<nature>gama.ui.application.testNature</nature>
+							<nature>gama.workspace.gamaNature</nature>
+							<nature>gama.workspace.testNature</nature>
 						</natures>
 					</projectDescription>
 					""".formatted(currentPlugin, currentPlugin));

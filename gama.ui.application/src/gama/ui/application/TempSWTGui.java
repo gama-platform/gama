@@ -10,18 +10,33 @@
  ********************************************************************************************************/
 package gama.ui.application;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 import gama.core.common.interfaces.IConsoleListener;
 import gama.core.common.interfaces.IDialogFactory;
 import gama.core.common.interfaces.IGui;
 import gama.dev.DEBUG;
+import gama.ui.application.workbench.PickWorkspaceDialog;
 
 /**
  * A partial implementation of IGui using SWT dialogs and the console for logging.
  */
 public class TempSWTGui implements IGui {
+
+	@Override
+	public void exit() {
+		Display.getDefault().syncExec(() -> {
+			if (PlatformUI.isWorkbenchRunning()) {
+				PlatformUI.getWorkbench().close();
+				IGui.super.exit();
+			}
+		});
+
+	}
 
 	@Override
 	public IConsoleListener getConsole() { return (s, root, color) -> DEBUG.LOG("Console: " + s); }
@@ -53,6 +68,36 @@ public class TempSWTGui implements IGui {
 			@Override
 			public boolean confirm(final String title, final String message) {
 				return Display.getDefault().syncCall(() -> MessageDialog.openConfirm(null, title, message));
+			}
+
+			/**
+			 * Opens the workspace selection dialog.
+			 *
+			 * @return the new path, if successful and null if cancelled (i.e. no workspace selected)
+			 */
+			@Override
+			public String openWorkspaceSelectionDialog(final boolean performInitialCheck) {
+				PickWorkspaceDialog pwd = new PickWorkspaceDialog(performInitialCheck);
+				Display.getDefault().syncExec(pwd::open);
+				return pwd.getResultWorkspace();
+			}
+
+			/**
+			 * Opens a container selection dialog.
+			 *
+			 * @param title
+			 *            the title of the dialog
+			 * @param message
+			 *            the message to display in the dialog
+			 * @return a path to a container (folder, project...) or null if cancelled
+			 */
+			@Override
+			public IPath openContainerSelectionDialog(final String title, final String message) {
+				final ContainerSelectionDialog dialog = new ContainerSelectionDialog(null, null, false, message);
+				dialog.setTitle(title);
+				dialog.showClosedProjects(false);
+				Display.getDefault().syncExec(dialog::open);
+				return (IPath) dialog.getResult()[0];
 			}
 		};
 	}

@@ -10,8 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.shared.factories;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
@@ -19,6 +21,7 @@ import gama.core.common.interfaces.IDialogFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.PlatformHelper;
 import gama.gaml.architecture.user.UserPanelStatement;
+import gama.ui.application.workbench.PickWorkspaceDialog;
 import gama.ui.shared.dialogs.UserControlDialog;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -107,6 +110,36 @@ public class DialogFactory extends AbstractServiceFactory implements IDialogFact
 	@Override
 	public void warning(final IScope scope, final String warning) {
 		WorkbenchHelper.run(() -> MessageDialog.openWarning(null, "Warning", warning));
+	}
+
+	/**
+	 * Opens the workspace selection dialog.
+	 *
+	 * @return the new path, if successful and null if cancelled (i.e. no workspace selected)
+	 */
+	@Override
+	public String openWorkspaceSelectionDialog(final boolean performInitialCheck) {
+		PickWorkspaceDialog pwd = new PickWorkspaceDialog(performInitialCheck);
+		WorkbenchHelper.run(pwd::open);
+		return pwd.getResultWorkspace();
+	}
+
+	/**
+	 * Opens a container selection dialog.
+	 *
+	 * @param title
+	 *            the title of the dialog
+	 * @param message
+	 *            the message to display in the dialog
+	 * @return a path to a container (folder, project...) or null if cancelled
+	 */
+	@Override
+	public IPath openContainerSelectionDialog(final String title, final String message) {
+		final ContainerSelectionDialog dialog = new ContainerSelectionDialog(null, null, false, message);
+		dialog.setTitle(title);
+		dialog.showClosedProjects(false);
+		WorkbenchHelper.run(dialog::open);
+		return (IPath) dialog.getResult()[0];
 	}
 
 	@Override

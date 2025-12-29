@@ -37,8 +37,8 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
-import gama.ui.application.workspace.WorkspaceHelper;
-import gama.ui.application.workspace.WorkspaceModelsManager;
+import gama.workspace.manager.WorkspaceHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /** This class controls all aspects of the application's execution */
 public class Application implements IApplication {

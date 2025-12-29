@@ -7,7 +7,7 @@
       <image
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/folder.model.svg"
             id="gama.application.nature.gamaNature.img"
-            natureId="gama.ui.application.gamaNature">
+            natureId="gama.workspace.gamaNature">
       </image>
    </extension>
    <extension

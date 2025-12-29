@@ -18,7 +18,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.ui.internal.AbstractEnabledHandler;
 
-import gama.ui.application.workspace.WorkspaceHelper;
+import gama.workspace.manager.WorkspaceHelper;
 
 /**
  * The Class UpdateHandler.

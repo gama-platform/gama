@@ -16,15 +16,14 @@ Require-Bundle: gama.dependencies,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.css.core,
- org.osgi.service.event
+ org.osgi.service.event,
+ gama.workspace;bundle-version="0.0.0"
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: gama.ui.application;singleton:=true
 Export-Package: gama.ui.application;uses:="org.eclipse.ui,org.eclipse.equinox.app",
- gama.ui.application.projects,
- gama.ui.application.workbench,
- gama.ui.application.workspace
+ gama.ui.application.workbench
 Import-Package: jakarta.inject,
  org.w3c.css.sac
 Bundle-ClassPath: .

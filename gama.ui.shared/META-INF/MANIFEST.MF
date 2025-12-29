@@ -39,4 +39,5 @@ Export-Package: gama.ui.shared,
  gama.ui.shared.views.toolbar
 Bundle-Activator: gama.ui.shared.Activator
 Automatic-Module-Name: gama.ui.shared 
-Import-Package: org.eclipse.e4.ui.internal.workbench.swt
+Import-Package: gama.workspace.manager,
+ org.eclipse.e4.ui.internal.workbench.swt

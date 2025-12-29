@@ -34,9 +34,9 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.internal.navigator.resources.plugin.WorkbenchNavigatorMessages;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import gama.ui.application.workspace.WorkspaceModelsManager;
 import gama.ui.navigator.view.contents.UserProjectsFolder;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * Standard action for pasting resources on the clipboard to the selected resource's location.

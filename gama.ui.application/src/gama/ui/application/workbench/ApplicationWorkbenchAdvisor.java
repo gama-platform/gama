@@ -34,7 +34,7 @@ import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.util.file.IGamaFile;
 import gama.dev.DEBUG;
 import gama.ui.application.Application;
-import gama.ui.application.workspace.WorkspaceModelsManager;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * The Class ApplicationWorkbenchAdvisor.

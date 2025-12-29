@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * WorkspaceModelsManager.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
+ * WorkspaceModelsManager.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.application.workspace;
+package gama.workspace.manager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -49,10 +49,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Strings;
@@ -77,19 +73,19 @@ public class WorkspaceModelsManager {
 	}
 
 	/** The Constant GAMA_NATURE. */
-	public final static String GAMA_NATURE = "gama.ui.application.gamaNature";
+	public final static String GAMA_NATURE = "gama.workspace.gamaNature";
 
 	/** The Constant XTEXT_NATURE. */
 	public final static String XTEXT_NATURE = "org.eclipse.xtext.ui.shared.xtextNature";
 
 	/** The Constant PLUGIN_NATURE. */
-	public final static String PLUGIN_NATURE = "gama.ui.application.pluginNature";
+	public final static String PLUGIN_NATURE = "gama.workspace.pluginNature";
 
 	/** The Constant TEST_NATURE. */
-	public final static String TEST_NATURE = "gama.ui.application.testNature";
+	public final static String TEST_NATURE = "gama.workspace.testNature";
 
 	/** The Constant BUILTIN_NATURE. */
-	public final static String BUILTIN_NATURE = "gama.ui.application.builtinNature";
+	public final static String BUILTIN_NATURE = "gama.workspace.builtinNature";
 
 	/** The Constant BUILTIN_PROPERTY. */
 	public static final QualifiedName BUILTIN_PROPERTY = new QualifiedName("gama.builtin", "models");
@@ -301,33 +297,20 @@ public class WorkspaceModelsManager {
 	 *             the core exception
 	 */
 	public IFolder createUnclassifiedModelsProject(final IPath location) throws CoreException {
-		// First allow to select a parent folder
-		final ContainerSelectionDialog dialog = new ContainerSelectionDialog(Display.getDefault().getActiveShell(),
-				null, false, "Select a parent project or cancel to create a new project:");
-		dialog.setTitle("Project selection");
-		dialog.showClosedProjects(false);
-
-		final int result = dialog.open();
-		IProject project;
-		IFolder modelFolder;
-
-		if (result == Window.CANCEL) {
-			project = createOrUpdateProject(UNCLASSIFIED_MODELS);
+		final IPath result = GAMA.getGui().getDialogFactory().openContainerSelectionDialog("Project selection",
+				"Select a parent project or folder to import the model into:");
+		IFolder modelFolder = null;
+		if (result == null) {
+			IProject project = createOrUpdateProject(UNCLASSIFIED_MODELS);
 			modelFolder = project.getFolder(new Path("models"));
 			if (!modelFolder.exists()) { modelFolder.create(true, true, null); }
 		} else {
-			final IContainer container =
-					(IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember((IPath) dialog.getResult()[0]);
-			if (container instanceof IProject) {
-				project = (IProject) container;
+			IContainer resultContainer = (IContainer) workspace.getRoot().findMember(result);
+			if (resultContainer instanceof IProject project) {
 				modelFolder = project.getFolder(new Path("models"));
 				if (!modelFolder.exists()) { modelFolder.create(true, true, null); }
-			} else {
-				modelFolder = (IFolder) container;
-			}
-
+			} else if (resultContainer instanceof IFolder folder) { modelFolder = folder; }
 		}
-
 		return modelFolder;
 	}
 

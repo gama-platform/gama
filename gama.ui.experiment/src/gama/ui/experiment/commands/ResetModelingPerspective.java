@@ -15,8 +15,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
 import gama.core.runtime.GAMA;
-import gama.ui.application.workspace.WorkspaceHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceHelper;
 
 /**
  * The Class ResetModelingPerspective.

@@ -495,7 +495,9 @@ public interface IGui {
 	/**
 	 * Exit.
 	 */
-	default void exit() {}
+	default void exit() {
+		System.exit(0);
+	}
 
 	// Tests
 

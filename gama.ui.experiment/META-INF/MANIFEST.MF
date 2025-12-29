@@ -30,3 +30,4 @@ Export-Package: gama.ui.experiment.activator,
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.experiment.activator.ExperimentUIActivator
 Automatic-Module-Name: gama.ui.experiment
+Import-Package: gama.workspace.manager

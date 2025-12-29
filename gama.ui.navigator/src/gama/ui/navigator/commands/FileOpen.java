@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import gama.core.common.GamlFileExtension;
-import gama.ui.application.workspace.WorkspaceModelsManager;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * Opens a file

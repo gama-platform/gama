@@ -57,10 +57,10 @@ import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
 import gama.gaml.statements.test.CompoundSummary;
-import gama.ui.application.workspace.WorkspaceModelsManager;
 import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * The Class ResourceManager.

@@ -58,7 +58,7 @@ import com.google.common.cache.LoadingCache;
 
 import gama.core.common.interfaces.IGui;
 import gama.dev.DEBUG;
-import gama.ui.application.workspace.WorkspaceModelsManager;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * The Class WorkbenchHelper.
