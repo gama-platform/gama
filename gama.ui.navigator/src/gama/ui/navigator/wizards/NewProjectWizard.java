@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -38,6 +37,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
+import gama.core.runtime.GAMA;
 import gama.ui.application.workspace.WorkspaceModelsManager;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -96,7 +96,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 			return false;
 		} catch (final InvocationTargetException e) {
 			final Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			GAMA.getGui().getDialogFactory().error(realException.getMessage());
 			return false;
 		}
 		project = projectHandle;

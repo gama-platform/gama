@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,15 +24,15 @@ import javax.sound.sampled.Clip;
 
 import org.eclipse.core.runtime.Platform;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IValue;
 import gama.core.common.util.FileUtils;
@@ -43,7 +43,6 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
-import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
@@ -609,7 +608,6 @@ public class System {
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, null, true));
 	}
-	
 
 	/**
 	 * User input dialog.
@@ -642,7 +640,6 @@ public class System {
 			final GamaFont font, final GamaColor color) {
 		return userInputDialog(scope, title, parameters, font, color, true);
 	}
-
 
 	/**
 	 * User input dialog.
@@ -681,7 +678,6 @@ public class System {
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, color, showTitle));
 	}
-
 
 	/**
 	 * Open wizard.
@@ -874,7 +870,7 @@ public class System {
 			{ @example ("bool confirm <- user_confirm(\"Confirm\",\"Please confirm\");") })
 	@no_test
 	public static Boolean userConfirmDialog(final IScope scope, final String title, final String message) {
-		return scope.getGui().openUserInputDialogConfirm(scope, title, message);
+		return scope.getGui().getDialogFactory().confirm(scope, title, message);
 	}
 
 	/**
@@ -1420,6 +1416,5 @@ public class System {
 	public static Object copyFromClipboard(final IScope scope, final IType type) {
 		return type.copyFromClipboard(scope);
 	}
-
 
 }

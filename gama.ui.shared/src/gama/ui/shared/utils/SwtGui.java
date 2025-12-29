@@ -13,7 +13,6 @@ import static gama.ui.shared.utils.ViewsHelper.hideView;
 import static gama.ui.shared.utils.WorkbenchHelper.getClipboard;
 
 import java.awt.EventQueue;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,6 +31,7 @@ import org.eclipse.ui.commands.ICommandService;
 
 import gama.core.common.CompositeConsoleListener;
 import gama.core.common.interfaces.IConsoleListener;
+import gama.core.common.interfaces.IDialogFactory;
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGamaView;
@@ -74,12 +74,10 @@ import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
 import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
-import gama.ui.shared.interfaces.IUserDialogFactory;
 import gama.ui.shared.parameters.EditorsDialog;
 import gama.ui.shared.parameters.GamaWizard;
 import gama.ui.shared.parameters.GamaWizardDialog;
@@ -113,6 +111,9 @@ public class SwtGui implements IGui {
 	/** The console. */
 	IConsoleListener console;
 
+	/** The dialog factory. */
+	IDialogFactory dialogFactory;
+
 	static {
 		PreferencesHelper.initialize();
 		AbstractDisplayGraphics.getCachedGC();
@@ -127,18 +128,8 @@ public class SwtGui implements IGui {
 	public boolean confirmClose(final IExperimentPlan exp) {
 		if (exp == null || !GamaPreferences.Runtime.CORE_ASK_CLOSING.getValue()) return true;
 		PerspectiveHelper.switchToSimulationPerspective();
-		return Messages.modalQuestion("Close simulation confirmation", "Do you want to close experiment '"
+		return getDialogFactory().modalQuestion("Closing experiment", "Do you want to close experiment '"
 				+ exp.getName() + "' of model '" + exp.getModel().getName() + "' ?");
-	}
-
-	@Override
-	public void openMessageDialog(final IScope scope, final String msg) {
-		Messages.tell(msg);
-	}
-
-	@Override
-	public void openErrorDialog(final IScope scope, final String err) {
-		Messages.error(err);
 	}
 
 	@Override
@@ -288,11 +279,6 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public DisplayDescription getDisplayDescriptionFor(final String name) {
-		return DISPLAYS.get(name);
-	}
-
-	@Override
 	public IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... args) {
 		final String keyword = output.getData().getDisplayType();
 		final DisplayDescription creator = DISPLAYS.get(keyword);
@@ -347,13 +333,6 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public Boolean openUserInputDialogConfirm(final IScope scope, final String title, final String message) {
-		final List<Boolean> result = new ArrayList<>();
-		WorkbenchHelper.run(() -> { result.add(Messages.confirm(title, message)); });
-		return result.isEmpty() ? false : result.get(0);
-	}
-
-	@Override
 	public void openUserControlPanel(final IScope scope, final UserPanelStatement panel) {
 		WorkbenchHelper.run(() -> {
 			IGamaView.User part = (User) showView(scope, USER_CONTROL_VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
@@ -372,8 +351,7 @@ public class SwtGui implements IGui {
 	public void closeDialogs(final IScope scope) {
 
 		WorkbenchHelper.run(() -> {
-			final IUserDialogFactory userDialogFactory = WorkbenchHelper.getService(IUserDialogFactory.class);
-			if (userDialogFactory != null) { userDialogFactory.closeUserDialog(); }
+			getDialogFactory().closeUserDialog();
 			hideView(USER_CONTROL_VIEW_ID);
 
 		});
@@ -642,6 +620,17 @@ public class SwtGui implements IGui {
 			console.addConsoleListener(WorkbenchHelper.getService(IConsoleListener.class));
 		}
 		return console;
+	}
+
+	/**
+	 * Gets the dialog factory.
+	 *
+	 * @return the dialog factory
+	 */
+	@Override
+	public IDialogFactory getDialogFactory() {
+		if (dialogFactory == null) { dialogFactory = WorkbenchHelper.getService(IDialogFactory.class); }
+		return dialogFactory;
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaServerGUIHandler.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaServerGUIHandler.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import gama.core.common.interfaces.IConsoleListener;
+import gama.core.common.interfaces.IDialogFactory;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.runtime.IScope;
@@ -43,6 +44,23 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 	/** The status. */
 	IStatusDisplayer status;
 
+	/** The dialog factory. */
+	IDialogFactory dialogFactory = new IDialogFactory() {
+		@Override
+		public void inform(final IScope scope, final String message) {
+			DEBUG.OUT(message);
+			if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
+			dialogMessager.sendMessage(scope.getExperiment(), message, MessageType.SimulationDialog);
+		}
+
+		@Override
+		public void error(final IScope scope, final String message) {
+			DEBUG.OUT(message);
+			if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
+			dialogMessager.sendMessage(scope.getExperiment(), message, MessageType.SimulationErrorDialog);
+		}
+	};
+
 	/** The dialog messager. */
 	GamaServerMessager dialogMessager = new GamaServerMessager() {
 
@@ -50,7 +68,7 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 		public boolean canSendMessage(final IExperimentAgent exp) {
 			if (exp == null) return false;
 			var scope = exp.getScope();
-			return scope != null && scope.getServerConfiguration().dialog();
+			return scope != null && scope.getServerConfiguration().hasDialog();
 		}
 
 	};
@@ -66,22 +84,8 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 	 */
 	private boolean canSendRuntimeErrors(final IScope scope) {
 		if (scope != null && scope.getExperiment() != null && scope.getExperiment().getScope() != null)
-			return scope.getExperiment().getScope().getServerConfiguration().runtime();
+			return scope.getExperiment().getScope().getServerConfiguration().hasRuntime();
 		return true;
-	}
-
-	@Override
-	public void openMessageDialog(final IScope scope, final String message) {
-		DEBUG.OUT(message);
-		if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
-		dialogMessager.sendMessage(scope.getExperiment(), message, MessageType.SimulationDialog);
-	}
-
-	@Override
-	public void openErrorDialog(final IScope scope, final String error) {
-		DEBUG.OUT(error);
-		if (!dialogMessager.canSendMessage(scope.getExperiment())) return;
-		dialogMessager.sendMessage(scope.getExperiment(), error, MessageType.SimulationErrorDialog);
 	}
 
 	@Override

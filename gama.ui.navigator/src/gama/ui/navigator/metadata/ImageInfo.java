@@ -98,9 +98,6 @@ public class ImageInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public String getSuffix() { return "" + width + "x" + height + ", " + getShortLabel(type) + ""; }
-
-	@Override
 	public void appendSuffix(final StringBuilder sb) {
 		sb.append(width).append("x").append(height).append(SUFFIX_DEL).append(getShortLabel(type));
 	}

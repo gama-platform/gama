@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -39,6 +38,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import gama.core.runtime.GAMA;
 
 /**
  * Dialog that lets/forces a user to enter/select a workspace that will be used when saving all configuration files and
@@ -133,16 +134,16 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 			// data.widthHint = 200;
 			workspacePathCombo.setLayoutData(data);
-			final String wsRoot = WorkspacePreferences.getLastSetWorkspaceDirectory();
+			final String wsRoot = WorkspaceHelper.getLastSetWorkspaceDirectory();
 			workspacePathCombo.setText(wsRoot);
 
 			/* Checkbox below */
 			rememberWorkspaceButton = new Button(inner, SWT.CHECK);
 			rememberWorkspaceButton.setText("Remember");
 			rememberWorkspaceButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-			rememberWorkspaceButton.setSelection(WorkspacePreferences.isRememberWorkspace());
+			rememberWorkspaceButton.setSelection(WorkspaceHelper.isRememberWorkspace());
 
-			final String lastUsed = WorkspacePreferences.getLastUsedWorkspaces();
+			final String lastUsed = WorkspaceHelper.getLastUsedWorkspaces();
 			lastUsedWorkspaces = new ArrayList<>();
 			if (lastUsed != null) {
 				final String[] all = lastUsed.split(splitChar);
@@ -179,7 +180,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 	 *
 	 * @return Path
 	 */
-	public String getSelectedWorkspaceLocation() { return WorkspacePreferences.getSelectedWorkspaceRootLocation(); }
+	public String getSelectedWorkspaceLocation() { return WorkspaceHelper.getSelectedWorkspaceRootLocation(); }
 
 	@Override
 	protected void createButtonsForButtonBar(final Composite parent) {
@@ -237,16 +238,16 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 	 * Clone current workspace.
 	 */
 	protected void cloneCurrentWorkspace() {
-		final String currentLocation = WorkspacePreferences.getLastSetWorkspaceDirectory();
+		final String currentLocation = WorkspaceHelper.getLastSetWorkspaceDirectory();
 		if (currentLocation == null || currentLocation.isEmpty()) {
-			MessageDialog.openError(Display.getDefault().getActiveShell(), ERROR,
-					"No current workspace exists. Can only clone from an existing workspace");
+			GAMA.getGui().getDialogFactory()
+					.error("No current workspace exists. Can only clone from an existing workspace");
 			return;
 		}
 		final String newLocation = workspacePathCombo.getText();
 		// Fixes Issue #2848
 		if (newLocation.startsWith(currentLocation)) {
-			MessageDialog.openError(Display.getDefault().getActiveShell(), ERROR,
+			GAMA.getGui().getDialogFactory().error(
 					"The path entered is either that of the current wokspace or of a subdirectory of it. Neither can be used as a destination.");
 			return;
 		}
@@ -267,7 +268,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			return;
 		}
 
-		final String ret = WorkspacePreferences.checkWorkspaceDirectory(str, true, true, cloning);
+		final String ret = WorkspaceHelper.checkWorkspaceDirectory(str, true, true, cloning);
 		if (ret != null) {
 			setMessage(ret, IMessageProvider.ERROR);
 			return;
@@ -294,8 +295,8 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		}
 
 		/* Save them onto our preferences */
-		WorkspacePreferences.isRememberWorkspace(rememberWorkspaceButton.getSelection());
-		WorkspacePreferences.setLastUsedWorkspaces(buf.toString());
+		WorkspaceHelper.isRememberWorkspace(rememberWorkspaceButton.getSelection());
+		WorkspaceHelper.setLastUsedWorkspaces(buf.toString());
 
 		/* Now create it */
 		final boolean ok = checkAndCreateWorkspaceRoot(str);
@@ -306,12 +307,12 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		}
 
 		/* Here we set the location so that we can later fetch it again */
-		WorkspacePreferences.setSelectedWorkspaceRootLocation(str);
+		WorkspaceHelper.setSelectedWorkspaceRootLocation(str);
 
 		/* And on our preferences as well */
 		// scope.getGui().debug("Writing " + str + " in the preferences");
 		if (cloning) {
-			final String previousLocation = WorkspacePreferences.getLastSetWorkspaceDirectory();
+			final String previousLocation = WorkspaceHelper.getLastSetWorkspaceDirectory();
 			File workspaceDirectory = new File(previousLocation);
 			if (!workspaceDirectory.exists() || previousLocation.equals(str)) {
 				final DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.OPEN);
@@ -327,16 +328,16 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 				final File targetDirectory = new File(str);
 				try {
 					copy(workspaceDirectory, targetDirectory);
-					// WorkspacePreferences.setApplyPrefs(true);
+					// WorkspaceHelper.setApplyPrefs(true);
 				} catch (final Exception err) {
-					MessageDialog.openError(Display.getDefault().getActiveShell(), ERROR,
-							"There was an error cloning the workspace: " + err.getMessage());
+					GAMA.getGui().getDialogFactory()
+							.error("There was an error cloning the workspace: " + err.getMessage());
 					return;
 				}
 
 			}
 		}
-		WorkspacePreferences.setLastSetWorkspaceDirectory(str);
+		WorkspaceHelper.setLastSetWorkspaceDirectory(str);
 
 		super.okPressed();
 	}
@@ -355,11 +356,11 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			if (!fRoot.exists()) // scope.getGui().debug("Folder " + wsRoot + " does not exist");
 				return false;
 
-			File dotFile = new File(wsRoot + File.separator + WorkspacePreferences.WORKSPACE_IDENTIFIER);
+			File dotFile = new File(wsRoot + File.separator + WorkspaceHelper.WORKSPACE_IDENTIFIER);
 			if (!dotFile.exists()) {
 				final boolean created = dotFile.createNewFile();
 				if (!created) return false;
-				dotFile = new File(wsRoot + File.separator + WorkspacePreferences.getModelIdentifier());
+				dotFile = new File(wsRoot + File.separator + WorkspaceHelper.getModelIdentifier());
 				if (!dotFile.createNewFile()) return false;
 			}
 			return true;

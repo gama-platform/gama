@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaServerExperimentConfiguration.java, in gama.core, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamaServerExperimentConfiguration.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,8 +18,8 @@ import org.java_websocket.WebSocket;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 3 nov. 2023
  */
-public record GamaServerExperimentConfiguration(WebSocket socket, String expId, boolean console, boolean status,
-		boolean dialog, boolean runtime) {
+public record GamaServerExperimentConfiguration(WebSocket socket, String expId, boolean hasConsole, boolean hasStatus,
+		boolean hasDialog, boolean hasRuntime) {
 
 	/** The null. */
 	public static final GamaServerExperimentConfiguration NULL =
@@ -39,7 +39,8 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 * @date 3 nov. 2023
 	 */
 	public GamaServerExperimentConfiguration withExpId(final String experimentID) {
-		return new GamaServerExperimentConfiguration(socket, experimentID, console, status, dialog, runtime);
+		return new GamaServerExperimentConfiguration(socket, experimentID, hasConsole, hasStatus, hasDialog,
+				hasRuntime);
 	}
 
 	/**
@@ -52,6 +53,6 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 * @date 3 nov. 2023
 	 */
 	public GamaServerExperimentConfiguration withSocket(final WebSocket s) {
-		return new GamaServerExperimentConfiguration(s, expId, console, status, dialog, runtime);
+		return new GamaServerExperimentConfiguration(s, expId, hasConsole, hasStatus, hasDialog, hasRuntime);
 	}
 }

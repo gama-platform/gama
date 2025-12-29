@@ -177,19 +177,6 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 		invalid = "TRUE".equals(values[6]);
 	}
 
-	/**
-	 * Method getSuffix()
-	 *
-	 * @see gama.core.util.file.GamaFileMetaInformation#getSuffix()
-	 */
-	@Override
-	public String getSuffix() {
-		if (invalid) return ERRORS;
-		final int expCount = experiments == null ? 0 : experiments.size();
-		if (expCount > 0) return "" + (expCount == 1 ? "1 experiment" : expCount + " experiments");
-		return "no experiment";
-	}
-
 	@Override
 	public void appendSuffix(final StringBuilder sb) {
 		if (invalid) {

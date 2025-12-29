@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * UserControlDialog.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * UserControlDialog.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.views.user;
+package gama.ui.shared.dialogs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.kernel.experiment.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -37,10 +36,9 @@ import gama.gaml.architecture.user.UserInputStatement;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
-import gama.ui.experiment.parameters.AgentAttributesEditorsList;
-import gama.ui.shared.dialogs.AbstractDetailsDialog;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.AbstractEditor;
+import gama.ui.shared.parameters.AgentAttributesEditorsList;
 import gama.ui.shared.parameters.EditorFactory;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaIcon;

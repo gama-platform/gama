@@ -291,12 +291,6 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		}
 
 		@Override
-		public String getSuffix() {
-			return "" + cols + "x" + (header ? rows - 1 : rows) + " | " + (header ? "with header" : "no header") + " | "
-					+ "delimiter: '" + delimiter + "' | " + type;
-		}
-
-		@Override
 		public void appendSuffix(final StringBuilder sb) {
 			sb.append(cols).append("x").append(rows).append(SUFFIX_DEL);
 			sb.append(header ? "with header" : "no header").append(SUFFIX_DEL);

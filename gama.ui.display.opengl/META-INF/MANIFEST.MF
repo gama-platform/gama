@@ -5,14 +5,9 @@ Bundle-SymbolicName: gama.ui.display.opengl;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.dependencies,
  gama.core,
- org.eclipse.core.runtime,
- org.eclipse.swt,
  org.eclipse.ui,
  gama.ui.shared,
- gama.ui.experiment,
- gama.ui.application,
- com.google.guava,
- gama.annotations
+ gama.ui.experiment
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.display.opengl.OpenGLActivator
 Bundle-ClassPath: .,
@@ -25,7 +20,6 @@ Bundle-ClassPath: .,
  libs/jogl 2.6.0/jogl-all-natives-macosx-universal.jar,
  libs/jogl 2.6.0/jogl-all-natives-windows-amd64.jar
 Import-Package: gama.extension.image,
- org.jfree.chart,
  org.locationtech.jts.geom
 Export-Package: 
  com.jogamp.common,

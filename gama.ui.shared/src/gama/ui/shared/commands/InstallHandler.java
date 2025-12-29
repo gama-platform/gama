@@ -19,7 +19,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.ui.internal.AbstractEnabledHandler;
 
 import gama.core.runtime.GAMA;
-import gama.ui.application.workspace.WorkspacePreferences;
+import gama.ui.application.workspace.WorkspaceHelper;
 
 /**
  * The Class InstallHandler.
@@ -29,7 +29,7 @@ public class InstallHandler extends AbstractEnabledHandler implements IHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		runCommand(getCommand("org.eclipse.equinox.p2.ui.sdk.install"), event);
-		WorkspacePreferences.forceWorkspaceRebuild();
+		WorkspaceHelper.forceWorkspaceRebuild();
 		GAMA.getGui().refreshNavigator();
 		return this;
 	}

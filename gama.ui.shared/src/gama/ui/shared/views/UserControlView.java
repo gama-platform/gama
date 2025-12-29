@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.views.user;
+package gama.ui.shared.views;
 
 import java.util.List;
 
@@ -42,7 +42,6 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
-import gama.ui.shared.views.GamaViewPart;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 
 /**

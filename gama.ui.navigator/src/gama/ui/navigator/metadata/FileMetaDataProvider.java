@@ -187,9 +187,6 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		}
 
 		@Override
-		public String getSuffix() { return suffix; }
-
-		@Override
 		public void appendSuffix(final StringBuilder sb) {
 			if (suffix != null) { sb.append(suffix); }
 		}
@@ -235,12 +232,6 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			super(propertiesString);
 			final String[] segments = split(propertiesString);
 			comment = segments[1];
-		}
-
-		@Override
-		public String getSuffix() {
-			if (comment == null || comment.isEmpty()) return "";
-			return comment;
 		}
 
 		@Override

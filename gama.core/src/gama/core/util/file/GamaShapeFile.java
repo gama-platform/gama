@@ -213,18 +213,6 @@ public class GamaShapeFile extends GamaGisFile {
 			}
 		}
 
-		/**
-		 * Method getSuffix()
-		 *
-		 * @see gama.core.util.file.GamaFileMetaInformation#getSuffix()
-		 */
-		@Override
-		public String getSuffix() {
-			final StringBuilder sb = new StringBuilder();
-			appendSuffix(sb);
-			return sb.toString();
-		}
-
 		@Override
 		public void appendSuffix(final StringBuilder sb) {
 			sb.append(itemNumber).append(" object");

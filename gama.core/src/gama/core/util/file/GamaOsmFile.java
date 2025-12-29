@@ -211,17 +211,6 @@ public class GamaOsmFile extends GamaGisFile {
 			}
 		}
 
-		/**
-		 * Method getSuffix()
-		 *
-		 * @see gama.core.util.file.GamaFileMetaInformation#getSuffix()
-		 */
-		@Override
-		public String getSuffix() {
-			return hasFailed ? "error: decompress the file to a .osm file"
-					: "" + itemNumber + " objects | " + Math.round(width) + "m x " + Math.round(height) + "m";
-		}
-
 		@Override
 		public void appendSuffix(final StringBuilder sb) {
 			if (hasFailed) {
@@ -928,7 +917,6 @@ public class GamaOsmFile extends GamaGisFile {
 			}
 			default -> readXML(scope, sink);
 		}
-		;
 
 	}
 

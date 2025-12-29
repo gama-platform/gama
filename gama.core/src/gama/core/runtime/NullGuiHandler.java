@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * NullGuiHandler.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * NullGuiHandler.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.common.interfaces.IConsoleListener;
+import gama.core.common.interfaces.IDialogFactory;
 import gama.core.common.interfaces.IDisplayCreator;
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
 import gama.core.common.interfaces.IDisplaySurface;
@@ -41,21 +43,26 @@ import gama.gaml.statements.test.CompoundSummary;
  */
 public class NullGuiHandler implements IGui {
 
-	// See #2996: simplification of the logging done in this class
-	// static Logger LOGGER = LogManager.getLogManager().getLogger("");
-	// static Level LEVEL = Level.ALL;
-	// final ThreadLocal<BufferedWriter> outputWriter = new ThreadLocal<>();
+	/** The console. */
+	protected IConsoleListener console = null;
+
+	/** The logger. */
+	private IHeadlessLogger logger = DEBUG::LOG;
+
+	/** The dialog factory. */
+	IDialogFactory dialogFactory = new IDialogFactory() {
+		@Override
+		public void inform(final IScope scope, final String message) {
+			logger.log("Message: " + message);
+		}
+
+		@Override
+		public void error(final IScope scope, final String error) {
+			logger.log("Error: " + error);
+		}
+	};
 
 	static {
-		// See #2996: simplification of the logging done in this class
-		// if (GAMA.isInHeadLessMode()) {
-
-		//
-		// for (final Handler h : LOGGER.getHandlers()) {
-		// h.setLevel(Level.ALL);
-		// }
-		// LOGGER.setLevel(Level.ALL);
-		// }
 		GAMA.setHeadlessGui(new NullGuiHandler());
 	}
 
@@ -85,14 +92,7 @@ public class NullGuiHandler implements IGui {
 	}
 
 	@Override
-	public void openMessageDialog(final IScope scope, final String message) {
-		logger.log("Message: " + message);
-	}
-
-	@Override
-	public void openErrorDialog(final IScope scope, final String error) {
-		logger.log("Error: " + error);
-	}
+	public IDialogFactory getDialogFactory() { return dialogFactory; }
 
 	@Override
 	public void runtimeError(final IScope scope, final GamaRuntimeException g) {
@@ -101,10 +101,9 @@ public class NullGuiHandler implements IGui {
 
 	@Override
 	public IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... objects) {
-		IDisplaySurface surface = null;
 		final IDisplayCreator creator = DISPLAYS.get("image");
 		if (creator == null) return new NullDisplaySurface();
-		surface = creator.create(output);
+		IDisplaySurface surface = creator.create(output);
 		surface.outputReloaded();
 		return surface;
 	}
@@ -118,12 +117,6 @@ public class NullGuiHandler implements IGui {
 	public DisplayDescription getDisplayDescriptionFor(final String name) {
 		return new DisplayDescription(null, null, "display", "gama.core");
 	}
-
-	/** The console. */
-	protected IConsoleListener console = null;
-
-	/** The logger. */
-	private IHeadlessLogger logger = DEBUG::LOG;
 
 	/**
 	 * The Interface IHeadlessLogger.
@@ -149,7 +142,6 @@ public class NullGuiHandler implements IGui {
 
 	@Override
 	public IConsoleListener getConsole() {
-
 		if (console == null) { console = (s, root, color) -> logger.log(s); }
 		return console;
 	}

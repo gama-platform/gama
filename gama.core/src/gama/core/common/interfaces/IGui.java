@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
@@ -40,8 +39,6 @@ import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.interfaces.IGamlDescription;
-import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
 
@@ -58,53 +55,14 @@ public interface IGui {
 	GamaPoint NULL_POINT = new GamaPoint.Immutable();
 
 	/** The null metadata provider. */
-	IFileMetaDataProvider NULL_METADATA_PROVIDER = new IFileMetaDataProvider() {
-
-		@Override
-		public void storeMetaData(final IResource file, final IGamaFileMetaData data, final boolean immediately) {}
-
-		@Override
-		public IGamaFileMetaData getMetaData(final Object element, final boolean includeOutdated,
-				final boolean immediately) {
-			return new IGamaFileMetaData() {
-
-				@Override
-				public boolean hasFailed() {
-					return false;
-				}
-
-				@Override
-				public String toPropertyString() {
-					return "";
-				}
-
-				@Override
-				public void setModificationStamp(final long modificationStamp) {}
-
-				@Override
-				public Object getThumbnail() { return ""; }
-
-				@Override
-				public String getSuffix() { return ""; }
-
-				@Override
-				public void appendSuffix(final StringBuilder sb) {}
-
-				@Override
-				public long getModificationStamp() { return 0; }
-
-				@Override
-				public Doc getDocumentation() { return IGamlDescription.EMPTY_DOC; }
-			};
-		}
-
-		@Override
-		public void refreshAllMetaData() {}
-
-	};
+	IFileMetaDataProvider NULL_METADATA_PROVIDER =
+			(element, includeOutdated, immediately) -> new IGamaFileMetaData() {};
 
 	/** The null status displayer. */
 	IStatusDisplayer NULL_STATUS_DISPLAYER = new IStatusDisplayer() {};
+
+	/** The null dialog factory. */
+	IDialogFactory NULL_DIALOG_FACTORY = new IDialogFactory() {};
 
 	/** The null snapshot maker. */
 	ISnapshotMaker NULL_SNAPSHOT_MAKER = new ISnapshotMaker() {};
@@ -201,6 +159,13 @@ public interface IGui {
 	IConsoleListener getConsole();
 
 	/**
+	 * Gets the dialog factory.
+	 *
+	 * @return the dialog factory
+	 */
+	default IDialogFactory getDialogFactory() { return NULL_DIALOG_FACTORY; }
+
+	/**
 	 * Show view.
 	 *
 	 * @param scope
@@ -218,46 +183,6 @@ public interface IGui {
 	}
 
 	/**
-	 * Tell.
-	 *
-	 * @param message
-	 *            the message
-	 */
-	default void tell(final String message) {
-		openMessageDialog(GAMA.getRuntimeScope(), message);
-	}
-
-	/**
-	 * Open message dialog.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param error
-	 *            the error
-	 */
-	void openMessageDialog(IScope scope, String error);
-
-	/**
-	 * Error.
-	 *
-	 * @param error
-	 *            the error
-	 */
-	default void error(final String error) {
-		openErrorDialog(GAMA.getRuntimeScope(), error);
-	}
-
-	/**
-	 * Open error dialog.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param error
-	 *            the error
-	 */
-	void openErrorDialog(IScope scope, String error);
-
-	/**
 	 * Clear errors.
 	 *
 	 * @param scope
@@ -273,7 +198,7 @@ public interface IGui {
 	 * @param g
 	 *            the g
 	 */
-	void runtimeError(final IScope scope, GamaRuntimeException g);
+	default void runtimeError(final IScope scope, final GamaRuntimeException g) {}
 
 	/**
 	 * Confirm close.
@@ -335,7 +260,9 @@ public interface IGui {
 	 *            the args
 	 * @return the i display surface
 	 */
-	IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... args);
+	default IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... args) {
+		return null;
+	}
 
 	/**
 	 * Open user input dialog.
@@ -352,8 +279,10 @@ public interface IGui {
 	 *            the color
 	 * @return the map
 	 */
-	Map<String, Object> openUserInputDialog(IScope scope, String title, List<IParameter> parameters, GamaFont font,
-			GamaColor color, Boolean showTitle);
+	default Map<String, Object> openUserInputDialog(final IScope scope, final String title,
+			final List<IParameter> parameters, final GamaFont font, final GamaColor color, final Boolean showTitle) {
+		return GamaMapFactory.create();
+	}
 
 	/**
 	 * Open wizard.
@@ -368,22 +297,9 @@ public interface IGui {
 	 *            the pages
 	 * @return the i map
 	 */
-	IMap<String, IMap<String, Object>> openWizard(IScope scope, String title, ActionDescription finish,
-			IList<IMap<String, Object>> pages);
-
-	/**
-	 * Open user input dialog confirm.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param title
-	 *            the title
-	 * @param message
-	 *            the message
-	 * @return the boolean
-	 */
-	default Boolean openUserInputDialogConfirm(final IScope scope, final String title, final String message) {
-		return true;
+	default IMap<String, IMap<String, Object>> openWizard(final IScope scope, final String title,
+			final ActionDescription finish, final IList<IMap<String, Object>> pages) {
+		return GamaMapFactory.create();
 	}
 
 	/**
@@ -492,7 +408,9 @@ public interface IGui {
 	 *            the name
 	 * @return the display description for
 	 */
-	DisplayDescription getDisplayDescriptionFor(final String name);
+	default DisplayDescription getDisplayDescriptionFor(final String name) {
+		return DISPLAYS.get(name);
+	}
 
 	/**
 	 * Update view title.
@@ -522,7 +440,9 @@ public interface IGui {
 	 * @param asynchronous
 	 *            the asynchronous
 	 */
-	void run(String taskName, Runnable opener, boolean asynchronous);
+	default void run(final String taskName, final Runnable opener, final boolean asynchronous) {
+		opener.run();
+	}
 
 	/**
 	 * Sets the focus on.
@@ -575,7 +495,7 @@ public interface IGui {
 	/**
 	 * Exit.
 	 */
-	void exit();
+	default void exit() {}
 
 	// Tests
 
@@ -605,7 +525,7 @@ public interface IGui {
 	 * @param summary
 	 *            the summary
 	 */
-	void displayTestsResults(IScope scope, CompoundSummary<?, ?> summary);
+	default void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {}
 
 	/**
 	 * End test display.

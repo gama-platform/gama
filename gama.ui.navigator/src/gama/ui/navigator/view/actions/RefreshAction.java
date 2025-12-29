@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * RefreshAction.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * RefreshAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -44,9 +44,9 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
+import gama.core.runtime.GAMA;
 import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.GamaNavigator;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -116,7 +116,7 @@ public class RefreshAction extends WorkspaceAction {
 	void checkLocationDeleted(final IProject project) throws CoreException {
 		if (!project.exists()) return;
 		final IFileInfo location = IDEResourceInfoUtils.getFileInfo(project.getLocationURI());
-		if (!location.exists() && Messages.confirm("Project location has been deleted",
+		if (!location.exists() && GAMA.getGui().getDialogFactory().confirm("Project location has been deleted",
 				"The location for project " + project.getName() + " (" + location.toString()
 						+ ") has been deleted. Do you want to remove " + project.getName() + " from the workspace ?")) {
 			project.delete(true, true, null);

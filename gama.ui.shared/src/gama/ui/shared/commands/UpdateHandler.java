@@ -18,7 +18,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.ui.internal.AbstractEnabledHandler;
 
-import gama.ui.application.workspace.WorkspacePreferences;
+import gama.ui.application.workspace.WorkspaceHelper;
 
 /**
  * The Class UpdateHandler.
@@ -28,7 +28,7 @@ public class UpdateHandler extends AbstractEnabledHandler implements IHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		runCommand(getCommand("org.eclipse.equinox.p2.ui.sdk.update"), event);
-		WorkspacePreferences.forceWorkspaceRebuild();
+		WorkspaceHelper.forceWorkspaceRebuild();
 		// GAMA.getGui().refreshNavigator();
 		return this;
 	}

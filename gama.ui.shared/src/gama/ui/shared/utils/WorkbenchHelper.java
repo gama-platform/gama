@@ -40,13 +40,13 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.navigator.CommonNavigator;
@@ -286,7 +286,7 @@ public class WorkbenchHelper {
 	 *
 	 * @return the workbench
 	 */
-	public static Workbench getWorkbench() { return (Workbench) PlatformUI.getWorkbench(); }
+	public static IWorkbench getWorkbench() { return PlatformUI.getWorkbench(); }
 
 	/**
 	 * Sets the workbench window title.

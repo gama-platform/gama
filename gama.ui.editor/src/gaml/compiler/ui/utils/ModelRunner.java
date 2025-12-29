@@ -130,7 +130,8 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 				try {
 					if (file.findMaxProblemSeverity(IMarker.PROBLEM, true,
 							IResource.DEPTH_ZERO) == IMarker.SEVERITY_ERROR) {
-						GAMA.getGui().error("Model " + file.getFullPath() + " has errors and cannot be launched");
+						GAMA.getGui().getDialogFactory()
+								.error("Model " + file.getFullPath() + " has errors and cannot be launched");
 						return null;
 					}
 				} catch (final CoreException e) {
@@ -143,8 +144,8 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 				final List<GamlCompilationError> errors = new ArrayList<>();
 				final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
 				if (model == null) {
-					GAMA.getGui().error("File " + uri.lastSegment() + " cannot be built because of " + errors.size()
-							+ " compilation errors");
+					GAMA.getGui().getDialogFactory().error("File " + uri.lastSegment() + " cannot be built because of "
+							+ errors.size() + " compilation errors");
 				}
 				return model;
 			}
@@ -153,8 +154,8 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 				try {
 					model = doc.readOnly(state -> GamlModelBuilder.getDefaultInstance().compile(state.getURI(), null));
 				} catch (final GamaRuntimeException ex) {
-					GAMA.getGui()
-							.error("Experiment cannot be instantiated because of the following error: " + ex.getMessage());
+					GAMA.getGui().getDialogFactory().error(
+							"Experiment cannot be instantiated because of the following error: " + ex.getMessage());
 				}
 				return model;
 			}

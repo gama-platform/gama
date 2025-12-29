@@ -44,11 +44,11 @@ public interface IFileMetaDataProvider {
 	 * @param immediately
 	 *            the immediately
 	 */
-	void storeMetaData(final IResource file, final IGamaFileMetaData data, final boolean immediately);
+	default void storeMetaData(final IResource file, final IGamaFileMetaData data, final boolean immediately) {}
 
 	/**
 	 * Refresh (deletes and recreate) the metadata of all files in the workspace
 	 */
-	void refreshAllMetaData();
+	default void refreshAllMetaData() {}
 
 }

@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.parameters;
+package gama.ui.shared.parameters;
 
 import gama.core.util.GamaColor;
 

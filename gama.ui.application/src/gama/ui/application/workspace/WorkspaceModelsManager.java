@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * WorkspaceModelsManager.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -49,7 +49,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
@@ -225,8 +224,7 @@ public class WorkspaceModelsManager {
 		}
 
 		if (dotFile == null || projectFileBean == null) {
-			MessageDialog.openInformation(Display.getDefault().getActiveShell(), "No project", "The model '"
-					+ modelFile.getAbsolutePath()
+			GAMA.getGui().getDialogFactory().inform("The model '" + modelFile.getAbsolutePath()
 					+ "' does not seem to belong to an existing GAML project. You can import it in an existing project or in the 'Unclassified models' project.");
 			return createUnclassifiedModelsProjectAndAdd(originalPath);
 		}
@@ -252,8 +250,7 @@ public class WorkspaceModelsManager {
 							final String name = description.getName();
 							for (final IProject p : projects) {
 								if (p.getName().equals(name)) {
-									MessageDialog.openInformation(Display.getDefault().getActiveShell(),
-											"Existing project",
+									GAMA.getGui().getDialogFactory().inform(
 											"A project with the same name already exists in the workspace. The model '"
 													+ modelFile.getAbsolutePath()
 													+ " will be imported as part of the 'Unclassified models' project.");
@@ -280,7 +277,7 @@ public class WorkspaceModelsManager {
 		} catch (final InterruptedException | InvocationTargetException e) {
 			return null;
 		} catch (final CoreException e) {
-			GAMA.getGui().error("Error wien importing project: " + e.getMessage());
+			GAMA.getGui().getDialogFactory().warning("Error wien importing project: " + e.getMessage());
 		}
 		final IProject project = workspace.getRoot().getProject(pathToProject);
 		final String relativePathToModel =
@@ -363,8 +360,8 @@ public class WorkspaceModelsManager {
 			return iFile;
 		} catch (final CoreException e) {
 			e.printStackTrace();
-			MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Error in creation",
-					"The file " + (iFile == null ? location.lastSegment() : iFile.getFullPath().lastSegment())
+			GAMA.getGui().getDialogFactory()
+					.inform("The file " + (iFile == null ? location.lastSegment() : iFile.getFullPath().lastSegment())
 							+ " cannot be created because of the following exception " + e.getMessage());
 			return null;
 		}
@@ -634,7 +631,7 @@ public class WorkspaceModelsManager {
 	 */
 	public void stampWorkspaceFromModels() {
 		try {
-			final String stamp = WorkspacePreferences.getCurrentGamaStampString();
+			final String stamp = WorkspaceHelper.getCurrentGamaStampString();
 			final IWorkspaceRoot root = workspace.getRoot();
 			final String oldStamp = root.getPersistentProperty(BUILTIN_PROPERTY);
 			if (oldStamp != null) {

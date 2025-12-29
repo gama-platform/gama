@@ -46,7 +46,6 @@ import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.ResourceManager;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -220,7 +219,7 @@ public class RefreshHandler implements IRefreshHandler {
 	void checkLocationDeleted(final IProject project) throws CoreException {
 		if (!project.exists()) return;
 		final IFileInfo location = IDEResourceInfoUtils.getFileInfo(project.getLocationURI());
-		if (!location.exists() && Messages.confirm("Project location has been deleted",
+		if (!location.exists() && GAMA.getGui().getDialogFactory().confirm("Project location has been deleted",
 				"The location for project " + project.getName() + " (" + location.toString()
 						+ ") has been deleted. Do you want to remove " + project.getName() + " from the workspace ?")) {
 			project.delete(true, true, null);

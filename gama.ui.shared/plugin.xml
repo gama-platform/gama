@@ -384,6 +384,12 @@
                serviceClass="gama.core.common.interfaces.IStatusDisplayer">
          </service>
       </serviceFactory>
+      <serviceFactory
+            factoryClass="gama.ui.shared.factories.DialogFactory">
+         <service
+               serviceClass="gama.core.common.interfaces.IDialogFactory">
+         </service>
+      </serviceFactory>
    </extension>
     <extension
           point="org.eclipse.ui.bindings">

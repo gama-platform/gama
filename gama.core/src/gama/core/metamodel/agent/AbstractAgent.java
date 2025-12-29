@@ -491,35 +491,29 @@ public abstract class AbstractAgent implements IAgent {
 
 	@action (
 			name = "debug",
-			args = { 
-					@arg (
-						name = "message",
-						type = IType.STRING,
-						doc = @doc ("The message to display.")
-					),
+			args = { @arg (
+					name = "message",
+					type = IType.STRING,
+					doc = @doc ("The message to display.")),
 					@arg (
 							name = "separator",
 							type = IType.STRING,
 							optional = true,
-							doc = @doc ("The string to place between the message and the sender. By default a new line.")
-					),					@arg (
-						name = "end",
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The string to append at the end. By default a new line.")
-					),
+							doc = @doc ("The string to place between the message and the sender. By default a new line.")),
+					@arg (
+							name = "end",
+							type = IType.STRING,
+							optional = true,
+							doc = @doc ("The string to append at the end. By default a new line.")),
 
-				}
-			)
+			})
 	public final Object primDebug(final IScope scope) throws GamaRuntimeException {
-		final String message 	= (String) scope.getArg("message", IType.STRING);
-		final String end 		= scope.getTypedArgIfExists("end", IType.STRING, Strings.LN);
-		final String separator 	= scope.getTypedArgIfExists("separator", IType.STRING, Strings.LN);
-		
-		scope.getGui().getConsole()
-				.debugConsole(	scope.getClock().getCycle(),
-								message + separator + "sender: " + Cast.asMap(scope, this, false) + end, 
-								scope.getRoot());
+		final String message = (String) scope.getArg("message", IType.STRING);
+		final String end = scope.getTypedArgIfExists("end", IType.STRING, Strings.LN);
+		final String separator = scope.getTypedArgIfExists("separator", IType.STRING, Strings.LN);
+
+		scope.getGui().getConsole().debugConsole(scope.getClock().getCycle(),
+				message + separator + "sender: " + Cast.asMap(scope, this, false) + end, scope.getRoot());
 		return message;
 	}
 
@@ -540,7 +534,7 @@ public abstract class AbstractAgent implements IAgent {
 					doc = @doc ("The message to display")) })
 	public final Object primError(final IScope scope) throws GamaRuntimeException {
 		final String error = (String) scope.getArg("message", IType.STRING);
-		scope.getGui().openErrorDialog(scope, error);
+		scope.getGui().getDialogFactory().error(scope, error);
 		return error;
 	}
 
@@ -567,7 +561,7 @@ public abstract class AbstractAgent implements IAgent {
 	public final Object primTell(final IScope scope) throws GamaRuntimeException {
 		boolean addName = !scope.hasArg("add_name") || Cast.asBool(scope, scope.getArg("add_name", IType.BOOL));
 		final String s = (addName ? getName() + " says : " : "") + scope.getArg("msg", IType.STRING);
-		scope.getGui().openMessageDialog(scope, s);
+		scope.getGui().getDialogFactory().inform(scope, s);
 		return s;
 	}
 

@@ -254,7 +254,7 @@ public class UICleanupTasks {
 		WorkbenchHelper.runInUI("Configuring GAMA UI", 0, p -> {
 			try {
 				DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Configuring GAMA UI", "done in", () -> {
-					Workbench workbench = WorkbenchHelper.getWorkbench();
+					Workbench workbench = (Workbench) WorkbenchHelper.getWorkbench();
 					WorkbenchWindow window = (WorkbenchWindow) workbench.getActiveWorkbenchWindow();
 					if (window == null) return;
 					RemoveUnwantedWizards.run(workbench);

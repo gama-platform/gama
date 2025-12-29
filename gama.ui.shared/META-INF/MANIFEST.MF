@@ -7,10 +7,7 @@ Eclipse-BundleShape: dir
 Bundle-Version: 0.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.swt,
- org.eclipse.jface,
- org.eclipse.ui.workbench,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.ui,
  gama.core,
@@ -20,14 +17,10 @@ Require-Bundle: org.eclipse.swt,
  gama.dependencies,
  org.eclipse.ui.console,
  org.eclipse.jface.text,
- gama.annotations,
  org.eclipse.ui.forms,
- org.eclipse.ui.editors,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.core.contexts,
- org.eclipse.core.expressions,
  org.eclipse.ui.navigator,
- gama.extension.image,
  org.eclipse.e4.ui.workbench
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,

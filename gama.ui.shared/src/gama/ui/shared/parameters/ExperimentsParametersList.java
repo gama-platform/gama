@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.parameters;
+package gama.ui.shared.parameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,8 +34,6 @@ import gama.gaml.operators.Cast;
 import gama.gaml.statements.UserCommandStatement;
 import gama.ui.shared.interfaces.EditorListener.Command;
 import gama.ui.shared.interfaces.IParameterEditor;
-import gama.ui.shared.parameters.EditorFactory;
-import gama.ui.shared.parameters.MonitorDisplayer;
 
 /**
  * The Class ExperimentsParametersList.

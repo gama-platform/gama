@@ -16,13 +16,13 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
 import gama.core.common.util.FileUtils;
+import gama.core.runtime.GAMA;
 
 /**
  * Utility methods related to open file from different type of locations.
@@ -43,17 +43,16 @@ public class FileOpener {
 	 */
 	public static IEditorPart openFile(final URI uri) {
 		if (uri == null) {
-			MessageDialog.openWarning(null, "No file found", "Trying to open a null file");
+			GAMA.getGui().getDialogFactory().warning("Trying to open a null file");
 			return null;
 		}
 		try {
 			if (uri.isPlatformResource()) return FileOpener.openFileInWorkspace(uri);
 			if (uri.isFile()) return FileOpener.openFileInFileSystem(uri);
 		} catch (final PartInitException e) {
-			MessageDialog.openWarning(null, "No file found",
-					"The file'" + uri.toString() + "' does not exist on disk.");
+			GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' does not exist on disk.");
 		}
-		MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
+		GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' cannot be found.");
 		return null;
 	}
 
@@ -69,7 +68,7 @@ public class FileOpener {
 	public static IEditorPart openFileInWorkspace(final URI uri) throws PartInitException {
 		final IFile file = FileUtils.getWorkspaceFile(uri);
 		if (file == null) {
-			MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
+			GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' cannot be found.");
 			return null;
 		}
 		return IDE.openEditor(PAGE, file);
@@ -90,18 +89,18 @@ public class FileOpener {
 		try {
 			fileStore = EFS.getLocalFileSystem().getStore(Path.fromOSString(uri.toFileString()));
 		} catch (final Exception e1) {
-			MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
+			GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' cannot be found.");
 			return null;
 		}
 		IFileInfo info;
 		try {
 			info = fileStore.fetchInfo();
 		} catch (final Exception e) {
-			MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
+			GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' cannot be found.");
 			return null;
 		}
 		if (!info.exists()) {
-			MessageDialog.openWarning(null, "No file found", "The file'" + uri.toString() + "' cannot be found.");
+			GAMA.getGui().getDialogFactory().warning("The file'" + uri.toString() + "' cannot be found.");
 		}
 		return IDE.openInternalEditorOnFileStore(PAGE, fileStore);
 	}

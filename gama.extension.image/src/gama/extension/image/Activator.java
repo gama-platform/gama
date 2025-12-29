@@ -42,8 +42,6 @@ public class Activator implements BundleActivator {
 	}
 
 	@Override
-	public void stop(final BundleContext bundleContext) throws Exception {
-
-	}
+	public void stop(final BundleContext bundleContext) throws Exception {}
 
 }

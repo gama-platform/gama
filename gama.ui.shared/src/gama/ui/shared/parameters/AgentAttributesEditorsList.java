@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.experiment.parameters;
+package gama.ui.shared.parameters;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +25,6 @@ import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaColor;
 import gama.ui.shared.interfaces.IParameterEditor;
-import gama.ui.shared.parameters.EditorFactory;
 
 /**
  * The Class AgentAttributesEditorsList.

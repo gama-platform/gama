@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * RenameResourceAction.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * RenameResourceAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
@@ -40,9 +40,9 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 
+import gama.core.runtime.GAMA;
 import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.LinkedFile;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -129,7 +129,7 @@ public class RenameResourceAction extends WorkspaceAction {
 			message = PROJECT_EXISTS_MESSAGE;
 			title = PROJECT_EXISTS_TITLE;
 		}
-		return Messages.question(title, MessageFormat.format(message, pathName));
+		return GAMA.getGui().getDialogFactory().question(title, MessageFormat.format(message, pathName));
 
 	}
 
@@ -145,8 +145,8 @@ public class RenameResourceAction extends WorkspaceAction {
 
 		// Do a quick read only check
 		final ResourceAttributes attributes = currentResource.getResourceAttributes();
-		if (attributes != null && attributes.isReadOnly()) return Messages.question(CHECK_RENAME_TITLE,
-				MessageFormat.format(CHECK_RENAME_MESSAGE, currentResource.getName()));
+		if (attributes != null && attributes.isReadOnly()) return GAMA.getGui().getDialogFactory()
+				.question(CHECK_RENAME_TITLE, MessageFormat.format(CHECK_RENAME_MESSAGE, currentResource.getName()));
 
 		return true;
 	}

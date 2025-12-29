@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * WorkspacePreferences.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
+ * WorkspaceHelper.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -11,10 +11,15 @@
 package gama.ui.application.workspace;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.PlatformUI.isWorkbenchRunning;
+import static org.eclipse.ui.internal.util.PrefUtil.getInternalPreferenceStore;
+import static org.eclipse.ui.internal.util.PrefUtil.saveInternalPrefs;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -27,18 +32,18 @@ import java.time.format.DateTimeFormatter;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.equinox.app.IApplication;
+import org.eclipse.osgi.service.datalocation.Location;
 
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.runtime.GAMA;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.ui.application.Application;
 
 /**
- * The Class WorkspacePreferences.
+ * The Class WorkspaceHelper.
  */
-public class WorkspacePreferences {
+public class WorkspaceHelper {
 
 	/** The Constant KEY_WORSPACE_PATH. */
 	private static final String KEY_WORSPACE_PATH = "pref_workspace_path";
@@ -196,7 +201,7 @@ public class WorkspacePreferences {
 		final Path workspaceDirectoryPath = Paths.get(workspaceLocation);
 		final Path workspaceIdentifierFilePath = Paths.get(workspaceLocation, WORKSPACE_IDENTIFIER);
 		if (!Files.exists(workspaceDirectoryPath) && askCreate) {
-			final boolean create = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "New Directory",
+			final boolean create = GAMA.getGui().getDialogFactory().question("New Directory",
 					workspaceLocation + " does not exist. Would you like to create a new workspace here"
 							+ (cloning ? ", copy the projects of your current workspace into it," : "")
 							+ " and proceeed ?");
@@ -224,9 +229,9 @@ public class WorkspacePreferences {
 
 		if (fromDialog) {
 			if (Files.notExists(workspaceIdentifierFilePath)) {
-				final boolean create = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
-						"New Workspace", "The directory '" + workspaceIdentifierFilePath.toAbsolutePath()
-								+ "' exists but is not identified as a GAMA workspace. \n\nWould you like to use it anyway ?");
+				final boolean create = GAMA.getGui().getDialogFactory().question("New Workspace", "The directory '"
+						+ workspaceIdentifierFilePath.toAbsolutePath()
+						+ "' exists but is not identified as a GAMA workspace. \n\nWould you like to use it anyway ?");
 				if (!create) return "Please select a directory for your workspace";
 				try {
 					Files.createDirectories(workspaceDirectoryPath);
@@ -245,14 +250,13 @@ public class WorkspacePreferences {
 			if (fromDialog) {
 				boolean create = true;
 				if (askBeforeUsingOutdatedWorkspace()) {
-					create = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
-							"Different version of the models library",
+					create = GAMA.getGui().getDialogFactory().question("Different version of the models library",
 							"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
 				}
 				if (create) {
 					try {
 						dotFile.createNewFile();
-						Application.clearWorkspace(true);
+						clearWorkspace(true);
 					} catch (final IOException e) {
 						return "Error updating the models library";
 					}
@@ -263,7 +267,7 @@ public class WorkspacePreferences {
 			return "models";
 		}
 		if (cloning) {
-			final boolean b = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "Existing workspace",
+			final boolean b = GAMA.getGui().getDialogFactory().question("Existing workspace",
 					"The path entered is a path to an existing workspace. Its contents will be erased and replaced by the current workspace contents. Proceed anyway ?");
 			if (!b) return "";
 		}
@@ -306,14 +310,14 @@ public class WorkspacePreferences {
 				if (files.length == 0) return true;
 
 				if (askBeforeRebuildingWorkspace()) {
-					rebuild = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "Corrupted workspace",
+					rebuild = GAMA.getGui().getDialogFactory().question("Corrupted workspace",
 							"The workspace appears to be corrupted (due to a previous crash) or "
 									+ "it is currently used by another instance of the platform. Would you like GAMA to clean it ?");
 				}
 			}
 			if (rebuild) {
 				if (files != null) { for (final File file : files) { if (file.exists()) { file.delete(); } } }
-				Application.clearWorkspace(true);
+				clearWorkspace(true);
 				return false;
 			}
 			return true;
@@ -341,6 +345,94 @@ public class WorkspacePreferences {
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * Check workspace.
+	 *
+	 * @return the object
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws MalformedURLException
+	 *             the malformed URL exception
+	 */
+	public static Object checkWorkspace() throws IOException {
+		final Location instanceLoc = Platform.getInstanceLocation();
+		if (instanceLoc == null) {
+			// -data @none was specified but GAMA requires a workspace
+			GAMA.getGui().getDialogFactory().error("A workspace is required to run GAMA");
+			return IApplication.EXIT_OK;
+		}
+		boolean remember = false;
+		String lastUsedWs = null;
+		if (instanceLoc.isSet()) {
+			lastUsedWs = instanceLoc.getURL().getFile();
+			final String ret = WorkspaceHelper.checkWorkspaceDirectory(lastUsedWs, false, false, false);
+			if (ret != null) {
+				// if ( ret.equals("Restart") ) { return EXIT_RESTART; }
+				/* If we don't or can't remember and the location is set, we can't do anything as we need a workspace */
+				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
+				if (isWorkbenchRunning()) { getWorkbench().close(); }
+				System.exit(0);
+				return IApplication.EXIT_OK;
+			}
+		} else {
+
+			/* Get what the user last said about remembering the workspace location */
+			remember = isRememberWorkspace();
+			/* Get the last used workspace location */
+			lastUsedWs = getLastSetWorkspaceDirectory();
+			/* If we have a "remember" but no last used workspace, it's not much to remember */
+			if (remember && (lastUsedWs == null || lastUsedWs.length() == 0)) { remember = false; }
+			if (remember) {
+				/*
+				 * If there's any problem with the workspace, force a dialog
+				 */
+				final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
+				// AD Added this check explicitly as the checkWorkspaceDirectory() was not supposed to return null at
+				// this stage
+				if (ret != null) {
+					remember = "models".equals(ret) && WorkspaceHelper.askBeforeUsingOutdatedWorkspace()
+							&& GAMA.getGui().getDialogFactory().question("Different version of the models library",
+									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					if (remember) { clearWorkspace(true); }
+				}
+			}
+		}
+
+		/* If we don't remember the workspace, show the dialog */
+		if (!remember) {
+			final int pick = new PickWorkspaceDialog(true).open();
+			/* If the user cancelled, we can't do anything as we need a workspace */
+			String wr = getSelectedWorkspaceRootLocation();
+			if (pick == 1 /* Window.CANCEL */ || wr == null) {
+				GAMA.getGui().getDialogFactory().error("GAMA can not start without a workspace and will now exit.");
+				// System.exit(0);
+				return IApplication.EXIT_OK;
+			}
+			/* Tell Eclipse what the selected location was and continue */
+			instanceLoc.set(new URL("file", null, wr), false);
+			// if ( applyPrefs() ) { applyEclipsePreferences(getSelectedWorkspaceRootLocation()); }
+		} else if (!instanceLoc.isSet()) {
+			/* Set the last used location and continue */
+			instanceLoc.set(new URL("file", null, lastUsedWs), false);
+		}
+
+		return null;
+	}
+
+	/** The Constant CLEAR_WORKSPACE. */
+	public static final String CLEAR_WORKSPACE = "clearWorkspace";
+
+	/**
+	 * Clear workspace.
+	 *
+	 * @param clear
+	 *            the clear
+	 */
+	public static void clearWorkspace(final boolean clear) {
+		getInternalPreferenceStore().setValue(CLEAR_WORKSPACE, Boolean.toString(clear));
+		saveInternalPrefs();
 	}
 
 }

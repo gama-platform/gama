@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractNewModelWizard.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,7 +38,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -177,7 +176,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 		} catch (final InvocationTargetException e) {
 			e.printStackTrace();
 			final Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			GAMA.getGui().getDialogFactory().error(realException.getMessage());
 			return false;
 		}
 		return true;
@@ -292,13 +291,13 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 			final IWorkspaceRoot root) throws CoreException {
 		IResource resource = root.findMember(new Path(containerName));
 		if (resource == null || !resource.exists()) {
-			final boolean create = MessageDialog.openConfirm(getShell(), "Folder does not exist",
+			final boolean create = GAMA.getGui().getDialogFactory().question("Folder does not exist",
 					"Folder \"" + containerName + "\" does not exist. Create it automatically ?");
 			if (!create) return null;
 			final IContainer folder = createRecursively(root, new Path(containerName));
 			resource = folder;
 		} else if (!(resource instanceof IContainer)) {
-			MessageDialog.openError(getShell(), "Not a folder", containerName + " is not a folder. Cannot proceed");
+			GAMA.getGui().getDialogFactory().error(containerName + " is not a folder. Cannot proceed");
 			return null;
 		}
 		return (IContainer) resource;

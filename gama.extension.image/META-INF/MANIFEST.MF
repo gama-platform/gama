@@ -6,11 +6,11 @@ Bundle-Version: 0.0.0.qualifier
 Export-Package: gama.extension.image
 Bundle-Activator: gama.extension.image.Activator
 Bundle-Vendor: UMMISCO
-Require-Bundle: org.eclipse.core.runtime,
- gama.core,
+Require-Bundle: gama.core,
  gama.dependencies,
- com.github.weisj.jsvg;bundle-version="2.0.0"
+ com.github.weisj.jsvg
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework

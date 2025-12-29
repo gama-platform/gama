@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
+import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 
 /**
@@ -42,21 +43,27 @@ public interface IGamaFileMetaData {
 	 *
 	 * @return the modification stamp
 	 */
-	long getModificationStamp();
+	default long getModificationStamp() { return 0; }
 
 	/**
 	 * Indicates a failure in the computation of metadata
 	 *
 	 * @return
 	 */
-	boolean hasFailed();
+	default boolean hasFailed() {
+		return false;
+	}
 
 	/**
 	 * Never returns null
 	 *
 	 * @return the suffix to use for decorating files in the navigator
 	 */
-	String getSuffix();
+	default String getSuffix() {
+		final StringBuilder sb = new StringBuilder();
+		appendSuffix(sb);
+		return sb.toString();
+	}
 
 	/**
 	 * Append suffix.
@@ -64,14 +71,14 @@ public interface IGamaFileMetaData {
 	 * @param sb
 	 *            the sb
 	 */
-	void appendSuffix(StringBuilder sb);
+	default void appendSuffix(final StringBuilder sb) {}
 
 	/**
 	 * Returns a thumbnail (imageDescriptor or anything else) or null if no image are provided
 	 *
 	 * @return an image (ImageDescriptor, BufferedImage, ...) or null
 	 */
-	Object getThumbnail();
+	default Object getThumbnail() { return null; }
 
 	/**
 	 * Returns a string that can be stored in the metadata part of the workspace. The implementing classes should also
@@ -79,18 +86,20 @@ public interface IGamaFileMetaData {
 	 *
 	 * @return a string describing completely the attributes of this metadata or null
 	 */
-	String toPropertyString();
+	default String toPropertyString() {
+		return "";
+	}
 
 	/**
 	 * Returns a string that can be displayed in hover info
 	 *
 	 * @return
 	 */
-	Doc getDocumentation();
+	default Doc getDocumentation() { return IGamlDescription.EMPTY_DOC; }
 
 	/**
 	 * @param modificationStamp
 	 */
-	void setModificationStamp(long modificationStamp);
+	default void setModificationStamp(final long modificationStamp) {}
 
 }

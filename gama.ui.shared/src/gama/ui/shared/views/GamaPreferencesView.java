@@ -46,7 +46,6 @@ import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.AbstractEditor;
 import gama.ui.shared.parameters.EditorFactory;
@@ -420,7 +419,7 @@ public class GamaPreferencesView {
 			GamaPreferences.setNewPreferences(modelValues);
 			if (restartRequired) {
 				restartRequired = false;
-				final var restart = Messages.confirm("Restart GAMA",
+				final var restart = GAMA.getGui().getDialogFactory().confirm("Restart GAMA",
 						"It is advised to restart GAMA after these changes. Restart now ?");
 				if (restart) {
 					close();
@@ -441,7 +440,7 @@ public class GamaPreferencesView {
 		// this.shell.setDefaultButton(buttonOK);
 
 		buttonRevert.setSelectionListener(e -> {
-			if (!Messages.question("Revert to default",
+			if (!GAMA.getGui().getDialogFactory().question("Revert to default",
 					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
 				return;
 			GamaPreferences.revertToDefaultValues(modelValues);
