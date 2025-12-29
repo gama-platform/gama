@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.shared;
+package gama.ui.shared.shared;
 
 import static org.eclipse.jface.resource.JFaceResources.getImageRegistry;
 

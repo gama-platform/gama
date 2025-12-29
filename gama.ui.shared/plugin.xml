@@ -360,12 +360,6 @@
          </activeWhen>
       </handler>
    </extension>
-   <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="gama.ui.shared.Startup">
-      </startup>
-   </extension>
    <extension point="org.eclipse.ui.services">
       <serviceFactory
             factoryClass="gama.ui.shared.shared.WebHelperFactory">

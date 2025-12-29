@@ -77,21 +77,26 @@ public class GamaIcon implements IGamaIcons {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	public static void preloadAllIcons() throws IOException {
-		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "done in", () -> {
-			if (PATH_TO_ICONS == null) return;
-			Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
+	public static void preloadAllIcons() {
+		try {
+			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "done in", () -> {
+				if (PATH_TO_ICONS == null) return;
+				Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
 
-				@Override
-				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-					if (attrs.isRegularFile()) {
-						String s = FilenameUtils.separatorsToUnix(PATH_TO_ICONS.relativize(file).toString());
-						if (FilenameUtils.isExtension(s, "svg")) { named(FilenameUtils.removeExtension(s)); }
+					@Override
+					public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+							throws IOException {
+						if (attrs.isRegularFile()) {
+							String s = FilenameUtils.separatorsToUnix(PATH_TO_ICONS.relativize(file).toString());
+							if (FilenameUtils.isExtension(s, "svg")) { named(FilenameUtils.removeExtension(s)); }
+						}
+						return FileVisitResult.CONTINUE;
 					}
-					return FileVisitResult.CONTINUE;
-				}
+				});
 			});
-		});
+		} catch (IOException e) {
+			DEBUG.ERR(e);
+		}
 	}
 
 	/**
