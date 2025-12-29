@@ -10,12 +10,20 @@
  ********************************************************************************************************/
 package gama.dependencies;
 
+import javax.imageio.ImageIO;
+import javax.media.jai.JAI;
+
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.util.factory.GeoTools;
 import org.geotools.util.factory.Hints;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+
+import gama.dev.BANNER_CATEGORY;
+import gama.dev.DEBUG;
+import it.geosolutions.jaiext.ConcurrentOperationRegistry;
+import one.util.streamex.StreamEx;
 
 /**
  * The Class Activator.
@@ -28,7 +36,19 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework. BundleContext)
 	 */
 	@Override
-	public void start(final BundleContext bundleContext) throws Exception {
+	public void start(final BundleContext bundleContext) throws Exception { // Forces early initialisation of operation
+																			// registry of JAI. It fixes initialisation
+																			// problems in some third
+		// party equinox x@applications such as OpenMOLE.
+		final JAI jaiDef = JAI.getDefaultInstance();
+		if (!(jaiDef.getOperationRegistry() instanceof ConcurrentOperationRegistry)) {
+			jaiDef.setOperationRegistry(ConcurrentOperationRegistry.initializeRegistry());
+		}
+		ImageIO.scanForPlugins();
+		DEBUG.BANNER(BANNER_CATEGORY.JAI, "ImageIO extensions", "loaded for",
+				StreamEx.of(ImageIO.getReaderFileSuffixes()).remove(String::isBlank).map(String::toUpperCase).distinct()
+						.sorted().joining("|"));
+
 		// Set some GeoTools default hints to speed up operations
 		Hints.putSystemDefault(Hints.FILTER_FACTORY, CommonFactoryFinder.getFilterFactory(null));
 		Hints.putSystemDefault(Hints.STYLE_FACTORY, CommonFactoryFinder.getStyleFactory(null));
@@ -47,7 +67,6 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	@Override
-	public void stop(final BundleContext bundleContext) throws Exception {
-	}
+	public void stop(final BundleContext bundleContext) throws Exception {}
 
 }

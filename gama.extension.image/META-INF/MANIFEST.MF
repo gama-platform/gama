@@ -3,15 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Name: GAML Image Extension
 Bundle-SymbolicName: gama.extension.image;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Export-Package: com.github.jaiimageio.impl.plugins.tiff,
- gama.extension.image
+Export-Package: gama.extension.image
 Bundle-Activator: gama.extension.image.Activator
 Bundle-Vendor: UMMISCO
 Require-Bundle: gama.core,
  gama.dependencies,
  com.github.weisj.jsvg
-Bundle-ClassPath: .,
- libs/jai-imageio-core 1.4.0/jai-imageio-core-1.4.0.jar
+Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy

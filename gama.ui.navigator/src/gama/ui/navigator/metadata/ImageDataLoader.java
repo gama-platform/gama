@@ -14,7 +14,6 @@ import static gama.core.outputs.display.AbstractDisplayGraphics.toCompatibleImag
 import static javax.imageio.ImageIO.createImageInputStream;
 import static javax.imageio.ImageIO.read;
 
-import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -48,8 +47,10 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.styling.SLD;
-import gama.dev.DEBUG;
 
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi;
+
+import gama.dev.DEBUG;
 
 /**
  * Class ImageDataLoader.
@@ -65,6 +66,22 @@ public class ImageDataLoader {
 
 	/** The Constant IMAGE_PGM. */
 	public static final int IMAGE_ASC = 8, IMAGE_PGM = 9;
+
+	/**
+	 * Gets the image data from image IO. Doesnt work properly for all formats (tiff, pgm, asc).
+	 *
+	 * @param file
+	 *            the file
+	 * @return the image data from image IO
+	 */
+	// public static ImageData getImageData(final IFile file) {
+	// try {
+	// return convertToSWT(ImageIO.read(file.getContents(true)));
+	// } catch (IOException | CoreException e) {
+	// e.printStackTrace();
+	// return null;
+	// }
+	// }
 
 	/**
 	 * Gets the image data.

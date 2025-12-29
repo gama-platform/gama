@@ -13,6 +13,7 @@ package gama.ui.navigator.metadata;
 import java.util.List;
 
 import gama.core.util.file.GamaFileMetaData;
+import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Strings;
@@ -23,8 +24,8 @@ import gama.gaml.operators.Strings;
 public class ImageInfo extends GamaFileMetaData {
 
 	/** The Constant FORMATS. */
-	public final static List<String> FORMATS = List.of("BMP", "WPMB", "GIF", "JPEG", "JPG", "PNG", "ICO", "TIFF", "TIF",
-			"ASCII", "PBM", "PGM", "PPM", "JP2");
+	public final static List<String> FORMATS = List.of("BMP", "WPMB", "GIF", "JPEG", "JPG", "PNG", "PNM", "ICO", "TIFF",
+			"TIF", "ASCII ARCINFO", "PBM", "PGM", "PPM", "JP2");
 
 	/** The type. */
 	private final int type;
@@ -51,6 +52,7 @@ public class ImageInfo extends GamaFileMetaData {
 			final int origWidth, final int origHeight) {
 		super(modificationStamp);
 		this.type = FORMATS.indexOf(origType.toUpperCase());
+		if (type == -1) { DEBUG.LOG("Unknown image format: " + origType); }
 		this.width = origWidth;
 		this.height = origHeight;
 	}

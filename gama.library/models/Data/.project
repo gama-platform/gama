@@ -16,11 +16,4 @@
 		<nature>gama.workspace.gamaNature</nature>
 		<nature>gama.workspace.builtinNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>external/andorra-latest.osm.pbf</name>
-			<type>1</type>
-			<locationURI>CACHE_LOC/download.geofabrik.de+_++_+europe+_+andorra-latest.osm.pbf</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>
