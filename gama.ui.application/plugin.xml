@@ -11,7 +11,7 @@
             name="Gama">
 	<property
             name="rendererFactoryUri"
-            value="bundleclass://gama.ui.experiment/gama.ui.experiment.commands.GamaStackRendererFactory">
+            value="bundleclass://gama.ui.application/gama.ui.application.workbench.GamaStackRendererFactory">
       </property>
          <property
                name="windowImages"
@@ -23,7 +23,7 @@
          </property>
          <property
                name="aboutImage"
-               value="icons/window/icon128.png">
+               value="icons/window/icon128.svg">
          </property>
          <property
                name="appName"

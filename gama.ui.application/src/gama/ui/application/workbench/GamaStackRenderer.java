@@ -1,7 +1,7 @@
 /**
  *
  */
-package gama.ui.experiment.commands;
+package gama.ui.application.workbench;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;

@@ -34,7 +34,8 @@ Export-Package: gama.ui.application;uses:="org.eclipse.ui,org.eclipse.equinox.ap
  gama.ui.application.projects,
  gama.ui.application.workbench,
  gama.ui.application.workspace
-Import-Package: org.w3c.css.sac
+Import-Package: jakarta.inject,
+ org.w3c.css.sac
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.ui.application
