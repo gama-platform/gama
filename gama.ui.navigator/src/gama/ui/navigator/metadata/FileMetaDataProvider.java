@@ -23,6 +23,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -40,7 +44,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.swt.graphics.ImageData;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.common.IStatusMessage;
@@ -371,6 +374,8 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 							e.printStackTrace();
 						}
 						// GAMA.getGui().updateDecorator("gama.ui.application.decorator");
+					} catch (Exception e) {
+						DEBUG.LOG("Error in processing " + theFile.getName());
 					} finally {
 						processing.remove(element);
 					}
@@ -482,17 +487,34 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @return the image info
 	 */
 	private ImageInfo createImageFileMetaData(final IFile file) {
-		int type = -1, width = -1, height = -1;
-		ImageData imageData = ImageDataLoader.getImageData(file);
-		if (imageData != null) {
-			width = imageData.width;
-			height = imageData.height;
-			type = imageData.type;
-		} else {
-			width = -1;
-			height = -1;
-			type = -1;
-		}
+		String type = "Unknown Format";
+		int width = -1, height = -1;
+		try (ImageInputStream iis = ImageIO.createImageInputStream(file.getLocationURI().toURL().openStream())) {
+			// DEBUG.LOG("Reading image metadata for " + file.getName());
+			if (iis == null) return new ImageInfo(file.getModificationStamp(), type, width, height);
+			final var readers = ImageIO.getImageReaders(iis);
+			if (readers.hasNext()) {
+				ImageReader reader;
+				try {
+					reader = readers.next();
+				} catch (Exception e) {
+					DEBUG.ERR("Error reading image metadata for " + file.getName() + ": " + e.getMessage());
+					reader = null;
+				}
+				if (reader != null) {
+					try {
+						reader.setInput(iis);
+						width = reader.getWidth(0);
+						height = reader.getHeight(0);
+						type = reader.getFormatName();
+					} catch (Exception e) {
+						DEBUG.ERR("Error reading image metadata for " + file.getName() + ": " + e.getMessage());
+					} finally {
+						reader.dispose();
+					}
+				}
+			}
+		} catch (final Exception e) {}
 		return new ImageInfo(file.getModificationStamp(), type, width, height);
 
 	}

@@ -27,6 +27,7 @@ Export-Package: gama.ui.navigator.commands,
  gama.ui.navigator.view.contents,
  gama.ui.navigator.view.properties,
  gama.ui.navigator.wizards
-Import-Package: gama.workspace.manager,
+Import-Package: com.github.jaiimageio.impl.plugins.tiff,
+ gama.workspace.manager,
  org.eclipse.core.filesystem
 Automatic-Module-Name: gama.ui.navigator

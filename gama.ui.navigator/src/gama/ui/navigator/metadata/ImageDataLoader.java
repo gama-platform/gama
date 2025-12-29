@@ -14,6 +14,7 @@ import static gama.core.outputs.display.AbstractDisplayGraphics.toCompatibleImag
 import static javax.imageio.ImageIO.createImageInputStream;
 import static javax.imageio.ImageIO.read;
 
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -47,9 +48,8 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.styling.SLD;
-
 import gama.dev.DEBUG;
-import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi;
+
 
 /**
  * Class ImageDataLoader.

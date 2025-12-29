@@ -32,8 +32,11 @@ public interface IGamaIcons {
 	/** The Constant COLORS. */
 	String COLOR_PATH = "colors/";
 
+	/** The icons fragment. */
+	String ICONS_FRAGMENT = "icons_svg/";
+
 	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons_svg/" + (ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH) + "/";
+	String ICONS_PATH = "/" + ICONS_FRAGMENT + (ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH) + "/";
 
 	/** The Constant GAML_PATH. */
 	String GAML_PATH = "gaml/";

@@ -84,7 +84,6 @@
 --add-exports=java.base/java.math=ALL-UNNAMED
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
---add-opens=java.base/java.lang=ALL-UNNAMED
 --add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
 --add-opens=java.base/java.math=ALL-UNNAMED
 --add-opens=java.base/java.util=ALL-UNNAMED
@@ -104,6 +103,11 @@
 --add-opens=java.base/java.text=ALL-UNNAMED
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.desktop/javax.imageio.stream=ALL-UNNAMED
+--add-opens java.desktop/javax.imageio=ALL-UNNAMED
+--add-exports java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED
+--add-exports java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED
 --enable-native-access=ALL-UNNAMED
 --sun-misc-unsafe-memory-access=allow
 --add-modules jdk.incubator.vector

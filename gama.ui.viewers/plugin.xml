@@ -7,7 +7,7 @@
             class="gama.ui.viewers.image.ImageViewer"
             default="false"
             extensions="JPG,jpg,JPEG,jpeg,PNG,png,BMP,bmp,TIFF,tiff,TIF,tif,ICO,ico,ASC,asc,PGM,pgm"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.image.svg"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.image.svg"
             id="gama.ui.application.editor.image"
             name="Image Viewer">
          <contentTypeBinding

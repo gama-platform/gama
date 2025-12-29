@@ -23,7 +23,8 @@ import gama.dev.DEBUG;
 import gama.ui.application.workbench.PickWorkspaceDialog;
 
 /**
- * A partial implementation of IGui using SWT dialogs and the console for logging.
+ * A partial implementation of IGui using SWT dialogs and the console for logging. Serves during initialization, before
+ * the real GUI is ready.
  */
 public class TempSWTGui implements IGui {
 

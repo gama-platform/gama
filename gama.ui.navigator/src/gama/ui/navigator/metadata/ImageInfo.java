@@ -10,8 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.navigator.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import gama.core.util.file.GamaFileMetaData;
 import gama.gaml.interfaces.IGamlDescription.Doc;
@@ -23,25 +22,9 @@ import gama.gaml.operators.Strings;
  */
 public class ImageInfo extends GamaFileMetaData {
 
-	/** The Constant formatsShortNames. */
-	public final static Map<Integer, String> formatsShortNames = new HashMap<>() {
-
-		{
-			// Hack: Corresponds to SWT.IMAGE_xxx + ImagePropertyPage
-			// constants
-			put(0, "BMP");
-			put(1, "BMP");
-			put(7, "BMP");
-			put(2, "GIF");
-			put(4, "JPEG");
-			put(5, "PNG");
-			put(3, "ICO");
-			put(6, "TIFF");
-			put(-1, "Unknown Format");
-			put(8, "ASCII");
-			put(9, "PGM");
-		}
-	};
+	/** The Constant FORMATS. */
+	public final static List<String> FORMATS = List.of("BMP", "WPMB", "GIF", "JPEG", "JPG", "PNG", "ICO", "TIFF", "TIF",
+			"ASCII", "PBM", "PGM", "PPM", "JP2");
 
 	/** The type. */
 	private final int type;
@@ -51,6 +34,26 @@ public class ImageInfo extends GamaFileMetaData {
 
 	/** The height. */
 	private final int height;
+
+	/**
+	 * Instantiates a new image info.
+	 *
+	 * @param modificationStamp
+	 *            the modification stamp
+	 * @param origType
+	 *            the orig type
+	 * @param origWidth
+	 *            the orig width
+	 * @param origHeight
+	 *            the orig height
+	 */
+	public ImageInfo(final long modificationStamp, /* final Object thumbnail, */final String origType,
+			final int origWidth, final int origHeight) {
+		super(modificationStamp);
+		this.type = FORMATS.indexOf(origType.toUpperCase());
+		this.width = origWidth;
+		this.height = origHeight;
+	}
 
 	/**
 	 * Instantiates a new image info.
@@ -94,7 +97,7 @@ public class ImageInfo extends GamaFileMetaData {
 	 * @return the short label
 	 */
 	public String getShortLabel(final int type) {
-		return formatsShortNames.containsKey(type) ? formatsShortNames.get(type) : formatsShortNames.get(-1);
+		return type >= 0 && type < FORMATS.size() ? FORMATS.get(type) : "Unknown Format";
 	}
 
 	@Override
