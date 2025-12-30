@@ -413,9 +413,9 @@ public class ImageDataLoader {
 			SVGLoader loader = new SVGLoader();
 			SVGDocument doc = loader.load(file.getLocationURI().toURL());
 			if (doc == null) return null;
-			int width = (int) doc.size().width;
-			int height = (int) doc.size().height;
-			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Float width = doc.size().width;
+			Float height = doc.size().height;
+			BufferedImage image = new BufferedImage(width.intValue(), height.intValue(), BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			doc.render(null, g, new ViewBox(0, 0, width, height));

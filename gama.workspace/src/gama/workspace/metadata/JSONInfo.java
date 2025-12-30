@@ -29,6 +29,15 @@ public class JSONInfo extends GamaFileMetaData {
 	/** The type. */
 	private final String type;
 
+	/** The crs. */
+	private final String crs;
+
+	/** The width. */
+	private final double width;
+
+	/** The height. */
+	private final double height;
+
 	/**
 	 * Instantiates a new JSON info.
 	 *
@@ -40,12 +49,23 @@ public class JSONInfo extends GamaFileMetaData {
 	 *            the is geo json
 	 * @param type
 	 *            the type
+	 * @param crs
+	 *            the crs
+	 * @param width
+	 *            the width
+	 * @param height
+	 *            the height
 	 */
-	public JSONInfo(final long modificationStamp, final int itemCount, final boolean isGeoJson, final String type) {
+	public JSONInfo(final long modificationStamp, final int itemCount, final boolean isGeoJson, final String type,
+			final String crs, final double width, final double height) {
 		super(modificationStamp);
 		this.itemCount = itemCount;
 		this.isGeoJson = isGeoJson;
 		this.type = type;
+		// GeoJSON files are using WGS84 by default
+		this.crs = crs == null || crs.isEmpty() ? isGeoJson ? "WGS84" : "" : crs;
+		this.width = width;
+		this.height = height;
 	}
 
 	/**
@@ -60,12 +80,17 @@ public class JSONInfo extends GamaFileMetaData {
 		itemCount = Integer.parseInt(segments[1]);
 		isGeoJson = Boolean.parseBoolean(segments[2]);
 		type = segments.length > 3 ? segments[3] : "Unknown";
+		crs = segments.length > 4 ? segments[4] : null;
+		width = segments.length > 5 ? Double.parseDouble(segments[5]) : 0;
+		height = segments.length > 6 ? Double.parseDouble(segments[6]) : 0;
 	}
 
 	@Override
 	public void appendSuffix(final StringBuilder sb) {
 		sb.append(type).append(" [").append(itemCount).append(isGeoJson ? " features" : " items").append("]");
 		if (isGeoJson) {
+			sb.append(SUFFIX_DEL).append(crs);
+			sb.append(SUFFIX_DEL).append(Math.round(width)).append("m x ").append(Math.round(height)).append("m");
 			sb.append(SUFFIX_DEL).append("GeoJSON");
 		} else {
 			sb.append(SUFFIX_DEL).append("JSON");
@@ -78,12 +103,17 @@ public class JSONInfo extends GamaFileMetaData {
 		sb.append(isGeoJson ? "GeoJSON File" : "JSON File").append(Strings.LN);
 		sb.append("Type: ").append(type).append(Strings.LN);
 		sb.append("Contains: ").append(itemCount + "").append(isGeoJson ? " features" : " items").append(Strings.LN);
+		sb.append("CRS: ").append(crs).append(Strings.LN);
+		if (isGeoJson && width > 0 && height > 0) {
+			sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m").append(Strings.LN);
+		}
 		return sb;
 	}
 
 	@Override
 	public String toPropertyString() {
-		return super.toPropertyString() + DELIMITER + itemCount + DELIMITER + isGeoJson + DELIMITER + type;
+		return super.toPropertyString() + DELIMITER + itemCount + DELIMITER + isGeoJson + DELIMITER + type + DELIMITER
+				+ crs + DELIMITER + width + DELIMITER + height;
 	}
 
 	/**

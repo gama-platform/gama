@@ -50,6 +50,7 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.common.IStatusMessage;
+import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.GamaCSVFile;
 import gama.core.util.file.GamaCSVFile.CSVInfo;
@@ -134,6 +135,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 
 	/** The Constant JSON_CT_ID. */
 	public static final String JSON_CT_ID = "gama.json.file.type";
+
+	/** The Constant GML_CT_ID. */
+	public static final String GML_CT_ID = "gama.gml.file.type";
 
 	/** The Constant instance. */
 	private final static FileMetaDataProvider instance = new FileMetaDataProvider();
@@ -274,6 +278,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			put(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo.class);
 			put(SVG_CT_ID, SVGInfo.class);
 			put(JSON_CT_ID, JSONInfo.class);
+			put(GML_CT_ID, GMLInfo.class);
 			put("project", ProjectInfo.class);
 			// BEN put(GSIM_CT_ID, SavedSimulationInfo.class);
 		}
@@ -377,6 +382,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 								break;
 							case JSON_CT_ID:
 								data[0] = createJSONFileMetaData(theFile);
+								break;
+							case GML_CT_ID:
+								data[0] = createGMLFileMetaData(theFile);
 								break;
 						}
 						// Last chance: we generate a generic info
@@ -639,6 +647,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		int itemCount = 0;
 		boolean isGeoJson = false;
 		String type = "Unknown";
+		String crs = null;
+		double width = 0;
+		double height = 0;
 		try (var reader = new java.io.InputStreamReader(file.getContents())) {
 			JsonValue value = Json.getNew().parse(reader);
 			if (value.isArray()) {
@@ -651,10 +662,45 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 					String t = value.asObject().get("type").asString();
 					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
 						isGeoJson = true;
+						Envelope3D env = Envelope3D.of(0, 0, 0, 0, 0, 0);
 						if ("FeatureCollection".equals(t)) {
 							JsonValue features = value.asObject().get("features");
 							if (features != null && features.isArray()) {
 								itemCount = features.asArray().size();
+								for (JsonValue v : features.asArray()) {
+									if (v.isObject()) {
+										JsonValue geom = v.asObject().get("geometry");
+										if (geom != null && geom.isObject()) {
+											computeEnvelope(geom, env);
+										}
+									}
+								}
+							}
+						} else if ("Feature".equals(t)) {
+							JsonValue geom = value.asObject().get("geometry");
+							if (geom != null && geom.isObject()) {
+								computeEnvelope(geom, env);
+							}
+						} else if ("GeometryCollection".equals(t)) {
+							JsonValue geometries = value.asObject().get("geometries");
+							if (geometries != null && geometries.isArray()) {
+								for (JsonValue v : geometries.asArray()) {
+									if (v.isObject()) {
+										computeEnvelope(v, env);
+									}
+								}
+							}
+						}
+						width = env.getWidth();
+						height = env.getHeight();
+						JsonValue crsVal = value.asObject().get("crs");
+						if (crsVal != null && crsVal.isObject()) {
+							JsonValue props = crsVal.asObject().get("properties");
+							if (props != null && props.isObject()) {
+								JsonValue name = props.asObject().get("name");
+								if (name != null && name.isString()) {
+									crs = name.asString();
+								}
 							}
 						}
 					}
@@ -663,7 +709,78 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		} catch (Exception e) {
 			DEBUG.ERR("Error reading JSON metadata for " + file.getName() + ": " + e.getMessage());
 		}
-		return new JSONInfo(file.getModificationStamp(), itemCount, isGeoJson, type);
+		return new JSONInfo(file.getModificationStamp(), itemCount, isGeoJson, type, crs, width, height);
+	}
+
+	/**
+	 * Compute envelope.
+	 *
+	 * @param geom
+	 *            the geom
+	 * @param env
+	 *            the env
+	 */
+	private void computeEnvelope(final JsonValue geom, final Envelope3D env) {
+		JsonValue coords = geom.asObject().get("coordinates");
+		if (coords == null) return;
+		String type = geom.asObject().get("type").asString();
+		if ("Point".equals(type)) {
+			expandEnvelope(coords, env);
+		} else if ("LineString".equals(type) || "MultiPoint".equals(type)) {
+			for (JsonValue v : coords.asArray()) {
+				expandEnvelope(v, env);
+			}
+		} else if ("Polygon".equals(type) || "MultiLineString".equals(type)) {
+			for (JsonValue v : coords.asArray()) {
+				for (JsonValue v2 : v.asArray()) {
+					expandEnvelope(v2, env);
+				}
+			}
+		} else if ("MultiPolygon".equals(type)) {
+			for (JsonValue v : coords.asArray()) {
+				for (JsonValue v2 : v.asArray()) {
+					for (JsonValue v3 : v2.asArray()) {
+						expandEnvelope(v3, env);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Expand envelope.
+	 *
+	 * @param coord
+	 *            the coord
+	 * @param env
+	 *            the env
+	 */
+	private void expandEnvelope(final JsonValue coord, final Envelope3D env) {
+		if (coord.isArray() && coord.asArray().size() >= 2) {
+			double x = coord.asArray().get(0).asDouble();
+			double y = coord.asArray().get(1).asDouble();
+			if (env.getWidth() == 0 && env.getHeight() == 0 && env.getMinX() == 0 && env.getMinY() == 0) {
+				env.init(x, x, y, y, 0, 0);
+			} else {
+				env.expandToInclude(x, y, 0);
+			}
+		}
+	}
+
+	/**
+	 * Creates the GML file meta data.
+	 *
+	 * @param file
+	 *            the file
+	 * @return the GML info
+	 */
+	private GMLInfo createGMLFileMetaData(final IFile file) {
+		try (var is = file.getContents()) {
+			return new GMLInfo(file.getModificationStamp(), is);
+		} catch (Exception e) {
+			DEBUG.ERR("Error reading GML metadata for " + file.getName() + ": " + e.getMessage());
+			return new GMLInfo(file.getModificationStamp(), null);
+		}
 	}
 
 	/**

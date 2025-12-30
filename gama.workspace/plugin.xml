@@ -123,6 +123,13 @@
             name="JSON File"
             priority="high">
       </content-type>
+      <content-type
+            default-charset="UTF-8"
+            file-extensions="gml,GML"
+            id="gama.gml.file.type"
+            name="GML File"
+            priority="high">
+      </content-type>
    </extension>
 
 </plugin>

@@ -69,6 +69,17 @@
                contentTypeId="gama.osm.file.type">
          </contentTypeBinding>
       </editor>
+      <editor
+            class="gama.ui.viewers.gis.GMLFileViewer"
+            default="true"
+            extensions="gml,GML"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.shape.svg"
+            id="gama.ui.application.gml.viewer"
+            name="GML Viewer">
+         <contentTypeBinding
+               contentTypeId="gama.gml.file.type">
+         </contentTypeBinding>
+      </editor>
    </extension>
    <extension point="org.eclipse.ui.contexts">
 	  <context
