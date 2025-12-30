@@ -27,7 +27,6 @@ import org.geotools.referencing.CRS;
 
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
-import gama.core.util.file.GamaFileMetaData;
 import gama.core.util.file.GamaShapeFile;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;

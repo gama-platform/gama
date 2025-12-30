@@ -12,7 +12,6 @@ package gama.workspace.metadata;
 
 import java.util.List;
 
-import gama.core.util.file.GamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;

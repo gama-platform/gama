@@ -129,6 +129,7 @@ import com.google.inject.Injector;
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.interfaces.IModelsManager;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
@@ -139,7 +140,6 @@ import gama.gaml.descriptions.ValidationContext;
 import gama.gaml.operators.Strings;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -271,8 +271,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The injector. */
 	@Inject Injector injector;
 
-	/** The runner. */
-	@Inject IModelRunner runner;
+	/** The modelsManager. */
+	@Inject IModelsManager modelsManager;
 
 	/** The template dialog factory. */
 	@Inject private GamlEditTemplateDialogFactory templateDialogFactory;
@@ -614,7 +614,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					listener = new RevalidateModelSelectionListener(GamlEditor.this);
 					imageName = MARKER_ERROR;
 				} else {
-					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, runner);
+					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, modelsManager);
 				}
 				if (msg != null) {
 					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);

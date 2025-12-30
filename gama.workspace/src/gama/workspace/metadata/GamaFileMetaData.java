@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaFileMetaData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * GamaFileMetaData.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.workspace.metadata;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 
+import gama.core.util.file.IGamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription;
 
@@ -144,15 +145,11 @@ public abstract class GamaFileMetaData implements IGamaFileMetaData {
 	 * @param failed
 	 *            the new failed
 	 */
-	public void setFailed(final boolean failed) {
-		this.hasFailed = failed;
-	}
+	public void setFailed(final boolean failed) { this.hasFailed = failed; }
 
 	/**
 	 * @return
 	 */
-	public Consumer<IGamlDescription> getContextualAction() { // TODO Auto-generated method stub
-		return null;
-	}
+	public Consumer<IGamlDescription> getContextualAction() { return null; }
 
 }

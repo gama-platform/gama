@@ -355,7 +355,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	public Map<String, Runnable> handleMenu(final AbstractSummary<?> item, final int x, final int y) {
 		final Map<String, Runnable> result = new HashMap<>();
 		result.put("Copy summary to clipboard", () -> { WorkbenchHelper.copy(item.toString()); });
-		result.put("Show in editor", () -> GAMA.getGui().editModel(item.getURI()));
+		result.put("Show in editor", () -> GAMA.getGui().getModelsManager().editModel(item.getURI()));
 		return result;
 	}
 

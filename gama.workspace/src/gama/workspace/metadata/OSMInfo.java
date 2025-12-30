@@ -32,7 +32,6 @@ import org.geotools.referencing.CRS;
 
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
-import gama.core.util.file.GamaFileMetaData;
 import gama.core.util.file.GamaOsmFile;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;

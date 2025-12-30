@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.workspace.metadata;
 
-import gama.core.util.file.GamaFileMetaData;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Strings;

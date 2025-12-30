@@ -1,75 +1,34 @@
 /*******************************************************************************************************
  *
- * GamlFileInfo.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * GamlFileInfo.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.workspace.metadata;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.common.util.FileUtils;
+import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.runtime.GAMA;
 import gama.gaml.interfaces.IGamlDescription;
 
 /**
  * The Class GamlFileInfo.
  */
-public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
-
-	/**
-	 * Gets the all models.
-	 *
-	 * @return the all models
-	 */
-	public static Iterable<GamlFileInfo> getAllModels() {
-		List<GamlFileInfo> infos = new ArrayList<>();
-		try {
-			processContainer(FileUtils.ROOT, infos);
-		} catch (CoreException e) {}
-		return infos;
-	}
-
-	/**
-	 * Process container.
-	 *
-	 * @param container
-	 *            the container
-	 * @throws CoreException
-	 *             the core exception
-	 */
-	static void processContainer(final IContainer container, final List<GamlFileInfo> list) throws CoreException {
-		IResource[] members = container.members();
-		IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
-		for (IResource member : members) {
-			if (member instanceof IContainer) {
-				processContainer((IContainer) member, list);
-			} else if (member instanceof IFile && GamlFileExtension.isGaml(member.getName())) {
-				GamlFileInfo data = (GamlFileInfo) provider.getMetaData(member, true, true);
-				// in case the data is not compatible anymore
-				if (data.uri == null || data.uri.isEmpty() || data.getName() == null) { provider.refreshAllMetaData(); }
-				list.add((GamlFileInfo) provider.getMetaData(member, true, true));
-			}
-		}
-	}
+public class GamlFileInfo extends GamaFileMetaData implements IGamlFileInfo {
 
 	/** The batch prefix. */
 	public static final String BATCH_PREFIX = "***";
@@ -125,6 +84,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	 *
 	 * @return true, if is valid
 	 */
+	@Override
 	public boolean isValid() { return !invalid; }
 
 	/**
@@ -132,6 +92,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	 *
 	 * @return the imports
 	 */
+	@Override
 	public Collection<String> getImports() { return imports == null ? Collections.EMPTY_LIST : imports; }
 
 	/**
@@ -139,6 +100,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	 *
 	 * @return the uses
 	 */
+	@Override
 	public Collection<String> getUses() { return uses == null ? Collections.EMPTY_LIST : uses; }
 
 	/**
@@ -146,6 +108,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	 *
 	 * @return the tags
 	 */
+	@Override
 	public Collection<String> getTags() { return tags == null ? Collections.EMPTY_LIST : tags; }
 
 	/**
@@ -153,6 +116,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	 *
 	 * @return the experiments
 	 */
+	@Override
 	public Collection<String> getExperiments() { return experiments == null ? Collections.EMPTY_LIST : experiments; }
 
 	/**
@@ -220,9 +184,19 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 	@Override
 	public Doc getDocumentation() { return new ConstantDoc("GAML model file with " + getSuffix()); }
 
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
+	 */
 	@Override
 	public String getName() { return URI.decode(uri.lastSegment()) + " " + tags; }
 
+	/**
+	 * Gets the title.
+	 *
+	 * @return the title
+	 */
 	@Override
 	public String getTitle() { return URI.decode(uri.lastSegment()); }
 

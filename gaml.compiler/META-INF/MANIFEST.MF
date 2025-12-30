@@ -48,4 +48,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gaml.compiler
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gaml.compiler.GamlActivator
-Import-Package: gama.gaml.interfaces
+Import-Package: gama.gaml.interfaces,
+ gama.workspace.metadata

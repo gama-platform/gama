@@ -23,7 +23,6 @@ import org.geotools.referencing.CRS;
 import org.geotools.wfs.GML;
 import org.geotools.wfs.GML.Version;
 
-import gama.core.util.file.GamaFileMetaData;
 import gama.dev.DEBUG;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;

@@ -42,6 +42,7 @@ import gama.core.common.interfaces.IGamaView.Test;
 import gama.core.common.interfaces.IGamaView.User;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.interfaces.IModelsManager;
 import gama.core.common.interfaces.IRuntimeExceptionHandler;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.common.preferences.GamaPreferences;
@@ -71,11 +72,9 @@ import gama.dev.DEBUG;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
 import gama.ui.shared.parameters.EditorsDialog;
@@ -369,21 +368,8 @@ public class SwtGui implements IGui {
 	 *
 	 * @return the model runner
 	 */
-	private IModelRunner getModelRunner() { return WorkbenchHelper.getService(IModelRunner.class); }
-
 	@Override
-	public void editModel(final Object eObject) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return;
-		modelRunner.editModel(eObject);
-	}
-
-	@Override
-	public List<TestExperimentSummary> runHeadlessTests(final Object model) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return null;
-		return modelRunner.runHeadlessTests(model);
-	}
+	public IModelsManager getModelsManager() { return WorkbenchHelper.getService(IModelsManager.class); }
 
 	/**
 	 * Update parameters.
@@ -538,13 +524,6 @@ public class SwtGui implements IGui {
 	 */
 	private IRuntimeExceptionHandler getRuntimeExceptionHandler() {
 		return WorkbenchHelper.getService(IRuntimeExceptionHandler.class);
-	}
-
-	@Override
-	public void runModel(final Object object, final String exp) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return;
-		modelRunner.runModel(object, exp);
 	}
 
 	/**

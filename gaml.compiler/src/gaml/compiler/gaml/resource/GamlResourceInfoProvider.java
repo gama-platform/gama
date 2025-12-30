@@ -30,11 +30,11 @@ import org.eclipse.emf.common.util.URI;
 import com.google.inject.Singleton;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IGamlResourceInfoProvider;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.types.GamaFileType;
+import gama.workspace.metadata.GamlFileInfo;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 
 /**

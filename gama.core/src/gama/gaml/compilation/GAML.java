@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2024-06).
+ * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,6 +34,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
+import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISkill;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -48,7 +49,6 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.ICollector;
 import gama.core.util.IContainer;
 import gama.core.util.IMap;
-import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IGamlResourceInfoProvider;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
@@ -366,7 +366,7 @@ public class GAML {
 	 *            the stamp
 	 * @return the info
 	 */
-	public static GamlFileInfo getInfo(final URI uri, final long stamp) {
+	public static IGamlFileInfo getInfo(final URI uri, final long stamp) {
 		return infoProvider.getInfo(uri, stamp);
 	}
 
@@ -377,7 +377,7 @@ public class GAML {
 	 *            the uri
 	 * @return the info
 	 */
-	public static GamlFileInfo getInfo(final URI uri) {
+	public static IGamlFileInfo getInfo(final URI uri) {
 		return infoProvider.getInfo(uri);
 	}
 

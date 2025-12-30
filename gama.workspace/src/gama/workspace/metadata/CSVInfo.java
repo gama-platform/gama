@@ -17,7 +17,6 @@ import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
 import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
-import gama.core.util.file.GamaFileMetaData;
 import gama.core.util.file.csv.CsvReader;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.interfaces.IGamlDescription.RegularDoc;

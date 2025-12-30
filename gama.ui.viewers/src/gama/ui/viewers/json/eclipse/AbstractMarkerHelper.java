@@ -45,10 +45,10 @@ abstract class AbstractMarkerHelper {
 	 * @throws CoreException
 	 *             the core exception
 	 */
-	private IMarker findMarker(final IResource resource, final String message, final int lineNumber, final String type) throws CoreException {
+	private IMarker findMarker(final IResource resource, final String message, final int lineNumber, final String type)
+			throws CoreException {
 		IMarker[] marker = resource.findMarkers(type, true, IResource.DEPTH_ZERO);
-		for (int i = 0; i < marker.length; i++) {
-			IMarker currentMarker = marker[i];
+		for (IMarker currentMarker : marker) {
 			if (currentMarker == null) { continue; }
 			Object lineNrAttribute = currentMarker.getAttribute(IMarker.LINE_NUMBER);
 			String markerLineNumber = null;
@@ -75,7 +75,8 @@ abstract class AbstractMarkerHelper {
 	 * @throws CoreException
 	 *             the core exception
 	 */
-	public void createErrorMarker(final IResource resource, final String message, final int lineNumber) throws CoreException {
+	public void createErrorMarker(final IResource resource, final String message, final int lineNumber)
+			throws CoreException {
 		createErrorMarker(resource, message, lineNumber, -1, -1);
 	}
 
@@ -95,8 +96,8 @@ abstract class AbstractMarkerHelper {
 	 * @throws CoreException
 	 *             the core exception
 	 */
-	public void createErrorMarker(final IResource resource, final String message, final int lineNumber, final int charStart, final int charEnd)
-			throws CoreException {
+	public void createErrorMarker(final IResource resource, final String message, final int lineNumber,
+			final int charStart, final int charEnd) throws CoreException {
 		createMarker(resource, message, lineNumber, markerType, IMarker.SEVERITY_ERROR, charStart, charEnd);
 	}
 
@@ -118,8 +119,8 @@ abstract class AbstractMarkerHelper {
 	 * @throws CoreException
 	 *             the core exception
 	 */
-	public void createMarker(final IResource resource, final String message, final int lineNumber, final int severity, final int charStart,
-			final int charEnd) throws CoreException {
+	public void createMarker(final IResource resource, final String message, final int lineNumber, final int severity,
+			final int charStart, final int charEnd) throws CoreException {
 		this.createMarker(resource, message, lineNumber, markerType, severity, charStart, charEnd);
 	}
 
@@ -143,8 +144,8 @@ abstract class AbstractMarkerHelper {
 	 * @throws CoreException
 	 *             the core exception
 	 */
-	private void createMarker(final IResource resource, final String message, int lineNumber, final String markerType, final int severity,
-			final int charStart, final int charEnd) throws CoreException {
+	private void createMarker(final IResource resource, final String message, int lineNumber, final String markerType,
+			final int severity, final int charStart, final int charEnd) throws CoreException {
 		if (lineNumber <= 0) { lineNumber = 1; }
 		IMarker marker = findMarker(resource, message, lineNumber, markerType);
 		if (marker == null) {
@@ -203,7 +204,7 @@ abstract class AbstractMarkerHelper {
 
 	/**
 	 * Removes all markers from this file having defined marker type
-	 * 
+	 *
 	 * @param resource
 	 */
 	public void removeMarkers(final IResource resource) {
@@ -225,14 +226,13 @@ abstract class AbstractMarkerHelper {
 		if (resource == null) /* maybe sync problem - guard close */
 			return new IMarker[] {};
 		IMarker[] tasks = null;
-		if (resource != null) {
-			try {
-				tasks = resource.findMarkers(markerType, true, IResource.DEPTH_ZERO);
-				for (IMarker task : tasks) { task.delete(); }
 
-			} catch (CoreException e) {
-				EclipseUtil.logError("Was not able to delete markers", e);
-			}
+		try {
+			tasks = resource.findMarkers(markerType, true, IResource.DEPTH_ZERO);
+			for (IMarker task : tasks) { task.delete(); }
+
+		} catch (CoreException e) {
+			EclipseUtil.logError("Was not able to delete markers", e);
 		}
 		if (tasks == null) { tasks = new IMarker[] {}; }
 		return tasks;

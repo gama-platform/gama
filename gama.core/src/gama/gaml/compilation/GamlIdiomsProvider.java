@@ -28,8 +28,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import gama.core.common.interfaces.IGamlFileInfo;
+import gama.core.runtime.GAMA;
 import gama.core.util.IMap;
-import gama.core.util.file.GamlFileInfo;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.FacetProto;
@@ -70,8 +71,9 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	public static List<GamlIdiomsProvider<?>> getProviders() {
 		if (PROVIDERS == null) {
 
-			GamlIdiomsProvider<GamlFileInfo> FILES =
-					new GamlIdiomsProvider<>("models", "Models (title & tags)", GamlFileInfo.getAllModels());
+			GamlIdiomsProvider<IGamlFileInfo> FILES = new GamlIdiomsProvider<>("models", "Models (title & tags)",
+					GAMA.getGui().getModelsManager().getAllModels());
+
 			GamlIdiomsProvider<SpeciesDescription> SPECIES =
 					new GamlIdiomsProvider<>("species", "Built-in species", Types.getBuiltInSpecies().values());
 

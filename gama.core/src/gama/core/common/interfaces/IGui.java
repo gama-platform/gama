@@ -40,7 +40,6 @@ import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
 
 /**
  * The interface IGui. Represents objects that act on behalf of a concrete GUI implementation (RCP, Headless, etc.)
@@ -57,6 +56,9 @@ public interface IGui {
 	/** The null metadata provider. */
 	IFileMetaDataProvider NULL_METADATA_PROVIDER =
 			(element, includeOutdated, immediately) -> new IGamaFileMetaData() {};
+
+	/** The null models manager. */
+	IModelsManager NULL_MODELS_MANAGER = new IModelsManager() {};
 
 	/** The null status displayer. */
 	IStatusDisplayer NULL_STATUS_DISPLAYER = new IStatusDisplayer() {};
@@ -349,26 +351,6 @@ public interface IGui {
 	default void cleanAfterExperiment() {}
 
 	/**
-	 * Edits the model.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param eObject
-	 *            the e object
-	 */
-	default void editModel(final Object eObject) {}
-
-	/**
-	 * Run model.
-	 *
-	 * @param object
-	 *            the object
-	 * @param exp
-	 *            the exp
-	 */
-	default void runModel(final Object object, final String exp) {}
-
-	/**
 	 * Update speed display.
 	 *
 	 * @param scope
@@ -387,6 +369,13 @@ public interface IGui {
 	 * @return the meta data provider
 	 */
 	default IFileMetaDataProvider getMetaDataProvider() { return NULL_METADATA_PROVIDER; }
+
+	/**
+	 * Gets the models manager.
+	 *
+	 * @return the models manager
+	 */
+	default IModelsManager getModelsManager() { return NULL_MODELS_MANAGER; }
 
 	/**
 	 * Close simulation views.
@@ -533,17 +522,6 @@ public interface IGui {
 	 * End test display.
 	 */
 	default void endTestDisplay() {}
-
-	/**
-	 * Run headless tests.
-	 *
-	 * @param model
-	 *            the model
-	 * @return the list
-	 */
-	default List<TestExperimentSummary> runHeadlessTests(final Object model) {
-		return null;
-	}
 
 	/**
 	 * Refresh navigator.

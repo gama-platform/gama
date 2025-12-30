@@ -828,9 +828,9 @@
     <extension
           point="org.eclipse.ui.services">
        <serviceFactory
-             factoryClass="gaml.compiler.ui.utils.ModelRunner">
+             factoryClass="gaml.compiler.ui.utils.ModelsManager">
           <service
-                serviceClass="gama.ui.shared.interfaces.IModelRunner"></service>
+                serviceClass="gama.core.common.interfaces.IModelsManager"></service>
        </serviceFactory>
        <serviceFactory
              factoryClass="gaml.compiler.ui.outline.LabelProviderFactory">

@@ -90,10 +90,9 @@ public class DefaultServerCommands {
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final IMap<String, Object> map) {
 		if (!GAMA.isInHeadLessMode()
-				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY
-			) {
-				return new CommandResponse(MessageType.UnableToExecuteRequest, "Unable to start new experiment, another one is loading", map, false);
-		}
+				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
+			return new CommandResponse(MessageType.UnableToExecuteRequest,
+					"Unable to start new experiment, another one is loading", map, false);
 
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
@@ -324,7 +323,9 @@ public class DefaultServerCommands {
 		} else {
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
-				if (expression != null) { res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString(); }
+				if (expression != null) {
+					res = Json.getNew().valueOf(scope.evaluate(expression, agent).getValue()).toString();
+				}
 			} catch (final Exception e) {
 				// error = true;
 				res = "> Error: " + e.getMessage();
@@ -359,11 +360,10 @@ public class DefaultServerCommands {
 		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
-		if (entered.isBlank()) {
-			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
-		}
+		if (entered.isBlank()) return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest, new GamaCompilationFailedException(errors).toJsonString(), map, true);
+		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
+				new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
 		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
 	}

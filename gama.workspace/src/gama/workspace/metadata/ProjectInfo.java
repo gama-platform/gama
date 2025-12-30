@@ -7,7 +7,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
-import gama.core.util.file.GamaFileMetaData;
 import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 

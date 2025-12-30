@@ -238,7 +238,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 		}
 		monitor.worked(1);
 		monitor.setTaskName("Opening file for editing...");
-		GAMA.getGui().editModel(file);
+		GAMA.getGui().getModelsManager().editModel(file);
 		monitor.worked(1);
 	}
 

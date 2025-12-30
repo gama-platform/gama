@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * IGamlResourceInfoProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * IGamlResourceInfoProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,6 +12,7 @@ package gama.core.util.file;
 
 import org.eclipse.emf.common.util.URI;
 
+import gama.core.common.interfaces.IGamlFileInfo;
 import gama.gaml.compilation.ast.ISyntacticElement;
 
 /**
@@ -26,7 +27,7 @@ public interface IGamlResourceInfoProvider {
 	 *            the uri
 	 * @return the info
 	 */
-	default GamlFileInfo getInfo(final URI uri) {
+	default IGamlFileInfo getInfo(final URI uri) {
 		return getInfo(uri, 0l);
 	}
 
@@ -39,7 +40,7 @@ public interface IGamlResourceInfoProvider {
 	 *            the stamp
 	 * @return the info
 	 */
-	GamlFileInfo getInfo(final URI uri, final long stamp);
+	IGamlFileInfo getInfo(final URI uri, final long stamp);
 
 	/**
 	 * Gets the contents.

@@ -267,7 +267,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 					hide();
 					StatusMessage message = (StatusMessage) labelText.getParent().getData();
 					if (message.isError()) {
-						GAMA.getGui().editModel(message.exception().getEditorContext());
+						GAMA.getGui().getModelsManager().editModel(message.exception().getEditorContext());
 					} else {
 						GAMA.getGui().showView(null, "org.eclipse.ui.views.ProgressView", null,
 								IWorkbenchPage.VIEW_ACTIVATE);

@@ -21,13 +21,13 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.IList;
 import gama.core.util.file.GamaFile;
-import gama.core.util.file.GamlFileInfo;
 import gama.gaml.compilation.GAML;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -114,7 +114,7 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 	public IList<String> getExperiments(final IScope scope) {
 		File file = getFile(scope);
 		// TODO AD Verify the use of a 'file' URI.
-		GamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
+		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getExperiments());
 		return GamaListFactory.EMPTY_LIST;
 	}
@@ -129,7 +129,7 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 	@getter ("tags")
 	public IList<String> getTags(final IScope scope) {
 		File file = getFile(scope);
-		GamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
+		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getTags());
 		return GamaListFactory.EMPTY_LIST;
 	}
@@ -144,7 +144,7 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 	@getter ("uses")
 	public IList<String> getUses(final IScope scope) {
 		File file = getFile(scope);
-		GamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
+		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getUses());
 		return GamaListFactory.EMPTY_LIST;
 	}
@@ -159,7 +159,7 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 	@getter ("imports")
 	public IList<String> getImports(final IScope scope) {
 		File file = getFile(scope);
-		GamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
+		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getImports());
 		return GamaListFactory.EMPTY_LIST;
 	}
@@ -174,7 +174,7 @@ public class GamlFile extends GamaFile<IList<IModel>, IModel> {
 	@getter ("valid")
 	public Boolean isValid(final IScope scope) {
 		File file = getFile(scope);
-		GamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
+		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()), file.lastModified());
 		if (info != null) return info.isValid();
 		return false; // If the file is not available, return false by default
 	}

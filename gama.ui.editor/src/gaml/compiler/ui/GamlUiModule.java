@@ -63,8 +63,8 @@ import com.google.inject.Provider;
 import com.google.inject.name.Names;
 
 import gama.core.common.interfaces.IGamlLabelProvider;
+import gama.core.common.interfaces.IModelsManager;
 import gama.dev.DEBUG;
-import gama.ui.shared.interfaces.IModelRunner;
 import gaml.compiler.gaml.parsing.GamlSyntaxErrorMessageProvider;
 import gaml.compiler.gaml.resource.GamlEncodingProvider;
 import gaml.compiler.ide.contentassist.antlr.GamlParser;
@@ -93,7 +93,7 @@ import gaml.compiler.ui.outline.GamlOutlinePage;
 import gaml.compiler.ui.outline.GamlSortOutlineContribution;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.ui.utils.GamlSyncUtil;
-import gaml.compiler.ui.utils.ModelRunner;
+import gaml.compiler.ui.utils.ModelsManager;
 
 /**
  * Use this class to register components to be used within the IDE.
@@ -127,7 +127,7 @@ public class GamlUiModule extends gaml.compiler.ui.AbstractGamlUiModule {
 				.to(InternalGamlLexer.class);
 		binder.bind(IResourceLoader.class).toProvider(ResourceLoaderProviders.getParallelLoader());
 		binder.bind(IResourceClusteringPolicy.class).to(DynamicResourceClusteringPolicy.class);
-		binder.bind(IModelRunner.class).to(ModelRunner.class);
+		binder.bind(IModelsManager.class).to(ModelsManager.class);
 		// binder.bind(XtextDocumentProvider.class).to(XtextDocumentProvider.class);
 		binder.bind(IMarkerUpdater.class).to(GamlMarkerUpdater.class);
 		binder.bind(IGamlLabelProvider.class).to(GamlLabelProvider.class);

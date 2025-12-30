@@ -103,7 +103,7 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 				if (GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue()) {
 					final GamaRuntimeException firstEx = list.get(0);
 					if (GamaPreferences.Runtime.CORE_ERRORS_EDITOR_LINK.getValue()) {
-						GAMA.getGui().editModel(firstEx.getEditorContext());
+						GAMA.getGui().getModelsManager().editModel(firstEx.getEditorContext());
 					}
 					firstEx.setReported();
 					if (GamaPreferences.Runtime.CORE_SHOW_ERRORS.getValue()) {

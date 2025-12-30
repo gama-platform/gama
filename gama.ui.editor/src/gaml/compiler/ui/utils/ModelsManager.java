@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ModelRunner.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * ModelsManager.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -13,6 +13,7 @@ package gaml.compiler.ui.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -33,30 +34,35 @@ import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
+import gama.core.common.GamlFileExtension;
+import gama.core.common.interfaces.IGamlFileInfo;
+import gama.core.common.interfaces.IModelsManager;
+import gama.core.common.util.FileUtils;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.metadata.GamlFileInfo;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
- * The class ModelRunner.
+ * The class ModelsManager.
  *
  * @author drogoul
  * @since 19 juin 2016
  *
  */
 @Singleton
-public class ModelRunner extends AbstractServiceFactory implements IModelRunner {
+public class ModelsManager extends AbstractServiceFactory implements IModelsManager {
 
 	/**
 	 * Edits the model internal.
@@ -176,6 +182,38 @@ public class ModelRunner extends AbstractServiceFactory implements IModelRunner 
 	public Object create(final Class serviceInterface, final IServiceLocator parentLocator,
 			final IServiceLocator locator) {
 		return this;
+	}
+
+	@Override
+	public List<IGamlFileInfo> getAllModels() {
+		List<IGamlFileInfo> infos = new ArrayList<>();
+		try {
+			processContainer(FileUtils.ROOT, infos);
+		} catch (CoreException e) {}
+		return infos;
+	}
+
+	/**
+	 * Process container.
+	 *
+	 * @param container
+	 *            the container
+	 * @throws CoreException
+	 *             the core exception
+	 */
+	static void processContainer(final IContainer container, final List<IGamlFileInfo> list) throws CoreException {
+		IResource[] members = container.members();
+		IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		for (IResource member : members) {
+			if (member instanceof IContainer) {
+				processContainer((IContainer) member, list);
+			} else if (member instanceof IFile && GamlFileExtension.isGaml(member.getName())) {
+				GamlFileInfo data = (GamlFileInfo) provider.getMetaData(member, true, true);
+				// in case the data is not compatible anymore
+				if (data.uri == null || data.uri.isEmpty() || data.getName() == null) { provider.refreshAllMetaData(); }
+				list.add((GamlFileInfo) provider.getMetaData(member, true, true));
+			}
+		}
 	}
 
 }

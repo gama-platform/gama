@@ -27,9 +27,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.parser.SVGLoader;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -47,23 +44,23 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.emf.common.util.URI;
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.SVGLoader;
+
 import gama.core.common.GamlFileExtension;
 import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.runtime.GAMA;
-import gama.core.util.file.GamaFileMetaData;
-import gama.core.util.file.GamaOsmFile;
-import gama.core.util.file.GamaShapeFile;
-import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
+import gama.core.util.file.json.Json;
+import gama.core.util.file.json.JsonValue;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
 import gama.gaml.operators.Strings;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
 
 /**
  * Class FileMetaDataProvider.
@@ -390,7 +387,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	/**
 	 * @param file
 	 */
-	private GamlFileInfo createGamlFileMetaData(final IFile file) {
+	private IGamlFileInfo createGamlFileMetaData(final IFile file) {
 		return GAML.getInfo(URI.createPlatformResourceURI(file.getFullPath().toOSString(), true),
 				file.getModificationStamp());
 	}
@@ -563,33 +560,37 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
 						isGeoJson = true;
 						Envelope3D env = Envelope3D.of(0, 0, 0, 0, 0, 0);
-						if ("FeatureCollection".equals(t)) {
-							JsonValue features = value.asObject().get("features");
-							if (features != null && features.isArray()) {
-								itemCount = features.asArray().size();
-								for (JsonValue v : features.asArray()) {
-									if (v.isObject()) {
-										JsonValue geom = v.asObject().get("geometry");
-										if (geom != null && geom.isObject()) {
-											computeEnvelope(geom, env);
+						switch (t) {
+							case "FeatureCollection": {
+								JsonValue features = value.asObject().get("features");
+								if (features != null && features.isArray()) {
+									itemCount = features.asArray().size();
+									for (JsonValue v : features.asArray()) {
+										if (v.isObject()) {
+											JsonValue geom = v.asObject().get("geometry");
+											if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
 										}
 									}
 								}
+								break;
 							}
-						} else if ("Feature".equals(t)) {
-							JsonValue geom = value.asObject().get("geometry");
-							if (geom != null && geom.isObject()) {
-								computeEnvelope(geom, env);
+							case "Feature": {
+								JsonValue geom = value.asObject().get("geometry");
+								if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
+								break;
 							}
-						} else if ("GeometryCollection".equals(t)) {
-							JsonValue geometries = value.asObject().get("geometries");
-							if (geometries != null && geometries.isArray()) {
-								for (JsonValue v : geometries.asArray()) {
-									if (v.isObject()) {
-										computeEnvelope(v, env);
+							case "GeometryCollection": {
+								JsonValue geometries = value.asObject().get("geometries");
+								if (geometries != null && geometries.isArray()) {
+									for (JsonValue v : geometries.asArray()) {
+										if (v.isObject()) { computeEnvelope(v, env); }
 									}
 								}
+								break;
 							}
+							case null:
+							default:
+								break;
 						}
 						width = env.getWidth();
 						height = env.getHeight();
@@ -598,9 +599,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 							JsonValue props = crsVal.asObject().get("properties");
 							if (props != null && props.isObject()) {
 								JsonValue name = props.asObject().get("name");
-								if (name != null && name.isString()) {
-									crs = name.asString();
-								}
+								if (name != null && name.isString()) { crs = name.asString(); }
 							}
 						}
 					}
@@ -624,26 +623,26 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		JsonValue coords = geom.asObject().get("coordinates");
 		if (coords == null) return;
 		String type = geom.asObject().get("type").asString();
-		if ("Point".equals(type)) {
-			expandEnvelope(coords, env);
-		} else if ("LineString".equals(type) || "MultiPoint".equals(type)) {
-			for (JsonValue v : coords.asArray()) {
-				expandEnvelope(v, env);
-			}
-		} else if ("Polygon".equals(type) || "MultiLineString".equals(type)) {
-			for (JsonValue v : coords.asArray()) {
-				for (JsonValue v2 : v.asArray()) {
-					expandEnvelope(v2, env);
+		switch (type) {
+			case "Point":
+				expandEnvelope(coords, env);
+				break;
+			case "LineString":
+			case "MultiPoint":
+				for (JsonValue v : coords.asArray()) { expandEnvelope(v, env); }
+				break;
+			case "Polygon":
+			case "MultiLineString":
+				for (JsonValue v : coords.asArray()) { for (JsonValue v2 : v.asArray()) { expandEnvelope(v2, env); } }
+				break;
+			case "MultiPolygon":
+				for (JsonValue v : coords.asArray()) {
+					for (JsonValue v2 : v.asArray()) { for (JsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); } }
 				}
-			}
-		} else if ("MultiPolygon".equals(type)) {
-			for (JsonValue v : coords.asArray()) {
-				for (JsonValue v2 : v.asArray()) {
-					for (JsonValue v3 : v2.asArray()) {
-						expandEnvelope(v3, env);
-					}
-				}
-			}
+				break;
+			case null:
+			default:
+				break;
 		}
 	}
 

@@ -130,10 +130,10 @@ public class WorkspaceModelsManager {
 			if (en == null) {
 				// System.out
 				// .println(Thread.currentThread().getName() + ": Opening the model " + fp + " in the editor");
-				GAMA.getGui().editModel(file);
+				GAMA.getGui().getModelsManager().editModel(file);
 			} else {
 				// DEBUG.OUT(Thread.currentThread().getName() + ": Trying to run experiment " + en);
-				GAMA.getGui().runModel(file, en);
+				GAMA.getGui().getModelsManager().runModel(file, en);
 			}
 
 			// };

@@ -129,7 +129,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				GAMA.getGui().editModel(exception.getEditorContext());
+				GAMA.getGui().getModelsManager().editModel(exception.getEditorContext());
 			}
 
 			@Override
@@ -234,7 +234,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	public Map<String, Runnable> handleMenu(final GamaRuntimeException item, final int x, final int y) {
 		final Map<String, Runnable> result = new HashMap<>();
 		result.put("Copy error to clipboard", () -> { WorkbenchHelper.copy(item.getAllText()); });
-		result.put("Show in editor", () -> GAMA.getGui().editModel(item.getEditorContext()));
+		result.put("Show in editor", () -> GAMA.getGui().getModelsManager().editModel(item.getEditorContext()));
 		result.put("Report issue on GitHub", () -> this.reportError(item));
 		return result;
 	}

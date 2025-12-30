@@ -64,7 +64,7 @@ public class OpenImportedErrorSelectionListener implements Selector {
 
 							@Override
 							public void widgetSelected(final SelectionEvent e1) {
-								GAMA.getGui().editModel(msgs.get(s));
+								GAMA.getGui().getModelsManager().editModel(msgs.get(s));
 							}
 
 						}, null);

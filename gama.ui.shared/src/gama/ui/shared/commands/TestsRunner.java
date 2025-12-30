@@ -62,7 +62,7 @@ public class TestsRunner {
 		Job.createSystem("All tests", m -> {
 			for (final IFile file : testFiles) {
 				gui.displayTestsProgress(scope, i[0]++, size);
-				final List<TestExperimentSummary> list = gui.runHeadlessTests(file);
+				final List<TestExperimentSummary> list = gui.getModelsManager().runHeadlessTests(file);
 				if (list != null) { LAST_RUN.addSummaries(list); }
 			}
 			gui.displayTestsResults(scope, LAST_RUN);

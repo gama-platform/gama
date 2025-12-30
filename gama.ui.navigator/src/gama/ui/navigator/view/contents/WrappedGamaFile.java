@@ -23,7 +23,6 @@ import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IMap;
-import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.ast.ISyntacticElement;
@@ -32,6 +31,7 @@ import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
+import gama.workspace.metadata.GamlFileInfo;
 import one.util.streamex.StreamEx;
 
 /**
