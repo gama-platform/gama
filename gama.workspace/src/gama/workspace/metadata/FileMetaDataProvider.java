@@ -168,6 +168,8 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			put("fix", "Feature index");
 			put("cpg", "Character set codepage");
 			put("qml", "Style information");
+			put("gfs", "GML Feature Store");
+			put("xsd", "XML Schema Definition");
 		}
 	};
 
@@ -817,9 +819,16 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		} else {
 			final String extension = r.getFileExtension();
 			if (!longNames.containsKey(extension)) return null;
-			fileName = fileName.replace(extension, "shp");
+			fileName = fileName.substring(0, fileName.length() - extension.length() - 1);
 		}
-		return r.getParent().findMember(fileName);
+		final IContainer parent = r.getParent();
+		IResource result = parent.findMember(fileName + ".shp");
+		if (result != null && result.exists()) return result;
+		result = parent.findMember(fileName + ".asc");
+		if (result != null && result.exists()) return result;
+		result = parent.findMember(fileName + ".gml");
+		if (result != null && result.exists()) return result;
+		return null;
 	}
 
 	/**
@@ -923,7 +932,11 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @return the support files of
 	 */
 	public List<IFile> getSupportFilesOf(final IFile f) {
-		if (f == null || !SHAPEFILE_CT_ID.equals(getContentTypeId(f))) return Collections.EMPTY_LIST;
+		if (f == null) return Collections.EMPTY_LIST;
+		String ct = getContentTypeId(f);
+		if (!SHAPEFILE_CT_ID.equals(ct) && !GML_CT_ID.equals(ct)
+				&& (!IMAGE_CT_ID.equals(ct) || !"asc".equals(f.getFileExtension())))
+			return Collections.EMPTY_LIST;
 		final IContainer c = f.getParent();
 		final List<IFile> result = new ArrayList<>();
 		try {
@@ -942,7 +955,10 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @return true, if successful
 	 */
 	public boolean hasSupportFiles(final IResource r) {
-		return r instanceof IFile && SHAPEFILE_CT_ID.equals(getContentTypeId((IFile) r));
+		if (!(r instanceof IFile)) return false;
+		String ct = getContentTypeId((IFile) r);
+		return SHAPEFILE_CT_ID.equals(ct) || GML_CT_ID.equals(ct)
+				|| IMAGE_CT_ID.equals(ct) && "asc".equals(r.getFileExtension());
 	}
 
 	@Override

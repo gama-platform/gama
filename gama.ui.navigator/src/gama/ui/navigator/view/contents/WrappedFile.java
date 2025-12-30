@@ -34,6 +34,8 @@ import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
 
+import gama.workspace.metadata.GMLInfo;
+
 /**
  * The Class WrappedFile.
  */
@@ -42,8 +44,8 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	/** The file parent. */
 	WrappedFile fileParent;
 
-	/** The is shape file. */
-	boolean isShapeFile;
+	/** The has support files. */
+	boolean hasSupportFiles;
 
 	/** The is shape file support. */
 	boolean isShapeFileSupport;
@@ -90,7 +92,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	 */
 	protected void computeFileType() {
 		final IFile f = getResource();
-		isShapeFile = FileMetaDataProvider.SHAPEFILE_CT_ID.equals(FileMetaDataProvider.getContentTypeId(f));
+		hasSupportFiles = FileMetaDataProvider.getInstance().hasSupportFiles(f);
 		isShapeFileSupport =
 				FileMetaDataProvider.SHAPEFILE_SUPPORT_CT_ID.equals(FileMetaDataProvider.getContentTypeId(f));
 	}
@@ -118,12 +120,12 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 
 	@Override
 	public boolean hasChildren() {
-		return isShapeFile;
+		return hasSupportFiles;
 	}
 
 	@Override
 	public Object[] getNavigatorChildren() {
-		if (NavigatorContentProvider.FILE_CHILDREN_ENABLED && (isGamaFile() || isShapeFile)) return getFileChildren();
+		if (NavigatorContentProvider.FILE_CHILDREN_ENABLED && (isGamaFile() || hasSupportFiles)) return getFileChildren();
 		return EMPTY;
 	}
 
@@ -143,8 +145,13 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 				}
 			}
 			final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(p, false, false);
-			Map<String, String> attributes;
-			if (metaData instanceof ShapeInfo info && !(attributes = info.getAttributes()).isEmpty()) {
+			Map<String, String> attributes = null;
+			if (metaData instanceof ShapeInfo info) {
+				attributes = info.getAttributes();
+			} else if (metaData instanceof GMLInfo info) {
+				attributes = info.getAttributes();
+			}
+			if (attributes != null && !attributes.isEmpty()) {
 				Map<String, String> tags = new LinkedHashMap<>(attributes);
 				attributes.forEach((k, v) -> {
 					if (GamaMetaModel.getAgentSpeciesDescription().hasAttribute(k)) {
