@@ -9,16 +9,12 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
-
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,18 +25,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.geotools.api.data.SimpleFeatureSource;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.NoSuchAuthorityCodeException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.data.DataUtilities;
-import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
@@ -66,14 +53,12 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaListFactory;
 import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
-import gama.dev.DEBUG;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.GamaGeometryType;
@@ -99,116 +84,6 @@ public class GamaOsmFile extends GamaGisFile {
 
 	/** The Constant RESERVED_KEYS. */
 	static final List<String> RESERVED_KEYS = List.of("location", "shape");
-
-	/**
-	 * The Class OSMInfo.
-	 */
-	public static class OSMInfo {
-
-		/** The item number. */
-		int itemNumber;
-
-		/** The crs. */
-		CoordinateReferenceSystem crs;
-
-		/** The width. */
-		final double width;
-
-		/** The height. */
-		final double height;
-
-		/** The attributes. */
-		final Map<String, String> attributes = new LinkedHashMap();
-
-		/**
-		 * Instantiates a new OSM info.
-		 *
-		 * @param url
-		 *            the url
-		 * @param modificationStamp
-		 *            the modification stamp
-		 */
-		public OSMInfo(final URL url, final long modificationStamp) {
-			CoordinateReferenceSystem crs = null;
-			ReferencedEnvelope env2 = new ReferencedEnvelope();
-
-			int number = 0;
-			try {
-				final File f = new File(url.toURI());
-				final GamaOsmFile osmfile = new GamaOsmFile(null, f.getAbsolutePath());
-				attributes.putAll(osmfile.getOSMAttributes(GAMA.getRuntimeScope()));
-
-				final SimpleFeatureType TYPE = DataUtilities.createType("geometries", "geom:LineString");
-				final ArrayList<SimpleFeature> list = new ArrayList<>();
-				for (final IShape shape : osmfile.iterable(null)) {
-					list.add(SimpleFeatureBuilder.build(TYPE, new Object[] { shape.getInnerGeometry() }, null));
-				}
-				final SimpleFeatureCollection collection = new ListFeatureCollection(TYPE, list);
-				final SimpleFeatureSource featureSource = DataUtilities.source(collection);
-
-				env2 = featureSource.getBounds();
-				number = osmfile.nbObjects;
-				crs = osmfile.getOwnCRS(null);
-			} catch (final Exception e) {
-				DEBUG.ERR("Error in reading metadata of " + url);
-
-			} finally {
-
-				// approximation of the width and height in meters.
-				width = env2 != null ? env2.getWidth() * (Math.PI / 180) * 6378137 : 0;
-				height = env2 != null ? env2.getHeight() * (Math.PI / 180) * 6378137 : 0;
-				itemNumber = number;
-				this.crs = crs;
-			}
-
-		}
-
-		/**
-		 * Gets the crs.
-		 *
-		 * @return the crs
-		 */
-		public CoordinateReferenceSystem getCRS() { return crs; }
-
-		/**
-		 * Instantiates a new OSM info.
-		 *
-		 * @param propertiesString
-		 *            the properties string
-		 * @throws NoSuchAuthorityCodeException
-		 *             the no such authority code exception
-		 * @throws FactoryException
-		 *             the factory exception
-		 */
-		public OSMInfo(final String propertiesString) throws NoSuchAuthorityCodeException, FactoryException {
-			final String[] segments =
-					splitByWholeSeparatorPreserveAllTokens(propertiesString, IGamaFileMetaData.DELIMITER);
-			itemNumber = Integer.parseInt(segments[1]);
-			final String crsString = segments[2];
-			if ("null".equals(crsString)) {
-				crs = null;
-			} else {
-				crs = CRS.parseWKT(crsString);
-			}
-			width = Double.parseDouble(segments[3]);
-			height = Double.parseDouble(segments[4]);
-			if (segments.length > 5) {
-				final String[] names =
-						splitByWholeSeparatorPreserveAllTokens(segments[5], IGamaFileMetaData.SUB_DELIMITER);
-				final String[] types =
-						splitByWholeSeparatorPreserveAllTokens(segments[6], IGamaFileMetaData.SUB_DELIMITER);
-				for (int i = 0; i < names.length; i++) { attributes.put(names[i], types[i]); }
-			}
-		}
-
-		/**
-		 * Gets the attributes.
-		 *
-		 * @return the attributes
-		 */
-		public Map<String, String> getAttributes() { return attributes; }
-
-	}
 
 	/** The filtering options. */
 	IMap<String, IList> filteringOptions;
