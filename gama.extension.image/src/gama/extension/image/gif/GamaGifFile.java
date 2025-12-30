@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.image;
+package gama.extension.image.gif;
 
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -17,6 +17,8 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.matrix.IMatrix;
+import gama.extension.image.GamaImageFile;
+import gama.extension.image.ImageCache;
 import gama.gaml.types.IType;
 
 /**

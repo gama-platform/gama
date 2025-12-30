@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.image;
+package gama.extension.image.svg;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -33,7 +33,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
 import com.github.weisj.jsvg.renderer.output.Output;
-import com.github.weisj.jsvg.util.ShapeUtil;
 
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.shape.GamaShapeFactory;

@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.image;
+package gama.extension.image.svg;
 
 import static java.lang.Integer.MAX_VALUE;
 
@@ -44,6 +44,11 @@ import gama.core.util.IList;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.file.IGamaFile;
 import gama.dev.DEBUG;
+import gama.extension.image.GamaImage;
+import gama.extension.image.GamaImageFile;
+import gama.extension.image.ImageCache;
+import gama.extension.image.ImageHelper;
+import gama.extension.image.ImageOperators;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

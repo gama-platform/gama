@@ -1,4 +1,14 @@
-package gama.extension.image;
+/*******************************************************************************************************
+ *
+ * GifImageContainer.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.extension.image.gif;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -17,7 +27,7 @@ import java.util.TimerTask;
 /**
  * The Class GifImageContainer.
  */
-class GifImageContainer {
+public class GifImageContainer {
 
 	/**
 	 * File read status: No errors.
@@ -311,8 +321,8 @@ class GifImageContainer {
 	protected void decodeImageData() {
 		final int NullCode = -1;
 		final int npix = iw * ih;
-		int available, clear, code_mask, code_size, end_of_information, in_code, old_code, bits, code, count, i,
-				datum, data_size, first, top, bi, pi;
+		int available, clear, code_mask, code_size, end_of_information, in_code, old_code, bits, code, count, i, datum,
+				data_size, first, top, bi, pi;
 		if (pixels == null || pixels.length < npix) {
 			pixels = new byte[npix]; // allocate new pixel array
 		}

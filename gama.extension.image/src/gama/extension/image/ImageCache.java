@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ImageCache.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ImageCache.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gama.extension.image;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
@@ -35,6 +34,7 @@ import com.sun.media.jai.codec.FileSeekableStream;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.runtime.IScope;
 import gama.dev.DEBUG;
+import gama.extension.image.gif.GifImageContainer;
 
 /**
  * The Class ImageCache.

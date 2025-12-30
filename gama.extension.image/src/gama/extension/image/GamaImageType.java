@@ -31,6 +31,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IMap;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaIntMatrix;
+import gama.extension.image.svg.GamaSVGFile;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.GamaFileType;
