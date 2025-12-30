@@ -105,7 +105,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	/**
 	 * The Class CSVInfo.
 	 */
-	public static class CSVInfo extends GamaFileMetaData {
+	public static class CSVInfo {
 
 		/** The cols. */
 		public int cols;
@@ -136,7 +136,6 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		 *            the CS vsep
 		 */
 		public CSVInfo(final String fileName, final long modificationStamp, final String CSVsep) {
-			super(modificationStamp);
 			try (CsvReader reader = new CsvReader(fileName)) {
 				process(reader, CSVsep);
 			} catch (FileNotFoundException e) {}
@@ -259,51 +258,19 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		 *            the property string
 		 */
 		public CSVInfo(final String propertyString) {
-			super(propertyString);
-			final String[] segments = split(propertyString);
+			final String[] segments = StringUtils.splitByWholeSeparatorPreserveAllTokens(propertyString, IGamaFileMetaData.DELIMITER);
 			cols = Integer.parseInt(segments[1]);
 			rows = Integer.parseInt(segments[2]);
 			header = Boolean.parseBoolean(segments[3]);
 			delimiter = segments[4].charAt(0);
 			type = Types.get(segments[5]);
 			if (header) {
-				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6], SUB_DELIMITER);
+				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6], IGamaFileMetaData.SUB_DELIMITER);
 			} else {
 
 				headers = new String[cols];
 				Arrays.fill(headers, "");
 			}
-		}
-
-		@Override
-		public Doc getDocumentation() {
-			RegularDoc sb = new RegularDoc();
-			sb.append("CSV File ").append(header ? "with header" : "no header").append(Strings.LN);
-			sb.append("Dimensions: ").append(cols + " columns x " + (header ? rows - 1 : rows) + " rows")
-					.append(Strings.LN);
-			sb.append("Delimiter: ").append(delimiter).append(Strings.LN).append("Contents type: ")
-					.append(type.toString()).append(Strings.LN);
-			if (header && headers != null) {
-				sb.append("Headers: ");
-				for (final String header2 : headers) { sb.append(header2).append(" | "); }
-			}
-			return sb;
-		}
-
-		@Override
-		public void appendSuffix(final StringBuilder sb) {
-			sb.append(cols).append("x").append(rows).append(SUFFIX_DEL);
-			sb.append(header ? "with header" : "no header").append(SUFFIX_DEL);
-			sb.append("delimiter: '").append(delimiter).append("'").append(SUFFIX_DEL).append(type);
-		}
-
-		/**
-		 * @return
-		 */
-		@Override
-		public String toPropertyString() {
-			return super.toPropertyString() + DELIMITER + cols + DELIMITER + rows + DELIMITER + header + DELIMITER
-					+ delimiter + DELIMITER + type + (header ? DELIMITER + String.join(SUB_DELIMITER, headers) : "");
 		}
 
 	}
@@ -588,9 +555,13 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		final IFileMetaDataProvider p = scope.getGui().getMetaDataProvider();
 		if (p != null) {
 			final IGamaFileMetaData metaData = p.getMetaData(getFile(scope), false, true);
-			if (metaData instanceof CSVInfo) {
-				info = (CSVInfo) metaData;
-				if (CSVSep != null && info != null && !info.delimiter.equals(CSVSep.charAt(0))) { info = null; }
+			if (metaData != null) {
+				try {
+					info = new CSVInfo(metaData.toPropertyString());
+					if (CSVSep != null && info != null && !info.delimiter.equals(CSVSep.charAt(0))) { info = null; }
+				} catch (Exception e) {
+					info = null;
+				}
 			}
 		}
 		if (info == null) {

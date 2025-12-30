@@ -33,7 +33,6 @@ import com.github.weisj.jsvg.parser.SVGLoader;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ISaveContext;
 import org.eclipse.core.resources.ISaveParticipant;
@@ -52,13 +51,9 @@ import gama.core.common.GamlFileExtension;
 import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.GAMA;
-import gama.core.util.file.GamaCSVFile;
-import gama.core.util.file.GamaCSVFile.CSVInfo;
 import gama.core.util.file.GamaFileMetaData;
 import gama.core.util.file.GamaOsmFile;
-import gama.core.util.file.GamaOsmFile.OSMInfo;
 import gama.core.util.file.GamaShapeFile;
-import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.core.util.file.GamlFileInfo;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
@@ -66,8 +61,6 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
-import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
-import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
@@ -172,101 +165,6 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			put("xsd", "XML Schema Definition");
 		}
 	};
-
-	/**
-	 * The Class GenericFileInfo.
-	 */
-	public static class GenericFileInfo extends GamaFileMetaData {
-
-		/** The suffix. */
-		final String suffix;
-
-		/**
-		 * Instantiates a new generic file info.
-		 *
-		 * @param stamp
-		 *            the stamp
-		 * @param suffix
-		 *            the suffix
-		 */
-		public GenericFileInfo(final long stamp, final String suffix) {
-			super(stamp);
-			this.suffix = suffix;
-		}
-
-		/**
-		 * Instantiates a new generic file info.
-		 *
-		 * @param propertiesString
-		 *            the properties string
-		 */
-		public GenericFileInfo(final String propertiesString) { // NO_UCD (unused code)
-			super(propertiesString);
-			final String[] segments = split(propertiesString);
-			suffix = segments[1];
-		}
-
-		@Override
-		public void appendSuffix(final StringBuilder sb) {
-			if (suffix != null) { sb.append(suffix); }
-		}
-
-		@Override
-		public String toPropertyString() {
-			return super.toPropertyString() + DELIMITER + suffix;
-		}
-
-		@Override
-		public Doc getDocumentation() { return new ConstantDoc(suffix); }
-	}
-
-	/**
-	 * The Class ProjectInfo.
-	 */
-	public static class ProjectInfo extends GamaFileMetaData {
-
-		/** The comment. */
-		final String comment;
-
-		/**
-		 * Instantiates a new project info.
-		 *
-		 * @param project
-		 *            the project
-		 * @throws CoreException
-		 *             the core exception
-		 */
-		public ProjectInfo(final IProject project) throws CoreException {
-			super(project.getModificationStamp());
-			final IProjectDescription desc = project.getDescription();
-			comment = desc.getComment();
-		}
-
-		/**
-		 * Instantiates a new project info.
-		 *
-		 * @param propertiesString
-		 *            the properties string
-		 */
-		public ProjectInfo(final String propertiesString) { // NO_UCD (unused code)
-			super(propertiesString);
-			final String[] segments = split(propertiesString);
-			comment = segments[1];
-		}
-
-		@Override
-		public void appendSuffix(final StringBuilder sb) {
-			if (comment != null && !comment.isEmpty()) { sb.append(comment); }
-		}
-
-		@Override
-		public String toPropertyString() {
-			return super.toPropertyString() + DELIMITER + comment;
-		}
-
-		@Override
-		public Doc getDocumentation() { return new ConstantDoc(comment); }
-	}
 
 	/** The Constant CLASSES. */
 	public static final Map<String, Class<? extends GamaFileMetaData>> CLASSES = new HashMap<>() {
@@ -504,7 +402,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 *            the file
 	 * @return the gama CSV file. CSV info
 	 */
-	private GamaCSVFile.CSVInfo createCSVFileMetaData(final IFile file) {
+	private CSVInfo createCSVFileMetaData(final IFile file) {
 		return new CSVInfo(file.getLocation().toOSString(), file.getModificationStamp(), null);
 	}
 
@@ -552,10 +450,10 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @param file
 	 * @return
 	 */
-	private GamaShapeFile.ShapeInfo createShapeFileMetaData(final IFile file) {
+	private ShapeInfo createShapeFileMetaData(final IFile file) {
 		ShapeInfo info = null;
 		try {
-			info = new ShapeInfo(null, file.getLocationURI().toURL(), file.getModificationStamp());
+			info = new ShapeInfo(GAMA.getRuntimeScope(), file.getLocationURI().toURL(), file.getModificationStamp());
 		} catch (final MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -570,7 +468,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 *            the file
 	 * @return the gama osm file. OSM info
 	 */
-	private GamaOsmFile.OSMInfo createOSMMetaData(final IFile file) {
+	private OSMInfo createOSMMetaData(final IFile file) {
 		OSMInfo info = null;
 		try {
 			info = new OSMInfo(file.getLocationURI().toURL(), file.getModificationStamp());

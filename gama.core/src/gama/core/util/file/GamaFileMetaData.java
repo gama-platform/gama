@@ -139,6 +139,16 @@ public abstract class GamaFileMetaData implements IGamaFileMetaData {
 	public void setModificationStamp(final long ms) { fileModificationStamp = ms; }
 
 	/**
+	 * Sets the failed.
+	 *
+	 * @param failed
+	 *            the new failed
+	 */
+	public void setFailed(final boolean failed) {
+		this.hasFailed = failed;
+	}
+
+	/**
 	 * @return
 	 */
 	public Consumer<IGamlDescription> getContextualAction() { // TODO Auto-generated method stub

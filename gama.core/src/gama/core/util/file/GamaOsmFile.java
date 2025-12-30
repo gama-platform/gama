@@ -74,9 +74,6 @@ import gama.core.util.GamaMapFactory;
 import gama.core.util.IList;
 import gama.core.util.IMap;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
-import gama.gaml.operators.Strings;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialTransformations;
 import gama.gaml.types.GamaGeometryType;
@@ -106,7 +103,7 @@ public class GamaOsmFile extends GamaGisFile {
 	/**
 	 * The Class OSMInfo.
 	 */
-	public static class OSMInfo extends GamaFileMetaData {
+	public static class OSMInfo {
 
 		/** The item number. */
 		int itemNumber;
@@ -132,7 +129,6 @@ public class GamaOsmFile extends GamaGisFile {
 		 *            the modification stamp
 		 */
 		public OSMInfo(final URL url, final long modificationStamp) {
-			super(modificationStamp);
 			CoordinateReferenceSystem crs = null;
 			ReferencedEnvelope env2 = new ReferencedEnvelope();
 
@@ -155,7 +151,6 @@ public class GamaOsmFile extends GamaGisFile {
 				crs = osmfile.getOwnCRS(null);
 			} catch (final Exception e) {
 				DEBUG.ERR("Error in reading metadata of " + url);
-				hasFailed = true;
 
 			} finally {
 
@@ -186,63 +181,24 @@ public class GamaOsmFile extends GamaGisFile {
 		 *             the factory exception
 		 */
 		public OSMInfo(final String propertiesString) throws NoSuchAuthorityCodeException, FactoryException {
-			super(propertiesString);
-			if (!hasFailed) {
-				final String[] segments = split(propertiesString);
-				itemNumber = Integer.parseInt(segments[1]);
-				final String crsString = segments[2];
-				if ("null".equals(crsString)) {
-					crs = null;
-				} else {
-					crs = CRS.parseWKT(crsString);
-				}
-				width = Double.parseDouble(segments[3]);
-				height = Double.parseDouble(segments[4]);
-				if (segments.length > 5) {
-					final String[] names = splitByWholeSeparatorPreserveAllTokens(segments[5], SUB_DELIMITER);
-					final String[] types = splitByWholeSeparatorPreserveAllTokens(segments[6], SUB_DELIMITER);
-					for (int i = 0; i < names.length; i++) { attributes.put(names[i], types[i]); }
-				}
-			} else {
-				itemNumber = 0;
-				width = 0.0;
-				height = 0.0;
+			final String[] segments =
+					splitByWholeSeparatorPreserveAllTokens(propertiesString, IGamaFileMetaData.DELIMITER);
+			itemNumber = Integer.parseInt(segments[1]);
+			final String crsString = segments[2];
+			if ("null".equals(crsString)) {
 				crs = null;
-			}
-		}
-
-		@Override
-		public void appendSuffix(final StringBuilder sb) {
-			if (hasFailed) {
-				sb.append("error: decompress the file to a .osm file");
-				return;
-			}
-			sb.append(itemNumber).append(" object");
-			if (itemNumber > 1) { sb.append("s"); }
-			sb.append(SUFFIX_DEL);
-			sb.append(Math.round(width)).append("m x ");
-			sb.append(Math.round(height)).append("m");
-		}
-
-		@Override
-		public Doc getDocumentation() {
-			final RegularDoc sb = new RegularDoc();
-			if (hasFailed) {
-				sb.append("Unreadable OSM file").append(Strings.LN)
-						.append("Decompress the file to an .osm file and retry");
 			} else {
-				sb.append("OSM file").append(Strings.LN);
-				sb.append(String.valueOf(itemNumber)).append(" objects").append(Strings.LN);
-				sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m")
-						.append(Strings.LN);
-				sb.append("Coordinate Reference System: ").append(crs == null ? "No CRS" : crs.getName().getCode())
-						.append(Strings.LN);
-				if (!attributes.isEmpty()) {
-					sb.append("Attributes: ").append(Strings.LN);
-					attributes.forEach((k, v) -> sb.append("<li>").append(k).append(" (" + v + ")").append("</li>"));
-				}
+				crs = CRS.parseWKT(crsString);
 			}
-			return sb;
+			width = Double.parseDouble(segments[3]);
+			height = Double.parseDouble(segments[4]);
+			if (segments.length > 5) {
+				final String[] names =
+						splitByWholeSeparatorPreserveAllTokens(segments[5], IGamaFileMetaData.SUB_DELIMITER);
+				final String[] types =
+						splitByWholeSeparatorPreserveAllTokens(segments[6], IGamaFileMetaData.SUB_DELIMITER);
+				for (int i = 0; i < names.length; i++) { attributes.put(names[i], types[i]); }
+			}
 		}
 
 		/**
@@ -252,15 +208,6 @@ public class GamaOsmFile extends GamaGisFile {
 		 */
 		public Map<String, String> getAttributes() { return attributes; }
 
-		@Override
-		public String toPropertyString() {
-			final String attributeNames = String.join(SUB_DELIMITER, attributes.keySet());
-			final String types = String.join(SUB_DELIMITER, attributes.values());
-			final String[] toSave =
-					{ super.toPropertyString(), String.valueOf(itemNumber), crs == null ? "null" : crs.toWKT(),
-							String.valueOf(width), String.valueOf(height), attributeNames, types };
-			return String.join(DELIMITER, toSave);
-		}
 	}
 
 	/** The filtering options. */
@@ -280,6 +227,13 @@ public class GamaOsmFile extends GamaGisFile {
 
 	/** The nb objects. */
 	int nbObjects;
+
+	/**
+	 * Gets the nb objects.
+	 *
+	 * @return the nb objects
+	 */
+	public int getNbObjects() { return nbObjects; }
 
 	/**
 	 * @throws GamaRuntimeException
@@ -967,7 +921,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 * @see gama.core.util.file.GamaGisFile#getExistingCRS()
 	 */
 	@Override
-	protected CoordinateReferenceSystem getOwnCRS(final IScope scope) {
+	public CoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		// Is it always true ?
 		return DefaultGeographicCRS.WGS84;
 	}

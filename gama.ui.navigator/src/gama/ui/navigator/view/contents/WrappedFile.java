@@ -23,7 +23,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
@@ -33,8 +32,9 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
-
 import gama.workspace.metadata.GMLInfo;
+import gama.workspace.metadata.OSMInfo;
+import gama.workspace.metadata.ShapeInfo;
 
 /**
  * The Class WrappedFile.
@@ -149,6 +149,8 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 			if (metaData instanceof ShapeInfo info) {
 				attributes = info.getAttributes();
 			} else if (metaData instanceof GMLInfo info) {
+				attributes = info.getAttributes();
+			} else if (metaData instanceof OSMInfo info) {
 				attributes = info.getAttributes();
 			}
 			if (attributes != null && !attributes.isEmpty()) {

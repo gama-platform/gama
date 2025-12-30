@@ -48,8 +48,6 @@ import org.geotools.styling.StyleBuilder;
 
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.GAMA;
-import gama.core.util.file.GamaShapeFile;
-import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -60,6 +58,7 @@ import gama.ui.shared.views.toolbar.Selector;
 import gama.ui.viewers.gis.geotools.styling.Mode;
 import gama.ui.viewers.gis.geotools.styling.SLDs;
 import gama.ui.viewers.gis.geotools.styling.Utils;
+import gama.workspace.metadata.ShapeInfo;
 
 /**
  * The Class ShapeFileViewer.
@@ -110,8 +109,7 @@ public class ShapeFileViewer extends GISFileViewer {
 	@Override
 	protected void displayInfoString() {
 		String s;
-		final GamaShapeFile.ShapeInfo info =
-				(ShapeInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+		final ShapeInfo info = (ShapeInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
 		if (info == null) {
 			s = "Error in reading file information";
 		} else {

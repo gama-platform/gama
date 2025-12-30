@@ -177,6 +177,12 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 		invalid = "TRUE".equals(values[6]);
 	}
 
+	/**
+	 * Append suffix.
+	 *
+	 * @param sb
+	 *            the sb
+	 */
 	@Override
 	public void appendSuffix(final StringBuilder sb) {
 		if (invalid) {
@@ -192,6 +198,11 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlDescription {
 		}
 	}
 
+	/**
+	 * To property string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toPropertyString() {
 		final StringBuilder sb = new StringBuilder();
