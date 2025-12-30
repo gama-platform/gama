@@ -405,7 +405,7 @@
           class="gama.ui.views.GamaOutlineView"
           icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.outline.svg"
           id="gama.ui.application.view.outline"
-          name="Model Outline"
+          name="Outline"
           restorable="true">
     </view>
     <view
@@ -431,7 +431,7 @@
           class="gama.ui.views.GamaMinimapView"
           icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.minimap.svg"
           id="gama.ui.application.view.minimap"
-          name="Model Navigation"
+          name="Navigation"
           restorable="true">
     </view>
  </extension>

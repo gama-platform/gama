@@ -14,6 +14,7 @@ Automatic-Module-Name: gama.workspace
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.common.base;version="[33.5.0,34.0.0)",
  com.google.common.collect;version="[33.5.0,34.0.0)",
+ gama.core.util.file.json,
  gama.dev,
  org.eclipse.core.internal.resources,
  org.eclipse.core.resources,

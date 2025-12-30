@@ -116,6 +116,13 @@
             name="SVG File"
             priority="high">
       </content-type>
+      <content-type
+            default-charset="UTF-8"
+            file-extensions="json,JSON,geojson,GEOJSON"
+            id="gama.json.file.type"
+            name="JSON File"
+            priority="high">
+      </content-type>
    </extension>
 
 </plugin>

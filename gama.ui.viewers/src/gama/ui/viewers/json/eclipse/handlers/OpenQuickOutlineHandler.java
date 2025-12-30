@@ -1,0 +1,29 @@
+/*******************************************************************************************************
+ *
+ * OpenQuickOutlineHandler.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.ui.viewers.json.eclipse.handlers;
+
+import gama.ui.viewers.json.eclipse.JsonEditor;
+
+/**
+ * The Class OpenQuickOutlineHandler.
+ */
+public class OpenQuickOutlineHandler extends AbstractJsonEditorHandler {
+
+	/** The Constant COMMAND_ID. */
+	public static final String COMMAND_ID = "jsoneditor.editor.commands.quickoutline";
+
+	@Override
+	protected void executeOnJsonEditor(final JsonEditor jsonEditor) {
+		jsonEditor.openQuickOutline();
+
+	}
+
+}

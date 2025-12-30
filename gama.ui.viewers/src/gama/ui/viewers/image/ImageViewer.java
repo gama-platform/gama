@@ -362,8 +362,6 @@ public class ImageViewer extends EditorPart
 					WorkbenchHelper.asyncRun(r);
 
 					return Status.OK_STATUS;
-				} catch (final CoreException ex) {
-					return ex.getStatus();
 				} catch (final SWTException ex) {
 					return new Status(IStatus.ERROR, "gama.ui.application", ex.getMessage());
 				} finally {
@@ -379,7 +377,7 @@ public class ImageViewer extends EditorPart
 	 * Load the image data from the current editor input. This operation can take time and should not be called on the
 	 * ui thread.
 	 */
-	void loadImageData() throws CoreException {
+	void loadImageData() {
 		final IEditorInput input = getEditorInput();
 		final Object o = input.getAdapter(ImageData.class);
 		if (o instanceof ImageData) {

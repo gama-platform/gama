@@ -12,7 +12,8 @@ Require-Bundle: gama.dependencies,
  org.eclipse.core.filesystem,
  org.eclipse.xtext
 Bundle-ActivationPolicy: lazy
-Export-Package: gama.core.common;
+Export-Package: gama.core.util.file.json,
+ gama.core.common;
   uses:="org.osgi.framework,
    gama.core.util,
    gama.core.kernel.experiment,

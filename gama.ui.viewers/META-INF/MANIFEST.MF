@@ -16,8 +16,10 @@ Require-Bundle: org.eclipse.core.resources,
  gama.ui.shared,
  gama.ui.navigator,
  gama.workspace;bundle-version="0.0.0",
- com.github.weisj.jsvg
+ com.github.weisj.jsvg,
+ org.eclipse.ui.views;bundle-version="3.12.800"
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: gama.ui.viewers.json.eclipse.JsonEditorActivator
 Automatic-Module-Name: gama.ui.viewers
 Export-Package: gama.ui.viewers.csv,
  gama.ui.viewers.csv.model,

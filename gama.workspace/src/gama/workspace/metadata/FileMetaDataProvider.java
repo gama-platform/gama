@@ -68,6 +68,8 @@ import gama.gaml.compilation.GAML;
 import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
+import gama.core.util.file.json.Json;
+import gama.core.util.file.json.JsonValue;
 
 /**
  * Class FileMetaDataProvider.
@@ -129,6 +131,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 
 	/** The Constant SVG_CT_ID. */
 	public static final String SVG_CT_ID = "gama.svg.file.type";
+
+	/** The Constant JSON_CT_ID. */
+	public static final String JSON_CT_ID = "gama.json.file.type";
 
 	/** The Constant instance. */
 	private final static FileMetaDataProvider instance = new FileMetaDataProvider();
@@ -268,6 +273,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			put(OSM_CT_ID, OSMInfo.class);
 			put(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo.class);
 			put(SVG_CT_ID, SVGInfo.class);
+			put(JSON_CT_ID, JSONInfo.class);
 			put("project", ProjectInfo.class);
 			// BEN put(GSIM_CT_ID, SavedSimulationInfo.class);
 		}
@@ -368,6 +374,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 								break;
 							case SVG_CT_ID:
 								data[0] = createSVGFileMetaData(theFile);
+								break;
+							case JSON_CT_ID:
+								data[0] = createJSONFileMetaData(theFile);
 								break;
 						}
 						// Last chance: we generate a generic info
@@ -617,6 +626,44 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			DEBUG.ERR("Error reading SVG metadata for " + file.getName() + ": " + e.getMessage());
 		}
 		return new SVGInfo(file.getModificationStamp(), width, height, groups);
+	}
+
+	/**
+	 * Creates the JSON file meta data.
+	 *
+	 * @param file
+	 *            the file
+	 * @return the JSON info
+	 */
+	private JSONInfo createJSONFileMetaData(final IFile file) {
+		int itemCount = 0;
+		boolean isGeoJson = false;
+		String type = "Unknown";
+		try (var reader = new java.io.InputStreamReader(file.getContents())) {
+			JsonValue value = Json.getNew().parse(reader);
+			if (value.isArray()) {
+				type = "Array";
+				itemCount = value.asArray().size();
+			} else if (value.isObject()) {
+				type = "Object";
+				itemCount = value.asObject().size();
+				if (value.asObject().get("type") != null) {
+					String t = value.asObject().get("type").asString();
+					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
+						isGeoJson = true;
+						if ("FeatureCollection".equals(t)) {
+							JsonValue features = value.asObject().get("features");
+							if (features != null && features.isArray()) {
+								itemCount = features.asArray().size();
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			DEBUG.ERR("Error reading JSON metadata for " + file.getName() + ": " + e.getMessage());
+		}
+		return new JSONInfo(file.getModificationStamp(), itemCount, isGeoJson, type);
 	}
 
 	/**
