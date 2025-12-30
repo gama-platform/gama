@@ -489,8 +489,16 @@ public class GAMA {
 	 *
 	 * @return the current random
 	 */
-	public static RandomUtils getCurrentRandom() {
-		final IScope scope = getRuntimeScope();
+	public static RandomUtils getCurrentRandom() { return getRandom(getRuntimeScope()); }
+
+	/**
+	 * Gets the random.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the random
+	 */
+	public static RandomUtils getRandom(final IScope scope) {
 		if (scope == null) return new RandomUtils();
 		return scope.getRandom();
 	}

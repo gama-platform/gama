@@ -349,24 +349,15 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					} else if (nbRows == null && line.contains("nrows")) {
 						nbRows = intVal(line);
 					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-
 						noDataD = line.contains("nan") ? Double.NaN : doubleVal(line);
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
 					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
 						yCorner = doubleVal(line);
-						// TODO: very suspicious, probably xllcenter and yllcenter
-					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) { // AD To verify: the
-																									// conditions are
-																									// the same as two
-																									// lines above...
+					} else if (xCorner == null && xCenter == null && line.contains("xllcenter")) {
 						xCenter = doubleVal(line);
-						// ascInfo[2] = xCorner;
-					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) { // AD To verify: the
-																									// conditions are
-																									// the same as two
-																									// lines above...
+					} else if (yCorner == null && yCenter == null && line.contains("yllcenter")) {
 						yCenter = doubleVal(line);
 					} else if (line.replace(" ", "").length() > 0) {
 						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0)
@@ -395,7 +386,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
-						if (noDataD.isNaN()) {
+						if (noDataD != null && noDataD.isNaN()) {
 							Double v = 0.0;
 							try {
 								v = Double.valueOf(l[i]);

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * ExperimentParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ExperimentParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -131,10 +132,11 @@ import gama.gaml.variables.Variable;
 						name = IKeyword.UPDATES,
 						type = IType.LIST,
 						optional = true,
-						doc = @doc ("a list of global variables whose parameter editors will be updated when this parameter value is changed "
-								+ "(their min, max, step and among values will be updated accordingly if they depend on this parameter. "
-								+ "Note that it might lead to some inconsistencies, for instance a parameter value which becomes out of range, "
-								+ "or which does not belong anymore to a list of possible values. In these cases, the value of the affected parameter will not change)")),
+						doc = @doc ("""
+								a list of global variables whose parameter editors will be updated when this parameter value is changed \
+								(their min, max, step and among values will be updated accordingly if they depend on this parameter. \
+								Note that it might lead to some inconsistencies, for instance a parameter value which becomes out of range, \
+								or which does not belong anymore to a list of possible values. In these cases, the value of the affected parameter will not change)""")),
 				@facet (
 						name = "in_workspace",
 						type = IType.BOOL,
@@ -157,10 +159,11 @@ import gama.gaml.variables.Variable;
 						type = IType.LIST,
 						of = IType.COLOR,
 						optional = true,
-						doc = @doc ("The colors of the control in the UI. An empty list has no effects. Only used for sliders and switches so far. For sliders, "
-								+ "3 colors will allow to specify the color of the left section, the thumb and the right section (in this order); 2 colors will "
-								+ "define the left and right sections only (thumb will be dark green); 1 color will define the left section and the thumb. "
-								+ "For switches, 2 colors will define the background for respectively the left 'true' and right 'false' sections. 1 color will define both backgrounds")),
+						doc = @doc ("""
+								The colors of the control in the UI. An empty list has no effects. Only used for sliders and switches so far. For sliders, \
+								3 colors will allow to specify the color of the left section, the thumb and the right section (in this order); 2 colors will \
+								define the left and right sections only (thumb will be dark green); 1 color will define the left section and the thumb. \
+								For switches, 2 colors will define the background for respectively the left 'true' and right 'false' sections. 1 color will define both backgrounds""")),
 				@facet (
 						name = "labels",
 						type = IType.LIST,
@@ -211,6 +214,9 @@ import gama.gaml.variables.Variable;
 @SuppressWarnings ({ "rawtypes" })
 public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
+	/**
+	 * The Class ExperimentParameterValidator.
+	 */
 	public static class ExperimentParameterValidator extends Variable.VarValidator {
 		@Override
 		public void validate(final IDescription vd) {
@@ -605,12 +611,12 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			if (val == UNDEFINED) {
 				List amongValue = getAmongValue(scope);
 				if (amongValue != null) {
-					value = amongValue.get(scope.getRandom().between(0, amongValue.size() - 1));
+					value = amongValue.get(GAMA.getRandom(scope).between(0, amongValue.size() - 1));
 				} else if (type.id() == IType.INT || type.id() == IType.FLOAT || type.id() == IType.POINT
 						|| type.id() == IType.DATE) {
 					value = drawRandomValue(scope);
 				} else if (type.id() == IType.BOOL) {
-					value = scope.getRandom().between(1, 100) > 50;
+					value = GAMA.getRandom(scope).between(1, 100) > 50;
 				} else {
 					value = null;
 				}
@@ -650,7 +656,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					final int iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
 					final int iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
 					final int iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
-					yield scope.getRandom().between(iMin, iMax, iStep);
+					yield GAMA.getRandom(scope).between(iMin, iMax, iStep);
 				}
 				case IType.POINT -> {
 					final GamaPoint pStep = stepValue == null ? new GamaPoint(1, 1, 1) : Cast.asPoint(scope, stepValue);
@@ -660,7 +666,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					final GamaPoint pMax =
 							maxValue == null ? new GamaPoint(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
 									: Cast.asPoint(scope, maxValue);
-					yield scope.getRandom().between(pMin, pMax, pStep);
+					yield GAMA.getRandom(scope).between(pMin, pMax, pStep);
 				}
 				case IType.DATE -> {
 					final double dStep =
@@ -678,7 +684,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					final double fStep = stepValue == null ? 1.0 : Cast.asFloat(scope, stepValue);
 					final double fMin = minValue == null ? Double.MIN_VALUE : Cast.asFloat(scope, minValue);
 					final double fMax = maxValue == null ? Double.MAX_VALUE : Cast.asFloat(scope, maxValue);
-					yield scope.getRandom().between(fMin, fMax, fStep);
+					yield GAMA.getRandom(scope).between(fMin, fMax, fStep);
 				}
 			};
 		} finally {
@@ -897,7 +903,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	}
 
 	@Override
-	public boolean canBeExplored() { 
+	public boolean canBeExplored() {
 		return type == Types.BOOL || among != null || min != null && max != null;
 	}
 

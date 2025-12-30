@@ -88,7 +88,9 @@ public class MultiPolygonHandler extends GeometryHandlerBase<MultiPolygon> {
 
 				LinearRing outer = factory.createLinearRing(rings.get(0));
 				LinearRing[] inner = rings.size() > 1 ? new LinearRing[rings.size() - 1] : null;
-				for (int j = 1; j < rings.size(); j++) { inner[j - 1] = factory.createLinearRing(rings.get(j)); }
+				if (inner != null) {
+					for (int j = 1; j < rings.size(); j++) { inner[j - 1] = factory.createLinearRing(rings.get(j)); }
+				}
 
 				polygons[i] = factory.createPolygon(outer, inner);
 			}
