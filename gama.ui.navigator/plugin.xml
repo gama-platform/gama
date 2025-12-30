@@ -29,32 +29,36 @@
                   <or>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.gaml.type">
+                           value="gama.gaml.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.shapefile.type">
+                           value="gama.shapefile.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.csv.type">
+                           value="gama.csv.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.images.type">
+                           value="gama.images.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.shapefile.support.type">
+                           value="gama.shapefile.support.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.osm.type">
+                           value="gama.osm.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.gsim.type">
-                     </objectState>                     
+                           value="gama.gsim.file.type">
+                     </objectState> 
+                     <objectState
+                           name="contentTypeId"
+                           value="gama.svg.file.type">
+                     </objectState>                       
                   </or>
                </and>
                <objectClass
@@ -778,60 +782,6 @@
             name="Test experiment file"
             project="false">
       </wizard>
-   </extension>
-   <extension
-         point="org.eclipse.core.contenttype.contentTypes">
-      <content-type
-            file-extensions="shp,SHP"
-            id="gama.ui.shapefile.type"
-            name="Shapefile"
-            priority="high">
-      </content-type>
-      <content-type
-            default-charset="UTF-8"
-            file-extensions="qml,QML,cpg,CPG,prj,shx,dbf,xml,sbn,sbx,qix,qpj,fix,PRJ,SHX,DBF,XML,SBN,SBX,QIX,QPJ,FIX"
-            id="gama.ui.shapefile.support.type"
-            name="Shapefile support"
-            priority="high">
-         <property
-               name="gama.support.target">
-         </property>
-      </content-type>
-      <content-type
-            file-extensions="PNG,png,GIF,gif,JPEG,jpeg,JPG,jpg,BMP,bmp,ICO,ico,TIFF,tiff,TIF,tif,ASC,asc,PGM,pgm"
-            id="gama.ui.images.type"
-            name="Image"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="UTF-8"
-            file-extensions="CSV,csv,TSV,tsv"
-            id="gama.ui.csv.type"
-            name="CSV"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="UTF-8"
-            file-extensions="gaml,experiment"
-            id="gama.ui.gaml.type"
-            name="GAML"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            file-extensions="html, HTML, htm, HTM, svg, SVG"
-            id="gama.ui.html.type"
-            name="HTML (in GAMA)"
-            priority="normal">
-      </content-type>
-      <content-type
-            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
-            id="gama.ui.osm.type"
-            name="OSM"
-            priority="high">
-      </content-type>
    </extension>
    <extension
          point="org.eclipse.ui.services">

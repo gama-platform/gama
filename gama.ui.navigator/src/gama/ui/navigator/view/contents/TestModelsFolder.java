@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * TestModelsFolder.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * TestModelsFolder.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,7 @@
 package gama.ui.navigator.view.contents;
 
 import gama.gaml.statements.test.CompoundSummary;
-import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class TestModelsFolder.
@@ -27,7 +27,7 @@ public class TestModelsFolder extends TopLevelFolder {
 	 *            the name
 	 */
 	public TestModelsFolder(final NavigatorRoot root, final String name) {
-		super(root, name, FOLDER_TEST, "Built-in tests", NEUTRAL, WorkbenchHelper.TEST_NATURE, Location.Tests);
+		super(root, name, FOLDER_TEST, "Built-in tests", NEUTRAL, GamaNatures.TEST_NATURE, Location.Tests);
 	}
 
 	@Override

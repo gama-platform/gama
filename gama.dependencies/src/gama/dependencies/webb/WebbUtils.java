@@ -280,6 +280,7 @@ public class WebbUtils {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@SuppressWarnings ("resource")
 	static InputStream wrapStream(final String contentEncoding, final InputStream inputStream) throws IOException {
 		if (contentEncoding == null || "identity".equalsIgnoreCase(contentEncoding)) return inputStream;
 		if ("gzip".equalsIgnoreCase(contentEncoding)) return new GZIPInputStream(inputStream);

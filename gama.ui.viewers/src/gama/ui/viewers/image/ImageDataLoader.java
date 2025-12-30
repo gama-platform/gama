@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.navigator.metadata;
+package gama.ui.viewers.image;
 
 import static gama.core.outputs.display.AbstractDisplayGraphics.toCompatibleImage;
 import static javax.imageio.ImageIO.createImageInputStream;

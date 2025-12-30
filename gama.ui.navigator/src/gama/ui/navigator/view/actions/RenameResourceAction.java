@@ -41,9 +41,9 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 
 import gama.core.runtime.GAMA;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.LinkedFile;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * Standard action for renaming the selected resources.

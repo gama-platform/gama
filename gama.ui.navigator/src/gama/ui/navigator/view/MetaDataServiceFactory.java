@@ -14,7 +14,7 @@ import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
 import gama.core.util.file.IFileMetaDataProvider;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * A factory for creating MetaDataService objects.

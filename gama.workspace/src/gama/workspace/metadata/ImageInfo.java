@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.navigator.metadata;
+package gama.workspace.metadata;
 
 import java.util.List;
 

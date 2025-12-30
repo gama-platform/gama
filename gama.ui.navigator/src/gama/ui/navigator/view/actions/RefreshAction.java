@@ -45,10 +45,10 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
 import gama.core.runtime.GAMA;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * Standard action for refreshing the workspace from the local file system for the selected resources and all of their

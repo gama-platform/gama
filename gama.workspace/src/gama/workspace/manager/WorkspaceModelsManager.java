@@ -58,6 +58,7 @@ import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * Class InitialModelOpener.
@@ -71,21 +72,6 @@ public class WorkspaceModelsManager {
 	static {
 		DEBUG.OFF();
 	}
-
-	/** The Constant GAMA_NATURE. */
-	public final static String GAMA_NATURE = "gama.workspace.gamaNature";
-
-	/** The Constant XTEXT_NATURE. */
-	public final static String XTEXT_NATURE = "org.eclipse.xtext.ui.shared.xtextNature";
-
-	/** The Constant PLUGIN_NATURE. */
-	public final static String PLUGIN_NATURE = "gama.workspace.pluginNature";
-
-	/** The Constant TEST_NATURE. */
-	public final static String TEST_NATURE = "gama.workspace.testNature";
-
-	/** The Constant BUILTIN_NATURE. */
-	public final static String BUILTIN_NATURE = "gama.workspace.builtinNature";
 
 	/** The Constant BUILTIN_PROPERTY. */
 	public static final QualifiedName BUILTIN_PROPERTY = new QualifiedName("gama.builtin", "models");
@@ -571,13 +557,13 @@ public class WorkspaceModelsManager {
 		try {
 
 			final List<String> ids = new ArrayList<>();
-			ids.add(XTEXT_NATURE);
-			ids.add(GAMA_NATURE);
+			ids.add(GamaNatures.XTEXT_NATURE);
+			ids.add(GamaNatures.GAMA_NATURE);
 			if (inTests) {
-				ids.add(TEST_NATURE);
+				ids.add(GamaNatures.TEST_NATURE);
 			} else if (inPlugin) {
-				ids.add(PLUGIN_NATURE);
-			} else if (builtin) { ids.add(BUILTIN_NATURE); }
+				ids.add(GamaNatures.PLUGIN_NATURE);
+			} else if (builtin) { ids.add(GamaNatures.BUILTIN_NATURE); }
 			desc = proj.getDescription();
 			desc.setNatureIds(ids.toArray(new String[ids.size()]));
 			// Addition of a special nature to the project.
@@ -646,7 +632,7 @@ public class WorkspaceModelsManager {
 					IPath p = new Path(f.getAbsolutePath());
 					p = p.append(".project");
 					final IProjectDescription pd = workspace.loadProjectDescription(p);
-					if (pd.hasNature(WorkspaceModelsManager.GAMA_NATURE)) return true;
+					if (pd.hasNature(GamaNatures.GAMA_NATURE)) return true;
 				}
 			}
 		}

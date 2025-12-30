@@ -449,7 +449,7 @@ public class GamlAccessContents2 extends PopupDialog {
 		//
 		List<List<GamlAccessEntry>> res = new ArrayList<>();
 		res.addAll(entriesPerProvider.values());
-		return (List<GamlAccessEntry>[]) res.toArray(new List<?>[res.size()]);
+		return (List<GamlAccessEntry>[]) res.toArray();
 	}
 
 	/**

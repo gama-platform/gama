@@ -41,13 +41,13 @@ import gama.core.common.interfaces.IGui;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * The Class RefreshHandler.

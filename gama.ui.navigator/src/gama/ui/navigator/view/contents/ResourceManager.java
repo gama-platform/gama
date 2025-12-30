@@ -10,10 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import static gama.ui.navigator.metadata.FileMetaDataProvider.getContentTypeId;
-import static gama.ui.shared.utils.WorkbenchHelper.BUILTIN_NATURE;
-import static gama.ui.shared.utils.WorkbenchHelper.PLUGIN_NATURE;
-import static gama.ui.shared.utils.WorkbenchHelper.TEST_NATURE;
+import static gama.workspace.metadata.FileMetaDataProvider.getContentTypeId;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_CHANGE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_CLOSE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_DELETE;
@@ -57,10 +54,11 @@ import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
 import gama.gaml.statements.test.CompoundSummary;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
+import gama.workspace.metadata.FileMetaDataProvider;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class ResourceManager.
@@ -444,8 +442,9 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			final String nature = root.getNature();
 			final WrappedProject p = (WrappedProject) wrap(root, project);
 			post(() -> {
-				WorkspaceModelsManager.instance.setValuesProjectDescription(project, BUILTIN_NATURE.equals(nature),
-						PLUGIN_NATURE.equals(nature), TEST_NATURE.equals(nature), null);
+				WorkspaceModelsManager.instance.setValuesProjectDescription(project,
+						GamaNatures.BUILTIN_NATURE.equals(nature), GamaNatures.PLUGIN_NATURE.equals(nature),
+						GamaNatures.TEST_NATURE.equals(nature), null);
 				root.initializeChildren();
 				refreshResource(root);
 				reveal(p);

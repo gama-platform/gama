@@ -35,10 +35,10 @@ import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.ui.internal.ide.actions.LTKLauncher;
 import org.eclipse.ui.part.FileEditorInput;
 
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.LinkedFile;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * Standard action for deleting the currently selected resources.

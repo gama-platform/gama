@@ -31,8 +31,8 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.part.ResourceTransfer;
 
 import gama.core.runtime.GAMA;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.ResourceManager;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * Standard action for copying the currently selected resources to the clipboard.

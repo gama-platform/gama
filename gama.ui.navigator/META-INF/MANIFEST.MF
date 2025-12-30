@@ -18,10 +18,10 @@ Require-Bundle: gama.ui.shared,
  org.eclipse.team.ui,
  org.eclipse.compare,
  org.eclipse.ltk.core.refactoring,
- org.eclipse.ltk.ui.refactoring
+ org.eclipse.ltk.ui.refactoring,
+ gama.workspace;bundle-version="[0.0.0,1.0.0)"
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.ui.navigator.commands,
- gama.ui.navigator.metadata,
  gama.ui.navigator.view,
  gama.ui.navigator.view.actions,
  gama.ui.navigator.view.contents,

@@ -76,7 +76,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.dev.DEBUG;
-import gama.ui.navigator.metadata.ImageDataLoader;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;

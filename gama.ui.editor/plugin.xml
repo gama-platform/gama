@@ -11,7 +11,7 @@
             id="gaml.compiler.Gaml"
             name="Gaml Editor">
          <contentTypeBinding
-               contentTypeId="gama.ui.gaml.type">
+               contentTypeId="gama.gaml.file.type">
          </contentTypeBinding>
       </editor>
    </extension>

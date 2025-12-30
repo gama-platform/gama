@@ -1,14 +1,14 @@
 /*******************************************************************************************************
  *
- * FileMetaDataProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * FileMetaDataProvider.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.navigator.metadata;
+package gama.workspace.metadata;
 
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 
@@ -104,25 +104,28 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	public static final QualifiedName CHANGE_KEY = new QualifiedName("gama.ui.application", "changed");
 
 	/** The Constant CSV_CT_ID. */
-	public static final String CSV_CT_ID = "gama.ui.csv.type";
+	public static final String CSV_CT_ID = "gama.csv.file.type";
 
 	/** The Constant IMAGE_CT_ID. */
-	public static final String IMAGE_CT_ID = "gama.ui.images.type";
+	public static final String IMAGE_CT_ID = "gama.images.file.type";
 
 	/** The Constant GAML_CT_ID. */
-	public static final String GAML_CT_ID = "gama.ui.gaml.type";
+	public static final String GAML_CT_ID = "gama.gaml.file.type";
 
 	/** The Constant SHAPEFILE_CT_ID. */
-	public static final String SHAPEFILE_CT_ID = "gama.ui.shapefile.type";
+	public static final String SHAPEFILE_CT_ID = "gama.shapefile.type";
 
 	/** The Constant OSM_CT_ID. */
-	public static final String OSM_CT_ID = "gama.ui.osm.type";
+	public static final String OSM_CT_ID = "gama.osm.file.type";
 
 	/** The Constant SHAPEFILE_SUPPORT_CT_ID. */
-	public static final String SHAPEFILE_SUPPORT_CT_ID = "gama.ui.shapefile.support.type";
+	public static final String SHAPEFILE_SUPPORT_CT_ID = "gama.shapefile.support.type";
 
 	/** The Constant GSIM_CT_ID. */
-	public static final String GSIM_CT_ID = "gama.ui.gsim.type";
+	public static final String GSIM_CT_ID = "gama.gsim.file.type";
+
+	/** The Constant SVG_CT_ID. */
+	public static final String SVG_CT_ID = "gama.svg.file.type";
 
 	/** The Constant instance. */
 	private final static FileMetaDataProvider instance = new FileMetaDataProvider();

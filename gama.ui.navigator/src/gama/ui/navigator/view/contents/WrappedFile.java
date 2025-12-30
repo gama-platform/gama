@@ -27,12 +27,12 @@ import gama.core.util.file.GamaShapeFile.ShapeInfo;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * The Class WrappedFile.

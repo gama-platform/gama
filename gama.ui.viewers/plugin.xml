@@ -11,7 +11,7 @@
             id="gama.ui.application.editor.image"
             name="Image Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.images.type">
+               contentTypeId="gama.images.file.type">
          </contentTypeBinding>
       </editor>
         <editor
@@ -22,7 +22,7 @@
             id="gama.ui.application.editor.csv"
             name="CSV Editor">
          <contentTypeBinding
-               contentTypeId="gama.ui.csv.type">
+               contentTypeId="gama.csv.file.type">
          </contentTypeBinding>
       </editor>
       <editor
@@ -33,7 +33,7 @@
             id="gama.ui.application.browser"
             name="HTML Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.html.type">
+               contentTypeId="gama.html.file.type">
          </contentTypeBinding>
       </editor>
       <editor
@@ -44,7 +44,7 @@
             id="gama.ui.application.shape.viewer"
             name="ShapeFile Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.shapefile.type">
+               contentTypeId="gama.shapefile.type">
          </contentTypeBinding>
       </editor>
       <editor
@@ -55,7 +55,7 @@
             id="gama.ui.application.osm.viewer"
             name="OSM Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.osm.type">
+               contentTypeId="gama.osm.file.type">
          </contentTypeBinding>
       </editor>
    </extension>

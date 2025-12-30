@@ -29,7 +29,7 @@ import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
-import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class TestsRunner.
@@ -100,10 +100,10 @@ public class TestsRunner {
 	private static boolean isInteresting(final IProject p) throws CoreException {
 		if (p == null || !p.exists() || !p.isAccessible()) return false;
 		// If it is contained in one of the built-in tests projects, return true
-		if (p.getDescription().hasNature(WorkbenchHelper.TEST_NATURE)) return true;
+		if (p.getDescription().hasNature(GamaNatures.TEST_NATURE)) return true;
 		if (GamaPreferences.Runtime.USER_TESTS.getValue()) {
 			// If it is not in user defined projects, return false
-			if (p.getDescription().hasNature(WorkbenchHelper.BUILTIN_NATURE)) return false;
+			if (p.getDescription().hasNature(GamaNatures.BUILTIN_NATURE)) return false;
 			// We try to find in the project a folder called 'tests'
 			final IResource r = p.findMember("tests");
 			if (r != null && r.exists() && r.isAccessible() && r.getType() == IResource.FOLDER) return true;

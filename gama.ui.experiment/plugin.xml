@@ -89,7 +89,7 @@
       </view>
       <view
             category="gama.ui.category.gama"
-            class="gama.ui.experiment.views.user.UserControlView"
+            class="gama.ui.shared.views.UserControlView"
             fastViewWidthRatio="0.2"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.panel.svg"
             id="gama.ui.application.view.userControlView"
@@ -1231,11 +1231,6 @@
             factoryClass="gama.ui.experiment.factories.AgentMenuFactory">
          <service
                serviceClass="gama.ui.shared.interfaces.IAgentMenuFactory"></service>
-      </serviceFactory>
-      <serviceFactory
-            factoryClass="gama.ui.experiment.factories.UserDialogFactory">
-         <service
-               serviceClass="gama.ui.shared.interfaces.IUserDialogFactory"></service>
       </serviceFactory>
       <sourceProvider
             provider="gama.ui.experiment.commands.ExperimentStateProvider">

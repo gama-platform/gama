@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static gama.ui.navigator.metadata.FileMetaDataProvider.getContentTypeId;
+import static gama.workspace.metadata.FileMetaDataProvider.getContentTypeId;
 import static org.eclipse.swt.dnd.DND.DROP_COPY;
 import static org.eclipse.swt.dnd.DND.DROP_MOVE;
 
@@ -50,7 +50,7 @@ import gama.core.runtime.PlatformHelper;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaFileType;
 import gama.gaml.types.ParametricFileType;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * The class GamlEditorDragAndDropHandler.

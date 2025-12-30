@@ -62,9 +62,9 @@ import org.eclipse.ui.navigator.CommonDropAdapter;
 import org.eclipse.ui.navigator.resources.ResourceDropAdapterAssistant;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * The Class NavigatorResourceDropAssistant.

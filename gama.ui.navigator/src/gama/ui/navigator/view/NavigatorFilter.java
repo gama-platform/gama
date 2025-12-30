@@ -16,10 +16,10 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.WrappedFolder;
 import gama.ui.shared.utils.PreferencesHelper;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * The Class NavigatorFilter.
