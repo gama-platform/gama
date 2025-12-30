@@ -27,6 +27,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.SVGLoader;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -264,6 +267,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 			put(SHAPEFILE_CT_ID, ShapeInfo.class);
 			put(OSM_CT_ID, OSMInfo.class);
 			put(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo.class);
+			put(SVG_CT_ID, SVGInfo.class);
 			put("project", ProjectInfo.class);
 			// BEN put(GSIM_CT_ID, SavedSimulationInfo.class);
 		}
@@ -361,6 +365,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 								break;
 							case SHAPEFILE_SUPPORT_CT_ID:
 								data[0] = createShapeFileSupportMetaData(theFile);
+								break;
+							case SVG_CT_ID:
+								data[0] = createSVGFileMetaData(theFile);
 								break;
 						}
 						// Last chance: we generate a generic info
@@ -582,6 +589,34 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		if (ext == null) return new GenericFileInfo(file.getModificationStamp(), "Generic file");
 		ext = ext.toUpperCase();
 		return new GenericFileInfo(file.getModificationStamp(), "Generic " + ext + " file");
+	}
+
+	/**
+	 * Creates the SVG file meta data.
+	 *
+	 * @param file
+	 *            the file
+	 * @return the SVG info
+	 */
+	private SVGInfo createSVGFileMetaData(final IFile file) {
+		float width = 0;
+		float height = 0;
+		int groups = 0;
+		try {
+			SVGLoader loader = new SVGLoader();
+			SVGDocument doc = loader.load(file.getLocationURI().toURL());
+			if (doc != null) {
+				width = doc.size().width;
+				height = doc.size().height;
+			}
+			try (var is = file.getContents()) {
+				String content = new String(is.readAllBytes());
+				groups = content.split("<g").length - 1;
+			}
+		} catch (Exception e) {
+			DEBUG.ERR("Error reading SVG metadata for " + file.getName() + ": " + e.getMessage());
+		}
+		return new SVGInfo(file.getModificationStamp(), width, height, groups);
 	}
 
 	/**
