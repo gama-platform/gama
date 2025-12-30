@@ -6,7 +6,7 @@
       <editor
             class="gama.ui.viewers.image.ImageViewer"
             default="false"
-            extensions="JPG,jpg,JPEG,jpeg,PNG,png,BMP,bmp,TIFF,tiff,TIF,tif,ICO,ico,ASC,asc,PGM,pgm"
+            extensions="JPG,jpg,JPEG,jpeg,PNG,png,BMP,bmp,TIFF,tiff,TIF,tif,ICO,ico,ASC,asc,PGM,pgm,svg,SVG"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.image.svg"
             id="gama.ui.application.editor.image"
             name="Image Viewer">
@@ -28,7 +28,7 @@
       <editor
             class="gama.ui.viewers.html.HtmlViewer"
             default="false"
-            extensions="html, htm, HTML, HTM, svg, SVG"
+            extensions="html,htm,HTML,HTM"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.html.svg"
             id="gama.ui.application.browser"
             name="HTML Viewer">
@@ -39,7 +39,7 @@
       <editor
             class="gama.ui.viewers.gis.ShapeFileViewer"
             default="true"
-            extensions="shp"
+            extensions="shp,SHP"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.shape.svg"
             id="gama.ui.application.shape.viewer"
             name="ShapeFile Viewer">

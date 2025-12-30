@@ -14,6 +14,8 @@ import static gama.core.outputs.display.AbstractDisplayGraphics.toCompatibleImag
 import static javax.imageio.ImageIO.createImageInputStream;
 import static javax.imageio.ImageIO.read;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,9 @@ import org.geotools.map.MapContent;
 import org.geotools.styling.SLD;
 
 import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi;
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.SVGLoader;
+import com.github.weisj.jsvg.view.ViewBox;
 
 import gama.dev.DEBUG;
 
@@ -105,6 +110,8 @@ public class ImageDataLoader {
 					imageData = readASC(in);
 				} else if ("pgm".equals(ext)) {
 					imageData = readPGM(in);
+				} else if ("svg".equals(ext)) {
+					imageData = readSVG(file);
 				} else if (ext.contains("tif")) {
 					imageData = readTiff(file, in);
 				} else {
@@ -392,6 +399,32 @@ public class ImageDataLoader {
 		final ImageData result = data;
 		result.type = IMAGE_ASC;
 		return result;
+	}
+
+	/**
+	 * Read SVG.
+	 *
+	 * @param file
+	 *            the file
+	 * @return the image data
+	 */
+	private static ImageData readSVG(final IFile file) {
+		try {
+			SVGLoader loader = new SVGLoader();
+			SVGDocument doc = loader.load(file.getLocationURI().toURL());
+			if (doc == null) return null;
+			int width = (int) doc.size().width;
+			int height = (int) doc.size().height;
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = image.createGraphics();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			doc.render(null, g, new ViewBox(0, 0, width, height));
+			g.dispose();
+			return convertToSWT(image);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
