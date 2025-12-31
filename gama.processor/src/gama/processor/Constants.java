@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * Constants.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform .
+ * Constants.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +16,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.constant;
@@ -130,8 +134,32 @@ public interface Constants {
 			IEXPRESSION = "IExpression", INTEGER = "Integer", DOUBLE = "Double", BOOLEAN = "Boolean";
 
 	/** The explicit imports. */
-	String[] EXPLICIT_IMPORTS = { "gama.gaml.operators.Random", "gama.gaml.operators.Maths",
-			"gama.gaml.operators.Points", "gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
+	String[] INDIVIDUAL_IMPORTS =
+			{ "gama.gaml.operators.Random", "gama.gaml.operators.Maths", "gama.gaml.operators.Points",
+					"gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
+
+	/** The star imports. */
+	Set<String> COLLECTIVE_IMPORTS = Stream
+			.of("gama.gaml.multi_criteria", "gama.core.outputs.layers.charts", "gama.core.outputs.layers",
+					"gama.core.outputs", "gama.core.kernel.batch", "gama.core.kernel.root",
+					"gama.gaml.architecture.weighted_tasks", "gama.gaml.architecture.user",
+					"gama.gaml.architecture.reflex", "gama.gaml.architecture.finite_state_machine", "gama.gaml.species",
+					"gama.core.metamodel.shape", "gama.gaml.expressions", "gama.core.metamodel.topology",
+					"gama.gaml.statements.test", "gama.core.metamodel.population", "gama.core.kernel.simulation",
+					"gama.core.kernel.model", "java.util", "gama.gaml.statements.draw", "gama.gaml.operators.spatial",
+					"gama.core.metamodel.shape", "gama.core.common.interfaces", "gama.gaml.interfaces",
+					"gama.core.runtime", "java.lang", "gama.core.metamodel.agent", "gama.gaml.types",
+					"gama.gaml.compilation", "gama.gaml.factories", "gama.gaml.descriptions", "gama.core.util.tree",
+					"gama.core.util.file", "gama.core.util.matrix", "gama.core.util.graph", "gama.core.util.path",
+					"gama.core.util", "gama.core.runtime.exceptions", "gama.gaml.statements", "gama.gaml.skills",
+					"gama.gaml.variables", "gama.core.kernel.experiment", "gama.gaml.operators",
+					"gama.core.common.interfaces", "gama.core.messaging", "gama.core.metamodel.population")
+			.map(s -> s + ".").collect(Collectors.toSet());
+
+	/** The static star imports. */
+	Set<String> STATIC_COLLECTIVE_IMPORTS =
+			Stream.of("gama.gaml.operators.Cast", "gama.core.common.interfaces.IKeyword").map(s -> s + ".")
+					.collect(Collectors.toSet());
 
 	/** The ss 1. */
 	List<String> ss1 = Arrays.asList("const", "true", "false", "name", "type");
@@ -213,8 +241,6 @@ public interface Constants {
 			// Doc built first, so that test generation can happen subsequently
 			put(doc.class, new DocProcessor());
 			// Then all the processors for specific annotations
-
-			// put(factory.class, new FactoryProcessor());
 			put(species.class, new SpeciesProcessor());
 			put(symbol.class, new SymbolProcessor());
 			put(vars.class, new VarsProcessor());

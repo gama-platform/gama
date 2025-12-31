@@ -127,11 +127,11 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	 *            the sb
 	 */
 	protected void writeImmutableHeader(final StringBuilder sb) {
-		for (final String element : context.imports) { sb.append(ln).append("import ").append(element).append("*;"); }
-		for (final String element : EXPLICIT_IMPORTS) { sb.append(ln).append("import ").append(element).append(";"); }
-		sb.append(ln).append("import static gama.gaml.operators.Cast.*;");
-		sb.append(ln).append("import gama.gaml.operators.spatial.*;");
-		sb.append(ln).append("import static gama.core.common.interfaces.IKeyword.*;");
+		for (final String element : STATIC_COLLECTIVE_IMPORTS) {
+			sb.append(ln).append("import static ").append(element).append("*;");
+		}
+		for (final String element : COLLECTIVE_IMPORTS) { sb.append(ln).append("import ").append(element).append("*;"); }
+		for (final String element : INDIVIDUAL_IMPORTS) { sb.append(ln).append("import ").append(element).append(";"); }
 		sb.append(ln).append("@SuppressWarnings({ \"rawtypes\", \"unchecked\", \"unused\" })");
 		sb.append(ln).append(ln)
 				.append("public class GamlAdditions extends gama.gaml.compilation.AbstractGamlAdditions").append(" {");
