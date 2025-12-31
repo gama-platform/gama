@@ -25,8 +25,8 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;

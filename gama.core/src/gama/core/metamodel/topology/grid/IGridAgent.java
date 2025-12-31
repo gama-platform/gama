@@ -3,7 +3,7 @@ package gama.core.metamodel.topology.grid;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 
 /**
  * The Interface IGridAgent.

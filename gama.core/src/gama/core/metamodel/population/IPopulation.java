@@ -15,8 +15,6 @@ import java.util.Map;
 
 import com.google.common.base.Predicate;
 
-import gama.core.common.interfaces.IDisposable;
-import gama.core.common.interfaces.IStepable;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -25,9 +23,11 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonObject;
+import gama.core.util.list.IList;
+import gama.gaml.interfaces.IDisposable;
+import gama.gaml.interfaces.IStepable;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.RemoteSequence;

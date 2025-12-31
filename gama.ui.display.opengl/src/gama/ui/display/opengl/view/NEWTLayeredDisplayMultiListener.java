@@ -23,10 +23,10 @@ import com.jogamp.newt.event.WindowListener;
 import com.jogamp.newt.event.WindowUpdateEvent;
 
 import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IDisposable;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IDisposable;
 import gama.ui.experiment.views.displays.LayeredDisplayDecorator;
 import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
 

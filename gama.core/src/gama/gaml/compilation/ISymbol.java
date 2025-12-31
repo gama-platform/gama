@@ -11,10 +11,10 @@ package gama.gaml.compilation;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.runtime.IScope;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.INamed;
 
 /**

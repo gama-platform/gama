@@ -52,7 +52,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;

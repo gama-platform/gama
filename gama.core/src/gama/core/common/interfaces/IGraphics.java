@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.charts.ChartOutput;

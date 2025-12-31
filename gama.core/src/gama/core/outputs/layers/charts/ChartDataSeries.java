@@ -16,7 +16,7 @@ import java.util.HashMap;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 

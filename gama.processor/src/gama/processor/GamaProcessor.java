@@ -33,14 +33,11 @@ import gama.processor.tests.TestProcessor;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @SupportedAnnotationTypes ({ "*" })
-@SupportedSourceVersion (SourceVersion.RELEASE_11)
+@SupportedSourceVersion (SourceVersion.RELEASE_21)
 public class GamaProcessor extends AbstractProcessor implements Constants {
 
 	/** The context. */
 	private ProcessorContext context;
-
-	/** The Constant JAVA_HEADER. */
-	// public static final String JAVA_HEADER;
 
 	/** The count. */
 	int count;
@@ -50,12 +47,6 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 
 	/** The complete. */
 	long complete = 0;
-
-	// static {
-	// final StringBuilder sb = new StringBuilder();
-	// writeImmutableHeader(sb);
-	// JAVA_HEADER = sb.toString();
-	// }
 
 	@Override
 	public synchronized void init(final ProcessingEnvironment pe) {

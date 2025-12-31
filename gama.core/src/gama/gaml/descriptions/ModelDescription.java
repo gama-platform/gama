@@ -26,8 +26,8 @@ import com.google.common.collect.Iterables;
 
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.util.ConsumerWithPruning;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.interfaces.IGamlIssue;

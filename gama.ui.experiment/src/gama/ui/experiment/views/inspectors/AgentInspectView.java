@@ -26,9 +26,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 
 import gama.core.common.interfaces.IGui;
-import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.ParameterAdapter;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;

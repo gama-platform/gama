@@ -14,9 +14,9 @@ import java.io.IOException;
 
 import org.java_websocket.WebSocket;
 
-import gama.core.kernel.experiment.AbstractExperimentController;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
+import gama.core.kernel.experiment.controller.AbstractExperimentController;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
@@ -27,9 +27,9 @@ import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
 import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.MessageType;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.operators.Cast;

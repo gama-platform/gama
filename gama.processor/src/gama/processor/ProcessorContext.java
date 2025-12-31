@@ -92,21 +92,19 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	public static final DocumentBuilder xmlBuilder;
 
 	/** The imports. */
-	public final Set<String> imports = Stream
-			.of("gama.gaml.multi_criteria", "gama.core.outputs.layers.charts", "gama.core.outputs.layers",
-					"gama.core.outputs", "gama.core.kernel.batch", "gama.core.kernel.root",
-					"gama.gaml.architecture.weighted_tasks", "gama.gaml.architecture.user",
-					"gama.gaml.architecture.reflex", "gama.gaml.architecture.finite_state_machine", "gama.gaml.species",
-					"gama.core.metamodel.shape", "gama.gaml.expressions", "gama.core.metamodel.topology",
-					"gama.gaml.statements.test", "gama.core.metamodel.population", "gama.core.kernel.simulation",
-					"gama.core.kernel.model", "java.util", "gama.gaml.statements.draw", " gama.core.metamodel.shape",
-					"gama.core.common.interfaces", "gama.core.runtime", "java.lang", "gama.core.metamodel.agent",
-					"gama.gaml.types", "gama.gaml.compilation", "gama.gaml.factories", "gama.gaml.descriptions",
-					"gama.core.util.tree", "gama.core.util.file", "gama.core.util.matrix", "gama.core.util.graph",
-					"gama.core.util.path", "gama.core.util", "gama.core.runtime.exceptions", "gama.gaml.statements",
-					"gama.gaml.skills", "gama.gaml.variables", "gama.core.kernel.experiment", "gama.gaml.operators",
-					"gama.core.common.interfaces", "gama.core.messaging", "gama.core.metamodel.population")
-			.map(s -> s + ".").collect(Collectors.toSet());
+	public final Set<String> imports = Stream.of("gama.gaml.multi_criteria", "gama.core.outputs.layers.charts",
+			"gama.core.outputs.layers", "gama.core.outputs", "gama.core.kernel.batch", "gama.core.kernel.root",
+			"gama.gaml.architecture.weighted_tasks", "gama.gaml.architecture.user", "gama.gaml.architecture.reflex",
+			"gama.gaml.architecture.finite_state_machine", "gama.gaml.species", "gama.core.metamodel.shape",
+			"gama.gaml.expressions", "gama.core.metamodel.topology", "gama.gaml.statements.test",
+			"gama.core.metamodel.population", "gama.core.kernel.simulation", "gama.core.kernel.model", "java.util",
+			"gama.gaml.statements.draw", "gama.core.metamodel.shape", "gama.core.common.interfaces",
+			"gama.gaml.interfaces", "gama.core.runtime", "java.lang", "gama.core.metamodel.agent", "gama.gaml.types",
+			"gama.gaml.compilation", "gama.gaml.factories", "gama.gaml.descriptions", "gama.core.util.tree",
+			"gama.core.util.file", "gama.core.util.matrix", "gama.core.util.graph", "gama.core.util.path",
+			"gama.core.util", "gama.core.runtime.exceptions", "gama.gaml.statements", "gama.gaml.skills",
+			"gama.gaml.variables", "gama.core.kernel.experiment", "gama.gaml.operators", "gama.core.common.interfaces",
+			"gama.core.messaging", "gama.core.metamodel.population").map(s -> s + ".").collect(Collectors.toSet());
 
 	static {
 		DocumentBuilder temp = null;
@@ -194,7 +192,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 *
 	 * @return the i skill
 	 */
-	public TypeMirror getISkill() { return getType("gama.core.common.interfaces.ISkill"); }
+	public TypeMirror getISkill() { return getType("gama.gaml.interfaces.ISkill"); }
 
 	/**
 	 * Gets the i scope.

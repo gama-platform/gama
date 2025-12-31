@@ -12,12 +12,12 @@ package gama.gaml.constants;
 
 import java.util.Map;
 
-import gama.core.common.interfaces.IEventLayerDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.outputs.layers.properties.ICameraDefinition;
 import gama.core.outputs.layers.properties.ILightDefinition;
 import gama.core.util.GamaColor;
+import gama.gaml.interfaces.IEventLayerDelegate;
 
 /**
  * The Class CoreConstantsSupplier.

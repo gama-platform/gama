@@ -13,7 +13,7 @@ import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 
 /**
  *

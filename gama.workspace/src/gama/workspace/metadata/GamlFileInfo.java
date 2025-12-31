@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.runtime.GAMA;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.IGamlFileInfo;
 
 /**
  * The Class GamlFileInfo.

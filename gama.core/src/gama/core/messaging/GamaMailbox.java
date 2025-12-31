@@ -11,7 +11,7 @@
 package gama.core.messaging;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaList;
+import gama.core.util.list.GamaList;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

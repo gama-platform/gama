@@ -30,8 +30,8 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
+import gama.core.util.map.IMap;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 

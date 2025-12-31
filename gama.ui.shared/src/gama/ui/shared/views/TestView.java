@@ -36,9 +36,9 @@ import org.eclipse.ui.PartInitException;
 
 import com.google.common.primitives.Ints;
 
-import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IGamaView;
 import gama.core.common.interfaces.IGui;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.interfaces.ItemList;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;

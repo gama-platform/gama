@@ -21,9 +21,9 @@ import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -81,7 +81,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setLocation()
 	 *
-	 * @see gama.core.common.interfaces.ILocated#setLocation(gama.core.metamodel.shape.GamaPoint)
+	 * @see gama.gaml.interfaces.ILocated#setLocation(gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
 	public GamaPoint setLocation(final GamaPoint loc) {
@@ -92,7 +92,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getLocation()
 	 *
-	 * @see gama.core.common.interfaces.ILocated#getLocation()
+	 * @see gama.gaml.interfaces.ILocated#getLocation()
 	 */
 	@Override
 	public GamaPoint getLocation() { return absoluteLocation; }
@@ -100,7 +100,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method stringValue()
 	 *
-	 * @see gama.core.common.interfaces.IValue#stringValue(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#stringValue(gama.core.runtime.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -117,7 +117,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.core.common.interfaces.IValue#copy(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#copy(gama.core.runtime.IScope)
 	 */
 	@Override
 	public IShape copy(final IScope scope) throws GamaRuntimeException {

@@ -12,9 +12,9 @@ package gama.ui.navigator.view.contents;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import gama.core.common.interfaces.IGamlLabelProvider;
 import gama.core.runtime.GAMA;
 import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.gaml.interfaces.IGamlLabelProvider;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.GamlFileInfo;

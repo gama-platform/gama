@@ -14,7 +14,7 @@ import java.io.Closeable;
 import java.util.Collection;
 
 import gama.core.common.util.PoolUtils;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 
 /**
  * The Interface ICollector.

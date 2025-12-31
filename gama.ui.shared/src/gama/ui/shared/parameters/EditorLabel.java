@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;

@@ -15,9 +15,9 @@ import java.util.Set;
 
 import com.google.common.collect.Queues;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.preferences.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The Class PoolUtils.

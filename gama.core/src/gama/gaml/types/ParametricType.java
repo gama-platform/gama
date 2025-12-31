@@ -25,7 +25,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
@@ -143,7 +143,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.gaml.interfaces.ITyped#getGamlType()
 	 */
 	@Override
 	public IContainerType<IContainer<?, ?>> getGamlType() { return type; }

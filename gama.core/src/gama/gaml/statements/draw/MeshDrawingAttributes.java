@@ -17,7 +17,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.core.util.GamaColor;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
 import gama.gaml.operators.Colors.GamaGradient;

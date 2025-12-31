@@ -26,7 +26,7 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.google.inject.Inject;
 
-import gama.core.common.IStatusMessage;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
 import gama.dev.BANNER_CATEGORY;

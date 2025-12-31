@@ -10,7 +10,7 @@
 package gama.core.util.file.json;
 
 import gama.core.runtime.IScope;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 
 /**
  * Represents a JSON object, a set of name/value pairs, where the names are strings and the values are JSON values.

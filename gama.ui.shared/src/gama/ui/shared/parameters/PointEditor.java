@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.exceptions.GamaRuntimeException;

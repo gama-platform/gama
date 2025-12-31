@@ -19,8 +19,8 @@ import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.Types;
 

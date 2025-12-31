@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
-import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
+import gama.core.kernel.experiment.parameters.ParametersSet;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.runtime.IScope;
 
 /**

@@ -17,7 +17,7 @@ import gama.core.runtime.server.CommandResponse;
 import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.MessageType;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 
 /**
  * The Class PlayCommand.

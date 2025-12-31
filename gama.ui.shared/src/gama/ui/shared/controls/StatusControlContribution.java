@@ -30,12 +30,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.IStatusMessage;
-import gama.core.common.IStatusMessage.StatusType;
-import gama.core.common.StatusMessage;
-import gama.core.common.StatusMessageFactory;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
+import gama.core.common.interfaces.IStatusMessage;
+import gama.core.common.interfaces.IStatusMessage.StatusType;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
@@ -43,6 +41,8 @@ import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.status.StatusMessage;
+import gama.workspace.status.StatusMessageFactory;
 
 /**
  * The Class ExperimentControlContribution.

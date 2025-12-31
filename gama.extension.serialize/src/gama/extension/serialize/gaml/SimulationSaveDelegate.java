@@ -16,12 +16,12 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import gama.core.common.interfaces.ISaveDelegate;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.ISaveDelegate;
 import gama.gaml.statements.save.SaveOptions;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

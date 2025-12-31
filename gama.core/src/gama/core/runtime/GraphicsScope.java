@@ -12,7 +12,7 @@ package gama.core.runtime;
 
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.runtime.IScope.IGraphicsScope;
 
 /**

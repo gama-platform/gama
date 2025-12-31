@@ -19,13 +19,12 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.GamlProperties;
-import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.core.util.ICollector;
 import gama.core.util.IContainer;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
@@ -33,6 +32,7 @@ import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.TypeExpression;
+import gama.gaml.interfaces.IValue;
 
 /**
  * Written by drogoul Modified on 25 aout 2010

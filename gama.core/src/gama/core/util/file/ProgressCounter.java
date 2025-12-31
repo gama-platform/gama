@@ -17,8 +17,8 @@ import org.geotools.api.util.InternationalString;
 import org.geotools.api.util.ProgressListener;
 import org.geotools.util.SimpleInternationalString;
 
-import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IStatusDisplayer;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;

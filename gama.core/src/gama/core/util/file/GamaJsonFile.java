@@ -25,13 +25,13 @@ import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
 import gama.core.util.IModifiableContainer;
 import gama.core.util.file.json.IJsonConstants;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.ParseException;
 import gama.core.util.file.json.WriterConfig;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
 

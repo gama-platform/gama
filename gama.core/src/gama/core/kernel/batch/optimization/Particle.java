@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.kernel.experiment.BatchAgent;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.gaml.operators.Cast;

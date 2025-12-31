@@ -19,9 +19,9 @@ import gama.core.metamodel.shape.DynamicLineString;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.GamaPair;
-import gama.core.util.IMap;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.expressions.IExpression;
 
 /**

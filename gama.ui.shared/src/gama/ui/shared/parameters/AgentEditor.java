@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.gaml.types.IType;
 import gama.ui.shared.interfaces.EditorListener;

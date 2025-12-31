@@ -38,7 +38,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 
 import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.outputs.LayeredDisplayData.Changes;
@@ -48,6 +47,7 @@ import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
+import gama.gaml.interfaces.IDisposable;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;

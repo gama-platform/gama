@@ -18,9 +18,9 @@ import java.util.Set;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.interfaces.IEventLayerDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
+import gama.gaml.interfaces.IEventLayerDelegate;
 
 /**
  * The Class MouseEventLayerDelegate.

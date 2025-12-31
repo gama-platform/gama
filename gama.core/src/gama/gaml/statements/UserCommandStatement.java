@@ -26,7 +26,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.IExperimentDisplayable;
+import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.IScope;

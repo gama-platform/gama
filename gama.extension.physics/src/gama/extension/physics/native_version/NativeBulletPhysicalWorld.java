@@ -19,9 +19,9 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Vector3f;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;

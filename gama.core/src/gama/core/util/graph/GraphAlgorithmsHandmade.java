@@ -12,7 +12,7 @@ package gama.core.util.graph;
 
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 
 /**
  * Contains various handmade algorithms. Algorithms mainly based on external

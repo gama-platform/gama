@@ -24,7 +24,7 @@ import gama.core.kernel.batch.optimization.TabuSearch;
 import gama.core.kernel.batch.optimization.TabuSearchReactive;
 import gama.core.kernel.batch.optimization.genetic.GeneticAlgorithm;
 import gama.core.kernel.experiment.BatchAgent;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;

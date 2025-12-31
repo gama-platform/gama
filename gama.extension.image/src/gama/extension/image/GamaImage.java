@@ -23,19 +23,19 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IAsset;
+import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.file.IFieldMatrixProvider;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IField;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 
 /**

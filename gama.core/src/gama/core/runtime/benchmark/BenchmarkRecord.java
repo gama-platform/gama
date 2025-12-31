@@ -12,7 +12,7 @@ package gama.core.runtime.benchmark;
 
 import java.util.concurrent.atomic.LongAdder;
 
-import gama.core.common.interfaces.IBenchmarkable;
+import gama.gaml.interfaces.IBenchmarkable;
 
 /**
  * The Class BenchmarkRecord.

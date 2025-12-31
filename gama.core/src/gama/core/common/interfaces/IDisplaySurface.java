@@ -27,6 +27,9 @@ import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.IScope.IGraphicsScope;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
+import gama.gaml.interfaces.IDisposable;
+import gama.gaml.interfaces.IScoped;
 import gama.gaml.statements.draw.DrawingAttributes;
 
 /**

@@ -28,11 +28,11 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMap;
-import gama.core.util.IList;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMap;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -805,7 +805,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.gaml.interfaces.ITyped#getGamlType()
 	 */
 	@Override
 	public IType getGamlType() { return Types.POINT; }

@@ -38,7 +38,7 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.IStatusMessage;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.IModel;

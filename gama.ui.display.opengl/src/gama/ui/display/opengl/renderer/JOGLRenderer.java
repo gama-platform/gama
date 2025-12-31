@@ -20,7 +20,6 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IAsset;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IImageProvider;
@@ -31,6 +30,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.runtime.GAMA;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.core.util.GamaColor;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.IField;

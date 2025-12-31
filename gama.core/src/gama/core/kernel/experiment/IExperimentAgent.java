@@ -12,6 +12,7 @@ package gama.core.kernel.experiment;
 import java.util.Collection;
 import java.util.List;
 
+import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.population.IPopulationFactory;

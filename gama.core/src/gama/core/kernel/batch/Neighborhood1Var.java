@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 

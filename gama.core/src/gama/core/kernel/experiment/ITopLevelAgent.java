@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.core.kernel.experiment;
 
-import gama.core.common.interfaces.IScopedStepable;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.outputs.IOutputManager;
 import gama.core.util.GamaColor;
+import gama.gaml.interfaces.IScopedStepable;
 import gama.gaml.statements.IExecutable;
 
 /**

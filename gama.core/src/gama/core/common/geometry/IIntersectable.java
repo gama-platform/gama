@@ -13,7 +13,7 @@ package gama.core.common.geometry;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
-import gama.core.common.interfaces.IDisposable;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The Interface IIntersectable.

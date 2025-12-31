@@ -11,10 +11,10 @@ package gama.core.runtime.benchmark;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.Benchmark.ScopeRecord;
+import gama.gaml.interfaces.IBenchmarkable;
 
 /**
  * The Class Benchmark.

@@ -19,7 +19,7 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.dev.COUNTER;
 import gama.gaml.compilation.IGamlEcoreUtils;
 import gama.gaml.compilation.ast.SyntacticFactory;

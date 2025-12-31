@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.operators.Cast;

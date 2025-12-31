@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.core.runtime;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.util.PoolUtils;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The Class AgentExecutionContext.

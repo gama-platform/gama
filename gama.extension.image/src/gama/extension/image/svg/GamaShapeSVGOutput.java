@@ -37,7 +37,7 @@ import com.github.weisj.jsvg.renderer.output.Output;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 
 /**
  * The Class GamaShapeSVGOutput.

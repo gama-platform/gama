@@ -25,7 +25,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.util.Collector;
 import gama.core.util.GamaColor;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;

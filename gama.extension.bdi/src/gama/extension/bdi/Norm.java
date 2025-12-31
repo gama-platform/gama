@@ -17,11 +17,11 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

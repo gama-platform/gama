@@ -25,7 +25,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.gaml.types.Types;

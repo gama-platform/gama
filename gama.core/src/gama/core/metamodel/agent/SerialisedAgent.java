@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.population.IPopulation;

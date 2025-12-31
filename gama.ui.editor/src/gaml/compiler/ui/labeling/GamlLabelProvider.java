@@ -24,9 +24,9 @@ import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gama.core.common.interfaces.IGamlLabelProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.gaml.interfaces.IGamlLabelProvider;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.Types;
 import gaml.compiler.gaml.EGaml;
@@ -345,7 +345,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	}
 
 	/**
-	 * @see gama.core.common.interfaces.IGamlLabelProvider#getText(gama.gaml.compilation.ast.ISyntacticElement)
+	 * @see gama.gaml.interfaces.IGamlLabelProvider#getText(gama.gaml.compilation.ast.ISyntacticElement)
 	 */
 	@Override
 	public String getText(final ISyntacticElement element) {

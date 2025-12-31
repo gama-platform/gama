@@ -16,8 +16,8 @@ import java.util.Collections;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.gaml.architecture.IArchitecture;
+import gama.gaml.interfaces.ISkill;
 import gama.gaml.skills.Skill;
 
 /**

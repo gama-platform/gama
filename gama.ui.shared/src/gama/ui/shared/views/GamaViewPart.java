@@ -28,8 +28,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.IStatusMessage;
 import gama.core.common.interfaces.IGamaView;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.SimulationAgent;

@@ -68,8 +68,8 @@ import org.eclipse.xtext.diagnostics.Diagnostic;
 
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.compilation.ast.SyntacticFactory;

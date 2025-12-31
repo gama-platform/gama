@@ -25,7 +25,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaPair;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.gaml.operators.Cast;
 
 /**

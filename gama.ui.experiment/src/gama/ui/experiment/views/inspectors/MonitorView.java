@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.interfaces.IValue;
 import gama.core.common.interfaces.ItemList;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.IOutput;
@@ -36,6 +35,7 @@ import gama.dev.COUNTER;
 import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import gama.ui.shared.parameters.EditorFactory;

@@ -16,7 +16,6 @@ import org.locationtech.jts.geom.Envelope;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IDrawDelegate;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
@@ -25,6 +24,7 @@ import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.GamaGisFile;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IDrawDelegate;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

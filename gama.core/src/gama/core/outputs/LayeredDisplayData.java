@@ -36,7 +36,7 @@ import gama.core.outputs.layers.properties.RotationDefinition;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.IDescription;

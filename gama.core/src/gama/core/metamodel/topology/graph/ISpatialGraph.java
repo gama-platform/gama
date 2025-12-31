@@ -14,8 +14,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
-import gama.core.util.IList;
 import gama.core.util.graph.IGraph;
+import gama.core.util.list.IList;
 
 /**
  * The class ISpatialGraph.

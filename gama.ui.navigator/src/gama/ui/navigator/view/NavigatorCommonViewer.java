@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.navigator.CommonViewer;
 
-import gama.core.common.IStatusMessage;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.NavigatorRoot;

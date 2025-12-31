@@ -28,7 +28,7 @@ import gama.core.metamodel.topology.grid.IDiffusionTarget;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.IMatrix;
 import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.DiffusionValidator;
 import gama.gaml.compilation.IDescriptionValidator;

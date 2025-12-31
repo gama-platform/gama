@@ -21,14 +21,14 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.Envelope3D;
-import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
 import gama.core.util.file.GamaFile;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.compilation.GAML;
+import gama.gaml.interfaces.IGamlFileInfo;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

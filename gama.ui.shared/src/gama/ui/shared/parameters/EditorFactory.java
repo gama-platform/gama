@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import gama.core.kernel.experiment.ExperimentParameter;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.kernel.experiment.TextStatement;
+import gama.core.kernel.experiment.parameters.ExperimentParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.InputParameter;
+import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.IScope;

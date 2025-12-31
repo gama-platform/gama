@@ -20,10 +20,11 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.constants.ColorCSS;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.map.GamaMapFactory;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -556,7 +557,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color>/* impl
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.gaml.interfaces.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.COLOR; }

@@ -14,8 +14,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import gama.core.common.interfaces.IStepable;
 import gama.core.runtime.IScope;
+import gama.gaml.interfaces.IStepable;
 
 /**
  *

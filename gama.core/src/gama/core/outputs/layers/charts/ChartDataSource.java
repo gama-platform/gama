@@ -17,7 +17,7 @@ import java.util.Map;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.compilation.GAML;

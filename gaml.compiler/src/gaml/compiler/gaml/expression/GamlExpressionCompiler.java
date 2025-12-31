@@ -54,7 +54,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IExecutionContext;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.SyntacticModelElement;

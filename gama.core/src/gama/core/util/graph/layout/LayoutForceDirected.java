@@ -18,7 +18,7 @@ import org.jgrapht.Graph;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Points;
 import gama.gaml.operators.spatial.SpatialPunctal;

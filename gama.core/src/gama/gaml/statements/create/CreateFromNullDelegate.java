@@ -13,9 +13,9 @@ package gama.gaml.statements.create;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.ICreateDelegate;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
+import gama.gaml.interfaces.ICreateDelegate;
 import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
 import gama.gaml.types.IType;
@@ -35,7 +35,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	/**
 	 * Method acceptSource()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
+	 * @see gama.gaml.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
@@ -47,7 +47,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	 *
 	 * @author Alexis Drogoul
 	 * @since 04-09-2012
-	 * @see gama.core.common.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
+	 * @see gama.gaml.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
 	 *      java.lang.Object)
 	 */
 	@Override
@@ -70,7 +70,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	/**
 	 * Method fromFacetType()
 	 * 
-	 * @see gama.core.common.interfaces.ICreateDelegate#fromFacetType()
+	 * @see gama.gaml.interfaces.ICreateDelegate#fromFacetType()
 	 */
 	@Override
 	public IType<?> fromFacetType() {

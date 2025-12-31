@@ -16,7 +16,7 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 

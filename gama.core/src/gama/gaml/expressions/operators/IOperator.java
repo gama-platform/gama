@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.gaml.expressions.operators;
 
-import gama.core.common.interfaces.IBenchmarkable;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IBenchmarkable;
 
 /**
  * Written by drogoul Modified on 22 ao�t 2010

@@ -14,11 +14,11 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.runtime.IExecutionContext;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.statements.Arguments;
 
 /**

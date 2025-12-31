@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
-import gama.core.common.IStatusMessage;
-
 /**
  * The Interface IStatusControl.
  *

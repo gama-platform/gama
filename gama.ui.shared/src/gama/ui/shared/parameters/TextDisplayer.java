@@ -30,8 +30,8 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.kernel.experiment.TextStatement;
+import gama.core.kernel.experiment.parameters.InputParameter;
+import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;

@@ -37,7 +37,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SIngleEquationSerializer;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SingleEquationValidator;
 import gama.gaml.compilation.IDescriptionValidator;

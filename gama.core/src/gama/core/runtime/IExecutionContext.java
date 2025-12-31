@@ -12,8 +12,8 @@ package gama.core.runtime;
 
 import java.util.Map;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The Interface IExecutionContext.

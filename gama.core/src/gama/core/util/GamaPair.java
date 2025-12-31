@@ -25,6 +25,10 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaMatrixType;
@@ -199,7 +203,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.core.util.IContainer#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.IList)
+	 * @see gama.core.util.IContainer#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.list.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {

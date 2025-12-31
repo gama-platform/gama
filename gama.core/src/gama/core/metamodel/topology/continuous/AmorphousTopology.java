@@ -29,9 +29,9 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.PathFactory;
 import gama.gaml.operators.Maths;
@@ -53,7 +53,7 @@ public class AmorphousTopology implements ITopology {
 	IShape expandableEnvironment = GamaGeometryType.createPoint(new GamaPoint(0, 0));
 
 	/**
-	 * @see gama.interfaces.IValue#stringValue()
+	 * @see gama.gaml.interfaces.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -64,7 +64,7 @@ public class AmorphousTopology implements ITopology {
 	public IType<?> getGamlType() { return Types.TOPOLOGY; }
 
 	/**
-	 * @see gama.interfaces.IValue#toGaml()
+	 * @see gama.gaml.interfaces.interfaces.IValue#toGaml()
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {

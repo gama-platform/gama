@@ -12,7 +12,7 @@ package gama.ui.shared.parameters;
 
 import static gama.core.runtime.GAMA.getRuntimeScope;
 import static gama.core.runtime.GAMA.reportError;
-import static gama.core.util.GamaListFactory.wrap;
+import static gama.core.util.list.GamaListFactory.wrap;
 import static gama.gaml.operators.System.enterValue;
 import static gama.gaml.operators.System.userInputDialog;
 import static gama.gaml.types.Types.NO_TYPE;
@@ -29,8 +29,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.common.interfaces.IValue;
-import gama.core.kernel.experiment.InputParameter;
+import gama.core.kernel.experiment.parameters.InputParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
@@ -38,6 +37,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import gama.ui.shared.controls.FlatButton;

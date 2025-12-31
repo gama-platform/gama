@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.map.IMap;
 
 /**
  * The Class CommandResponse.

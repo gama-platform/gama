@@ -23,9 +23,9 @@ import java.util.Set;
 import com.google.common.collect.Iterables;
 
 import gama.core.util.Collector;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.ICollector;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.ModelDescription;

@@ -37,14 +37,14 @@ import org.eclipse.ui.IWorkbenchPage;
 import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
 
-import gama.core.common.IStatusMessage;
-import gama.core.common.StatusMessage;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.status.StatusMessage;
 
 /**
  * The Class CustomMenu. An alternative to Popup & Regular menus

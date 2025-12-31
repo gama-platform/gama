@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.moeaframework.util.sequence.Saltelli;
 
-import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
+import gama.core.kernel.experiment.parameters.ParametersSet;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.runtime.IScope;
 
 /**

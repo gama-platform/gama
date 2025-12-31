@@ -23,7 +23,7 @@ import gama.core.metamodel.topology.grid.IGrid;
 import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 
 /**

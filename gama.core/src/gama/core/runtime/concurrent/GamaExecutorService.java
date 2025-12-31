@@ -27,7 +27,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;

@@ -21,11 +21,11 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -102,7 +102,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.gaml.interfaces.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.FONT; }
@@ -110,7 +110,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method stringValue(). Outputs to a format that is usable by Font.decode(String);
 	 *
-	 * @see gama.core.common.interfaces.IValue#stringValue(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#stringValue(gama.core.runtime.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -131,7 +131,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.core.common.interfaces.IValue#copy(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#copy(gama.core.runtime.IScope)
 	 */
 	@Override
 	public IValue copy(final IScope scope) throws GamaRuntimeException {

@@ -23,7 +23,9 @@ import java.util.stream.Stream;
 import com.google.common.collect.Sets;
 
 import gama.core.common.util.PoolUtils;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.types.Types;
 
 /**

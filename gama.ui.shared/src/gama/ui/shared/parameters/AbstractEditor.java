@@ -27,8 +27,8 @@ import org.eclipse.swt.widgets.Control;
 import com.google.common.primitives.Ints;
 
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.ExperimentParameter;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.ExperimentParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;

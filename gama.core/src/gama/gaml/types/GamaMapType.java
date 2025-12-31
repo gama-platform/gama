@@ -18,11 +18,11 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IContainer;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.ParseException;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.expressions.IExpression;
 
 /**

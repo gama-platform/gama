@@ -22,9 +22,9 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
 import gama.core.util.file.GamaFile;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

@@ -41,4 +41,5 @@ Bundle-Activator: gama.ui.shared.Activator
 Automatic-Module-Name: gama.ui.shared 
 Import-Package: gama.workspace.manager,
  gama.workspace.nature,
+ gama.workspace.status,
  org.eclipse.e4.ui.internal.workbench.swt

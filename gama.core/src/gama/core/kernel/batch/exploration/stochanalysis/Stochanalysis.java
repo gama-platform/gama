@@ -31,13 +31,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
-import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 

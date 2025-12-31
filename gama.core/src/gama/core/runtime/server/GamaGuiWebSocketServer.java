@@ -17,8 +17,8 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
+import gama.core.util.map.IMap;
 
 /**
  * The Class GamaWebSocketServer.

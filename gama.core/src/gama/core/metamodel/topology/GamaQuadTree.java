@@ -27,9 +27,9 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.ICollector;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 

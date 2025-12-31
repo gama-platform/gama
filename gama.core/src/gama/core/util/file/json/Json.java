@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import gama.core.metamodel.agent.SerialisedAgent;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.interfaces.IJsonable;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

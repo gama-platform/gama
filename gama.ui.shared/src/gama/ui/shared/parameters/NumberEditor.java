@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.InputParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.InputParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;

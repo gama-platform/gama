@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.extension.serialize.binary.BinarySerialisation;

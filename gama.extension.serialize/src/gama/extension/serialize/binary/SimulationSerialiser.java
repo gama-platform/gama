@@ -13,7 +13,7 @@ package gama.extension.serialize.binary;
 import java.util.LinkedList;
 
 import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.kernel.experiment.ISimulationRecorder;
+import gama.core.kernel.experiment.tools.IExperimentRecorder;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.SerialisedAgent;
 import gama.dev.DEBUG;
@@ -25,7 +25,7 @@ import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 août 2023
  */
-public class SimulationSerialiser implements ISimulationRecorder, ISerialisationConstants {
+public class SimulationSerialiser implements IExperimentRecorder, ISerialisationConstants {
 
 	static {
 		DEBUG.OFF();

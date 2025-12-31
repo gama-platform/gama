@@ -15,12 +15,12 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.common.util.StringUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -214,7 +214,7 @@ public class GamaMessage implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.gaml.interfaces.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.get(IType.MESSAGE); }

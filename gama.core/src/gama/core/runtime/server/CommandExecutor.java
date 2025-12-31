@@ -37,9 +37,9 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.enums.ReadyState;
 
 import gama.core.runtime.GAMA;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.gaml.types.Types;
 
 /**

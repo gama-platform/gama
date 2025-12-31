@@ -26,8 +26,8 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;

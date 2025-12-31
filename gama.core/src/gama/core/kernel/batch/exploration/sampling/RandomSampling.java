@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.IParameter.Batch;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParametersSet;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.runtime.IScope;
 
 /**

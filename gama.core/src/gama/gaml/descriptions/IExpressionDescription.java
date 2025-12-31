@@ -14,8 +14,8 @@ import java.util.Collection;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.IGamlable;
 import gama.gaml.types.IType;
 

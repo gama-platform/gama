@@ -22,7 +22,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.network.common.IConnector;
 import gama.extension.network.common.MessageFactory;

@@ -11,10 +11,10 @@
 package gama.gaml.expressions.types;
 
 import gama.annotations.precompiler.GamlProperties;
-import gama.core.common.interfaces.ISkill;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.expressions.ConstantExpression;
+import gama.gaml.interfaces.ISkill;
 import gama.gaml.types.IType;
 
 /**

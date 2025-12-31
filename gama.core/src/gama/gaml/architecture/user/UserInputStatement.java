@@ -22,7 +22,7 @@ import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
@@ -217,7 +217,7 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 	/**
 	 * Method setUnitLabel()
 	 *
-	 * @see gama.core.kernel.experiment.IParameter#setUnitLabel(java.lang.String)
+	 * @see gama.core.kernel.experiment.parameters.IParameter#setUnitLabel(java.lang.String)
 	 */
 	@Override
 	public void setUnitLabel(final String label) {}
@@ -225,7 +225,7 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 	/**
 	 * Method isDefined()
 	 *
-	 * @see gama.core.kernel.experiment.IParameter#isDefined()
+	 * @see gama.core.kernel.experiment.parameters.IParameter#isDefined()
 	 */
 	@Override
 	public boolean isDefined() { return true; }
@@ -233,7 +233,7 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 	/**
 	 * Method setDefined()
 	 *
-	 * @see gama.core.kernel.experiment.IParameter#setDefined(boolean)
+	 * @see gama.core.kernel.experiment.parameters.IParameter#setDefined(boolean)
 	 */
 	@Override
 	public void setDefined(final boolean b) {}

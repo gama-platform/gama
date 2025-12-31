@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IExecutionContext;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.ActionDescription;

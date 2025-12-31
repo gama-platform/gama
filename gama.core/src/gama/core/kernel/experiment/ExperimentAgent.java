@@ -30,8 +30,15 @@ import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.RandomUtils;
-import gama.core.kernel.experiment.IParameter.Batch;
+import gama.core.common.util.random.RandomUtils;
+import gama.core.kernel.experiment.parameters.ExperimentParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
+import gama.core.kernel.experiment.parameters.ParametersSet;
+import gama.core.kernel.experiment.tools.ActionExecuter;
+import gama.core.kernel.experiment.tools.ExperimentClock;
+import gama.core.kernel.experiment.tools.ExperimentRecorderFactory;
+import gama.core.kernel.experiment.tools.IExperimentRecorder;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
@@ -51,11 +58,11 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaServerExperimentConfiguration;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMap;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.descriptions.ModelDescription;
@@ -170,7 +177,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	protected final ActionExecuter executer;
 
 	/** The recorder. */
-	protected ISimulationRecorder recorder;
+	protected IExperimentRecorder recorder;
 
 	/** The extra parameters map. */
 	final IMap<String, Object> extraParametersMap = GamaMapFactory.createOrdered();
@@ -221,7 +228,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		ownClock = new ExperimentClock(ownScope);
 		executer = new ActionExecuter(ownScope);
 		populationFactory = initializePopulationFactory();
-		if (getSpecies().isMemorize()) { recorder = SimulationRecorderFactory.create(); }
+		if (getSpecies().isMemorize()) { recorder = ExperimentRecorderFactory.create(); }
 		// Should not perform a whole reset as it shuts down UI outputs in comodels (see #2813)
 		if (s.getSpecies().getDescription().belongsToAMicroModel()) {
 			initialize();
@@ -619,8 +626,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				"(current seed)", null, true) {
 
 			@Override
-			Object getValue(final IScope scope) {
-				// tryToInit(scope);
+			protected Object getValue(final IScope scope) {
 				return getSeed();
 			}
 		};

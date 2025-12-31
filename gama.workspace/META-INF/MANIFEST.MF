@@ -6,7 +6,8 @@ Bundle-Version: 0.0.0.qualifier
 Export-Package: gama.workspace,
  gama.workspace.manager,
  gama.workspace.metadata,
- gama.workspace.nature
+ gama.workspace.nature,
+ gama.workspace.status
 Bundle-Activator: gama.workspace.Activator
 Bundle-Vendor: UMMISCO
 Bundle-RequiredExecutionEnvironment: JavaSE-25

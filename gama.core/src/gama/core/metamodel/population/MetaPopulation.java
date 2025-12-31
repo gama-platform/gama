@@ -17,21 +17,21 @@ import java.util.Map;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.util.RandomUtils;
 import gama.core.common.util.StringUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.species.ISpecies;
 import gama.gaml.types.IContainerType;
@@ -157,7 +157,7 @@ public class MetaPopulation implements IContainer.Addressable<Integer, IAgent>, 
 	/**
 	 * Method stringValue()
 	 *
-	 * @see gama.core.common.interfaces.IValue#stringValue(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#stringValue(gama.core.runtime.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -167,7 +167,7 @@ public class MetaPopulation implements IContainer.Addressable<Integer, IAgent>, 
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.core.common.interfaces.IValue#copy(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IValue#copy(gama.core.runtime.IScope)
 	 */
 	@Override
 	public MetaPopulation copy(final IScope scope) throws GamaRuntimeException {
@@ -207,7 +207,7 @@ public class MetaPopulation implements IContainer.Addressable<Integer, IAgent>, 
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.core.util.IContainer#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.IList)
+	 * @see gama.core.util.IContainer#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.list.IList)
 	 */
 	@Override
 	public IAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {

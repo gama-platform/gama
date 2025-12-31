@@ -37,8 +37,8 @@ import gama.core.common.geometry.Envelope3D;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.file.GamaGisFile;
+import gama.core.util.map.GamaMapFactory;
 import tech.units.indriya.unit.Units;
 
 /**

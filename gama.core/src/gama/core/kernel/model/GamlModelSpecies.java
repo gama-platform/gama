@@ -31,7 +31,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.outputs.AbstractOutputManager;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.descriptions.IDescription;

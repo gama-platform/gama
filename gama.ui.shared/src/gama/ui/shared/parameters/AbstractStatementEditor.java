@@ -16,7 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
 import gama.core.common.interfaces.IColored;
-import gama.core.kernel.experiment.InputParameter;
+import gama.core.kernel.experiment.parameters.InputParameter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;

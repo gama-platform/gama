@@ -28,9 +28,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import gama.core.common.interfaces.IGamlFileInfo;
 import gama.core.runtime.GAMA;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.FacetProto;
@@ -42,6 +41,7 @@ import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.IGamlFileInfo;
 import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;

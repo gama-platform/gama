@@ -17,11 +17,11 @@ import java.util.Set;
 
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.dev.COUNTER;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

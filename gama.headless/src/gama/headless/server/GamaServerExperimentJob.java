@@ -24,10 +24,10 @@ import javax.imageio.ImageIO;
 import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.model.IModel;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.types.Types;

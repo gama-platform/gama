@@ -17,14 +17,14 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaMatrixType;
 import gama.gaml.types.GamaType;

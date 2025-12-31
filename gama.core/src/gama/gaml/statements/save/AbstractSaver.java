@@ -12,7 +12,7 @@ package gama.gaml.statements.save;
 
 import java.util.Set;
 
-import gama.core.common.interfaces.ISaveDelegate;
+import gama.gaml.interfaces.ISaveDelegate;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

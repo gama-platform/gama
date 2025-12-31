@@ -25,7 +25,7 @@ import java.util.Map;
 import gama.core.common.geometry.GamaGeometryFactory;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;

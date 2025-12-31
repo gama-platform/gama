@@ -14,22 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.ISnapshotMaker;
 import gama.core.common.interfaces.ITopLevelAgentChangeListener;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.PoolUtils;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentController;
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.ParametersSet;
 import gama.core.kernel.experiment.TestAgent;
+import gama.core.kernel.experiment.controller.IExperimentController;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
@@ -45,6 +44,7 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.interfaces.IBenchmarkable;
 
 /**
  * Written by drogoul Modified on 23 nov. 2009

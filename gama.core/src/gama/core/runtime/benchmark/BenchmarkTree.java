@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.core.runtime.benchmark;
 
-import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.util.tree.GamaNode;
 import gama.core.util.tree.GamaTree;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.operators.IOperator;
+import gama.gaml.interfaces.IBenchmarkable;
 
 /**
  * The Class BenchmarkTree.

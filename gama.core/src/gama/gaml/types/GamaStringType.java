@@ -15,10 +15,10 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.interfaces.INamed;
+import gama.gaml.interfaces.IValue;
 
 /**
  *

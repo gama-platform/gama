@@ -20,7 +20,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;

@@ -14,8 +14,8 @@ import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.core.util.tree.GamaNode;
 import gama.gaml.types.IType;
 

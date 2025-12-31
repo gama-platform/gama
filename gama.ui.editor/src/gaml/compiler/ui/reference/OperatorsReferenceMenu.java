@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.types.Signature;

@@ -23,8 +23,8 @@ import org.sqlite.SQLiteConfig;
 
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;

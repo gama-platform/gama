@@ -15,8 +15,8 @@ import java.util.List;
 import org.eclipse.jface.wizard.Wizard;
 
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.statements.ActionStatement;

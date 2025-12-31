@@ -10,11 +10,11 @@
 package gama.core.outputs;
 
 import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IScoped;
-import gama.core.common.interfaces.IStepable;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
+import gama.gaml.interfaces.IScoped;
+import gama.gaml.interfaces.IStepable;
 
 /**
  * This interface represents the objects, declared in a model, which perform various types of computations and return

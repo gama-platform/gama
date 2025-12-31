@@ -22,10 +22,10 @@ import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.IMap;
 import gama.core.util.graph.GraphEvent;
 import gama.core.util.graph._Edge;
 import gama.core.util.graph.GraphEvent.GraphEventType;
+import gama.core.util.map.IMap;
 
 /**
  * The Class DrivingGraph.

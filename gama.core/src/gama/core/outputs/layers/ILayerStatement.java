@@ -11,11 +11,11 @@
 package gama.core.outputs.layers;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IStepable;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IStepable;
 
 /**
  * The class ILayerStatement. Supports the GAML definition of layers in a display

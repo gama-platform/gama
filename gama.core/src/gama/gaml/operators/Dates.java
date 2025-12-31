@@ -62,7 +62,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaDate;
 import gama.core.util.GamaDateInterval;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.IOperatorValidator;
 import gama.gaml.compilation.annotations.validator;

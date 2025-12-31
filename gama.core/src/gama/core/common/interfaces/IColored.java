@@ -4,7 +4,7 @@ import java.util.List;
 
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 import gama.gaml.types.Types;
 
 public interface IColored {

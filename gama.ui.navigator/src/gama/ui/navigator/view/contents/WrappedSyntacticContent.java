@@ -17,9 +17,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import gama.core.common.interfaces.IGamlLabelProvider;
 import gama.core.runtime.GAMA;
 import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.gaml.interfaces.IGamlLabelProvider;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**

@@ -18,7 +18,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.grid.IDiffusionTarget;
 import gama.core.runtime.IScope;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 
 /**

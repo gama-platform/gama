@@ -31,10 +31,10 @@ import gama.core.metamodel.topology.filter.In;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
 import gama.core.util.ICollector;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.core.util.path.GamaPath;
 import gama.core.util.path.GamaSpatialPath;
 import gama.core.util.path.IPath;
@@ -780,7 +780,7 @@ public class GraphTopology extends AbstractTopology {
 	}
 
 	/**
-	 * @see gama.interfaces.IValue#stringValue()
+	 * @see gama.gaml.interfaces.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {

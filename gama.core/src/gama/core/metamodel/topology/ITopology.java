@@ -20,7 +20,6 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -30,10 +29,11 @@ import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.list.IList;
 import gama.core.util.path.GamaSpatialPath;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 
 /**

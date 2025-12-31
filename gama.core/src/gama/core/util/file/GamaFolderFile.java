@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.util.GamaListFactory.createWithoutCasting;
+import static gama.core.util.list.GamaListFactory.createWithoutCasting;
 
 import java.io.File;
 
@@ -18,9 +18,9 @@ import gama.core.common.geometry.Envelope3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.operators.Files;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.Types;

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TypeConverter.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -125,9 +125,9 @@ public class TypeConverter {
 		hm.put("gama.gaml.operators.Colors.GamaScale", "map<float,rgb>");
 
 		// List
-		hm.put("gama.core.util.IList", "list");
-		hm.put("gama.core.util.GamaList", "list");
-		hm.put("gama.core.util.IList", "list");
+		hm.put("gama.core.util.list.IList", "list");
+		hm.put("gama.core.util.list.GamaList", "list");
+		hm.put("gama.core.util.list.IList", "list");
 		hm.put("java.util.List", "list");
 		hm.put("gama.core.util.GamaDateInterval", "list");
 

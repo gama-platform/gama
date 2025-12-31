@@ -15,11 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.base.Function;
 
-import gama.core.common.interfaces.IBenchmarkable;
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
-import gama.core.common.interfaces.ITyped;
 import gama.core.util.BiConsumerWithPruning;
 import gama.core.util.ConsumerWithPruning;
 import gama.core.util.ICollector;
@@ -29,7 +25,11 @@ import gama.gaml.descriptions.SymbolSerializer.SpeciesSerializer;
 import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
 import gama.gaml.descriptions.SymbolSerializer.VarSerializer;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IBenchmarkable;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.ISkill;
+import gama.gaml.interfaces.ITyped;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
 

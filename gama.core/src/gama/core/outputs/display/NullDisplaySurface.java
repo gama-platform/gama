@@ -17,7 +17,6 @@ import java.util.Collections;
 
 import org.locationtech.jts.geom.Envelope;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
@@ -29,7 +28,8 @@ import gama.core.outputs.LayeredDisplayData.Changes;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.util.IList;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
+import gama.core.util.list.IList;
 
 /**
  * Class NullDisplaySurface.

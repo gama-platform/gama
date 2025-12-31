@@ -15,11 +15,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.IStatusMessage;
-import gama.core.common.IStatusMessage.StatusType;
-import gama.core.common.StatusMessageFactory;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
+import gama.core.common.interfaces.IStatusMessage;
+import gama.core.common.interfaces.IStatusMessage.StatusType;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
@@ -27,6 +26,7 @@ import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.status.StatusMessageFactory;
 
 /**
  * The Class StatusDisplayer.

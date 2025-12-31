@@ -27,7 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.ISymbolConstructor;
 import gama.gaml.compilation.IValidator;

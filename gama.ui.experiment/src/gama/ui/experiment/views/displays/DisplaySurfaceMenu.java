@@ -55,7 +55,7 @@ import gama.core.outputs.layers.charts.ChartLayer;
 import gama.core.outputs.layers.charts.ChartLayerStatement;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;

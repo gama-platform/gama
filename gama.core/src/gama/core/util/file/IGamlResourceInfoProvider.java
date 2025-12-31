@@ -12,8 +12,8 @@ package gama.core.util.file;
 
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.interfaces.IGamlFileInfo;
 import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.gaml.interfaces.IGamlFileInfo;
 
 /**
  * The Interface IGamlResourceInfoProvider.

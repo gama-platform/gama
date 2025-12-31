@@ -27,7 +27,6 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISkill;
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.common.util.JavaUtils;
 import gama.core.common.util.StringUtils;
@@ -55,6 +54,7 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.units.TimeUnitConstantExpression;
 import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.interfaces.ISkill;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.AbstractSpecies;
 import gama.gaml.statements.IExecutable;
@@ -884,7 +884,7 @@ public class Variable extends Symbol implements IVariable {
 	/**
 	 * Method isDefined()
 	 *
-	 * @see gama.core.kernel.experiment.IParameter#isDefined()
+	 * @see gama.core.kernel.experiment.parameters.IParameter#isDefined()
 	 */
 	@Override
 	public boolean isDefined() { return true; }
@@ -892,7 +892,7 @@ public class Variable extends Symbol implements IVariable {
 	/**
 	 * Method setDefined()
 	 *
-	 * @see gama.core.kernel.experiment.IParameter#setDefined(boolean)
+	 * @see gama.core.kernel.experiment.parameters.IParameter#setDefined(boolean)
 	 */
 	@Override
 	public void setDefined(final boolean b) {}

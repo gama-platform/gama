@@ -26,8 +26,8 @@ import gama.core.outputs.layers.ILayerStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.interfaces.INamed;
 
 /**

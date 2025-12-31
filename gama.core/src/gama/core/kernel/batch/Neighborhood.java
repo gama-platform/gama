@@ -13,6 +13,8 @@ package gama.core.kernel.batch;
 import java.util.List;
 
 import gama.core.kernel.experiment.*;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 

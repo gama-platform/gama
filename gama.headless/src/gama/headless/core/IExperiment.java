@@ -13,7 +13,7 @@ package gama.headless.core;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
 import gama.headless.server.GamaServerExperimentJob;
 

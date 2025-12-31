@@ -19,12 +19,12 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
 import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
 import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph._Edge;
 import gama.core.util.graph._Vertex;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.types.Types;
 
 /**

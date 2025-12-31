@@ -27,8 +27,8 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.inject.Singleton;
 
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlPackage;

@@ -11,17 +11,17 @@ package gama.gaml.types;
 
 import java.util.Map;
 
-import gama.core.common.interfaces.ITyped;
 import gama.core.runtime.IScope;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.core.util.map.IMap;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IJsonable;
+import gama.gaml.interfaces.ITyped;
 
 /**
  * Written by drogoul Modified on 9 juin 2010

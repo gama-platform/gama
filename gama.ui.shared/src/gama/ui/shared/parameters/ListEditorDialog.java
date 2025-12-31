@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Text;
 
 import gama.core.common.util.StringUtils;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.compilation.GAML;
 
 /**

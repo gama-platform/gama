@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Envelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
-import gama.core.common.util.RandomUtils;
+import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.layers.OverlayLayer;

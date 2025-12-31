@@ -16,8 +16,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
 import gama.core.util.IContainer;
+import gama.core.util.list.GamaListFactory;
 import gama.gaml.species.ISpecies;
 
 /**

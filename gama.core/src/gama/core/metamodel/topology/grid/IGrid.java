@@ -21,7 +21,7 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.core.util.matrix.IMatrix;
 import gama.core.util.path.GamaSpatialPath;
 import gama.gaml.expressions.IExpression;

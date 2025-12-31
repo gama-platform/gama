@@ -16,9 +16,9 @@ import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.core.common.interfaces.ILayer;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
 import gama.core.util.file.GamaGeometryFile;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.DrawingAttributes;

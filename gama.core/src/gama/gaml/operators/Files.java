@@ -42,9 +42,9 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.IList;
 import gama.core.util.file.GamaFolderFile;
 import gama.core.util.file.IGamaFile;
+import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 

@@ -21,7 +21,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -39,8 +38,9 @@ import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 
 /**

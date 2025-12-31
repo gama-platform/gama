@@ -13,7 +13,7 @@ package gama.ui.shared.parameters;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.kernel.experiment.InputParameter;
+import gama.core.kernel.experiment.parameters.InputParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.types.IType;

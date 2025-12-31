@@ -232,7 +232,7 @@ public class MinimalAgent extends AbstractAgent {
 	 * implementation is provided in this class as well (equivalent to a super.init())
 	 *
 	 * @see GamlAgent#_init_()
-	 * @see gama.core.common.interfaces.IStepable#step(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IStepable#step(gama.core.runtime.IScope)
 	 * @warning This method should NOT be overriden (except for some rare occasions like in SimulationAgent). Always
 	 *          override _init_(IScope) instead.
 	 */
@@ -251,7 +251,7 @@ public class MinimalAgent extends AbstractAgent {
 	 * implementation is provided in this class as well (equivalent to a super.doStep());
 	 *
 	 * @see GamlAgent#_step_()
-	 * @see gama.core.common.interfaces.IStepable#step(gama.core.runtime.IScope)
+	 * @see gama.gaml.interfaces.IStepable#step(gama.core.runtime.IScope)
 	 * @warning This method should NOT be overridden (except for some rare occasions like in SimulationAgent). Always
 	 *          override _step_(IScope) instead.
 	 */

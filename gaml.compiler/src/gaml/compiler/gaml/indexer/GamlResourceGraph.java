@@ -26,7 +26,7 @@ import org.jgrapht.graph.FastLookupGraphSpecificsStrategy;
 
 import com.google.common.collect.Maps;
 
-import gama.core.util.GamaMapFactory;
+import gama.core.util.map.GamaMapFactory;
 import gama.dev.DEBUG;
 
 /**

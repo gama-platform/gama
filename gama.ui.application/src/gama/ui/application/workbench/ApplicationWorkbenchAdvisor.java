@@ -24,7 +24,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 
-import gama.core.common.interfaces.IEventLayerDelegate;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
@@ -33,6 +32,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.util.file.IGamaFile;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IEventLayerDelegate;
 import gama.ui.application.Application;
 import gama.workspace.manager.WorkspaceModelsManager;
 

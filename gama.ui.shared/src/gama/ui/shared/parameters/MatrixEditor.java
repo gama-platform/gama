@@ -12,7 +12,7 @@ package gama.ui.shared.parameters;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.types.IType;

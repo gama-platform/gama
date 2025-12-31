@@ -16,11 +16,11 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.ParseException;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.types.Types;
 
 /**

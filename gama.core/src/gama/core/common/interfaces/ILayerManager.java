@@ -15,6 +15,7 @@ import java.util.List;
 
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.layers.charts.ChartLayer;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The class ILayerManager. Manages a fixed set of layers on behalf of a IDisplaySurface

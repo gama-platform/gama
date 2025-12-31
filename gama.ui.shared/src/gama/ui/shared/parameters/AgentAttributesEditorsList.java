@@ -19,8 +19,8 @@ import java.util.Set;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ItemList;
-import gama.core.kernel.experiment.IExperimentDisplayable;
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaColor;

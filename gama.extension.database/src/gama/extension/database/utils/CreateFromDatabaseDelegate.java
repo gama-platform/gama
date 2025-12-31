@@ -15,14 +15,14 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.interfaces.ICreateDelegate;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
+import gama.core.util.map.GamaMapFactory;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.ICreateDelegate;
 import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
 import gama.gaml.types.IType;
@@ -41,7 +41,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	/**
 	 * Method acceptSource()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
+	 * @see gama.gaml.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
@@ -53,7 +53,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	 *
 	 * @author thai.truongminh@gmail.com
 	 * @since 04-09-2012
-	 * @see gama.core.common.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
+	 * @see gama.gaml.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
 	 *      java.lang.Object)
 	 */
 	@Override
@@ -126,7 +126,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	/**
 	 * Method fromFacetType()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#fromFacetType()
+	 * @see gama.gaml.interfaces.ICreateDelegate#fromFacetType()
 	 */
 	@Override
 	public IType fromFacetType() {

@@ -12,7 +12,7 @@ package gama.core.runtime.server;
 
 import java.util.Map;
 
-import gama.core.util.GamaMap;
+import gama.core.util.map.GamaMap;
 import gama.gaml.types.Types;
 
 /**

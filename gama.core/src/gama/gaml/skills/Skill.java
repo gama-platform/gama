@@ -9,11 +9,11 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.gaml.descriptions.SkillDescription;
+import gama.gaml.interfaces.ISkill;
 
 /**
  * The Class Skill.

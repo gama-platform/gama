@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 
 /**
  * Represents an abstract JSON object, a set of name/value pairs, where the names are strings and the values are JSON

@@ -13,7 +13,7 @@ package gama.core.runtime.server;
 import org.java_websocket.WebSocket;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 
 /**
  * The Interface ISocketCommand.

@@ -15,16 +15,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.core.common.interfaces.IBenchmarkable;
 import gama.core.common.util.FileUtils;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
 import gama.core.util.file.csv.CsvWriter;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.core.util.tree.GamaTree.Order;
+import gama.gaml.interfaces.IBenchmarkable;
 import gama.gaml.operators.Files;
 import gama.gaml.types.Types;
 

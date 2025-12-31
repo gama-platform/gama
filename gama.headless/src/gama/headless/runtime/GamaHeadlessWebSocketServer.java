@@ -33,8 +33,8 @@ import gama.core.runtime.server.GamaWebSocketServer;
 import gama.core.runtime.server.IGamaServer;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.ISocketCommand.CommandException;
+import gama.core.util.map.IMap;
 import gama.core.runtime.server.MessageType;
-import gama.core.util.IMap;
 
 /**
  * The Class GamaWebSocketServer.

@@ -16,11 +16,11 @@ import java.util.function.Predicate;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IKeyword;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.descriptions.IDescription.IFacetVisitor;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.INamed;
 import gama.gaml.statements.Facets;
 

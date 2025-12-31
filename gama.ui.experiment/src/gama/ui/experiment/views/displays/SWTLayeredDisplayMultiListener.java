@@ -31,10 +31,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 
 import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IDisposable;
 import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IDisposable;
 import gama.ui.shared.bindings.GamaKeyBindings;
 
 /**

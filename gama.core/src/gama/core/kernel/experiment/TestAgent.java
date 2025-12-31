@@ -21,6 +21,8 @@ import org.eclipse.emf.common.util.URI;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.experiment;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;

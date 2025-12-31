@@ -21,9 +21,9 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.core.common.GamlFileExtension;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
 import gama.core.util.file.IGamaFileMetaData;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.descriptions.IExpressionDescription;

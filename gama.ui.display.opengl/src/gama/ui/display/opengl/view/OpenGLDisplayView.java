@@ -13,10 +13,10 @@ package gama.ui.display.opengl.view;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
+import gama.gaml.interfaces.IDisposable;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 
 /**

@@ -36,8 +36,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.inject.Singleton;
 
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;

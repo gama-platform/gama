@@ -14,9 +14,9 @@ package gama.ui.display.opengl.scene;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.metamodel.shape.GamaPoint;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.OpenGL;

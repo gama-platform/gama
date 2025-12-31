@@ -24,8 +24,8 @@ import gama.core.metamodel.topology.graph.GraphTopology;
 import gama.core.metamodel.topology.grid.GridTopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
 import gama.core.util.graph.IGraph;
+import gama.core.util.list.IList;
 
 /**
  * A factory for creating Path objects.

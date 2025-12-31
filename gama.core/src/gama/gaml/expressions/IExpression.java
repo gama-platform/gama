@@ -11,14 +11,14 @@ package gama.gaml.expressions;
 
 import java.util.function.Predicate;
 
-import gama.core.common.interfaces.IDisposable;
-import gama.core.common.interfaces.ITyped;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.IVarDescriptionUser;
 import gama.gaml.expressions.types.TypeExpression;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.ITyped;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 

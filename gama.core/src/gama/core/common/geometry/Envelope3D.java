@@ -17,12 +17,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.common.util.PoolUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
+import gama.gaml.interfaces.IDisposable;
 import gama.gaml.operators.Comparison;
 import gama.gaml.types.GamaGeometryType;
 

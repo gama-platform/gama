@@ -20,12 +20,12 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
 import gama.core.util.GamaPair;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph.IGraph;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
 import gama.gaml.expressions.variables.VariableExpression;
 import gama.gaml.operators.Cast;
 

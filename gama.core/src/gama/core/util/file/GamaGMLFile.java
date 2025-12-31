@@ -27,8 +27,8 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.core.common.geometry.Envelope3D;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 
 /**

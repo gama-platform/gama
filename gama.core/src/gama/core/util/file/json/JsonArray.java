@@ -16,8 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.core.util.list.GamaListFactory;
+import gama.core.util.list.IList;
 
 /**
  * Represents a JSON array, an ordered collection of JSON values.

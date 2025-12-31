@@ -14,15 +14,15 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.IMap;
 import gama.core.util.graph.IGraph;
+import gama.core.util.list.IList;
+import gama.core.util.map.IMap;
+import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 
 /**

@@ -12,10 +12,10 @@ package gama.gaml.types;
 
 import java.util.Set;
 
-import gama.core.common.interfaces.IDisposable;
 import gama.core.metamodel.agent.IAgent;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.interfaces.IDisposable;
 
 /**
  * The Interface ITypesManager.

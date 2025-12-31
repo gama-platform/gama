@@ -28,7 +28,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.extension.image.svg.GamaSVGFile;

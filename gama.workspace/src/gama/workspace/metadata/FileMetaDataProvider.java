@@ -48,9 +48,8 @@ import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.parser.SVGLoader;
 
 import gama.core.common.GamlFileExtension;
-import gama.core.common.IStatusMessage;
 import gama.core.common.geometry.Envelope3D;
-import gama.core.common.interfaces.IGamlFileInfo;
+import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
@@ -60,6 +59,7 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.gaml.compilation.GAML;
+import gama.gaml.interfaces.IGamlFileInfo;
 import gama.gaml.operators.Strings;
 
 /**

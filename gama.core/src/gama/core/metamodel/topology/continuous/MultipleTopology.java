@@ -44,7 +44,7 @@ public class MultipleTopology extends ContinuousTopology {
 	}
 
 	/**
-	 * @see gama.interfaces.IValue#stringValue()
+	 * @see gama.gaml.interfaces.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {

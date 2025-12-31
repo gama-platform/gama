@@ -33,8 +33,8 @@ import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescri
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.util.GamaMapFactory;
 import gama.core.util.file.IGamaFile;
+import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;

@@ -12,7 +12,7 @@ package gama.headless.core;
 
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ParametersSet;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.IOutput;
@@ -20,7 +20,7 @@ import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
 import gama.headless.server.GamaServerExperimentJob;

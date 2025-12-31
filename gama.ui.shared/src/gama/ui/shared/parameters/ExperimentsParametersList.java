@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ICategory;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentDisplayable;
-import gama.core.kernel.experiment.IParameter;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.TextStatement;
+import gama.core.kernel.experiment.parameters.ICategory;
+import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
+import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.SimulationOutputManager;

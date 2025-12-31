@@ -16,7 +16,7 @@ import java.util.Map;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.SerialisedAgent;
 import gama.core.runtime.IScope;
-import gama.core.util.IMap;
+import gama.core.util.map.IMap;
 
 /**
  * The Class JsonGamlObject.

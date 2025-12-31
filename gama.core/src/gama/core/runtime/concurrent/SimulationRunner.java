@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;

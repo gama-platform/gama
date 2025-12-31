@@ -17,7 +17,7 @@ import gama.core.metamodel.topology.AbstractTopology;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
+import gama.core.util.list.GamaListFactory;
 import gama.gaml.operators.Maths;
 import gama.gaml.types.Types;
 
@@ -41,7 +41,7 @@ public class ContinuousTopology extends AbstractTopology {
 	}
 
 	/**
-	 * @see gama.interfaces.IValue#stringValue()
+	 * @see gama.gaml.interfaces.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {

@@ -11,7 +11,7 @@
 package gama.extension.fipa;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.util.IList;
+import gama.core.util.list.IList;
 
 /**
  * The Message class represents the piece of information transfered between agents capable of communicating.

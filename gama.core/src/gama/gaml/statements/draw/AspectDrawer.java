@@ -12,13 +12,13 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.interfaces.IDrawDelegate;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IDrawDelegate;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;

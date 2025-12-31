@@ -13,7 +13,7 @@ package gama.core.kernel.batch.optimization.genetic;
 
 import java.util.List;
 
-import gama.core.kernel.experiment.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.IScope;
 
 /**

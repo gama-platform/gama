@@ -13,6 +13,7 @@ package gama.core.common.interfaces;
 import java.util.Collections;
 import java.util.List;
 
+import gama.gaml.interfaces.IGamlFileInfo;
 import gama.gaml.statements.test.TestExperimentSummary;
 
 /**

@@ -21,14 +21,14 @@ import java.util.Set;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.ISkill;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.core.util.map.GamaMapFactory;
+import gama.core.util.map.IMap;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.descriptions.IDescription.DescriptionVisitor;
+import gama.gaml.interfaces.ISkill;
 
 /**
  * The Class GamaSkillRegistry.
