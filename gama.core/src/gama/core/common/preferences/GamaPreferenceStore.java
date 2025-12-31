@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaPreferenceStore.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,8 +39,8 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaDate;
-import gama.core.util.file.GamaFile;
 import gama.core.util.file.GenericFile;
+import gama.core.util.file.IGamaFile;
 import gama.dev.FLAGS;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaDateType;
@@ -511,37 +511,19 @@ public abstract class GamaPreferenceStore<T> {
 		final var key = gp.key;
 		final var value = gp.value;
 		switch (gp.type) {
-			case IType.INT:
-				putInt(key, (Integer) value);
-				break;
-			case IType.FLOAT:
-				putDouble(key, (Double) value);
-				break;
-			case IType.BOOL:
-				putBoolean(key, (Boolean) value);
-				break;
-			case IType.STRING:
-				put(key, toJavaString((String) value));
-				break;
-			case IType.FILE:
-				put(key, value == null ? "" : ((GamaFile) value).getPath(null));
-				break;
-			case IType.COLOR:
-				putInt(key, value == null ? 0 : ((GamaColor) value).getRGB());
-				break;
-			case IType.POINT:
-				put(key, value == null ? "{0,0}" : ((GamaPoint) value).stringValue(null));
-				break;
-			case IType.FONT:
-				put(key, value == null ? DEFAULT_FONT : value.toString());
-				break;
-			case IType.DATE:
-				put(key, value == null ? toJavaString(GamaDateType.EPOCH.toISOString())
-						: toJavaString(((GamaDate) value).toISOString()));
-				break;
-			default:
-				put(key, (String) value);
+			case IType.INT -> putInt(key, (Integer) value);
+			case IType.FLOAT -> putDouble(key, (Double) value);
+			case IType.BOOL -> putBoolean(key, (Boolean) value);
+			case IType.STRING -> put(key, toJavaString((String) value));
+			case IType.FILE -> put(key, value == null ? "" : ((IGamaFile) value).getPath(null));
+			case IType.COLOR -> putInt(key, value == null ? 0 : ((GamaColor) value).getRGB());
+			case IType.POINT -> put(key, value == null ? "{0,0}" : ((GamaPoint) value).stringValue(null));
+			case IType.FONT -> put(key, value == null ? DEFAULT_FONT : value.toString());
+			case IType.DATE -> put(key, value == null ? toJavaString(GamaDateType.EPOCH.toISOString())
+					: toJavaString(((GamaDate) value).toISOString()));
+			default -> put(key, (String) value);
 		}
+		;
 		flush();
 	}
 
@@ -558,41 +540,23 @@ public abstract class GamaPreferenceStore<T> {
 		final var value = gp.value;
 		if (getKeys().contains(key)) {
 			switch (gp.type) {
-				case IType.POINT:
-					gp.init((ValueProvider) () -> Cast.asPoint(scope, get(key, asString(scope, value)), false));
-					break;
-				case IType.INT:
-					gp.init((ValueProvider) () -> getInt(key, asInt(scope, value)));
-					break;
-				case IType.FLOAT:
-					gp.init((ValueProvider) () -> getDouble(key, Cast.asFloat(scope, value)));
-					break;
-				case IType.BOOL:
-					gp.init((ValueProvider) () -> getBoolean(key, Cast.asBool(scope, value)));
-					break;
-				case IType.STRING:
-					gp.init((ValueProvider) () -> get(key, toJavaString(asString(scope, value))));
-					break;
-				case IType.FILE:
-					gp.init((ValueProvider) () -> new GenericFile(get(key, (String) value), false));
-					break;
-				case IType.COLOR:
-					gp.init((ValueProvider) () -> GamaColor.get(getInt(key, asInt(scope, value))));
-					break;
-				case IType.FONT:
-					gp.init((ValueProvider) () -> {
-						final var font = get(key, asString(scope, value));
-						if (DEFAULT_FONT.equals(font)) return null;
-						return GamaFontType.staticCast(scope, font, false);
-					});
-					break;
-				case IType.DATE:
-					gp.init((ValueProvider) () -> GamaDate
-							.fromISOString(toJavaString(get(key, asString(scope, value)))));
-					break;
-				default:
-					gp.init((ValueProvider) () -> get(key, asString(scope, value)));
+				case IType.POINT -> gp.init((ValueProvider) () -> Cast.asPoint(scope, get(key, asString(scope, value)), false));
+				case IType.INT -> gp.init((ValueProvider) () -> getInt(key, asInt(scope, value)));
+				case IType.FLOAT -> gp.init((ValueProvider) () -> getDouble(key, Cast.asFloat(scope, value)));
+				case IType.BOOL -> gp.init((ValueProvider) () -> getBoolean(key, Cast.asBool(scope, value)));
+				case IType.STRING -> gp.init((ValueProvider) () -> get(key, toJavaString(asString(scope, value))));
+				case IType.FILE -> gp.init((ValueProvider) () -> new GenericFile(get(key, (String) value), false));
+				case IType.COLOR -> gp.init((ValueProvider) () -> GamaColor.get(getInt(key, asInt(scope, value))));
+				case IType.FONT -> gp.init((ValueProvider) () -> {
+					final var font = get(key, asString(scope, value));
+					if (DEFAULT_FONT.equals(font)) return null;
+					return GamaFontType.staticCast(scope, font, false);
+				});
+				case IType.DATE -> gp.init((ValueProvider) () -> GamaDate
+						.fromISOString(toJavaString(get(key, asString(scope, value)))));
+				default -> gp.init((ValueProvider) () -> get(key, asString(scope, value)));
 			}
+			;
 		}
 		flush();
 	}

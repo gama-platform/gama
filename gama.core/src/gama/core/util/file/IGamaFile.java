@@ -329,4 +329,9 @@ public interface IGamaFile<C extends IModifiableContainer, Contents>
 		return Types.FILE.of(type.getKeyType(), type.getContentType());
 	}
 
+	/**
+	 * Invalidate contents.
+	 */
+	void invalidateContents();
+
 }

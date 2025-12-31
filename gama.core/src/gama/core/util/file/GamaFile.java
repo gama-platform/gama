@@ -23,6 +23,7 @@ import gama.core.common.util.FileUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.FlushBufferException;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IAddressableContainer;
 import gama.core.util.IContainer;
@@ -327,27 +328,6 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 		throw GamaRuntimeException.error("Loading is not yet impletemented for files of type "
 				+ this.getExtension(scope) + ". Please post a request for enhancement to implement "
 				+ getClass().getSimpleName() + ".fillBuffer(IScope, Facets)", scope);
-	}
-
-	/**
-	 * The Class FlushBufferException.
-	 */
-	public static class FlushBufferException extends GamaRuntimeException {
-
-		/**
-		 * Instantiates a new flush buffer exception.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param s
-		 *            the s
-		 * @param warning
-		 *            the warning
-		 */
-		protected FlushBufferException(final IScope scope, final String s, final boolean warning) {
-			super(scope, s, warning);
-		}
-
 	}
 
 	/**

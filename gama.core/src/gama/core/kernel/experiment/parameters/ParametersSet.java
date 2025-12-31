@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ParametersSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import java.util.Map;
 
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.GamaFile;
+import gama.core.util.file.IGamaFile;
 import gama.core.util.map.GamaMap;
 import gama.gaml.types.Types;
 
@@ -97,7 +97,7 @@ public class ParametersSet extends GamaMap<String, Object> {
 		// Special case for files as they are not invariant. Their contents must
 		// be invalidated before they are loaded
 		// again in a simulation. See Issue 812.
-		if (o instanceof GamaFile) { ((GamaFile) o).invalidateContents(); }
+		if (o instanceof IGamaFile) { ((IGamaFile) o).invalidateContents(); }
 		return super.put(s, o);
 	}
 

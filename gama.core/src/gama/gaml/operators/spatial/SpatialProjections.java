@@ -30,8 +30,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.GamaFile;
 import gama.core.util.file.GamaGisFile;
+import gama.core.util.file.IGamaFile;
 
 /**
  * The Class Projections.
@@ -62,7 +62,7 @@ public class SpatialProjections {
 					isExecutable = false) },
 			see = {})
 	@no_test
-	public static String crsFromFile(final IScope scope, final GamaFile gisFile) {
+	public static String crsFromFile(final IScope scope, final IGamaFile gisFile) {
 		if (!(gisFile instanceof GamaGisFile))
 			throw GamaRuntimeException.error("Impossible to compute the CRS for this type of file", scope);
 		final CoordinateReferenceSystem crs = ((GamaGisFile) gisFile).getGis(scope).getInitialCRS(scope);

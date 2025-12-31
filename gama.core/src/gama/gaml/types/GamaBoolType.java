@@ -20,7 +20,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.file.GamaFile;
+import gama.core.util.file.IGamaFile;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -64,7 +64,7 @@ public class GamaBoolType extends GamaType<Boolean> {
 			case null -> false;
 			case Boolean b -> b;
 			case IAgent a -> !a.dead();
-			case GamaFile f -> f.exists(scope);
+			case IGamaFile f -> f.exists(scope);
 			case IContainer c -> !c.isEmpty(scope);
 			case File f -> f.exists();
 			case Integer i -> i != 0;
