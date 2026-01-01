@@ -2,7 +2,7 @@
  *
  * GAMA.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import gama.core.common.interfaces.ISnapshotMaker;
 import gama.core.common.interfaces.ITopLevelAgentChangeListener;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.PoolUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.ExperimentPlan;
@@ -489,7 +490,7 @@ public class GAMA {
 	 *
 	 * @return the current random
 	 */
-	public static RandomUtils getCurrentRandom() { return getRandom(getRuntimeScope()); }
+	public static IRandom getCurrentRandom() { return getRandom(getRuntimeScope()); }
 
 	/**
 	 * Gets the random.
@@ -498,7 +499,7 @@ public class GAMA {
 	 *            the scope
 	 * @return the random
 	 */
-	public static RandomUtils getRandom(final IScope scope) {
+	public static IRandom getRandom(final IScope scope) {
 		if (scope == null) return new RandomUtils();
 		return scope.getRandom();
 	}

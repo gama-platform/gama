@@ -3,7 +3,7 @@
  * GamaRuntimeException.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,10 +18,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IClock;
+import gama.core.common.util.StringUtils;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.IScope;
 import gama.gaml.compilation.ISymbol;
-import gama.gaml.operators.Strings;
 
 /**
  * Written by drogoul Modified on 7 janv. 2011
@@ -374,7 +374,7 @@ public class GamaRuntimeException extends RuntimeException {
 		sb.append(a).append(" at ");
 		sb.append("cycle ").append(getCycle()).append(": ").append(getMessage());
 		final List<String> strings = getContextAsList();
-		for (final String s : strings) { sb.append(Strings.LN).append(s); }
+		for (final String s : strings) { sb.append(StringUtils.LN).append(s); }
 		return sb.toString();
 	}
 

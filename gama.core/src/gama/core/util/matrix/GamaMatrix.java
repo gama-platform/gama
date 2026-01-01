@@ -2,7 +2,7 @@
  *
  * GamaMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import java.util.List;
 import org.eclipse.core.runtime.ISafeRunnable;
 
 import gama.core.common.interfaces.ISafeConsumer;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -493,12 +493,11 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		return _listValue(scope, contentsType, true);
 	}
 
-	
 	@Override
 	public IList<T> asList(final IScope scope) {
 		return listValue(scope, type.getContentType(), false);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -597,7 +596,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 
 	@Override
 	public T anyValue(final IScope scope) {
-		final RandomUtils r = scope.getRandom();
+		final IRandom r = scope.getRandom();
 		final int x = r.between(0, numCols - 1);
 		final int y = r.between(0, numRows - 1);
 		return this.get(scope, x, y);

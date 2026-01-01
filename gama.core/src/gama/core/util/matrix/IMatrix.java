@@ -2,7 +2,7 @@
  *
  * IMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,7 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -55,8 +55,7 @@ import one.util.streamex.StreamEx;
 		@variable (
 				name = IMatrix.COLUMNS,
 				type = IType.INT,
-				doc = { @doc ("Returns the number of columns of the receiver matrix") })
-})
+				doc = { @doc ("Returns the number of columns of the receiver matrix") }) })
 
 @SuppressWarnings ({ "rawtypes" })
 public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint, T>,
@@ -164,7 +163,13 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 			see = "rows_list")
 	IList<IList<T>> getColumnsList();
 
-	
+	/**
+	 * As list.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i list
+	 */
 	@operator (
 			value = "as_list",
 			can_be_const = true,
@@ -180,7 +185,6 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	@test ("as_list(matrix([[1,4,7],[2,5,8],[3,6,9]])) = [1,2,3,4,5,6,7,8,9]")
 	IList<T> asList(final IScope scope);
 
-	
 	/**
 	 * Gets the row.
 	 *
@@ -534,7 +538,7 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	 * @param randomAgent
 	 *            the random agent
 	 */
-	void shuffleWith(RandomUtils randomAgent);
+	void shuffleWith(IRandom randomAgent);
 
 	/**
 	 * Copy.

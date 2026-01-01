@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * Collector.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Collector.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 import com.google.common.collect.Sets;
 
 import gama.core.common.util.PoolUtils;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.types.Types;
@@ -53,41 +52,40 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 	/**
 	 * Gets the list.
 	 *
-	 * @param <T> the generic type
+	 * @param <T>
+	 *            the generic type
 	 * @return the list
 	 */
 	@SuppressWarnings ("unchecked")
-	public static final <T> Collector.AsList<T> getList() {
-		return (AsList<T>) LISTS.get();
-	}
+	public static final <T> Collector.AsList<T> getList() { return (AsList<T>) LISTS.get(); }
 
 	/**
 	 * Gets the sets the.
 	 *
-	 * @param <T> the generic type
+	 * @param <T>
+	 *            the generic type
 	 * @return the sets the
 	 */
 	@SuppressWarnings ("unchecked")
-	public static final <T> Collector.AsSet<T> getSet() {
-		return (AsSet<T>) SETS.get();
-	}
+	public static final <T> Collector.AsSet<T> getSet() { return (AsSet<T>) SETS.get(); }
 
 	/**
 	 * Gets the ordered set.
 	 *
-	 * @param <T> the generic type
+	 * @param <T>
+	 *            the generic type
 	 * @return the ordered set
 	 */
 	@SuppressWarnings ("unchecked")
-	public static final <T> Collector.AsOrderedSet<T> getOrderedSet() {
-		return (AsOrderedSet<T>) ORDERED_SETS.get();
-	}
+	public static final <T> Collector.AsOrderedSet<T> getOrderedSet() { return (AsOrderedSet<T>) ORDERED_SETS.get(); }
 
 	/**
 	 * Release.
 	 *
-	 * @param <T> the generic type
-	 * @param coll the coll
+	 * @param <T>
+	 *            the generic type
+	 * @param coll
+	 *            the coll
 	 */
 	public static final <T> void release(final ICollector<T> coll) {
 		if (coll instanceof AsList) {
@@ -130,7 +128,8 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 	/**
 	 * The Class AsSet.
 	 *
-	 * @param <E> the element type
+	 * @param <E>
+	 *            the element type
 	 */
 	public static class AsSet<E> extends Collector<E, Set<E>> {
 
@@ -142,7 +141,8 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 		/**
 		 * The Class Concurrent.
 		 *
-		 * @param <E> the element type
+		 * @param <E>
+		 *            the element type
 		 */
 		public static class Concurrent<E> extends AsSet<E> {
 			@Override
@@ -178,7 +178,8 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 	/**
 	 * The Class AsList.
 	 *
-	 * @param <E> the element type
+	 * @param <E>
+	 *            the element type
 	 */
 	public static class AsList<E> extends Collector<E, IList<E>> {
 
@@ -200,15 +201,22 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 		/**
 		 * Sets the size.
 		 *
-		 * @param size the new size
+		 * @param size
+		 *            the new size
 		 */
 		public void setSize(final int size) {
 			if (size > 0 && collect == null) { collect = GamaListFactory.create(Types.NO_TYPE, size); }
 
 		}
 
+		/**
+		 * Shuffle in place with.
+		 *
+		 * @param random
+		 *            the random
+		 */
 		@Override
-		public void shuffleInPlaceWith(final RandomUtils random) {
+		public void shuffleInPlaceWith(final IRandom random) {
 			random.shuffleInPlace(items());
 		}
 	}
@@ -216,7 +224,8 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 	/**
 	 * The Class AsOrderedSet.
 	 *
-	 * @param <E> the element type
+	 * @param <E>
+	 *            the element type
 	 */
 	public static class AsOrderedSet<E> extends AsSet<E> {
 
@@ -329,9 +338,7 @@ public abstract class Collector<E, C extends Collection<E>> implements ICollecto
 	 * @see gama.core.util.ICollector#isEmpty()
 	 */
 	@Override
-	public boolean isEmpty() {
-		return collect == null || collect.isEmpty();
-	}
+	public boolean isEmpty() { return collect == null || collect.isEmpty(); }
 
 	/*
 	 * (non-Javadoc)

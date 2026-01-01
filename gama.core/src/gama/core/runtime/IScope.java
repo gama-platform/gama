@@ -16,7 +16,7 @@ import java.util.Map;
 import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IGui;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
@@ -363,7 +363,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return The random number generator
 	 */
-	RandomUtils getRandom();
+	IRandom getRandom();
 
 	/**
 	 * Returns the GUI interface associated with this scope. This provides access to user interface components and user

@@ -3,7 +3,7 @@
  * GeometryUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -56,7 +56,7 @@ import org.locationtech.jts.util.AssertionFailedException;
 
 import gama.core.common.interfaces.IEnvelopeComputer;
 import gama.core.common.interfaces.IEnvelopeProvider;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
@@ -253,7 +253,7 @@ public class GeometryUtils {
 	 */
 	private static GamaPoint pointInPolygon(final IScope scope, final Polygon polygon) {
 
-		RandomUtils rand = scope.getRandom();
+		IRandom rand = scope.getRandom();
 		final Envelope env = polygon.getEnvelopeInternal();
 		final double xMin = env.getMinX();
 		final double xMax = env.getMaxX();
@@ -1247,11 +1247,10 @@ public class GeometryUtils {
 			coords2[0] = pt;
 			for (int i = indexTarget + 1, k = 1; i < coords.length; i++, k++) { coords2[k] = coords[i]; }
 			lines.add(GamaShapeFactory.createFrom(GEOMETRY_FACTORY.createLineString(coords2, false)));
-		} else if (g instanceof MultiLineString) {
+		} else if (g instanceof final MultiLineString ml) {
 			final Point point = GEOMETRY_FACTORY.createPoint(pt);
 			LineString geom2 = null;
 			double distMin = Double.MAX_VALUE;
-			final MultiLineString ml = (MultiLineString) g;
 			for (int i = 0; i < ml.getNumGeometries(); i++) {
 				final double dist = ml.getGeometryN(i).distance(point);
 				if (dist <= distMin) {
@@ -1593,7 +1592,7 @@ public class GeometryUtils {
 	 * @return the holes number
 	 */
 	public static int getHolesNumber(final Geometry p) {
-		return p instanceof Polygon ? ((Polygon) p).getNumInteriorRing() : 0;
+		return p instanceof Polygon p2 ? p2.getNumInteriorRing() : 0;
 	}
 
 	/**
@@ -1646,7 +1645,7 @@ public class GeometryUtils {
 	 * @return the geometry
 	 */
 	public static Geometry cleanGeometryCollection(final Geometry gg) {
-		GeometryCollection gc = gg instanceof GeometryCollection ? (GeometryCollection) gg : null;
+		GeometryCollection gc = gg instanceof GeometryCollection g2 ? g2 : null;
 		if (gc == null) return gg;
 		boolean isMultiPolygon = true;
 		boolean isMultiPoint = true;

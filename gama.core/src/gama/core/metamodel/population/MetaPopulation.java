@@ -3,7 +3,7 @@
  * MetaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,7 @@ import java.util.Map;
 import com.google.common.collect.Iterables;
 
 import gama.core.common.util.StringUtils;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -295,7 +295,7 @@ public class MetaPopulation implements IContainer.Addressable<Integer, IAgent>, 
 	@Override
 	public IAgent anyValue(final IScope scope) {
 		if (populationSets.size() == 0) return null;
-		final RandomUtils r = scope.getRandom();
+		final IRandom r = scope.getRandom();
 		final int i = r.between(0, populationSets.size() - 1);
 		return populationSets.get(i).anyValue(scope);
 	}

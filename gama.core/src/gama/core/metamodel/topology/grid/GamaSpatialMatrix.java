@@ -3,7 +3,7 @@
  * GamaSpatialMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,7 +38,7 @@ import com.google.common.collect.Ordering;
 
 import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -725,7 +725,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	}
 
 	@Override
-	public void shuffleWith(final RandomUtils randomAgent) {
+	public void shuffleWith(final IRandom randomAgent) {
 		// TODO not allowed for the moment (fixed grid)
 		//
 	}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractDisplayGraphics.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AbstractDisplayGraphics.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,6 +22,7 @@ import org.locationtech.jts.geom.Envelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.LayeredDisplayData;
@@ -119,7 +120,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	public boolean highlight = false;
 
 	/** The random number generator specific to this graphics. See Issue #3250. */
-	private final RandomUtils random = new RandomUtils();
+	private final IRandom random = new RandomUtils();
 
 	/** The current layer. */
 	protected ILayer currentLayer;
@@ -293,6 +294,6 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	public Envelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
 
 	@Override
-	public RandomUtils getRandom() { return random; }
+	public IRandom getRandom() { return random; }
 
 }

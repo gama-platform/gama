@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ITopLevelAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,7 @@
 package gama.core.kernel.experiment;
 
 import gama.core.common.interfaces.IClock;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.outputs.IOutputManager;
 import gama.core.util.GamaColor;
@@ -46,7 +46,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	 *
 	 * @return the random generator
 	 */
-	RandomUtils getRandomGenerator();
+	IRandom getRandomGenerator();
 
 	/**
 	 * Gets the output manager.

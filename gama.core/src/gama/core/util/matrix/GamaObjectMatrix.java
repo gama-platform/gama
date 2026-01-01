@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaObjectMatrix.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaObjectMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
@@ -17,7 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
@@ -343,7 +343,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	}
 
 	@Override
-	public void shuffleWith(final RandomUtils randomAgent) {
+	public void shuffleWith(final IRandom randomAgent) {
 		randomAgent.shuffleInPlace(getMatrix());
 	}
 

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Colors.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Colors.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,8 +13,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.emf.ecore.EObject;
@@ -25,16 +27,16 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
@@ -516,7 +518,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value = {"rgb", "with_alpha"},
+			value = { "rgb", "with_alpha" },
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = {})
@@ -545,7 +547,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value = {"rgb", "with_alpha"},
+			value = { "rgb", "with_alpha" },
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = {})
@@ -612,7 +614,7 @@ public class Colors {
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(255)) = -3749758")
 	public static GamaColor random_color(final IScope scope, final Integer max) {
-		final RandomUtils r = scope.getRandom();
+		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
 		return GamaColor.get(r.between(0, realMax), r.between(0, realMax), r.between(0, realMax), 255);
 	}
@@ -642,7 +644,7 @@ public class Colors {
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833")
 	public static GamaColor random_color(final IScope scope, final Integer min, final Integer max) {
-		final RandomUtils r = scope.getRandom();
+		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
 		final int realMin = Math.max(0, Math.min(min, realMax));
 		return GamaColor.get(r.between(realMin, realMax), r.between(realMin, realMax), r.between(realMin, realMax),
@@ -661,7 +663,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value =  "blend",
+			value = "blend",
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = { IConcept.COLOR })
@@ -755,7 +757,7 @@ public class Colors {
 				@Override
 				public GamaPalette load(final String name) throws Exception {
 					IList<GamaColor> colors = GamaListFactory.create(Types.COLOR);
-					 BrewerPalette  p= BREWER.getPalette(name);
+					BrewerPalette p = BREWER.getPalette(name);
 					for (final Color col : p.getColors()) { if (col != null) { colors.add(GamaColor.get(col)); } }
 					return new GamaPalette(colors);
 				}
@@ -946,7 +948,7 @@ public class Colors {
 		 */
 		void sort(final Map<Double, GamaColor> values) {
 			List<Map.Entry<Double, GamaColor>> entries = new ArrayList(values.entrySet());
-			Collections.sort(entries, (o1, o2) -> o1.getKey().compareTo(o2.getKey()));
+			Collections.sort(entries, Comparator.comparing(Entry<Double, GamaColor>::getKey));
 			for (Map.Entry<Double, GamaColor> entry : entries) { put(entry.getKey(), entry.getValue()); }
 		}
 
@@ -1045,12 +1047,12 @@ public class Colors {
 	@doc (
 			value = "returns the definition of a linear gradient between n colors, represented internally as a color map [c1::0,c2::1/n-1, ... cn::n-1/n-1]")
 	@no_test
-	public static GamaGradient gradient(IScope scope, final IList<GamaColor> colors) {
+	public static GamaGradient gradient(final IScope scope, final IList<GamaColor> colors) {
 		GamaGradient cm = new GamaGradient();
 		if (colors.size() < 2) throw GamaRuntimeException.error("A gradient must at least propose 2 colors", scope);
 		int nb = colors.size();
 		int i = 1;
-		for (GamaColor c : colors) { cm.put(c, i++ - 1d / nb - 1);  }
+		for (GamaColor c : colors) { cm.put(c, i++ - 1d / nb - 1); }
 		return cm;
 	}
 
@@ -1115,9 +1117,10 @@ public class Colors {
 			concept = {})
 	@doc (
 			see = "gradient",
-			value = "Similar to gradient(map<rgb, float>) but reorders the colors based on their weight and does not normalize them, so as to effectively represent a color scale (i.e. a correspondance between a range of value and a color that implicitly begins with the lowest value). "
-					+ "For instance scale([#red::10, #green::0, #blue::30]) would produce the reverse map and associate #green to the interval 0-10, #red to 10-30, and #blue above 30. The main difference in usages is that, for instance in the definition of a "
-					+ "mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.")
+			value = """
+					Similar to gradient(map<rgb, float>) but reorders the colors based on their weight and does not normalize them, so as to effectively represent a color scale (i.e. a correspondance between a range of value and a color that implicitly begins with the lowest value). \
+					For instance scale([#red::10, #green::0, #blue::30]) would produce the reverse map and associate #green to the interval 0-10, #red to 10-30, and #blue above 30. The main difference in usages is that, for instance in the definition of a \
+					mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.""")
 	@no_test
 	public static GamaScale scale(final IScope scope, final IMap<GamaColor, Object> colors) {
 		IMap<Double, GamaColor> map = GamaMapFactory.createOrdered();
@@ -1167,30 +1170,32 @@ public class Colors {
 		return new GamaScale(scope, map);
 	}
 
-//	/**
-//	 * Palette.
-//	 *
-//	 * @param scope
-//	 *            the scope
-//	 * @param colors
-//	 *            the colors
-//	 * @param nb
-//	 *            the nb
-//	 * @return the gama palette
-//	 */
-//	@operator (
-//			value = "palette",
-//			can_be_const = true,
-//			type = IType.LIST,
-//			content_type = IType.COLOR,
-//			category = { IOperatorCategory.COLOR },
-//			concept = {})
-//	@doc (
-//			value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. Colors are chosen by interpolating the stops of the gradient (the colors and their position between 0 and 1), in the order described in the gradient")
-//	@no_test
-//	public static GamaPalette palette(final IScope scope, final IMap<GamaColor, Number> colors, final int nb) {
-//		
-//	}
+	// /**
+	// * Palette.
+	// *
+	// * @param scope
+	// * the scope
+	// * @param colors
+	// * the colors
+	// * @param nb
+	// * the nb
+	// * @return the gama palette
+	// */
+	// @operator (
+	// value = "palette",
+	// can_be_const = true,
+	// type = IType.LIST,
+	// content_type = IType.COLOR,
+	// category = { IOperatorCategory.COLOR },
+	// concept = {})
+	// @doc (
+	// value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. Colors are chosen by
+	// interpolating the stops of the gradient (the colors and their position between 0 and 1), in the order described
+	// in the gradient")
+	// @no_test
+	// public static GamaPalette palette(final IScope scope, final IMap<GamaColor, Number> colors, final int nb) {
+	//
+	// }
 
 	/**
 	 * Palette.
@@ -1203,7 +1208,7 @@ public class Colors {
 	 */
 	@operator (
 			value = "palette",
-			can_be_const = true, 
+			can_be_const = true,
 			type = IType.LIST,
 			expected_content_type = IType.COLOR,
 			content_type = IType.COLOR,

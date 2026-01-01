@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * IMacroAgent.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IMacroAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.agent;
 
@@ -15,6 +14,7 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
@@ -27,6 +27,7 @@ import gama.gaml.types.IType;
 /**
  * The Interface IMacroAgent.
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 @vars ({ @variable (
 		name = IKeyword.MEMBERS,
 		// Changed from IType.LIST; see issue #3264

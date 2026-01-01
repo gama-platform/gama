@@ -31,6 +31,7 @@ import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.parameters.ExperimentParameter;
 import gama.core.kernel.experiment.parameters.IParameter;
@@ -184,7 +185,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	final IMap<String, Object> extraParametersMap = GamaMapFactory.createOrdered();
 
 	/** The random. */
-	protected RandomUtils random;
+	protected IRandom random;
 
 	/** The current minimum duration. */
 	protected Double currentMinimumDuration = 0d;
@@ -528,7 +529,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @date 24 sept. 2023
 	 */
 	@Override
-	public RandomUtils getRandomGenerator() { return random; }
+	public IRandom getRandomGenerator() { return random; }
 
 	/**
 	 * Schedule.
@@ -1069,7 +1070,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @see msi.gama.runtime.IScope#getRandom()
 		 */
 		@Override
-		public RandomUtils getRandom() { return ExperimentAgent.this.random; }
+		public IRandom getRandom() { return ExperimentAgent.this.random; }
 
 		/**
 		 * Instantiates a new experiment agent scope.

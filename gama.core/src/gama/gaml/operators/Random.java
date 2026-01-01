@@ -1,24 +1,25 @@
 /*******************************************************************************************************
  *
- * Random.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Random.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
@@ -194,8 +195,8 @@ public class Random {
 	 *            the scope
 	 * @return the random utils
 	 */
-	public static RandomUtils RANDOM(final IScope scope) {
-		RandomUtils r = scope.getRandom();
+	public static IRandom RANDOM(final IScope scope) {
+		IRandom r = scope.getRandom();
 		if (r == null) { r = new RandomUtils(); }
 		return r;
 	}
@@ -398,7 +399,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; poisson(3.5) = 6")
 	public static Integer opPoisson(final IScope scope, final Double mean) {
-		RandomUtils ru = RANDOM(scope);
+		IRandom ru = RANDOM(scope);
 		int x = 0;
 		double t = 0.0;
 		while (true) {
@@ -440,17 +441,25 @@ public class Random {
 	@test ("binomial(0,0.9) = 0")
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
-		
+
 		// to avoid infinite loops
-		if (value == 1.0) return n; 
-		
+		if (value == 1.0) return n;
+
 		if (value < 0.0 || value > 1.0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the probability p must be in the range [0,1] but is " + value, scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error(
+							"In the binomial operator, the probability p must be in the range [0,1] but is " + value,
+							scope),
+					true);
 		}
 		if (n < 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the number of trials n must be a positive integer but is " + n, scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error(
+							"In the binomial operator, the number of trials n must be a positive integer but is " + n,
+							scope),
+					true);
 		}
-		
+
 		final StringBuilder bits = new StringBuilder(64);
 		double bitValue = 0.5d;
 		while (value > 0) {
@@ -463,7 +472,7 @@ public class Random {
 			bitValue /= 2;
 		}
 		final BitString pBits = new BitString(bits.toString());
-		RandomUtils ru = RANDOM(scope);
+		IRandom ru = RANDOM(scope);
 		int trials = n;
 		int totalSuccesses = 0;
 		int pIndex = pBits.getLength() - 1;
@@ -628,7 +637,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd(1,5) = 4")
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
 	}
 
@@ -659,7 +668,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2, 12, 4) = 10")
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Integer step) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
 
@@ -688,7 +697,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2.0, 4.0) = 3.548024306042759")
 	public static Double opRnd(final IScope scope, final Double min, final Double max) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
 	}
 
@@ -719,7 +728,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5")
 	public static Double opRnd(final IScope scope, final Double min, final Double max, final Double step) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
 
@@ -999,7 +1008,11 @@ public class Random {
 					value = "sample([2,10,1],2,false)",
 					equals = "[10,1]",
 					test = false) })
-	@test ("seed <- 1.0; " + "list l1 <- sample([2,10,1],2,false);\r\n" + "		list l2 <-  [1,10];" + "l1 = l2")
+	@test ("""
+			seed <- 1.0; \
+			list l1 <- sample([2,10,1],2,false);\r
+					list l2 <-  [1,10];\
+			l1 = l2""")
 	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement) {
 		if (nb < 0.0) throw GamaRuntimeException
 				.create(new RuntimeException("The number of elements of the sample should be positive."), scope);
@@ -1043,8 +1056,11 @@ public class Random {
 					value = "sample([2,10,1],2,false,[0.1,0.7,0.2])",
 					equals = "[10,2]",
 					test = false) })
-	@test ("seed <- 1.0;\r\n" + "		list l1 <- sample([2,10,1],2,false,[0.1,0.7,0.2]);\r\n"
-			+ "		list l2 <-  [10,1];\r\n" + "		l1 = l2 ")
+	@test ("""
+			seed <- 1.0;\r
+					list l1 <- sample([2,10,1],2,false,[0.1,0.7,0.2]);\r
+					list l2 <-  [10,1];\r
+					l1 = l2\s""")
 	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement,
 			final IList weights) {
 		if (weights == null) return opSample(scope, x, nb, replacement);
@@ -1104,15 +1120,16 @@ public class Random {
 	 */
 	@operator (
 			value = "generate_terrain")
-	@doc ("This operator allows to generate a pseudo-terrain using a simplex noise generator. Its usage is kept simple: it takes first a seed (random or not), then the dimensions "
-			+ "(width and height) of the field to generate, then a level (between 0 and 1) of details (which actually determines the number of passes to make)"
-			+ ", then the value (between 0 and 1) of smoothess, with 0 being completely rought and 1 super smooth, and finally the value (between 0 and 1) of "
-			+ "scattering, with 0 building maps in 'one piece' and 1 completely scattered ones.")
+	@doc ("""
+			This operator allows to generate a pseudo-terrain using a simplex noise generator. Its usage is kept simple: it takes first a seed (random or not), then the dimensions \
+			(width and height) of the field to generate, then a level (between 0 and 1) of details (which actually determines the number of passes to make)\
+			, then the value (between 0 and 1) of smoothess, with 0 being completely rought and 1 super smooth, and finally the value (between 0 and 1) of \
+			scattering, with 0 building maps in 'one piece' and 1 completely scattered ones.""")
 	@no_test
 	public static IField generateTerrain(final IScope scope, final int seed, final int width, final int height,
 			final double details, final double smoothness, final double scattering) {
 
-		RandomUtils rand = new RandomUtils((double) seed, IKeyword.MERSENNE);
+		IRandom rand = new RandomUtils((double) seed, IKeyword.MERSENNE);
 		final short p[] = SUPPLY.clone();
 		rand.shuffleInPlace(p);
 

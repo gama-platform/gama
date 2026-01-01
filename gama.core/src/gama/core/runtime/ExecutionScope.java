@@ -21,6 +21,7 @@ import java.util.Map;
 
 import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGui;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
@@ -1067,7 +1068,7 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#getRandom()
 	 */
 	@Override
-	public RandomUtils getRandom() {
+	public IRandom getRandom() {
 		final ITopLevelAgent root = getRoot();
 		if (root == null) return new RandomUtils();
 		return root.getRandomGenerator();

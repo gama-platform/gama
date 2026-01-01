@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * RandomUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * RandomUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,7 +30,7 @@ import gama.gaml.operators.Maths;
  * The Class RandomUtils.
  */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class RandomUtils {
+public class RandomUtils implements IRandom {
 
 	/** The Constant DOC. */
 	public static final String DOC =
@@ -63,7 +62,7 @@ public class RandomUtils {
 				" is a very fast generator, based on the DotMix algorithm, that can be safely used in parallel simulations as it creates one instance per thread. However, determinism cannot be guaranteed and this algorithm does not accept a seed as each instance will compute its own; ");
 
 		/** The name. */
-		private String name;
+		private final String name;
 
 		/**
 		 * Environment.
@@ -165,6 +164,7 @@ public class RandomUtils {
 	 * @param usage
 	 *            the new usage
 	 */
+	@Override
 	public void setUsage(final Integer usage) {
 		generator.setUsage(usage);
 	}
@@ -174,6 +174,7 @@ public class RandomUtils {
 	 *
 	 * @return the usage
 	 */
+	@Override
 	public Integer getUsage() { return generator.getUsage(); }
 
 	/**
@@ -186,6 +187,7 @@ public class RandomUtils {
 	 *
 	 * @return the gaussian generator
 	 */
+	@Override
 	public double createGaussian(final double mean, final double stdv) {
 		return generator.nextGaussian() * stdv + mean;
 	}
@@ -199,6 +201,7 @@ public class RandomUtils {
 	 *            the length
 	 * @return the byte[]
 	 */
+	@Override
 	public byte[] generateSeed(final int length) {
 		Double realSeed = seed;
 		if (realSeed < 0) { realSeed *= -1; }
@@ -235,6 +238,7 @@ public class RandomUtils {
 	 * @param init
 	 *            the init
 	 */
+	@Override
 	public void setSeed(final Double newSeed, final boolean init) {
 		seed = newSeed;
 		if (seed == null) { seed = SEED_SOURCE.nextDouble(); }
@@ -247,6 +251,7 @@ public class RandomUtils {
 	 * @param newGen
 	 *            the new generator
 	 */
+	@Override
 	public void setGenerator(final String newGen, final boolean init) {
 		generatorName = newGen;
 		if (init) { initGenerator(); }
@@ -258,6 +263,7 @@ public class RandomUtils {
 	 * @param list
 	 *            the list
 	 */
+	@Override
 	public void shuffleInPlace(final Collection list) {
 		if (list == null) return;
 		final int size = list.size();
@@ -276,6 +282,7 @@ public class RandomUtils {
 	 * @param a
 	 *            the a
 	 */
+	@Override
 	public <T> void shuffleInPlace(final T[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -291,6 +298,7 @@ public class RandomUtils {
 	 * @param a
 	 *            the a
 	 */
+	@Override
 	public void shuffleInPlace(final double[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -306,6 +314,7 @@ public class RandomUtils {
 	 * @param a
 	 *            the a
 	 */
+	@Override
 	public void shuffleInPlace(final int[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -321,6 +330,7 @@ public class RandomUtils {
 	 * @param a
 	 *            the a
 	 */
+	@Override
 	public void shuffleInPlace(final short[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -336,6 +346,7 @@ public class RandomUtils {
 	 * @param a
 	 *            the a
 	 */
+	@Override
 	public void shuffleInPlace(final char[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -351,6 +362,7 @@ public class RandomUtils {
 	 * @param list
 	 *            the list
 	 */
+	@Override
 	public void shuffleInPlace(final List list) {
 		for (int i = list.size(); i > 1; i--) {
 			final int i1 = i - 1;
@@ -368,6 +380,7 @@ public class RandomUtils {
 	 *            the string
 	 * @return the string
 	 */
+	@Override
 	public String shuffle(final String string) {
 		final char[] c = string.toCharArray();
 		shuffleInPlace(c);
@@ -377,6 +390,7 @@ public class RandomUtils {
 	/**
 	 * @return an uniformly distributed int random number in [from, to]
 	 */
+	@Override
 	public int between(final int min, final int max) {
 		return (int) (min + (long) ((1L + max - min) * next()));
 	}
@@ -390,6 +404,7 @@ public class RandomUtils {
 	 *            the max
 	 * @return the double
 	 */
+	@Override
 	public double between(final double min, final double max) {
 		// uniformly distributed double random number in [min, max]
 		return min + (max + Double.MIN_VALUE - min) * next();
@@ -398,6 +413,7 @@ public class RandomUtils {
 	/**
 	 * @return an uniformly distributed int random number in [min, max] respecting the step
 	 */
+	@Override
 	public int between(final int min, final int max, final int step) {
 		final int nbSteps = (max - min) / step;
 		return min + between(0, nbSteps) * step;
@@ -414,6 +430,7 @@ public class RandomUtils {
 	 *            the step
 	 * @return the double
 	 */
+	@Override
 	public double between(final double min, final double max, final double step) {
 		// uniformly distributed double random number in [min, max] respecting
 		// the step
@@ -433,6 +450,7 @@ public class RandomUtils {
 	 *
 	 * @return the double
 	 */
+	@Override
 	public double next() {
 		return generator.nextDouble();
 	}
@@ -440,11 +458,13 @@ public class RandomUtils {
 	/**
 	 * @return
 	 */
+	@Override
 	public Double getSeed() { return seed; }
 
 	/**
 	 * @return
 	 */
+	@Override
 	public String getRngName() { return generatorName; }
 
 	/**
@@ -452,6 +472,7 @@ public class RandomUtils {
 	 *
 	 * @return the generator
 	 */
+	@Override
 	public Random getGenerator() { return generator.getRandomGenerator(); }
 
 	/**
@@ -463,6 +484,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return the k
 	 */
+	@Override
 	public <K> K oneOf(final Collection<K> c) {
 		if (c == null || c.isEmpty()) return null;
 		return (K) oneOf(c.toArray());
@@ -477,6 +499,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return the k
 	 */
+	@Override
 	public <K> K oneOf(final List<K> c) {
 		if (c == null || c.isEmpty()) return null;
 		return c.get(between(0, c.size() - 1));
@@ -491,6 +514,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return the k
 	 */
+	@Override
 	public <K> K oneOf(final K[] c) {
 		if (c == null || c.length == 0) return null;
 		return c[between(0, c.length - 1)];
@@ -504,6 +528,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return the int
 	 */
+	@Override
 	public int oneOf(final int[] c) {
 		if (c == null || c.length == 0) return -1;
 		return c[between(0, c.length - 1)];
@@ -516,6 +541,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return the double
 	 */
+	@Override
 	public double oneOf(final double[] c) {
 		if (c == null || c.length == 0) return -1;
 		return c[between(0, c.length - 1)];
@@ -528,6 +554,7 @@ public class RandomUtils {
 	 *            the c
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean oneOf(final boolean[] c) {
 		if (c == null || c.length == 0) return false;
 		return c[between(0, c.length - 1)];
@@ -544,6 +571,7 @@ public class RandomUtils {
 	 *            the step
 	 * @return the gama point
 	 */
+	@Override
 	public GamaPoint between(final GamaPoint pMin, final GamaPoint pMax, final GamaPoint pStep) {
 		double x = between(pMin.x, pMax.x, pStep.x);
 		double y = between(pMin.y, pMax.y, pStep.y);

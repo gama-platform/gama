@@ -34,6 +34,7 @@ import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
+import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.controller.IExperimentController;
@@ -212,7 +213,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	private volatile boolean isOnUserHold;
 
 	/** The random. */
-	private RandomUtils random;
+	private IRandom random;
 
 	/** The executer. */
 	private final ActionExecuter executer;
@@ -913,7 +914,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 	// @Override
 	@Override
-	public RandomUtils getRandomGenerator() { return random; }
+	public IRandom getRandomGenerator() { return random; }
 
 	/**
 	 * Sets the random generator.
@@ -921,7 +922,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param rng
 	 *            the new random generator
 	 */
-	public void setRandomGenerator(final RandomUtils rng) { random = rng; }
+	public void setRandomGenerator(final IRandom rng) { random = rng; }
 
 	/**
 	 * Prepare gui for simulation.

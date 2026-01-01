@@ -3,7 +3,7 @@
  * GamaIntMatrix.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.primitives.Ints;
 
 import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.util.random.RandomUtils;
+import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -450,7 +450,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public void setCellSize(final double size) { cellSize = size; }
 
 	@Override
-	public void shuffleWith(final RandomUtils randomAgent) {
+	public void shuffleWith(final IRandom randomAgent) {
 		randomAgent.shuffleInPlace(getMatrix());
 	}
 
