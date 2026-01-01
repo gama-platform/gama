@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.common.util.random;
+package gama.core.common.interfaces;
 
 import java.util.Random;
 

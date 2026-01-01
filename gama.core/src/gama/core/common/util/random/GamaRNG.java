@@ -11,6 +11,8 @@ package gama.core.common.util.random;
 
 import java.util.Random;
 
+import gama.core.common.interfaces.IGamaRNG;
+
 /**
  * Class GamaRNG.
  *

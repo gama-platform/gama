@@ -13,6 +13,8 @@ package gama.core.common.util.random;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import gama.core.common.interfaces.IGamaRNG;
+
 /**
  * An implementation that derives all access to ThreadLocalRandom instances. Not deterministic but fast and thread-safe
  */

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import gama.core.common.interfaces.IGamaRNG;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
