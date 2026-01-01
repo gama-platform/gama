@@ -3,7 +3,7 @@
  * GamaServerExperimentConfiguration.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,15 +19,7 @@ import org.java_websocket.WebSocket;
  * @date 3 nov. 2023
  */
 public record GamaServerExperimentConfiguration(WebSocket socket, String expId, boolean hasConsole, boolean hasStatus,
-		boolean hasDialog, boolean hasRuntime) {
-
-	/** The null. */
-	public static final GamaServerExperimentConfiguration NULL =
-			new GamaServerExperimentConfiguration(null, "", false, false, false, false);
-
-	/** The gui. */
-	public static final GamaServerExperimentConfiguration GUI =
-			new GamaServerExperimentConfiguration(null, "", true, true, true, true);
+		boolean hasDialog, boolean hasRuntime) implements IServerConfiguration {
 
 	/**
 	 * Clones the current config with an exp id.
@@ -38,6 +30,7 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 * @return the gama server experiment configuration
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public GamaServerExperimentConfiguration withExpId(final String experimentID) {
 		return new GamaServerExperimentConfiguration(socket, experimentID, hasConsole, hasStatus, hasDialog,
 				hasRuntime);
@@ -52,6 +45,7 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 * @return the gama server experiment configuration
 	 * @date 3 nov. 2023
 	 */
+	@Override
 	public GamaServerExperimentConfiguration withSocket(final WebSocket s) {
 		return new GamaServerExperimentConfiguration(s, expId, hasConsole, hasStatus, hasDialog, hasRuntime);
 	}

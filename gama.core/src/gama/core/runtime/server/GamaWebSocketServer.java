@@ -3,7 +3,7 @@
  * GamaWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,6 +39,13 @@ import gama.dev.DEBUG;
  * The Class GamaWebSocketServer.
  */
 public abstract class GamaWebSocketServer extends WebSocketServer implements IGamaServer {
+
+	/** The gui. */
+	static IServerConfiguration GUI = new GamaServerExperimentConfiguration(null, "", true, true, true, true);
+
+	/** The null. */
+	public static IServerConfiguration NULL =
+			new GamaServerExperimentConfiguration(null, "", false, false, false, false);
 
 	/** The Constant SOCKET_ID. */
 	static final String SOCKET_ID = "socket_id";
@@ -256,6 +263,11 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		}
 	}
 
+	@Override
+	public IServerConfiguration obtainNullServerConfiguration() {
+		return NULL;
+	}
+
 	/**
 	 * Gets the experiment.
 	 *
@@ -302,7 +314,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public abstract GamaServerExperimentConfiguration obtainGuiServerConfiguration();
+	public abstract IServerConfiguration obtainGuiServerConfiguration();
 
 	/**
 	 * Retrieve experiment plan.

@@ -3,7 +3,7 @@
  * ExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -56,7 +56,8 @@ import gama.core.runtime.ExecutionScope;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.server.GamaServerExperimentConfiguration;
+import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IServerConfiguration;
 import gama.core.util.GamaColor;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
@@ -1041,7 +1042,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public class ExperimentAgentScope extends ExecutionScope {
 
 		/** The server config. */
-		GamaServerExperimentConfiguration serverConfig = GamaServerExperimentConfiguration.NULL;
+		IServerConfiguration serverConfig = GamaWebSocketServer.NULL;
 
 		/**
 		 * Gets the server configuration.
@@ -1051,7 +1052,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @date 3 nov. 2023
 		 */
 		@Override
-		public GamaServerExperimentConfiguration getServerConfiguration() { return serverConfig; }
+		public IServerConfiguration getServerConfiguration() { return serverConfig; }
 
 		/**
 		 * Sets the server configuration.
@@ -1060,7 +1061,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @date 3 nov. 2023
 		 */
 		@Override
-		public void setServerConfiguration(final GamaServerExperimentConfiguration config) { serverConfig = config; }
+		public void setServerConfiguration(final IServerConfiguration config) { serverConfig = config; }
 
 		/**
 		 * Method getRandom()

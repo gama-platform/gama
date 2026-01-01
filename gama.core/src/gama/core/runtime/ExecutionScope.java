@@ -3,7 +3,7 @@
  * ExecutionScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,6 +34,8 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.runtime.server.GamaWebSocketServer;
+import gama.core.runtime.server.IServerConfiguration;
 import gama.core.util.Collector;
 import gama.core.util.list.IList;
 import gama.dev.COUNTER;
@@ -1155,6 +1157,13 @@ public class ExecutionScope implements IScope {
 	 */
 	protected void setExecutionContext(final IExecutionContext executionContext) {
 		this.executionContext = executionContext;
+	}
+
+	@Override
+	public IServerConfiguration getServerConfiguration() {
+		IExperimentAgent agent = getExperiment();
+		if (agent == null) return GamaWebSocketServer.NULL;
+		return agent.getScope().getServerConfiguration();
 	}
 
 }

@@ -3,7 +3,7 @@
  * GamaHeadlessWebSocketServer.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,13 +28,13 @@ import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaServerExperimentConfiguration;
 import gama.core.runtime.server.GamaWebSocketServer;
 import gama.core.runtime.server.IGamaServer;
+import gama.core.runtime.server.IServerConfiguration;
 import gama.core.runtime.server.ISocketCommand;
 import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.util.map.IMap;
 import gama.core.runtime.server.MessageType;
+import gama.core.util.map.IMap;
 
 /**
  * The Class GamaWebSocketServer.
@@ -310,8 +310,8 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public GamaServerExperimentConfiguration obtainGuiServerConfiguration() {
-		return GamaServerExperimentConfiguration.NULL;
+	public IServerConfiguration obtainGuiServerConfiguration() {
+		return GamaWebSocketServer.NULL;
 	}
 
 	/**

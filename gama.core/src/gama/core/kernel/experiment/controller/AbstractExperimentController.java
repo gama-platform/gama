@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractExperimentController.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GeneralSynchronizer;
-import gama.core.runtime.server.GamaServerExperimentConfiguration;
+import gama.core.runtime.server.IServerConfiguration;
 
 /**
  * The Class AbstractExperimentController.
@@ -33,7 +33,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	protected boolean disposing;
 
 	/** The server configuration. */
-	protected GamaServerExperimentConfiguration serverConfiguration;
+	protected IServerConfiguration serverConfiguration;
 
 	/**
 	 * Alive. Flag indicating that the scheduler is running (it should be alive unless the application is shutting down)
@@ -50,6 +50,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 
 	/** The lock. Used to pause the experiment */
 	protected final GeneralSynchronizer lock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
+
+	/** The previouslock. */
 	protected final GeneralSynchronizer previouslock = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
 	/** The experiment. */

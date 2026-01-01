@@ -3,7 +3,7 @@
  * GamaGuiWebSocketServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,7 +26,7 @@ import gama.core.util.map.IMap;
 public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExperimentStateListener {
 
 	/** The current server config. */
-	private GamaServerExperimentConfiguration currentServerConfig = GamaServerExperimentConfiguration.GUI;
+	private IServerConfiguration currentServerConfig = GamaWebSocketServer.GUI;
 
 	/** The current state. */
 	private volatile State currentState = State.NONE;
@@ -66,7 +66,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval, final boolean noDelay) {
 		try {
 			GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
-			server.currentServerConfig = GamaServerExperimentConfiguration.GUI;
+			server.currentServerConfig = GamaWebSocketServer.GUI;
 			server.start();
 			return server;
 		} catch (Exception e) {
@@ -180,7 +180,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public GamaServerExperimentConfiguration obtainGuiServerConfiguration() {
+	public IServerConfiguration obtainGuiServerConfiguration() {
 		return currentServerConfig;
 	}
 

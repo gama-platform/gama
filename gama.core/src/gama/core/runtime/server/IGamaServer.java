@@ -2,7 +2,7 @@
  *
  * IGamaServer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -100,7 +100,14 @@ public interface IGamaServer {
 	 * @return the gama server experiment configuration
 	 * @date 3 nov. 2023
 	 */
-	GamaServerExperimentConfiguration obtainGuiServerConfiguration();
+	IServerConfiguration obtainGuiServerConfiguration();
+
+	/**
+	 * Obtain null server configuration.
+	 *
+	 * @return the i server configuration
+	 */
+	IServerConfiguration obtainNullServerConfiguration();
 
 	/**
 	 * Retrieve experiment plan.
