@@ -17,11 +17,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ItemList;
 import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
 import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaColor;
 import gama.ui.shared.interfaces.IParameterEditor;
@@ -45,7 +45,7 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	public String getItemDisplayName(final IAgent ag, final String name) {
 		if (name == null) return AGENT_MARKER + ag.getName();
 		if (ag.dead() && !name.contains(DEAD_MARKER)) {
-			SimulationClock clock = ag.getScope().getClock();
+			IClock clock = ag.getScope().getClock();
 			final long cycle = clock == null ? 0 : clock.getCycle();
 			return AGENT_MARKER + ItemList.ERROR_CODE + name.substring(name.indexOf(ItemList.SEPARATION_CODE) + 1)
 					+ DEAD_MARKER + cycle;

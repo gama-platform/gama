@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
@@ -27,7 +28,6 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.controller.IExperimentController;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.core.metamodel.topology.ITopology;
@@ -982,7 +982,7 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#getClock()
 	 */
 	@Override
-	public SimulationClock getClock() {
+	public IClock getClock() {
 		final ITopLevelAgent root = getRoot();
 		if (root == null) return null;
 		return root.getClock();

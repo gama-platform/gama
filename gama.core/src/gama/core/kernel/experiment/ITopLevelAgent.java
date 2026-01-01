@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.core.kernel.experiment;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.util.random.RandomUtils;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.outputs.IOutputManager;
 import gama.core.util.GamaColor;
@@ -32,7 +32,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	 *
 	 * @return the clock
 	 */
-	SimulationClock getClock();
+	IClock getClock();
 
 	/**
 	 * Gets the color.

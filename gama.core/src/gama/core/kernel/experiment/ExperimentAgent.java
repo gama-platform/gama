@@ -27,6 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -41,7 +42,6 @@ import gama.core.kernel.experiment.tools.ExperimentRecorderFactory;
 import gama.core.kernel.experiment.tools.IExperimentRecorder;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -292,7 +292,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @date 24 sept. 2023
 	 */
 	@Override
-	public SimulationClock getClock() { return ownClock; }
+	public IClock getClock() { return ownClock; }
 
 	/**
 	 * Reset.

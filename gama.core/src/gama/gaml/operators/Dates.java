@@ -52,11 +52,11 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -274,7 +274,7 @@ public class Dates {
 	@no_test
 	@validator (EveryValidator.class)
 	public static Boolean every(final IScope scope, final Integer period) {
-		SimulationClock clock = scope.getClock();
+		IClock clock = scope.getClock();
 		if (clock == null) return false;
 		final int time = clock.getCycle();
 		return period > 0 && (time == 0 || time >= period) && time % period == 0;

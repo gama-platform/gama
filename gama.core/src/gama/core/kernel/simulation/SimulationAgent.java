@@ -30,6 +30,7 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.geometry.Envelope3D;
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
@@ -190,7 +191,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	public static final String USAGE = "rng_usage";
 
 	/** The own clock. */
-	final SimulationClock ownClock;
+	final IClock ownClock;
 
 	/** The color. */
 	GamaColor color;
@@ -431,7 +432,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	public ProjectionFactory getProjectionFactory() { return projectionFactory; }
 
 	@Override
-	public SimulationClock getClock() { return ownClock; }
+	public IClock getClock() { return ownClock; }
 
 	@Override
 	public void dispose() {
@@ -543,7 +544,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 */
 	@getter (IKeyword.CYCLE)
 	public Integer getCycle(final IScope scope) {
-		final SimulationClock clock = getClock();
+		final IClock clock = getClock();
 		if (clock != null) return clock.getCycle();
 		return 0;
 	}
@@ -600,7 +601,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 			value = IKeyword.STEP,
 			initializer = true)
 	public double getTimeStep(final IScope scope) {
-		final SimulationClock clock = getClock();
+		final IClock clock = getClock();
 		if (clock != null) return clock.getStepInSeconds();
 		return 1d;
 	}
@@ -617,7 +618,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 */
 	@setter (IKeyword.STEP)
 	public void setTimeStep(final IScope scope, final double t) throws GamaRuntimeException {
-		final SimulationClock clock = getClock();
+		final IClock clock = getClock();
 		if (clock != null) {
 			clock.setStep(t);
 
@@ -633,7 +634,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 */
 	@getter (TIME)
 	public double getTime(final IScope scope) {
-		final SimulationClock clock = getClock();
+		final IClock clock = getClock();
 		if (clock != null) return clock.getTimeElapsedInSeconds();
 		return 0d;
 	}

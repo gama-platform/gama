@@ -27,6 +27,7 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
@@ -257,7 +258,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	public ISpecies getSpecies() { return getPopulation().getSpecies(); }
 
 	@Override
-	public SimulationClock getClock() { return new SimulationClock(getScope()); }
+	public IClock getClock() { return new SimulationClock(getScope()); }
 
 	@Override
 	public IScope getScope() { return basicScope; }

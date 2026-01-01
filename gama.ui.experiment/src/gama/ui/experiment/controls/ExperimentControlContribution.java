@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IStatusControl;
 import gama.core.common.interfaces.IStatusDisplayer;
 import gama.core.common.interfaces.IStatusMessage;
@@ -32,7 +33,6 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
 import gama.gaml.operators.Strings;
@@ -150,7 +150,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	String popupTextFor(final ITopLevelAgent exp) {
 		if (exp == null) return "";
 		text.setLength(0);
-		final SimulationClock clock = exp.getClock();
+		final IClock clock = exp.getClock();
 		clock.getInfo(text).append(Strings.LN);
 		text.append("Durations: cycle ").append(clock.getDuration()).append("ms; average ")
 				.append((int) clock.getAverageDuration()).append("ms; total ").append(clock.getTotalDuration())

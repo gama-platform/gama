@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.util.EnumSet;
 import java.util.Map;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.util.random.RandomUtils;
@@ -20,7 +21,6 @@ import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.core.metamodel.topology.ITopology;
@@ -381,7 +381,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return The simulation clock
 	 */
-	SimulationClock getClock();
+	IClock getClock();
 
 	/**
 	 * Returns the current topology associated with this scope. The topology defines the spatial relationships between

@@ -14,6 +14,7 @@ import java.time.DateTimeException;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
@@ -34,7 +35,7 @@ import gama.gaml.operators.Dates;
  * @author administrateur
  *
  */
-public class SimulationClock {
+public class SimulationClock implements IClock {
 
 	/** The number of simulation cycles elapsed so far. */
 	private volatile AtomicInteger cycle = new AtomicInteger(0);
@@ -110,6 +111,7 @@ public class SimulationClock {
 	// FIXME Make setCycle() or incrementCycle() advance the other variables as
 	// well, so as to allow writing
 	// "cycle <- cycle + 1" in GAML and have the correct information computed.
+	@Override
 	public void setCycle(final int i) throws GamaRuntimeException {
 		if (i < 0) throw GamaRuntimeException.error("The current cycle of a simulation cannot be negative", clockScope);
 		final int previous = cycle.get();
@@ -129,6 +131,7 @@ public class SimulationClock {
 	 *             the gama runtime exception
 	 * @date 9 août 2023
 	 */
+	@Override
 	public void setCycleNoCheck(final int i) throws GamaRuntimeException {
 		if (i < 0) throw GamaRuntimeException.error("The current cycle of a simulation cannot be negative", clockScope);
 		final int previous = cycle.get();
@@ -139,6 +142,7 @@ public class SimulationClock {
 	/**
 	 * Increment cycle.
 	 */
+	@Override
 	public void incrementCycle() {
 		cycle.incrementAndGet();
 		setCurrentDate(getCurrentDate().plusMillis(getStepInMillis()));
@@ -147,6 +151,7 @@ public class SimulationClock {
 	/**
 	 * Reset cycles.
 	 */
+	@Override
 	public void resetCycles() {
 		cycle.set(0);
 		startingDate = null;
@@ -156,6 +161,7 @@ public class SimulationClock {
 	/**
 	 * Returns the current value of cycle
 	 */
+	@Override
 	public int getCycle() { return cycle.get(); }
 
 	/**
@@ -180,6 +186,7 @@ public class SimulationClock {
 	 *
 	 * @return a positive double
 	 */
+	@Override
 	public double getTimeElapsedInSeconds() {
 		// BG 16/03/2018 : to fix the issue that time != cycle * step, when step is not an integer number.
 		// return getStartingDate().until(getCurrentDate(), ChronoUnit.SECONDS);
@@ -195,6 +202,7 @@ public class SimulationClock {
 	 *            a positive double
 	 */
 
+	@Override
 	public void setStep(final double exp) throws GamaRuntimeException {
 		if (exp <= 0) throw GamaRuntimeException
 				.error("The interval between two cycles of a simulation cannot be negative or null", clockScope);
@@ -208,6 +216,7 @@ public class SimulationClock {
 	 *
 	 * @return a positive double
 	 */
+	@Override
 	public double getStepInSeconds() { return step; }
 
 	/**
@@ -215,11 +224,13 @@ public class SimulationClock {
 	 *
 	 * @return the step in millis
 	 */
+	@Override
 	public long getStepInMillis() { return (long) (step * 1000); }
 
 	/**
 	 * Initializes start at the beginning of a step
 	 */
+	@Override
 	public void resetDuration() {
 		start = System.currentTimeMillis();
 		// duration = 0;
@@ -228,6 +239,7 @@ public class SimulationClock {
 	/**
 	 * Reset total duration.
 	 */
+	@Override
 	public void resetTotalDuration() {
 		resetDuration();
 		duration = 0;
@@ -247,6 +259,7 @@ public class SimulationClock {
 	 *
 	 * @return a duration in milliseconds
 	 */
+	@Override
 	public long getDuration() { return duration; }
 
 	/**
@@ -254,6 +267,7 @@ public class SimulationClock {
 	 *
 	 * @return a duration in milliseconds
 	 */
+	@Override
 	public double getAverageDuration() {
 		if (cycle.get() == 0) return 0;
 		return totalDuration / (double) cycle.get();
@@ -264,6 +278,7 @@ public class SimulationClock {
 	 *
 	 * @return a duration in milliseconds
 	 */
+	@Override
 	public long getTotalDuration() { return totalDuration; }
 
 	/**
@@ -272,6 +287,7 @@ public class SimulationClock {
 	 * @param scope
 	 *            the scope
 	 */
+	@Override
 	public void step() {
 		incrementCycle();
 		computeDuration();
@@ -281,6 +297,7 @@ public class SimulationClock {
 	/**
 	 * Wait delay.
 	 */
+	@Override
 	public void waitDelay() {
 		final double delay = getDelayInMilliseconds();
 		if (delay <= 0d || duration >= delay) return;
@@ -293,6 +310,7 @@ public class SimulationClock {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@Override
 	public void reset() throws GamaRuntimeException {
 		resetCycles();
 		resetTotalDuration();
@@ -301,6 +319,7 @@ public class SimulationClock {
 	/**
 	 * Begin cycle.
 	 */
+	@Override
 	public void beginCycle() {
 		resetDuration();
 	}
@@ -312,6 +331,7 @@ public class SimulationClock {
 	 *            the info string builder
 	 * @return the info
 	 */
+	@Override
 	public StringBuilder getInfo(final StringBuilder sb) {
 		final int c = getCycle();
 		final ITopLevelAgent agent = clockScope.getRoot();
@@ -334,6 +354,7 @@ public class SimulationClock {
 	 *
 	 * @return the delay in milliseconds
 	 */
+	@Override
 	public double getDelayInMilliseconds() {
 		IExperimentAgent agent = clockScope.getExperiment();
 		return agent == null ? 0 : agent.getMinimumDuration() * 1000;
@@ -344,6 +365,7 @@ public class SimulationClock {
 	 *
 	 * @return the current date
 	 */
+	@Override
 	public GamaDate getCurrentDate() {
 		if (currentDate == null) { currentDate = getStartingDate(); }
 		return currentDate;
@@ -354,6 +376,7 @@ public class SimulationClock {
 	 *
 	 * @return the starting date
 	 */
+	@Override
 	public GamaDate getStartingDate() {
 		if (startingDate == null) { setStartingDate(Dates.DATES_STARTING_DATE.getValue()); }
 		return startingDate;
@@ -365,6 +388,7 @@ public class SimulationClock {
 	 * @param starting_date
 	 *            the new starting date
 	 */
+	@Override
 	public void setStartingDate(final GamaDate starting_date) {
 		this.startingDate = starting_date;
 		this.currentDate = starting_date;
@@ -377,6 +401,7 @@ public class SimulationClock {
 	 * @param date
 	 *            the new current date
 	 */
+	@Override
 	public void setCurrentDate(final GamaDate date) { currentDate = date; }
 
 }

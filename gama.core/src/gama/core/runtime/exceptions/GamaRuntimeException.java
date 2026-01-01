@@ -17,8 +17,8 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.runtime.IScope;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.operators.Strings;
@@ -294,7 +294,7 @@ public class GamaRuntimeException extends RuntimeException {
 	 * @return the long
 	 */
 	public long computeCycle(final IScope scope) {
-		final SimulationClock clock = scope == null ? null : scope.getClock();
+		final IClock clock = scope == null ? null : scope.getClock();
 		return clock == null ? 0l : clock.getCycle();
 	}
 

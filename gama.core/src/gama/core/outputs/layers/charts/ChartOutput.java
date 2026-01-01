@@ -17,9 +17,9 @@ import java.util.LinkedHashMap;
 
 import org.jfree.chart.JFreeChart;
 
+import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
@@ -262,7 +262,7 @@ public abstract class ChartOutput {
 			return 0;
 		}
 		if (scope != null) {
-			SimulationClock clock = scope.getClock();
+			IClock clock = scope.getClock();
 			if (clock != null) return clock.getCycle() + 1;
 		}
 		return 0;
@@ -319,7 +319,7 @@ public abstract class ChartOutput {
 
 		}
 		resetAxes(scope);
-		SimulationClock clock = scope.getClock();
+		IClock clock = scope.getClock();
 		if (clock != null) {
 			lastUpdateCycle = clock.getCycle();
 			// DEBUG.LOG("output last update:" + lastUpdateCycle);
