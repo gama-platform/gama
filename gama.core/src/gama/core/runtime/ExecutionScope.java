@@ -1166,4 +1166,11 @@ public class ExecutionScope implements IScope {
 		return agent.getScope().getServerConfiguration();
 	}
 
+	@Override
+	public ITypesManager getTypes() {
+		IModel m = getModel();
+		if (m == null) return Types.builtInTypes;
+		return m.getDescription().getTypesManager();
+	}
+
 }

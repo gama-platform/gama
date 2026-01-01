@@ -3,7 +3,7 @@
  * LayeredDisplayData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.properties.GenericCameraDefinition;
 import gama.core.outputs.layers.properties.GenericLightDefinition;
@@ -525,7 +525,7 @@ public class LayeredDisplayData {
 	public void initWith(final IScope scope, final IDescription desc) {
 		final Facets facets = desc.getFacets();
 		// Initializing the size of the environment
-		SimulationAgent sim = scope.getSimulation();
+		ISimulationAgent sim = scope.getSimulation();
 		// hqnghi if layer come from micro-model
 		final ModelDescription micro = desc.getModelDescription();
 		final ModelDescription main = scope.getModel().getDescription();

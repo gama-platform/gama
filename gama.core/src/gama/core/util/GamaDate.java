@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaDate.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaDate.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,7 +42,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -385,7 +385,7 @@ public class GamaDate implements IValue, Temporal, Comparable<GamaDate> {
 	 */
 	@Override
 	public double floatValue(final IScope scope) {
-		final SimulationAgent sim = scope.getSimulation();
+		final ISimulationAgent sim = scope.getSimulation();
 		if (sim == null) return Dates.DATES_STARTING_DATE.getValue().until(this, ChronoUnit.SECONDS);
 		return sim.getStartingDate().until(this, ChronoUnit.SECONDS);
 	}
@@ -799,24 +799,33 @@ public class GamaDate implements IValue, Temporal, Comparable<GamaDate> {
 		return nextByStep.isGreaterThan(nextByPeriod, true);
 
 	}
-	
+
+	/**
+	 * Checks if is interval reached optimized.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param period
+	 *            the period
+	 * @return true, if is interval reached optimized
+	 */
 	public boolean isIntervalReachedOptimized(final IScope scope, final IExpression period) {
-			// We get the current date from the model
-			final GamaDate current = scope.getClock().getCurrentDate();
-			// Exact date ?
-			if (this.equals(current)) return true;
-			
-			// Not yet reached ?
-			if (isGreaterThan(current, true)) return false;
-			long tStep = (long)(scope.getSimulation().getTimeStep(scope) * 1000);
-			long periodToMilliSecond = (long) (Cast.asFloat(scope, period.value(scope)) * 1000);
-			if (tStep >= periodToMilliSecond) return true;
-			long sinceBeginning = scope.getSimulation().getStartingDate().until(scope.getSimulation().getCurrentDate(), ChronoUnit.MILLIS);
-			long r = sinceBeginning % periodToMilliSecond;
-			if (r  == 0) return true;
-			return(((r - tStep) > 0)
-						&& (r + tStep > periodToMilliSecond));		
-			
+		// We get the current date from the model
+		final GamaDate current = scope.getClock().getCurrentDate();
+		// Exact date ?
+		if (this.equals(current)) return true;
+
+		// Not yet reached ?
+		if (isGreaterThan(current, true)) return false;
+		long tStep = (long) (scope.getSimulation().getTimeStep(scope) * 1000);
+		long periodToMilliSecond = (long) (Cast.asFloat(scope, period.value(scope)) * 1000);
+		if (tStep >= periodToMilliSecond) return true;
+		long sinceBeginning = scope.getSimulation().getStartingDate().until(scope.getSimulation().getCurrentDate(),
+				ChronoUnit.MILLIS);
+		long r = sinceBeginning % periodToMilliSecond;
+		if (r == 0) return true;
+		return r - tStep > 0 && r + tStep > periodToMilliSecond;
+
 	}
 
 	// class Amount {

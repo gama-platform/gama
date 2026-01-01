@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -86,8 +86,12 @@ public abstract class AbstractTopology implements ITopology {
 	}
 
 	@Override
-	public void setRoot(final IScope scope, final RootTopology root) {
-		this.root = root == null ? scope.getSimulation().getTopology() : root;
+	public void setRoot(final IScope scope, final ITopology root) {
+		if (root instanceof RootTopology rt) {
+			this.root = rt;
+		} else {
+			this.root = (RootTopology) scope.getSimulation().getTopology();
+		}
 	}
 
 	@Override
@@ -579,11 +583,21 @@ public abstract class AbstractTopology implements ITopology {
 	 * @return true, if successful
 	 */
 	public static final boolean accept(final PreparedGeometry pg1, final Geometry g2, final SpatialRelation rel) {
-		if (rel == SpatialRelation.OVERLAP) return pg1.intersects(g2);
-		if (rel == SpatialRelation.INSIDE) return pg1.covers(g2);
-		if (rel == SpatialRelation.COVER) return pg1.coveredBy(g2);
-		if (rel == SpatialRelation.CROSS) return pg1.crosses(g2);
-		if (rel == SpatialRelation.PARTIALLY_OVERLAP) return pg1.overlaps(g2);
+		switch (rel) {
+			case OVERLAP:
+				return pg1.intersects(g2);
+			case INSIDE:
+				return pg1.covers(g2);
+			case COVER:
+				return pg1.coveredBy(g2);
+			case CROSS:
+				return pg1.crosses(g2);
+			case PARTIALLY_OVERLAP:
+				return pg1.overlaps(g2);
+			case null:
+			default:
+				break;
+		}
 		return pg1.touches(g2);
 	}
 
@@ -642,6 +656,12 @@ public abstract class AbstractTopology implements ITopology {
 	protected double[][] getAdjustedXYVector() {
 		if (adjustedXYVector == null) { createVirtualEnvironments(); }
 		return adjustedXYVector;
+	}
+
+	@Override
+	public String stringValue(final IScope scope) throws GamaRuntimeException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -3,7 +3,7 @@
  * BufferingController.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.core.metamodel.agent.AbstractAgent;
+import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -163,18 +164,18 @@ public class BufferingController {
 	// those are the maps that are mapping a file to one or multiple agents each responsible for a buffer of text.
 	/** The file buffer per agent. */
 	// the files in those maps MUST be absolute paths for it to work
-	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgent;
+	protected Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgent;
 
 	/** The file buffer per agent for cycles. */
-	protected Map<String, Map<AbstractAgent, TextBuffer>> fileBufferPerAgentForCycles;
+	protected Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgentForCycles;
 
 	// the maps that manage console writing, per agent and per agent for cycle buffering.
 	/** The console buffer list per agent. */
 	// each agent is responsible for a list of buffers (one each color change)
-	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgent;
+	protected Map<IAgent, List<TextBuffer>> consoleBufferListPerAgent;
 
 	/** The console buffer list per agent for cycles. */
-	protected Map<AbstractAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles;
+	protected Map<IAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles;
 
 	/**
 	 * Instantiates a new buffering controller.
@@ -206,14 +207,12 @@ public class BufferingController {
 	 */
 	public synchronized boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content,
 			final SaveOptions options) {
-		AbstractAgent owner = scope.getSimulation();
+		IAgent owner = scope.getSimulation();
 		switch (options.bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
 				// in case it's per agent we just switch the owner to the calling agent
 				// instead of the whole simulation
-				if (options.bufferingStrategy == BufferingStrategies.PER_AGENT) {
-					owner = (AbstractAgent) scope.getAgent();
-				}
+				if (options.bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
 				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileBufferPerAgent), content,
 						options);
 			case PER_CYCLE_BUFFERING:
@@ -249,12 +248,12 @@ public class BufferingController {
 	 */
 	public synchronized boolean askWriteConsole(final IScope scope, final StringBuilder content, final GamaColor color,
 			final BufferingStrategies bufferingStrategy) {
-		AbstractAgent owner = scope.getSimulation();
+		IAgent owner = scope.getSimulation();
 		switch (bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
 				// in case it's per agent we just switch the owner to the calling agent
 				// instead of the whole simulation
-				if (bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = (AbstractAgent) scope.getAgent(); }
+				if (bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
 				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgent, content, color);
 			case PER_CYCLE_BUFFERING:
 				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgentForCycles, content, color);
@@ -279,10 +278,10 @@ public class BufferingController {
 	 *            the map in which to look in
 	 * @return the corresponding map of agent/buffer
 	 */
-	protected synchronized Map<AbstractAgent, TextBuffer> getOrInitBufferingMap(final String fileId,
-			final Map<String, Map<AbstractAgent, TextBuffer>> map) {
+	protected synchronized Map<IAgent, TextBuffer> getOrInitBufferingMap(final String fileId,
+			final Map<String, Map<IAgent, TextBuffer>> map) {
 		// If we don't have any map for this file yet we create one
-		Map<AbstractAgent, TextBuffer> bufferingMap = map.get(fileId);
+		Map<IAgent, TextBuffer> bufferingMap = map.get(fileId);
 		if (bufferingMap == null) {
 			bufferingMap = new HashMap<>();
 			map.put(fileId, bufferingMap);
@@ -305,8 +304,8 @@ public class BufferingController {
 	 *            the saving options (used to get the rewrite option)
 	 * @return true if the operation was successful, false otherwise
 	 */
-	protected static boolean appendSaveFileRequestToMap(final AbstractAgent owner,
-			final Map<AbstractAgent, TextBuffer> bufferingMap, final CharSequence content, final SaveOptions options) {
+	protected static boolean appendSaveFileRequestToMap(final IAgent owner, final Map<IAgent, TextBuffer> bufferingMap,
+			final CharSequence content, final SaveOptions options) {
 
 		// We look up for the previous request of the owner simulation in the map
 		// if there's already one we append our content or rewrite, depending on the append parameter
@@ -344,9 +343,8 @@ public class BufferingController {
 	 *            the color in which the text should be printed
 	 * @return true if the operation was successful, false otherwise
 	 */
-	protected static boolean appendWriteConsoleRequestToMap(final AbstractAgent owner,
-			final Map<AbstractAgent, List<TextBuffer>> bufferingMap, final StringBuilder content,
-			final GamaColor color) {
+	protected static boolean appendWriteConsoleRequestToMap(final IAgent owner,
+			final Map<IAgent, List<TextBuffer>> bufferingMap, final StringBuilder content, final GamaColor color) {
 
 		// We look up for the previous request of the owner simulation in the map
 		List<TextBuffer> requests = bufferingMap.get(owner);
@@ -359,9 +357,9 @@ public class BufferingController {
 
 		// If the last element of the list is not of the same color as the currently requested color we append a new
 		// task with the new color
-		if (requests.size() != 0 && ((requests.get(requests.size() - 1).color == null && color == null)
-				|| (requests.get(requests.size() - 1).color != null
-						&& requests.get(requests.size() - 1).color.equals(color)))) {
+		if (requests.size() != 0 && (requests.get(requests.size() - 1).color == null && color == null
+				|| requests.get(requests.size() - 1).color != null
+						&& requests.get(requests.size() - 1).color.equals(color))) {
 			requests.get(requests.size() - 1).content.append(content);
 			return true;
 		}
@@ -391,11 +389,11 @@ public class BufferingController {
 			final boolean append) {
 		try {
 			if (append) {
-				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
-						StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset), StandardOpenOption.CREATE,
+						StandardOpenOption.APPEND);
 			} else {
-				Files.write(Paths.get(fileId), content.toString().getBytes(charset),
-						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+				Files.write(Paths.get(fileId), content.toString().getBytes(charset), StandardOpenOption.CREATE,
+						StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 			}
 			// FileUtils.write(new File(fileId), content, charset, append);
 			return true;
@@ -414,8 +412,7 @@ public class BufferingController {
 	 *            the map in which to look up
 	 * @return true if everything went well, false in case of error
 	 */
-	protected static boolean flushAllFilesOfAgent(final AbstractAgent owner,
-			final Map<String, Map<AbstractAgent, TextBuffer>> map) {
+	protected static boolean flushAllFilesOfAgent(final IAgent owner, final Map<String, Map<IAgent, TextBuffer>> map) {
 		boolean success = true;
 		for (var entry : map.entrySet()) {
 			var writeTask = entry.getValue().get(owner);
@@ -439,8 +436,7 @@ public class BufferingController {
 	 * @param map
 	 *            the map in which to look up
 	 */
-	protected static void flushAllWriteOfAgent(final AbstractAgent owner,
-			final Map<AbstractAgent, List<TextBuffer>> map) {
+	protected static void flushAllWriteOfAgent(final IAgent owner, final Map<IAgent, List<TextBuffer>> map) {
 		var tasks = map.get(owner);
 		if (tasks != null) {
 			var scope = owner.getScope();
@@ -458,7 +454,7 @@ public class BufferingController {
 	 *            the simulation or agent in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public synchronized boolean flushSaveFilesOfAgent(final AbstractAgent owner) {
+	public synchronized boolean flushSaveFilesOfAgent(final IAgent owner) {
 		return flushAllFilesOfAgent(owner, fileBufferPerAgent);
 	}
 
@@ -469,7 +465,7 @@ public class BufferingController {
 	 *            the simulation in which the save statements have been executed
 	 * @return true if everything went well, false in case of error
 	 */
-	public synchronized boolean flushSaveFilesInCycle(final AbstractAgent owner) {
+	public synchronized boolean flushSaveFilesInCycle(final IAgent owner) {
 		return flushAllFilesOfAgent(owner, fileBufferPerAgentForCycles);
 	}
 
@@ -479,7 +475,7 @@ public class BufferingController {
 	 * @param owner
 	 *            the simulation in which the write statements have been executed
 	 */
-	public synchronized void flushWriteInCycle(final AbstractAgent owner) {
+	public synchronized void flushWriteInCycle(final IAgent owner) {
 		flushAllWriteOfAgent(owner, consoleBufferListPerAgentForCycles);
 	}
 
@@ -489,7 +485,7 @@ public class BufferingController {
 	 * @param owner:
 	 *            the agent or simulation in which the write statements have been executed
 	 */
-	public synchronized void flushWriteOfAgent(final AbstractAgent owner) {
+	public synchronized void flushWriteOfAgent(final IAgent owner) {
 		flushAllWriteOfAgent(owner, consoleBufferListPerAgent);
 	}
 

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SoundPlayerBroker.java, in gama.extension.sound, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SoundPlayerBroker.java, in gama.extension.sound, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.sound;
 
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -36,8 +36,7 @@ public class SoundPlayerBroker {
 			Collections.synchronizedList(new ArrayList<GamaSoundPlayer>(MAX_NB_OF_MUSIC_PLAYERS));
 
 	/** The sound player of agents. */
-	private static Map<SimulationAgent, Map<IAgent, GamaSoundPlayer>> soundPlayerOfAgents =
-			new HashMap<>();
+	private static Map<ISimulationAgent, Map<IAgent, GamaSoundPlayer>> soundPlayerOfAgents = new HashMap<>();
 
 	/** The broker. */
 	private static volatile SoundPlayerBroker broker = null;
@@ -49,9 +48,7 @@ public class SoundPlayerBroker {
 	 */
 	public static SoundPlayerBroker getInstance() {
 
-		if (broker == null) {
-			broker = new SoundPlayerBroker();
-		}
+		if (broker == null) { broker = new SoundPlayerBroker(); }
 
 		return broker;
 	}
@@ -61,9 +58,7 @@ public class SoundPlayerBroker {
 	 */
 	private void initializeGamaSoundPlayer() {
 		synchronized (soundPlayerPools) {
-			for (int i = 0; i < MAX_NB_OF_MUSIC_PLAYERS; i++) {
-				soundPlayerPools.add(new GamaSoundPlayer());
-			}
+			for (int i = 0; i < MAX_NB_OF_MUSIC_PLAYERS; i++) { soundPlayerPools.add(new GamaSoundPlayer()); }
 		}
 	}
 
@@ -77,14 +72,15 @@ public class SoundPlayerBroker {
 	/**
 	 * Gets the sound player.
 	 *
-	 * @param agent the agent
+	 * @param agent
+	 *            the agent
 	 * @return the sound player
 	 */
 	public GamaSoundPlayer getSoundPlayer(final IAgent agent) {
 
 		synchronized (soundPlayerOfAgents) {
 			final IScope scope = agent.getScope();
-			final SimulationAgent simulation = scope.getSimulation();
+			final ISimulationAgent simulation = scope.getSimulation();
 
 			Map<IAgent, GamaSoundPlayer> soundPlayersOfSimulation = soundPlayerOfAgents.get(simulation);
 			if (soundPlayersOfSimulation == null) {
@@ -121,21 +117,19 @@ public class SoundPlayerBroker {
 	/**
 	 * Manage music players.
 	 *
-	 * @param simulation the simulation
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param simulation
+	 *            the simulation
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
-	public void manageMusicPlayers(final SimulationAgent simulation) throws GamaRuntimeException {
+	public void manageMusicPlayers(final ISimulationAgent simulation) throws GamaRuntimeException {
 		GamaSoundPlayer soundPlayer;
 
 		final Map<IAgent, GamaSoundPlayer> soundPlayersOfSimulation = soundPlayerOfAgents.get(simulation);
 
 		// remove music players of dead agents
 		final List<IAgent> deadAgents = new ArrayList<>();
-		for (final IAgent a : soundPlayersOfSimulation.keySet()) {
-			if (a.dead()) {
-				deadAgents.add(a);
-			}
-		}
+		for (final IAgent a : soundPlayersOfSimulation.keySet()) { if (a.dead()) { deadAgents.add(a); } }
 		for (final IAgent d : deadAgents) {
 			soundPlayer = soundPlayersOfSimulation.get(d);
 			soundPlayer.stop(d.getScope(), true);
@@ -153,9 +147,7 @@ public class SoundPlayerBroker {
 			for (final IAgent a : soundPlayersOfSimulation.keySet()) {
 
 				soundPlayer = soundPlayersOfSimulation.get(a);
-				if (soundPlayer.canBeReused()) {
-					agentsToBeRemoved.add(a);
-				}
+				if (soundPlayer.canBeReused()) { agentsToBeRemoved.add(a); }
 			}
 
 			for (final IAgent a : agentsToBeRemoved) {
@@ -171,10 +163,12 @@ public class SoundPlayerBroker {
 	/**
 	 * Scheduler disposed.
 	 *
-	 * @param simulation the simulation
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param simulation
+	 *            the simulation
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
-	public void schedulerDisposed(final SimulationAgent simulation) throws GamaRuntimeException {
+	public void schedulerDisposed(final ISimulationAgent simulation) throws GamaRuntimeException {
 
 		final Map<IAgent, GamaSoundPlayer> soundPlayersOfSimulation = soundPlayerOfAgents.get(simulation);
 

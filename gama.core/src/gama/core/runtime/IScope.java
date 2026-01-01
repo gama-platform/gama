@@ -20,7 +20,7 @@ import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.core.metamodel.topology.ITopology;
@@ -35,9 +35,7 @@ import gama.gaml.statements.Arguments;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.IType;
 import gama.gaml.types.ITypesManager;
-import gama.gaml.types.Types;
 
-// TODO: Auto-generated Javadoc
 /**
  * The IScope interface represents the execution context in the GAMA modeling and simulation platform. It provides a
  * complete environment for the execution of statements, expressions, and actions by agents within a simulation. An
@@ -315,7 +313,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return The simulation agent
 	 */
-	SimulationAgent getSimulation();
+	ISimulationAgent getSimulation();
 
 	/**
 	 * Returns the experiment agent associated with this scope. The experiment agent manages the simulation and provides
@@ -1007,9 +1005,6 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @return The types manager, or the built-in types if no model is available
 	 */
-	default ITypesManager getTypes() {
-		IModel m = getModel();
-		if (m == null) return Types.builtInTypes;
-		return m.getDescription().getTypesManager();
-	}
+	ITypesManager getTypes();
+
 }

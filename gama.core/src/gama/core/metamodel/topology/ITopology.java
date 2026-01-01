@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ITopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * ITopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,6 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.continuous.RootTopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -41,6 +40,10 @@ import gama.gaml.types.IType;
  *
  * @todo Description
  *
+ */
+
+/**
+ * The Interface ITopology.
  */
 @vars ({ @variable (
 		name = IKeyword.ENVIRONMENT,
@@ -438,7 +441,7 @@ public interface ITopology extends IValue {
 	 * @param rt
 	 *            the rt
 	 */
-	void setRoot(IScope scope, RootTopology rt);
+	void setRoot(IScope scope, ITopology rt);
 
 	/**
 	 * Int value.
@@ -475,5 +478,10 @@ public interface ITopology extends IValue {
 	default JsonValue serializeToJson(final Json json) {
 		return json.typedObject(getGamlType(), IKeyword.ENVIRONMENT, getEnvironment());
 	}
+
+	/**
+	 * @param topology
+	 */
+	default void mergeWith(final ITopology topology) {}
 
 }

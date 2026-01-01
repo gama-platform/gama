@@ -3,7 +3,7 @@
  * SimulationOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -162,7 +162,7 @@ public class SimulationOutputManager extends AbstractOutputManager {
 	 * @param agent
 	 *            the agent
 	 */
-	public void updateDisplayOutputsName(final SimulationAgent agent) {
+	public void updateDisplayOutputsName(final ISimulationAgent agent) {
 		for (final IOutput out : this) { GAMA.getGui().updateViewTitle(out, agent); }
 	}
 

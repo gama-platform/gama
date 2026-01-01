@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * RootTopology.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * RootTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.topology.continuous;
 
@@ -17,6 +16,7 @@ import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.CompoundSpatialIndex;
 import gama.core.metamodel.topology.ISpatialIndex;
+import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 
 /**
@@ -71,7 +71,7 @@ public class RootTopology extends ContinuousTopology {
 	public boolean isTorus() { return isTorus; }
 
 	@Override
-	public void setRoot(final IScope scope, final RootTopology root) {}
+	public void setRoot(final IScope scope, final ITopology root) {}
 
 	/**
 	 * Merge with.
@@ -79,8 +79,9 @@ public class RootTopology extends ContinuousTopology {
 	 * @param other
 	 *            the other
 	 */
-	public void mergeWith(final RootTopology other) {
-		spatialIndex.mergeWith(other.spatialIndex);
+	@Override
+	public void mergeWith(final ITopology other) {
+		if (other instanceof RootTopology rt) { spatialIndex.mergeWith(rt.spatialIndex); }
 	}
 
 	@Override

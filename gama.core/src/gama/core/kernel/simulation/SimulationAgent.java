@@ -3,7 +3,7 @@
  * SimulationAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,6 @@ import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.controller.IExperimentController;
 import gama.core.kernel.experiment.tools.ActionExecuter;
 import gama.core.metamodel.agent.GamlAgent;
@@ -47,6 +46,7 @@ import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.ISerialisedPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
+import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.continuous.RootTopology;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.metamodel.topology.projection.WorldProjection;
@@ -160,7 +160,7 @@ import gama.gaml.types.IType;
 				doc = @doc (
 						value = "Represents the starting date of the simulation",
 						comment = "If no starting_date is provided in the model, GAMA initializes it with a zero date: 1st of January, 1970 at 00:00:00")), })
-public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
+public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 	static {
 		// DEBUG.OFF();
@@ -315,9 +315,11 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param topology2
 	 *            the new topology
 	 */
-	public void setTopology(final RootTopology topology2) {
-		if (topology != null) { topology.dispose(); }
-		topology = topology2;
+	public void setTopology(final ITopology topology2) {
+		if (topology2 instanceof RootTopology rt) {
+			if (topology != null) { topology.dispose(); }
+			topology = rt;
+		}
 
 	}
 
@@ -429,6 +431,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return the projection factory
 	 */
+	@Override
 	public ProjectionFactory getProjectionFactory() { return projectionFactory; }
 
 	@Override
@@ -474,6 +477,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return true, if is micro simulation
 	 */
+	@Override
 	public boolean isMicroSimulation() { return getSpecies().getDescription().belongsToAMicroModel(); }
 
 	@Override
@@ -597,6 +601,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *            the scope
 	 * @return the time step
 	 */
+	@Override
 	@getter (
 			value = IKeyword.STEP,
 			initializer = true)
@@ -681,6 +686,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return the current date
 	 */
+	@Override
 	@getter (CURRENT_DATE)
 	public GamaDate getCurrentDate() { return ownClock.getCurrentDate(); }
 
@@ -702,6 +708,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return the starting date
 	 */
+	@Override
 	@getter (
 			value = STARTING_DATE,
 			initializer = true)
@@ -816,6 +823,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	/**
 	 * @param inspectDisplayOutput
 	 */
+	@Override
 	public void addOutput(final IOutput output) {
 		outputs.add(output);
 	}
@@ -851,6 +859,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return the seed
 	 */
+	@Override
 	@getter (
 			value = IKeyword.SEED,
 			initializer = true)
@@ -985,18 +994,10 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 
 			// If attributes are related to the RNG, we keep them to initialise the RNG later, in the proper order.
 			switch (varName) {
-				case IKeyword.SEED:
-					seedValue = (Double) attrValue;
-					break;
-				case IKeyword.RNG:
-					rngValue = (String) attrValue;
-					break;
-				case SimulationAgent.USAGE:
-					usageValue = (Integer) attrValue;
-					break;
-				default:
-					this.setDirectVarValue(scope, varName, attrValue);
-					break;
+				case IKeyword.SEED -> seedValue = (Double) attrValue;
+				case IKeyword.RNG -> rngValue = (String) attrValue;
+				case SimulationAgent.USAGE -> usageValue = (Integer) attrValue;
+				default -> this.setDirectVarValue(scope, varName, attrValue);
 			}
 
 		}
@@ -1088,14 +1089,16 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	/**
 	 * Adopt topology of.
 	 *
-	 * @param root
+	 * @param iSimulationAgent
 	 *            the root
 	 */
-	public void adoptTopologyOf(final SimulationAgent root) {
-		final RootTopology rt = root.getTopology();
-		rt.mergeWith(topology);
-		setTopology(rt);
-		for (final IPopulation<?> p : getMicroPopulations()) { p.getTopology().setRoot(root.getScope(), rt); }
+	public void adoptTopologyOf(final ISimulationAgent iSimulationAgent) {
+		final ITopology topo = iSimulationAgent.getTopology();
+		topo.mergeWith(topology);
+		setTopology(topo);
+		for (final IPopulation<?> p : getMicroPopulations()) {
+			p.getTopology().setRoot(iSimulationAgent.getScope(), topo);
+		}
 	}
 
 	/**
@@ -1103,6 +1106,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 *
 	 * @return the Simulation local map
 	 */
+	@Override
 	@SuppressWarnings ("unchecked")
 	public <T> Map<SimulationLocal<T>, T> getSimulationLocalMap() { return simulationLocalMap; }
 
@@ -1112,6 +1116,7 @@ public class SimulationAgent extends GamlAgent implements ITopLevelAgent {
 	 * @param map
 	 *            the new Simulation local map
 	 */
+	@Override
 	public <T> void setSimulationLocalMap(final Map<SimulationLocal<T>, T> map) { simulationLocalMap = map; }
 
 	@Override
