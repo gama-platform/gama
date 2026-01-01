@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.annotations.serializer;
@@ -252,7 +252,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		final IStatement.WithArgs executer = species.getAction(name);
 		Object result = null;
 		if (executer != null) {
-			final ExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
+			final IExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
 			result = er.getValue();
 		} else if (function != null) {
 			result = function.value(scope);

@@ -25,7 +25,7 @@ import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.FlowStatus;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -316,7 +316,7 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 			for (final MatchStatement matche : matches) {
 
 				if (matche.matches(scope, switchValue)) {
-					final ExecutionResult er = scope.execute(matche);
+					final IExecutionResult er = scope.execute(matche);
 					if (!er.passed()) return lastResult;
 					lastResult = er.getValue();
 					hasMatched = true;

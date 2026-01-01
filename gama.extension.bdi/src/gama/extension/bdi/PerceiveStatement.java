@@ -26,7 +26,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -234,7 +234,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
 			return this;
 		}
-		ExecutionResult result = null;
+		IExecutionResult result = null;
 		final Iterator<? extends IAgent> runners = obj instanceof IContainer c ? c.iterable(scope).iterator()
 				: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
 		if (runners != null) {

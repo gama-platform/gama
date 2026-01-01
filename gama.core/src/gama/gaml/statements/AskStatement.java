@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -226,7 +226,7 @@ public class AskStatement extends AbstractStatementSequence implements Breakable
 			agent = Cast.asAgent(scope, t);
 			if (agent == null) throw GamaRuntimeException.error("Can not execute ask on a nil agent", scope);
 		}
-		final ExecutionResult result = scope.execute(sequence, agent, null);
+		final IExecutionResult result = scope.execute(sequence, agent, null);
 		return result.getValue();
 	}
 

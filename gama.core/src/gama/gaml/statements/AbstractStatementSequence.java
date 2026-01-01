@@ -12,7 +12,7 @@ package gama.gaml.statements;
 
 import com.google.common.collect.FluentIterable;
 
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
@@ -66,7 +66,7 @@ public class AbstractStatementSequence extends AbstractStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		Object lastResult = null;
 		for (final IStatement command : commands) {
-			final ExecutionResult result = scope.execute(command);
+			final IExecutionResult result = scope.execute(command);
 			if (!result.passed()) return lastResult;
 			lastResult = result.getValue();
 		}

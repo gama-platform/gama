@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.core.runtime;
 
-import static gama.core.runtime.ExecutionResult.FAILED;
-import static gama.core.runtime.ExecutionResult.PASSED;
-import static gama.core.runtime.ExecutionResult.withValue;
+import static gama.core.runtime.IExecutionResult.FAILED;
+import static gama.core.runtime.IExecutionResult.PASSED;
+import static gama.core.runtime.IExecutionResult.withValue;
 import static gama.core.runtime.exceptions.GamaRuntimeException.create;
 
 import java.util.Collections;
@@ -512,7 +512,7 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#execute(gama.gaml.statements.IStatement, gama.core.metamodel.agent.IAgent)
 	 */
 	@Override
-	public ExecutionResult execute(final IExecutable statement, final IAgent target,
+	public IExecutionResult execute(final IExecutable statement, final IAgent target,
 			final boolean useTargetScopeForExecution, final Arguments args) {
 		if (statement == null || target == null || interrupted() || target.dead()) return FAILED;
 		// We keep the current pushed agent (context of this execution)
@@ -540,7 +540,7 @@ public class ExecutionScope implements IScope {
 			return withValue(statement.executeOn(useTargetScopeForExecution ? target.getScope() : ExecutionScope.this));
 		} catch (final Exception g) {
 			GAMA.reportAndThrowIfNeeded(this, g instanceof GamaRuntimeException e ? e : create(g, this), true);
-			return ExecutionResult.FAILED;
+			return IExecutionResult.FAILED;
 		} finally {
 			// We clean the caller that may have been set previously so as to keep the
 			// arguments clean
@@ -571,7 +571,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult step(final IStepable agent) {
+	public IExecutionResult step(final IStepable agent) {
 		if (agent == null || interrupted()) return FAILED;
 		try (StopWatch w = GAMA.benchmark(this, agent)) {
 			return withValue(agent.step(this));
@@ -587,7 +587,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult init(final IStepable agent) {
+	public IExecutionResult init(final IStepable agent) {
 		if (agent == null || interrupted()) return FAILED;
 		try (StopWatch w = GAMA.benchmark(this, agent)) {
 			return withValue(agent.init(this));
@@ -603,7 +603,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult step(final IAgent agent) {
+	public IExecutionResult step(final IAgent agent) {
 		if (agent == null || agent.dead() || interrupted()) return FAILED;
 		final boolean pushed = push(agent);
 		try {
@@ -624,7 +624,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult init(final IAgent agent) {
+	public IExecutionResult init(final IAgent agent) {
 		if (agent == null || agent.dead() || interrupted()) return FAILED;
 		final boolean pushed = push(agent);
 		try {
@@ -645,7 +645,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult evaluate(final IExpression expr, final IAgent agent) throws GamaRuntimeException {
+	public IExecutionResult evaluate(final IExpression expr, final IAgent agent) throws GamaRuntimeException {
 		if (agent == null || agent.dead() || interrupted()) return FAILED;
 		final boolean pushed = push(agent);
 		try {
@@ -834,7 +834,7 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ExecutionResult update(final IAgent a) {
+	public IExecutionResult update(final IAgent a) {
 		if (a == null || a.dead() || interrupted()) return FAILED;
 		final boolean pushed = push(a);
 		try {

@@ -46,7 +46,7 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.model.IModel;
 import gama.core.metamodel.agent.AgentReference;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
@@ -403,7 +403,7 @@ public class DefaultServerCommands {
 		String json = (String) map.get(ARGS);
 		JsonValue object = Json.getNew().parse(json);
 		Map<String, Object> args = Cast.asMap(scope, object.toGamlValue(scope), false);
-		ExecutionResult er = ExecutionResult.PASSED;
+		IExecutionResult er = IExecutionResult.PASSED;
 		IScope newScope = agent.getScope().copy("Ask command of gama-server");
 		try {
 			er = newScope.execute(exec, agent, new Arguments(args));

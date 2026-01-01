@@ -19,7 +19,7 @@ import java.util.Map;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
@@ -63,7 +63,7 @@ public class RuleBasedArchitecture extends ReflexArchitecture {
 				.reverseSorted((o1, o2) -> priorities.get(o1).compareTo(priorities.get(o2))).toList();
 		Object result = null;
 		for (final RuleStatement rule : rulesToRun) {
-			final ExecutionResult er = scope.execute(rule);
+			final IExecutionResult er = scope.execute(rule);
 			if (!er.passed()) return result;
 			result = er.getValue();
 		}

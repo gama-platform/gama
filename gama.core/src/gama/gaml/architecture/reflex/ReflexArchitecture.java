@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
@@ -123,7 +123,7 @@ public class ReflexArchitecture extends AbstractArchitecture {
 		if (_reflexes == null) { return null; }
 		Object result = null;
 		for (final IStatement r : _reflexes) {
-			final ExecutionResult er = scope.execute(r);
+			final IExecutionResult er = scope.execute(r);
 			if (!er.passed()) { return result; }
 			result = er.getValue();
 		}

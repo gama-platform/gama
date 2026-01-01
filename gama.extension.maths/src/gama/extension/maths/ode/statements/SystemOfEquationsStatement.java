@@ -34,7 +34,7 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -360,7 +360,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		for (int i = 0, n = getDimension(); i < n; i++) {
 			if (myEQ.get(i) == null) { continue; }
 			try {
-				final ExecutionResult result = currentScope.execute(myEQ.get(i).getValue(), equaAgents.get(i), null);
+				final IExecutionResult result = currentScope.execute(myEQ.get(i).getValue(), equaAgents.get(i), null);
 				ydot[i] = Cast.asFloat(currentScope, result.getValue());
 			} catch (final Throwable e2) {
 				GAMA.reportAndThrowIfNeeded(currentScope, GamaRuntimeException.create(e2, currentScope), true);

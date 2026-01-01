@@ -33,7 +33,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.PlatformHelper;
@@ -312,7 +312,7 @@ public class AgentsMenu extends ContributionItem {
 				final IScope runningScope = a.getScope();
 				runningScope.getSimulation().executeAction(scope -> {
 					final Arguments args = new Arguments();
-					final ExecutionResult result = scope.execute(c, a, args);
+					final IExecutionResult result = scope.execute(c, a, args);
 					GAMA.getExperiment().refreshAllOutputs();
 					return result.getValue();
 				});

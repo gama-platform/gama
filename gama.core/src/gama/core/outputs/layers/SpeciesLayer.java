@@ -15,7 +15,7 @@ import gama.core.common.interfaces.IGraphics;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -97,7 +97,7 @@ public class SpeciesLayer extends AgentLayer {
 		StreamEx<? extends IAgent> stream = population.stream(scope);
 		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
 		stream.nonNull().filter(a -> !a.dead()).forEach(a -> {
-			ExecutionResult result = null;
+			IExecutionResult result = null;
 			if (a == scope.getGui().getHighlightedAgent()) {
 				IExecutable hAspect = population.getSpecies().getAspect("highlighted");
 				if (hAspect == null) { hAspect = aspect; }
@@ -105,7 +105,7 @@ public class SpeciesLayer extends AgentLayer {
 			} else {
 				result = scope.execute(aspect, a, null);
 			}
-			if (result != ExecutionResult.FAILED) {
+			if (result != IExecutionResult.FAILED) {
 				if (result != null && result.getValue() instanceof Rectangle2D) {
 					final Rectangle2D r = (Rectangle2D) result.getValue();
 					shapes.put(a, r);

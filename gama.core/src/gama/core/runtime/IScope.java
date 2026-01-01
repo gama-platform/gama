@@ -405,7 +405,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The statement to execute
 	 * @return The result of the execution
 	 */
-	default ExecutionResult execute(final IExecutable executable) {
+	default IExecutionResult execute(final IExecutable executable) {
 		return execute(executable, getAgent(), null);
 	}
 
@@ -418,7 +418,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default ExecutionResult execute(final IExecutable executable, final Arguments args) {
+	default IExecutionResult execute(final IExecutable executable, final Arguments args) {
 		return execute(executable, getAgent(), args);
 	}
 
@@ -433,7 +433,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default ExecutionResult execute(final IExecutable executable, final IAgent agent, final Arguments args) {
+	default IExecutionResult execute(final IExecutable executable, final IAgent agent, final Arguments args) {
 		return execute(executable, agent, false, args);
 	}
 
@@ -448,7 +448,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If an error occurs during evaluation
 	 */
-	ExecutionResult evaluate(IExpression expr, IAgent agent) throws GamaRuntimeException;
+	IExecutionResult evaluate(IExpression expr, IAgent agent) throws GamaRuntimeException;
 
 	/**
 	 * Returns the value of a variable in the current execution context. This may be a local variable, an agent
@@ -759,7 +759,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to initialize
 	 * @return The result of the initialization
 	 */
-	ExecutionResult init(final IStepable agent);
+	IExecutionResult init(final IStepable agent);
 
 	/**
 	 * Executes one simulation step for an agent that implements the IStepable interface.
@@ -768,7 +768,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to step
 	 * @return The result of the step execution
 	 */
-	ExecutionResult step(final IStepable agent);
+	IExecutionResult step(final IStepable agent);
 
 	/**
 	 * Initializes an agent. This is typically called when the agent is created.
@@ -777,7 +777,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to initialize
 	 * @return The result of the initialization
 	 */
-	ExecutionResult init(final IAgent agent);
+	IExecutionResult init(final IAgent agent);
 
 	/**
 	 * Executes one simulation step for an agent.
@@ -786,7 +786,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to step
 	 * @return The result of the step execution
 	 */
-	ExecutionResult step(final IAgent agent);
+	IExecutionResult step(final IAgent agent);
 
 	/**
 	 * Pushes a set of arguments onto the argument stack. These arguments can later be accessed using the getArg
@@ -804,7 +804,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to update
 	 * @return The result of the update
 	 */
-	ExecutionResult update(IAgent agent);
+	IExecutionResult update(IAgent agent);
 
 	/**
 	 * Returns the current execution context, which contains information about the execution environment, including
@@ -868,7 +868,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	ExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, Arguments args);
+	IExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, Arguments args);
 
 	/**
 	 * Retrieves and clears the BREAK flow status.

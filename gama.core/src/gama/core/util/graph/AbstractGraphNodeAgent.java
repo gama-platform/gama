@@ -23,7 +23,7 @@ import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
@@ -62,7 +62,7 @@ public class AbstractGraphNodeAgent extends GamlAgent {
 		@Override
 		public boolean related(final IScope scope, final AbstractGraphNodeAgent p1, final AbstractGraphNodeAgent p2) {
 			args.put("other", ConstantExpressionDescription.create(p2));
-			final ExecutionResult result = scope.execute(getAction(p1), p1, args);
+			final IExecutionResult result = scope.execute(getAction(p1), p1, args);
 			return Cast.asBool(scope, result.getValue());
 		}
 

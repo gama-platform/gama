@@ -11,7 +11,7 @@ package gama.gaml.statements;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.FlowStatus;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -59,7 +59,7 @@ public class RemoteSequence extends AbstractStatementSequence {
 		scope.addVarWithValue(IKeyword.MYSELF, myself.get());
 		Object lastResult = null;
 		for (final IStatement command : commands) {
-			final ExecutionResult result = scope.execute(command);
+			final IExecutionResult result = scope.execute(command);
 			if (!result.passed()) return lastResult;
 			FlowStatus fs = scope.getAndClearContinueStatus();
 			if (scope.interrupted() || fs == FlowStatus.BREAK) return lastResult;

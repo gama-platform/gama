@@ -17,7 +17,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ILayer.IGridLayer;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
@@ -78,7 +78,7 @@ public class HexagonalGridLayer extends AgentLayer implements IGridLayer {
 		 * optimized.
 		 */
 		getData().getGrid().stream(s).nonNull().forEach(a -> {
-			final ExecutionResult result = s.execute(aspect, (IAgent) a, null);
+			final IExecutionResult result = s.execute(aspect, (IAgent) a, null);
 			final Object r = result.getValue();
 			if (r instanceof Rectangle2D r2d) { shapes.put((IAgent) a, r2d); }
 		});

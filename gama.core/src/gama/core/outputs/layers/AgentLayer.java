@@ -16,7 +16,7 @@ import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -76,7 +76,7 @@ public class AgentLayer extends AbstractLayer {
 				if (aspect == null) { aspect = a.getSpecies().getAspect(aspectName); }
 			}
 			if (aspect == null) { aspect = AspectStatement.DEFAULT_ASPECT; }
-			final ExecutionResult result = scope.execute(aspect, a, null);
+			final IExecutionResult result = scope.execute(aspect, a, null);
 			final Object r = result.getValue();
 			if (r instanceof Rectangle2D r2d) { shapes.put(a, r2d); }
 		});

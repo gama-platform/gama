@@ -18,7 +18,7 @@ import java.util.Map;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.core.runtime.ExecutionResult;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
@@ -61,7 +61,7 @@ public class SortedTasksArchitecture extends WeightedTasksArchitecture {
 		// heaviest)
 		Object result = null;
 		for (int i = tasks.size() - 1; i >= 0; i--) {
-			final ExecutionResult er = scope.execute(tasks.get(i));
+			final IExecutionResult er = scope.execute(tasks.get(i));
 			if (!er.passed()) { return result; }
 			result = er.getValue();
 		}
