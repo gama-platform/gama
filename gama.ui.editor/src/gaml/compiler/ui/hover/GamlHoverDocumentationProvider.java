@@ -31,6 +31,8 @@ import gama.gaml.descriptions.SkillDescription;
 import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.DoStatement;
@@ -77,7 +79,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	private final IDocManager documenter = GamlResourceServices.getResourceDocumenter();
 
 	/**
-	 * The Doc.
+	 * The IGamlDocumentation.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 30 déc. 2023
@@ -92,7 +94,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		 * @date 30 déc. 2023
 		 */
 		@Override
-		public Doc getDocumentation() { return new ConstantDoc(doc); }
+		public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation(doc); }
 
 		/**
 		 * Gets the title.
@@ -200,8 +202,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				public String getTitle() { return "Unknown type of display " + name; }
 
 				@Override
-				public Doc getDocumentation() {
-					return new ConstantDoc(name
+				public IGamlDocumentation getDocumentation() {
+					return new GamlConstantDocumentation(name
 							+ " is not a registered display type. Please visit <a href=\"https://gama-platform.org/wiki/Displays\"> https://gama-platform.org/wiki/Displays</a> for more information.");
 				}
 			};
@@ -216,8 +218,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				public String getTitle() { return "Unknown type of experiment " + name; }
 
 				@Override
-				public Doc getDocumentation() {
-					return new ConstantDoc(name
+				public IGamlDocumentation getDocumentation() {
+					return new GamlConstantDocumentation(name
 							+ " is not a registered experiment type. Please visit <a=href=\"https://gama-platform.org/wiki/DefiningGUIExperiment#types-of-experiments\">https://gama-platform.org/wiki/DefiningGUIExperiment#types-of-experiments</a> for more information.");
 				}
 
@@ -229,8 +231,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			public String getTitle() { return "Definition of the exploration method to use in this experiment "; }
 
 			@Override
-			public Doc getDocumentation() {
-				return new ConstantDoc(
+			public IGamlDocumentation getDocumentation() {
+				return new GamlConstantDocumentation(
 						"The facets that can be defined to specify the exploration are specific to each method. Please visit <a href=\"https://gama-platform.org/wiki/ExplorationMethods\">https://gama-platform.org/wiki/ExplorationMethods</a> for more information.");
 			}
 
@@ -241,8 +243,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			public String getTitle() { return "The type (" + name + ") of charts to draw"; }
 
 			@Override
-			public Doc getDocumentation() {
-				return new ConstantDoc(
+			public IGamlDocumentation getDocumentation() {
+				return new GamlConstantDocumentation(
 						"Several types of charts are available (pie, series, histogram, xy...). Please visit <a href=\"https://gama-platform.org/wiki/DefiningCharts\">https://gama-platform.org/wiki/DefiningCharts </a> for more information.");
 			}
 

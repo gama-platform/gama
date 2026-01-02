@@ -15,6 +15,8 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.species.ISpecies;
 
 /**
@@ -112,8 +114,8 @@ public class GamaAgentType extends GamaType<IAgent> {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc("Represents instances of species " + species.getName());
+	public IGamlDocumentation getDocumentation() {
+		IGamlDocumentation result = new GamlRegularDocumentation("Represents instances of species " + species.getName());
 		species.documentAttributes(result);
 		return result;
 	}

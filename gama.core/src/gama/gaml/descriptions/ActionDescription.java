@@ -18,7 +18,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.statements.Arguments;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -206,8 +209,8 @@ public class ActionDescription extends StatementWithChildrenDescription {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		Doc documentation = getShortDocumentation(false);
+	public IGamlDocumentation getDocumentation() {
+		IGamlDocumentation documentation = getShortDocumentation(false);
 
 		if (getArgNames().size() > 0) {
 			getFormalArgs().forEach(arg -> {
@@ -217,7 +220,7 @@ public class ActionDescription extends StatementWithChildrenDescription {
 					sb1.append(" <i>(default: ").append(arg.getFacetExpr(DEFAULT).serializeToGaml(false))
 							.append(")</i>");
 				}
-				documentation.set("Arguments accepted: ", arg.getName(), new ConstantDoc(sb1.toString()));
+				documentation.set("Arguments accepted: ", arg.getName(), new GamlConstantDocumentation(sb1.toString()));
 			});
 		}
 		return documentation;
@@ -229,8 +232,8 @@ public class ActionDescription extends StatementWithChildrenDescription {
 	 *
 	 * @return the short documentation
 	 */
-	public Doc getShortDocumentation(final boolean withArgs) {
-		Doc result = new RegularDoc();
+	public IGamlDocumentation getShortDocumentation(final boolean withArgs) {
+		IGamlDocumentation result = new GamlRegularDocumentation();
 		Iterable<IDescription> args = getFormalArgs();
 		if (withArgs && Iterables.size(args) > 0) {
 			StringBuilder sb = new StringBuilder();

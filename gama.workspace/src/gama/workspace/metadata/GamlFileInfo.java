@@ -22,6 +22,8 @@ import java.util.function.Consumer;
 import org.eclipse.emf.common.util.URI;
 
 import gama.core.runtime.GAMA;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlFileInfo;
 
@@ -182,7 +184,7 @@ public class GamlFileInfo extends GamaFileMetaData implements IGamlFileInfo {
 	}
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc("GAML model file with " + getSuffix()); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation("GAML model file with " + getSuffix()); }
 
 	/**
 	 * Gets the name.

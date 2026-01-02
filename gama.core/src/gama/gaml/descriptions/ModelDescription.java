@@ -30,6 +30,7 @@ import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -264,7 +265,7 @@ public class ModelDescription extends SpeciesDescription {
 	}
 
 	@Override
-	public void documentThis(final Doc sb) {
+	public void documentThis(final IGamlDocumentation sb) {
 		final String parentName = getParent() == null ? "nil" : getParent().getName();
 		sb.append("<b>Subspecies of:</b> ").append(parentName).append("<br>");
 		final Iterable<String> skills = getSkillsNames();

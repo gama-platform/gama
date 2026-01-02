@@ -12,6 +12,8 @@ package gama.gaml.expressions.variables;
 
 import gama.core.runtime.IScope;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -46,8 +48,8 @@ public class EachExpression extends VariableExpression {
 	 * @see gama.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc("Represents the current object, of type " + type.getTitle() + ", in the iteration");
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation("Represents the current object, of type " + type.getTitle() + ", in the iteration");
 	}
 
 	@Override

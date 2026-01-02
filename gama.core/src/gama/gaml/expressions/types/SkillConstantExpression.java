@@ -14,6 +14,7 @@ import gama.annotations.precompiler.GamlProperties;
 import gama.gaml.architecture.IArchitecture;
 import gama.gaml.compilation.kernel.GamaSkillRegistry;
 import gama.gaml.expressions.ConstantExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.ISkill;
 import gama.gaml.types.IType;
 
@@ -38,7 +39,7 @@ public class SkillConstantExpression extends ConstantExpression {
 	 * @see gama.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() { return ((ISkill) value).getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return ((ISkill) value).getDocumentation(); }
 
 	@Override
 	public String getTitle() { return ((ISkill) value).getTitle(); }

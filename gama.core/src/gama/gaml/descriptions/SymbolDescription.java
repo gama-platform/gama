@@ -31,6 +31,7 @@ import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
@@ -1054,7 +1055,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the documentation object
 	 */
 	@Override
-	public Doc getDocumentation() { 
+	public IGamlDocumentation getDocumentation() { 
 		return getMeta().getDocumentation(); 
 	}
 

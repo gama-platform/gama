@@ -14,6 +14,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.Types;
 
 /**
@@ -48,7 +50,7 @@ public class CurrentExperimentExpression extends VariableExpression {
 	public String getTitle() { return "pseudo variable " + getName() + " of type " + getGamlType().getName(); }
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc("Represents and gives acces to the current experiment"); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation("Represents and gives acces to the current experiment"); }
 
 	@Override
 	protected Object _value(final IScope scope) {

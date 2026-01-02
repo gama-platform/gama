@@ -14,6 +14,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.expressions.AbstractExpression;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -68,7 +69,7 @@ public class TypeExpression extends AbstractExpression {
 	 * @see gama.gaml.interfaces.IGamlDescription#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() { return type.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return type.getDocumentation(); }
 
 	@Override
 	public IType<?> getGamlType() { return Types.TYPE; }

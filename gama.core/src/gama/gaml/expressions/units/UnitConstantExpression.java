@@ -25,6 +25,8 @@ import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.LabelExpressionDescription;
 import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -97,7 +99,7 @@ public class UnitConstantExpression extends ConstantExpression implements IExpre
 	}
 
 	/** The documentation. */
-	Doc documentation;
+	IGamlDocumentation documentation;
 
 	/** The alternate names. */
 	final List<String> alternateNames;
@@ -123,7 +125,7 @@ public class UnitConstantExpression extends ConstantExpression implements IExpre
 			final String[] names) {
 		super(val, t);
 		this.name = name;
-		documentation = new ConstantDoc(doc);
+		documentation = new GamlConstantDocumentation(doc);
 		alternateNames = new ArrayList<>();
 		alternateNames.add(name);
 		if (names != null) { alternateNames.addAll(Arrays.asList(names)); }
@@ -135,7 +137,7 @@ public class UnitConstantExpression extends ConstantExpression implements IExpre
 	}
 
 	@Override
-	public Doc getDocumentation() { return documentation; }
+	public IGamlDocumentation getDocumentation() { return documentation; }
 
 	@Override
 	public String getName() { return name; }

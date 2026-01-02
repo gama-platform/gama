@@ -23,6 +23,9 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.core.common.interfaces.IKeyword;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.IGamaHelper;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -52,7 +55,7 @@ public class PrimitiveDescription extends ActionDescription {
 	private String plugin;
 
 	/** The documentation. */
-	private RegularDoc documentation;
+	private GamlRegularDocumentation documentation;
 
 	/**
 	 * Instantiates a new primitive description.
@@ -99,11 +102,11 @@ public class PrimitiveDescription extends ActionDescription {
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		if (documentation != null) return documentation;
 		String s = getBuiltInDoc();
 		// Only arguments
-		documentation = new RegularDoc(s);
+		documentation = new GamlRegularDocumentation(s);
 		if (getArgNames().size() > 0) {
 			Map<String, arg> argAnnotations = getArgs();
 			getFormalArgs().forEach(arg -> {
@@ -116,7 +119,7 @@ public class PrimitiveDescription extends ActionDescription {
 				}
 				arg a = argAnnotations.get(name);
 				if (a != null && a.doc().length > 0) { sb1.append("; ").append(a.doc()[0].value()); }
-				documentation.set("Arguments accepted: ", name, new ConstantDoc(sb1.toString()));
+				documentation.set("Arguments accepted: ", name, new GamlConstantDocumentation(sb1.toString()));
 			});
 		}
 		return documentation;

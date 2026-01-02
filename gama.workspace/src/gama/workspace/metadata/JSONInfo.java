@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.workspace.metadata;
 
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 
 /**
@@ -97,8 +97,8 @@ public class JSONInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		final RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		sb.append(isGeoJson ? "GeoJSON File" : "JSON File").append(Strings.LN);
 		sb.append("Type: ").append(type).append(Strings.LN);
 		sb.append("Contains: ").append(itemCount + "").append(isGeoJson ? " features" : " items").append(Strings.LN);

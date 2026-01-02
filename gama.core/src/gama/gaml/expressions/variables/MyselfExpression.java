@@ -15,6 +15,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -46,9 +48,9 @@ public class MyselfExpression extends TempVariableExpression {
 	public String getTitle() { return "pseudo variable " + getName() + " of type " + getGamlType().getName(); }
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final IDescription desc = getDefinitionDescription();
-		return new ConstantDoc("pseudo variable " + getName() + " of type " + getGamlType().getName()
+		return new GamlConstantDocumentation("pseudo variable " + getName() + " of type " + getGamlType().getName()
 				+ (desc == null ? "<br>Built in" : "<br>Defined in " + desc.getTitle()));
 	}
 

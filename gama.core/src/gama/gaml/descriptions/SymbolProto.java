@@ -35,6 +35,8 @@ import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.factories.SymbolFactory;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -309,9 +311,9 @@ public class SymbolProto extends AbstractProto {
 	 * @return
 	 */
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		if (documentation == null) {
-			documentation = new RegularDoc(super.getDocumentation().toString());
+			documentation = new GamlRegularDocumentation(super.getDocumentation().toString());
 			final List<FacetProto> protos = new ArrayList(getPossibleFacets().values());
 			Collections.sort(protos);
 			for (final FacetProto f : protos) {

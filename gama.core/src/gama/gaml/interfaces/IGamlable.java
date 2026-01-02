@@ -34,16 +34,4 @@ public interface IGamlable {
 		return toString();
 	}
 
-	// /**
-	// * Returns the serialization in GAML of this object, using a scope if it is provided. Calls the regular function
-	// by
-	// * default
-	// *
-	// * @param scope
-	// * @param includingBuiltIn
-	// * @return
-	// */
-	// default String serializeToGaml(final IScope scope, final boolean includingBuiltIn) {
-	// return serializeToGaml(includingBuiltIn);
-	// }
 }

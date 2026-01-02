@@ -31,6 +31,7 @@ import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.DenotedActionExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.IType;
@@ -111,7 +112,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 * @param result
 	 *            the result
 	 */
-	public void documentAttributes(final Doc result) {
+	public void documentAttributes(final IGamlDocumentation result) {
 		for (final VariableDescription f : getAttributes()) {
 			result.set("Attributes:", f.getName(), f.getShortDocumentation());
 		}
@@ -123,7 +124,7 @@ public abstract class TypeDescription extends SymbolDescription {
 	 * @param result
 	 *            the result
 	 */
-	public void documentActions(final Doc result) {
+	public void documentActions(final IGamlDocumentation result) {
 		for (final ActionDescription f : getActions()) {
 			result.set("Actions:", f.getName(), f.getShortDocumentation(true));
 		}

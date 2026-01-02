@@ -32,7 +32,10 @@ import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.TypeDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.TypeExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IValue;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 
 /**
  * Written by drogoul Modified on 25 aout 2010
@@ -101,8 +104,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public String getDefiningPlugin() { return plugin; }
 
 	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		IGamlDocumentation result = new GamlRegularDocumentation();
 		doc documentation = getClass().getAnnotation(doc.class);
 		if (documentation == null) {
 			final type t = getClass().getAnnotation(type.class);
@@ -120,7 +123,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	@Override
-	public void documentFields(final Doc result) {
+	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
 			if (getters.isEmpty()) { result.append("<p>").append("No fields accessible").append("</p>"); }
 			// sb.append("<b><br/>Fields :</b><ul>");
@@ -144,7 +147,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 *            the prototype
 	 * @return the field documentation
 	 */
-	void getFieldDocumentation(final Doc sb, final OperatorProto prototype) {
+	void getFieldDocumentation(final IGamlDocumentation sb, final OperatorProto prototype) {
 
 		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
 		if (annot != null) {
@@ -152,7 +155,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 			for (final variable v : allVars) {
 				if (v.name().equals(prototype.getName())) {
 					if (v.doc().length > 0) {
-						sb.set("Accessible fields: ", v.name(), new ConstantDoc(v.doc()[0].value()));
+						sb.set("Accessible fields: ", v.name(), new GamlConstantDocumentation(v.doc()[0].value()));
 					}
 					break;
 				}

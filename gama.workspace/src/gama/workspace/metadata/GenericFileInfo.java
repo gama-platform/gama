@@ -3,8 +3,8 @@
  */
 package gama.workspace.metadata;
 
-import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
-import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 
 /**
  * The Class GenericFileInfo.
@@ -50,5 +50,5 @@ public class GenericFileInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc(suffix); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation(suffix); }
 }

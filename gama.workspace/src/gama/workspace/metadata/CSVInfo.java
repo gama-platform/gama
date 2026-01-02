@@ -18,8 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
 import gama.core.util.file.csv.CsvReader;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -242,8 +242,8 @@ public class CSVInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		sb.append("CSV File ").append(header ? "with header" : "no header").append(Strings.LN);
 		sb.append("Dimensions: ").append(cols + " columns x " + (header ? rows - 1 : rows) + " rows")
 				.append(Strings.LN);

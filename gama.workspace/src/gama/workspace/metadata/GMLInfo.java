@@ -24,8 +24,8 @@ import org.geotools.wfs.GML;
 import org.geotools.wfs.GML.Version;
 
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.Types;
 
@@ -158,8 +158,8 @@ public class GMLInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		final RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		sb.append("GML File").append(Strings.LN);
 		sb.append(String.valueOf(itemNumber)).append(" objects").append(Strings.LN);
 		sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m").append(Strings.LN);

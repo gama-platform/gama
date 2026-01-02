@@ -20,6 +20,9 @@ import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -61,10 +64,10 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final IDescription desc = getDefinitionDescription();
-		if (desc == null) return new ConstantDoc("Type " + type.getTitle());
-		Doc doc = new RegularDoc(new StringBuilder());
+		if (desc == null) return new GamlConstantDocumentation("Type " + type.getTitle());
+		IGamlDocumentation doc = new GamlRegularDocumentation(new StringBuilder());
 		final VariableDescription var = desc.getSpeciesContext().getAttribute(name);
 		doc.append("Type ").append(type.getTitle()).append("<br/>");
 		String builtInDoc = null;

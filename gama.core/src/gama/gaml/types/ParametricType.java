@@ -32,6 +32,7 @@ import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.TypeExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 
 /**
  * Class ParametricType. A class that allows to build composed types with a content type and a key type
@@ -473,7 +474,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.gaml.interfaces.IGamlDescription#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() { return type.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return type.getDocumentation(); }
 
 	/**
 	 * Method getName()

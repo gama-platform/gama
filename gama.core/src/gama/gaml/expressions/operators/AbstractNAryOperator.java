@@ -38,6 +38,7 @@ import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.AbstractExpression;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
@@ -316,7 +317,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	}
 
 	@Override
-	public Doc getDocumentation() { return prototype.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return prototype.getDocumentation(); }
 
 	@Override
 	public String getDefiningPlugin() { return prototype.getDefiningPlugin(); }

@@ -19,6 +19,7 @@ import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IJsonable;
 import gama.gaml.interfaces.ITyped;
@@ -476,7 +477,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param result
 	 *            the result
 	 */
-	default void documentFields(final Doc result) {}
+	default void documentFields(final IGamlDocumentation result) {}
 
 	/**
 	 * Copy from clipboard. The default method retrieves the text present in the clipboard and tries to cast it to the

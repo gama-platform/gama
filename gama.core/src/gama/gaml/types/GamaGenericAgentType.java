@@ -19,6 +19,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.SpeciesDescription;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 
 /**
  * The "generic" agent type.
@@ -69,7 +71,7 @@ public class GamaGenericAgentType extends GamaAgentType {
 	}
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc("Generic type of all agents in a model"); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation("Generic type of all agents in a model"); }
 
 	@Override
 	public boolean isSuperTypeOf(final IType<?> type) {

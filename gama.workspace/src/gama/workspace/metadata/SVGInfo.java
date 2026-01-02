@@ -9,8 +9,8 @@
  ********************************************************************************************************/
 package gama.workspace.metadata;
 
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 
 /**
@@ -76,8 +76,8 @@ public class SVGInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		final RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		sb.append("SVG File").append(Strings.LN);
 		sb.append("Dimensions: ").append(width + " x " + height).append(Strings.LN);
 		if (numberOfGroups > 0) { sb.append("Groups: " + numberOfGroups).append(Strings.LN); }

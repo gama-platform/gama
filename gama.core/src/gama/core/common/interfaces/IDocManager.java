@@ -18,6 +18,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.core.util.ByteArrayZipper;
 import gama.gaml.descriptions.ModelDescription;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 
 /**
@@ -54,8 +56,8 @@ public interface IDocManager {
 		 * @date 30 déc. 2023
 		 */
 		@Override
-		public Doc getDocumentation() {
-			return new ConstantDoc(new String(ByteArrayZipper.unzip(doc)));
+		public IGamlDocumentation getDocumentation() {
+			return new GamlConstantDocumentation(new String(ByteArrayZipper.unzip(doc)));
 
 		}
 

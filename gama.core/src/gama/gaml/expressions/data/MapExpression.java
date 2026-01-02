@@ -32,6 +32,8 @@ import gama.gaml.expressions.ConstantExpression;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.operators.BinaryOperator;
 import gama.gaml.expressions.operators.IOperator;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -217,8 +219,8 @@ public class MapExpression extends AbstractExpression implements IOperator {
 	 */
 
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc(
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation(
 				"Constant " + isConst() + "<br>Contains elements of type " + type.getContentType().getTitle());
 	}
 

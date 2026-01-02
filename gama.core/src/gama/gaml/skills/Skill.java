@@ -13,6 +13,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.gaml.descriptions.SkillDescription;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.ISkill;
 
 /**
@@ -40,7 +41,7 @@ public class Skill implements ISkill {
 	public void setDescription(final SkillDescription desc) { description = desc; }
 
 	@Override
-	public Doc getDocumentation() { return description.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return description.getDocumentation(); }
 
 	@Override
 	public SkillDescription getDescription() { return description; }

@@ -7,8 +7,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
-import gama.gaml.interfaces.IGamlDescription.ConstantDoc;
-import gama.gaml.interfaces.IGamlDescription.Doc;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 
 /**
  * The Class ProjectInfo.
@@ -55,5 +55,5 @@ public class ProjectInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc(comment); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation(comment); }
 }

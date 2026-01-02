@@ -34,8 +34,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.GamaOsmFile;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 
 /**
@@ -160,8 +160,8 @@ public class OSMInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		final RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		if (hasFailed()) {
 			sb.append("Unreadable OSM file").append(Strings.LN).append("Decompress the file to an .osm file and retry");
 		} else {

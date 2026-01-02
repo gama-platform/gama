@@ -14,6 +14,7 @@ import gama.core.runtime.IScope;
 import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.variables.VariableExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.Types;
 
 /**
@@ -43,7 +44,7 @@ public class DenotedActionExpression extends VariableExpression {
 	 * @see gama.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() { return getDefinitionDescription().getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return getDefinitionDescription().getDocumentation(); }
 
 	@Override
 	public void setVal(final IScope scope, final Object v, final boolean create) {}

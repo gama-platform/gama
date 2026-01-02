@@ -21,6 +21,8 @@ import gama.gaml.descriptions.IVarDescriptionUser;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.ConstantExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -91,8 +93,8 @@ public class SpeciesConstantExpression extends ConstantExpression {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc("");
+	public IGamlDocumentation getDocumentation() {
+		IGamlDocumentation result = new GamlRegularDocumentation("");
 		getGamlType().getContentType().getSpecies().documentThis(result);
 		return result;
 	}

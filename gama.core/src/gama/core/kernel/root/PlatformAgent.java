@@ -57,6 +57,8 @@ import gama.core.util.map.GamaMapFactory;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.kernel.GamaMetaModel;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.operators.Containers;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.IExecutable;
@@ -414,8 +416,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc("The unique instance of the platform species. Used to access GAMA platform properties.");
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation("The unique instance of the platform species. Used to access GAMA platform properties.");
 	}
 
 	/**

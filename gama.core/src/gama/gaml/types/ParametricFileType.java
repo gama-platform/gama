@@ -27,6 +27,9 @@ import gama.core.util.file.IGamaFile;
 import gama.gaml.compilation.GamaGetter;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 
 /**
  * @author drogoul
@@ -111,8 +114,8 @@ public class ParametricFileType extends ParametricType {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		Doc result = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		IGamlDocumentation result = new GamlRegularDocumentation();
 		doc documentation;
 		documentation = support.getAnnotation(doc.class);
 		if (documentation == null) {
@@ -139,7 +142,7 @@ public class ParametricFileType extends ParametricType {
 	 * @param result
 	 *            the result
 	 */
-	private void documentConstructors(final Doc result) {
+	private void documentConstructors(final IGamlDocumentation result) {
 		Constructor[] constructors = support.getConstructors();
 		if (constructors.length == 0) return;
 		result.append("<br/>").append("File constructors:").append("<br/><ul>");
@@ -148,7 +151,7 @@ public class ParametricFileType extends ParametricType {
 			String signature =
 					"(" + new Signature(c.getParameterTypes()).asPattern(false).replace("unknown,", "") + ")";
 			String doc = annotation == null ? "" : annotation.value();
-			result.set("File constructors:", alias + signature, new ConstantDoc(doc));
+			result.set("File constructors:", alias + signature, new GamlConstantDocumentation(doc));
 		}
 	}
 
@@ -286,7 +289,7 @@ public class ParametricFileType extends ParametricType {
 	}
 
 	@Override
-	public void documentFields(final Doc result) {
+	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
 			// sb.append("<b><br/>Fields :</b><ul>");
 			for (final OperatorProto f : getters.values()) { getFieldDocumentation(result, f); }
@@ -302,7 +305,7 @@ public class ParametricFileType extends ParametricType {
 	 *            the prototype
 	 * @return the field documentation
 	 */
-	void getFieldDocumentation(final Doc sb, final OperatorProto prototype) {
+	void getFieldDocumentation(final IGamlDocumentation sb, final OperatorProto prototype) {
 
 		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
 		if (annot != null) {
@@ -310,7 +313,7 @@ public class ParametricFileType extends ParametricType {
 			for (final variable v : allVars) {
 				if (v.name().equals(prototype.getName())) {
 					if (v.doc().length > 0) {
-						sb.set("Accessible fields: ", v.name(), new ConstantDoc(v.doc()[0].value()));
+						sb.set("Accessible fields: ", v.name(), new GamlConstantDocumentation(v.doc()[0].value()));
 					}
 					break;
 				}

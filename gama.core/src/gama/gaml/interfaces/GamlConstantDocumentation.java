@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IDisposable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * GamlConstantDocumentation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -9,25 +9,17 @@
  ********************************************************************************************************/
 package gama.gaml.interfaces;
 
-import gama.annotations.precompiler.OkForAPI;
-
 /**
- * Class IDisposable.
- *
- * @author drogoul
- * @since 13 avr. 2014
- *
+ * Constant documentation that cannot change once instantiated
  */
-@OkForAPI (OkForAPI.Location.INTERFACES)
+public record GamlConstantDocumentation(String value) implements IGamlDocumentation {
 
-/**
- * The Interface IDisposable.
- */
-public interface IDisposable {
+	@Override
+	public String getContents() { return value; }
 
-	/**
-	 * Dispose.
-	 */
-	default void dispose() {}
+	@Override
+	public String toString() {
+		return value;
+	}
 
 }

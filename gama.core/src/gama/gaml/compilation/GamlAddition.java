@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamlAddition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamlAddition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,8 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 
 /**
  * The Class GamlAddition. Foundation for different subclasses that represent GAML artifacts (experiment, display,...)
@@ -30,7 +32,7 @@ public abstract class GamlAddition implements IGamlDescription {
 	protected final String name, plugin;
 
 	/** The documentation. */
-	protected Doc documentation;
+	protected IGamlDocumentation documentation;
 
 	/** The support. */
 	protected final AnnotatedElement support;
@@ -66,13 +68,13 @@ public abstract class GamlAddition implements IGamlDescription {
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		if (documentation == null) {
 			final doc d = getDocAnnotation();
 			if (d == null) {
-				documentation = EMPTY_DOC;
+				documentation = IGamlDocumentation.EMPTY_DOC;
 			} else {
-				documentation = new RegularDoc(new StringBuilder(200));
+				documentation = new GamlRegularDocumentation(new StringBuilder(200));
 				String s = d.value();
 				if (s != null && !s.isEmpty()) { documentation.append(s).append("<br/>"); }
 				usage[] usages = d.usages();

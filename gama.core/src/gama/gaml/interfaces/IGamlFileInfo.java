@@ -25,7 +25,7 @@ public interface IGamlFileInfo extends IGamlDescription, IGamaFileMetaData {
 	 * @return the documentation
 	 */
 	@Override
-	default Doc getDocumentation() { return IGamaFileMetaData.super.getDocumentation(); }
+	default IGamlDocumentation getDocumentation() { return IGamaFileMetaData.super.getDocumentation(); }
 
 	/**
 	 * Checks if is valid.

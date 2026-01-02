@@ -321,7 +321,7 @@ public class ConceptManager {
 		result += "\n\n";
 
 		// write array
-		result += "| **Concept name** | **in Doc** | **in GAML Ref** | **in Model Lib** | **TOTAL** |\n";
+		result += "| **Concept name** | **in IGamlDocumentation** | **in GAML Ref** | **in Model Lib** | **TOTAL** |\n";
 		result += "|:----------------------------|:-------------|:-------------|:-------------|:-------------|\n";
 		for (int i = 0 ; i < m_concepts.size(); i++) {
 			String id = m_concepts.get(i);

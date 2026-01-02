@@ -28,6 +28,8 @@ import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.AbstractExpression;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.operators.IOperator;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.Types;
 
@@ -185,8 +187,8 @@ public class ListExpression extends AbstractExpression implements IOperator {
 	public String getTitle() { return "literal list of type " + getGamlType().getTitle(); }
 
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc(
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation(
 				"Constant " + isConst() + "<br>Contains elements of type " + type.getContentType().getTitle());
 	}
 

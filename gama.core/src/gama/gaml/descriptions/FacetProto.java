@@ -16,7 +16,9 @@ import com.google.common.collect.ImmutableSet;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -196,8 +198,8 @@ public class FacetProto implements IGamlDescription, Comparable<FacetProto> {
 	 * @see gama.gaml.interfaces.IGamlDescription#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() {
-		final Doc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final IGamlDocumentation sb = new GamlRegularDocumentation();
 		sb.append(getDeprecated() != null ? "Deprecated" : optional ? "Optional" : "Required").append(", expects ")
 				.append(typesToString());
 		if (values != null && values.size() > 0) {

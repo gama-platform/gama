@@ -12,6 +12,8 @@ package gama.gaml.expressions;
 
 import gama.core.common.util.StringUtils;
 import gama.core.runtime.IScope;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 
@@ -86,7 +88,7 @@ public class ConstantExpression extends AbstractExpression {
 	 * @see gama.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc("Literal expression of type " + getGamlType().getName()); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation("Literal expression of type " + getGamlType().getName()); }
 
 	@Override
 	public String getTitle() { return literalValue(); }

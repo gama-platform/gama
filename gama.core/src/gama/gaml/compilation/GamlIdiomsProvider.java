@@ -40,9 +40,9 @@ import gama.gaml.descriptions.SymbolProto;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.units.UnitConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlFileInfo;
-import gama.gaml.interfaces.IGamlDescription.Doc;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -137,7 +137,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 
 	/** The documenter. */
 	// default
-	public Function<T, Doc> documenter = IGamlDescription::getDocumentation;
+	public Function<T, IGamlDocumentation> documenter = IGamlDescription::getDocumentation;
 
 	/**
 	 * Instantiates a new gaml idioms provider.

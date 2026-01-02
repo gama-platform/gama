@@ -13,8 +13,8 @@ package gama.workspace.metadata;
 import java.util.List;
 
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 
 /**
@@ -107,8 +107,8 @@ public class ImageInfo extends GamaFileMetaData {
 	}
 
 	@Override
-	public Doc getDocumentation() {
-		final RegularDoc sb = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final GamlRegularDocumentation sb = new GamlRegularDocumentation();
 		sb.append(getShortLabel(type)).append(" Image File").append(Strings.LN);
 		sb.append("Dimensions: ").append(width + " pixels x " + height + " pixels").append(Strings.LN);
 		return sb;

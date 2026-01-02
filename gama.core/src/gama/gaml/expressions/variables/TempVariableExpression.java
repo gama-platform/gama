@@ -15,6 +15,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.GAML;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -58,9 +60,9 @@ public class TempVariableExpression extends VariableExpression {
 	 * @see gama.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final IDescription desc = getDefinitionDescription();
-		return new ConstantDoc("temporary variable " + getName() + " of type " + getGamlType().getName()
+		return new GamlConstantDocumentation("temporary variable " + getName() + " of type " + getGamlType().getName()
 				+ (desc == null ? "<br>Built In" : "<br>Defined in " + desc.getTitle()));
 	}
 

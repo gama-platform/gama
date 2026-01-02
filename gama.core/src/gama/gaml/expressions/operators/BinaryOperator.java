@@ -25,6 +25,8 @@ import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.expressions.types.TypeExpression;
 import gama.gaml.expressions.variables.VariableExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
 
@@ -50,10 +52,10 @@ public class BinaryOperator extends AbstractNAryOperator {
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		if (IKeyword.AS.equals(this.getName()) && exprs[1] instanceof TypeExpression) {
 			IType t = exprs[1].getDenotedType();
-			Doc doc = findDocOnType(t);
+			IGamlDocumentation doc = findDocOnType(t);
 			if (doc == null) { doc = findDocOnType(t.getGamlType()); }
 			if (doc != null) return doc;
 		}
@@ -67,7 +69,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 	 *            the type
 	 * @return the doc
 	 */
-	private Doc findDocOnType(final IType type) {
+	private IGamlDocumentation findDocOnType(final IType type) {
 		Class<? extends IType> clazz = type.getClass();
 		doc doc = null;
 		java.lang.reflect.Method m = null;
@@ -83,7 +85,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 			} catch (NoSuchMethodException | SecurityException e) {}
 		}
 		if (doc != null) {
-			Doc documentation = new RegularDoc(new StringBuilder(200));
+			IGamlDocumentation documentation = new GamlRegularDocumentation(new StringBuilder(200));
 			String s = doc.value();
 			if (s != null && !s.isEmpty()) { documentation.append(s).append("<br/>"); }
 			usage[] usages = doc.usages();

@@ -17,6 +17,8 @@ import gama.core.runtime.IScope;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 
 /**
  * The Class TypeFieldExpression.
@@ -57,7 +59,7 @@ public class TypeFieldExpression extends UnaryOperator {
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final StringBuilder sb = new StringBuilder(200);
 		if (child != null) { sb.append("Defined on objects of type " + child.getGamlType().getName()); }
 		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
@@ -70,7 +72,7 @@ public class TypeFieldExpression extends UnaryOperator {
 				}
 			}
 		}
-		return new RegularDoc(sb);
+		return new GamlRegularDocumentation(sb);
 	}
 
 	@Override

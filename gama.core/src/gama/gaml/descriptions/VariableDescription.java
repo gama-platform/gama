@@ -38,7 +38,10 @@ import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamaHelper;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaIntegerType;
 import gama.gaml.types.IType;
@@ -358,12 +361,12 @@ public class VariableDescription extends SymbolDescription {
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final String doc = getBuiltInDoc();
-		if (isBuiltIn()) return new ConstantDoc(doc == null ? "Not yet documented" : doc);
+		if (isBuiltIn()) return new GamlConstantDocumentation(doc == null ? "Not yet documented" : doc);
 		StringBuilder s = new StringBuilder();
 		if (doc != null) { s.append(doc).append("<br/>"); }
-		Doc result = new RegularDoc(s).append(getMeta().getDocumentation().toString());
+		IGamlDocumentation result = new GamlRegularDocumentation(s).append(getMeta().getDocumentation().toString());
 		result.append("<hr/>").append("<b><p>").append(getGamlType().getTitle()).append("</p></b>").append("<br/>")
 				.append(getGamlType().getDocumentation().toString());
 		return result;
@@ -374,8 +377,8 @@ public class VariableDescription extends SymbolDescription {
 	 *
 	 * @return the short documentation
 	 */
-	public Doc getShortDocumentation() {
-		Doc result = new RegularDoc(isParameter() ? "parameter " : isNotModifiable() ? "constant " : "attribute ")
+	public IGamlDocumentation getShortDocumentation() {
+		IGamlDocumentation result = new GamlRegularDocumentation(isParameter() ? "parameter " : isNotModifiable() ? "constant " : "attribute ")
 				.append("of type ").append(getGamlType().getName());
 		final String doc = getBuiltInDoc();
 		if (doc != null) { result.append(". ").append(doc).append("<br/>"); }

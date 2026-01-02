@@ -13,6 +13,8 @@ package gama.gaml.expressions.variables;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -39,8 +41,8 @@ public class SuperExpression extends VariableExpression {
 	public String getTitle() { return "pseudo-variable super of type " + getGamlType().getTitle(); }
 
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc("Represents the current agent, instance of species " + type.getTitle()
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation("Represents the current agent, instance of species " + type.getTitle()
 				+ ", indicating a redirection to the parent species in case of calling an action");
 	}
 

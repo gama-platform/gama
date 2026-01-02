@@ -34,8 +34,6 @@ import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaMatrixType;

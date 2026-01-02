@@ -35,6 +35,7 @@ import gama.gaml.expressions.AbstractExpression;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.data.ListExpression;
 import gama.gaml.expressions.data.MapExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
@@ -140,7 +141,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	}
 
 	@Override
-	public Doc getDocumentation() { return prototype.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return prototype.getDocumentation(); }
 
 	/**
 	 * Compute type.

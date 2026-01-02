@@ -17,6 +17,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -126,7 +128,7 @@ public class LabelExpressionDescription extends BasicExpressionDescription imple
 	}
 
 	@Override
-	public Doc getDocumentation() { return new ConstantDoc("Constant string: " + getName()); }
+	public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation("Constant string: " + getName()); }
 
 	@Override
 	public String getTitle() { return "constant string '" + getName() + "'"; }

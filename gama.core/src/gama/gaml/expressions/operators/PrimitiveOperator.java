@@ -25,6 +25,7 @@ import gama.gaml.descriptions.StatementDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.AbstractExpression;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Strings;
 import gama.gaml.species.ISpecies;
@@ -166,7 +167,7 @@ public class PrimitiveOperator implements IExpression, IOperator {
 	}
 
 	@Override
-	public Doc getDocumentation() { return action.getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return action.getDocumentation(); }
 
 	@Override
 	public String getDefiningPlugin() { return action.getDefiningPlugin(); }

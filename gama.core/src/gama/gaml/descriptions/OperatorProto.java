@@ -45,6 +45,8 @@ import gama.gaml.expressions.operators.NAryOperator;
 import gama.gaml.expressions.operators.TypeFieldExpression;
 import gama.gaml.expressions.operators.UnaryOperator;
 import gama.gaml.expressions.types.TypeExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
@@ -216,7 +218,7 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 			final int contentTypeContentTypeProvider, final int[] expectedContentType, final String plugin) {
 		super(name, method, plugin);
 		iterator = GAML.ITERATORS.contains(name);
-		if (constantDoc != null) { documentation = new ConstantDoc(constantDoc); }
+		if (constantDoc != null) { documentation = new GamlConstantDocumentation(constantDoc); }
 		if (IKeyword.AS.equals(name)) { AS = this; }
 		this.returnType = returnType;
 		this.canBeConst = canBeConst;
@@ -325,19 +327,19 @@ public class OperatorProto extends AbstractProto implements IVarDescriptionUser 
 	}
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		if (!isVarOrField) return super.getDocumentation();
 		final vars annot = getJavaBase().getAnnotation(vars.class);
 		if (annot != null) {
 			final variable[] allVars = annot.value();
 			for (final variable v : allVars) {
 				if (v.name().equals(getName())) {
-					if (v.doc().length > 0) return new ConstantDoc(v.doc()[0].value());
+					if (v.doc().length > 0) return new GamlConstantDocumentation(v.doc()[0].value());
 					break;
 				}
 			}
 		}
-		return new ConstantDoc(getTitle());
+		return new GamlConstantDocumentation(getTitle());
 	}
 
 	/**

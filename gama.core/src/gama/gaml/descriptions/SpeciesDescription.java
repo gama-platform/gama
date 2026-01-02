@@ -44,8 +44,10 @@ import gama.gaml.expressions.types.DenotedActionExpression;
 import gama.gaml.expressions.types.SkillConstantExpression;
 import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.factories.DescriptionFactory;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.interfaces.ISkill;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaType;
@@ -677,8 +679,8 @@ public class SpeciesDescription extends TypeDescription {
 	public String getTitle() { return Strings.capitalize(null, getKeyword()) + " " + getName(); }
 
 	@Override
-	public Doc getDocumentation() {
-		final Doc result = new RegularDoc();
+	public IGamlDocumentation getDocumentation() {
+		final IGamlDocumentation result = new GamlRegularDocumentation();
 		documentThis(result);
 		result.append("<hr/>").append(getMeta().getDocumentation().toString());
 		return result;
@@ -689,7 +691,7 @@ public class SpeciesDescription extends TypeDescription {
 	 *
 	 * @return the documentation without meta
 	 */
-	public void documentThis(final Doc sb) {
+	public void documentThis(final IGamlDocumentation sb) {
 		final String parentName = getParent() == null ? "nil" : getParent().getName();
 		final String hostName = getMacroSpecies() == null ? null : getMacroSpecies().getName();
 		sb.append("<b>Subspecies of:</b> ").append(parentName).append("<br>");

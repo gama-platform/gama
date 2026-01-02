@@ -17,7 +17,9 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.core.common.interfaces.IKeyword;
 import gama.gaml.architecture.IArchitecture;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.ISkill;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.skills.Skill;
 
 /**
@@ -125,9 +127,9 @@ public class SkillDescription extends TypeDescription {
 	public String getTitle() { return "skill " + getName(); }
 
 	@Override
-	public Doc getDocumentation() {
+	public IGamlDocumentation getDocumentation() {
 		final doc d = getDocAnnotation();
-		final Doc sb = new RegularDoc();
+		final IGamlDocumentation sb = new GamlRegularDocumentation();
 		if (d != null) {
 			String s = d.value();
 			if (s != null && !s.isEmpty()) {

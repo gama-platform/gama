@@ -17,6 +17,8 @@ import gama.gaml.descriptions.IVarDescriptionUser;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.VariableDescription;
 import gama.gaml.expressions.IExpression;
+import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.types.IType;
 
 /**
@@ -43,8 +45,8 @@ public class SelfExpression extends VariableExpression {
 	public String getTitle() { return "pseudo-variable self of type " + getGamlType().getTitle(); }
 
 	@Override
-	public Doc getDocumentation() {
-		return new ConstantDoc("Represents the current agent, instance of species " + type.getTitle());
+	public IGamlDocumentation getDocumentation() {
+		return new GamlConstantDocumentation("Represents the current agent, instance of species " + type.getTitle());
 	}
 
 	@Override
