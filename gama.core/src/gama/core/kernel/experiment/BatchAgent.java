@@ -2,7 +2,7 @@
  *
  * BatchAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,10 +28,10 @@ import gama.core.kernel.batch.exploration.AExplorationAlgorithm;
 import gama.core.kernel.batch.optimization.AOptimizationAlgorithm;
 import gama.core.kernel.experiment.parameters.ExperimentParameter;
 import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.kernel.experiment.parameters.IParameter.Batch;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -272,10 +272,10 @@ public class BatchAgent extends ExperimentAgent {
 	 *            the sim to parameter
 	 * @return the simulation agent
 	 */
-	private SimulationAgent createSimulation(final Map<String, Object> sim,
+	private ISimulationAgent createSimulation(final Map<String, Object> sim,
 			final Map<IAgent, ParametersSet> simToParameter) {
 		ParametersSet sol = (ParametersSet) sim.get("parameters");
-		final SimulationAgent s = createSimulation(sol, true);
+		final ISimulationAgent s = createSimulation(sol, true);
 		s.setSeed((Double) sim.get("seed"));
 		simToParameter.put(s, sol);
 		return s;
@@ -351,7 +351,7 @@ public class BatchAgent extends ExperimentAgent {
 		while (pop.hasScheduledSimulations() && !dead) {
 			// We step all the simulations
 			pop.step(getScope());
-			for (final SimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
+			for (final ISimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
 				ParametersSet ps = simToParameter.get(agent);
 				currentSolution = new ParametersSet(ps);
 
@@ -472,20 +472,19 @@ public class BatchAgent extends ExperimentAgent {
 				// String cycles = "";
 				// We evaluate their stopCondition and unschedule the ones who
 				// return true
-				for (final IAgent sim : pop.toArray()) {
-					final SimulationAgent agent = (SimulationAgent) sim;
+				for (final ISimulationAgent sim : pop.toArray()) {
 					// cycles += " " + simulation.getClock().getCycle();
 					// test the condition first in case it is paused
 					final boolean stopConditionMet =
 							dead || Cast.asBool(sim.getScope(), sim.getScope().evaluate(stopCondition, sim).getValue());
-					final boolean mustStop = stopConditionMet || agent.dead();
+					final boolean mustStop = stopConditionMet || sim.dead();
 					// AD -- removed because it would prevent simulations from running if 'do pause' was called in the
 					// experiment
 					// || agent.getScope().isPaused();
 					if (mustStop) {
-						pop.unscheduleSimulation(agent);
+						pop.unscheduleSimulation(sim);
 						Map<String, Object> out =
-								manageOutputAndCloseSimulation(agent, currentSolution, true, simDispose);
+								manageOutputAndCloseSimulation(sim, currentSolution, true, simDispose);
 						out.forEach((out_vars, obj) -> {
 							if (!outputs.containsKey(out_vars)) { outputs.put(out_vars, GamaListFactory.create()); }
 							outputs.get(out_vars).add(obj);

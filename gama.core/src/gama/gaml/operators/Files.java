@@ -2,7 +2,7 @@
  *
  * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,7 +35,7 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.FileUtils;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
@@ -129,13 +129,22 @@ public class Files {
 
 		return f.exists() && !f.isDirectory();
 	}
-	
-	@operator(
-				value = "to_absolute_path",
-				can_be_const = true,
-				category = IOperatorCategory.FILE,
-				concept = { IConcept.FILE })
-	@doc(
+
+	/**
+	 * To absolute file.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param relativePath
+	 *            the relative path
+	 * @return the string
+	 */
+	@operator (
+			value = "to_absolute_path",
+			can_be_const = true,
+			category = IOperatorCategory.FILE,
+			concept = { IConcept.FILE })
+	@doc (
 			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.")
 	@no_test
 	public static String toAbsoluteFile(final IScope scope, final String relativePath) {
@@ -757,7 +766,7 @@ public class Files {
 			examples = {
 					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments") },
 			see = { "save" })
-	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation)
+	public static boolean flushAllFiles(final IScope scope, final ISimulationAgent simulation)
 			throws GamaRuntimeException {
 		boolean success = GAMA.getBufferingController().flushSaveFilesInCycle(simulation);
 		success &= GAMA.getBufferingController().flushSaveFilesOfAgent(simulation);

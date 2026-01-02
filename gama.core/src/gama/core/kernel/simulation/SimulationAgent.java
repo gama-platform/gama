@@ -119,7 +119,7 @@ import gama.gaml.types.IType;
 						value = "Represents the value of the interval, in model time, between two simulation cycles",
 						comment = "If not set, its value is equal to 1.0 and, since the default time unit is the second, to 1 second")),
 		@variable (
-				name = SimulationAgent.TIME,
+				name = ISimulationAgent.TIME,
 				type = IType.FLOAT,
 				doc = @doc (
 						value = "Represents the total time passed, in model time, since the beginning of the simulation",
@@ -129,34 +129,34 @@ import gama.gaml.types.IType;
 				type = IType.INT,
 				doc = @doc ("Returns the current cycle of the simulation")),
 		@variable (
-				name = SimulationAgent.USAGE,
+				name = ISimulationAgent.USAGE,
 				type = IType.INT,
 				doc = @doc ("Returns the number of times the random number generator of the simulation has been drawn")),
 		@variable (
-				name = SimulationAgent.PAUSED,
+				name = ISimulationAgent.PAUSED,
 				type = IType.BOOL,
 				doc = @doc ("Returns the current pausing state of the simulation")),
 		@variable (
-				name = SimulationAgent.DURATION,
+				name = ISimulationAgent.DURATION,
 				type = IType.STRING,
 				doc = @doc ("Returns a string containing the duration, in milliseconds, of the previous simulation cycle")),
 		@variable (
-				name = SimulationAgent.TOTAL_DURATION,
+				name = ISimulationAgent.TOTAL_DURATION,
 				type = IType.STRING,
 				doc = @doc ("Returns a string containing the total duration, in milliseconds, of the simulation since it has been launched ")),
 		@variable (
-				name = SimulationAgent.AVERAGE_DURATION,
+				name = ISimulationAgent.AVERAGE_DURATION,
 				type = IType.STRING,
 				doc = @doc ("Returns a string containing the average duration, in milliseconds, of a simulation cycle.")),
 		@variable (
-				name = SimulationAgent.CURRENT_DATE,
-				depends_on = SimulationAgent.STARTING_DATE,
+				name = ISimulationAgent.CURRENT_DATE,
+				depends_on = ISimulationAgent.STARTING_DATE,
 				type = IType.DATE,
 				doc = @doc (
 						value = "Returns the current date in the simulation",
 						comment = "The return value is a date; the starting_date has to be initialized to use this attribute, which otherwise indicates a pseudo-date")),
 		@variable (
-				name = SimulationAgent.STARTING_DATE,
+				name = ISimulationAgent.STARTING_DATE,
 				type = IType.DATE,
 				doc = @doc (
 						value = "Represents the starting date of the simulation",
@@ -166,30 +166,6 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	static {
 		// DEBUG.OFF();
 	}
-
-	/** The Constant DURATION. */
-	public static final String DURATION = "duration";
-
-	/** The Constant TOTAL_DURATION. */
-	public static final String TOTAL_DURATION = "total_duration";
-
-	/** The Constant AVERAGE_DURATION. */
-	public static final String AVERAGE_DURATION = "average_duration";
-
-	/** The Constant TIME. */
-	public static final String TIME = "time";
-
-	/** The Constant CURRENT_DATE. */
-	public static final String CURRENT_DATE = "current_date";
-
-	/** The Constant STARTING_DATE. */
-	public static final String STARTING_DATE = "starting_date";
-
-	/** The Constant PAUSED. */
-	public static final String PAUSED = "paused";
-
-	/** The Constant USAGE. */
-	public static final String USAGE = "rng_usage";
 
 	/** The own clock. */
 	final IClock ownClock;
@@ -250,6 +226,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the inits
 	 * @date 13 août 2023
 	 */
+	@Override
 	public void setExternalInits(final Map<String, Object> inits) {
 		if (externalInitsAndParameters == null) {
 			if (inits == null) {
@@ -267,6 +244,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @return the external inits
 	 * @date 13 août 2023
 	 */
+	@Override
 	public Map<String, Object> getExternalInits() {
 		if (externalInitsAndParameters == null) return Collections.EMPTY_MAP;
 		return externalInitsAndParameters;
@@ -296,7 +274,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *
 	 * @return the scheduled
 	 */
-	public Boolean getScheduled() { return scheduled; }
+	@Override
+	public boolean getScheduled() { return scheduled; }
 
 	@Override
 	@getter (IKeyword.EXPERIMENT)
@@ -308,7 +287,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 	@Override
 	@getter (IKeyword.WORLD_AGENT_NAME)
-	public SimulationAgent getSimulation() { return this; }
+	public ISimulationAgent getSimulation() { return this; }
 
 	/**
 	 * Sets the topology.
@@ -366,7 +345,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param scheduled
 	 *            the new scheduled
 	 */
-	public void setScheduled(final Boolean scheduled) { this.scheduled = scheduled; }
+	@Override
+	public void setScheduled(final boolean scheduled) { this.scheduled = scheduled; }
 
 	@Override
 	@getter (
@@ -547,6 +527,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the scope
 	 * @return the cycle
 	 */
+	@Override
 	@getter (IKeyword.CYCLE)
 	public Integer getCycle(final IScope scope) {
 		final IClock clock = getClock();
@@ -783,6 +764,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param iOutputManager
 	 *            the new outputs
 	 */
+	@Override
 	@SuppressWarnings ("unchecked")
 	public void setOutputs(final IOutputManager iOutputManager) {
 		if (iOutputManager == null) return;
@@ -834,8 +816,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *
 	 * @return the usage
 	 */
+	@Override
 	@getter (
-			value = SimulationAgent.USAGE,
+			value = ISimulationAgent.USAGE,
 			initializer = false)
 	public Integer getUsage() {
 		final Integer usage = random.getUsage();
@@ -848,7 +831,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param s
 	 *            the new usage
 	 */
-	@setter (SimulationAgent.USAGE)
+	@Override
+	@setter (ISimulationAgent.USAGE)
 	public void setUsage(final Integer s) {
 		Integer usage = s;
 		if (s == null) { usage = 0; }
@@ -876,6 +860,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param s
 	 *            the new seed
 	 */
+	@Override
 	@setter (IKeyword.SEED)
 	public void setSeed(final Double s) {
 		// DEBUG.LOG("simulation agent set seed: " + s);
@@ -893,6 +878,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *
 	 * @return the rng
 	 */
+	@Override
 	@getter (
 			value = IKeyword.RNG,
 			initializer = true)
@@ -922,6 +908,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param rng
 	 *            the new random generator
 	 */
+	@Override
 	public void setRandomGenerator(final IRandom rng) { random = rng; }
 
 	/**
@@ -937,6 +924,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	/**
 	 * Inits the outputs.
 	 */
+	@Override
 	public void initOutputs() {
 		if (outputs != null) { outputs.init(this.getScope()); }
 	}
@@ -997,7 +985,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 			switch (varName) {
 				case IKeyword.SEED -> seedValue = (Double) attrValue;
 				case IKeyword.RNG -> rngValue = (String) attrValue;
-				case SimulationAgent.USAGE -> usageValue = (Integer) attrValue;
+				case ISimulationAgent.USAGE -> usageValue = (Integer) attrValue;
 				default -> this.setDirectVarValue(scope, varName, attrValue);
 			}
 
@@ -1093,6 +1081,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @param iSimulationAgent
 	 *            the root
 	 */
+	@Override
 	public void adoptTopologyOf(final ISimulationAgent iSimulationAgent) {
 		final ITopology topo = iSimulationAgent.getTopology();
 		topo.mergeWith(topology);

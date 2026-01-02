@@ -3,7 +3,7 @@
  * ExperimentControlContribution.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,7 +32,7 @@ import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.root.PlatformAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
 import gama.gaml.operators.Strings;
@@ -135,7 +135,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	public void setSelection(final ITopLevelAgent agent) {
 		if (agent instanceof IExperimentAgent exp) {
 			GAMA.changeCurrentTopLevelAgent(exp, false);
-		} else if (agent instanceof SimulationAgent sim) { GAMA.getExperiment().getAgent().setCurrentSimulation(sim); }
+		} else if (agent instanceof ISimulationAgent sim) { GAMA.getExperiment().getAgent().setCurrentSimulation(sim); }
 	}
 
 	/**

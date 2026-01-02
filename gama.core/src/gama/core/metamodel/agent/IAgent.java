@@ -2,7 +2,7 @@
  *
  * IAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
@@ -698,7 +698,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 *
 	 * @return the simulation
 	 */
-	default SimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
+	default ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
 
 	/**
 	 * Serialize to json.

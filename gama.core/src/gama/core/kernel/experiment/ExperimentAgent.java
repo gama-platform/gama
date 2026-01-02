@@ -42,7 +42,7 @@ import gama.core.kernel.experiment.tools.ExperimentClock;
 import gama.core.kernel.experiment.tools.ExperimentRecorderFactory;
 import gama.core.kernel.experiment.tools.IExperimentRecorder;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
@@ -122,7 +122,7 @@ import gama.gaml.variables.IVariable;
 				type = IType.INT,
 				doc = @doc ("Returns the current cycle of the simulation")),
 		@variable (
-				name = SimulationAgent.USAGE,
+				name = ISimulationAgent.USAGE,
 				type = IType.INT,
 				doc = @doc ("Returns the number of times the random number generator of the experiment has been drawn")),
 		@variable (
@@ -431,8 +431,8 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			SimulationPopulation sp = getSimulationPopulation();
 			IExpression shouldRecord = getSpecies().shouldRecord();
 			if (sp != null && shouldRecord != null) {
-				List<SimulationAgent> sims = new ArrayList<>(sp);
-				for (SimulationAgent sim : sims) {
+				List<ISimulationAgent> sims = new ArrayList<>(sp);
+				for (ISimulationAgent sim : sims) {
 					IScope scope = sim.getScope();
 					if (!scope.interrupted() && Cast.asBool(scope, shouldRecord.value(scope))) { recorder.record(sim); }
 				}
@@ -498,15 +498,15 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the schedule it
 	 * @return the simulation agent
 	 */
-	public SimulationAgent createSimulation(final ParametersSet parameters, final boolean scheduleIt) {
-		final IPopulation<? extends IAgent> pop = getSimulationPopulation();
+	public ISimulationAgent createSimulation(final ParametersSet parameters, final boolean scheduleIt) {
+		final SimulationPopulation pop = getSimulationPopulation();
 		if (pop == null) return null;
 		final ParametersSet ps = getParameterValues();
 		if (parameters != null) { ps.putAll(parameters); }
 		final IList<Map<String, Object>> list = GamaListFactory.create(Types.MAP);
 		list.add(ps);
-		final IList<? extends IAgent> c = pop.createAgents(ownScope, 1, list, false, scheduleIt);
-		return (SimulationAgent) c.get(0);
+		final IList<? extends ISimulationAgent> c = pop.createAgents(ownScope, 1, list, false, scheduleIt);
+		return c.get(0);
 	}
 
 	/**
@@ -854,7 +854,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @return the usage
 	 */
 	@getter (
-			value = SimulationAgent.USAGE,
+			value = ISimulationAgent.USAGE,
 			initializer = false)
 	public Integer getUsage() {
 		final Integer usage = random.getUsage();
@@ -867,7 +867,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @param s
 	 *            the new usage
 	 */
-	@setter (SimulationAgent.USAGE)
+	@setter (ISimulationAgent.USAGE)
 	public void setUsage(final Integer s) {
 		Integer usage = s;
 		if (s == null) { usage = 0; }
@@ -930,7 +930,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 	@getter (IKeyword.SIMULATION)
-	public SimulationAgent getSimulation() {
+	public ISimulationAgent getSimulation() {
 		if (getSimulationPopulation() != null) return getSimulationPopulation().getCurrentSimulation();
 		return null;
 	}
@@ -942,7 +942,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the new simulation
 	 */
 	@setter (IKeyword.SIMULATION)
-	public void setSimulation(final SimulationAgent sim) {
+	public void setSimulation(final ISimulationAgent sim) {
 		getSimulationPopulation().setCurrentSimulation(sim);
 	}
 
@@ -977,7 +977,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public IPopulation<? extends IAgent> getPopulationFor(final ISpecies species) {
 		if (species == getModel()) return getSimulationPopulation();
-		final SimulationAgent sim = getSimulation();
+		final ISimulationAgent sim = getSimulation();
 		if (sim == null) return IPopulation.createEmpty(species);
 		// Issue #3983
 		final ModelDescription micro = species.getDescription().getModelDescription();
@@ -1011,7 +1011,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		final boolean result = true;
 		try {
 			GAMA.runAndUpdateAll(() -> {
-				for (SimulationAgent sim : getSimulationPopulation()) {
+				for (ISimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
 						recorder.restore(sim);
 						if (!((ExperimentPlan) this.getSpecies()).keepsSeed()) {
@@ -1128,7 +1128,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			if (ExperimentAgent.this.hasAttribute(varName) || getSpecies().hasVar(varName))
 				return super.getGlobalVarValue(varName);
 			// Second case: the simulation is not null, so it should handle it
-			final SimulationAgent sim = getSimulation();
+			final ISimulationAgent sim = getSimulation();
 			if (sim != null && !sim.dead()) return sim.getScope().getGlobalVarValue(varName);
 			// Third case, the simulation is null but the model defines this variable (see #2044). We then grab its
 			// initial value if possible
@@ -1181,7 +1181,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				super.setGlobalVarValue(name, v);
 				return;
 			}
-			final SimulationAgent sim = getSimulation();
+			final ISimulationAgent sim = getSimulation();
 			if (sim != null && !sim.dead() && sim.getSpecies().hasVar(name)) {
 				sim.getScope().setGlobalVarValue(name, v);
 			} else {
@@ -1242,7 +1242,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public Iterable<IOutputManager> getAllSimulationOutputs() {
 		final SimulationPopulation pop = getSimulationPopulation();
 		if (pop != null)
-			return Iterables.filter(Iterables.concat(Iterables.transform(pop, SimulationAgent::getOutputManager),
+			return Iterables.filter(Iterables.concat(Iterables.transform(pop, ISimulationAgent::getOutputManager),
 					Collections.singletonList(getOutputManager())), each -> each != null);
 		return Collections.emptyList();
 	}
@@ -1258,7 +1258,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @see msi.gama.kernel.experiment.IExperimentAgent#closeSimulation(msi.gama.kernel.simulation.SimulationAgent)
 	 */
 	@Override
-	public void closeSimulation(final SimulationAgent simulationAgent) {
+	public void closeSimulation(final ISimulationAgent simulationAgent) {
 		simulationAgent.dispose();
 	}
 
@@ -1339,7 +1339,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public boolean canStepBack() {
 		if (!isRecord()) return false;
-		SimulationAgent sim = getSimulation();
+		ISimulationAgent sim = getSimulation();
 		if (sim == null) return false;
 		return sim.getClock().getCycle() > 0; // see if cycle needs to be taken into account
 	}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SimulationSerialiser.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
- * simulation platform.
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import java.util.LinkedList;
 
 import gama.core.common.interfaces.ISerialisationConstants;
 import gama.core.kernel.experiment.tools.IExperimentRecorder;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.SerialisedAgent;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
@@ -43,7 +43,7 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 * @date 8 août 2023
 	 */
 	@Override
-	public void record(final SimulationAgent sim) {
+	public void record(final ISimulationAgent sim) {
 		try {
 			byte[] state = processor.saveObjectToBytes(sim.getScope(), sim);
 			SimulationHistory history = getSimulationHistory(sim);
@@ -62,7 +62,7 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 * @return the simulation history
 	 * @date 22 oct. 2023
 	 */
-	private SimulationHistory getSimulationHistory(final SimulationAgent sim) {
+	private SimulationHistory getSimulationHistory(final ISimulationAgent sim) {
 		SimulationHistory history = (SimulationHistory) sim.getAttribute(SerialisedAgent.HISTORY_KEY);
 		if (history == null) {
 			history = new SimulationHistory();
@@ -80,7 +80,7 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 * @date 8 août 2023
 	 */
 	@Override
-	public void restore(final SimulationAgent sim) {
+	public void restore(final ISimulationAgent sim) {
 		try {
 			synchronized (sim) {
 				LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
@@ -107,7 +107,7 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 * @date 9 août 2023
 	 */
 	@Override
-	public boolean canStepBack(final SimulationAgent sim) {
+	public boolean canStepBack(final ISimulationAgent sim) {
 		return getSimulationHistory(sim).size() > 0;
 	}
 

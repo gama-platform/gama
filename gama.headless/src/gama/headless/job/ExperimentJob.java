@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.BANNER_CATEGORY;
@@ -300,7 +300,7 @@ public class ExperimentJob implements IExperimentJob {
 			while (finalStep >= 0 ? step < finalStep : true) {
 				if (step % affDelay == 0) { DEBUG.LOG(".", false); }
 				if (simulator.isInterrupted()) { break; }
-				final SimulationAgent sim = simulator.getSimulation();
+				final ISimulationAgent sim = simulator.getSimulation();
 				final ExperimentAgent exp = simulator.getExperimentPlan().getAgent();
 				final IScope scope = sim == null ? exp.getScope() : sim.getScope();
 				if (Cast.asBool(scope, exp.getStopCondition().value(scope))) { break; }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentExecutionContext.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,7 @@
 package gama.core.runtime;
 
 import gama.core.common.util.PoolUtils;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.gaml.interfaces.IDisposable;
 
@@ -105,7 +105,7 @@ public class AgentExecutionContext implements IDisposable {
 	 * @return the simulation
 	 * @date 1 oct. 2023
 	 */
-	public SimulationAgent getSimulation() {
+	public ISimulationAgent getSimulation() {
 		if (agent == null) return null;
 		return agent.getSimulation();
 	}

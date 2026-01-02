@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.util.ConsumerWithPruning;
 import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
@@ -177,7 +177,7 @@ public class ModelDescription extends SpeciesDescription {
 		super(MODEL, clazz, macro == null ? GamaMetaModel.getExperimentDescription() : macro, parent, children, source,
 				facets, skills);
 		setName(name);
-		types = parent instanceof ModelDescription ? new TypesManager(((ModelDescription) parent).types)
+		types = parent instanceof ModelDescription m ? new TypesManager(m.types)
 				: Types.builtInTypes;
 		modelFilePath = modelPath;
 		modelProjectPath = projectPath;
@@ -348,7 +348,7 @@ public class ModelDescription extends SpeciesDescription {
 
 	@Override
 	public void addOwnAttribute(final VariableDescription vd) {
-		setIf(Flag.StartingDateDefined, !vd.isBuiltIn() && SimulationAgent.STARTING_DATE.equals(vd.getName()));
+		setIf(Flag.StartingDateDefined, !vd.isBuiltIn() && ISimulationAgent.STARTING_DATE.equals(vd.getName()));
 		super.addOwnAttribute(vd);
 	}
 

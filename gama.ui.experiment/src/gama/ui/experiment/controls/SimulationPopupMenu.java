@@ -3,7 +3,7 @@
  * SimulationPopupMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
@@ -274,7 +274,7 @@ public class SimulationPopupMenu extends PopupDialog {
 		}
 		// GamaColors.setBackground(provider.getColor(), toolbar, toolbarComposite);
 		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
-		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof SimulationAgent;
+		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent;
 		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
 		add.setEnabled(isExperiment || isSimulation);
 		kill.setEnabled(isSimulation);

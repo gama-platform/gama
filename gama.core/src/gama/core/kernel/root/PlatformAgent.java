@@ -36,7 +36,7 @@ import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.population.GamaPopulation;
@@ -297,7 +297,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	public void setOnUserHold(final boolean state) {}
 
 	@Override
-	public SimulationAgent getSimulation() { return GAMA.getSimulation(); }
+	public ISimulationAgent getSimulation() { return GAMA.getSimulation(); }
 
 	@Override
 	public IExperimentAgent getExperiment() {
@@ -417,7 +417,8 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	 */
 	@Override
 	public IGamlDocumentation getDocumentation() {
-		return new GamlConstantDocumentation("The unique instance of the platform species. Used to access GAMA platform properties.");
+		return new GamlConstantDocumentation(
+				"The unique instance of the platform species. Used to access GAMA platform properties.");
 	}
 
 	/**

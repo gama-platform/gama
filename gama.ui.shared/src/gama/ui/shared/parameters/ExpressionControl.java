@@ -3,7 +3,7 @@
  * ExpressionControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 import gama.core.common.util.StringUtils;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -173,7 +173,8 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 			var s = text.getText();
 			if (expectedType == Types.STRING && !StringUtils.isGamaString(s)) { s = StringUtils.toGamlString(s); }
 			// AD: Fix for Issue 1042
-			if (agent != null && (agent.getScope().interrupted() || agent.dead()) && agent instanceof SimulationAgent) {
+			if (agent != null && (agent.getScope().interrupted() || agent.dead())
+					&& agent instanceof ISimulationAgent) {
 				agent = agent.getScope().getExperiment();
 				if (agent == null) { agent = GAMA.getRuntimeScope().getExperiment(); }
 			}

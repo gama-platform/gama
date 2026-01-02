@@ -3,7 +3,7 @@
  * AbstractAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -610,7 +610,8 @@ public abstract class AbstractAgent implements IAgent {
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.core.util.IContainer.Addressable#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.list.IList)
+	 * @see gama.core.util.IContainer.Addressable#getFromIndicesList(gama.core.runtime.IScope,
+	 *      gama.core.util.list.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList<String> indices) throws GamaRuntimeException {
@@ -637,5 +638,5 @@ public abstract class AbstractAgent implements IAgent {
 	}
 
 	@Override
-	public SimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
+	public ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
 }

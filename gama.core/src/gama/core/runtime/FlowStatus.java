@@ -14,7 +14,7 @@ import gama.annotations.precompiler.OkForAPI;
 /**
  * The Enum LoopStatus.
  */
-@OkForAPI (OkForAPI.Location.UTILS)
+@OkForAPI (OkForAPI.Location.CONSTANTS)
 public enum FlowStatus {
 
 	/** The break. */

@@ -37,7 +37,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.ExperimentPlan.ExperimentPopulation;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
@@ -533,7 +533,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			population.setHost(scope.getExperiment());
 			for (final IAgent a : population) {
 				((ExperimentAgent) a)._init_(scope);
-				final SimulationAgent sim = ((ExperimentAgent) a).getSimulation();
+				final ISimulationAgent sim = ((ExperimentAgent) a).getSimulation();
 				sim.adoptTopologyOf(scope.getSimulation());
 
 				if (!sim.getScheduled()) { sim._init_(sim.getScope()); }

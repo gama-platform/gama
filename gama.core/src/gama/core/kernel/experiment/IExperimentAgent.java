@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * IExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IExperimentAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.gaml.expressions.IExpression;
@@ -71,7 +72,7 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 * @param simulationAgent
 	 *            the simulation agent
 	 */
-	void closeSimulation(SimulationAgent simulationAgent);
+	void closeSimulation(ISimulationAgent simulationAgent);
 
 	/**
 	 * Gets the simulation population.
@@ -133,7 +134,7 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 *            the new current simulation
 	 * @date 11 août 2023
 	 */
-	default void setCurrentSimulation(final SimulationAgent simulationAgent) {
+	default void setCurrentSimulation(final ISimulationAgent simulationAgent) {
 		SimulationPopulation pop = getSimulationPopulation();
 		if (pop != null) { pop.setCurrentSimulation(simulationAgent); }
 	}

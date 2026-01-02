@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SimulationRunner.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.concurrent.GamaExecutorService.Caller;
 import gama.dev.DEBUG;
@@ -33,7 +33,7 @@ public class SimulationRunner implements ISimulationRunner {
 	}
 
 	/** The runnables. */
-	final Map<SimulationAgent, Thread> runnables;
+	final Map<ISimulationAgent, Thread> runnables;
 
 	/** The simulationsSemaphore. */
 	final Object lock = new Object();
@@ -85,7 +85,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 *            the agent
 	 */
 	@Override
-	public void remove(final SimulationAgent agent) {
+	public void remove(final ISimulationAgent agent) {
 		runnables.remove(agent);
 	}
 
@@ -96,7 +96,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 *            the agent
 	 */
 	@Override
-	public void add(final SimulationAgent agent) {
+	public void add(final ISimulationAgent agent) {
 		Thread t = new Thread("Thread of " + agent.getName()) {
 			@Override
 			public void run() {
@@ -148,7 +148,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 * @return the active stepables
 	 */
 	@Override
-	public Set<SimulationAgent> getStepable() { return runnables.keySet(); }
+	public Set<ISimulationAgent> getStepable() { return runnables.keySet(); }
 
 	/**
 	 * Gets the active threads.

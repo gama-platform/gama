@@ -3,21 +3,19 @@
  * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.server;
 
-import java.io.IOException;
-
 import org.java_websocket.WebSocket;
 
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.controller.AbstractExperimentController;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
@@ -31,7 +29,6 @@ import gama.core.util.file.json.Json;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.operators.Cast;
 
 /**
@@ -78,7 +75,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 				while (experimentAlive) {
 					if (mexp.simulator.isInterrupted()) { break; }
-					final SimulationAgent sim = mexp.simulator.getSimulation();
+					final ISimulationAgent sim = mexp.simulator.getSimulation();
 					final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
 					final IScope scope = sim == null ? exp.getScope() : sim.getScope();
 					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
@@ -256,9 +253,10 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		try {
 			_job.doStep();
 		} catch (RuntimeException e) {
-//			e.printStackTrace();
-			serverConfiguration.socket().send(Json.getNew().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
-		}finally {
+			// e.printStackTrace();
+			serverConfiguration.socket()
+					.send(Json.getNew().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
+		} finally {
 			previouslock.release();
 		}
 	}

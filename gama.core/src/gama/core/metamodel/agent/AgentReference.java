@@ -3,7 +3,7 @@
  * AgentReference.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import java.util.List;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.util.file.json.IJsonConstants;
@@ -137,7 +137,7 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	 */
 	static String[] buildSpeciesArray(final IAgent a) {
 		List<String> species = new LinkedList<>();
-		species.add(a instanceof SimulationAgent ? IKeyword.SIMULATION : a.getSpeciesName());
+		species.add(a instanceof ISimulationAgent ? IKeyword.SIMULATION : a.getSpeciesName());
 		IAgent host = a.getHost();
 		while (host != null && !(host instanceof IExperimentAgent)) {
 			species.add(0, host.getSpeciesName());

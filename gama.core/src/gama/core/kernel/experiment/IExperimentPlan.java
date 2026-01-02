@@ -3,7 +3,7 @@
  * IExperimentPlan.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,7 @@ import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.outputs.IOutputManager;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -136,7 +136,7 @@ public interface IExperimentPlan extends ISpecies {
 	 *
 	 * @return the current simulation
 	 */
-	SimulationAgent getCurrentSimulation();
+	ISimulationAgent getCurrentSimulation();
 
 	/**
 	 * Gets the parameters.

@@ -3,7 +3,7 @@
  * AgentsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,14 +27,14 @@ import org.eclipse.swt.widgets.MenuItem;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.GAMA;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope;
 import gama.core.runtime.PlatformHelper;
 import gama.gaml.statements.Arguments;
@@ -69,7 +69,7 @@ public class AgentsMenu extends ContributionItem {
 		final MenuItem result = new MenuItem(parent, SWT.CASCADE);
 		result.setText(title);
 		Image image;
-		if (agent instanceof SimulationAgent sim) {
+		if (agent instanceof ISimulationAgent sim) {
 			image = GamaIcon.ofColor(sim.getColor()).image();
 		} else {
 			image = GamaIcon.named(IGamaIcons.MENU_AGENT).image();
@@ -342,7 +342,7 @@ public class AgentsMenu extends ContributionItem {
 			final boolean withInspect, final MenuAction... actions) {
 		if (agent == null) return;
 		GamaMenu.separate(menu, "Actions");
-		final boolean simulation = agent instanceof SimulationAgent;
+		final boolean simulation = agent instanceof ISimulationAgent;
 		if (withInspect) {
 			actionAgentMenuItem(menu, agent, inspector, GamaIcon.named(IGamaIcons.MENU_INSPECT).image(),
 					"Inspect" + (topLevel ? simulation ? " simulation" : " experiment" : ""));

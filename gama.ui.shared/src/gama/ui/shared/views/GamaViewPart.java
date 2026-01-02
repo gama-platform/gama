@@ -33,7 +33,6 @@ import gama.core.common.interfaces.IStatusMessage;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.outputs.IOutput;
@@ -111,7 +110,7 @@ public abstract class GamaViewPart extends ViewPart
 				case HIGH -> setPriority(SHORT);
 				case LOW -> setPriority(LONG);
 			}
-			;
+
 		}
 
 		/**
@@ -195,7 +194,7 @@ public abstract class GamaViewPart extends ViewPart
 
 			// hqngh in case of micro-model
 			if (out == null) {
-				final SimulationAgent sim = GAMA.getExperiment().getCurrentSimulation();
+				final ISimulationAgent sim = GAMA.getExperiment().getCurrentSimulation();
 				if (sim != null) {
 					final String[] stemp = id.split("#");
 					if (stemp.length > 1) {
@@ -203,7 +202,7 @@ public abstract class GamaViewPart extends ViewPart
 								sim.getExternMicroPopulationFor(stemp[1] + "." + stemp[2]);
 						if (externPop != null) {
 							for (final IAgent expAgent : externPop) {
-								final SimulationAgent spec = ((ExperimentAgent) expAgent).getSimulation();
+								final ISimulationAgent spec = ((ExperimentAgent) expAgent).getSimulation();
 								if (spec != null) {
 									final IOutputManager manager = spec.getOutputManager();
 									if (manager != null) { out = manager.getOutputWithId(s_id); }

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.InScope;
@@ -25,6 +26,7 @@ import gama.core.runtime.InScope;
  * @author drogoul
  *
  */
+@OkForAPI (OkForAPI.Location.UTILS)
 public class SimulationLocal<T> {
 
 	/**

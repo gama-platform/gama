@@ -3,7 +3,7 @@
  * Experiment.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.GAMA;
@@ -62,7 +62,7 @@ public class Experiment implements IExperiment {
 	}
 
 	@Override
-	public SimulationAgent getSimulation() {
+	public ISimulationAgent getSimulation() {
 		return currentExperiment == null ? null : currentExperiment.getCurrentSimulation();
 	}
 
@@ -72,7 +72,7 @@ public class Experiment implements IExperiment {
 	 * @return the scope
 	 */
 	protected IScope getScope() {
-		SimulationAgent sim = getSimulation();
+		ISimulationAgent sim = getSimulation();
 		return sim == null ? null : sim.getScope();
 	}
 
@@ -183,7 +183,7 @@ public class Experiment implements IExperiment {
 
 	@Override
 	public boolean isInterrupted() {
-		final SimulationAgent sim = currentExperiment.getCurrentSimulation();
+		final ISimulationAgent sim = currentExperiment.getCurrentSimulation();
 		if (currentExperiment.isBatch() && sim == null) return false;
 		return sim == null || sim.dead() || sim.getScope().interrupted();
 	}

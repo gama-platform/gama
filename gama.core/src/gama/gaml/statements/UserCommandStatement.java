@@ -27,7 +27,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentPlan;
 import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -236,7 +236,7 @@ public class UserCommandStatement extends AbstractStatementSequence
 				return result;
 			}
 			final SimulationPopulation simulations = scope.getExperiment().getSimulationPopulation();
-			for (final SimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
+			for (final ISimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
 		}
 		return null;
 	}

@@ -3,7 +3,7 @@
  * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +29,7 @@ import gama.core.common.interfaces.IGui;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -248,7 +248,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		}
 
 		if (newTopLevelAgent.isSimulation()) {
-			SimulationAgent newSimulation = (SimulationAgent) newTopLevelAgent;
+			ISimulationAgent newSimulation = (ISimulationAgent) newTopLevelAgent;
 			if (agent == null || agent.isPlatform() || !agent.getExperiment().getSpecies().isBatch()) {
 				// Platform ==> Simulation
 				reset();
@@ -313,7 +313,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	 * @date 12 août 2023
 	 */
 	private void saveParameterValuesForCurrentAgent() {
-		if (!(agent instanceof SimulationAgent sim)) return;
+		if (!(agent instanceof ISimulationAgent sim)) return;
 		sim.setExternalInits(getEditorsList().getItemValues());
 		// DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
 	}

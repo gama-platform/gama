@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SerialisedAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +20,7 @@ import java.util.Set;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.random.RandomUtils;
 import gama.core.kernel.root.PlatformAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.ISerialisedPopulation;
 import gama.core.metamodel.population.SerialisedGrid;
@@ -44,12 +44,13 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 
 	/** All the attributes that are not interesting to serialise for regular agents */
 	public static final Set<String> NON_SERIALISABLE = Set.of(IKeyword.MEMBERS, IKeyword.AGENTS, IKeyword.LOCATION,
-			IKeyword.HOST, IKeyword.PEERS, IKeyword.EXPERIMENT, IKeyword.WORLD_AGENT_NAME, SimulationAgent.TIME,
-			PlatformAgent.MACHINE_TIME, SimulationAgent.DURATION, SimulationAgent.AVERAGE_DURATION,
-			SimulationAgent.TOTAL_DURATION, IKeyword.INDEX);
+			IKeyword.HOST, IKeyword.PEERS, IKeyword.EXPERIMENT, IKeyword.WORLD_AGENT_NAME, ISimulationAgent.TIME,
+			PlatformAgent.MACHINE_TIME, ISimulationAgent.DURATION, ISimulationAgent.AVERAGE_DURATION,
+			ISimulationAgent.TOTAL_DURATION, IKeyword.INDEX);
 
 	/** All the attributes that are not interesting to serialise for grid agents */
-	public static final Set<String> GRID_NON_SERIALISABLE = Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
+	public static final Set<String> GRID_NON_SERIALISABLE =
+			Set.of(IKeyword.GRID_X, IKeyword.GRID_Y, IKeyword.NEIGHBORS);
 
 	/** The Constant KEY. */
 	public static final String HISTORY_KEY = "**history**";
@@ -74,7 +75,7 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 		Map<String, ISerialisedPopulation> populations = filterPopulations(target, target instanceof IGridAgent,
 				target.getAttributes(true), serializePopulations);
 		SerialisedAgent result = new SerialisedAgent(index, species, attributes, populations);
-		if (target instanceof SimulationAgent sa && !shouldSerializeHistory(sa)) {
+		if (target instanceof ISimulationAgent sa && !shouldSerializeHistory(sa)) {
 			result.attributes().remove(HISTORY_KEY);
 		}
 		return result;
@@ -156,12 +157,12 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 			}
 			map.put(k, v);
 		}
-		boolean isSim = agent instanceof SimulationAgent;
+		boolean isSim = agent instanceof ISimulationAgent;
 		if (isSim) {
-			SimulationAgent sim = (SimulationAgent) agent;
+			ISimulationAgent sim = (ISimulationAgent) agent;
 			map.put(IKeyword.SEED, sim.getSeed());
 			map.put(IKeyword.RNG, sim.getRng());
-			map.put(SimulationAgent.USAGE, sim.getUsage());
+			map.put(ISimulationAgent.USAGE, sim.getUsage());
 			map.put(IKeyword.CYCLE, sim.getClock().getCycle());
 		}
 		if (!isGrid) { map.put(IKeyword.SHAPE, agent.getGeometry()); }
@@ -224,11 +225,11 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 				}
 			});
 			// Update simulation-specific variables
-			if (agent instanceof SimulationAgent sim) {
+			if (agent instanceof ISimulationAgent sim) {
 				final Map<String, Object> attr = attributes();
 				Double seedValue = (Double) attr.remove(IKeyword.SEED);
 				String rngValue = (String) attr.remove(IKeyword.RNG);
-				Integer usageValue = (Integer) attr.remove(SimulationAgent.USAGE);
+				Integer usageValue = (Integer) attr.remove(ISimulationAgent.USAGE);
 				sim.setRandomGenerator(new RandomUtils(seedValue, rngValue));
 				sim.setUsage(usageValue);
 				// Update Clock
@@ -273,7 +274,7 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 	 * @return true, if successful
 	 * @date 22 oct. 2023
 	 */
-	static boolean shouldSerializeHistory(final SimulationAgent sim) {
+	static boolean shouldSerializeHistory(final ISimulationAgent sim) {
 		return sim.hasAttribute(SERIALISE_HISTORY) && (Boolean) sim.getAttribute(SERIALISE_HISTORY);
 	}
 

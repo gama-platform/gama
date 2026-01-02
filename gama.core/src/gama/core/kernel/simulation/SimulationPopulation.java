@@ -3,7 +3,7 @@
  * SimulationPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -43,10 +43,10 @@ import gama.gaml.variables.IVariable;
  * The Class SimulationPopulation.
  */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
+public class SimulationPopulation extends GamaPopulation<ISimulationAgent> {
 
 	/** The current simulation. */
-	private SimulationAgent currentSimulation;
+	private ISimulationAgent currentSimulation;
 
 	/** The runner. */
 	private final ISimulationRunner runner;
@@ -76,7 +76,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 
 	@Override
 	public void removeValue(final IScope scope, final Object value) {
-		if (value instanceof SimulationAgent sim) {
+		if (value instanceof ISimulationAgent sim) {
 			int index = indexOf(sim);
 			if (index == -1) return;
 			setCurrentSimulation(nextSimulationAfter(index));
@@ -93,7 +93,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 * @return the simulation agent
 	 * @date 26 août 2023
 	 */
-	private SimulationAgent nextSimulationAfter(final int index) {
+	private ISimulationAgent nextSimulationAfter(final int index) {
 		if (size() <= 1 || index == -1) return null;
 		return get((index + 1) % size());
 	}
@@ -105,7 +105,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	@Override
 	protected void fireAgentRemoved(final IScope scope, final IAgent old) {
 		super.fireAgentRemoved(scope, old);
-		runner.remove((SimulationAgent) old);
+		runner.remove((ISimulationAgent) old);
 	}
 
 	@Override
@@ -121,23 +121,23 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	}
 
 	@Override
-	public Iterable<SimulationAgent> iterable(final IScope scope) {
-		return (Iterable<SimulationAgent>) getAgents(scope);
+	public Iterable<ISimulationAgent> iterable(final IScope scope) {
+		return (Iterable<ISimulationAgent>) getAgents(scope);
 	}
 
 	@Override
-	public IList<SimulationAgent> createAgents(final IScope scope, final int number,
+	public IList<ISimulationAgent> createAgents(final IScope scope, final int number,
 			final List<? extends Map<String, Object>> initialValues, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) throws GamaRuntimeException {
 
-		final IList<SimulationAgent> result = GamaListFactory.create(SimulationAgent.class);
-		final IAgentConstructor<SimulationAgent> constr = species.getDescription().getAgentConstructor();
+		final IList<ISimulationAgent> result = GamaListFactory.create(ISimulationAgent.class);
+		final IAgentConstructor<ISimulationAgent> constr = species.getDescription().getAgentConstructor();
 		scope.getGui().getStatus().waitStatus("Initializing simulations", IStatusMessage.SIMULATION_ICON, () -> {
 			for (int i = 0; i < number; i++) {
 
 				// Model do not only rely on SimulationAgent
 
-				SimulationAgent sim = constr.createOneAgent(this, currentAgentIndex++);
+				ISimulationAgent sim = constr.createOneAgent(this, currentAgentIndex++);
 				sim.setScheduled(toBeScheduled);
 				sim.setName("Simulation " + sim.getIndex());
 				add(sim);
@@ -178,7 +178,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 * @param sequence
 	 *            the sequence
 	 */
-	private void initSimulation(final IScope scope, final SimulationAgent sim,
+	private void initSimulation(final IScope scope, final ISimulationAgent sim,
 			final List<? extends Map<String, Object>> initialValues, final int index, final boolean isRestored,
 			final boolean toBeScheduled, final RemoteSequence sequence) {
 		scope.getGui().getStatus().waitStatus("Instantiating agents", IStatusMessage.SIMULATION_ICON, () -> {
@@ -219,7 +219,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	public ExperimentAgent getHost() { return (ExperimentAgent) super.getHost(); }
 
 	@Override
-	public SimulationAgent getAgent(final IScope scope, final GamaPoint value) {
+	public ISimulationAgent getAgent(final IScope scope, final GamaPoint value) {
 		return get(null, 0);
 	}
 
@@ -248,7 +248,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 *
 	 * @param sim
 	 */
-	public void unscheduleSimulation(final SimulationAgent sim) {
+	public void unscheduleSimulation(final ISimulationAgent sim) {
 		runner.remove(sim);
 	}
 
@@ -257,7 +257,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 *
 	 * @return the number of active stepables
 	 */
-	public Set<SimulationAgent> getRunningSimulations() { return runner.getStepable(); }
+	public Set<ISimulationAgent> getRunningSimulations() { return runner.getStepable(); }
 
 	/**
 	 * Gets the number of active threads.
@@ -278,7 +278,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 *
 	 * @return the simulation agent
 	 */
-	public SimulationAgent getCurrentSimulation() { return currentSimulation; }
+	public ISimulationAgent getCurrentSimulation() { return currentSimulation; }
 
 	/**
 	 * Sets the current simulation.
@@ -286,7 +286,7 @@ public class SimulationPopulation extends GamaPopulation<SimulationAgent> {
 	 * @param current
 	 *            the new current simulation
 	 */
-	public void setCurrentSimulation(final SimulationAgent current) {
+	public void setCurrentSimulation(final ISimulationAgent current) {
 		currentSimulation = current;
 		GAMA.changeCurrentTopLevelAgent(current == null ? getHost() : current, false);
 	}

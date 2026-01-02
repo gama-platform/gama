@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * BinarySerialisation.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.SerialisedAgent;
 import gama.core.runtime.GAMA;
@@ -39,6 +39,7 @@ import gama.extension.serialize.fst.FSTConfiguration;
  */
 public class BinarySerialisation implements ISerialisationConstants {
 
+	/** The fst. */
 	private static FSTConfiguration FST = FSTConfiguration.createDefaultConfiguration();
 
 	/** The processor. */
@@ -178,11 +179,11 @@ public class BinarySerialisation implements ISerialisationConstants {
 	public static final void saveToFile(final IScope scope, final Object o, final String path,
 			final boolean includingHistory) {
 		try (OutputStream os = Files.newOutputStream(new File(path).toPath(), CREATE, WRITE, TRUNCATE_EXISTING)) {
-			if (o instanceof SimulationAgent sim) {
+			if (o instanceof ISimulationAgent sim) {
 				sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, includingHistory);
 			}
 			os.write(saveToBytes(scope, o));
-			if (o instanceof SimulationAgent sim) { sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, false); }
+			if (o instanceof ISimulationAgent sim) { sim.setAttribute(SerialisedAgent.SERIALISE_HISTORY, false); }
 		} catch (IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}

@@ -28,7 +28,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.experiment.controller.IExperimentController;
 import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationFactory;
 import gama.core.metamodel.topology.ITopology;
@@ -936,7 +936,7 @@ public class ExecutionScope implements IScope {
 	 * @see gama.core.runtime.IScope#getSimulation()
 	 */
 	@Override
-	public SimulationAgent getSimulation() {
+	public ISimulationAgent getSimulation() {
 		if (agentContext != null) return agentContext.getSimulation();
 		final ITopLevelAgent root = getRoot();
 		if (root == null) return null;

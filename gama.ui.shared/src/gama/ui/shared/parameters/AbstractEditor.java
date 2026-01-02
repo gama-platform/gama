@@ -3,7 +3,7 @@
  * AbstractEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +29,7 @@ import com.google.common.primitives.Ints;
 import gama.core.common.util.StringUtils;
 import gama.core.kernel.experiment.parameters.ExperimentParameter;
 import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -243,7 +243,7 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	 *             the gama runtime exception
 	 */
 	private final void modifyValueOfParameterWith(final Object newValue) throws GamaRuntimeException {
-		if (param instanceof ExperimentParameter && GAMA.getCurrentTopLevelAgent() instanceof SimulationAgent) {
+		if (param instanceof ExperimentParameter && GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent) {
 			agent.getScope().setAgentVarValue(agent, param.getName(), newValue);
 		} else if (param instanceof Variable) {
 			((Variable) param).setVal(getScope(), agent, newValue);

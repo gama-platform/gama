@@ -32,7 +32,7 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.root.PlatformAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.IExperimentStateListener.State;
 import gama.core.runtime.benchmark.Benchmark;
 import gama.core.runtime.benchmark.StopWatch;
@@ -245,7 +245,7 @@ public class GAMA {
 	 *
 	 */
 
-	public static SimulationAgent getSimulation() {
+	public static ISimulationAgent getSimulation() {
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null) return null;
 		return controller.getExperiment().getCurrentSimulation();
@@ -480,7 +480,7 @@ public class GAMA {
 		if (controller == null || controller.getExperiment() == null) return getPlatformAgent().getScope();
 		final ExperimentAgent a = controller.getExperiment().getAgent();
 		if (a == null || a.dead()) return controller.getExperiment().getExperimentScope();
-		final SimulationAgent s = a.getSimulation();
+		final ISimulationAgent s = a.getSimulation();
 		if (s == null || s.dead()) return a.getScope();
 		return s.getScope();
 	}
@@ -675,7 +675,7 @@ public class GAMA {
 		if (plan == null) return getPlatformAgent();
 		IExperimentAgent exp = plan.getAgent();
 		if (exp == null || exp.dead()) return getPlatformAgent();
-		SimulationAgent sim = exp.getSimulation();
+		ISimulationAgent sim = exp.getSimulation();
 		if (sim == null || sim.dead()) return exp;
 		return sim;
 	}

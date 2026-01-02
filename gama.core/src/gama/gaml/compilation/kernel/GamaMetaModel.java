@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaMetaModel.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +29,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.model.GamlModelSpecies;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.descriptions.ExperimentDescription;
@@ -249,7 +249,7 @@ public class GamaMetaModel {
 		// We then create all other built-in species and attach them to "model"
 		for (final SpeciesProto proto : tempSpecies.values()) {
 			model.addChild(
-					buildSpecies(proto, model, agent, SimulationAgent.class.isAssignableFrom(proto.clazz), false));
+					buildSpecies(proto, model, agent, ISimulationAgent.class.isAssignableFrom(proto.clazz), false));
 		}
 		tempSpecies.clear();
 		model.buildTypes();
