@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.descriptions.ValidationContext;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlDefinition;
@@ -62,7 +62,7 @@ public class ErrorToDiagnoticTranslator {
 	 */
 	public Diagnostic translate(final ValidationContext errors, final GamlResource r, final CheckMode mode) {
 		final BasicDiagnostic chain = new BasicDiagnostic();
-		for (final GamlCompilationError e : errors) {
+		for (final IGamlCompilationError e : errors) {
 			final Diagnostic d = translate(e, r, mode);
 			if (d != null) { chain.add(d); }
 		}
@@ -80,7 +80,7 @@ public class ErrorToDiagnoticTranslator {
 	 *            the mode
 	 * @return the diagnostic
 	 */
-	public Diagnostic translate(final GamlCompilationError e, final GamlResource r, final CheckMode mode) {
+	public Diagnostic translate(final IGamlCompilationError e, final GamlResource r, final CheckMode mode) {
 		final URI errorURI = e.getURI();
 		if (!GamlResourceServices.equals(errorURI, r.getURI())) // final String s = URI.decode(errorURI.lastSegment());
 			// final EObject m = r.getContents().get(0);
@@ -93,7 +93,7 @@ public class ErrorToDiagnoticTranslator {
 		// e.toString() + " (" + ValidationContext.IMPORTED_FROM + " " + s + ")", eObject, feature,
 		// ValidationMessageAcceptor.INSIGNIFICANT_INDEX, e.getCode(), e.getData());
 		EStructuralFeature feature = null;
-		final EObject object = e.getStatement();
+		final EObject object = e.getSource();
 		String[] data = e.getData();
 		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
 			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
@@ -163,7 +163,7 @@ public class ErrorToDiagnoticTranslator {
 	 *            the e
 	 * @return the int
 	 */
-	protected int toDiagnosticSeverity(final GamlCompilationError e) {
+	protected int toDiagnosticSeverity(final IGamlCompilationError e) {
 		int diagnosticSeverity = -1;
 		if (e.isError()) {
 			diagnosticSeverity = Diagnostic.ERROR;

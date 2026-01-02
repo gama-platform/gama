@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ValidationContext.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,7 +33,7 @@ import gama.core.runtime.GAMA;
 import gama.core.util.Collector;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.interfaces.IGamlDescription;
 import gama.gaml.interfaces.IGamlIssue;
@@ -280,7 +280,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> {
 	 */
 	public boolean hasErrorOn(final EObject... objects) {
 		final List<EObject> list = Arrays.asList(objects);
-		return StreamEx.of(items()).filter(IS_ERROR).findAny(p -> list.contains(p.getStatement())).isPresent();
+		return StreamEx.of(items()).filter(IS_ERROR).findAny(p -> list.contains(p.getSource())).isPresent();
 	}
 
 	/**
@@ -309,7 +309,8 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> {
 			if (!GamaBundleLoader.gamlPluginExists(s)) {
 				if (!GAMA.isInHeadLessMode() || !GamaBundleLoader.isDisplayPlugin(s)) {
 					add(new GamlCompilationError("Missing plugin: " + s, IGamlIssue.MISSING_PLUGIN, resourceURI,
-							GamaBundleLoader.isDisplayPlugin(s) ? GamlCompilationErrorType.Error : GamlCompilationErrorType.Warning));
+							GamaBundleLoader.isDisplayPlugin(s) ? GamlCompilationErrorType.Error
+									: GamlCompilationErrorType.Warning));
 				}
 				return false;
 			}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryTester.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryTester.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,7 +30,7 @@ import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.gaml.statements.test.TestState;
 import gama.headless.runtime.HeadlessApplication;
@@ -110,18 +110,14 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 	 */
 	public void test(final GamlModelBuilder builder, final int[] count, final int[] code, final URL p) {
 		// DEBUG.OUT(p);
-		final List<GamlCompilationError> errors = new ArrayList<>();
+		final List<IGamlCompilationError> errors = new ArrayList<>();
 		try {
 			final IModel model = builder.compile(p, errors);
-			if (model == null || model.getDescription() == null) {
-				return;
-			}
+			if (model == null || model.getDescription() == null) return;
 			final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 					.filter(e -> model.getExperiment(e).isTest()).toList();
 
-			if (testExpNames.isEmpty()) {
-				return;
-			}
+			if (testExpNames.isEmpty()) return;
 			for (final String expName : testExpNames) {
 				final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 				if (exp != null) {

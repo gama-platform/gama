@@ -26,6 +26,7 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.ICollector;
+import gama.gaml.compilation.Assert;
 import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
@@ -34,8 +35,7 @@ import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IDescription.DescriptionVisitor;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.StatementSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
 import gama.gaml.interfaces.IGamlIssue;
@@ -167,8 +167,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs {
 	public static class ActionSerializer extends StatementSerializer {
 
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
+		protected String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (TYPE.equals(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}
@@ -185,7 +184,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs {
 		}
 
 		@Override
-		protected void serializeKeyword(final SymbolDescription desc, final StringBuilder sb,
+		protected void serializeKeyword(final IDescription desc, final StringBuilder sb,
 				final boolean includingBuiltIn) {
 			String type = desc.getGamlType().serializeToGaml(includingBuiltIn);
 			if (UNKNOWN.equals(type)) { type = ACTION; }

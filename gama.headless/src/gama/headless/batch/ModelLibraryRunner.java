@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryRunner.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryRunner.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,7 @@ import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.kernel.model.IModel;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.core.Experiment;
 import gama.headless.runtime.HeadlessApplication;
@@ -88,7 +88,6 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 		return code[0] + code[1];
 	}
 
-
 	/**
 	 * Validate and run.
 	 *
@@ -110,17 +109,15 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	private void validateAndRun(final GamlModelBuilder builder, final Map<String, Exception> executionErrors,
 			final int[] countOfModelsValidated, final int[] returnCode, final URL pathToModel, final boolean expGUIOnly,
 			final int nbCycles) {
-		if (pathToModel.toString().contains("Database")) {
-			return;
-		}
+		if (pathToModel.toString().contains("Database")) return;
 		STRINGS.PAD("", 80, '=');
 
-		final List<GamlCompilationError> errors = new ArrayList<>();
+		final List<IGamlCompilationError> errors = new ArrayList<>();
 		final IModel mdl = builder.compile(pathToModel, errors);
 
 		countOfModelsValidated[0]++;
-		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
-			DEBUG.OUT("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
+		errors.stream().filter(IGamlCompilationError::isError).forEach(e -> {
+			DEBUG.OUT("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getSource().toString() + "\n");
 			returnCode[0]++;
 		});
 

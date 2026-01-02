@@ -29,8 +29,7 @@ import gama.gaml.descriptions.DoDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.StatementSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.operators.Strings;
@@ -176,8 +175,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		}
 
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
+		protected String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (!DO_FACETS.contains(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}

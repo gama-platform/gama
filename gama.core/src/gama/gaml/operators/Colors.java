@@ -46,6 +46,7 @@ import gama.core.util.list.IList;
 import gama.core.util.map.GamaMap;
 import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
+import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IOperatorValidator;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
@@ -714,6 +715,22 @@ public class Colors {
 	 * The Class BrewerValidator.
 	 */
 	public static class BrewerValidator implements IOperatorValidator {
+
+		/**
+		 * Gets the arg.
+		 *
+		 * @param emfContext
+		 *            the emf context
+		 * @param index
+		 *            the index
+		 * @return the arg
+		 */
+		private EObject getArg(final EObject emfContext, final int index) {
+			if (index < 0) return emfContext;
+			final List<? extends EObject> list = GAML.getEcoreUtils().getExprsOf(emfContext);
+			if (list == null || list.isEmpty() || index > list.size() - 1) return emfContext;
+			return list.get(index);
+		}
 
 		@Override
 		public boolean validate(final IDescription context, final EObject emfContext, final IExpression... arguments) {

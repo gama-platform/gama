@@ -2,7 +2,7 @@
  *
  * GAML.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -551,8 +551,8 @@ public class GAML {
 	 * @return the list
 	 * @date 11 janv. 2024
 	 */
-	public static List<GamlCompilationError> validate(final String entered, final boolean syntaxOnly) {
-		List<GamlCompilationError> errors = new ArrayList<>();
+	public static List<IGamlCompilationError> validate(final String entered, final boolean syntaxOnly) {
+		List<IGamlCompilationError> errors = new ArrayList<>();
 		if (entered.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
 		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)) {

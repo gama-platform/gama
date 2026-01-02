@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * IGamlModelBuilder.java, in gama.lang.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * IGamlModelBuilder.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.precompiler.GamlProperties;
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.kernel.model.IModel;
 
 /**
@@ -26,6 +27,7 @@ import gama.core.kernel.model.IModel;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 15 oct. 2023
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IGamlModelBuilder {
 
 	/**
@@ -49,7 +51,7 @@ public interface IGamlModelBuilder {
 	 * @return the i model
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final URI uri, final List<GamlCompilationError> errors);
+	IModel compile(final URI uri, final List<IGamlCompilationError> errors);
 
 	/**
 	 * Compiles a file to a GAMA model ready to be experimented
@@ -69,7 +71,7 @@ public interface IGamlModelBuilder {
 	 *             Signals that errors occured
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final File myFile, final List<GamlCompilationError> errors, final GamlProperties metaProperties)
+	IModel compile(final File myFile, final List<IGamlCompilationError> errors, final GamlProperties metaProperties)
 			throws IOException, GamaCompilationFailedException;
 
 	/**
@@ -83,6 +85,6 @@ public interface IGamlModelBuilder {
 	 * @return the i model
 	 * @date 15 oct. 2023
 	 */
-	IModel compile(final URL url, final List<GamlCompilationError> errors);
+	IModel compile(final URL url, final List<IGamlCompilationError> errors);
 
 }

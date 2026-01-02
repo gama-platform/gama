@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ISymbolConstructor.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * ValidNameValidator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,26 +10,20 @@
  ********************************************************************************************************/
 package gama.gaml.compilation;
 
-import gama.annotations.precompiler.OkForAPI;
 import gama.gaml.descriptions.IDescription;
 
 /**
- * Written by drogoul Modified on 29 ao�t 2010
- *
- * @todo Description
- *
+ * The Class ValidNameValidator.
  */
-@FunctionalInterface
-@OkForAPI (OkForAPI.Location.INTERFACES)
-public interface ISymbolConstructor {
+public class ValidNameValidator implements IDescriptionValidator {
 
 	/**
-	 * Creates the.
+	 * Verifies that the name is valid (non reserved, non type and non species)
 	 *
-	 * @param description
-	 *            the description
-	 * @return the i symbol
+	 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
 	 */
-	ISymbol create(IDescription description);
-
+	@Override
+	public void validate(final IDescription cd) {
+		Assert.nameIsValid(cd);
+	}
 }

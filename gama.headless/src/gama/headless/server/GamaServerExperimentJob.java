@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaServerExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +29,7 @@ import gama.core.kernel.model.IModel;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
 import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.types.Types;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.core.RichExperiment;
@@ -42,7 +42,6 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  * The Class ExperimentJob.
  */
 public class GamaServerExperimentJob extends ExperimentJob {
-
 
 	/** The socket. */
 	public WebSocket socket;
@@ -79,9 +78,9 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 * @param dialog
 	 *            the dialog
 	 */
-	public GamaServerExperimentJob(final String sourcePath, final String exp,
-			final WebSocket sk, final IList p, final String end,
-			final boolean console, final boolean status, final boolean dialog, final boolean runtime) {
+	public GamaServerExperimentJob(final String sourcePath, final String exp, final WebSocket sk, final IList p,
+			final String end, final boolean console, final boolean status, final boolean dialog,
+			final boolean runtime) {
 		// (final String sourcePath, final String exp, final long max, final String untilCond,
 		// final double s)
 		super(sourcePath, exp, 0, "", 0);
@@ -103,7 +102,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	@Override
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
-		final List<GamlCompilationError> errors = new ArrayList<>();
+		final List<IGamlCompilationError> errors = new ArrayList<>();
 		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);

@@ -3,7 +3,7 @@
  * ExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,7 +32,7 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.descriptions.ExperimentDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
@@ -266,7 +266,7 @@ public class ExperimentJob implements IExperimentJob {
 	 */
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
-		final List<GamlCompilationError> errors = new ArrayList<>();
+		final List<IGamlCompilationError> errors = new ArrayList<>();
 		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);

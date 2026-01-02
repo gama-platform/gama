@@ -28,8 +28,5 @@ public interface ITyped {
 	 * @see GamaType, IType
 	 */
 	IType<?> getGamlType();
-	// {
-	// return Types.NO_TYPE;
-	// }
 
 }

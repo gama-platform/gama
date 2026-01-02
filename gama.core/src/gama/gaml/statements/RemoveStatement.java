@@ -1,17 +1,15 @@
 /*******************************************************************************************************
  *
  * RemoveStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -19,6 +17,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -27,8 +27,6 @@ import gama.core.util.graph.IGraph;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.statements.AbstractContainerStatement.ContainerValidator;
@@ -79,12 +77,18 @@ import gama.gaml.types.IType;
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER },
 		symbols = IKeyword.CHART)
 @doc (
-		value = "A statement used to remove items from containers. It can be written using the classic syntax (`remove ... from: ...`) or a compact one, which is now preferred."
-				+ "\n- To remove an element from a container (other than a matrix), use `container >> element;` or `container >- element;` (classic form: `remove element from: container;`) "
-				+ "\n- To remove an index/key from a container (other than a matrix) use `container[] >> index` or `container[] >- index` (classic form: `remove key: index from: container;`)"
-				+ "\n- To remove all the elements contained in another container, use `container >>- elements;` (classic form: `remove all: elements from: container;`)"
-				+ "\n- To remove all the indexes contained in another container, use `container[] >>- indices;` (classic form: `remove key: indices all: true from: container;`)"
-				+ "\n- To remove all the occurences of an element in the container, use `container >>- element;` (classic form: `remove element from: container all: true;`)",
+		value = """
+				A statement used to remove items from containers. It can be written using the classic syntax (`remove ... from: ...`) or a compact one, which is now preferred.\
+
+				- To remove an element from a container (other than a matrix), use `container >> element;` or `container >- element;` (classic form: `remove element from: container;`) \
+
+				- To remove an index/key from a container (other than a matrix) use `container[] >> index` or `container[] >- index` (classic form: `remove key: index from: container;`)\
+
+				- To remove all the elements contained in another container, use `container >>- elements;` (classic form: `remove all: elements from: container;`)\
+
+				- To remove all the indexes contained in another container, use `container[] >>- indices;` (classic form: `remove key: indices all: true from: container;`)\
+
+				- To remove all the occurences of an element in the container, use `container >>- element;` (classic form: `remove element from: container all: true;`)""",
 		usages = { @usage (
 				value = "This statement should be used in the following ways, depending on the kind of container used and the expected action on it:",
 				examples = { @example (
@@ -207,10 +211,10 @@ public class RemoveStatement extends AbstractContainerStatement {
 	/**
 	 * The Class RemoveSerializer.
 	 */
-	public static class RemoveSerializer extends SymbolSerializer<StatementDescription> {
+	public static class RemoveSerializer extends SymbolSerializer {
 
 		@Override
-		protected void serialize(final SymbolDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
+		protected void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			final IExpression allFacet = cd.getFacetExpr(ALL);

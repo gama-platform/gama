@@ -2,7 +2,7 @@
  *
  * LetStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,12 +20,12 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.gaml.compilation.Assert;
 import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.statements.LetStatement.LetSerializer;
@@ -85,7 +85,7 @@ public class LetStatement extends SetStatement {
 	public static class LetSerializer extends AssignmentSerializer {
 
 		@Override
-		protected void serialize(final SymbolDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(desc.getGamlType().serializeToGaml(includingBuiltIn)).append(" ");
 			super.serialize(desc, sb, includingBuiltIn);
 

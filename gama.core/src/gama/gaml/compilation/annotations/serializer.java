@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * serializer.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * serializer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.compilation.annotations;
 
@@ -38,5 +37,5 @@ public @interface serializer {
 	 *
 	 * @return the class<? extends symbol serializer<?>>
 	 */
-	Class<? extends SymbolSerializer<?>> value();
+	Class<? extends SymbolSerializer> value();
 }

@@ -11,9 +11,9 @@ package gama.gaml.expressions;
 
 import java.util.function.Predicate;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.descriptions.IVarDescriptionUser;
 import gama.gaml.expressions.types.TypeExpression;
 import gama.gaml.interfaces.IDisposable;
@@ -30,6 +30,11 @@ import gama.gaml.types.IType;
  * @since August 2018, IExpression is a @FunctionalInterface
  *
  */
+
+/**
+ * The Interface IExpression.
+ */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IExpression extends IGamlDescription, ITyped, IDisposable, IVarDescriptionUser {
 
 	/**

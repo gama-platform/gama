@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Variable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Variable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,6 +37,7 @@ import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.dev.DEBUG;
+import gama.gaml.compilation.Assert;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaHelper;
 import gama.gaml.compilation.IDescriptionValidator;
@@ -196,7 +197,7 @@ public class Variable extends Symbol implements IVariable {
 					return;
 				}
 				// Verifying that the name is not reserved
-				if (RESERVED.contains(name)) {
+				if (Assert.RESERVED.contains(name)) {
 					cd.error(name + " is a reserved keyword. It cannot be used as an attribute name",
 							IGamlIssue.IS_RESERVED, NAME, name);
 					return;
@@ -211,9 +212,10 @@ public class Variable extends Symbol implements IVariable {
 					final IExpression expr = cd.getFacetExpr(INIT);
 					if (expr.findAny(e -> e instanceof TimeUnitConstantExpression tu && !tu.isConst())) {
 						cd.warning(
-								"Time dependent constants used to define the step at initialization are computed once based on the current_date. "
-										+ "The resulting durations may be irrelevant after a few cycles. "
-										+ "An 'update:' facet should be defined with the same expression to recompute the step every cycle",
+								"""
+										Time dependent constants used to define the step at initialization are computed once based on the current_date. \
+										The resulting durations may be irrelevant after a few cycles. \
+										An 'update:' facet should be defined with the same expression to recompute the step every cycle""",
 								IGamlIssue.CONFLICTING_FACETS, INIT);
 					}
 				}
@@ -775,8 +777,7 @@ public class Variable extends Symbol implements IVariable {
 	 *             the gama runtime exception
 	 */
 	protected void _setVal(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
-		Object val;
-		val = coerce(agent, scope, v);
+		Object val = coerce(agent, scope, v);
 		val = checkAmong(agent, scope, val);
 		if (setter != null) {
 			setter.run(scope, agent, sSkill == null ? agent : sSkill, val);

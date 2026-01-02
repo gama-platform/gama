@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlCompilationError.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * GamlCompilationError.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.compilation;
 
@@ -16,11 +16,7 @@ import org.eclipse.emf.ecore.EObject;
 /**
  * The Class GamlCompilationError. Represents the errors produced by the validation/compilation of IDescription's.
  */
-public class GamlCompilationError {
-
-	public enum GamlCompilationErrorType {
-		Info, Warning, Error
-	}
+public class GamlCompilationError implements IGamlCompilationError {
 
 	/** The message. */
 	protected final String message;
@@ -36,7 +32,8 @@ public class GamlCompilationError {
 
 	/** The uri. */
 	protected final URI uri;
-	
+
+	/** The error type. */
 	protected final GamlCompilationErrorType errorType;
 
 	/**
@@ -55,8 +52,8 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final EObject object, final GamlCompilationErrorType type, 
-			final String... data) {
+	public GamlCompilationError(final String string, final String code, final EObject object,
+			final GamlCompilationErrorType type, final String... data) {
 
 		message = string;
 		errorType = type;
@@ -82,8 +79,8 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final URI uri, final GamlCompilationErrorType type,
-			final String... data) {
+	public GamlCompilationError(final String string, final String code, final URI uri,
+			final GamlCompilationErrorType type, final String... data) {
 
 		message = string;
 		errorType = type;
@@ -98,6 +95,7 @@ public class GamlCompilationError {
 	 *
 	 * @return the data
 	 */
+	@Override
 	public String[] getData() { return data; }
 
 	/**
@@ -105,13 +103,23 @@ public class GamlCompilationError {
 	 *
 	 * @return the uri
 	 */
+	@Override
 	public URI getURI() { return uri; }
+
+	/**
+	 * Gets the error type.
+	 *
+	 * @return the error type
+	 */
+	@Override
+	public GamlCompilationErrorType getErrorType() { return errorType; }
 
 	/**
 	 * Gets the code.
 	 *
 	 * @return the code
 	 */
+	@Override
 	public String getCode() { return code; }
 
 	@Override
@@ -124,6 +132,7 @@ public class GamlCompilationError {
 	 *
 	 * @return true, if is warning
 	 */
+	@Override
 	public boolean isWarning() { return errorType == GamlCompilationErrorType.Warning; }
 
 	/**
@@ -131,6 +140,7 @@ public class GamlCompilationError {
 	 *
 	 * @return true, if is info
 	 */
+	@Override
 	public boolean isInfo() { return errorType == GamlCompilationErrorType.Info; }
 
 	/**
@@ -138,13 +148,15 @@ public class GamlCompilationError {
 	 *
 	 * @return the statement
 	 */
-	public EObject getStatement() { return source; }
+	@Override
+	public EObject getSource() { return source; }
 
 	/**
 	 * Checks if is error.
 	 *
 	 * @return true, if is error
 	 */
+	@Override
 	public boolean isError() { return errorType == GamlCompilationErrorType.Error; }
 
 	@Override
@@ -158,4 +170,7 @@ public class GamlCompilationError {
 	public int hashCode() {
 		return message.hashCode() + (source == null ? 0 : source.hashCode());
 	}
+
+	@Override
+	public String getMessage() { return message; }
 }

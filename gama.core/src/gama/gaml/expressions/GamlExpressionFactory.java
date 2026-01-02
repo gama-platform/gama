@@ -22,9 +22,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IExecutionContext;
 import gama.core.runtime.IScope;
+import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
@@ -431,7 +431,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * @return the i expression
 	 */
 	@Override
-	public <T> IExpression createExpr(final GAMA.InScope<T> exp, final IType type) {
+	public <T> IExpression createExpr(final InScope<T> exp, final IType type) {
 		return new IExpression() {
 
 			@Override

@@ -1,17 +1,14 @@
 /*******************************************************************************************************
  *
- * AddStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AddStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -19,6 +16,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -26,8 +25,6 @@ import gama.core.util.IContainer;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -66,10 +63,14 @@ import gama.gaml.types.Types;
 						doc = @doc ("the symbol '<<+' allows to pass a container as item so as to add all its elements to the receiving container")) },
 		omissible = IKeyword.ITEM)
 @doc (
-		value = "A statement used to add items to containers. It can be written using the classic syntax (`add ... to: ...`) or a compact one, which is now preferred."
-				+ "\n- To add an element to a container (other than a matrix), use `container << element;` or `container <+ element;` (classic form: `add element to: container;`) "
-				+ "\n- To add all the elements contained in another container, use `container <<+ elements;` (classic form: `add all: elements to: container;`)"
-				+ "\n- To add an element to a container at a certain index, use `container[index] +<- element;` (classic form: `add element at: index to: container;`)",
+		value = """
+				A statement used to add items to containers. It can be written using the classic syntax (`add ... to: ...`) or a compact one, which is now preferred.\
+
+				- To add an element to a container (other than a matrix), use `container << element;` or `container <+ element;` (classic form: `add element to: container;`) \
+
+				- To add all the elements contained in another container, use `container <<+ elements;` (classic form: `add all: elements to: container;`)\
+
+				- To add an element to a container at a certain index, use `container[index] +<- element;` (classic form: `add element at: index to: container;`)""",
 		usages = { @usage (
 				value = "The new element can be added either at the end of the container or at a particular position.",
 				examples = { @example (
@@ -221,10 +222,10 @@ public class AddStatement extends AbstractContainerStatement {
 	/**
 	 * The Class AddSerializer.
 	 */
-	public static class AddSerializer extends SymbolSerializer<StatementDescription> {
+	public static class AddSerializer extends SymbolSerializer {
 
 		@Override
-		protected void serialize(final SymbolDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
+		protected void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			final IExpression allFacet = cd.getFacetExpr(ALL);

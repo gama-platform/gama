@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GridLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,7 +34,6 @@ import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -178,10 +177,10 @@ public class GridLayerStatement extends AbstractLayerStatement {
 	/**
 	 * The Class GridLayerSerializer.
 	 */
-	public static class GridLayerSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class GridLayerSerializer extends SymbolSerializer {
 
 		@Override
-		protected void serializeKeyword(final SymbolDescription desc, final StringBuilder sb,
+		protected void serializeKeyword(final IDescription desc, final StringBuilder sb,
 				final boolean includingBuiltIn) {
 			sb.append("grid ");
 		}

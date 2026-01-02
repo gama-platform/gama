@@ -1,19 +1,18 @@
 /*******************************************************************************************************
  *
- * IOperatorValidator.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IOperatorValidator.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.compilation;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 
@@ -25,6 +24,7 @@ import gama.gaml.expressions.IExpression;
  * @since July 2018
  *
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IOperatorValidator extends IValidator {
 	/**
 	 * Called during the semantic validation process, this method should ensure that informations, warnings or errors
@@ -52,19 +52,5 @@ public interface IOperatorValidator extends IValidator {
 	 */
 	@Override
 	boolean validate(IDescription context, EObject emfContext, IExpression... arguments);
-
-	/**
-	 * Gets the arg.
-	 *
-	 * @param emfContext the emf context
-	 * @param index the index
-	 * @return the arg
-	 */
-	default EObject getArg(final EObject emfContext, final int index) {
-		if (index < 0) { return emfContext; }
-		final List<? extends EObject> list = GAML.getEcoreUtils().getExprsOf(emfContext);
-		if (list == null || list.isEmpty() || index > list.size() - 1) { return emfContext; }
-		return list.get(index);
-	}
 
 }

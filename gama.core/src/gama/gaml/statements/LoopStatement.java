@@ -3,7 +3,7 @@
  * LoopStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,12 +26,12 @@ import gama.core.runtime.FlowStatus;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
+import gama.gaml.compilation.Assert;
 import gama.gaml.compilation.IDescriptionValidator;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -375,11 +375,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	/**
 	 * The Class LoopSerializer.
 	 */
-	public static class LoopSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class LoopSerializer extends SymbolSerializer {
 
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
+		protected String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (NAME.equals(key) && (s.hasFacet(TIMES) || s.hasFacet(WHILE))) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}

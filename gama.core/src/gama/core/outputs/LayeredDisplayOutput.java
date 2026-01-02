@@ -3,7 +3,7 @@
  * LayeredDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -52,7 +52,6 @@ import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
@@ -247,7 +246,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	/**
 	 * The Class DisplaySerializer.
 	 */
-	public static class DisplaySerializer extends SymbolSerializer<SymbolDescription> {
+	public static class DisplaySerializer extends SymbolSerializer {
 
 		/**
 		 * Method collectPluginsInFacetValue()
@@ -256,7 +255,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		 *      java.lang.String, java.util.Set)
 		 */
 		@Override
-		protected void collectMetaInformationInFacetValue(final SymbolDescription desc, final String key,
+		protected void collectMetaInformationInFacetValue(final IDescription desc, final String key,
 				final GamlProperties plugins) {
 			super.collectMetaInformationInFacetValue(desc, key, plugins);
 			if (TYPE.equals(key)) {

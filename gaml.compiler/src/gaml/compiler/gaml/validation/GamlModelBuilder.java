@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlModelBuilder.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlModelBuilder.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,8 @@ import gama.core.kernel.model.IModel;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IGamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamlModelBuilder;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.interfaces.IGamlIssue;
@@ -83,7 +84,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URL url, final List<GamlCompilationError> errors) {
+	public IModel compile(final URL url, final List<IGamlCompilationError> errors) {
 		try {
 			final java.net.URI uri = new java.net.URI(url.getProtocol(), url.getPath(), null).normalize();
 			final URI resolvedURI = URI.createURI(uri.toString());
@@ -113,7 +114,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public synchronized IModel compile(final File myFile, final List<GamlCompilationError> errors,
+	public synchronized IModel compile(final File myFile, final List<IGamlCompilationError> errors,
 			final GamlProperties metaProperties) throws IOException, GamaCompilationFailedException {
 		if (myFile == null) throw new IOException("Model file is null");
 		final String fileName = myFile.getAbsolutePath();
@@ -140,7 +141,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URI uri, final List<GamlCompilationError> errors) {
+	public IModel compile(final URI uri, final List<IGamlCompilationError> errors) {
 		// We build the description and fill the errors list
 		final ModelDescription model = buildModelDescription(uri, errors);
 		// And compile it before returning it, unless it is null.
@@ -156,7 +157,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 *            the errors
 	 * @return the model description
 	 */
-	private ModelDescription buildModelDescription(final URI uri, final List<GamlCompilationError> errors) {
+	private ModelDescription buildModelDescription(final URI uri, final List<IGamlCompilationError> errors) {
 		try {
 			final GamlResource r = (GamlResource) buildResourceSet.getResource(uri, true);
 			// Syntactic errors detected, we cannot build the resource

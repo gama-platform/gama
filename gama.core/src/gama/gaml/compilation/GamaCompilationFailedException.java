@@ -3,7 +3,7 @@
  * GamaCompilationFailedException.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,7 @@ public class GamaCompilationFailedException extends RuntimeException {
 	private static final long serialVersionUID = 1392647532622819498L;
 
 	/** The error list. */
-	public final List<GamlCompilationError> errorList;
+	public final List<IGamlCompilationError> errorList;
 
 	/**
 	 * Instantiates a new gama compilation failed exception.
@@ -33,7 +33,7 @@ public class GamaCompilationFailedException extends RuntimeException {
 	 * @param errorList
 	 *            the error list
 	 */
-	public GamaCompilationFailedException(final List<GamlCompilationError> errorList) {
+	public GamaCompilationFailedException(final List<IGamlCompilationError> errorList) {
 		this.errorList = errorList;
 	}
 
@@ -55,15 +55,17 @@ public class GamaCompilationFailedException extends RuntimeException {
 		for (var error : errorList) {
 			if (atLeastSecond) { sb.append(","); }
 			sb.append("{");
-			sb.append("\"type\":\"").append(error.errorType.name()).append("\",");
-			sb.append("\"message\":\"").append(error.message).append("\",");
-			sb.append("\"code\":\"").append(error.code).append("\",");
-			sb.append("\"data\":[\"").append(String.join("\",\"", error.data != null ? error.data : new String[0]))
+			sb.append("\"type\":\"").append(error.getErrorType().name()).append("\",");
+			sb.append("\"message\":\"").append(error.getMessage()).append("\",");
+			sb.append("\"code\":\"").append(error.getCode()).append("\",");
+			sb.append("\"data\":[\"")
+					.append(String.join("\",\"", error.getData() != null ? error.getData() : new String[0]))
 					.append("\"],");
 			sb.append("\"source\":\"")
-					.append(FileUtils.escapeFilePath(error.uri != null ? error.uri.toFileString() : "")).append("\",");
-			sb.append("\"uri\":\"").append(error.uri).append("\"");
-			var node = error.source == null ? null : NodeModelUtils.getNode(error.source);
+					.append(FileUtils.escapeFilePath(error.getURI() != null ? error.getURI().toFileString() : ""))
+					.append("\",");
+			sb.append("\"uri\":\"").append(error.getURI()).append("\"");
+			var node = error.getSource() == null ? null : NodeModelUtils.getNode(error.getSource());
 			if (node != null) {
 				sb.append(",\"starting_at_line\":").append(node.getStartLine()).append(",");
 				sb.append("\"offset\":").append(node.getTotalOffset()).append("");

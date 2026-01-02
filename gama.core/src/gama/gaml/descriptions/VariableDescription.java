@@ -3,7 +3,7 @@
  * VariableDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,14 +34,14 @@ import gama.core.util.ICollector;
 import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaHelper;
-import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamaHelper;
+import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
 import gama.gaml.interfaces.GamlConstantDocumentation;
+import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.interfaces.GamlRegularDocumentation;
 import gama.gaml.statements.Facets;
 import gama.gaml.types.GamaIntegerType;
 import gama.gaml.types.IType;
@@ -191,7 +191,7 @@ public class VariableDescription extends SymbolDescription {
 	}
 
 	@Override
-	protected SymbolSerializer<VariableDescription> createSerializer() {
+	protected SymbolSerializer createSerializer() {
 		return VAR_SERIALIZER;
 	}
 
@@ -378,8 +378,9 @@ public class VariableDescription extends SymbolDescription {
 	 * @return the short documentation
 	 */
 	public IGamlDocumentation getShortDocumentation() {
-		IGamlDocumentation result = new GamlRegularDocumentation(isParameter() ? "parameter " : isNotModifiable() ? "constant " : "attribute ")
-				.append("of type ").append(getGamlType().getName());
+		IGamlDocumentation result = new GamlRegularDocumentation(
+				isParameter() ? "parameter " : isNotModifiable() ? "constant " : "attribute ").append("of type ")
+						.append(getGamlType().getName());
 		final String doc = getBuiltInDoc();
 		if (doc != null) { result.append(". ").append(doc).append("<br/>"); }
 		return result;

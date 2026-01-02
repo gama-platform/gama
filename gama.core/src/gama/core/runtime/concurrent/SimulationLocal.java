@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.InScope;
 
 /**
  * Identical to ThreadLocal but for simulations. Allows to provide simulation-local variables (actually experiment- AND
@@ -36,7 +36,7 @@ public class SimulationLocal<T> {
 	static final class SuppliedSimulationLocal<T> extends SimulationLocal<T> {
 
 		/** The supplier. */
-		private final GAMA.InScope<? extends T> supplier;
+		private final InScope<? extends T> supplier;
 
 		/**
 		 * Instantiates a new supplied simulation local.
@@ -44,7 +44,7 @@ public class SimulationLocal<T> {
 		 * @param supplier
 		 *            the supplier
 		 */
-		SuppliedSimulationLocal(final GAMA.InScope<? extends T> supplier) {
+		SuppliedSimulationLocal(final InScope<? extends T> supplier) {
 			this.supplier = Objects.requireNonNull(supplier);
 		}
 
@@ -99,7 +99,7 @@ public class SimulationLocal<T> {
 	 * @throws NullPointerException
 	 *             if the specified supplier is null
 	 */
-	public static <S> SimulationLocal<S> withInitial(final GAMA.InScope<S> supplier) {
+	public static <S> SimulationLocal<S> withInitial(final InScope<S> supplier) {
 		return new SuppliedSimulationLocal<>(supplier);
 	}
 

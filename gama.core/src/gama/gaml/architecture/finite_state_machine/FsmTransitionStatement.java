@@ -1,19 +1,18 @@
 /*******************************************************************************************************
  *
- * FsmTransitionStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * FsmTransitionStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.architecture.finite_state_machine;
 
 import java.util.Arrays;
 import java.util.List;
 
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -21,6 +20,7 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -31,7 +31,6 @@ import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IExpressionFactory;
@@ -95,20 +94,17 @@ public class FsmTransitionStatement extends AbstractStatementSequence {
 	/**
 	 * The Class TransitionSerializer.
 	 */
-	public static class TransitionSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class TransitionSerializer extends SymbolSerializer {
 
 		/** The my facets. */
-		static String[] MY_FACETS = new String[] { TO, WHEN };
+		static String[] MY_FACETS = { TO, WHEN };
 
 		@Override
-		protected void serializeFacets(final SymbolDescription s, final StringBuilder sb,
-				final boolean includingBuiltIn) {
+		protected void serializeFacets(final IDescription s, final StringBuilder sb, final boolean includingBuiltIn) {
 			for (final String key : MY_FACETS) {
 
 				final String expr = serializeFacetValue(s, key, includingBuiltIn);
-				if (expr != null) {
-					sb.append(serializeFacetKey(s, key, includingBuiltIn)).append(expr).append(" ");
-				}
+				if (expr != null) { sb.append(serializeFacetKey(s, key, includingBuiltIn)).append(expr).append(" "); }
 			}
 
 		}
@@ -160,7 +156,8 @@ public class FsmTransitionStatement extends AbstractStatementSequence {
 	/**
 	 * Instantiates a new fsm transition statement.
 	 *
-	 * @param desc the desc
+	 * @param desc
+	 *            the desc
 	 */
 	public FsmTransitionStatement(final IDescription desc) {
 		super(desc);
@@ -176,9 +173,11 @@ public class FsmTransitionStatement extends AbstractStatementSequence {
 	/**
 	 * Evaluates true on.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return true, if successful
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public boolean evaluatesTrueOn(final IScope scope) throws GamaRuntimeException {
 		return Cast.asBool(scope, when.value(scope));

@@ -3,7 +3,7 @@
  * HeadlessApplication.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -50,7 +50,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.IGamaServer;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.headless.batch.ModelLibraryRunner;
 import gama.headless.batch.ModelLibraryTester;
 import gama.headless.batch.ModelLibraryValidator;
@@ -639,7 +639,7 @@ public class HeadlessApplication implements IApplication {
 		final Injector injector = getInjector();
 		final GamlModelBuilder builder = new GamlModelBuilder(injector);
 
-		final List<GamlCompilationError> errors = new ArrayList<>();
+		final List<IGamlCompilationError> errors = new ArrayList<>();
 		URI uri;
 		try {
 			uri = URI.createFileURI(pathToModel);

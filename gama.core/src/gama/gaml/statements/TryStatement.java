@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * TryStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TryStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,8 +24,7 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.StatementSerializer;
 import gama.gaml.operators.Strings;
 import gama.gaml.statements.TryStatement.IfSerializer;
 
@@ -84,7 +82,7 @@ public class TryStatement extends AbstractStatementSequence {
 	public static class IfSerializer extends StatementSerializer {
 
 		@Override
-		protected void serializeChildren(final SymbolDescription desc, final StringBuilder sb,
+		protected void serializeChildren(final IDescription desc, final StringBuilder sb,
 				final boolean includingBuiltIn) {
 			sb.append(' ').append('{').append(Strings.LN);
 			final String[] catchString = { null };
@@ -136,9 +134,7 @@ public class TryStatement extends AbstractStatementSequence {
 			scope.enableTryMode();
 			result = super.privateExecuteIn(scope);
 		} catch (final Exception e) {
-			if (!(e instanceof GamaRuntimeException)){
-				scope.setCurrentError(GamaRuntimeException.create(e, scope));
-			}
+			if (!(e instanceof GamaRuntimeException)) { scope.setCurrentError(GamaRuntimeException.create(e, scope)); }
 			scope.disableTryMode();
 			if (catchStatement != null) return scope.execute(catchStatement).getValue();
 		} finally {

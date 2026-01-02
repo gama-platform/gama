@@ -3,7 +3,7 @@
  * ModelsManager.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,7 +45,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.interfaces.IGamlFileInfo;
 import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.editor.internal.EditorActivator;
@@ -147,7 +147,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				return findModel(uri);
 			}
 			case URI uri -> {
-				final List<GamlCompilationError> errors = new ArrayList<>();
+				final List<IGamlCompilationError> errors = new ArrayList<>();
 				final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
 				if (model == null) {
 					GAMA.getGui().getDialogFactory().error("File " + uri.lastSegment() + " cannot be built because of "

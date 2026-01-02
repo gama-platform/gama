@@ -10,11 +10,14 @@
  ********************************************************************************************************/
 package gama.gaml.interfaces;
 
+import gama.annotations.precompiler.OkForAPI;
+
 /**
  * The Interface IGamlDocumentation. A simple interface that allows retrieving the documentation of a description,
  * either directly or using a key. Used for actions and their arguments
  */
 @FunctionalInterface
+@OkForAPI
 public interface IGamlDocumentation {
 
 	/** The empty doc. */

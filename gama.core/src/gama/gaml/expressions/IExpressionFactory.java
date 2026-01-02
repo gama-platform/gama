@@ -13,8 +13,8 @@ package gama.gaml.expressions;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IExecutionContext;
+import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.ActionDescription;
 import gama.gaml.descriptions.ConstantExpressionDescription;
@@ -108,7 +108,7 @@ public interface IExpressionFactory {
 	 *            the type
 	 * @return the i expression
 	 */
-	<T> IExpression createExpr(final GAMA.InScope<T> exp, final IType type);
+	<T> IExpression createExpr(final InScope<T> exp, final IType type);
 
 	/**
 	 * Creates a new IExpression object.

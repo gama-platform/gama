@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlResource.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,7 +39,7 @@ import gama.core.runtime.IExecutionContext;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
+import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.ast.ISyntacticElement;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.ValidationContext;
@@ -378,14 +378,10 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	public void consume(final org.eclipse.xtext.diagnostics.Diagnostic diagnostic, final Severity severity) {
 		if (isValidationDisabled()) return;
 		switch (severity) {
-			case ERROR:
-				getErrors().add(diagnostic);
-				break;
-			case WARNING:
-				getWarnings().add(diagnostic);
-				break;
-			default:
-				;
+			case ERROR -> getErrors().add(diagnostic);
+			case WARNING -> getWarnings().add(diagnostic);
+			default -> {
+			}
 		}
 
 	}

@@ -29,7 +29,7 @@ import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.runtime.GAMA.InScope;
+import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.compilation.AbstractGamlAdditions;
 import gama.gaml.compilation.ISymbol;

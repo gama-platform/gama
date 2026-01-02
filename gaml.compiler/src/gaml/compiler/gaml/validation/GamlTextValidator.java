@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlTextValidator.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlTextValidator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,9 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 import org.eclipse.xtext.validation.EObjectDiagnosticImpl;
 
 import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.compilation.IGamlTextValidator;
-import gama.gaml.compilation.GamlCompilationError.GamlCompilationErrorType;
 import gama.gaml.interfaces.IGamlIssue;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.GamlResourceServices;
@@ -46,7 +47,7 @@ public class GamlTextValidator implements IGamlTextValidator {
 	 * @date 11 janv. 2024
 	 */
 	@Override
-	public void validateModel(final String expr, final List<GamlCompilationError> errors, final boolean syntaxOnly) {
+	public void validateModel(final String expr, final List<IGamlCompilationError> errors, final boolean syntaxOnly) {
 		final GamlResource resource = GamlResourceServices.getTemporaryResource(null);
 		try {
 			final InputStream is = new ByteArrayInputStream(expr.getBytes());
@@ -57,24 +58,22 @@ public class GamlTextValidator implements IGamlTextValidator {
 			} finally {}
 			if (resource.hasErrors()) {
 				for (Resource.Diagnostic d : resource.getErrors()) {
-					GamlCompilationError error;
-					if (d instanceof EObjectDiagnosticImpl ed) {
-						error = new GamlCompilationError(ed.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
-								ed.getProblematicObject(), 
-								Severity.WARNING.equals(ed.getSeverity()) ? GamlCompilationErrorType.Warning 
-										: Severity.INFO.equals(ed.getSeverity()) ? GamlCompilationErrorType.Info : GamlCompilationErrorType.Error
-								//Previously: Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
-								, ed.getData());
-					} else if (d instanceof XtextLinkingDiagnostic ld) {
-						error = new GamlCompilationError(ld.getMessage(), IGamlIssue.LINKING_ERROR,
-								ld.getUriToProblem(), GamlCompilationErrorType.Error, ld.getData());
-					} else if (d instanceof XtextSyntaxDiagnostic sd) {
-						error = new GamlCompilationError(sd.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
-								sd.getUriToProblem(), GamlCompilationErrorType.Error, sd.getData());
-					} else {
-						error = new GamlCompilationError(d.getMessage(), IGamlIssue.SYNTACTIC_ERROR, resource.getURI(),
-								GamlCompilationErrorType.Error);
-					}
+					GamlCompilationError error = switch (d) {
+						case EObjectDiagnosticImpl ed -> new GamlCompilationError(ed.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
+														ed.getProblematicObject(),
+														Severity.WARNING.equals(ed.getSeverity()) ? GamlCompilationErrorType.Warning
+																: Severity.INFO.equals(ed.getSeverity()) ? GamlCompilationErrorType.Info
+																: GamlCompilationErrorType.Error
+														// Previously:
+														// Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
+														, ed.getData()); // Previously: // Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
+						case XtextLinkingDiagnostic ld -> new GamlCompilationError(ld.getMessage(), IGamlIssue.LINKING_ERROR,
+														ld.getUriToProblem(), GamlCompilationErrorType.Error, ld.getData());
+						case XtextSyntaxDiagnostic sd -> new GamlCompilationError(sd.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
+														sd.getUriToProblem(), GamlCompilationErrorType.Error, sd.getData());
+						case null, default -> new GamlCompilationError(d.getMessage(), IGamlIssue.SYNTACTIC_ERROR, resource.getURI(),
+														GamlCompilationErrorType.Error);
+					};
 					errors.add(error);
 				}
 			}

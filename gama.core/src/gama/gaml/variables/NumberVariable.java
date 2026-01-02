@@ -23,8 +23,8 @@ import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
+import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaDate;
 import gama.gaml.descriptions.IDescription;
@@ -121,10 +121,10 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	private final IExpression min, max, step;
 
 	/** The max val. */
-	private GAMA.InScope<T> minVal, maxVal;
+	private InScope<T> minVal, maxVal;
 
 	/** The step val. */
-	private GAMA.InScope<Step> stepVal;
+	private InScope<Step> stepVal;
 
 	/**
 	 * Instantiates a new number variable.

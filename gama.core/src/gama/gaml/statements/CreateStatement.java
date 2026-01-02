@@ -56,8 +56,7 @@ import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
+import gama.gaml.descriptions.StatementSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.interfaces.ICreateDelegate;
@@ -324,7 +323,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	public static class CreateSerializer extends StatementSerializer {
 
 		@Override
-		protected void serializeArgs(final SymbolDescription s, final StringBuilder sb, final boolean ncludingBuiltIn) {
+		protected void serializeArgs(final IDescription s, final StringBuilder sb, final boolean includingBuiltIn) {
 			final StatementDescription desc = (StatementDescription) s;
 			final Arguments args = desc.getPassedArgs();
 			if (args == null || args.isEmpty()) return;

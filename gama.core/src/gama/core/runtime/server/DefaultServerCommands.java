@@ -3,7 +3,7 @@
  * DefaultServerCommands.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -46,8 +46,8 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.model.IModel;
 import gama.core.metamodel.agent.AgentReference;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.GAMA;
+import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -59,8 +59,8 @@ import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
 import gama.gaml.compilation.GamlIdiomsProvider;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.gaml.operators.Cast;
 import gama.gaml.species.ISpecies;
 import gama.gaml.statements.ActionStatement;
@@ -108,7 +108,7 @@ public class DefaultServerCommands {
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
-			List<GamlCompilationError> errors = new ArrayList<>();
+			List<IGamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
 		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);
@@ -361,7 +361,7 @@ public class DefaultServerCommands {
 				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
 		if (entered.isBlank()) return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
-		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
+		List<IGamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
 		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
 				new GamaCompilationFailedException(errors).toJsonString(), map, true);
 		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
@@ -501,7 +501,7 @@ public class DefaultServerCommands {
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
 		IModel model = null;
 		try {
-			List<GamlCompilationError> errors = new ArrayList<>();
+			List<IGamlCompilationError> errors = new ArrayList<>();
 			model = GAML.getModelBuilder().compile(ff, errors, null);
 		} catch (GamaCompilationFailedException compError) {
 			return new CommandResponse(UnableToExecuteRequest, compError.toJsonString(), map, true);

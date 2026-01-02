@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MoleSimulationLoader.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MoleSimulationLoader.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,7 @@ import java.util.List;
 import gama.annotations.precompiler.GamlProperties;
 import gama.core.kernel.model.IModel;
 import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
+import gama.gaml.compilation.IGamlCompilationError;
 import gama.headless.core.GamaHeadlessException;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
@@ -25,7 +25,6 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  * The Class MoleSimulationLoader.
  */
 public abstract class MoleSimulationLoader {
-
 
 	/**
 	 * Load model.
@@ -40,7 +39,7 @@ public abstract class MoleSimulationLoader {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public static IModel loadModel(final File modelPath, final List<GamlCompilationError> errors)
+	public static IModel loadModel(final File modelPath, final List<IGamlCompilationError> errors)
 			throws IOException, GamaCompilationFailedException {
 		return loadModel(modelPath, errors, null);
 	}
@@ -60,7 +59,7 @@ public abstract class MoleSimulationLoader {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public static IModel loadModel(final File modelPath, final List<GamlCompilationError> errors,
+	public static IModel loadModel(final File modelPath, final List<IGamlCompilationError> errors,
 			final GamlProperties metadata) throws IOException, GamaCompilationFailedException {
 		return GamlModelBuilder.getDefaultInstance().compile(modelPath, errors, metadata);
 	}

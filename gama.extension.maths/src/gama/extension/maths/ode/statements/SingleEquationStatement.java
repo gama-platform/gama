@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SingleEquationStatement.java, in gaml.extensions.maths, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SingleEquationStatement.java, in gama.extension.maths, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.maths.ode.statements;
 
@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.Reason;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -35,6 +32,9 @@ import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
+import gama.annotations.precompiler.Reason;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.map.GamaMapFactory;
@@ -45,7 +45,6 @@ import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.expressions.IVarExpression;
@@ -130,10 +129,10 @@ public class SingleEquationStatement extends AbstractStatement {
 	/**
 	 * The Class SIngleEquationSerializer.
 	 */
-	public static class SIngleEquationSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class SIngleEquationSerializer extends SymbolSerializer {
 
 		@Override
-		protected void serialize(final SymbolDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(desc.getFacet(EQUATION_LEFT).serializeToGaml(includingBuiltIn)).append(" = ")
 					.append(desc.getFacet(EQUATION_RIGHT).serializeToGaml(includingBuiltIn)).append(";");
 		}
@@ -179,10 +178,10 @@ public class SingleEquationStatement extends AbstractStatement {
 
 	/** The expression. */
 	private IExpression function, expression;
-	
+
 	/** The var. */
 	private final List<IExpression> var = new ArrayList<>();
-	
+
 	/** The var t. */
 	private IExpression var_t;
 
@@ -191,59 +190,50 @@ public class SingleEquationStatement extends AbstractStatement {
 	 *
 	 * @return the function
 	 */
-	public IExpression getFunction() {
-		return function;
-	}
+	public IExpression getFunction() { return function; }
 
 	/**
 	 * Sets the function.
 	 *
-	 * @param function the new function
+	 * @param function
+	 *            the new function
 	 */
-	public void setFunction(final IExpression function) {
-		this.function = function;
-	}
+	public void setFunction(final IExpression function) { this.function = function; }
 
 	/**
 	 * Gets the expression.
 	 *
 	 * @return the expression
 	 */
-	public IExpression getExpression() {
-		return expression;
-	}
+	public IExpression getExpression() { return expression; }
 
 	/**
 	 * Sets the expression.
 	 *
-	 * @param expression the new expression
+	 * @param expression
+	 *            the new expression
 	 */
-	public void setExpression(final IExpression expression) {
-		this.expression = expression;
-	}
+	public void setExpression(final IExpression expression) { this.expression = expression; }
 
 	/**
 	 * Gets the vars.
 	 *
 	 * @return the vars
 	 */
-	public List<IExpression> getVars() {
-		return var;
-	}
+	public List<IExpression> getVars() { return var; }
 
 	/**
 	 * Gets the var time.
 	 *
 	 * @return the var time
 	 */
-	public IExpression getVarTime() {
-		return var_t;
-	}
+	public IExpression getVarTime() { return var_t; }
 
 	/**
 	 * Gets the var.
 	 *
-	 * @param index the index
+	 * @param index
+	 *            the index
 	 * @return the var
 	 */
 	public IExpression getVar(final int index) {
@@ -253,16 +243,16 @@ public class SingleEquationStatement extends AbstractStatement {
 	/**
 	 * Sets the var t.
 	 *
-	 * @param vt the new var t
+	 * @param vt
+	 *            the new var t
 	 */
-	public void setVar_t(final IVarExpression vt) {
-		this.var_t = vt;
-	}
+	public void setVar_t(final IVarExpression vt) { this.var_t = vt; }
 
 	/**
 	 * Instantiates a new single equation statement.
 	 *
-	 * @param desc the desc
+	 * @param desc
+	 *            the desc
 	 */
 	public SingleEquationStatement(final IDescription desc) {
 		super(desc);
@@ -274,7 +264,7 @@ public class SingleEquationStatement extends AbstractStatement {
 	 * Establish var.
 	 */
 	public void establishVar() {
-		if (getOrder() == 0) { return; }
+		if (getOrder() == 0) return;
 		int i = 0;
 		for (i = 0; i < ((AbstractNAryOperator) function).numArg() - 1; i++) {
 			final IExpression tmp = ((AbstractNAryOperator) function).arg(i);
@@ -304,9 +294,7 @@ public class SingleEquationStatement extends AbstractStatement {
 	}
 
 	@Override
-	public int getOrder() {
-		return orderNames.get(function.getName());
-	}
+	public int getOrder() { return orderNames.get(function.getName()); }
 
 	// Placeholders operators that are (normally) never called.
 	// FIXME Can probably be replaced by actions, so that they do not pollute
@@ -319,9 +307,12 @@ public class SingleEquationStatement extends AbstractStatement {
 	/**
 	 * Diff.
 	 *
-	 * @param scope the scope
-	 * @param var the var
-	 * @param time the time
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @param time
+	 *            the time
 	 * @return the double
 	 */
 	@operator (
@@ -338,9 +329,12 @@ public class SingleEquationStatement extends AbstractStatement {
 	/**
 	 * Diff 2.
 	 *
-	 * @param scope the scope
-	 * @param var the var
-	 * @param time the time
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @param time
+	 *            the time
 	 * @return the double
 	 */
 	@operator (

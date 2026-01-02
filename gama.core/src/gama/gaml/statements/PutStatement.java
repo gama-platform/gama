@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * PutStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * PutStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,7 +28,6 @@ import gama.core.util.list.IList;
 import gama.gaml.compilation.annotations.serializer;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SymbolDescription;
 import gama.gaml.descriptions.SymbolSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IGamlIssue;
@@ -81,9 +79,12 @@ import gama.gaml.types.IType;
 		symbols = IKeyword.CHART)
 @validator (PutValidator.class)
 @doc (
-		value = "A statement used to put items into containers at specific keys or indices. It can be written using the classic syntax (`put ... in: ...`) or a compact one, which is now preferred."
-				+ "\n- To put an element in a container at a given index, use `container[index] <- element;` (classic form: `put element in: container at: index;`) "
-				+ "\n- To put an element in a container at all indices (i.e. replace all values by the element),  use `container[] <- element` (classic form: `put element in: container all: true;`)",
+		value = """
+				A statement used to put items into containers at specific keys or indices. It can be written using the classic syntax (`put ... in: ...`) or a compact one, which is now preferred.\
+
+				- To put an element in a container at a given index, use `container[index] <- element;` (classic form: `put element in: container at: index;`) \
+
+				- To put an element in a container at all indices (i.e. replace all values by the element),  use `container[] <- element` (classic form: `put element in: container all: true;`)""",
 		usages = { @usage (
 				value = "The allowed  configurations are the following ones:",
 				examples = { @example (
@@ -147,10 +148,10 @@ public class PutStatement extends AddStatement {
 	/**
 	 * The Class PutSerializer.
 	 */
-	public static class PutSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class PutSerializer extends SymbolSerializer {
 
 		@Override
-		protected void serialize(final SymbolDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
+		protected void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			// IExpression allFacet = f.getExpr(ALL);

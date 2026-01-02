@@ -2,7 +2,7 @@
  *
  * IDescription.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,10 +20,6 @@ import gama.core.util.BiConsumerWithPruning;
 import gama.core.util.ConsumerWithPruning;
 import gama.core.util.ICollector;
 import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.SymbolSerializer.ModelSerializer;
-import gama.gaml.descriptions.SymbolSerializer.SpeciesSerializer;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
-import gama.gaml.descriptions.SymbolSerializer.VarSerializer;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IBenchmarkable;
 import gama.gaml.interfaces.IDisposable;
@@ -120,31 +116,6 @@ public interface IDescription extends IGamlDescription, IKeyword, ITyped, IDispo
 		NoTypeInference
 
 	}
-
-	/**
-	 * The Constant SYMBOL_SERIALIZER.
-	 */
-	SymbolSerializer<SymbolDescription> SYMBOL_SERIALIZER = new SymbolSerializer<>();
-
-	/**
-	 * The Constant VAR_SERIALIZER.
-	 */
-	VarSerializer VAR_SERIALIZER = new VarSerializer();
-
-	/**
-	 * The Constant SPECIES_SERIALIZER.
-	 */
-	SpeciesSerializer SPECIES_SERIALIZER = new SpeciesSerializer();
-
-	/**
-	 * The Constant MODEL_SERIALIZER.
-	 */
-	ModelSerializer MODEL_SERIALIZER = new ModelSerializer();
-
-	/**
-	 * The Constant STATEMENT_SERIALIZER.
-	 */
-	StatementSerializer STATEMENT_SERIALIZER = new StatementSerializer();
 
 	/**
 	 * The Constant TO_NAME.
