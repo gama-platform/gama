@@ -1,14 +1,15 @@
 /*******************************************************************************************************
  *
- * IStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
 import gama.gaml.compilation.ISymbol;
 
@@ -18,6 +19,7 @@ import gama.gaml.compilation.ISymbol;
  *
  *
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IStatement extends ISymbol, IExecutable {
 
 	/**
@@ -31,7 +33,7 @@ public interface IStatement extends ISymbol, IExecutable {
 		 * @param args
 		 *            the new formal args
 		 */
-		void setFormalArgs(Arguments args);
+		void setFormalArgs(IArguments args);
 
 		/**
 		 * Sets the runtime args.
@@ -42,7 +44,7 @@ public interface IStatement extends ISymbol, IExecutable {
 		 *            the args
 		 */
 		@Override
-		default void setRuntimeArgs(final IScope scope, final Arguments args) {}
+		default void setRuntimeArgs(final IScope scope, final IArguments args) {}
 
 	}
 

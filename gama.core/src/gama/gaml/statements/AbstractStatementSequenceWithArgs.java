@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractStatementSequenceWithArgs.java, in gama.core, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * AbstractStatementSequenceWithArgs.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,7 @@ import gama.gaml.statements.IStatement.WithArgs;
 public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence implements WithArgs {
 
 	/** The actual args. */
-	final ThreadLocal<Arguments> actualArgs = new ThreadLocal<>();
+	final ThreadLocal<IArguments> actualArgs = new ThreadLocal<>();
 
 	/**
 	 * @param desc
@@ -40,7 +40,7 @@ public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence
 	 * @see gama.gaml.statements.IStatement.WithArgs#setFormalArgs(gama.gaml.statements.Arguments)
 	 */
 	@Override
-	public void setFormalArgs(final Arguments args) {}
+	public void setFormalArgs(final IArguments args) {}
 
 	/**
 	 * Method setRuntimeArgs()
@@ -48,7 +48,7 @@ public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence
 	 * @see gama.gaml.statements.IStatement.WithArgs#setRuntimeArgs(gama.gaml.statements.Arguments)
 	 */
 	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {
+	public void setRuntimeArgs(final IScope scope, final IArguments args) {
 		// TODO Verify that this copy of the arguments is required or not.
 		actualArgs.set(new Arguments(args));
 	}
@@ -61,7 +61,7 @@ public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence
 
 	@Override
 	public void dispose() {
-		Arguments args = actualArgs.get();
+		IArguments args = actualArgs.get();
 		if (args != null) { args.dispose(); }
 		actualArgs.set(null);
 		super.dispose();

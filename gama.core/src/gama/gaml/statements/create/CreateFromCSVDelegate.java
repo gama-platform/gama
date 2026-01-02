@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * CreateFromCSVDelegate.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,8 +22,8 @@ import gama.core.util.matrix.IMatrix;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.ICreateDelegate;
 import gama.gaml.operators.Cast;
-import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
+import gama.gaml.statements.IArguments;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -58,7 +58,7 @@ public class CreateFromCSVDelegate implements ICreateDelegate {
 	@SuppressWarnings ("rawtypes")
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object input, final Arguments init, final CreateStatement statement) {
+			final Object input, final IArguments init, final CreateStatement statement) {
 		final GamaCSVFile source = (GamaCSVFile) input;
 		final IExpression header = statement.getHeader();
 		if (header != null) { source.forceHeader(Cast.asBool(scope, header.value(scope))); }

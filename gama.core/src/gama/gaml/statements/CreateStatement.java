@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CreateStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * CreateStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
@@ -260,7 +260,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				final boolean mir = sd.isMirror();
 				final boolean gri = sd.isGrid();
 				final boolean bui = sd.isBuiltIn();
-				if (abs || mir || gri /** see #4 || bui**/) {
+				if (abs || mir || gri /** see #4 || bui **/
+				) {
 					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : bui ? "built-in" : "";
 					cd.error(sd.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
 					return;
@@ -340,7 +341,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 	/** The init. */
 	// private final ThreadLocal<Arguments> init = new ThreadLocal();
-	private Arguments init;
+	private IArguments init;
 
 	/** The header. */
 	private final IExpression from, number, species, header;
@@ -478,7 +479,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
 			throw GamaRuntimeException.error("Simulations can only be created within experiments", scope);
 		final SpeciesDescription sd = pop.getSpecies().getDescription();
-		final String error = sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" :**/ sd.isGrid() ? "a grid" : null;
+		final String error =
+				sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" : **/
+						sd.isGrid() ? "a grid" : null;
 		if (error != null)
 			throw GamaRuntimeException.error(sd.getName() + "is " + error + " and cannot be instantiated.", scope);
 	}
@@ -555,7 +558,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		if (init == null) return;
 		scope.pushReadAttributes(values);
 		try {
-			init.forEachFacet((k, v) -> {
+			init.forEachArgument((k, v) -> {
 				values.put(k, v.getExpression().value(scope));
 				return true;
 			});
@@ -565,10 +568,10 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { init = args; }
+	public void setFormalArgs(final IArguments args) { init = args; }
 
 	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
+	public void setRuntimeArgs(final IScope scope, final IArguments args) {}
 
 	/**
 	 * @return

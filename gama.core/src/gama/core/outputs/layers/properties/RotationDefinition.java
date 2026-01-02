@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * RotationDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,8 @@ import static gama.core.common.interfaces.IKeyword.LOCATION;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
+import gama.gaml.compilation.GAML;
+import gama.gaml.expressions.IExpression;
 import gama.gaml.types.Types;
 
 /**
@@ -48,9 +50,10 @@ public class RotationDefinition extends AbstractDefinition {
 	@SuppressWarnings ("unchecked")
 	public RotationDefinition(final RotationStatement symbol) {
 		super(symbol);
-		locationAttribute = create(LOCATION,
-				symbol.hasFacet(LOCATION) ? symbol.getFacet(LOCATION) : scope -> scope.getSimulation().getCentroid(),
-				Types.POINT, null);
+		IExpression expr =
+				GAML.getExpressionFactory().createExpr(scope -> scope.getSimulation().getCentroid(), Types.POINT);
+		locationAttribute =
+				create(LOCATION, symbol.hasFacet(LOCATION) ? symbol.getFacet(LOCATION) : expr, Types.POINT, null);
 		axisAttribute = create("axis", Types.POINT, Rotation3D.PLUS_K);
 		angleAttribute = initialAngleAttribute = create("angle", Types.FLOAT, 0d);
 	}

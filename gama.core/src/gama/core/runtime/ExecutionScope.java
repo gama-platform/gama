@@ -45,7 +45,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IStepable;
 import gama.gaml.operators.Strings;
-import gama.gaml.statements.Arguments;
+import gama.gaml.statements.IArguments;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.IType;
@@ -514,7 +514,7 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public IExecutionResult execute(final IExecutable statement, final IAgent target,
-			final boolean useTargetScopeForExecution, final Arguments args) {
+			final boolean useTargetScopeForExecution, final IArguments args) {
 		if (statement == null || target == null || interrupted() || target.dead()) return FAILED;
 		// We keep the current pushed agent (context of this execution)
 		final IAgent caller = this.getAgent();
@@ -554,13 +554,13 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public void stackArguments(final Arguments actualArgs) {
+	public void stackArguments(final IArguments actualArgs) {
 		if (actualArgs == null) return;
 		boolean callerPushed = false;
 		final IAgent caller = actualArgs.getCaller();
 		if (caller != null) { callerPushed = push(caller); }
 		try {
-			actualArgs.forEachFacet((a, b) -> {
+			actualArgs.forEachArgument((a, b) -> {
 				final IExpression e = b.getExpression();
 				if (e != null) { addVarWithValue(a, e.value(ExecutionScope.this)); }
 				return true;

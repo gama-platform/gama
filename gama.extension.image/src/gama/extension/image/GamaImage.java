@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaImage.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaImage.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,6 +37,7 @@ import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IField;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 
 /**
  * Class GamaImage. A simple wrapper on a BufferedImage of type TYPE_INT_ARGB
@@ -378,5 +379,8 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), "type", getType(), "pixels",
 				ImageOperators.matrix(null, this));
 	}
+
+	@Override
+	public IType<?> getGamlType() { return Types.get(IKeyword.IMAGE); }
 
 }

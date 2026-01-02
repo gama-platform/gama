@@ -31,7 +31,7 @@ import gama.gaml.compilation.ISymbol;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IBenchmarkable;
 import gama.gaml.interfaces.IStepable;
-import gama.gaml.statements.Arguments;
+import gama.gaml.statements.IArguments;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.types.IType;
 import gama.gaml.types.ITypesManager;
@@ -418,7 +418,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default IExecutionResult execute(final IExecutable executable, final Arguments args) {
+	default IExecutionResult execute(final IExecutable executable, final IArguments args) {
 		return execute(executable, getAgent(), args);
 	}
 
@@ -433,7 +433,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default IExecutionResult execute(final IExecutable executable, final IAgent agent, final Arguments args) {
+	default IExecutionResult execute(final IExecutable executable, final IAgent agent, final IArguments args) {
 		return execute(executable, agent, false, args);
 	}
 
@@ -795,7 +795,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param actualArgs
 	 *            The arguments to push
 	 */
-	void stackArguments(Arguments actualArgs);
+	void stackArguments(IArguments actualArgs);
 
 	/**
 	 * Updates an agent. This is typically called during the simulation update phase.
@@ -868,7 +868,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	IExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, Arguments args);
+	IExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, IArguments args);
 
 	/**
 	 * Retrieves and clears the BREAK flow status.

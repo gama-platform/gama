@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamlSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamlSpecies.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,8 +11,6 @@ package gama.gaml.species;
 
 import java.util.Collection;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -21,6 +18,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -42,6 +41,7 @@ import gama.gaml.interfaces.IGamlIssue;
 import gama.gaml.species.GamlSpecies.SpeciesValidator;
 import gama.gaml.types.IContainerType;
 import gama.gaml.types.IType;
+import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
 
 /**
@@ -292,9 +292,7 @@ public class GamlSpecies extends AbstractSpecies {
 		private IExpression processNeighbors(final SpeciesDescription sd) {
 
 			final IExpression neighbours = sd.getFacetExpr(IKeyword.NEIGHBORS);
-			if (neighbours != null) {
-				sd.setFacet(NEIGHBORS, neighbours);
-			}
+			if (neighbours != null) { sd.setFacet(NEIGHBORS, neighbours); }
 			return neighbours;
 		}
 
@@ -394,7 +392,7 @@ public class GamlSpecies extends AbstractSpecies {
 		concurrency = this.getFacet(IKeyword.PARALLEL);
 		if (isMirror() && !hasFacet(IKeyword.SCHEDULES)) {
 			// See Issue #2731 -- mirror species have a default scheduling rule
-			schedule = scope -> {
+			schedule = GAML.getExpressionFactory().createExpr(scope -> {
 				final IList<IAgent> agents = GamaListFactory.create();
 				for (final IAgent agent : getPopulation(scope)) {
 					final Object obj = agent.getDirectVarValue(scope, IKeyword.TARGET);
@@ -402,7 +400,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 				}
 				return agents;
-			};
+			}, Types.LIST.of(Types.AGENT));
 		} else {
 			schedule = this.getFacet(IKeyword.SCHEDULES);
 		}

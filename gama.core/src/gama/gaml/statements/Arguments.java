@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Arguments.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Arguments.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,6 +15,7 @@ import java.util.Map;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
+import gama.core.util.BiConsumerWithPruning;
 import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.descriptions.IExpressionDescription;
 import gama.gaml.expressions.IExpression;
@@ -22,7 +23,7 @@ import gama.gaml.expressions.IExpression;
 /**
  * @author drogoul
  */
-public class Arguments extends Facets {
+public class Arguments extends Facets implements IArguments {
 
 	/** The null. */
 	public static final Arguments NULL = new Arguments();
@@ -42,9 +43,11 @@ public class Arguments extends Facets {
 	 * @param args
 	 *            the args
 	 */
-	public Arguments(final Arguments args) {
-		super(args);
-		if (args != null) { setCaller(args.caller.get()); }
+	public Arguments(final IArguments args) {
+		if (args != null) {
+			putAll(args);
+			setCaller(args.getCaller());
+		}
 	}
 
 	/**
@@ -96,6 +99,7 @@ public class Arguments extends Facets {
 	 *            the scope
 	 * @return the arguments
 	 */
+	@Override
 	public Arguments resolveAgainst(final IScope scope) {
 		final Arguments result = new Arguments();
 		result.setCaller(caller.get());
@@ -125,6 +129,7 @@ public class Arguments extends Facets {
 	 * @return the i expression description
 	 * @date 27 déc. 2023
 	 */
+	@Override
 	public IExpressionDescription remove(final String s) {
 		if (keys != null) { keys.remove(s); }
 		return super.remove(s);
@@ -136,6 +141,7 @@ public class Arguments extends Facets {
 	 * @param caller
 	 *            the new caller
 	 */
+	@Override
 	public void setCaller(final IAgent caller) {
 		this.caller.set(caller);
 	}
@@ -145,6 +151,7 @@ public class Arguments extends Facets {
 	 *
 	 * @return the caller
 	 */
+	@Override
 	public IAgent getCaller() { return caller.get(); }
 
 	@Override
@@ -160,9 +167,37 @@ public class Arguments extends Facets {
 	 *            the index
 	 * @return the expr
 	 */
+	@Override
 	public IExpression getExpr(final int index) {
 		if (index > size() || index < 0) return null;
 		String key = keys.get(index);
 		return get(key).getExpression();
 	}
+
+	/**
+	 * For each argument.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 * @return true, if successful
+	 */
+	@Override
+	public boolean forEachArgument(final BiConsumerWithPruning<String, IExpressionDescription> visitor) {
+		return forEachFacet(visitor);
+	}
+
+	/**
+	 * Complement with.
+	 *
+	 * @param newFacets
+	 *            the new facets
+	 */
+	@Override
+	public void complementWith(final IArguments newFacets) {
+		newFacets.forEachArgument((s, v) -> {
+			if (!containsKey(s)) { put(s, v); }
+			return true;
+		});
+	}
+
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CreateFromDatabaseDelegate.java, in gama.extension.database, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * CreateFromDatabaseDelegate.java, in gama.extension.database, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,8 +23,8 @@ import gama.core.util.map.GamaMapFactory;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.ICreateDelegate;
-import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
+import gama.gaml.statements.IArguments;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -58,7 +58,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object source, final Arguments init, final CreateStatement statement) {
+			final Object source, final IArguments init, final CreateStatement statement) {
 		final IList<IList<Object>> input = (IList<IList<Object>>) source;
 		// get Column name
 		final IList<Object> colNames = input.get(0);
@@ -101,10 +101,10 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	 * transformCRS from GisUtils.transformCRS Last Modified: 25-Feb-2013
 	 */
 	private void computeInits(final IScope scope, final Map values, final IList<Object> rowList,
-			final IList<Object> colTypes, final IList<Object> colNames, final Arguments init)
+			final IList<Object> colTypes, final IList<Object> colNames, final IArguments init)
 			throws GamaRuntimeException {
 		if (init == null) return;
-		init.forEachFacet((s, e) -> {
+		init.forEachArgument((s, e) -> {
 			final IExpression valueExpr = e.getExpression();
 			// get parameter
 			final String columnName = valueExpr.value(scope).toString().toUpperCase();

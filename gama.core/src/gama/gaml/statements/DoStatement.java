@@ -2,7 +2,7 @@
  *
  * DoStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -185,7 +185,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	/** The args. */
-	Arguments args;
+	IArguments args;
 
 	/** The target species. */
 	final String targetSpecies;
@@ -221,7 +221,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { this.args = args; }
+	public void setFormalArgs(final IArguments args) { this.args = args; }
 
 	/**
 	 * Gets the runtime args.
@@ -267,7 +267,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
+	public void setRuntimeArgs(final IScope scope, final IArguments args) {}
 
 	@Override
 	public void dispose() {

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CreateFromNullDelegate.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * CreateFromNullDelegate.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.statements.create;
 
@@ -16,8 +16,8 @@ import java.util.Map;
 import gama.core.runtime.IScope;
 import gama.core.util.map.GamaMapFactory;
 import gama.gaml.interfaces.ICreateDelegate;
-import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
+import gama.gaml.statements.IArguments;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -52,11 +52,9 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object input, final Arguments init, final CreateStatement statement) {
+			final Object input, final IArguments init, final CreateStatement statement) {
 		Map<String, Object> nullMap = null;
-		if (init == null) {
-			nullMap = GamaMapFactory.create();
-		}
+		if (init == null) { nullMap = GamaMapFactory.create(); }
 		final int num = max == null ? 1 : max;
 		for (int i = 0; i < num; i++) {
 			final Map<String, Object> map =
@@ -69,7 +67,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 
 	/**
 	 * Method fromFacetType()
-	 * 
+	 *
 	 * @see gama.gaml.interfaces.ICreateDelegate#fromFacetType()
 	 */
 	@Override

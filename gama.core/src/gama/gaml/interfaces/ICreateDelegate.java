@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ICreateDelegate.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,8 +17,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
 import gama.core.util.list.IList;
-import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
+import gama.gaml.statements.IArguments;
 import gama.gaml.statements.RemoteSequence;
 import gama.gaml.types.IType;
 
@@ -56,7 +56,7 @@ public interface ICreateDelegate {
 	 * @return
 	 */
 
-	boolean createFrom(IScope scope, List<Map<String, Object>> inits, Integer max, Object source, Arguments init,
+	boolean createFrom(IScope scope, List<Map<String, Object>> inits, Integer max, Object source, IArguments init,
 			CreateStatement statement);
 
 	/**

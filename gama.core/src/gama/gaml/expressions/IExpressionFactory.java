@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IExpressionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.gaml.expressions;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IExecutionContext;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.descriptions.ActionDescription;
@@ -95,6 +96,19 @@ public interface IExpressionFactory {
 	 * @return the i expression
 	 */
 	IExpression createExpr(final IExpressionDescription s, final IDescription context);
+
+	/**
+	 * Creates a new IExpression object.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param exp
+	 *            the exp
+	 * @param type
+	 *            the type
+	 * @return the i expression
+	 */
+	<T> IExpression createExpr(final GAMA.InScope<T> exp, final IType type);
 
 	/**
 	 * Creates a new IExpression object.

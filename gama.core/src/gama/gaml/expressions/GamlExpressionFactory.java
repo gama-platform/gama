@@ -4,7 +4,7 @@
  * GamlExpressionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.runtime.GAMA;
 import gama.core.runtime.IExecutionContext;
+import gama.core.runtime.IScope;
+import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
@@ -414,6 +417,32 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		final ActionStatement a = (ActionStatement) desc.compile();
 		agent.getSpecies().addTemporaryAction(a);
 		return getParser().compile(TEMPORARY_ACTION_NAME + "()", context, null);
+	}
+
+	/**
+	 * Creates a new GamlExpression object.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param type
+	 *            the type
+	 * @return the i expression
+	 */
+	@Override
+	public <T> IExpression createExpr(final GAMA.InScope<T> exp, final IType type) {
+		return new IExpression() {
+
+			@Override
+			public IType<?> getGamlType() { return type; }
+
+			@Override
+			public T value(final IScope scope) throws GamaRuntimeException {
+				return exp.run(scope);
+			}
+
+		};
 	}
 
 }

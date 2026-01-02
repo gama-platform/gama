@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * CreateFromGeometriesDelegate.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,8 @@ import gama.core.util.IAddressableContainer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.list.IList;
 import gama.gaml.interfaces.ICreateDelegate;
-import gama.gaml.statements.Arguments;
 import gama.gaml.statements.CreateStatement;
+import gama.gaml.statements.IArguments;
 import gama.gaml.types.GamaGeometryType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -61,7 +61,7 @@ public class CreateFromGeometriesDelegate implements ICreateDelegate {
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object input, final Arguments init, final CreateStatement statement) {
+			final Object input, final IArguments init, final CreateStatement statement) {
 		final IAddressableContainer<Integer, IShape, Integer, IShape> container =
 				(IAddressableContainer<Integer, IShape, Integer, IShape>) input;
 		final int num = max == null ? container.length(scope) : Math.min(container.length(scope), max);

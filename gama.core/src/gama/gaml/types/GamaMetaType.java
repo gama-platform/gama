@@ -2,7 +2,7 @@
  *
  * GamaMetaType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -126,9 +126,10 @@ public class GamaMetaType extends GamaType<IType<?>> {
 
 			})
 	@no_test
-	public static IType<?> actualTypeOf(final IScope scope, final IExpression obj) {
-		if (obj == null) return Types.NO_TYPE;
-		return obj.computeRuntimeType(scope);
+	public static IType<?> actualTypeOf(final IScope scope, final IExpression exp) {
+		if (exp == null) return Types.NO_TYPE;
+		Object obj = exp.value(scope);
+		return GamaType.actualTypeOf(scope, obj);
 	}
 
 	@Override
