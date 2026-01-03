@@ -28,8 +28,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMap;
@@ -992,7 +992,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	public boolean isNull() { return x == 0d && y == 0d && z == 0d; }
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "x", x, "y", y, "z", z);
 	}
 

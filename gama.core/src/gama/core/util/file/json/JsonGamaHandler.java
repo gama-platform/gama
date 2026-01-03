@@ -3,7 +3,7 @@
  * JsonGamaHandler.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,7 @@ import gama.gaml.types.Types;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 29 oct. 2023
  */
-class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJsonConstants {
+class JsonGamaHandler extends JsonHandler<IJsonArray, JsonObject> implements IJsonConstants {
 
 	/**
 	 * Instantiates a new default handler.
@@ -33,18 +33,18 @@ class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJso
 	 *            the json
 	 * @date 1 nov. 2023
 	 */
-	JsonGamaHandler(final Json json) {
+	JsonGamaHandler(final IJSon json) {
 		this.json = json;
 	}
 
 	/** The json. */
-	protected Json json;
+	protected IJSon json;
 
 	/** The value. */
-	protected JsonValue value;
+	protected IJsonValue value;
 
 	@Override
-	public JsonArray startArray() {
+	public IJsonArray startArray() {
 		return new JsonArray(json);
 	}
 
@@ -93,8 +93,14 @@ class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJso
 		value = isFloat ? new JsonFloat(string) : isString ? new JsonString(string) : new JsonInt(string);
 	}
 
+	/**
+	 * End array.
+	 *
+	 * @param array
+	 *            the array
+	 */
 	@Override
-	public void endArray(final JsonArray array) {
+	public void endArray(final IJsonArray array) {
 		value = array;
 	}
 
@@ -131,7 +137,7 @@ class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJso
 	}
 
 	@Override
-	public void endArrayValue(final JsonArray array) {
+	public void endArrayValue(final IJsonArray array) {
 		array.add(value);
 	}
 
@@ -147,6 +153,6 @@ class JsonGamaHandler extends JsonHandler<JsonArray, JsonObject> implements IJso
 	 * @return the value
 	 * @date 29 oct. 2023
 	 */
-	JsonValue getValue() { return value; }
+	IJsonValue getValue() { return value; }
 
 }

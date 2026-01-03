@@ -30,8 +30,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IAddressableContainer;
 import gama.core.util.IModifiableContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.IList;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -585,7 +585,7 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "cols", this.getCols(null), "rows", this.getRows(null), "contents",
 				this.listValue(null, this.getGamlType().getContentType(), false));
 

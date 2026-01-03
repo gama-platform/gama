@@ -53,8 +53,8 @@ import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
@@ -548,7 +548,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		double width = 0;
 		double height = 0;
 		try (var reader = new java.io.InputStreamReader(file.getContents())) {
-			JsonValue value = Json.getNew().parse(reader);
+			IJsonValue value = Json.getNew().parse(reader);
 			if (value.isArray()) {
 				type = "Array";
 				itemCount = value.asArray().size();
@@ -562,12 +562,12 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 						Envelope3D env = Envelope3D.of(0, 0, 0, 0, 0, 0);
 						switch (t) {
 							case "FeatureCollection": {
-								JsonValue features = value.asObject().get("features");
+								IJsonValue features = value.asObject().get("features");
 								if (features != null && features.isArray()) {
 									itemCount = features.asArray().size();
-									for (JsonValue v : features.asArray()) {
+									for (IJsonValue v : features.asArray()) {
 										if (v.isObject()) {
-											JsonValue geom = v.asObject().get("geometry");
+											IJsonValue geom = v.asObject().get("geometry");
 											if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
 										}
 									}
@@ -575,14 +575,14 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 								break;
 							}
 							case "Feature": {
-								JsonValue geom = value.asObject().get("geometry");
+								IJsonValue geom = value.asObject().get("geometry");
 								if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
 								break;
 							}
 							case "GeometryCollection": {
-								JsonValue geometries = value.asObject().get("geometries");
+								IJsonValue geometries = value.asObject().get("geometries");
 								if (geometries != null && geometries.isArray()) {
-									for (JsonValue v : geometries.asArray()) {
+									for (IJsonValue v : geometries.asArray()) {
 										if (v.isObject()) { computeEnvelope(v, env); }
 									}
 								}
@@ -594,11 +594,11 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 						}
 						width = env.getWidth();
 						height = env.getHeight();
-						JsonValue crsVal = value.asObject().get("crs");
+						IJsonValue crsVal = value.asObject().get("crs");
 						if (crsVal != null && crsVal.isObject()) {
-							JsonValue props = crsVal.asObject().get("properties");
+							IJsonValue props = crsVal.asObject().get("properties");
 							if (props != null && props.isObject()) {
-								JsonValue name = props.asObject().get("name");
+								IJsonValue name = props.asObject().get("name");
 								if (name != null && name.isString()) { crs = name.asString(); }
 							}
 						}
@@ -619,8 +619,8 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @param env
 	 *            the env
 	 */
-	private void computeEnvelope(final JsonValue geom, final Envelope3D env) {
-		JsonValue coords = geom.asObject().get("coordinates");
+	private void computeEnvelope(final IJsonValue geom, final Envelope3D env) {
+		IJsonValue coords = geom.asObject().get("coordinates");
 		if (coords == null) return;
 		String type = geom.asObject().get("type").asString();
 		switch (type) {
@@ -629,15 +629,15 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 				break;
 			case "LineString":
 			case "MultiPoint":
-				for (JsonValue v : coords.asArray()) { expandEnvelope(v, env); }
+				for (IJsonValue v : coords.asArray()) { expandEnvelope(v, env); }
 				break;
 			case "Polygon":
 			case "MultiLineString":
-				for (JsonValue v : coords.asArray()) { for (JsonValue v2 : v.asArray()) { expandEnvelope(v2, env); } }
+				for (IJsonValue v : coords.asArray()) { for (IJsonValue v2 : v.asArray()) { expandEnvelope(v2, env); } }
 				break;
 			case "MultiPolygon":
-				for (JsonValue v : coords.asArray()) {
-					for (JsonValue v2 : v.asArray()) { for (JsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); } }
+				for (IJsonValue v : coords.asArray()) {
+					for (IJsonValue v2 : v.asArray()) { for (IJsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); } }
 				}
 				break;
 			case null:
@@ -654,7 +654,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @param env
 	 *            the env
 	 */
-	private void expandEnvelope(final JsonValue coord, final Envelope3D env) {
+	private void expandEnvelope(final IJsonValue coord, final Envelope3D env) {
 		if (coord.isArray() && coord.asArray().size() >= 2) {
 			double x = coord.asArray().get(0).asDouble();
 			double y = coord.asArray().get(1).asDouble();

@@ -37,6 +37,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.enums.ReadyState;
 
 import gama.core.runtime.GAMA;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.Json;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
@@ -60,7 +61,7 @@ public class CommandExecutor {
 	protected volatile LinkedBlockingQueue<Entry<WebSocket, IMap<String, Object>>> commandQueue;
 
 	/** The json encoder. */
-	protected static final Json jsonEncoder = Json.getNew();
+	protected static final IJSon jsonEncoder = Json.getNew();
 
 	/**
 	 * Instantiates a new command executor.

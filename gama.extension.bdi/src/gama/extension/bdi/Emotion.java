@@ -20,8 +20,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -63,7 +63,7 @@ public class Emotion implements IValue {
 	
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json
 				.typedObject(getGamlType(), "name", name, IKeyword.INTENSITY, intensity, ABOUT,
 						about == null ? null : about.getName(), "decay", decay)

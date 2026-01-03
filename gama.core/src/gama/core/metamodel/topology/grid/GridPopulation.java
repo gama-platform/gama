@@ -53,7 +53,7 @@ import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
 import gama.core.util.file.GamaGridFile;
-import gama.core.util.file.json.Json;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.JsonObject;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
@@ -1355,7 +1355,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	public void addValue(final IScope scope, final IGridAgent value) {}
 
 	@Override
-	public JsonObject serializeToJson(final Json json) {
+	public JsonObject serializeToJson(final IJSon json) {
 		return (JsonObject) IPopulation.super.serializeToJson(json).add("cols", json.valueOf(getNbCols())).add("rows",
 				json.valueOf(getNbRows()));
 	}

@@ -12,8 +12,8 @@ package gama.gaml.types;
 
 import gama.core.runtime.IScope;
 import gama.core.util.IContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -108,7 +108,7 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	 * @date 4 nov. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(Types.TYPE, "name", json.valueOf(getGamlType()), "key", json.valueOf(getKeyType()),
 				"content", json.valueOf(getContentType()));
 	}

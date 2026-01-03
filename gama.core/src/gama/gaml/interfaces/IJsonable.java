@@ -9,8 +9,8 @@
  ********************************************************************************************************/
 package gama.gaml.interfaces;
 
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 
 /**
  * The interface IJSonable. Represents objects that can represent themselves in terms of JSON descriptions
@@ -28,6 +28,6 @@ public interface IJsonable {
 	 *
 	 * @return a string that can be reinterpreted to reproduce the object
 	 */
-	JsonValue serializeToJson(Json json);
+	IJsonValue serializeToJson(IJSon json);
 
 }

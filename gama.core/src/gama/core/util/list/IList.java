@@ -26,8 +26,8 @@ import gama.core.util.IAddressableContainer;
 import gama.core.util.IContainer;
 import gama.core.util.IModifiableContainer;
 import gama.core.util.IContainer.Modifiable;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
 import gama.core.util.matrix.IMatrix;
@@ -560,7 +560,7 @@ public interface IList<E>
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		return json.array(this);
 	}
 

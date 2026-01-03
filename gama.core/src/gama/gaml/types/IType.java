@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,15 +12,15 @@ package gama.gaml.types;
 import java.util.Map;
 
 import gama.core.runtime.IScope;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.map.IMap;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
 import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IGamlDescription;
+import gama.gaml.interfaces.IGamlDocumentation;
 import gama.gaml.interfaces.IJsonable;
 import gama.gaml.interfaces.ITyped;
 
@@ -512,7 +512,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @date 4 nov. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(Types.TYPE, "name", getName());
 	}
 

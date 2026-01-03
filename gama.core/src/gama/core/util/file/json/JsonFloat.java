@@ -2,7 +2,7 @@
  *
  * JsonFloat.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -101,7 +101,7 @@ class JsonFloat extends JsonValue {
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	void write(final JsonWriter writer) throws IOException {
+	public void write(final JsonWriter writer) throws IOException {
 		writer.writeNumber(string);
 	}
 

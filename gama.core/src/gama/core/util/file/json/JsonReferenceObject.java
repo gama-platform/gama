@@ -33,7 +33,7 @@ public class JsonReferenceObject extends JsonAbstractObject {
 	 *            the json
 	 * @date 5 nov. 2023
 	 */
-	public JsonReferenceObject(final String ref, final Json json) {
+	public JsonReferenceObject(final String ref, final IJSon json) {
 		super(json);
 		this.ref = ref;
 	}

@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ICoordinates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ICoordinates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,8 +12,8 @@ package gama.core.common.geometry;
 import org.locationtech.jts.geom.CoordinateSequence;
 
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonArray;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonArray;
 import gama.gaml.interfaces.IJsonable;
 
 /**
@@ -415,8 +414,8 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @date 4 nov. 2023
 	 */
 	@Override
-	default JsonArray serializeToJson(final Json json) {
-		JsonArray result = json.array();
+	default IJsonArray serializeToJson(final IJSon json) {
+		IJsonArray result = json.array();
 		GamaPoint work = new GamaPoint();
 		for (int i = 0; i < size(); i++) {
 			getCoordinate(i, work);

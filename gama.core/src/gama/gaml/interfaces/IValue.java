@@ -2,15 +2,15 @@
  *
  * IValue.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.interfaces;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.types.IType;
 
 /**
@@ -21,6 +21,7 @@ import gama.gaml.types.IType;
  * @since 19 nov. 2008
  *
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IValue extends IGamlable, ITyped, IJsonable {
 
 	/**
@@ -29,9 +30,8 @@ public interface IValue extends IGamlable, ITyped, IJsonable {
 	 * @param scope
 	 *            the current GAMA scope
 	 * @return a string representing this value (not necessarily its serialization in GAML)
-	 * @throws GamaRuntimeException
 	 */
-	String stringValue(IScope scope) throws GamaRuntimeException;
+	String stringValue(IScope scope);
 
 	/**
 	 * Int value.
@@ -61,9 +61,8 @@ public interface IValue extends IGamlable, ITyped, IJsonable {
 	 * @param scope
 	 *            the current GAMA scope
 	 * @return a copy of this value. The definition of copy (whether shallow or deep, etc.) depends on the subclasses
-	 * @throws GamaRuntimeException
 	 */
-	IValue copy(IScope scope) throws GamaRuntimeException;
+	IValue copy(IScope scope);
 
 	/**
 	 * @param scope

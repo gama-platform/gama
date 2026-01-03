@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
-import gama.core.util.file.json.Json;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.file.json.JsonObject;
-import gama.core.util.file.json.JsonValue;
 import gama.gaml.interfaces.IJsonable;
 
 /**
@@ -74,7 +74,7 @@ public class GamaServerMessage implements IJsonable {
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		JsonObject o = (JsonObject) json.object().add("type", type).add("content", content);
 		if (exp_id != null) { o.add(ISocketCommand.EXP_ID, exp_id); }
 		return o;

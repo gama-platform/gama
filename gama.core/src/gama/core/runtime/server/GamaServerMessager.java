@@ -11,6 +11,7 @@
 package gama.core.runtime.server;
 
 import gama.core.kernel.experiment.IExperimentAgent;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.Json;
 import gama.dev.DEBUG;
 
@@ -23,7 +24,7 @@ import gama.dev.DEBUG;
 public abstract class GamaServerMessager {
 
 	/** The json. */
-	Json json = Json.getNew();
+	IJSon json = Json.getNew();
 
 	/**
 	 * Can send message.

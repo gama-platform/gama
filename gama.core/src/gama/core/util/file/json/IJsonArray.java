@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * JsonArray.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * IJsonArray.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -9,60 +9,18 @@
  ********************************************************************************************************/
 package gama.core.util.file.json;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
-import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 
 /**
- * Represents a JSON array, an ordered collection of JSON values.
- * <p>
- * Elements can be added using the <code>add(...)</code> methods which accept instances of {@link JsonValue}, strings,
- * primitive numbers, and boolean values. To replace an element of an array, use the <code>set(int, ...)</code> methods.
- * </p>
- * <p>
- * Elements can be accessed by their index using {@link #get(int)}. This class also supports iterating over the elements
- * in document order using an {@link #iterator()} or an enhanced for loop:
- * </p>
  *
- * <pre>
- * for (JsonValue value : jsonArray) {
- *   ...
- * }
- * </pre>
- * <p>
- * An equivalent {@link List} can be obtained from the method {@link #values()}.
- * </p>
- * <p>
- * Note that this class is <strong>not thread-safe</strong>. If multiple threads access a <code>JsonArray</code>
- * instance concurrently, while at least one of these threads modifies the contents of this array, access to the
- * instance must be synchronized externally. Failure to do so may lead to an inconsistent state.
- * </p>
- * <p>
- * This class is <strong>not supposed to be extended</strong> by clients.
- * </p>
  */
-@SuppressWarnings ("serial") // use default serial UID
-public class JsonArray extends JsonValue implements IJsonArray {
-
-	/** The values. */
-	private final List<IJsonValue> values;
-
-	/** The json. */
-	private final IJSon json;
-
-	/**
-	 * Creates a new empty JsonArray.
-	 */
-	JsonArray(final IJSon json) {
-		this.json = json;
-		values = new ArrayList<>();
-	}
+@OkForAPI (OkForAPI.Location.INTERFACES)
+public interface IJsonArray extends IJsonValue, Iterable<IJsonValue> {
 
 	/**
 	 * Appends the JSON representation of the specified <code>int</code> value to the end of this array.
@@ -71,11 +29,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the value to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final int value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(int value);
 
 	/**
 	 * Appends the JSON representation of the specified <code>long</code> value to the end of this array.
@@ -84,11 +38,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the value to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final long value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(long value);
 
 	/**
 	 * Appends the JSON representation of the specified <code>float</code> value to the end of this array.
@@ -97,11 +47,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the value to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final float value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(float value);
 
 	/**
 	 * Appends the JSON representation of the specified <code>double</code> value to the end of this array.
@@ -110,11 +56,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the value to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final double value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(double value);
 
 	/**
 	 * Appends the JSON representation of the specified <code>boolean</code> value to the end of this array.
@@ -123,11 +65,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the value to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final boolean value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(boolean value);
 
 	/**
 	 * Appends the JSON representation of the specified string to the end of this array.
@@ -136,11 +74,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the string to add to the array
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final String value) {
-		values.add(json.valueOf(value));
-		return this;
-	}
+	IJsonArray add(String value);
 
 	/**
 	 * Appends the specified JSON value to the end of this array.
@@ -149,12 +83,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *            the JsonValue to add to the array, must not be <code>null</code>
 	 * @return the array itself, to enable method chaining
 	 */
-	@Override
-	public IJsonArray add(final JsonValue value) {
-		if (value == null) throw new NullPointerException("value is null");
-		values.add(value);
-		return this;
-	}
+	IJsonArray add(JsonValue value);
 
 	/**
 	 * Adds the.
@@ -165,11 +94,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @return the json array
 	 * @date 29 oct. 2023
 	 */
-	@Override
-	public IJsonArray add(final Object object) {
-		values.add(json.valueOf(object));
-		return this;
-	}
+	IJsonArray add(Object object);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -183,11 +108,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final int value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, int value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -201,11 +122,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final long value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, long value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -219,11 +136,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final float value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, float value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -237,11 +150,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final double value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, double value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -255,11 +164,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final boolean value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, boolean value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the JSON representation of the specified
@@ -273,11 +178,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final String value) {
-		values.set(index, json.valueOf(value));
-		return this;
-	}
+	IJsonArray set(int index, String value);
 
 	/**
 	 * Replaces the element at the specified position in this array with the specified JSON value.
@@ -290,12 +191,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray set(final int index, final JsonValue value) {
-		if (value == null) throw new NullPointerException("value is null");
-		values.set(index, value);
-		return this;
-	}
+	IJsonArray set(int index, JsonValue value);
 
 	/**
 	 * Removes the element at the specified index from this array.
@@ -306,29 +202,21 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonArray remove(final int index) {
-		values.remove(index);
-		return this;
-	}
+	IJsonArray remove(int index);
 
 	/**
 	 * Returns the number of elements in this array.
 	 *
 	 * @return the number of elements in this array
 	 */
-	@Override
-	public int size() {
-		return values.size();
-	}
+	int size();
 
 	/**
 	 * Returns <code>true</code> if this array contains no elements.
 	 *
 	 * @return <code>true</code> if this array contains no elements
 	 */
-	@Override
-	public boolean isEmpty() { return values.isEmpty(); }
+	boolean isEmpty();
 
 	/**
 	 * Returns the value of the element at the specified position in this array.
@@ -339,10 +227,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is out of range, i.e. <code>index &lt; 0</code> or <code>index &gt;= size</code>
 	 */
-	@Override
-	public IJsonValue get(final int index) {
-		return values.get(index);
-	}
+	IJsonValue get(int index);
 
 	/**
 	 * Returns a list of the values in this array in document order. The returned list is backed by this array and will
@@ -351,10 +236,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 *
 	 * @return a list of the values in this array
 	 */
-	@Override
-	public List<IJsonValue> values() {
-		return Collections.unmodifiableList(values);
-	}
+	List<IJsonValue> values();
 
 	/**
 	 * Returns an iterator over the values of this array in document order. The returned iterator cannot be used to
@@ -363,50 +245,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @return an iterator over the values of this array
 	 */
 	@Override
-	public Iterator<IJsonValue> iterator() {
-		final Iterator<IJsonValue> iterator = values.iterator();
-		return new Iterator<>() {
-
-			@Override
-			public boolean hasNext() {
-				return iterator.hasNext();
-			}
-
-			@Override
-			public IJsonValue next() {
-				return iterator.next();
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
-
-	/**
-	 * Write.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param writer
-	 *            the writer
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 29 oct. 2023
-	 */
-	@Override
-	public void write(final JsonWriter writer) throws IOException {
-		writer.writeArrayOpen();
-		Iterator<IJsonValue> iterator = iterator();
-		if (iterator.hasNext()) {
-			iterator.next().write(writer);
-			while (iterator.hasNext()) {
-				writer.writeArraySeparator();
-				iterator.next().write(writer);
-			}
-		}
-		writer.writeArrayClose();
-	}
+	Iterator<IJsonValue> iterator();
 
 	/**
 	 * Checks if is array.
@@ -416,7 +255,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	public boolean isArray() { return true; }
+	boolean isArray();
 
 	/**
 	 * As array.
@@ -426,9 +265,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	public IJsonArray asArray() {
-		return this;
-	}
+	IJsonArray asArray();
 
 	/**
 	 * Hash code.
@@ -438,9 +275,7 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	public int hashCode() {
-		return values.hashCode();
-	}
+	int hashCode();
 
 	/**
 	 * Indicates whether a given object is "equal to" this JsonArray. An object is considered equal if it is also a
@@ -454,18 +289,16 @@ public class JsonArray extends JsonValue implements IJsonArray {
 	 * @return <tt>true</tt> if the specified object is equal to this JsonArray, <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(final Object object) {
-		if (this == object) return true;
-		if (object == null || getClass() != object.getClass()) return false;
-		JsonArray other = (JsonArray) object;
-		return values.equals(other.values);
-	}
+	boolean equals(Object object);
 
+	/**
+	 * To gaml value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i list
+	 */
 	@Override
-	public IList toGamlValue(final IScope scope) {
-		IList<Object> result = GamaListFactory.create();
-		for (IJsonValue v : values) { result.add(v.toGamlValue(scope)); }
-		return result;
-	}
+	IList toGamlValue(IScope scope);
 
 }

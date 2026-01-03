@@ -18,9 +18,9 @@ import gama.core.kernel.experiment.IExperimentAgent;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.runtime.IScope;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.IJsonConstants;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.interfaces.IJsonable;
 import one.util.streamex.StreamEx;
 
@@ -167,7 +167,7 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.object(IJsonConstants.AGENT_REFERENCE_LABEL, toString());
 	}
 

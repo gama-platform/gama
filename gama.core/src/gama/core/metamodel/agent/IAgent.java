@@ -34,8 +34,8 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.interfaces.IAttributed;
@@ -708,7 +708,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		AgentReference ar = AgentReference.of(this);
 		json.addRef(ar.toString(), () -> SerialisedAgent.of(this, false));
 		return json.valueOf(ar);

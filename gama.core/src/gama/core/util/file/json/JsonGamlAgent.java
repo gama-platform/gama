@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * JsonGamlAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,7 @@ public class JsonGamlAgent extends JsonAbstractObject {
 	 *            the json
 	 * @date 3 nov. 2023
 	 */
-	public JsonGamlAgent(final String species, final int index, final Json json) {
+	public JsonGamlAgent(final String species, final int index, final IJSon json) {
 		super(json);
 		this.species = species;
 		this.index = index;
@@ -54,9 +54,9 @@ public class JsonGamlAgent extends JsonAbstractObject {
 	 *            the json
 	 * @date 3 nov. 2023
 	 */
-	public JsonGamlAgent(final String species, final int index, final JsonAbstractObject object, final Json json) {
+	public JsonGamlAgent(final String species, final int index, final IJsonObject object, final IJSon json) {
 		this(species, index, json);
-		for (JsonObjectMember m : object) { add(m.getName(), m.getValue()); }
+		for (IJsonObjectMember m : object) { add(m.name(), m.value()); }
 	}
 
 	@Override

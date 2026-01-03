@@ -52,6 +52,7 @@ import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.Json;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
@@ -164,7 +165,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	private TimerTask currentTask;
 
 	/** The json encoder. */
-	private final Json jsonEncoder = Json.getNew();
+	private final IJSon jsonEncoder = Json.getNew();
 
 	/**
 	 * Instantiates a new platform agent.

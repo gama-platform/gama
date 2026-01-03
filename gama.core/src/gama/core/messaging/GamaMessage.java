@@ -18,8 +18,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -233,7 +233,7 @@ public class GamaMessage implements IValue {
 	public void hasBeenReceived(final IScope scope) {}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), SENDER, sender, CONTENTS, contents, RECEPTION_TIMESTAMP,
 				emissionTimeStamp, EMISSION_TIMESTAMP, emissionTimeStamp).add(RECEIVERS, receivers);
 	}

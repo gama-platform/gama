@@ -17,8 +17,8 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -303,7 +303,7 @@ public class GamaColor implements IColor {
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "red", red(), "green", green(), "blue", blue(), "alpha", alpha());
 
 	}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * JsonGamaContentsObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * JsonGamaContentsObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,7 +31,7 @@ public class JsonGamaContentsObject extends JsonAbstractObject {
 	 *            the json
 	 * @date 6 nov. 2023
 	 */
-	public JsonGamaContentsObject(final JsonValue contents, final JsonObject references, final Json json) {
+	public JsonGamaContentsObject(final IJsonValue contents, final IJsonObject references, final IJSon json) {
 		super(json);
 		add(CONTENTS_WITH_REFERENCES_LABEL, contents).add(REFERENCE_TABLE_LABEL, references);
 	}
@@ -43,7 +43,7 @@ public class JsonGamaContentsObject extends JsonAbstractObject {
 	public Object toGamlValue(final IScope scope) {
 		JsonObject references = get(REFERENCE_TABLE_LABEL).asObject();
 		recreateAgents(scope, references);
-		JsonValue contents = get(CONTENTS_WITH_REFERENCES_LABEL);
+		IJsonValue contents = get(CONTENTS_WITH_REFERENCES_LABEL);
 		return contents.toGamlValue(scope);
 	}
 
@@ -56,9 +56,9 @@ public class JsonGamaContentsObject extends JsonAbstractObject {
 	 * @date 7 nov. 2023
 	 */
 	private void recreateAgents(final IScope scope, final JsonObject references) {
-		for (JsonObjectMember m : references) {
-			IAgent a = AgentReference.of(m.getName()).getReferencedAgent(scope);
-			JsonGamlAgent jga = (JsonGamlAgent) m.getValue();
+		for (IJsonObjectMember m : references) {
+			IAgent a = AgentReference.of(m.name()).getReferencedAgent(scope);
+			JsonGamlAgent jga = (JsonGamlAgent) m.value();
 			SerialisedAgent sa = jga.toGamlValue(scope);
 			sa.restoreAs(scope, a);
 		}

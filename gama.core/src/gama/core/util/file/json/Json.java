@@ -2,7 +2,7 @@
  *
  * Json.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import gama.core.metamodel.agent.SerialisedAgent;
+import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.map.GamaMapFactory;
 import gama.gaml.interfaces.IJsonable;
@@ -28,7 +28,7 @@ import gama.gaml.types.Types;
  * get rid of the static features, become stateful (i.e. add a serialisation context to keep references, be thread safe
  * and compute statistics), and add some useful features for GAMA (typedObject(...), etc.)
  */
-public final class Json implements IJsonConstants {
+public final class Json implements IJsonConstants, IJSon {
 
 	/**
 	 * Gets a new stateful instance of Json.
@@ -37,7 +37,7 @@ public final class Json implements IJsonConstants {
 	 * @return the new
 	 * @date 31 oct. 2023
 	 */
-	public static Json getNew() { return new Json(); }
+	public static IJSon getNew() { return new Json(); }
 
 	/** The initial. */
 	boolean firstPass = true;
@@ -54,10 +54,11 @@ public final class Json implements IJsonConstants {
 	 * @return the json value
 	 * @date 29 oct. 2023
 	 */
-	public JsonValue valueOf(final Object object) {
+	@Override
+	public IJsonValue valueOf(final Object object) {
 		boolean initial = firstPass;
 		firstPass = false;
-		JsonValue result = NULL;
+		IJsonValue result = NULL;
 		try {
 			result = switch (object) {
 				case JsonValue jv -> jv;
@@ -89,15 +90,16 @@ public final class Json implements IJsonConstants {
 	 * Contents.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param contents
+	 * @param result
 	 *            the contents
 	 * @param references
 	 *            the references
 	 * @return the json gama contents object
 	 * @date 6 nov. 2023
 	 */
-	public JsonGamaContentsObject contents(final JsonValue contents, final JsonObject references) {
-		return new JsonGamaContentsObject(contents, references, this);
+	@Override
+	public IJsonObject contents(final IJsonValue result, final IJsonObject references) {
+		return new JsonGamaContentsObject(result, references, this);
 	}
 
 	/**
@@ -107,6 +109,7 @@ public final class Json implements IJsonConstants {
 	 *            the value to get a JSON representation for
 	 * @return a JSON value that represents the given value
 	 */
+	@Override
 	public JsonValue valueOf(final int value) {
 		return new JsonInt(Integer.toString(value, 10));
 	}
@@ -118,6 +121,7 @@ public final class Json implements IJsonConstants {
 	 *            the value to get a JSON representation for
 	 * @return a JSON value that represents the given value
 	 */
+	@Override
 	public JsonValue valueOf(final long value) {
 		return new JsonInt(Integer.toString((int) value));
 	}
@@ -129,6 +133,7 @@ public final class Json implements IJsonConstants {
 	 *            the value to get a JSON representation for
 	 * @return a JSON value that represents the given value
 	 */
+	@Override
 	public JsonValue valueOf(final float value) {
 		// if (Float.isNaN(value)) return NULL;
 		return new JsonFloat(value);
@@ -141,6 +146,7 @@ public final class Json implements IJsonConstants {
 	 *            the value to get a JSON representation for
 	 * @return a JSON value that represents the given value
 	 */
+	@Override
 	public JsonValue valueOf(final double value) {
 		// if (Double.isNaN(value)) return NULL;
 		return new JsonFloat(value);
@@ -153,6 +159,7 @@ public final class Json implements IJsonConstants {
 	 *            the string to get a JSON representation for
 	 * @return a JSON value that represents the given string
 	 */
+	@Override
 	public JsonValue valueOf(final String string) {
 		return string == null ? NULL : new JsonString(string);
 	}
@@ -166,7 +173,8 @@ public final class Json implements IJsonConstants {
 	 * @return the json value
 	 * @date 29 oct. 2023
 	 */
-	public JsonValue valueOf(final Character c) {
+	@Override
+	public IJsonValue valueOf(final Character c) {
 		return c == null ? NULL : new JsonString(c.toString());
 	}
 
@@ -177,6 +185,7 @@ public final class Json implements IJsonConstants {
 	 *            the value to get a JSON representation for
 	 * @return a JSON value that represents the given value
 	 */
+	@Override
 	public JsonValue valueOf(final boolean value) {
 		return value ? TRUE : FALSE;
 	}
@@ -186,6 +195,7 @@ public final class Json implements IJsonConstants {
 	 *
 	 * @return a new empty JSON array
 	 */
+	@Override
 	public JsonArray array() {
 		return new JsonArray(this);
 	}
@@ -197,9 +207,9 @@ public final class Json implements IJsonConstants {
 	 *            the values to be included in the new JSON array
 	 * @return a new JSON array that contains the given values
 	 */
-	public JsonArray array(final int... values) {
+	public IJsonArray array(final int... values) {
 		if (values == null) throw new NullPointerException("values is null");
-		JsonArray array = new JsonArray(this);
+		IJsonArray array = new JsonArray(this);
 		for (int value : values) { array.add(value); }
 		return array;
 	}
@@ -211,9 +221,9 @@ public final class Json implements IJsonConstants {
 	 *            the values to be included in the new JSON array
 	 * @return a new JSON array that contains the given values
 	 */
-	public JsonArray array(final long... values) {
+	public IJsonArray array(final long... values) {
 		if (values == null) throw new NullPointerException("values is null");
-		JsonArray array = new JsonArray(this);
+		IJsonArray array = new JsonArray(this);
 		for (long value : values) { array.add(value); }
 		return array;
 	}
@@ -225,9 +235,9 @@ public final class Json implements IJsonConstants {
 	 *            the values to be included in the new JSON array
 	 * @return a new JSON array that contains the given values
 	 */
-	public JsonArray array(final float... values) {
+	public IJsonArray array(final float... values) {
 		if (values == null) throw new NullPointerException("values is null");
-		JsonArray array = new JsonArray(this);
+		IJsonArray array = new JsonArray(this);
 		for (float value : values) { array.add(value); }
 		return array;
 	}
@@ -239,6 +249,7 @@ public final class Json implements IJsonConstants {
 	 *            the values to be included in the new JSON array
 	 * @return a new JSON array that contains the given values
 	 */
+	@Override
 	public JsonArray array(final double... values) {
 		if (values == null) throw new NullPointerException("values is null");
 		JsonArray array = new JsonArray(this);
@@ -253,8 +264,8 @@ public final class Json implements IJsonConstants {
 	 *            the values to be included in the new JSON array
 	 * @return a new JSON array that contains the given values
 	 */
-	public JsonArray array(final boolean... values) {
-		JsonArray array = new JsonArray(this);
+	public IJsonArray array(final boolean... values) {
+		IJsonArray array = new JsonArray(this);
 		for (boolean value : values) { array.add(value); }
 		return array;
 	}
@@ -266,8 +277,8 @@ public final class Json implements IJsonConstants {
 	 *            the strings to be included in the new JSON array
 	 * @return a new JSON array that contains the given strings
 	 */
-	public JsonArray array(final String... strings) {
-		JsonArray array = new JsonArray(this);
+	public IJsonArray array(final String... strings) {
+		IJsonArray array = new JsonArray(this);
 		for (String value : strings) { array.add(value); }
 		return array;
 	}
@@ -281,8 +292,8 @@ public final class Json implements IJsonConstants {
 	 * @return the json array
 	 * @date 29 oct. 2023
 	 */
-	public JsonArray array(final Object[] objects) {
-		JsonArray array = new JsonArray(this);
+	public IJsonArray array(final Object[] objects) {
+		IJsonArray array = new JsonArray(this);
 		for (Object value : objects) { array.add(value); }
 		return array;
 	}
@@ -296,8 +307,9 @@ public final class Json implements IJsonConstants {
 	 * @return the json array
 	 * @date 29 oct. 2023
 	 */
-	public JsonArray array(final Collection objects) {
-		JsonArray array = new JsonArray(this);
+	@Override
+	public IJsonArray array(final Collection objects) {
+		IJsonArray array = new JsonArray(this);
 		for (Object value : objects) { array.add(value); }
 		return array;
 	}
@@ -311,6 +323,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 5 nov. 2023
 	 */
+	@Override
 	public JsonReferenceObject reference(final String ref) {
 		return new JsonReferenceObject(ref, this);
 	}
@@ -320,6 +333,7 @@ public final class Json implements IJsonConstants {
 	 *
 	 * @return a new empty JSON object
 	 */
+	@Override
 	public JsonObject object() {
 		return new JsonObject(this);
 	}
@@ -335,6 +349,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonObject object(final String k1, final Object v1) {
 		return (JsonObject) object().add(k1, v1);
 	}
@@ -347,6 +362,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonObject object(final String k1, final Object v1, final String k2, final Object v2) {
 		return (JsonObject) object(k1, v1).add(k2, v2);
 	}
@@ -359,6 +375,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonObject object(final String k1, final Object v1, final String k2, final Object v2, final String k3,
 			final Object v3) {
 		return (JsonObject) object(k1, v1, k2, v2).add(k3, v3);
@@ -372,6 +389,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonObject object(final String k1, final Object v1, final String k2, final Object v2, final String k3,
 			final Object v3, final String k4, final Object v4) {
 		return (JsonObject) object(k1, v1, k2, v2, k3, v3).add(k4, v4);
@@ -384,6 +402,7 @@ public final class Json implements IJsonConstants {
 	 *
 	 * @return a new empty JsonGamlObject with the corresponding type
 	 */
+	@Override
 	public JsonGamlObject typedObject(final IType type) {
 		return new JsonGamlObject(type.getName(), this);
 	}
@@ -399,6 +418,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonGamlObject typedObject(final IType type, final String k1, final Object v1) {
 		return (JsonGamlObject) typedObject(type).add(k1, v1);
 	}
@@ -411,6 +431,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonGamlObject typedObject(final IType type, final String k1, final Object v1, final String k2,
 			final Object v2) {
 		return (JsonGamlObject) typedObject(type, k1, v1).add(k2, v2);
@@ -424,6 +445,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonGamlObject typedObject(final IType type, final String k1, final Object v1, final String k2,
 			final Object v2, final String k3, final Object v3) {
 		return (JsonGamlObject) typedObject(type, k1, v1, k2, v2).add(k3, v3);
@@ -437,6 +459,7 @@ public final class Json implements IJsonConstants {
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonGamlObject typedObject(final IType type, final String k1, final Object v1, final String k2,
 			final Object v2, final String k3, final Object v3, final String k4, final Object v4) {
 		return (JsonGamlObject) typedObject(type, k1, v1, k2, v2, k3, v3).add(k4, v4);
@@ -450,6 +473,7 @@ public final class Json implements IJsonConstants {
 	 *            the agent
 	 * @date 29 oct. 2023
 	 */
+	@Override
 	public JsonGamlAgent agent(final String species, final int index) {
 		return new JsonGamlAgent(species, index, this);
 	}
@@ -464,7 +488,8 @@ public final class Json implements IJsonConstants {
 	 * @throws ParseException
 	 *             if the input is not valid JSON
 	 */
-	public JsonValue parse(final String string) {
+	@Override
+	public IJsonValue parse(final String string) {
 		if (string == null) throw new NullPointerException("string is null");
 		JsonGamaHandler handler = new JsonGamaHandler(this);
 		new JsonParser(handler).parse(string);
@@ -487,7 +512,8 @@ public final class Json implements IJsonConstants {
 	 * @throws ParseException
 	 *             if the input is not valid JSON
 	 */
-	public JsonValue parse(final Reader reader) throws IOException {
+	@Override
+	public IJsonValue parse(final Reader reader) throws IOException {
 		if (reader == null) throw new NullPointerException("reader is null");
 		JsonGamaHandler handler = new JsonGamaHandler(this);
 		new JsonParser(handler).parse(reader);
@@ -518,11 +544,12 @@ public final class Json implements IJsonConstants {
 	 *            the value
 	 * @date 1 nov. 2023
 	 */
-	public void addRef(final String key, final Supplier<SerialisedAgent> value) {
+	@Override
+	public void addRef(final String key, final Supplier<ISerialisedAgent> value) {
 		if (agentReferences.contains(key)) return;
 		// We first set it to avoid infinite loops
 		agentReferences.add(key, (Object) null);
-		JsonValue agent = valueOf(value.get());
+		IJsonValue agent = valueOf(value.get());
 		// We now replace it with the agent
 		agentReferences.set(key, agent);
 	}

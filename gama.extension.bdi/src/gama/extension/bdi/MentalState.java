@@ -19,8 +19,8 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -65,7 +65,7 @@ public class MentalState implements IValue {
 	
 	
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json
 				.typedObject(getGamlType(), "modality", modality, SimpleBdiArchitecture.MENTAL_STATE, mental, SimpleBdiArchitecture.PREDICATE,
 						predicate == null ? null : predicate.getName(), "emotion", emo == null ? null : emo.name)

@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.core.runtime.server;
 
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.map.IMap;
 
 /**
@@ -50,7 +50,7 @@ public class CommandResponse extends GamaServerMessage {
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		var params = commandParameters.copy(null);
 		params.remove("server");
 		return json.object("type", type, "content", isJson ? json.parse((String) content) : content, "command", params);

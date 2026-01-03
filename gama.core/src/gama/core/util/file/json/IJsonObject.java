@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * JsonAbstractObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * IJsonObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -10,77 +9,18 @@
  ********************************************************************************************************/
 package gama.core.util.file.json;
 
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
 
 /**
- * Represents an abstract JSON object, a set of name/value pairs, where the names are strings and the values are JSON
- * values.
- * <p>
- * Members can be added using the <code>add(String, ...)</code> methods which accept instances of {@link IJsonValue},
- * strings, primitive numbers, and boolean values. To modify certain values of an object, use the
- * <code>set(String, ...)</code> methods. Please note that the <code>add</code> methods are faster than <code>set</code>
- * as they do not search for existing members. On the other hand, the <code>add</code> methods do not prevent adding
- * multiple members with the same name. Duplicate names are discouraged but not prohibited by JSON.
- * </p>
- * <p>
- * Members can be accessed by their name using {@link #get(String)}. A list of all names can be obtained from the method
- * {@link #names()}. This class also supports iterating over the members in document order using an {@link #iterator()}
- * or an enhanced for loop:
- * </p>
- *
- * <pre>
- * for (Member member : jsonObject) {
- *   String name = member.getName();
- *   JsonValue value = member.getValue();
- *   ...
- * }
- * </pre>
- * <p>
- * Even though JSON objects are unordered by definition, instances of this class preserve the order of members to allow
- * processing in document order and to guarantee a predictable output.
- * </p>
- * <p>
- * Note that this class is <strong>not thread-safe</strong>. If multiple threads access a <code>JsonObject</code>
- * instance concurrently, while at least one of these threads modifies the contents of this object, access to the
- * instance must be synchronized externally. Failure to do so may lead to an inconsistent state.
- * </p>
  *
  */
-@SuppressWarnings ("serial") // use default serial UID
-public abstract class JsonAbstractObject extends JsonValue implements IJsonObject {
 
-	/** The map. */
-	protected final LinkedHashMap<String, IJsonValue> members = new LinkedHashMap<>();
-
-	// /** The names. */
-	// protected final List<String> names;
-	//
-	// /** The values. */
-	// protected final List<IJsonValue> values;
-	//
-	// /** The table. */
-	// private transient HashIndexTable table;
-
-	/** The json. */
-	protected final IJSon json;
-
-	/**
-	 * Creates a new empty JsonObject.
-	 */
-	JsonAbstractObject(final IJSon json) {
-		this.json = json;
-		// names = new ArrayList<>();
-		// values = new ArrayList<>();
-		// table = new HashIndexTable();
-	}
+@OkForAPI (OkForAPI.Location.INTERFACES)
+public interface IJsonObject extends IJsonValue, Iterable<IJsonObjectMember> {
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -94,11 +34,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the json object
 	 * @date 29 oct. 2023
 	 */
-	@Override
-	public IJsonObject add(final String name, final Object object) {
-		add(name, json.valueOf(object));
-		return this;
-	}
+	IJsonObject add(String name, Object object);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -117,11 +53,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final int value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, int value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -140,11 +72,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final long value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, long value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -163,11 +91,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final float value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, float value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -186,11 +110,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final double value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, double value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -209,11 +129,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final boolean value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, boolean value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the JSON representation of the
@@ -232,11 +148,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final String value) {
-		add(name, json.valueOf(value));
-		return this;
-	}
+	IJsonObject add(String name, String value);
 
 	/**
 	 * Appends a new member to the end of this object, with the specified name and the specified JSON value.
@@ -254,16 +166,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add, must not be <code>null</code>
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject add(final String name, final JsonValue value) {
-		if (name == null) throw new NullPointerException("name is null");
-		if (value == null) throw new NullPointerException("value is null");
-		members.put(name, value);
-		// table.add(name, names.size());
-		// names.add(name);
-		// values.add(value);
-		return this;
-	}
+	IJsonObject add(String name, JsonValue value);
 
 	/**
 	 * Sets the value of the member with the specified name to the specified JSON value. If this object does not contain
@@ -281,21 +184,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the value of the member to add, must not be <code>null</code>
 	 * @return the object itself, to enable method chaining
 	 */
-	@Override
-	public IJsonObject set(final String name, final IJsonValue value) {
-		if (name == null) throw new NullPointerException("name is null");
-		if (value == null) throw new NullPointerException("value is null");
-		members.put(name, value);
-		// int index = indexOf(name);
-		// if (index != -1) {
-		// values.set(index, value);
-		// } else {
-		// table.add(name, names.size());
-		// names.add(name);
-		// values.add(value);
-		// }
-		return this;
-	}
+	IJsonObject set(String name, IJsonValue value);
 
 	/**
 	 * Removes a member with the specified name from this object. If this object contains multiple members with the
@@ -306,19 +195,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the name of the member to remove
 	 * @return the value that has been removed or null if the name was not present
 	 */
-	@Override
-	public IJsonValue remove(final String name) {
-		if (name == null) throw new NullPointerException("name is null");
-		// int index = indexOf(name);
-		// IJsonValue result = null;
-		// if (index != -1) {
-		// table.remove(index);
-		// names.remove(index);
-		// result = values.remove(index);
-		// }
-		// return result;
-		return members.remove(name);
-	}
+	IJsonValue remove(String name);
 
 	/**
 	 * Checks if a specified member is present as a child of this object. This will not test if this object contains the
@@ -328,10 +205,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *            the name of the member to check for
 	 * @return whether or not the member is present
 	 */
-	@Override
-	public boolean contains(final String name) {
-		return members.containsKey(name);
-	}
+	boolean contains(String name);
 
 	/**
 	 * Returns the value of the member with the specified name in this object. If this object contains multiple members
@@ -342,13 +216,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or <code>null</code> if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public IJsonValue get(final String name) {
-		if (name == null) throw new NullPointerException("name is null");
-		return members.get(name);
-		// int index = indexOf(name);
-		// return index != -1 ? values.get(index) : null;
-	}
+	IJsonValue get(String name);
 
 	/**
 	 * Returns the <code>int</code> value of the member with the specified name in this object. If this object does not
@@ -363,11 +231,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public int getInt(final String name, final int defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asInt() : defaultValue;
-	}
+	int getInt(String name, int defaultValue);
 
 	/**
 	 * Returns the <code>long</code> value of the member with the specified name in this object. If this object does not
@@ -382,11 +246,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public long getLong(final String name, final long defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asLong() : defaultValue;
-	}
+	long getLong(String name, long defaultValue);
 
 	/**
 	 * Returns the <code>float</code> value of the member with the specified name in this object. If this object does
@@ -401,11 +261,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public float getFloat(final String name, final float defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asFloat() : defaultValue;
-	}
+	float getFloat(String name, float defaultValue);
 
 	/**
 	 * Returns the <code>double</code> value of the member with the specified name in this object. If this object does
@@ -420,11 +276,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public double getDouble(final String name, final double defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asDouble() : defaultValue;
-	}
+	double getDouble(String name, double defaultValue);
 
 	/**
 	 * Returns the <code>boolean</code> value of the member with the specified name in this object. If this object does
@@ -439,11 +291,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public boolean getBoolean(final String name, final boolean defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asBoolean() : defaultValue;
-	}
+	boolean getBoolean(String name, boolean defaultValue);
 
 	/**
 	 * Returns the <code>String</code> value of the member with the specified name in this object. If this object does
@@ -458,29 +306,21 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the value of the last member with the specified name, or the given default value if this object does not
 	 *         contain a member with that name
 	 */
-	@Override
-	public String getString(final String name, final String defaultValue) {
-		IJsonValue value = get(name);
-		return value != null ? value.asString() : defaultValue;
-	}
+	String getString(String name, String defaultValue);
 
 	/**
 	 * Returns the number of members (name/value pairs) in this object.
 	 *
 	 * @return the number of members in this object
 	 */
-	@Override
-	public int size() {
-		return members.size();
-	}
+	int size();
 
 	/**
 	 * Returns <code>true</code> if this object contains no members.
 	 *
 	 * @return <code>true</code> if this object contains no members
 	 */
-	@Override
-	public boolean isEmpty() { return members.isEmpty(); }
+	boolean isEmpty();
 
 	/**
 	 * Returns a list of the names in this object in document order. The returned list is backed by this object and will
@@ -489,10 +329,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 *
 	 * @return a list of the names in this object
 	 */
-	@Override
-	public List<String> names() {
-		return members.keySet().stream().toList();
-	}
+	List<String> names();
 
 	/**
 	 * Returns an iterator over the members of this object in document order. The returned iterator cannot be used to
@@ -501,64 +338,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return an iterator over the members of this object
 	 */
 	@Override
-	public Iterator<IJsonObjectMember> iterator() {
-		final Iterator<Map.Entry<String, IJsonValue>> it = members.entrySet().iterator();
-		return new Iterator<>() {
-
-			@Override
-			public boolean hasNext() {
-				return it.hasNext();
-			}
-
-			@Override
-			public IJsonObjectMember next() {
-				Map.Entry<String, IJsonValue> entry = it.next();
-				return new JsonObjectMember(entry.getKey(), entry.getValue());
-			}
-
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-
-		};
-	}
-
-	/**
-	 * Write.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param writer
-	 *            the writer
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 29 oct. 2023
-	 */
-	@Override
-	public void write(final JsonWriter writer) throws IOException {
-		writer.writeObjectOpen();
-		writeMembers(writer);
-		writer.writeObjectClose();
-	}
-
-	/**
-	 * Write members.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param writer
-	 *            the writer
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 4 nov. 2023
-	 */
-	protected void writeMembers(final JsonWriter writer) throws IOException {
-		members.forEach((name, value) -> {
-			try {
-				writer.writeMemberName(name);
-				writer.writeMemberSeparator();
-				value.write(writer);
-			} catch (IOException e) {}
-		});
-	}
+	Iterator<IJsonObjectMember> iterator();
 
 	/**
 	 * Hash code.
@@ -568,9 +348,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	public int hashCode() {
-		return 31 + members.hashCode();
-	}
+	int hashCode();
 
 	/**
 	 * Equals.
@@ -582,27 +360,16 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		JsonAbstractObject other = (JsonAbstractObject) obj;
-		return members.equals(other.members);
-	}
-
-	@Override
-	public abstract Object toGamlValue(final IScope scope);
+	boolean equals(Object obj);
 
 	/**
-	 * To map.
+	 * To gaml value.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope
 	 *            the scope
-	 * @return the i map
-	 * @date 4 nov. 2023
+	 * @return the object
 	 */
-	protected IMap<String, ? extends Object> toMap(final IScope scope) {
-		return GamaMapFactory.wrap(members);
-	}
+	@Override
+	Object toGamlValue(IScope scope);
 
 }

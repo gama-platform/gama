@@ -46,8 +46,8 @@ import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
@@ -969,7 +969,7 @@ public class GamaDate implements Temporal, IDate {
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "iso", toISOString());
 	}
 

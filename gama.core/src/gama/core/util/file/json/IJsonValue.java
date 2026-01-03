@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * JsonValue.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * IJsonValue.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -10,53 +10,16 @@
 package gama.core.util.file.json;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.Writer;
 
 import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
 
 /**
- * Represents a JSON value. This can be a JSON <strong>object</strong>, an <strong> array</strong>, a
- * <strong>number</strong>, a <strong>string</strong>, or one of the literals <strong>true</strong>,
- * <strong>false</strong>, and <strong>null</strong>.
- * <p>
- * The literals <strong>true</strong>, <strong>false</strong>, and <strong>null</strong> are represented by the
- * constants {@link Json#TRUE}, {@link Json#FALSE}, and {@link Json#NULL}.
- * </p>
- * <p>
- * JSON <strong>objects</strong> and <strong>arrays</strong> are represented by the subtypes {@link JsonObject} and
- * {@link JsonArray}. Instances of these types can be created using the public constructors of these classes.
- * </p>
- * <p>
- * Instances that represent JSON <strong>numbers</strong>, <strong>strings</strong> and <strong>boolean</strong> values
- * can be created using the static factory methods {@link Json#valueOf(String)}, {@link Json#valueOf(long)},
- * {@link Json#valueOf(double)}, etc.
- * </p>
- * <p>
- * In order to find out whether an instance of this class is of a certain type, the methods {@link #isObject()},
- * {@link #isArray()}, {@link #isString()}, {@link #isNumber()} etc. can be used.
- * </p>
- * <p>
- * If the type of a JSON value is known, the methods {@link #asObject()}, {@link #asArray()}, {@link #asString()},
- * {@link #asInt()}, etc. can be used to get this value directly in the appropriate target type.
- * </p>
- * <p>
- * This class is <strong>not supposed to be extended</strong> by clients.
- * </p>
+ *
  */
-@SuppressWarnings ("serial") // use default serial UID
-@OkForAPI (OkForAPI.Location.UTILS)
-public abstract class JsonValue implements Serializable, IJsonValue {
-
-	/**
-	 * Instantiates a new json value.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 29 oct. 2023
-	 */
-	JsonValue() {}
+@OkForAPI (OkForAPI.Location.INTERFACES)
+public interface IJsonValue extends IJsonConstants {
 
 	/**
 	 * Checks if is gaml object.
@@ -65,8 +28,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return true, if is gaml object
 	 * @date 4 nov. 2023
 	 */
-	@Override
-	public boolean isGamlObject() { return false; }
+	boolean isGamlObject();
 
 	/**
 	 * Checks if is gaml agent.
@@ -75,8 +37,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return true, if is gaml agent
 	 * @date 4 nov. 2023
 	 */
-	@Override
-	public boolean isGamlAgent() { return false; }
+	boolean isGamlAgent();
 
 	/**
 	 * Detects whether this value represents a JSON object. If this is the case, this value is an instance of
@@ -84,8 +45,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 *
 	 * @return <code>true</code> if this value is an instance of JsonObject
 	 */
-	@Override
-	public boolean isObject() { return false; }
+	boolean isObject();
 
 	/**
 	 * Detects whether this value represents a JSON array. If this is the case, this value is an instance of
@@ -93,24 +53,21 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 *
 	 * @return <code>true</code> if this value is an instance of JsonArray
 	 */
-	@Override
-	public boolean isArray() { return false; }
+	boolean isArray();
 
 	/**
 	 * Detects whether this value represents a JSON number.
 	 *
 	 * @return <code>true</code> if this value represents a JSON number
 	 */
-	@Override
-	public boolean isNumber() { return false; }
+	boolean isNumber();
 
 	/**
 	 * Detects whether this value represents a JSON string.
 	 *
 	 * @return <code>true</code> if this value represents a JSON string
 	 */
-	@Override
-	public boolean isString() { return false; }
+	boolean isString();
 
 	/**
 	 * Detects whether this value represents a boolean value.
@@ -118,32 +75,28 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return <code>true</code> if this value represents either the JSON literal <code>true</code> or
 	 *         <code>false</code>
 	 */
-	@Override
-	public boolean isBoolean() { return false; }
+	boolean isBoolean();
 
 	/**
 	 * Detects whether this value represents the JSON literal <code>true</code>.
 	 *
 	 * @return <code>true</code> if this value represents the JSON literal <code>true</code>
 	 */
-	@Override
-	public boolean isTrue() { return false; }
+	boolean isTrue();
 
 	/**
 	 * Detects whether this value represents the JSON literal <code>false</code>.
 	 *
 	 * @return <code>true</code> if this value represents the JSON literal <code>false</code>
 	 */
-	@Override
-	public boolean isFalse() { return false; }
+	boolean isFalse();
 
 	/**
 	 * Detects whether this value represents the JSON literal <code>null</code>.
 	 *
 	 * @return <code>true</code> if this value represents the JSON literal <code>null</code>
 	 */
-	@Override
-	public boolean isNull() { return false; }
+	boolean isNull();
 
 	/**
 	 * Returns this JSON value as {@link JsonObject}, assuming that this value represents a JSON object. If this is not
@@ -153,10 +106,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is not a JSON object
 	 */
-	@Override
-	public JsonObject asObject() {
-		throw new UnsupportedOperationException("Not an object: " + toString());
-	}
+	JsonObject asObject();
 
 	/**
 	 * Returns this JSON value as {@link JsonArray}, assuming that this value represents a JSON array. If this is not
@@ -166,10 +116,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is not a JSON array
 	 */
-	@Override
-	public IJsonArray asArray() {
-		throw new UnsupportedOperationException("Not an array: " + toString());
-	}
+	IJsonArray asArray();
 
 	/**
 	 * Returns this JSON value as an <code>int</code> value, assuming that this value represents a JSON number that can
@@ -185,10 +132,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws NumberFormatException
 	 *             if this JSON number can not be interpreted as <code>int</code> value
 	 */
-	@Override
-	public int asInt() {
-		throw new UnsupportedOperationException("Not a number: " + toString());
-	}
+	int asInt();
 
 	/**
 	 * Returns this JSON value as a <code>long</code> value, assuming that this value represents a JSON number that can
@@ -204,10 +148,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws NumberFormatException
 	 *             if this JSON number can not be interpreted as <code>long</code> value
 	 */
-	@Override
-	public long asLong() {
-		throw new UnsupportedOperationException("Not a number: " + toString());
-	}
+	long asLong();
 
 	/**
 	 * Returns this JSON value as a <code>float</code> value, assuming that this value represents a JSON number. If this
@@ -221,10 +162,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is not a JSON number
 	 */
-	@Override
-	public float asFloat() {
-		throw new UnsupportedOperationException("Not a number: " + toString());
-	}
+	float asFloat();
 
 	/**
 	 * Returns this JSON value as a <code>double</code> value, assuming that this value represents a JSON number. If
@@ -238,10 +176,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is not a JSON number
 	 */
-	@Override
-	public double asDouble() {
-		throw new UnsupportedOperationException("Not a number: " + toString());
-	}
+	double asDouble();
 
 	/**
 	 * Returns this JSON value as String, assuming that this value represents a JSON string. If this is not the case, an
@@ -251,10 +186,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is not a JSON string
 	 */
-	@Override
-	public String asString() {
-		throw new UnsupportedOperationException("Not a string: " + toString());
-	}
+	String asString();
 
 	/**
 	 * Returns this JSON value as a <code>boolean</code> value, assuming that this value is either <code>true</code> or
@@ -264,10 +196,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws UnsupportedOperationException
 	 *             if this value is neither <code>true</code> or <code>false</code>
 	 */
-	@Override
-	public boolean asBoolean() {
-		throw new UnsupportedOperationException("Not a boolean: " + toString());
-	}
+	boolean asBoolean();
 
 	/**
 	 * As gaml object.
@@ -276,10 +205,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return the json gaml object
 	 * @date 4 nov. 2023
 	 */
-	@Override
-	public JsonGamlObject asGamlObject() {
-		throw new UnsupportedOperationException("Not a GAML object: " + toString());
-	}
+	JsonGamlObject asGamlObject();
 
 	/**
 	 * As gaml agent.
@@ -288,10 +214,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return the json gaml agent
 	 * @date 4 nov. 2023
 	 */
-	@Override
-	public JsonGamlAgent asGamlAgent() {
-		throw new UnsupportedOperationException("Not a GAML agent: " + toString());
-	}
+	JsonGamlAgent asGamlAgent();
 
 	/**
 	 * Writes the JSON representation of this value to the given writer in its minimal form, without any additional
@@ -305,10 +228,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws IOException
 	 *             if an I/O error occurs in the writer
 	 */
-	@Override
-	public void writeTo(final Writer writer) throws IOException {
-		writeTo(writer, WriterConfig.MINIMAL);
-	}
+	void writeTo(Writer writer) throws IOException;
 
 	/**
 	 * Writes the JSON representation of this value to the given writer using the given formatting.
@@ -323,26 +243,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @throws IOException
 	 *             if an I/O error occurs in the writer
 	 */
-	@Override
-	public void writeTo(final Writer writer, final WriterConfig config) throws IOException {
-		if (writer == null) throw new NullPointerException("writer is null");
-		if (config == null) throw new NullPointerException("config is null");
-		WritingBuffer buffer = new WritingBuffer(writer, 128);
-		write(config.createWriter(buffer));
-		buffer.flush();
-	}
-
-	/**
-	 * Returns the JSON string for this value in its minimal form, without any additional whitespace. The result is
-	 * guaranteed to be a valid input for the method {@link Json#parse(String)} and to create a value that is
-	 * <em>equal</em> to this object.
-	 *
-	 * @return a JSON string that represents this value
-	 */
-	@Override
-	public String toString() {
-		return toString(WriterConfig.MINIMAL);
-	}
+	void writeTo(Writer writer, WriterConfig config) throws IOException;
 
 	/**
 	 * Returns the JSON string for this value using the given formatting.
@@ -351,53 +252,7 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 *            a configuration that controls the formatting or <code>null</code> for the minimal form
 	 * @return a JSON string that represents this value
 	 */
-	@Override
-	public String toString(final WriterConfig config) {
-		StringWriter writer = new StringWriter();
-		try {
-			writeTo(writer, config);
-		} catch (IOException exception) {
-			// StringWriter does not throw IOExceptions
-			throw new RuntimeException(exception);
-		}
-		return writer.toString();
-	}
-
-	/**
-	 * Indicates whether some other object is "equal to" this one according to the contract specified in
-	 * {@link Object#equals(Object)}.
-	 * <p>
-	 * Two JsonValues are considered equal if and only if they represent the same JSON text. As a consequence, two given
-	 * JsonObjects may be different even though they contain the same set of names with the same values, but in a
-	 * different order.
-	 * </p>
-	 *
-	 * @param object
-	 *            the reference object with which to compare
-	 * @return true if this object is the same as the object argument; false otherwise
-	 */
-	@Override
-	public boolean equals(final Object object) {
-		return super.equals(object);
-	}
-
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
-
-	/**
-	 * Write.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param writer
-	 *            the writer
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 29 oct. 2023
-	 */
-	@Override
-	public abstract void write(JsonWriter writer) throws IOException;
+	String toString(WriterConfig config);
 
 	/**
 	 * To gaml value.
@@ -406,7 +261,11 @@ public abstract class JsonValue implements Serializable, IJsonValue {
 	 * @return the object
 	 * @date 2 nov. 2023
 	 */
-	@Override
-	public abstract Object toGamlValue(IScope scope);
+	Object toGamlValue(IScope scope);
+
+	/**
+	 * @param writer
+	 */
+	void write(JsonWriter writer) throws IOException;
 
 }

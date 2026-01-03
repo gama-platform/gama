@@ -17,8 +17,8 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.graph.IGraph;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
@@ -44,7 +44,7 @@ import gama.gaml.types.Types;
 public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, GraphPath<V, E>, IPath<V, E, G> {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "source", source, "target", target, "edges", json.array(edges), "weight",
 				weight).add("graph", graph).add("graphVersion", graphVersion);
 	}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * JsonGamlObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,7 @@ package gama.core.util.file.json;
 import java.io.IOException;
 
 import gama.core.runtime.IScope;
+import gama.core.util.map.IMap;
 import gama.gaml.types.IType;
 import gama.gaml.types.ITypesManager;
 import gama.gaml.types.Types;
@@ -36,7 +37,7 @@ public class JsonGamlObject extends JsonAbstractObject {
 	 *            the json
 	 * @date 3 nov. 2023
 	 */
-	public JsonGamlObject(final String type, final Json json) {
+	public JsonGamlObject(final String type, final IJSon json) {
 		super(json);
 		this.type = type;
 	}
@@ -49,16 +50,16 @@ public class JsonGamlObject extends JsonAbstractObject {
 	 *            the json
 	 * @date 3 nov. 2023
 	 */
-	public JsonGamlObject(final String type, final JsonAbstractObject object, final Json json) {
+	public JsonGamlObject(final String type, final IJsonObject object, final IJSon json) {
 		this(type, json);
-		for (JsonObjectMember m : object) { add(m.getName(), m.getValue()); }
+		for (IJsonObjectMember m : object) { add(m.name(), m.value()); }
 	}
 
 	@Override
 	public Object toGamlValue(final IScope scope) {
 		ITypesManager types = scope == null ? Types.builtInTypes : scope.getTypes();
 		IType<?> gamlType = types.decodeType(type);
-		return gamlType.deserializeFromJson(scope, toMap(scope));
+		return gamlType.deserializeFromJson(scope, (IMap<String, Object>) toMap(scope));
 
 	}
 

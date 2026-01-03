@@ -24,8 +24,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.map.IMap;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
@@ -69,7 +69,7 @@ import gama.gaml.types.Types;
 public class Predicate implements IValue {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "name", name, "is_true", is_true, "values", values, "date", date)
 				.add(SimpleBdiArchitecture.SUBINTENTIONS, subintentions)
 				.add(SimpleBdiArchitecture.ON_HOLD_UNTIL, onHoldUntil)

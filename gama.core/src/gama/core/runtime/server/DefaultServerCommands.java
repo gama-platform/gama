@@ -52,8 +52,8 @@ import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.ISocketCommand.CommandException;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
 import gama.dev.DEBUG;
@@ -401,7 +401,7 @@ public class DefaultServerCommands {
 				"Action " + action + " does not exist in agent " + ref, map, false);
 		// TODO Verify that it is not a JSON string...Otherwise, use Json.getNew().parse(...)
 		String json = (String) map.get(ARGS);
-		JsonValue object = Json.getNew().parse(json);
+		IJsonValue object = Json.getNew().parse(json);
 		Map<String, Object> args = Cast.asMap(scope, object.toGamlValue(scope), false);
 		IExecutionResult er = IExecutionResult.PASSED;
 		IScope newScope = agent.getScope().copy("Ask command of gama-server");

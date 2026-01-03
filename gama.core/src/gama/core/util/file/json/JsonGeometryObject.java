@@ -3,7 +3,7 @@
  * JsonGeometryObject.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -63,7 +63,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 *            the json
 	 * @date 4 nov. 2023
 	 */
-	public JsonGeometryObject(final Geometry geometry, final Json json) {
+	public JsonGeometryObject(final Geometry geometry, final IJSon json) {
 		this(toGeoJsonObject(geometry, json), json);
 		try {
 			int srid = CRS.lookupEpsgCode(ProjectionFactory.getTargetCRSOrDefault(GAMA.getRuntimeScope()), true);
@@ -82,7 +82,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 *            the json
 	 * @date 5 nov. 2023
 	 */
-	public JsonGeometryObject(final JsonAbstractObject object, final Json json) {
+	public JsonGeometryObject(final IJsonObject object, final IJSon json) {
 		super(Types.GEOMETRY.getName(), object, json);
 	}
 
@@ -97,10 +97,10 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @return the map
 	 * @date 4 nov. 2023
 	 */
-	private static JsonAbstractObject toGeoJsonObject(final Geometry geometry, final Json json) {
+	private static JsonAbstractObject toGeoJsonObject(final Geometry geometry, final IJSon json) {
 		JsonAbstractObject result = new JsonObject(json);
 		result.add(NAME_TYPE, geometry.getGeometryType());
-		JsonArray components = json.array();
+		IJsonArray components = json.array();
 		String key = NAME_COORDINATES;
 		if (geometry instanceof Point || geometry instanceof LineString) {
 			components = (JsonArray) json.valueOf(GeometryUtils.getContourCoordinates(geometry));
@@ -133,8 +133,8 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @return the list
 	 * @date 4 nov. 2023
 	 */
-	private static JsonArray toJsonArray(final Polygon poly, final Json json) {
-		JsonArray result = json.array();
+	private static IJsonArray toJsonArray(final Polygon poly, final IJSon json) {
+		IJsonArray result = json.array();
 		result.add(json.valueOf(GeometryUtils.getContourCoordinates(poly)));
 		for (int i = 0; i < poly.getNumInteriorRing(); i++) {
 			result.add(json.valueOf(GeometryUtils.getContourCoordinates(poly.getInteriorRingN(i))));
@@ -151,8 +151,8 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @return the list
 	 * @date 4 nov. 2023
 	 */
-	private static JsonArray toJsonArray(final GeometryCollection geometryCollection, final Json json) {
-		JsonArray list = json.array();
+	private static IJsonArray toJsonArray(final GeometryCollection geometryCollection, final IJSon json) {
+		IJsonArray list = json.array();
 		for (int i = 0; i < geometryCollection.getNumGeometries(); i++) {
 			Geometry geometry = geometryCollection.getGeometryN(i);
 			if (geometry instanceof Polygon polygon) {
@@ -273,12 +273,12 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @date 5 nov. 2023
 	 */
 	private static Geometry buildMultiPolygon(final JsonGeometryObject geometryMap) {
-		JsonArray polygonsList = geometryMap.get(NAME_COORDINATES).asArray();
+		IJsonArray polygonsList = geometryMap.get(NAME_COORDINATES).asArray();
 		Polygon[] polygons = new Polygon[polygonsList.size()];
 		int p = 0;
-		for (JsonValue ringsList : polygonsList) {
+		for (IJsonValue ringsList : polygonsList) {
 			List<CoordinateSequence> rings = new ArrayList<>();
-			for (JsonValue coordinates : ringsList.asArray()) {
+			for (IJsonValue coordinates : ringsList.asArray()) {
 				rings.add(createCoordinateSequence(coordinates.asArray()));
 			}
 			if (rings.isEmpty()) { continue; }
@@ -347,10 +347,10 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @date 5 nov. 2023
 	 */
 	private static Geometry buildPolygon(final JsonGeometryObject geometryMap) {
-		JsonArray ringsList = geometryMap.get(NAME_COORDINATES).asArray();
+		IJsonArray ringsList = geometryMap.get(NAME_COORDINATES).asArray();
 		if (ringsList.isEmpty()) return GEOMETRY_FACTORY.createPolygon();
 		List<CoordinateSequence> rings = new ArrayList<>();
-		for (JsonValue coordinates : ringsList) { rings.add(createCoordinateSequence(coordinates.asArray())); }
+		for (IJsonValue coordinates : ringsList) { rings.add(createCoordinateSequence(coordinates.asArray())); }
 		LinearRing outer = GEOMETRY_FACTORY.createLinearRing(rings.get(0));
 		LinearRing[] inner = null;
 		if (rings.size() > 1) {
@@ -392,7 +392,7 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @date 5 nov. 2023
 	 */
 	private static Geometry buildPoint(final JsonGeometryObject object) {
-		JsonArray c = object.get(NAME_COORDINATES).asArray();
+		IJsonArray c = object.get(NAME_COORDINATES).asArray();
 		if (c.isEmpty()) return null;
 		c = c.get(0).asArray();
 		CoordinateSequence coordinate =
@@ -409,11 +409,11 @@ public class JsonGeometryObject extends JsonGamlObject {
 	 * @return the coordinate sequence
 	 * @date 5 nov. 2023
 	 */
-	private static CoordinateSequence createCoordinateSequence(final JsonArray coordinates) {
+	private static CoordinateSequence createCoordinateSequence(final IJsonArray coordinates) {
 		ICoordinates result = ICoordinates.ofLength(coordinates.size());
 		int i = 0;
-		for (JsonValue ordinates : coordinates) {
-			JsonArray c = ordinates.asArray();
+		for (IJsonValue ordinates : coordinates) {
+			IJsonArray c = ordinates.asArray();
 			if (c.size() > 0) { result.setOrdinate(i, 0, c.get(0).asDouble()); }
 			if (c.size() > 1) { result.setOrdinate(i, 1, c.get(1).asDouble()); }
 			if (c.size() > 2) { result.setOrdinate(i++, 2, c.get(2).asDouble()); }

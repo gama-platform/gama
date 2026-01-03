@@ -30,6 +30,7 @@ import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.IExperimentPlan;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.server.ISocketCommand.CommandException;
+import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.Json;
 import gama.core.util.map.IMap;
 import gama.dev.BANNER_CATEGORY;
@@ -63,7 +64,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	protected final Map<WebSocket, Timer> pingTimers = new HashMap<>();
 
 	/** The json err. */
-	protected Json jsonErr = Json.getNew();
+	protected IJSon jsonErr = Json.getNew();
 
 	/** The console. */
 	protected final IConsoleListener console = new GamaServerConsoleListener();

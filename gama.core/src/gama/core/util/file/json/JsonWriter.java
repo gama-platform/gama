@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * JsonWriter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * JsonWriter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +12,20 @@ package gama.core.util.file.json;
 import java.io.IOException;
 import java.io.Writer;
 
+import gama.annotations.precompiler.OkForAPI;
+
 /**
  * The Class JsonWriter.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 29 oct. 2023
  */
-class JsonWriter {
+@OkForAPI (OkForAPI.Location.UTILS)
+
+/**
+ * The Class JsonWriter.
+ */
+public class JsonWriter {
 
 	/** The Constant CONTROL_CHARACTERS_END. */
 	private static final int CONTROL_CHARACTERS_END = 0x001f;

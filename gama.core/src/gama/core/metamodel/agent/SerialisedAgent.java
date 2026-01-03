@@ -29,9 +29,9 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.grid.IGridAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.file.json.JsonGamlAgent;
-import gama.core.util.file.json.JsonValue;
 
 /**
  * The Class SerialisedAgent.
@@ -241,7 +241,7 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		JsonGamlAgent obj = (JsonGamlAgent) json.agent(species, index).add("attributes", attributes);
 		if (innerPopulations != null && !innerPopulations.isEmpty()) { obj.add("populations", innerPopulations); }
 		return obj;

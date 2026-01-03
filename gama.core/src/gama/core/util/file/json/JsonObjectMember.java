@@ -1,52 +1,21 @@
+/*******************************************************************************************************
+ *
+ * JsonObjectMember.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.util.file.json;
+
+import java.util.Objects;
 
 /**
  * Represents a member of a JSON object, a pair of a name and a value.
  */
-public class JsonObjectMember {
-
-	/** The name. */
-	private final String name;
-
-	/** The value. */
-	private final JsonValue value;
-
-	/**
-	 * Instantiates a new member.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param name
-	 *            the name
-	 * @param value
-	 *            the value
-	 * @date 29 oct. 2023
-	 */
-	JsonObjectMember(final String name, final JsonValue value) {
-		this.name = name;
-		this.value = value;
-	}
-
-	/**
-	 * Returns the name of this member.
-	 *
-	 * @return the name of this member, never <code>null</code>
-	 */
-	public String getName() { return name; }
-
-	/**
-	 * Returns the value of this member.
-	 *
-	 * @return the value of this member, never <code>null</code>
-	 */
-	public JsonValue getValue() { return value; }
-
-	@Override
-	public int hashCode() {
-		int result = 1;
-		result = 31 * result + name.hashCode();
-		result = 31 * result + value.hashCode();
-		return result;
-	}
+public record JsonObjectMember(String name, IJsonValue value) implements IJsonObjectMember {
 
 	/**
 	 * Indicates whether a given object is "equal to" this JsonObject. An object is considered equal if it is also a
@@ -62,9 +31,7 @@ public class JsonObjectMember {
 	@Override
 	public boolean equals(final Object object) {
 		if (this == object) return true;
-		if (object == null || getClass() != object.getClass()) return false;
-		JsonObjectMember other = (JsonObjectMember) object;
-		return name.equals(other.name) && value.equals(other.value);
+		return object instanceof JsonObjectMember jom && name.equals(jom.name) && Objects.equals(value, jom.value);
 	}
 
 }

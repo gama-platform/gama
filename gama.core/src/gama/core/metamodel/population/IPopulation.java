@@ -2,7 +2,7 @@
  *
  * IPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,8 +23,8 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonObject;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonObject;
 import gama.core.util.list.IList;
 import gama.gaml.interfaces.IDisposable;
 import gama.gaml.interfaces.IStepable;
@@ -442,7 +442,7 @@ public interface IPopulation<T extends IAgent>
 	 * @date 31 oct. 2023
 	 */
 	@Override
-	default JsonObject serializeToJson(final Json json) {
+	default IJsonObject serializeToJson(final IJSon json) {
 		return json.object("population", getSpecies().getName(), "agents", this.subList(0, size()));
 		// return json.valueOf(new SerialisedPopulation(this));
 	}

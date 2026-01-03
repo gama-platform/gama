@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaGraph.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,9 +45,9 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.core.util.GamaPair;
 import gama.core.util.IContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonGamlObject;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonObject;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.graph.GraphEvent.GraphEventType;
 import gama.core.util.graph.loader.GamaGraphMLEdgeImporter;
 import gama.core.util.graph.loader.GamaGraphMLNodeImporter;
@@ -85,8 +85,8 @@ import one.util.streamex.StreamEx;
 public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
-		JsonGamlObject object = json.typedObject(getGamlType(), "directed", directed, "vertices", vertexMap, "edges",
+	public IJsonValue serializeToJson(final IJSon json) {
+		IJsonObject object = json.typedObject(getGamlType(), "directed", directed, "vertices", vertexMap, "edges",
 				edgeMap, "agentEdge", agentEdge);
 		if (edgeSpecies != null) { object.add("edgeSpecies", edgeSpecies); }
 		if (vertexSpecies != null) { object.add("vertexSpecies", vertexSpecies); }
@@ -298,17 +298,13 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		for (DefaultEdge e : graph.edgeSet()) {
 			Object s = graph.getEdgeSource(e);
-			
+
 			Object t = graph.getEdgeTarget(e);
-			
+
 			if (nodeS != null) {
-				if (s instanceof String) {
-					s = verticesAg.get(s);
-				}
-				if (t instanceof String) {
-					t = verticesAg.get(t);
-				}
-				
+				if (s instanceof String) { s = verticesAg.get(s); }
+				if (t instanceof String) { t = verticesAg.get(t); }
+
 			}
 
 			if (edgeS == null) {
@@ -486,8 +482,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		for (final Entry<E, _Edge<V, E>> entry : edgeMap.entrySet()) {
 			final E e = entry.getKey();
 			final _Edge<V, E> v = entry.getValue();
-			sb.append(e).append(Strings.TAB).append("(").append(v).append("),")
-					.append(Strings.LN);
+			sb.append(e).append(Strings.TAB).append("(").append(v).append("),").append(Strings.LN);
 		}
 		sb.append("]\n}");
 		/*
@@ -526,7 +521,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		if (edges != null) {
 			for (final Object p : edges.iterable(scope)) {
 				addEdge(p);
-				final Object p2 = p instanceof GraphObjectToAdd ? ((GraphObjectToAdd) p).getObject() : p;
+				final Object p2 = p instanceof GraphObjectToAdd g ? g.getObject() : p;
 				if (p2 instanceof IShape) {
 					final _Edge ed = getEdge(p2);
 					if (ed != null) { ed.setWeight(((IShape) p2).getPerimeter()); }
@@ -549,7 +544,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		if (vertices != null) {
 			for (final Object p : vertices.iterable(scope)) {
 				addEdge(p);
-				final Object p2 = p instanceof GraphObjectToAdd ? ((GraphObjectToAdd) p).getObject() : p;
+				final Object p2 = p instanceof GraphObjectToAdd g ? g.getObject() : p;
 				if (p2 instanceof IShape) {
 					final _Edge ed = getEdge(p2);
 					if (ed != null) { ed.setWeight(((IShape) p2).getPerimeter()); }
@@ -813,18 +808,17 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
 	public boolean addVertex(final Object v) {
-		
+
 		// we set the vertex species with the species of the added agent
-		if (v instanceof IAgent agentVertex) { 
+		if (v instanceof IAgent agentVertex) {
 			// if it's different than the previous species we switch it to null
 			if (!getVertices().isEmpty() && agentVertex.getSpecies() != vertexSpecies) {
 				vertexSpecies = null;
-			}
-			else {
+			} else {
 				vertexSpecies = agentVertex.getSpecies();
 			}
 		}
-		
+
 		if (v instanceof gama.gaml.operators.Graphs.GraphObjectToAdd) {
 			addValue(graphScope, (gama.gaml.operators.Graphs.GraphObjectToAdd) v);
 			return ((gama.gaml.operators.Graphs.GraphObjectToAdd) v).getObject() != null;

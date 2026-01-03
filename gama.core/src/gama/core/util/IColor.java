@@ -11,11 +11,13 @@ package gama.core.util;
 
 import java.awt.Color;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.gaml.interfaces.IValue;
 
 /**
  *
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IColor extends IValue, Comparable<IColor> {
 
 	/**

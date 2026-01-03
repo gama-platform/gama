@@ -28,8 +28,8 @@ import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.IList;
 import gama.core.util.path.GamaSpatialPath;
 import gama.gaml.interfaces.IValue;
@@ -475,7 +475,7 @@ public interface ITopology extends IValue {
 	 * @date 29 oct. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
+	default IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), IKeyword.ENVIRONMENT, getEnvironment());
 	}
 

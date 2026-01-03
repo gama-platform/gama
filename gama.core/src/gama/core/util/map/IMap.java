@@ -2,7 +2,7 @@
  *
  * IMap.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,9 +39,9 @@ import gama.core.util.GamaPair;
 import gama.core.util.IAddressableContainer;
 import gama.core.util.IContainer;
 import gama.core.util.IModifiableContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonObject;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonObject;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.GamaPairList;
 import gama.core.util.list.IList;
@@ -685,8 +685,8 @@ public interface IMap<K, V>
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	default JsonValue serializeToJson(final Json json) {
-		JsonObject result = json.object();
+	default IJsonValue serializeToJson(final IJSon json) {
+		IJsonObject result = json.object();
 		for (java.util.Map.Entry<K, V> entry : this.entrySet()) {
 			result.add(entry.getKey().toString(), json.valueOf(entry.getValue()));
 		}

@@ -28,8 +28,8 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IAddressableContainer;
 import gama.core.util.IContainer;
 import gama.core.util.IModifiableContainer;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
@@ -714,7 +714,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	 * pattern: return super.serializeToJson().add(attr1, value1).add...
 	 */
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "path", originalPath);
 	}
 
