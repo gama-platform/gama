@@ -22,6 +22,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.HeapControl;
@@ -45,7 +46,7 @@ public class AutoStartup implements IStartup {
 				.setValue(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT, false);
 		final RGB rgb = PreferenceConverter.getColor(EditorsPlugin.getDefault().getPreferenceStore(),
 				AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-		return GamaColor.get(rgb.red, rgb.green, rgb.blue);
+		return GamaColorFactory.get(rgb.red, rgb.green, rgb.blue);
 	}
 
 	/**

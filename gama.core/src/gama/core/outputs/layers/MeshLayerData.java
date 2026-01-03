@@ -3,14 +3,12 @@
  * MeshLayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
-
-import java.awt.Color;
 
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IImageProvider;
@@ -19,6 +17,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.matrix.IField;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
@@ -31,7 +30,7 @@ import gama.gaml.types.Types;
 public class MeshLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColor.get(Color.black);
+	static GamaColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The should compute values. */
 	boolean shouldComputeValues = true;
@@ -105,7 +104,7 @@ public class MeshLayerData extends LayerData {
 		triangulation = create(IKeyword.TRIANGULATION, Types.BOOL, false);
 		smooth = create(IKeyword.SMOOTH, (scope, exp) -> {
 			final Object result = exp.value(scope);
-			return result instanceof Boolean ? (Boolean) result ? 1 : 0 : Cast.asInt(scope, result);
+			return result instanceof Boolean b ? b ? 1 : 0 : Cast.asInt(scope, result);
 		}, Types.INT, 0);
 		grayscale = create(IKeyword.GRAYSCALE, Types.BOOL, false);
 		wireframe = create(IKeyword.WIREFRAME, Types.BOOL, false);

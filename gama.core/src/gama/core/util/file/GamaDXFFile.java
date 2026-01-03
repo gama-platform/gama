@@ -39,7 +39,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.operators.spatial.SpatialCreation;
@@ -463,7 +463,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 						g.setAttribute("color_index", obj.getColor());
 
 						if (obj.getColorRGB() != null) {
-							g.setAttribute("color", GamaColor.get(obj.getColorRGB()[0], obj.getColorRGB()[1],
+							g.setAttribute("color", GamaColorFactory.get(obj.getColorRGB()[0], obj.getColorRGB()[1],
 									obj.getColorRGB()[2], 255));
 						}
 						if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
@@ -497,7 +497,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 					if (obj.getColorRGB() != null) {
 						g.setAttribute("color",
-								GamaColor.get(obj.getColorRGB()[0], obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
+								GamaColorFactory.get(obj.getColorRGB()[0], obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
 					}
 					if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
 

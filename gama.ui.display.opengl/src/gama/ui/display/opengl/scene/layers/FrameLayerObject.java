@@ -16,6 +16,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.types.GamaGeometryType;
@@ -29,7 +30,7 @@ import gama.ui.display.opengl.scene.geometry.GeometryObject;
 public class FrameLayerObject extends StaticLayerObject.World {
 
 	/** The Constant FRAME. */
-	private static final GamaColor FRAME = GamaColor.get(150, 150, 150, 255);
+	private static final GamaColor FRAME = GamaColorFactory.get(150, 150, 150, 255);
 
 	/**
 	 * Instantiates a new frame layer object.

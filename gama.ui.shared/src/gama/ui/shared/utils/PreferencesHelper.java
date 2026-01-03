@@ -23,6 +23,7 @@ import gama.core.common.preferences.Pref;
 import gama.core.common.util.MemoryUtils;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.gaml.types.IType;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -41,12 +42,12 @@ public class PreferencesHelper {
 
 	/** The Constant SHAPEFILE_VIEWER_FILL. */
 	public static final Pref<GamaColor> SHAPEFILE_VIEWER_FILL =
-			create("pref_shapefile_background_color", "Shapefile viewer fill color", () -> GamaColor.get("lightgray"),
+			create("pref_shapefile_background_color", "Shapefile viewer fill color", () -> GamaColorFactory.get("lightgray"),
 					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant SHAPEFILE_VIEWER_LINE_COLOR. */
 	public static final Pref<GamaColor> SHAPEFILE_VIEWER_LINE_COLOR =
-			create("pref_shapefile_line_color", "Shapefile viewer line color", () -> GamaColor.get("black"),
+			create("pref_shapefile_line_color", "Shapefile viewer line color", () -> GamaColorFactory.get("black"),
 					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant ERROR_TEXT_COLOR. */
@@ -61,7 +62,7 @@ public class PreferencesHelper {
 
 	/** The Constant IMAGE_VIEWER_BACKGROUND. */
 	public static final Pref<GamaColor> IMAGE_VIEWER_BACKGROUND =
-			create("pref_image_background_color", "Image viewer background color", () -> GamaColor.get("white"),
+			create("pref_image_background_color", "Image viewer background color", () -> GamaColorFactory.get("white"),
 					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	// public static final Pref<GamaFont> BASE_BUTTON_FONT = create("pref_button_font", "Font of buttons and dialogs",

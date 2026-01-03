@@ -3,7 +3,7 @@
  * ColorEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.gaml.types.GamaColorType;
 import gama.gaml.types.Types;
 import gama.ui.shared.controls.FlatButton;
@@ -39,7 +40,7 @@ import gama.ui.shared.resources.IGamaColors;
 public class ColorEditor extends AbstractEditor<Color> {
 
 	/** The runnable. */
-	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColor.get(r, g, b, 255));
+	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColorFactory.get(r, g, b, 255));
 
 	/** The listener. */
 	final SelectionListener listener = new SelectionAdapter() {
@@ -53,7 +54,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 		public void widgetSelected(final SelectionEvent e) {
 			final MenuItem i = (MenuItem) e.widget;
 			final String color = i.getText().replace("#", "");
-			final GamaColor c = GamaColor.colors.get(color);
+			final GamaColor c = GamaColorFactory.colors.get(color);
 			if (c == null) return;
 			modifyAndDisplayValue(c);
 		}
@@ -96,7 +97,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 	protected void displayParameterValue() {
 		internalModification = true;
 		final GamaUIColor color =
-				GamaColors.get(currentValue == null ? GamaColor.get(0) : (java.awt.Color) currentValue);
+				GamaColors.get(currentValue == null ? GamaColorFactory.get(0) : (java.awt.Color) currentValue);
 		edit.setTextWithoutRecomputingSize(color.toString());
 		edit.setColor(color);
 		internalModification = false;

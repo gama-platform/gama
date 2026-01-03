@@ -12,6 +12,7 @@ package gama.gaml.statements.test;
 import gama.core.common.interfaces.IColored;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 
 /**
  * The Enum TestState.
@@ -55,11 +56,11 @@ public enum TestState implements IColored {
 	@Override
 	public GamaColor getColor(final IScope scope) {
 		return switch (this) {
-			case FAILED -> GamaColor.get("gamared");
-			case NOT_RUN -> GamaColor.get("gamablue");
-			case WARNING -> GamaColor.get("gamaorange");
-			case PASSED -> GamaColor.get("gamagreen");
-			default -> GamaColor.get(83, 95, 107); // GamaColors.toGamaColor(IGamaColors.NEUTRAL.color());
+			case FAILED -> GamaColorFactory.get("gamared");
+			case NOT_RUN -> GamaColorFactory.get("gamablue");
+			case WARNING -> GamaColorFactory.get("gamaorange");
+			case PASSED -> GamaColorFactory.get("gamagreen");
+			default -> GamaColorFactory.get(83, 95, 107); // GamaColors.toGamaColor(IGamaColors.NEUTRAL.color());
 		};
 	}
 }

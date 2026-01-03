@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.QualifiedName;
 
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 
 /**
  *
@@ -21,16 +22,16 @@ import gama.core.util.GamaColor;
 public interface IStatusMessage {
 
 	/** The wait and task color. */
-	GamaColor WAIT_AND_TASK_COLOR = GamaColor.get(207, 119, 56);
+	GamaColor WAIT_AND_TASK_COLOR = GamaColorFactory.get(207, 119, 56);
 
 	/** The inform color. */
-	GamaColor INFORM_COLOR = GamaColor.get(102, 114, 126);
+	GamaColor INFORM_COLOR = GamaColorFactory.get(102, 114, 126);
 
 	/** The error color. */
-	GamaColor ERROR_COLOR = GamaColor.get(158, 77, 77);
+	GamaColor ERROR_COLOR = GamaColorFactory.get(158, 77, 77);
 
 	/** The neutral color. */
-	GamaColor NEUTRAL_COLOR = GamaColor.get(102, 114, 126);
+	GamaColor NEUTRAL_COLOR = GamaColorFactory.get(102, 114, 126);
 
 	/** The progress icon. */
 	String PROGRESS_ICON = "status/status.progress";

@@ -36,6 +36,7 @@ import gama.core.outputs.layers.properties.RotationDefinition;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
@@ -616,7 +617,7 @@ public class LayeredDisplayData {
 				intensity = Cast.asColor(scope, light.value(scope));
 			} else {
 				final int meanValue = Cast.asInt(scope, light.value(scope));
-				intensity = GamaColor.get(meanValue, meanValue, meanValue, 255);
+				intensity = GamaColorFactory.get(meanValue, meanValue, meanValue, 255);
 			}
 			lights.put(ILightDefinition.ambient, new GenericLightDefinition(ILightDefinition.ambient, -1, intensity));
 		}

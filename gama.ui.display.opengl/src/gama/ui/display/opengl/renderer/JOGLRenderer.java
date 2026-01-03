@@ -32,6 +32,7 @@ import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
@@ -365,7 +366,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		double stepX, stepY;
 		final double cellWidth = getEnvWidth() / dimensions.x;
 		final double cellHeight = getEnvHeight() / dimensions.y;
-		final GamaColor color = GamaColor.get(lineColor.getRGB());
+		final GamaColor color = GamaColorFactory.get(lineColor.getRGB());
 		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.GRIDLINE);
 		attributes.setEmpty(true);
 		for (double i = 0; i < dimensions.x; i++) {

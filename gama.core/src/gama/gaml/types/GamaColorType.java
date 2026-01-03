@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaColorType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * GamaColorType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,6 +22,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.IContainer;
 import gama.core.util.map.IMap;
 import gama.gaml.operators.Cast;
@@ -66,34 +68,42 @@ public class GamaColorType extends GamaType<GamaColor> {
 	public static GamaColor staticCast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		// param can contain the alpha value
-		if (obj == null) return null;
-		if (obj instanceof final GamaColor col) {
-			if (param instanceof Integer a) return GamaColor.get(col.getRed(), col.getGreen(), col.getBlue(), a);
-			if (param instanceof Double a)
-				return GamaColor.getWithDoubleAlpha(col.getRed(), col.getGreen(), col.getBlue(), a);
-			return (GamaColor) obj;
+		switch (obj) {
+			case null -> {
+				return null;
+			}
+			case GamaColor col -> {
+				if (param instanceof Integer a) return GamaColorFactory.get(col.getRed(), col.getGreen(), col.getBlue(), a);
+				if (param instanceof Double a)
+					return GamaColorFactory.getWithDoubleAlpha(col.getRed(), col.getGreen(), col.getBlue(), a);
+				return (GamaColor) obj;
+			}
+			case List l -> {
+				final int size = l.size();
+				return switch (size) {
+					case 0 -> GamaColorFactory.BLACK;
+					case 1, 2 -> staticCast(scope, ((List) obj).get(0), param, copy);
+					case 3 -> GamaColorFactory.get(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
+							Cast.asInt(scope, l.get(2)), 255);
+					default -> GamaColorFactory.get(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
+							Cast.asInt(scope, l.get(2)), Cast.asInt(scope, l.get(3)));
+				};
+			}
+			case Map m -> {
+				return GamaColorFactory.get(Cast.asInt(scope, m.get("red")),
+						Cast.asInt(scope, m.get("green")), Cast.asInt(scope, m.get("blue")), Cast.asInt(scope, m.get("alpha")));
+			}
+			default -> {
+			}
 		}
-		if (obj instanceof final List l) {
-			final int size = l.size();
-			return switch (size) {
-				case 0 -> GamaColor.get(Color.black);
-				case 1, 2 -> staticCast(scope, ((List) obj).get(0), param, copy);
-				case 3 -> GamaColor.get(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
-						Cast.asInt(scope, l.get(2)), 255);
-				default -> GamaColor.get(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
-						Cast.asInt(scope, l.get(2)), Cast.asInt(scope, l.get(3)));
-			};
-		}
-		if (obj instanceof final Map m) return GamaColor.get(Cast.asInt(scope, m.get("red")),
-				Cast.asInt(scope, m.get("green")), Cast.asInt(scope, m.get("blue")), Cast.asInt(scope, m.get("alpha")));
 		if (obj instanceof IContainer)
 			return staticCast(scope, ((IContainer) obj).listValue(scope, Types.NO_TYPE, false), param, copy);
 		if (obj instanceof String) {
 			final String s = ((String) obj).toLowerCase();
-			GamaColor c = GamaColor.colors.get(s);
+			GamaColor c = GamaColorFactory.colors.get(s);
 			if (c == null) {
 				try {
-					c = GamaColor.get(Color.decode(s));
+					c = GamaColorFactory.get(Color.decode(s));
 				} catch (final NumberFormatException e) {
 					c = null;
 					if (s != null && s.contains("rgb")) {
@@ -105,23 +115,34 @@ public class GamaColorType extends GamaType<GamaColor> {
 							Integer b = Integer.valueOf(sval[2]);
 							Integer alpha = sval.length == 4 ? Integer.valueOf(sval[3]) : null;
 							if (r != null && b != null && g != null) {
-								c = GamaColor.get(r, g, b, alpha == null ? 255 : alpha);
+								c = GamaColorFactory.get(r, g, b, alpha == null ? 255 : alpha);
 							}
 						}
 					}
 					if (c == null) throw GamaRuntimeException.error("'" + s + "' is not a valid color name", scope);
 				}
-				GamaColor.colors.put(s, c);
+				GamaColorFactory.colors.put(s, c);
 			}
-			if (param == null) return c;
-			if (param instanceof Integer i) return GamaColor.get(c, i);
-			if (param instanceof Double d) return GamaColor.get(c, d);
+			switch (param) {
+				case null -> {
+					return c;
+				}
+				case Integer i -> {
+					return GamaColorFactory.get(c, i);
+				}
+				case Double d -> {
+					return GamaColorFactory.get(c, d);
+				}
+				default -> {
+				}
+			}
 		}
-		if (obj instanceof Boolean cond) return cond ? GamaColor.get(Color.black) : GamaColor.get(Color.white);
+		if (obj instanceof Boolean cond)
+			return cond ? GamaColorFactory.get(Color.black) : GamaColorFactory.get(Color.white);
 		final int i = Cast.asInt(scope, obj);
-		if (param instanceof Integer in) return GamaColor.get(i, in);
-		if (param instanceof Double d) return GamaColor.get(i, Double.valueOf(d * 255).intValue());
-		return GamaColor.get(i);
+		if (param instanceof Integer in) return GamaColorFactory.create(i, in);
+		if (param instanceof Double d) return GamaColorFactory.create(i, Double.valueOf(d * 255).intValue());
+		return GamaColorFactory.get(i);
 	}
 
 	@Override

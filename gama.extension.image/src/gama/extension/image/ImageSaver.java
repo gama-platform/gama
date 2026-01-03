@@ -27,7 +27,7 @@ import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.matrix.GamaField;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -170,7 +170,7 @@ public class ImageSaver extends AbstractSaver {
 			for (int col = 0; col < cols; col++) {
 				double v = field.get(scope, col, row);
 				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
-				image.setRGB(col, rows - 1 - row, GamaColor.get(vRef, vRef, vRef).getRGB());
+				image.setRGB(col, rows - 1 - row, GamaColorFactory.get(vRef, vRef, vRef).getRGB());
 			}
 		}
 		ImageIO.write(image, t, f);

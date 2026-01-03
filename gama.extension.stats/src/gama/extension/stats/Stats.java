@@ -56,6 +56,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.IContainer;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
@@ -1718,8 +1719,8 @@ public class Stats {
 					g.addValue(p.getGreen());
 					b.addValue(p.getBlue());
 				}
-				if (r.getSize() == 0) return GamaColor.get(0, 0, 0, 0);
-				return GamaColor.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
+				if (r.getSize() == 0) return GamaColorFactory.get(0, 0, 0, 0);
+				return GamaColorFactory.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
 			default:
 				final DataSet d = new DataSet();
 				for (final Object o : values.iterable(scope)) { d.addValue(Cast.asFloat(scope, o)); }

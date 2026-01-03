@@ -1,22 +1,19 @@
 /*******************************************************************************************************
  *
  * MonitorOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs;
 
-import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -24,6 +21,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ItemList;
@@ -35,6 +34,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.file.csv.CsvWriter;
 import gama.core.util.list.GamaListFactory;
 import gama.gaml.compilation.GAML;
@@ -133,7 +133,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 			if (sim != null) {
 				constantColor = sim.getColor();
 			} else {
-				constantColor = GamaColor.get(Color.gray);
+				constantColor = GamaColorFactory.GRAY;
 			}
 		}
 	}
@@ -294,7 +294,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 		final StringBuilder sb = new StringBuilder(100);
 		sb.append(getName()).append(": ");
 		final Object v = getLastValue();
-		sb.append(v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
+		sb.append(v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
 		if (isPaused()) { sb.append(" (paused)"); }
 		return sb.toString();
 

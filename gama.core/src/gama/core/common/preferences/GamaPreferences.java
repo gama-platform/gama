@@ -3,7 +3,7 @@
  * GamaPreferences.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,8 +11,8 @@
 package gama.core.common.preferences;
 
 import static gama.core.common.preferences.GamaPreferenceStore.getStore;
+import static gama.core.util.GamaColorFactory.LIGHT_GRAY;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,6 +40,7 @@ import gama.core.outputs.layers.properties.ICameraDefinition;
 import gama.core.runtime.PlatformHelper;
 import gama.core.runtime.concurrent.BufferingController;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.core.util.file.GenericFile;
 import gama.core.util.file.IGamaFile;
@@ -61,22 +62,27 @@ import one.util.streamex.StreamEx;
 public class GamaPreferences {
 
 	/** The Constant BASIC_COLORS. */
-	public static final ValueProvider<GamaColor>[] BASIC_COLORS = new ValueProvider[] {
-			() -> GamaColor.get(74, 97, 144), () -> GamaColor.get(66, 119, 42), () -> GamaColor.get(83, 95, 107),
-			() -> GamaColor.get(195, 98, 43), () -> GamaColor.get(150, 132, 106) };
+	public static final ValueProvider<GamaColor>[] BASIC_COLORS =
+			new ValueProvider[] { () -> GamaColorFactory.get(74, 97, 144), () -> GamaColorFactory.get(66, 119, 42),
+					() -> GamaColorFactory.get(83, 95, 107), () -> GamaColorFactory.get(195, 98, 43),
+					() -> GamaColorFactory.get(150, 132, 106) };
 
 	/** The Constant DIVERGING_COLORS. */
-	public static final ValueProvider<GamaColor>[] QUALITATIVE_COLORS = new ValueProvider[] {
-			() -> GamaColor.get(166, 206, 227), () -> GamaColor.get(31, 120, 180), () -> GamaColor.get(178, 223, 138),
-			() -> GamaColor.get(51, 160, 44), () -> GamaColor.get(251, 154, 153), () -> GamaColor.get(227, 26, 28),
-			() -> GamaColor.get(253, 191, 111), () -> GamaColor.get(255, 127, 0), () -> GamaColor.get(202, 178, 214) };
+	public static final ValueProvider<GamaColor>[] QUALITATIVE_COLORS =
+			new ValueProvider[] { () -> GamaColorFactory.get(166, 206, 227), () -> GamaColorFactory.get(31, 120, 180),
+					() -> GamaColorFactory.get(178, 223, 138), () -> GamaColorFactory.get(51, 160, 44),
+					() -> GamaColorFactory.get(251, 154, 153), () -> GamaColorFactory.get(227, 26, 28),
+					() -> GamaColorFactory.get(253, 191, 111), () -> GamaColorFactory.get(255, 127, 0),
+					() -> GamaColorFactory.get(202, 178, 214) };
 
 	/** The Constant DIVERGING_COLORS. */
-	public static final ValueProvider<GamaColor>[] DIVERGING_COLORS = new ValueProvider[] {
-			() -> GamaColor.get(84, 48, 5), () -> GamaColor.get(140, 81, 10), () -> GamaColor.get(191, 129, 45),
-			() -> GamaColor.get(223, 194, 125), () -> GamaColor.get(246, 232, 195), () -> GamaColor.get(245, 245, 245),
-			() -> GamaColor.get(199, 234, 229), () -> GamaColor.get(128, 205, 193), () -> GamaColor.get(53, 151, 143),
-			() -> GamaColor.get(1, 102, 94), () -> GamaColor.get(0, 60, 48) };
+	public static final ValueProvider<GamaColor>[] DIVERGING_COLORS =
+			new ValueProvider[] { () -> GamaColorFactory.get(84, 48, 5), () -> GamaColorFactory.get(140, 81, 10),
+					() -> GamaColorFactory.get(191, 129, 45), () -> GamaColorFactory.get(223, 194, 125),
+					() -> GamaColorFactory.get(246, 232, 195), () -> GamaColorFactory.get(245, 245, 245),
+					() -> GamaColorFactory.get(199, 234, 229), () -> GamaColorFactory.get(128, 205, 193),
+					() -> GamaColorFactory.get(53, 151, 143), () -> GamaColorFactory.get(1, 102, 94),
+					() -> GamaColorFactory.get(0, 60, 48) };
 
 	/** The Constant PREF_SAVE_BUFFERING_STRATEGY. */
 	public static final String PREF_SAVE_BUFFERING_STRATEGY = "pref_save_buffering_strategy";
@@ -119,7 +125,8 @@ public class GamaPreferences {
 		/** The Constant CORE_EXTERNAL_BROWSER. */
 		public static final Pref<Boolean> CORE_EXTERNAL_BROWSER = create("pref_external_browser",
 				"Browser to open to display web links (in documentation or text statements)", true, IType.BOOL, true)
-						.withLabels("Internal", "System").withColors(GamaColor.get("lightgray"), GamaColor.get("gray"))
+						.withLabels("Internal", "System")
+						.withColors(GamaColorFactory.get("lightgray"), GamaColorFactory.get("gray"))
 						.in(Network.NAME, WEB);
 
 	}
@@ -248,15 +255,15 @@ public class GamaPreferences {
 		static void setPivot(final GamaColor c) {
 			if (!PIVOT.equals(CORE_SIMULATION_COLOR.getValue())) return;
 			SIMULATION_COLORS = new GamaColor[9];
-			SIMULATION_COLORS[0] = GamaColor.get(c.darker().darker().darker().darker());
-			SIMULATION_COLORS[1] = GamaColor.get(c.darker().darker().darker());
-			SIMULATION_COLORS[2] = GamaColor.get(c.darker().darker());
-			SIMULATION_COLORS[3] = GamaColor.get(c.darker());
-			SIMULATION_COLORS[4] = GamaColor.get(c);
-			SIMULATION_COLORS[5] = GamaColor.get(c.brighter());
-			SIMULATION_COLORS[6] = GamaColor.get(c.brighter().brighter());
-			SIMULATION_COLORS[7] = GamaColor.get(c.brighter().brighter().brighter());
-			SIMULATION_COLORS[8] = GamaColor.get(c.brighter().brighter().brighter().brighter());
+			SIMULATION_COLORS[0] = GamaColorFactory.get(c.darker().darker().darker().darker());
+			SIMULATION_COLORS[1] = GamaColorFactory.get(c.darker().darker().darker());
+			SIMULATION_COLORS[2] = GamaColorFactory.get(c.darker().darker());
+			SIMULATION_COLORS[3] = GamaColorFactory.get(c.darker());
+			SIMULATION_COLORS[4] = GamaColorFactory.get(c);
+			SIMULATION_COLORS[5] = GamaColorFactory.get(c.brighter());
+			SIMULATION_COLORS[6] = GamaColorFactory.get(c.brighter().brighter());
+			SIMULATION_COLORS[7] = GamaColorFactory.get(c.brighter().brighter().brighter());
+			SIMULATION_COLORS[8] = GamaColorFactory.get(c.brighter().brighter().brighter().brighter());
 		}
 
 		/**
@@ -326,8 +333,8 @@ public class GamaPreferences {
 
 		/** The Constant CORE_PIVOT_COLOR. */
 		public static final Pref<GamaColor> CORE_PIVOT_COLOR =
-				create("pref_simulation_color", "Pivot color of simulations", GamaColor.get(64, 224, 208), IType.COLOR,
-						true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
+				create("pref_simulation_color", "Pivot color of simulations", GamaColorFactory.get(64, 224, 208),
+						IType.COLOR, true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
 
 		/** The Constant CORE_CONSOLE_KEEP. */
 		public static final Pref<Boolean> CORE_CONSOLE_KEEP =
@@ -442,7 +449,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
 				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
 				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT)
-				.withColors(GamaColor.get("white"), GamaColor.get("darkgray"));
+				.withColors(GamaColorFactory.get("white"), GamaColorFactory.get("darkgray"));
 
 		/** The Constant EDITOR_COLLAPSE_BUTTONS. */
 		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS =
@@ -486,7 +493,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SLIDER_TYPE =
 				create("pref_experiment_type_slider", "Scale of the step duration slider", true, IType.BOOL, true)
 						.in(NAME, EXECUTION).withLabels("Linear", "Logarithmic")
-						.withColors(GamaColor.get("white"), GamaColor.get("darkgray"));
+						.withColors(GamaColorFactory.get("white"), GamaColorFactory.get("darkgray"));
 
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =
@@ -700,11 +707,12 @@ public class GamaPreferences {
 		/** The Constant CORE_BACKGROUND. */
 		public static final Pref<GamaColor> CORE_BACKGROUND =
 				create("pref_display_background_color", "Default background color ('background' facet of 'display')",
-						() -> GamaColor.get("white"), IType.COLOR, true).in(NAME, DRAWING);
+						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The Constant CORE_HIGHLIGHT. */
-		public static final Pref<GamaColor> CORE_HIGHLIGHT = create("pref_display_highlight_color",
-				"Default highlight color", () -> GamaColor.get(0, 200, 200), IType.COLOR, true).in(NAME, DRAWING);
+		public static final Pref<GamaColor> CORE_HIGHLIGHT =
+				create("pref_display_highlight_color", "Default highlight color",
+						() -> GamaColorFactory.get(0, 200, 200), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The Constant CORE_SHAPE. */
 		public static final Pref<String> CORE_SHAPE =
@@ -718,7 +726,7 @@ public class GamaPreferences {
 
 		/** The Constant CORE_COLOR. */
 		public static final Pref<GamaColor> CORE_COLOR = create("pref_display_default_color", "Default color of agents",
-				() -> GamaColor.get("yellow"), IType.COLOR, true).in(NAME, DRAWING);
+				() -> GamaColorFactory.get("yellow"), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The Constant DISPLAY_NO_ACCELERATION. */
 		public static final Pref<Boolean> DISPLAY_NO_ACCELERATION = create("pref_display_no_java2d_acceleration",
@@ -948,22 +956,19 @@ public class GamaPreferences {
 		/** The Constant JSON_INFINITY. */
 		public static final Pref<Boolean> JSON_INFINITY =
 				create("pref_json_infinity_as_string", "Write and parse #infinity as", true, IType.BOOL, true)
-						.withLabels("string \"Infinity\"", "literal Infinity")
-						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
+						.withLabels("string \"Infinity\"", "literal Infinity").withColors(LIGHT_GRAY, LIGHT_GRAY)
 						.in(NAME, "JSON Format");
 
 		/** The Constant JSON_NAN. */
 		public static final Pref<Boolean> JSON_NAN =
 				create("pref_json_nan_as_string", "Write and parse #nan as", true, IType.BOOL, true)
-						.withLabels("string \"NaN\"", "literal NaN")
-						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
+						.withLabels("string \"NaN\"", "literal NaN").withColors(LIGHT_GRAY, LIGHT_GRAY)
 						.in(NAME, "JSON Format");
 
 		/** The Constant JSON_NAN. */
 		public static final Pref<Boolean> JSON_INT_OVERFLOW = create("pref_json_int_overflow_as_double",
 				"In case of an int overflow, parse the item as a", true, IType.BOOL, true).withLabels("float", "string")
-						.withColors(GamaColor.get(Color.LIGHT_GRAY), GamaColor.get(Color.LIGHT_GRAY))
-						.in(NAME, "JSON Format");
+						.withColors(LIGHT_GRAY, LIGHT_GRAY).in(NAME, "JSON Format");
 	}
 
 	/**

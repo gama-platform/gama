@@ -27,6 +27,7 @@ import gama.core.common.interfaces.IGui;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -66,7 +67,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				console[0].append(msg, root, color);
 			} else { // DO WE KEEP THIS ? NOT HAVING BUFFERS MEANS THAT IF A CONSOLE IS OPENED AFTERWARDS, NOTHING WILL
 				// APPEAR ON IT
-				GamaColor c = color == null ? root == null ? GamaColor.get(0) : root.getColor() : color;
+				GamaColor c = color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
 				StringBuilder sb = consoleBuffers.get(c);
 				if (sb == null) {
 					sb = new StringBuilder(2000);

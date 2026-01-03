@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
  * GridLayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
@@ -26,6 +25,7 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
@@ -37,7 +37,7 @@ import gama.gaml.types.Types;
 public class GridLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColor.get(Color.black);
+	static GamaColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The grid. */
 	GridPopulation grid;

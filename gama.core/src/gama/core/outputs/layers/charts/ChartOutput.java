@@ -2,7 +2,7 @@
  *
  * ChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,6 +23,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 
@@ -246,7 +247,7 @@ public abstract class ChartOutput {
 				: IKeyword.RADAR.equals(t) ? RADAR_CHART : IKeyword.PIE.equals(t) ? PIE_CHART
 				: IKeyword.BOX_WHISKER.equals(t) ? BOX_WHISKER_CHART : IKeyword.SCATTER.equals(t) ? SCATTER_CHART
 				: XY_CHART;
-		axesColor = GamaColor.get(Color.black);
+		axesColor = GamaColorFactory.BLACK;
 	}
 
 	/**

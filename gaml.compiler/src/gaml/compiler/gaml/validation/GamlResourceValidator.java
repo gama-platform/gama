@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.resource.GamlResource;
@@ -80,7 +80,7 @@ public class GamlResourceValidator implements IResourceValidator {
 		String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
 		ArrayList<Issue> result = new ArrayList<>();
 		GAMA.getGui().getStatus().setStatus("Compilation of " + name, IStatusMessage.COMPILE_ICON,
-				GamaColor.get(200, 200, 200));
+				GamaColorFactory.get(200, 200, 200));
 		DEBUG.TIMER(BANNER_CATEGORY.COMPIL, name, "in", () -> {
 			final IAcceptor<Issue> acceptor = issue -> {
 				if (issue.getMessage() != null && !issue.getMessage().isEmpty()) { result.add(issue); }

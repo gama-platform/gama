@@ -15,6 +15,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.Types;
@@ -84,10 +85,10 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		intensityAttribute = create(IKeyword.INTENSITY, (scope, exp) -> {
 			if (exp.getGamlType() == Types.INT) {
 				int v = Cast.asInt(scope, exp.value(scope));
-				return GamaColor.get(v, v, v, 255);
+				return GamaColorFactory.get(v, v, v, 255);
 			}
 			return Cast.asColor(scope, exp.value(scope));
-		}, Types.COLOR, GamaColor.get(i, i, i, 255));
+		}, Types.COLOR, GamaColorFactory.get(i, i, i, 255));
 
 	}
 

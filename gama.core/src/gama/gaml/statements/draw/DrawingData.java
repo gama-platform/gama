@@ -2,14 +2,12 @@
  *
  * DrawingData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
-
-import java.awt.Color;
 
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Rotation3D;
@@ -19,6 +17,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.core.util.GamaPair;
 import gama.core.util.list.GamaListFactory;
@@ -42,7 +41,7 @@ import gama.gaml.types.Types;
 public class DrawingData extends AttributeHolder {
 
 	/** The Constant DEFAULT_BORDER_COLOR. */
-	static final GamaColor DEFAULT_BORDER_COLOR = GamaColor.get(Color.BLACK);
+	static final GamaColor DEFAULT_BORDER_COLOR = GamaColorFactory.BLACK;
 
 	/** The size. */
 	public final Attribute<GamaPoint> size;

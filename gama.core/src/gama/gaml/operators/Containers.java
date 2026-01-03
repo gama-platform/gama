@@ -54,6 +54,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaPair;
 import gama.core.util.IContainer;
 import gama.core.util.graph.IGraph;
@@ -2409,7 +2410,7 @@ public class Containers {
 			case IType.INT -> ((Stream<Integer>) s).reduce(0, Integer::sum);
 			case IType.FLOAT -> ((Stream<Double>) s).reduce(0d, Double::sum);
 			case IType.POINT -> ((Stream<GamaPoint>) s).reduce(new GamaPoint(), GamaPoint::plus);
-			case IType.COLOR -> ((Stream<GamaColor>) s).reduce(GamaColor.get(0, 0, 0, 0), GamaColor::merge);
+			case IType.COLOR -> ((Stream<GamaColor>) s).reduce(GamaColorFactory.get(0, 0, 0, 0), GamaColor::merge);
 			case IType.STRING -> ((Stream<String>) s).reduce("", String::concat);
 			default -> throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
 					scope);

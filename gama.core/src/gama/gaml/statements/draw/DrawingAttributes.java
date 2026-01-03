@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
  * DrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -23,6 +22,7 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.dev.DEBUG;
 import gama.gaml.constants.GamlCoreConstants;
 
@@ -77,10 +77,10 @@ public class DrawingAttributes {
 	private static int INDEX = 0;
 
 	/** The Constant TEXTURED_COLOR. */
-	public static final GamaColor TEXTURED_COLOR = GamaColor.get(Color.white);
+	public static final GamaColor TEXTURED_COLOR = GamaColorFactory.WHITE;
 
 	/** The Constant SELECTED_COLOR. */
-	public static final GamaColor SELECTED_COLOR = GamaColor.get(Color.red);
+	public static final GamaColor SELECTED_COLOR = GamaColorFactory.RED;
 
 	/** The flags. */
 	EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);

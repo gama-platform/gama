@@ -34,6 +34,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.draw.DrawingAttributes;
@@ -106,7 +107,7 @@ public class AspectStatement extends AbstractStatementSequence {
 	};
 
 	/** The border color. */
-	public static final GamaColor borderColor = GamaColor.get(Color.black.getRGB());
+	public static final GamaColor borderColor = GamaColorFactory.get(Color.black.getRGB());
 
 	/** The default aspect. */
 	public static final IExecutable DEFAULT_ASPECT = sc -> {
@@ -124,7 +125,7 @@ public class AspectStatement extends AbstractStatementSequence {
 					final Object value = agent.getDirectVarValue(scope, IKeyword.COLOR);
 					color = Cast.asColor(scope, value);
 				} else {
-					color = GamaColor.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB());
+					color = GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB());
 				}
 				final String defaultShape = GamaPreferences.Displays.CORE_SHAPE.getValue();
 				final Integer index = SHAPES.get(defaultShape);

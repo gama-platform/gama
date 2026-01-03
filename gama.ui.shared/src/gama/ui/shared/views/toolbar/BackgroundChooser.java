@@ -3,7 +3,7 @@
  * BackgroundChooser.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -53,7 +54,7 @@ public class BackgroundChooser {
 					public void widgetSelected(final SelectionEvent e) {
 						final MenuItem i = (MenuItem) e.widget;
 						final String color = i.getText().replace("#", "");
-						final GamaColor c = GamaColor.colors.get(color);
+						final GamaColor c = GamaColorFactory.colors.get(color);
 						if (c == null) return;
 						changeColor(c.red(), c.green(), c.blue());
 					}

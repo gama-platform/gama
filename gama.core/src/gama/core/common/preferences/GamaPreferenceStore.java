@@ -38,6 +38,7 @@ import gama.core.common.preferences.Pref.ValueProvider;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.IDate;
 import gama.core.util.file.GenericFile;
 import gama.core.util.file.IGamaFile;
@@ -547,7 +548,7 @@ public abstract class GamaPreferenceStore<T> {
 				case IType.BOOL -> gp.init((ValueProvider) () -> getBoolean(key, Cast.asBool(scope, value)));
 				case IType.STRING -> gp.init((ValueProvider) () -> get(key, toJavaString(asString(scope, value))));
 				case IType.FILE -> gp.init((ValueProvider) () -> new GenericFile(get(key, (String) value), false));
-				case IType.COLOR -> gp.init((ValueProvider) () -> GamaColor.get(getInt(key, asInt(scope, value))));
+				case IType.COLOR -> gp.init((ValueProvider) () -> GamaColorFactory.get(getInt(key, asInt(scope, value))));
 				case IType.FONT -> gp.init((ValueProvider) () -> {
 					final var font = get(key, asString(scope, value));
 					if (DEFAULT_FONT.equals(font)) return null;

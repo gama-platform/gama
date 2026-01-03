@@ -29,6 +29,7 @@ import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
@@ -55,7 +56,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 
 	/** The Constant COLORS. */
 	public final static GamaColor[] COLORS =
-			{ GamaColor.get("gamared"), GamaColor.get("gamaorange"), GamaColor.get("gamablue") };
+			{ GamaColorFactory.get("gamared"), GamaColorFactory.get("gamaorange"), GamaColorFactory.get("gamablue") };
 
 	/** The Constant DEFAULT_SCALE. */
 	protected final static GamaPoint DEFAULT_SCALE = new GamaPoint(.15, .15, .15);

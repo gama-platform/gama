@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.menus.GamaColorMenu.IColorRunnable;
 import gama.ui.shared.resources.GamaIcon;
@@ -39,7 +40,7 @@ public class ColorReferenceMenu extends GamlReferenceMenu {
 
 	/** The runnable. */
 	IColorRunnable runnable = (r, g, b) -> {
-		final GamaColor c = GamaColor.get(r, g, b, 255);
+		final GamaColor c = GamaColorFactory.get(r, g, b, 255);
 		applyText(c.serializeToGaml(true));
 	};
 

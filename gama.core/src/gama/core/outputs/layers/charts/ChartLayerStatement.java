@@ -3,7 +3,7 @@
  * ChartLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,6 @@ package gama.core.outputs.layers.charts;
 
 import static gama.core.common.interfaces.IKeyword.ANCHOR;
 
-import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -36,6 +35,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.core.util.list.IList;
 import gama.gaml.compilation.ISymbol;
@@ -651,12 +651,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 		// ((BarRenderer) plot.getRenderer()).setItemMargin(gap);
 
-		GamaColor colorvalue = GamaColor.get(Color.black);
+		GamaColor colorvalue = GamaColorFactory.BLACK;
 		IExpression color = getFacet(IKeyword.AXES);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setAxesColorValue(scope, colorvalue);
 
-		colorvalue = GamaColor.get(Color.black);
+		colorvalue = GamaColorFactory.BLACK;
 		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setTickColorValue(scope, colorvalue);
@@ -690,7 +690,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);
-		colorvalue = GamaColor.get(Color.white);
+		colorvalue = GamaColorFactory.WHITE;
 		color = getFacet(IKeyword.BACKGROUND);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setBackgroundColorValue(scope, colorvalue);

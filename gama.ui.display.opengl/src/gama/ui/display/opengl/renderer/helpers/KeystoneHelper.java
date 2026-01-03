@@ -25,7 +25,7 @@ import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
-import gama.core.util.GamaColor.NamedGamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
@@ -67,8 +67,8 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	private boolean worldCorners = false;
 
 	/** The Constant FILL_COLORS. */
-	private static final Color[] FILL_COLORS = { NamedGamaColor.get("gamared").withAlpha(0.3),
-			NamedGamaColor.get("gamablue").withAlpha(0.3), NamedGamaColor.get("black").withAlpha(0.3) };
+	private static final Color[] FILL_COLORS = { GamaColorFactory.get("gamared").withAlpha(0.3),
+			GamaColorFactory.get("gamablue").withAlpha(0.3), GamaColorFactory.get("black").withAlpha(0.3) };
 
 	/** The ib idx buff. */
 	final IntBuffer ibIdxBuff = Buffers.newDirectIntBuffer(new int[] { 0, 1, 2, 0, 2, 3 });

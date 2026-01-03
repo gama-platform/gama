@@ -63,6 +63,7 @@ import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
@@ -371,7 +372,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		GamaColor border = isLine ? attributes.getColor() : attributes.getBorder();
 		if (border == null && attributes.isEmpty()) { border = attributes.getColor(); }
 		if (highlight) {
-			attributes.setFill(GamaColor.get(data.getHighlightColor().getRGB()));
+			attributes.setFill(GamaColorFactory.get(data.getHighlightColor().getRGB()));
 			if (border != null) { border = attributes.getColor(); }
 		}
 		final Shape s = sw.toShape(geometry);

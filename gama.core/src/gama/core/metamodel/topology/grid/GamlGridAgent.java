@@ -15,6 +15,7 @@ import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
+import gama.core.util.GamaColorFactory;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.operators.Cast;
@@ -43,7 +44,7 @@ public class GamlGridAgent extends GamlAgent implements IGridAgent {
 	@Override
 	public GamaColor getColor() {
 		if (getPopulation().grid.isHexagon) return (GamaColor) getAttribute(IKeyword.COLOR);
-		return GamaColor.get(getPopulation().grid.supportImagePixels[getIndex()]);
+		return GamaColorFactory.get(getPopulation().grid.supportImagePixels[getIndex()]);
 	}
 
 	@Override
