@@ -3,7 +3,7 @@
  * IDialogFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import org.eclipse.core.runtime.IPath;
 
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.gaml.architecture.user.UserPanelStatement;
+import gama.gaml.statements.IStatement;
 
 /**
  *
@@ -169,7 +169,7 @@ public interface IDialogFactory {
 	 * @param scope
 	 * @param panel
 	 */
-	default void openUserDialog(final IScope scope, final UserPanelStatement panel) {}
+	default void openUserDialog(final IScope scope, final IStatement panel) {}
 
 	/**
 	 * Disconnects and closes the user dialog if any.

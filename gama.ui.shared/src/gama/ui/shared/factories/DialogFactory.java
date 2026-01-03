@@ -3,7 +3,7 @@
  * DialogFactory.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +20,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import gama.core.common.interfaces.IDialogFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.PlatformHelper;
-import gama.gaml.architecture.user.UserPanelStatement;
+import gama.gaml.statements.IStatement;
 import gama.ui.application.workbench.PickWorkspaceDialog;
 import gama.ui.shared.dialogs.UserControlDialog;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -30,8 +30,16 @@ import gama.ui.shared.utils.WorkbenchHelper;
  */
 public class DialogFactory extends AbstractServiceFactory implements IDialogFactory {
 
+	/**
+	 * Open user dialog.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param panel
+	 *            the panel
+	 */
 	@Override
-	public void openUserDialog(final IScope scope, final UserPanelStatement panel) {
+	public void openUserDialog(final IScope scope, final IStatement panel) {
 		final UserControlDialog dialog = new UserControlDialog(scope, panel);
 		dialog.open();
 	}

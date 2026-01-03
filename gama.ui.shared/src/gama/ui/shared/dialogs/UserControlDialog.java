@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * UserControlDialog.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * UserControlDialog.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -105,10 +105,14 @@ public class UserControlDialog extends AbstractDetailsDialog {
 	 * @param panel
 	 *            the panel
 	 */
-	public UserControlDialog(final IScope scope, final UserPanelStatement panel) {
+	public UserControlDialog(final IScope scope, final IStatement panel) {
 		super((Shell) null, "[" + scope.getAgent().getName() + "] " + panel.getName(), null, null);
 		setShellStyle(SWT.CLOSE | SWT.BORDER | SWT.TOOL | SWT.MODELESS | SWT.RESIZE);
-		userCommands = panel.getUserCommands();
+		if (panel instanceof UserPanelStatement ups) {
+			userCommands = ups.getUserCommands();
+		} else {
+			userCommands = Collections.emptyList();
+		}
 		this.scope = scope;
 	}
 

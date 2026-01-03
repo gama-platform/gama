@@ -25,10 +25,10 @@ import gama.dev.THREADS;
 import gama.gaml.operators.Dates;
 
 /**
- * The class GamaRuntimeInformation.
+ * The class SimulationClock. Implements a clock for simulations.
  *
  * @author drogoul
- * @since 13 d�c. 2011
+ * @since 13 déc. 2011
  *
  */
 /**
