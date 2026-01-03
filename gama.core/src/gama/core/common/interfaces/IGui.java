@@ -30,8 +30,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.CommandExecutor;
 import gama.core.runtime.server.ISocketCommand;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.core.util.file.IFileMetaDataProvider;
 import gama.core.util.file.IGamaFileMetaData;
 import gama.core.util.list.IList;
@@ -282,7 +282,7 @@ public interface IGui {
 	 * @return the map
 	 */
 	default Map<String, Object> openUserInputDialog(final IScope scope, final String title,
-			final List<IParameter> parameters, final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final List<IParameter> parameters, final GamaFont font, final IColor color, final Boolean showTitle) {
 		return GamaMapFactory.create();
 	}
 
@@ -578,7 +578,7 @@ public interface IGui {
 	default void arrangeExperimentViews(final IScope myScope, final IExperimentPlan experimentPlan,
 			final Boolean keepTabs, final Boolean keepToolbars, final Boolean showConsoles,
 			final Boolean showParameters, final Boolean showNavigator, final Boolean showControls,
-			final Boolean keepTray, final Supplier<GamaColor> color, final boolean showEditors) {}
+			final Boolean keepTray, final Supplier<IColor> color, final boolean showEditors) {}
 
 	/**
 	 * Display errors.

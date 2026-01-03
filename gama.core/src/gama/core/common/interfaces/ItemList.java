@@ -12,7 +12,7 @@ package gama.core.common.interfaces;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * Written by drogoul Modified on 13 mai 2011
@@ -116,7 +116,7 @@ public interface ItemList<T> {
 	 *            the data
 	 * @return the item display color
 	 */
-	default GamaColor getItemDisplayColor(final T data) {
+	default IColor getItemDisplayColor(final T data) {
 		return null;
 	}
 

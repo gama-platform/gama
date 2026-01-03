@@ -3,7 +3,7 @@
  * MeshDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,6 +17,7 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
@@ -120,7 +121,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	}
 
 	@Override
-	public GamaColor getColor() {
+	public IColor getColor() {
 		if (isSet(Flag.Selected)) return SELECTED_COLOR;
 		if (highlight != null) return highlight;
 		if (isSet(Flag.Empty) || isSet(Flag.Grayscaled)) return null;

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TextDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,6 @@ import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
 import static java.awt.geom.PathIterator.WIND_EVEN_ODD;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -56,6 +55,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.ICoordinates;
 import gama.core.metamodel.shape.GamaPoint;
+import gama.core.util.IColor;
 import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
@@ -117,7 +117,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The border. */
 	// Properties
-	Color border;
+	IColor border;
 
 	/** The depth. */
 	double width, height, depth;
@@ -261,7 +261,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 		final GamaPoint p = attributes.getLocation();
 
-		Color previous = null;
+		IColor previous = null;
 		gl.pushMatrix();
 		try {
 			GamaPoint anchor = attributes.getAnchor();
@@ -289,7 +289,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawWireframe(Color previous) {
+	private IColor drawWireframe(IColor previous) {
 		// Wireframe case
 		if (border != null) {
 			previous = gl.getCurrentColor();
@@ -311,7 +311,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawFacesAndBorder(Color previous) {
+	private IColor drawFacesAndBorder(IColor previous) {
 		// Solid case
 		drawFace(depth == 0);
 		if (depth > 0) {

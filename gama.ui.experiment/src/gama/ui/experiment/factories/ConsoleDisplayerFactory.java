@@ -3,7 +3,7 @@
  * ConsoleDisplayerFactory.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,6 +28,7 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -46,7 +47,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 	static class ConsoleDisplayer implements IConsoleListener {
 
 		/** The console buffers. */
-		Map<GamaColor, StringBuilder> consoleBuffers = new HashMap<>();
+		Map<IColor, StringBuilder> consoleBuffers = new HashMap<>();
 
 		@Override
 		public void informConsole(final String msg, final ITopLevelAgent root, final GamaColor color) {
@@ -67,7 +68,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				console[0].append(msg, root, color);
 			} else { // DO WE KEEP THIS ? NOT HAVING BUFFERS MEANS THAT IF A CONSOLE IS OPENED AFTERWARDS, NOTHING WILL
 				// APPEAR ON IT
-				GamaColor c = color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
+				IColor c = color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
 				StringBuilder sb = consoleBuffers.get(c);
 				if (sb == null) {
 					sb = new StringBuilder(2000);

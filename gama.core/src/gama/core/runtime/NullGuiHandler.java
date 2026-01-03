@@ -3,7 +3,7 @@
  * NullGuiHandler.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,15 +17,15 @@ import gama.core.common.interfaces.IConsoleListener;
 import gama.core.common.interfaces.IDialogFactory;
 import gama.core.common.interfaces.IDisplayCreator;
 import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGui;
 import gama.core.common.interfaces.IKeyword;
+import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.NullDisplaySurface;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
@@ -68,7 +68,7 @@ public class NullGuiHandler implements IGui {
 
 	@Override
 	public Map<String, Object> openUserInputDialog(final IScope scope, final String title,
-			final List<IParameter> parameters, final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final List<IParameter> parameters, final GamaFont font, final IColor color, final Boolean showTitle) {
 		final Map<String, Object> initialValues = GamaMapFactory.create();
 		parameters.forEach(p -> { initialValues.put(p.getName(), p.getInitialValue(scope)); });
 		return initialValues;

@@ -3,7 +3,7 @@
  * ChartJFreeChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,6 @@ import org.jfree.data.general.Dataset;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 import gama.gaml.operators.Colors;
@@ -220,7 +219,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		chart.getTitle().setVisible(true);
 		chart.getTitle().setFont(getTitleFont());
 		if (!this.getTitleVisible(scope)) { chart.getTitle().setVisible(false); }
-		if (textColor != null) { chart.getTitle().setPaint(textColor); }
+		if (textColor != null) { chart.getTitle().setPaint(textColor.getAWTColor()); }
 
 		if (backgroundColor == null) {
 			plot.setBackgroundPaint(null);
@@ -228,7 +227,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			chart.setBorderPaint(null);
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(null); }
 		} else {
-			final Color bg = backgroundColor;
+			final Color bg = backgroundColor.getAWTColor();
 			chart.setBackgroundPaint(bg);
 			plot.setBackgroundPaint(bg);
 			chart.setBorderPaint(bg);
@@ -265,7 +264,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 						legend.setVerticalAlignment(VerticalAlignment.CENTER);
 						// Legend with 50% transparency by default
-						legend.setBackgroundPaint(Colors.rgb(scope, GamaColorFactory.get(backgroundColor), 0.5));
+						legend.setBackgroundPaint(Colors.rgb(scope, backgroundColor, 0.5).getAWTColor());
 						p.addAnnotation(ta);
 						// Remove the default legend
 						chart.removeLegend();
@@ -273,7 +272,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			}
 
 			// Set legend text color
-			if (textColor != null) { legend.setItemPaint(textColor); }
+			if (textColor != null) { legend.setItemPaint(textColor.getAWTColor()); }
 
 		}
 

@@ -3,7 +3,7 @@
  * Stats.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -1715,9 +1715,9 @@ public class Stats {
 				final DataSet b = new DataSet();
 				for (final Object o : values.iterable(scope)) {
 					final GamaColor p = (GamaColor) o;
-					r.addValue(p.getRed());
-					g.addValue(p.getGreen());
-					b.addValue(p.getBlue());
+					r.addValue(p.red());
+					g.addValue(p.green());
+					b.addValue(p.blue());
 				}
 				if (r.getSize() == 0) return GamaColorFactory.get(0, 0, 0, 0);
 				return GamaColorFactory.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);

@@ -25,7 +25,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
@@ -146,7 +146,7 @@ public class OverlayStatement extends GraphicLayerStatement {
 	 * @return the int[]
 	 */
 	private static int[] computeColor(final IScope scope, final Object color) {
-		final GamaColor c = Cast.asColor(scope, color);
+		final IColor c = Cast.asColor(scope, color);
 		return new int[] { c.red(), c.green(), c.blue() };
 	}
 

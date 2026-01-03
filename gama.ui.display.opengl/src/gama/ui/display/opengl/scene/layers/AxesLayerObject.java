@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AxesLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AxesLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,9 +28,9 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
@@ -55,7 +55,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, 90), new AxisAngle(MINUS_I, 90), null };
 
 	/** The Constant COLORS. */
-	public final static GamaColor[] COLORS =
+	public final static IColor[] COLORS =
 			{ GamaColorFactory.get("gamared"), GamaColorFactory.get("gamaorange"), GamaColorFactory.get("gamablue") };
 
 	/** The Constant DEFAULT_SCALE. */
@@ -153,7 +153,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	 * @param empty
 	 *            the empty
 	 */
-	protected void addSyntheticObject(final List<AbstractObject<?, ?>> list, final IShape shape, final GamaColor color,
+	protected void addSyntheticObject(final List<AbstractObject<?, ?>> list, final IShape shape, final IColor color,
 			final IShape.Type type) {
 		final DrawingAttributes att = new ShapeDrawingAttributes(shape, (IAgent) null, color, color, type,
 				GamaPreferences.Displays.CORE_LINE_WIDTH.getValue(), null);

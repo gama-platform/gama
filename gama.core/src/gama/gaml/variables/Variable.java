@@ -36,6 +36,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.benchmark.StopWatch;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.Assert;
 import gama.gaml.compilation.GAML;
@@ -920,7 +921,7 @@ public class Variable extends Symbol implements IVariable {
 	}
 
 	@Override
-	public List<GamaColor> getColors(final IScope scope) {
+	public List<IColor> getColors(final IScope scope) {
 		// No facet available to describe a potential color
 		return null;
 	}

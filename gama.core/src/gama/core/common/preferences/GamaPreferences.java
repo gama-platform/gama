@@ -42,6 +42,7 @@ import gama.core.runtime.concurrent.BufferingController;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.core.util.file.GenericFile;
 import gama.core.util.file.IGamaFile;
 import gama.core.util.file.csv.AbstractCSVManipulator;
@@ -242,7 +243,7 @@ public class GamaPreferences {
 		// public static final Pref<GamaColor>[] SIMULATION_COLORS = new Pref[5];
 
 		/** The Constant COLORS. */
-		private static GamaColor[] SIMULATION_COLORS = null;
+		private static IColor[] SIMULATION_COLORS = null;
 
 		/**
 		 * Sets the pivot.
@@ -252,18 +253,18 @@ public class GamaPreferences {
 		 *            the new pivot
 		 * @date 16 août 2023
 		 */
-		static void setPivot(final GamaColor c) {
+		static void setPivot(final IColor c) {
 			if (!PIVOT.equals(CORE_SIMULATION_COLOR.getValue())) return;
-			SIMULATION_COLORS = new GamaColor[9];
-			SIMULATION_COLORS[0] = GamaColorFactory.get(c.darker().darker().darker().darker());
-			SIMULATION_COLORS[1] = GamaColorFactory.get(c.darker().darker().darker());
-			SIMULATION_COLORS[2] = GamaColorFactory.get(c.darker().darker());
-			SIMULATION_COLORS[3] = GamaColorFactory.get(c.darker());
-			SIMULATION_COLORS[4] = GamaColorFactory.get(c);
-			SIMULATION_COLORS[5] = GamaColorFactory.get(c.brighter());
-			SIMULATION_COLORS[6] = GamaColorFactory.get(c.brighter().brighter());
-			SIMULATION_COLORS[7] = GamaColorFactory.get(c.brighter().brighter().brighter());
-			SIMULATION_COLORS[8] = GamaColorFactory.get(c.brighter().brighter().brighter().brighter());
+			SIMULATION_COLORS = new IColor[9];
+			SIMULATION_COLORS[0] = c.darker().darker().darker().darker();
+			SIMULATION_COLORS[1] = c.darker().darker().darker();
+			SIMULATION_COLORS[2] = c.darker().darker();
+			SIMULATION_COLORS[3] = c.darker();
+			SIMULATION_COLORS[4] = c;
+			SIMULATION_COLORS[5] = c.brighter();
+			SIMULATION_COLORS[6] = c.brighter().brighter();
+			SIMULATION_COLORS[7] = c.brighter().brighter().brighter();
+			SIMULATION_COLORS[8] = c.brighter().brighter().brighter().brighter();
 		}
 
 		/**
@@ -275,7 +276,7 @@ public class GamaPreferences {
 		 * @return the color for simulation
 		 * @date 16 août 2023
 		 */
-		public static GamaColor getColorForSimulation(final int index) {
+		public static IColor getColorForSimulation(final int index) {
 			if (SIMULATION_COLORS == null) { setColorScheme(CORE_SIMULATION_COLOR.getValue()); }
 			return SIMULATION_COLORS[index % SIMULATION_COLORS.length];
 		}
@@ -291,17 +292,17 @@ public class GamaPreferences {
 		public static void setColorScheme(final String scheme) {
 			switch (scheme) {
 				case DIVERGING:
-					SIMULATION_COLORS = new GamaColor[DIVERGING_COLORS.length];
+					SIMULATION_COLORS = new IColor[DIVERGING_COLORS.length];
 					for (int i = 0; i < DIVERGING_COLORS.length; i++) {
 						SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get();
 					}
 					break;
 				case BASIC:
-					SIMULATION_COLORS = new GamaColor[BASIC_COLORS.length];
+					SIMULATION_COLORS = new IColor[BASIC_COLORS.length];
 					for (int i = 0; i < BASIC_COLORS.length; i++) { SIMULATION_COLORS[i] = BASIC_COLORS[i].get(); }
 					break;
 				case QUALITATIVE:
-					SIMULATION_COLORS = new GamaColor[QUALITATIVE_COLORS.length];
+					SIMULATION_COLORS = new IColor[QUALITATIVE_COLORS.length];
 					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) {
 						SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get();
 					}
@@ -332,7 +333,7 @@ public class GamaPreferences {
 								.onChange(Interface::setColorScheme);
 
 		/** The Constant CORE_PIVOT_COLOR. */
-		public static final Pref<GamaColor> CORE_PIVOT_COLOR =
+		public static final Pref<IColor> CORE_PIVOT_COLOR =
 				create("pref_simulation_color", "Pivot color of simulations", GamaColorFactory.get(64, 224, 208),
 						IType.COLOR, true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
 
@@ -437,8 +438,9 @@ public class GamaPreferences {
 				.create("pref_editor_font", "Font of editors", (GamaFont) null, IType.FONT, false).in(NAME, TEXT);
 
 		/** The Constant EDITOR_BACKGROUND_COLOR. */
-		public static final Pref<GamaColor> EDITOR_BACKGROUND_COLOR = create("pref_editor_background_color",
-				"Background color of editors", (GamaColor) null, IType.COLOR, false).in(NAME, TEXT);
+		public static final Pref<IColor> EDITOR_BACKGROUND_COLOR =
+				create("pref_editor_background_color", "Background color of editors", (IColor) null, IType.COLOR, false)
+						.in(NAME, TEXT);
 
 		/** The Constant EDITOR_MARK_OCCURRENCES. */
 		public static final Pref<Boolean> EDITOR_MARK_OCCURRENCES = GamaPreferences
@@ -705,12 +707,12 @@ public class GamaPreferences {
 				create("pref_display_antialias", "Apply antialiasing", false, IType.BOOL, true).in(NAME, DRAWING);
 
 		/** The Constant CORE_BACKGROUND. */
-		public static final Pref<GamaColor> CORE_BACKGROUND =
+		public static final Pref<IColor> CORE_BACKGROUND =
 				create("pref_display_background_color", "Default background color ('background' facet of 'display')",
 						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The Constant CORE_HIGHLIGHT. */
-		public static final Pref<GamaColor> CORE_HIGHLIGHT =
+		public static final Pref<IColor> CORE_HIGHLIGHT =
 				create("pref_display_highlight_color", "Default highlight color",
 						() -> GamaColorFactory.get(0, 200, 200), IType.COLOR, true).in(NAME, DRAWING);
 
@@ -725,7 +727,7 @@ public class GamaPreferences {
 						.between(0.01, null).in(NAME, DRAWING);
 
 		/** The Constant CORE_COLOR. */
-		public static final Pref<GamaColor> CORE_COLOR = create("pref_display_default_color", "Default color of agents",
+		public static final Pref<IColor> CORE_COLOR = create("pref_display_default_color", "Default color of agents",
 				() -> GamaColorFactory.get("yellow"), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The Constant DISPLAY_NO_ACCELERATION. */

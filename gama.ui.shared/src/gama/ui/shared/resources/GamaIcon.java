@@ -3,7 +3,7 @@
  * GamaIcon.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -41,7 +41,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
@@ -143,11 +143,11 @@ public class GamaIcon implements IGamaIcons {
 	 *            the gcolor
 	 * @return the gama SVG icon
 	 */
-	public static GamaIcon ofColor(final GamaColor gcolor) {
+	public static GamaIcon ofColor(final IColor gcolor) {
 		String name = COLOR_PATH + "circle.color." + String.format("%X", gcolor.getRGB()) + ".24";
 		try {
 			return ICON_CACHE.get(name, () -> {
-				String hex = String.format("#%02x%02x%02x", gcolor.getRed(), gcolor.getGreen(), gcolor.getBlue());
+				String hex = String.format("#%02x%02x%02x", gcolor.red(), gcolor.green(), gcolor.blue());
 				String stroke = ThemeHelper.isDark() ? "#E3E6E1" : "gray";
 				String svg =
 						"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"24\" height=\"24\">"

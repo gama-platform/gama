@@ -3,7 +3,7 @@
  * ParameterExpandItem.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 
 import gama.core.common.interfaces.ItemList;
+import gama.core.util.IColor;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -449,7 +450,7 @@ public class ParameterExpandItem extends Item {
 	/**
 	 * @param itemDisplayColor
 	 */
-	public void setColor(final java.awt.Color color) {
+	public void setColor(final IColor color) {
 		if (color != null) { headerColor = GamaColors.get(color).color(); }
 	}
 

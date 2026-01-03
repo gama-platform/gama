@@ -13,8 +13,8 @@ package gama.core.common.interfaces;
 import org.eclipse.core.runtime.QualifiedName;
 
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 
 /**
  *
@@ -22,16 +22,16 @@ import gama.core.util.GamaColorFactory;
 public interface IStatusMessage {
 
 	/** The wait and task color. */
-	GamaColor WAIT_AND_TASK_COLOR = GamaColorFactory.get(207, 119, 56);
+	IColor WAIT_AND_TASK_COLOR = GamaColorFactory.get(207, 119, 56);
 
 	/** The inform color. */
-	GamaColor INFORM_COLOR = GamaColorFactory.get(102, 114, 126);
+	IColor INFORM_COLOR = GamaColorFactory.get(102, 114, 126);
 
 	/** The error color. */
-	GamaColor ERROR_COLOR = GamaColorFactory.get(158, 77, 77);
+	IColor ERROR_COLOR = GamaColorFactory.get(158, 77, 77);
 
 	/** The neutral color. */
-	GamaColor NEUTRAL_COLOR = GamaColorFactory.get(102, 114, 126);
+	IColor NEUTRAL_COLOR = GamaColorFactory.get(102, 114, 126);
 
 	/** The progress icon. */
 	String PROGRESS_ICON = "status/status.progress";
@@ -122,7 +122,7 @@ public interface IStatusMessage {
 	 *
 	 * @return the gama color
 	 */
-	default GamaColor color() {
+	default IColor color() {
 		return null;
 	}
 

@@ -35,6 +35,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.csv.CsvWriter;
 import gama.core.util.list.GamaListFactory;
 import gama.gaml.compilation.GAML;
@@ -97,10 +98,10 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	protected IExpression colorExpression = null;
 
 	/** The color. */
-	protected GamaColor color = null;
+	protected IColor color = null;
 
 	/** The constant color. */
-	protected GamaColor constantColor = null;
+	protected IColor constantColor = null;
 
 	/** The history. */
 	protected List<Object> history;
@@ -230,7 +231,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 * @return the color
 	 */
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 
 		return constantColor == null ? color : constantColor;
 	}

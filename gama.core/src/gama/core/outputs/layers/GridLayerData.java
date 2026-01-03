@@ -24,8 +24,8 @@ import gama.core.metamodel.topology.grid.IGrid;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
@@ -37,7 +37,7 @@ import gama.gaml.types.Types;
 public class GridLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColorFactory.BLACK;
+	static IColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The grid. */
 	GridPopulation grid;
@@ -52,7 +52,7 @@ public class GridLayerData extends LayerData {
 	private final boolean shouldComputeImage;
 
 	/** The line. */
-	Attribute<GamaColor> line;
+	Attribute<IColor> line;
 
 	/** The texture. */
 	Attribute<IImageProvider> texture;
@@ -176,7 +176,7 @@ public class GridLayerData extends LayerData {
 	 *
 	 * @return the line color
 	 */
-	public GamaColor getLineColor() { return line.get() == null ? defaultLineColor : line.get(); }
+	public IColor getLineColor() { return line.get() == null ? defaultLineColor : line.get(); }
 
 	/**
 	 * Draw lines.

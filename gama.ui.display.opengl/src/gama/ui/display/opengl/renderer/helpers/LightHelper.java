@@ -3,7 +3,7 @@
  * LightHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,8 +11,6 @@
 package gama.ui.display.opengl.renderer.helpers;
 
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-
-import java.awt.Color;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -22,6 +20,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.properties.ILightDefinition;
+import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -49,8 +49,8 @@ public class LightHelper extends AbstractRendererHelper {
 	 *            the ambient light value
 	 */
 	public void setAmbientLight(final ILightDefinition light) {
-		Color c = !light.isActive() ? Color.black : light.getIntensity();
-		final float[] array = { c.getRed() / 255.0f, c.getGreen() / 255.0f, c.getBlue() / 255.0f, 1.0f };
+		IColor c = !light.isActive() ? GamaColorFactory.BLACK : light.getIntensity();
+		final float[] array = { c.red() / 255.0f, c.green() / 255.0f, c.blue() / 255.0f, 1.0f };
 		getGL().glLightModelfv(GL2ES1.GL_LIGHT_MODEL_AMBIENT, array, 0);
 	}
 
@@ -81,10 +81,9 @@ public class LightHelper extends AbstractRendererHelper {
 			int id = GL_LIGHT0 + light.getId();
 			if (light.isActive()) {
 				String type = light.getType();
-				Color c = light.getIntensity();
+				IColor c = light.getIntensity();
 				gl.glEnable(id);
-				final float[] color =
-						{ c.getRed() / 255.0f, c.getGreen() / 255.0f, c.getBlue() / 255.0f, c.getAlpha() / 255.0f };
+				final float[] color = { c.red() / 255.0f, c.green() / 255.0f, c.blue() / 255.0f, c.alpha() / 255.0f };
 				openGL.getGL().glLightfv(id, GLLightingFunc.GL_DIFFUSE, color, 0);
 				float[] lightPosition;
 				if (ILightDefinition.direction.equals(type)) {
@@ -159,7 +158,7 @@ public class LightHelper extends AbstractRendererHelper {
 
 		// save the current color to re-set it at the end of this
 		// part
-		final Color currentColor = openGL.swapCurrentColor(light.getIntensity());
+		final IColor currentColor = openGL.swapCurrentColor(light.getIntensity());
 		// change the current color to the light color (the
 		// representation of the color will have the same color as
 		// the light in itself)

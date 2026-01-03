@@ -30,7 +30,7 @@ import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.COUNTER;
 import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
@@ -164,7 +164,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final MonitorOutput o) {
+	public IColor getItemDisplayColor(final MonitorOutput o) {
 		return o.getColor(null);
 	}
 

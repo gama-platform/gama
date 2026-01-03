@@ -16,8 +16,6 @@ import static gama.core.common.geometry.GeometryUtils.getHolesNumber;
 import static gama.core.common.geometry.GeometryUtils.getTypeOf;
 import static gama.core.common.geometry.GeometryUtils.getYNegatedCoordinates;
 
-import java.awt.Color;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
@@ -32,8 +30,8 @@ import gama.core.common.geometry.UnboundedCoordinateSequence;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.shape.IShape.Type;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -54,7 +52,7 @@ import gama.ui.display.opengl.scene.ObjectDrawer;
 public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 
 	/** The Constant DEFAULT_BORDER. */
-	private static final GamaColor DEFAULT_BORDER = GamaColorFactory.BLACK;
+	private static final IColor DEFAULT_BORDER = GamaColorFactory.BLACK;
 
 	/** The normal. */
 	final GamaPoint _normal = new GamaPoint();
@@ -99,7 +97,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 			applyRotation(object);
 			applyTranslation(object);
 			applyScaling(object);
-			final Color border = !object.isFilled() && object.getAttributes().getBorder() == null
+			final IColor border = !object.isFilled() && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
 			final Geometry geometry = object.getObject();
 			Double d = object.getAttributes().getDepth();
@@ -128,7 +126,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param type
 	 *            the type of the geometry
 	 */
-	public void drawGeometry(final Geometry geom, final Color border, final double height, final IShape.Type type) {
+	public void drawGeometry(final Geometry geom, final IColor border, final double height, final IShape.Type type) {
 		switch (type) {
 			case SPHERE:
 				drawSphere(geom, height, border);
@@ -200,7 +198,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 *            the border
 	 */
 	private void drawPolyhedron(final Polygon polygon, /* final boolean solid, */final double height,
-			final Color border) {
+			final IColor border) {
 		// final boolean hasHoles = getHolesNumber(polygon) > 0;
 		// Draw bottom
 		drawPolygon(polygon, border, /* hasHoles ? border : null, */ true, true);
@@ -235,7 +233,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param computeVertices
 	 *            the compute vertices
 	 */
-	private void drawPolygon(final Polygon p, /* final boolean solid, */final Color border, final boolean clockwise,
+	private void drawPolygon(final Polygon p, /* final boolean solid, */final IColor border, final boolean clockwise,
 			final boolean computeVertices) {
 		if (computeVertices) { _vertices.setToYNegated(getContourCoordinates(p)); }
 		if (!gl.isWireframe()) {
@@ -250,7 +248,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		}
 
 		if (border != null || gl.isWireframe()) {
-			final Color colorToUse = border != null ? border : gl.getCurrentColor();
+			final IColor colorToUse = border != null ? border : gl.getCurrentColor();
 			gl.drawClosedLine(_vertices, colorToUse, -1);
 			applyToInnerGeometries(p, ring -> gl.drawClosedLine(getYNegatedCoordinates(ring), colorToUse, -1));
 		}
@@ -266,7 +264,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawPlan(final Geometry p, /* final boolean solid, */final double height, final Color border) {
+	private void drawPlan(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		if (height != 0) {
 			_vertices.visit((pj, pk) -> {
@@ -287,7 +285,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawCachedGeometry(final IShape.Type type, /* final boolean solid, */ final Color border) {
+	private void drawCachedGeometry(final IShape.Type type, /* final boolean solid, */ final IColor border) {
 		gl.pushMatrix();
 		gl.translateBy(_center);
 		gl.rotateBy(_rot.rotateToHorizontal(_normal, _tangent, false).revertInPlace());
@@ -307,7 +305,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawPoint(final Geometry point, /* final boolean solid, */ final double height, final Color border) {
+	private void drawPoint(final Geometry point, /* final boolean solid, */ final double height, final IColor border) {
 		_center.setCoordinate(point.getCoordinate());
 		_center.y *= -1;
 		_scale.setTo(height);
@@ -325,7 +323,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawCube(final Geometry p, /* final boolean solid, */ final double height, final Color border) {
+	private void drawCube(final Geometry p, /* final boolean solid, */ final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		_vertices.getNormal(true, 1, _normal);
 		_vertices.getCenter(_center);
@@ -344,7 +342,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawPyramid(final Geometry p, /* final boolean solid, */final double height, final Color border) {
+	private void drawPyramid(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		_vertices.getNormal(true, 1, _normal);
 		_vertices.getCenter(_center);
@@ -363,7 +361,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawSphere(final Geometry p, /* final boolean solid, */ final double height, final Color border) {
+	private void drawSphere(final Geometry p, /* final boolean solid, */ final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		_vertices.getNormal(true, 1, _normal);
 		_vertices.getCenter(_center);
@@ -402,7 +400,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawCylinder(final Geometry g, /* final boolean solid, */ final double height, final Color border) {
+	private void drawCylinder(final Geometry g, /* final boolean solid, */ final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(g));
 		final double radius = g instanceof Polygon ? _vertices.getLength() / (2 * Math.PI) : height;
 		_vertices.getCenter(_center);
@@ -423,7 +421,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 *            the border
 	 */
 	private void drawLineCylinder(final Geometry g, /* final boolean solid, */ final double radius,
-			final Color border) {
+			final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(g));
 		for (int i = 0, n = _vertices.size(); i < n - 1; i++) {
 			final GamaPoint v1 = _vertices.at(i);
@@ -457,7 +455,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawCone3D(final Geometry p, /* final boolean solid, */final double height, final Color border) {
+	private void drawCone3D(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		final double radius = p instanceof Polygon ? _vertices.getLength() / (2 * Math.PI) : _vertices.getLength();
 		_vertices.getCenter(_center);
@@ -478,7 +476,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawTeapot(final Geometry p, /* final boolean solid, */final double height, final Color border) {
+	private void drawTeapot(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
 		_vertices.setToYNegated(getContourCoordinates(p));
 		try {
 			gl.pushMatrix();
@@ -531,7 +529,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 */
 	public void drawRotationHelper(final GamaPoint target, final double distance, final double height) {
 		gl.setZIncrement(0);
-		gl.setCurrentColor(Color.gray, 0.3);
+		gl.setCurrentColor(GamaColorFactory.GRAY, 0.3);
 		final GamaPoint position = target.yNegated().add(0, 0, -height);
 		final Geometry point = GamaGeometryType.buildCircle(height, position).getInnerGeometry();
 		boolean old = gl.setObjectWireframe(false);

@@ -3,7 +3,7 @@
  * PreferencesHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,8 +22,8 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
 import gama.core.common.util.MemoryUtils;
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.types.IType;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -41,27 +41,27 @@ public class PreferencesHelper {
 					IType.BOOL, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant SHAPEFILE_VIEWER_FILL. */
-	public static final Pref<GamaColor> SHAPEFILE_VIEWER_FILL =
-			create("pref_shapefile_background_color", "Shapefile viewer fill color", () -> GamaColorFactory.get("lightgray"),
-					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
+	public static final Pref<IColor> SHAPEFILE_VIEWER_FILL =
+			create("pref_shapefile_background_color", "Shapefile viewer fill color",
+					() -> GamaColorFactory.get("lightgray"), IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant SHAPEFILE_VIEWER_LINE_COLOR. */
-	public static final Pref<GamaColor> SHAPEFILE_VIEWER_LINE_COLOR =
+	public static final Pref<IColor> SHAPEFILE_VIEWER_LINE_COLOR =
 			create("pref_shapefile_line_color", "Shapefile viewer line color", () -> GamaColorFactory.get("black"),
 					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 
 	/** The Constant ERROR_TEXT_COLOR. */
-	public static final Pref<GamaColor> ERROR_TEXT_COLOR = create("pref_error_text_color", "Text color of errors",
+	public static final Pref<IColor> ERROR_TEXT_COLOR = create("pref_error_text_color", "Text color of errors",
 			() -> GamaColors.toGamaColor(IGamaColors.ERROR.inactive()), IType.COLOR, false)
 					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS).hidden();
 
 	/** The Constant WARNING_TEXT_COLOR. */
-	public static final Pref<GamaColor> WARNING_TEXT_COLOR = create("pref_warning_text_color", "Text color of warnings",
+	public static final Pref<IColor> WARNING_TEXT_COLOR = create("pref_warning_text_color", "Text color of warnings",
 			() -> GamaColors.toGamaColor(IGamaColors.WARNING.inactive()), IType.COLOR, false)
 					.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.ERRORS).hidden();
 
 	/** The Constant IMAGE_VIEWER_BACKGROUND. */
-	public static final Pref<GamaColor> IMAGE_VIEWER_BACKGROUND =
+	public static final Pref<IColor> IMAGE_VIEWER_BACKGROUND =
 			create("pref_image_background_color", "Image viewer background color", () -> GamaColorFactory.get("white"),
 					IType.COLOR, false).in(NAME, APPEARANCE).hidden();
 

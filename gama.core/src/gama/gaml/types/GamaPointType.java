@@ -3,7 +3,7 @@
  * GamaPointType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -71,7 +71,7 @@ public class GamaPointType extends GamaType<GamaPoint> {
 			case GamaPoint gp -> copy ? new GamaPoint(gp) : gp;
 			case IShape s -> s.getLocation();
 			case List l -> castFromList(scope, l, copy);
-			case GamaColor c -> new GamaPoint(c.getRed(), c.getGreen(), c.getBlue());
+			case GamaColor c -> new GamaPoint(c.red(), c.green(), c.blue());
 			case Map m -> castFromMap(scope, m);
 			case String s -> castFromString(scope, s);
 			case GamaPair p -> new GamaPoint(Cast.asFloat(scope, p.first()), Cast.asFloat(scope, p.last()));
@@ -85,8 +85,10 @@ public class GamaPointType extends GamaType<GamaPoint> {
 	/**
 	 * Cast from map.
 	 *
-	 * @param scope the scope
-	 * @param m the m
+	 * @param scope
+	 *            the scope
+	 * @param m
+	 *            the m
 	 * @return the gama point
 	 */
 	private static GamaPoint castFromMap(final IScope scope, final Map m) {
@@ -110,7 +112,7 @@ public class GamaPointType extends GamaType<GamaPoint> {
 		if (str.startsWith("{") && str.endsWith("}")) {
 			str = str.replace("{", "").replace("}", "").trim();
 			return staticCast(scope, Arrays.asList(str.split(",")), false);
-		} 
+		}
 		Double v = Cast.asFloat(scope, str);
 		if (v != null) return new GamaPoint(v, v, v);
 		throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);

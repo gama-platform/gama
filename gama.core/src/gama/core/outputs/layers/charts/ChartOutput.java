@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -22,8 +21,8 @@ import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 
@@ -114,22 +113,22 @@ public abstract class ChartOutput {
 	boolean grid_lines_visible = true;
 
 	/** The background color. */
-	Color backgroundColor = GamaColor.WHITE;
+	IColor backgroundColor = GamaColorFactory.WHITE;
 
 	/** The axes color. */
-	Color axesColor = null;
+	IColor axesColor = null;
 
 	/** The background color. */
-	Color labelBackgroundColor = null;
+	IColor labelBackgroundColor = null;
 
 	/** The background color. */
-	Color labelTextColor = null;
+	IColor labelTextColor = null;
 
 	/** The text color. */
-	Color textColor = null;
+	IColor textColor = null;
 
 	/** The tick color. */
-	Color tickColor = null;
+	IColor tickColor = null;
 
 	/** The tick font face. */
 	String tickFontFace = Font.SANS_SERIF;
@@ -491,7 +490,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setAxesColorValue(final IScope scope, final GamaColor color) {
+	public void setAxesColorValue(final IScope scope, final IColor color) {
 		axesColor = color;
 
 	}
@@ -504,7 +503,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setTickColorValue(final IScope scope, final GamaColor color) {
+	public void setTickColorValue(final IScope scope, final IColor color) {
 		tickColor = color;
 
 	}
@@ -517,7 +516,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setBackgroundColorValue(final IScope scope, final GamaColor color) {
+	public void setBackgroundColorValue(final IScope scope, final IColor color) {
 		backgroundColor = color;
 
 	}
@@ -530,7 +529,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setLabelTextColorValue(final IScope scope, final GamaColor color) {
+	public void setLabelTextColorValue(final IScope scope, final IColor color) {
 		labelTextColor = color;
 	}
 
@@ -542,7 +541,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setLabelBackgroundColorValue(final IScope scope, final GamaColor color) {
+	public void setLabelBackgroundColorValue(final IScope scope, final IColor color) {
 		labelBackgroundColor = color;
 	}
 
@@ -554,7 +553,7 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setColorValue(final IScope scope, final GamaColor color) {
+	public void setColorValue(final IScope scope, final IColor color) {
 		textColor = color;
 
 	}

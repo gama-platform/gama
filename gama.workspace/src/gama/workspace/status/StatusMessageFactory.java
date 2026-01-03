@@ -13,7 +13,7 @@ package gama.workspace.status;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.interfaces.IStatusMessage.StatusType;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  *
@@ -72,7 +72,7 @@ public class StatusMessageFactory {
 	 * @return the status message
 	 */
 	public static IStatusMessage CUSTOM(final String msg, final StatusType s, final String icon,
-			final GamaColor color) {
+			final IColor color) {
 		return new StatusMessage(msg, s, icon, color, null, System.currentTimeMillis());
 	}
 

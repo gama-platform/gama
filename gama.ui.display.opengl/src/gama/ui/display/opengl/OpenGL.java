@@ -3,14 +3,13 @@
  * OpenGL.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.nio.BufferOverflowException;
 import java.util.HashMap;
@@ -42,6 +41,8 @@ import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
+import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
@@ -151,7 +152,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current color. */
 	// Colors
-	private Color currentColor;
+	private IColor currentColor;
 
 	/** The current object alpha. */
 	private double currentObjectAlpha = 1d;
@@ -782,14 +783,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            if not null, will be used to draw the contour
 	 */
 	public void drawSimpleShape(final ICoordinates yNegatedVertices, final int number, final boolean clockwise,
-			final boolean computeNormal, final Color border) {
+			final boolean computeNormal, final IColor border) {
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
 			final int style = number == 4 ? GL2ES3.GL_QUADS : number == -1 ? GL2.GL_POLYGON : GL.GL_TRIANGLES;
 			drawVertices(style, yNegatedVertices, number, clockwise);
 		}
 		if (border != null || isWireframe()) {
-			final Color colorToUse = border != null ? border : getCurrentColor();
+			final IColor colorToUse = border != null ? border : getCurrentColor();
 			drawClosedLine(yNegatedVertices, colorToUse, -1);
 		}
 	}
@@ -838,9 +839,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param number
 	 *            the number
 	 */
-	public void drawClosedLine(final ICoordinates yNegatedVertices, final Color color, final int number) {
+	public void drawClosedLine(final ICoordinates yNegatedVertices, final IColor color, final int number) {
 		if (color == null) return;
-		final Color previous = swapCurrentColor(color);
+		final IColor previous = swapCurrentColor(color);
 		drawClosedLine(yNegatedVertices, number);
 		setCurrentColor(previous);
 	}
@@ -952,13 +953,13 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Replaces the current color by the parameter, sets the alpha of the parameter to be the one of the current color,
 	 * and returns the ex-current color
 	 *
-	 * @param color
+	 * @param iColor
 	 *            a Color
 	 * @return the previous current color
 	 */
-	public Color swapCurrentColor(final Color color) {
-		final Color old = currentColor;
-		setCurrentColor(color, old == null ? 1 : old.getAlpha() / 255d);
+	public IColor swapCurrentColor(final IColor iColor) {
+		final IColor old = currentColor;
+		setCurrentColor(iColor, old == null ? 1 : old.alpha() / 255d);
 		return old;
 	}
 
@@ -1007,9 +1008,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param alpha
 	 *            the alpha
 	 */
-	public void setCurrentColor(final Color c, final double alpha) {
+	public void setCurrentColor(final IColor c, final double alpha) {
 		if (c == null) return;
-		setCurrentColor(c.getRed() / 255d, c.getGreen() / 255d, c.getBlue() / 255d, c.getAlpha() / 255d * alpha);
+		setCurrentColor(c.red() / 255d, c.green() / 255d, c.blue() / 255d, c.alpha() / 255d * alpha);
 	}
 
 	/**
@@ -1018,7 +1019,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param c
 	 *            the new current color
 	 */
-	public void setCurrentColor(final Color c) {
+	public void setCurrentColor(final IColor c) {
 		setCurrentColor(c, currentObjectAlpha);
 	}
 
@@ -1035,8 +1036,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the alpha
 	 */
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
-		currentColor = new Color((float) Math.max(red, 0), (float) Math.max(green, 0), (float) Math.max(blue, 0),
-				(float) alpha);
+		currentColor = GamaColorFactory.getWithDoubles(Math.max(red, 0), Math.max(green, 0), Math.max(blue, 0), alpha);
 		gl.glColor4d(red, green, blue, alpha);
 	}
 
@@ -1045,7 +1045,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *
 	 * @return the current color
 	 */
-	public Color getCurrentColor() { return currentColor; }
+	public IColor getCurrentColor() { return currentColor; }
 
 	// LINE WIDTH
 
@@ -1398,14 +1398,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param border
 	 *            the border
 	 */
-	public void drawCachedGeometry(final GamaGeometryFile file, final Color border) {
+	public void drawCachedGeometry(final GamaGeometryFile file, final IColor border) {
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
 		if (index != null) {
 			drawList(index);
 			if (border != null || isWireframe()) {
-				final Color colorToUse = border != null ? border : getCurrentColor();
-				final Color old = swapCurrentColor(colorToUse);
+				final IColor colorToUse = border != null ? border : getCurrentColor();
+				final IColor old = swapCurrentColor(colorToUse);
 				boolean previous = setObjectWireframe(true);
 				try {
 					drawList(index);
@@ -1425,14 +1425,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param border
 	 *            the border
 	 */
-	public void drawCachedGeometry(final IShape.Type id, /* final boolean solid, */ final Color border) {
+	public void drawCachedGeometry(final IShape.Type id, /* final boolean solid, */ final IColor border) {
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
 		if (object == null) return;
 		if (!isWireframe()) { object.draw(this); }
 		if (border != null || isWireframe()) {
-			final Color colorToUse = border != null ? border : getCurrentColor();
-			final Color old = swapCurrentColor(colorToUse);
+			final IColor colorToUse = border != null ? border : getCurrentColor();
+			final IColor old = swapCurrentColor(colorToUse);
 			boolean previous = setObjectWireframe(true);
 			try {
 				object.draw(this);
@@ -1510,9 +1510,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		previousDisplayWireframe = setDisplayWireframe(getData().isWireframe());
 		previousDisplayLighting = setDisplayLighting(getData().isLightOn());
 		processUnloadedCacheObjects();
-		final Color backgroundColor = getData().getBackgroundColor();
-		gl.glClearColor(backgroundColor.getRed() / 255.0f, backgroundColor.getGreen() / 255.0f,
-				backgroundColor.getBlue() / 255.0f, 1.0f);
+		final IColor backgroundColor = getData().getBackgroundColor();
+		gl.glClearColor(backgroundColor.red() / 255.0f, backgroundColor.green() / 255.0f,
+				backgroundColor.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
@@ -1570,8 +1570,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param bg
 	 *            the bg
 	 */
-	public void initializeGLStates(final Color bg) {
-		gl.glClearColor(bg.getRed() / 255.0f, bg.getGreen() / 255.0f, bg.getBlue() / 255.0f, 1.0f);
+	public void initializeGLStates(final IColor bg) {
+		gl.glClearColor(bg.red() / 255.0f, bg.green() / 255.0f, bg.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 
 		// Putting the swap interval to 0 (instead of 1) seems to cure some of
@@ -1653,7 +1653,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
-			setCurrentColor(Color.black);
+			setCurrentColor(GamaColorFactory.BLACK);
 			final int nb = (int) getCanvas().getAnimator().getLastFPS();
 			final String s = nb == 0 ? "(computing FPS...)" : nb + " FPS";
 			rasterText(s, GLUT.BITMAP_HELVETICA_12, -5, 5, 0);

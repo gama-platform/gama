@@ -3,7 +3,7 @@
  * GMLFileViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -84,11 +84,11 @@ public class GMLFileViewer extends GISFileViewer {
 		final File f = path.makeAbsolute().toFile();
 		try {
 			pathStr = f.getAbsolutePath();
-			
+
 			// Load GML
 			final GML gml = new GML(Version.GML3);
 			SimpleFeatureCollection collection = gml.decodeFeatureCollection(new FileInputStream(f));
-			
+
 			content = new MapContent();
 			featureSource = DataUtilities.source(collection);
 			style = Utils.createStyle2(featureSource);
@@ -101,18 +101,16 @@ public class GMLFileViewer extends GISFileViewer {
 				fts = null;
 			}
 			if (fts != null) {
-				this.setFillColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue(), mode, fts);
-				this.setStrokeColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue(), mode, fts);
+				this.setFillColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue().getAWTColor(), mode, fts);
+				this.setStrokeColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue().getAWTColor(), mode, fts);
 				((StyleLayer) layer).setStyle(style);
 			}
 
 			content.addLayer(layer);
-			
+
 			// Load attributes from metadata
 			GMLInfo info = (GMLInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
-			if (info != null) {
-				attributes = info.getAttributes();
-			}
+			if (info != null) { attributes = info.getAttributes(); }
 
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -225,7 +223,7 @@ public class GMLFileViewer extends GISFileViewer {
 		((StyleLayer) layer).setStyle(style);
 		pane.redraw();
 	}
-	
+
 	/**
 	 * Sets the fill color.
 	 *
@@ -285,7 +283,7 @@ public class GMLFileViewer extends GISFileViewer {
 				break;
 		}
 	}
-	
+
 	/**
 	 * Gets the stroke.
 	 *
@@ -342,7 +340,7 @@ public class GMLFileViewer extends GISFileViewer {
 		}
 		return new StyleBuilder().createFill();
 	}
-	
+
 	/**
 	 * Determine mode.
 	 *

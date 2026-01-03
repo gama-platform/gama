@@ -12,12 +12,12 @@ package gama.workspace.status;
 
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * The Class StatusMessage.
  */
-public record StatusMessage(String message, StatusType type, String icon, GamaColor color, Object data, long timeStamp)
+public record StatusMessage(String message, StatusType type, String icon, IColor color, Object data, long timeStamp)
 		implements IStatusMessage {
 
 }

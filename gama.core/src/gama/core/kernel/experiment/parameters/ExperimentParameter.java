@@ -35,8 +35,8 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaDateInterval;
+import gama.core.util.IColor;
 import gama.core.util.IDate;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
@@ -456,22 +456,22 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	}
 
 	@Override
-	public List<GamaColor> getColors(final IScope scope) {
+	public List<IColor> getColors(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
 			final IExpression exp = getFacet("colors");
 			return exp == null ? null
-					: (List<GamaColor>) Types.LIST.cast(scope, exp.value(scope), null, Types.INT, Types.COLOR, false);
+					: (List<IColor>) Types.LIST.cast(scope, exp.value(scope), null, Types.INT, Types.COLOR, false);
 		} finally {
 			if (scope != null) { scope.pop(this); }
 		}
 	}
 
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			List<GamaColor> colors = getColors(scope);
+			List<IColor> colors = getColors(scope);
 			if (colors == null || colors.isEmpty()) return null;
 			return colors.get(0);
 		} finally {

@@ -62,6 +62,7 @@ import gama.core.runtime.concurrent.GamaExecutorService.Caller;
 import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.IDate;
 import gama.core.util.IReference;
 import gama.core.util.map.GamaMapFactory;
@@ -171,7 +172,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	final IClock ownClock;
 
 	/** The color. */
-	GamaColor color;
+	IColor color;
 
 	/** The own scope. */
 	final IScope ownScope = new ExecutionScope(this);
@@ -352,7 +353,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	@getter (
 			value = IKeyword.COLOR,
 			initializer = true)
-	public GamaColor getColor() {
+	public IColor getColor() {
 		if (color == null) { color = GamaPreferences.Interface.getColorForSimulation(getIndex()); }
 		return color;
 	}

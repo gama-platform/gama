@@ -23,7 +23,7 @@ import gama.core.common.interfaces.ItemList;
 import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.ui.shared.interfaces.IParameterEditor;
 
 /**
@@ -54,7 +54,7 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final IAgent o) {
+	public IColor getItemDisplayColor(final IAgent o) {
 		return null;
 	}
 

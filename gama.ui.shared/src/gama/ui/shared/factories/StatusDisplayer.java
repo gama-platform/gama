@@ -24,7 +24,7 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IExperimentStateListener;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.status.StatusMessageFactory;
 
@@ -258,7 +258,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void setStatus(final String message, final String icon, final GamaColor color) {
+	public void setStatus(final String message, final String icon, final IColor color) {
 		if (message == null) {
 			// resetStatus();
 		} else {

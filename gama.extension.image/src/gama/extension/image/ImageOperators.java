@@ -3,7 +3,7 @@
  * ImageOperators.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -48,6 +48,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.server.MessageType;
 import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.extension.image.ImageHelper.Mode;
@@ -574,10 +575,10 @@ public class ImageOperators implements ImageConstants {
 		graphics.dispose();
 		ColorModel cm = result.getColorModel();
 		WritableRaster raster = result.getRaster();
-		float r = color.getRed() / 255f;
-		float g = color.getGreen() / 255f;
-		float b = color.getBlue() / 255f;
-		float a = color.getAlpha() / 255f;
+		float r = color.red() / 255f;
+		float g = color.green() / 255f;
+		float b = color.blue() / 255f;
+		float a = color.alpha() / 255f;
 		for (int i = 0; i < result.getWidth(); i++) {
 			for (int j = 0; j < result.getHeight(); j++) {
 				int ax = cm.getAlpha(raster.getDataElements(i, j, null));
@@ -623,14 +624,14 @@ public class ImageOperators implements ImageConstants {
 	@operator ({ "tinted_with" })
 	@doc ("Returns the image tinted using the color passed in parameter and a factor between 0 and 1, determining the transparency of the dyeing to apply. The original image is left untouched")
 	@no_test
-	public static GamaImage tint(final IScope scope, final GamaImage image, final GamaColor color, final double ratio) {
+	public static GamaImage tint(final IScope scope, final GamaImage image, final IColor color, final double ratio) {
 		int w = image.getWidth();
 		int h = image.getHeight();
 		GamaImage result = GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = result.createGraphics();
 		g.drawImage(image, 0, 0, null);
 		g.setComposite(AlphaComposite.SrcAtop.derive(Math.min(1f, Math.max((float) ratio, 0f))));
-		g.setColor(color);
+		g.setColor(color.getAWTColor());
 		g.fillRect(0, 0, w, h);
 		g.dispose();
 		result.setId(image.getId() + "tinted" + color + "|" + ratio);
@@ -844,10 +845,10 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new image with the specified dimensions and already filled with the given rgb color")
 	@no_test
-	public static GamaImage image(final int w, final int h, final GamaColor color) {
+	public static GamaImage image(final int w, final int h, final IColor color) {
 		GamaImage gi = GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = gi.createGraphics();
-		g.setColor(color);
+		g.setColor(color.getAWTColor());
 		g.fillRect(0, 0, w, h);
 		g.dispose();
 		return gi;

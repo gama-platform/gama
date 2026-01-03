@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractSummary.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,7 @@ import gama.core.common.interfaces.IColored;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.COUNTER;
 import gama.gaml.interfaces.INamed;
 import one.util.streamex.StreamEx;
@@ -108,7 +108,7 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	 * @return the color
 	 */
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		return getState().getColor(scope);
 	}
 
@@ -160,9 +160,8 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	@Override
 	public final String toString() {
 		final TestState state = getState();
-		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && state != TestState.FAILED && state != TestState.ABORTED) {
+		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && state != TestState.FAILED && state != TestState.ABORTED)
 			return "";
-		}
 		final StringBuilder sb = new StringBuilder();
 		printHeader(sb);
 		sb.append(state).append(": ").append(getTitle()).append(" ");
@@ -206,9 +205,7 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 		// if (this.uri != null) {
 		// DEBUG.OUT("Comparing " + this.uri + " to " + uri);
 		// }
-		if (uri.equals(this.uri)) {
-			return this;
-		}
+		if (uri.equals(this.uri)) return this;
 		return StreamEx.ofValues(getSummaries()).findFirst(s -> s.getSummaryOf(uri) != null).orElse(null);
 	}
 

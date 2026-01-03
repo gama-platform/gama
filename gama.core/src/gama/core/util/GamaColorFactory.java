@@ -24,32 +24,65 @@ import gama.core.util.map.GamaMapFactory;
  */
 public class GamaColorFactory {
 
+	/** The Constant array. */
+	public final static Object[] array = ColorCSS.array;
+
+	/** The Constant colors. */
+	public final static Map<String, IColor> COLORS = GamaMapFactory.createUnordered();
+
+	/** The Constant int_colors. */
+	public final static Map<Integer, IColor> INT_COLORS = Collections.synchronizedMap(new HashMap<>());
+
+	static {
+		for (int i = 0; i < array.length; i += 2) {
+			final IColor color = get((String) array[i], (int[]) array[i + 1]);
+			COLORS.put((String) array[i], color);
+			INT_COLORS.put(color.getRGB(), color);
+		}
+		// A.G add the GAMA Color corresponding to the GAMA 1.9 Logo
+		final IColor orange = get("gamaorange", 244, 165, 40, 255);
+		COLORS.put("gamaorange", orange);
+		INT_COLORS.put(orange.getRGB(), orange);
+
+		final IColor red = get("gamared", 217, 72, 33, 255);
+		COLORS.put("gamared", red);
+		INT_COLORS.put(red.getRGB(), red);
+
+		final IColor blue = get("gamablue", 22, 94, 147, 255);
+		COLORS.put("gamablue", blue);
+		INT_COLORS.put(blue.getRGB(), blue);
+
+		final IColor green = get("gamagreen", 81, 135, 56, 255);
+		COLORS.put("gamagreen", green);
+		INT_COLORS.put(green.getRGB(), green);
+	}
+
 	/** The Constant TRANSPARENT. */
-	public static final GamaColor TRANSPARENT = get("transparent", 0, 0, 0, 0);
+	public static final IColor TRANSPARENT = get("transparent", 0, 0, 0, 0);
 
 	/** The Constant BLACK. */
-	public static final GamaColor BLACK = get("black", 0, 0, 0);
+	public static final IColor BLACK = get("black", 0, 0, 0);
 
 	/** The Constant WHITE. */
-	public static final GamaColor WHITE = get("white", 255, 255, 255);
+	public static final IColor WHITE = get("white", 255, 255, 255);
 
 	/** The Constant RED. */
-	public static final GamaColor RED = get("red", 255, 0, 0);
+	public static final IColor RED = get("red", 255, 0, 0);
 
 	/** The Constant GREEN. */
-	public static final GamaColor GREEN = get("green", 0, 255, 0);
+	public static final IColor GREEN = get("green", 0, 255, 0);
 
 	/** The Constant BLUE. */
-	public static final GamaColor BLUE = get("blue", 0, 0, 255);
+	public static final IColor BLUE = get("blue", 0, 0, 255);
 
 	/** The Constant YELLOW. */
-	public static final GamaColor YELLOW = get("yellow", 255, 255, 0);
+	public static final IColor YELLOW = get("yellow", 255, 255, 0);
 
 	/** The Constant LIGHT_GRAY. */
-	public static final GamaColor LIGHT_GRAY = get("lightgray", 211, 211, 211);
+	public static final IColor LIGHT_GRAY = get("lightgray", 211, 211, 211);
 
 	/** The Constant GRAY. */
-	public static final GamaColor GRAY = get("gray", 128, 128, 128);
+	public static final IColor GRAY = get("gray", 128, 128, 128);
 	// Add more colors as needed
 
 	/**
@@ -92,39 +125,6 @@ public class GamaColorFactory {
 
 	}
 
-	/** The Constant array. */
-	public final static Object[] array = ColorCSS.array;
-
-	/** The Constant colors. */
-	public final static Map<String, GamaColor> colors = GamaMapFactory.createUnordered();
-
-	/** The Constant int_colors. */
-	public final static Map<Integer, GamaColor> int_colors = Collections.synchronizedMap(new HashMap<>());
-
-	static {
-		for (int i = 0; i < array.length; i += 2) {
-			final GamaColor color = GamaColorFactory.get((String) array[i], (int[]) array[i + 1]);
-			colors.put((String) array[i], color);
-			int_colors.put(color.getRGB(), color);
-		}
-		// A.G add the GAMA Color corresponding to the GAMA 1.9 Logo
-		final GamaColor orange = GamaColorFactory.get("gamaorange", 244, 165, 40, 255);
-		colors.put("gamaorange", orange);
-		int_colors.put(orange.getRGB(), orange);
-
-		final GamaColor red = GamaColorFactory.get("gamared", 217, 72, 33, 255);
-		colors.put("gamared", red);
-		int_colors.put(red.getRGB(), red);
-
-		final GamaColor blue = GamaColorFactory.get("gamablue", 22, 94, 147, 255);
-		colors.put("gamablue", blue);
-		int_colors.put(blue.getRGB(), blue);
-
-		final GamaColor green = GamaColorFactory.get("gamagreen", 81, 135, 56, 255);
-		colors.put("gamagreen", green);
-		int_colors.put(green.getRGB(), green);
-	}
-
 	/**
 	 * Gets the.
 	 *
@@ -135,12 +135,12 @@ public class GamaColorFactory {
 	 * @date 20 août 2023
 	 */
 
-	public static GamaColor get(final int rgb) {
+	public static IColor get(final int rgb) {
 		// rgba value expected
-		GamaColor result = int_colors.get(rgb);
+		IColor result = INT_COLORS.get(rgb);
 		if (result == null) {
 			result = new GamaColor(rgb);
-			int_colors.put(rgb, result);
+			INT_COLORS.put(rgb, result);
 		}
 		return result;
 	}
@@ -156,9 +156,9 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor create(final int rgb, final int alpha) {
-		GamaColor c = get(rgb);
-		return get(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+	public static IColor create(final int rgb, final int alpha) {
+		IColor c = get(rgb);
+		return get(c.red(), c.green(), c.blue(), alpha);
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor get(final int r, final int g, final int b) {
+	public static IColor get(final int r, final int g, final int b) {
 		return get(r, g, b, 255);
 	}
 
@@ -193,7 +193,7 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor get(final int r, final int g, final int b, final int a) {
+	public static IColor get(final int r, final int g, final int b, final int a) {
 		// rgb in 3 components + alpha
 		return get((normalize(a) & 0xFF) << 24 | (normalize(r) & 0xFF) << 16 | (normalize(g) & 0xFF) << 8
 				| (normalize(b) & 0xFF) << 0);
@@ -215,7 +215,7 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor getWithDoubleAlpha(final int r, final int g, final int b, final double t) {
+	public static IColor getWithDoubleAlpha(final int r, final int g, final int b, final double t) {
 		return get(r, g, b, normalize(t));
 	}
 
@@ -234,7 +234,7 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor getWithDoubles(final double r, final double g, final double b, final double t) {
+	public static IColor getWithDoubles(final double r, final double g, final double b, final double t) {
 		return get(normalize(r), normalize(g), normalize(b), normalize(t));
 	}
 
@@ -249,8 +249,8 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor get(final Color c, final double t) {
-		return create(c, normalize(t));
+	public static IColor createWithAlpha(final Color c, final double t) {
+		return createWithAlpha(c, normalize(t));
 	}
 
 	/**
@@ -264,8 +264,34 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor create(final Color c, final int t) {
+	public static IColor createWithAlpha(final Color c, final int t) {
 		return get(c.getRed(), c.getGreen(), c.getBlue(), t);
+	}
+
+	/**
+	 * Creates a new GamaColor object.
+	 *
+	 * @param c
+	 *            the c
+	 * @param t
+	 *            the t
+	 * @return the gama color
+	 */
+	public static IColor createWithAlpha(final IColor c, final int t) {
+		return c.withAlpha(t / 255d);
+	}
+
+	/**
+	 * Creates a new GamaColor object.
+	 *
+	 * @param c
+	 *            the c
+	 * @param t
+	 *            the t
+	 * @return the i color
+	 */
+	public static IColor createWithAlpha(final IColor c, final double t) {
+		return c.withAlpha(t);
 	}
 
 	/**
@@ -276,7 +302,7 @@ public class GamaColorFactory {
 	 *            the c
 	 * @date 20 août 2023
 	 */
-	public static GamaColor get(final Color c) {
+	public static IColor get(final Color c) {
 		return get(c.getRGB());
 	}
 
@@ -287,8 +313,8 @@ public class GamaColorFactory {
 	 *            the rgb
 	 * @return the named
 	 */
-	public static GamaColor get(final String rgb) {
-		return colors.get(rgb);
+	public static IColor get(final String rgb) {
+		return COLORS.get(rgb);
 	}
 
 	/**
@@ -300,13 +326,13 @@ public class GamaColorFactory {
 	 * @return the gama color
 	 * @date 20 août 2023
 	 */
-	public static GamaColor get(final String name, final int... t) {
-		GamaColor c = colors.get(name);
+	public static IColor get(final String name, final int... t) {
+		IColor c = COLORS.get(name);
 		if (c == null) {
-			colors.put(name,
+			COLORS.put(name,
 					new NamedGamaColor(name, normalize(t[0]), normalize(t[1]), normalize(t[2]), normalize(t[3])));
 		}
-		return colors.get(name);
+		return COLORS.get(name);
 	}
 
 	/**

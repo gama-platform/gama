@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FrameLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,8 +15,8 @@ import java.util.List;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.types.GamaGeometryType;
@@ -30,7 +30,7 @@ import gama.ui.display.opengl.scene.geometry.GeometryObject;
 public class FrameLayerObject extends StaticLayerObject.World {
 
 	/** The Constant FRAME. */
-	private static final GamaColor FRAME = GamaColorFactory.get(150, 150, 150, 255);
+	private static final IColor FRAME = GamaColorFactory.get(150, 150, 150, 255);
 
 	/**
 	 * Instantiates a new frame layer object.

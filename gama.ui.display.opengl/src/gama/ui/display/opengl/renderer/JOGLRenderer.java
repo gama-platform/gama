@@ -3,14 +3,13 @@
  * JOGLRenderer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer;
 
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -31,8 +30,8 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.concurrent.GeneralSynchronizer;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
@@ -140,7 +139,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
-	public void fillBackground(final Color bgColor) {
+	public void fillBackground(final IColor bgColor) {
 		openGL.setCurrentObjectAlpha(1);
 	}
 
@@ -360,13 +359,13 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @param lineColor
 	 *            the line color
 	 */
-	public void drawGridLine(final GamaPoint dimensions, final Color lineColor) {
+	public void drawGridLine(final GamaPoint dimensions, final IColor lineColor) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return;
 		double stepX, stepY;
 		final double cellWidth = getEnvWidth() / dimensions.x;
 		final double cellHeight = getEnvHeight() / dimensions.y;
-		final GamaColor color = GamaColorFactory.get(lineColor.getRGB());
+		final IColor color = GamaColorFactory.get(lineColor.getRGB());
 		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.GRIDLINE);
 		attributes.setEmpty(true);
 		for (double i = 0; i < dimensions.x; i++) {

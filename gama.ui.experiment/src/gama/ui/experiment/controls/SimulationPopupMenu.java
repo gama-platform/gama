@@ -40,7 +40,7 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.ui.experiment.menus.SimulationsMenu;
@@ -217,7 +217,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				public void mouseEnter(final MouseEvent e) {
 					background = labelText.getBackground();
 					foreground = labelText.getForeground();
-					GamaColor c = ((ITopLevelAgent) labelComposite.getData()).getColor();
+					IColor c = ((ITopLevelAgent) labelComposite.getData()).getColor();
 					Color b = GamaColors.toSwtColor(c);
 					GamaColors.setBackAndForeground(b, GamaColors.getTextColorForBackground(b).color(), labelText);
 				}

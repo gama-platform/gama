@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 
 /**
  * The Class AmbientLightDefinition.
@@ -25,7 +25,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	final int id;
 
 	/** The intensity. */
-	final GamaColor intensity;
+	final IColor intensity;
 
 	/**
 	 * Instantiates a new generic light definition.
@@ -49,7 +49,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	 * @param intensity
 	 *            the intensity.
 	 */
-	public GenericLightDefinition(final String name, final int id, final GamaColor intensity) {
+	public GenericLightDefinition(final String name, final int id, final IColor intensity) {
 		this.name = name;
 		this.id = id;
 		this.intensity = intensity;
@@ -62,6 +62,6 @@ public class GenericLightDefinition implements ILightDefinition {
 	public int getId() { return id; }
 
 	@Override
-	public GamaColor getIntensity() { return intensity; }
+	public IColor getIntensity() { return intensity; }
 
 }

@@ -2,7 +2,7 @@
  *
  * Cast.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,8 +30,8 @@ import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaPair;
+import gama.core.util.IColor;
 import gama.core.util.graph.IGraph;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
@@ -297,8 +297,7 @@ public class Cast {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static GamaColor asColor(final IScope scope, final Object val, final boolean copy)
-			throws GamaRuntimeException {
+	public static IColor asColor(final IScope scope, final Object val, final boolean copy) throws GamaRuntimeException {
 		// copy not passed
 		return GamaColorType.staticCast(scope, val, null, false);
 	}
@@ -312,7 +311,7 @@ public class Cast {
 	 *            the val
 	 * @return the gama color
 	 */
-	public static GamaColor asColor(final IScope scope, final Object val) {
+	public static IColor asColor(final IScope scope, final Object val) {
 		return asColor(scope, val, false);
 	}
 

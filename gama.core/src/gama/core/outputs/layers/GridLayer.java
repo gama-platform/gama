@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.util.Collector;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
@@ -73,7 +73,7 @@ public class GridLayer extends AbstractLayer implements IGridLayer {
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
-		GamaColor lineColor = null;
+		IColor lineColor = null;
 		final GridLayerData data = getData();
 		if (data.drawLines()) { lineColor = data.getLineColor(); }
 		final double[] gridValueMatrix = data.getElevationMatrix(scope);

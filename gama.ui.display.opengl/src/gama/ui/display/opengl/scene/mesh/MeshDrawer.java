@@ -3,14 +3,13 @@
  * MeshDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.mesh;
 
-import java.awt.Color;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
@@ -25,6 +24,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import gama.core.common.geometry.ICoordinates;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.MeshLayerData;
+import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.IMeshColorProvider;
@@ -141,11 +142,11 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		cols = (int) attributes.getXYDimension().x;
 		rows = (int) attributes.getXYDimension().y;
 		boolean grayscale = attributes.isGrayscaled();
-		Color line = attributes.getBorder();
+		IColor line = attributes.getBorder();
 		useFillForLines = line == null && gl.isWireframe() && colorProvider != null;
 		this.colorProvider = attributes.getColorProvider();
-		this.lineColor = line != null
-				? new double[] { line.getRed() / 255d, line.getGreen() / 255d, line.getBlue() / 255d, 1 } : BLACK;
+		this.lineColor =
+				line != null ? new double[] { line.red() / 255d, line.green() / 255d, line.blue() / 255d, 1 } : BLACK;
 		outputsTextures = gl.isTextured() && !grayscale;
 		outputsColors = (colorProvider != null || grayscale) && !gl.isWireframe();
 		outputsLines = gl.isWireframe() || line != null;
@@ -511,7 +512,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 */
 	public void drawLabels(final double[] data) {
 		// Draw gridvalue as text inside each cell
-		gl.setCurrentColor(Color.black);
+		gl.setCurrentColor(GamaColorFactory.BLACK);
 		final var strings = new String[data.length];
 		final var coords = new double[strings.length * 3];
 		for (int i = 0, c = 0; i < cols; i++) {

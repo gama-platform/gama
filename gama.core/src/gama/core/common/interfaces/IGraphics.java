@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
-import java.awt.Color;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -21,6 +20,7 @@ import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.charts.ChartOutput;
+import gama.core.util.IColor;
 import gama.core.util.matrix.IField;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
@@ -187,7 +187,7 @@ public interface IGraphics {
 	 * @param bgColor
 	 *            the bg color
 	 */
-	void fillBackground(Color bgColor);
+	void fillBackground(IColor bgColor);
 
 	/**
 	 * Begin drawing layers.

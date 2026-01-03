@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import gama.core.common.interfaces.ItemList;
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -268,7 +268,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final T o) {
+	public IColor getItemDisplayColor(final T o) {
 		return null;
 	}
 

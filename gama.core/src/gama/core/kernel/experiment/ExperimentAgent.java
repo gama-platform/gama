@@ -59,8 +59,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaWebSocketServer;
 import gama.core.runtime.server.IServerConfiguration;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMap;
@@ -1271,7 +1271,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @date 24 sept. 2023
 	 */
 	@Override
-	public GamaColor getColor() { return GamaColorFactory.get(30, 30, 30, 255); }
+	public IColor getColor() { return GamaColorFactory.get(30, 30, 30, 255); }
 
 	/**
 	 * Method getOutputManager()

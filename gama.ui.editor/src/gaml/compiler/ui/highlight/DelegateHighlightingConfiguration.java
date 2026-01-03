@@ -24,8 +24,8 @@ import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfigurationAcce
 import org.eclipse.xtext.ui.editor.utils.TextStyle;
 
 import gama.core.common.preferences.GamaPreferences.Theme;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.gaml.types.IType;
 
 /**
@@ -234,7 +234,7 @@ public abstract class DelegateHighlightingConfiguration implements IHighlighting
 	 * @param color
 	 *            the color
 	 */
-	private void applyColor(final String id, final String name, final TextStyle style, final GamaColor color) {
+	private void applyColor(final String id, final String name, final TextStyle style, final IColor color) {
 		style.setColor(new RGB(color.red(), color.green(), color.blue()));
 		// acceptDefaultHighlighting(id, name, style);
 	}

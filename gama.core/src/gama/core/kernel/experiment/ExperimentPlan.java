@@ -53,7 +53,7 @@ import gama.core.runtime.ExecutionScope;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
@@ -763,7 +763,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		final Boolean keepTray = layout.getFacetValue(myScope, "tray", false);
 		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(myScope, "editors", false)
 				: !GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue();
-		Supplier<GamaColor> color = () -> layout.getFacetValue(myScope, "background", null);
+		Supplier<IColor> color = () -> layout.getFacetValue(myScope, "background", null);
 		myScope.getGui().arrangeExperimentViews(myScope, this, keepTabs, keepToolbars, showConsoles, showParameters,
 				showNavigator, showControls, keepTray, color, showEditors);
 	}

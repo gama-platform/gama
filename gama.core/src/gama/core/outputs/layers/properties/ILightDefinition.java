@@ -17,7 +17,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.interfaces.INamed;
 
 /**
@@ -94,7 +94,7 @@ public interface ILightDefinition extends INamed {
 	 *
 	 * @return the intensity
 	 */
-	GamaColor getIntensity();
+	IColor getIntensity();
 
 	/**
 	 * Gets the type.

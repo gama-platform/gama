@@ -19,8 +19,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.GamaShapeFile;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -50,7 +50,7 @@ public class GisLayer extends AbstractLayer {
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics g) {
-		final GamaColor color =
+		final IColor color =
 				colorExpression == null ? GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB())
 						: Cast.asColor(scope, colorExpression.value(scope));
 		final List<IShape> shapes = buildGisLayer(scope);

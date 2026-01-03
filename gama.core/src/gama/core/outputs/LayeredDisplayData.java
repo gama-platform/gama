@@ -35,8 +35,8 @@ import gama.core.outputs.layers.properties.LightDefinition;
 import gama.core.outputs.layers.properties.RotationDefinition;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
@@ -135,16 +135,16 @@ public class LayeredDisplayData {
 	/**
 	 * Colors
 	 */
-	private GamaColor backgroundColor = GamaPreferences.Displays.CORE_BACKGROUND.getValue();
+	private IColor backgroundColor = GamaPreferences.Displays.CORE_BACKGROUND.getValue();
 	//
 	// /** The ambient color. */
 	// private GamaColor ambientColor = new GamaColor(64, 64, 64, 255);
 
 	/** The highlight color. */
-	private GamaColor highlightColor = GamaPreferences.Displays.CORE_HIGHLIGHT.getValue();
+	private IColor highlightColor = GamaPreferences.Displays.CORE_HIGHLIGHT.getValue();
 
 	/** The toolbar color. */
-	private GamaColor toolbarColor = null;
+	private IColor toolbarColor = null;
 
 	/**
 	 * Properties
@@ -216,7 +216,7 @@ public class LayeredDisplayData {
 	private int fullScreen = -1;
 
 	/** The highlight listener. */
-	IPreferenceAfterChangeListener<GamaColor> highlightListener = this::setHighlightColor;
+	IPreferenceAfterChangeListener<IColor> highlightListener = this::setHighlightColor;
 
 	/**
 	 * Instantiates a new layered display data.
@@ -236,13 +236,13 @@ public class LayeredDisplayData {
 	/**
 	 * @return the backgroundColor
 	 */
-	public GamaColor getBackgroundColor() { return backgroundColor; }
+	public IColor getBackgroundColor() { return backgroundColor; }
 
 	/**
 	 * @param backgroundColor
 	 *            the backgroundColor to set
 	 */
-	public void setBackgroundColor(final GamaColor backgroundColor) {
+	public void setBackgroundColor(final IColor backgroundColor) {
 		this.backgroundColor = backgroundColor;
 		notifyListeners(Changes.BACKGROUND, backgroundColor);
 	}
@@ -400,7 +400,7 @@ public class LayeredDisplayData {
 	/**
 	 * @return
 	 */
-	public GamaColor getHighlightColor() { return highlightColor; }
+	public IColor getHighlightColor() { return highlightColor; }
 
 	/**
 	 * Sets the highlight color.
@@ -408,7 +408,7 @@ public class LayeredDisplayData {
 	 * @param hc
 	 *            the new highlight color
 	 */
-	public void setHighlightColor(final GamaColor hc) { highlightColor = hc; }
+	public void setHighlightColor(final IColor hc) { highlightColor = hc; }
 
 	/**
 	 * Checks if is antialias.
@@ -505,7 +505,7 @@ public class LayeredDisplayData {
 	 *
 	 * @return the toolbar color
 	 */
-	public GamaColor getToolbarColor() { return toolbarColor == null ? getBackgroundColor() : toolbarColor; }
+	public IColor getToolbarColor() { return toolbarColor == null ? getBackgroundColor() : toolbarColor; }
 
 	/**
 	 * Sets the toolbar visible.
@@ -612,7 +612,7 @@ public class LayeredDisplayData {
 
 		final IExpression light = facets.getExpr("ambient_light");
 		if (light != null) {
-			GamaColor intensity;
+			IColor intensity;
 			if (light.getGamlType().equals(Types.COLOR)) {
 				intensity = Cast.asColor(scope, light.value(scope));
 			} else {

@@ -19,7 +19,6 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
-import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 
@@ -53,7 +52,10 @@ import gama.gaml.types.Types;
 				name = IKeyword.DARKER,
 				type = IType.COLOR,
 				doc = { @doc ("Returns a darker color (with decreased luminance)") }) })
-public class GamaColor extends Color implements IValue, Comparable<Color> {
+public class GamaColor implements IColor {
+
+	/** The internal color. */
+	Color internalColor;
 
 	/**
 	 * Instantiates a new gama color.
@@ -62,7 +64,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the awt RGB
 	 */
 	GamaColor(final int awtRGB) {
-		super(awtRGB, true);
+		internalColor = new Color(awtRGB, true);
 	}
 
 	/**
@@ -79,7 +81,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 */
 	GamaColor(final int r, final int g, final int b, final int t) {
 		// t between 0 and 255
-		super(r, g, b, t);
+		internalColor = new Color(r, g, b, t);
 	}
 
 	@Override
@@ -89,7 +91,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "rgb (" + red() + ", " + green() + ", " + blue() + ", " + getAlpha() + ")";
+		return "rgb (" + red() + ", " + green() + ", " + blue() + ", " + alpha() + ")";
 	}
 
 	@Override
@@ -102,9 +104,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *
 	 * @return the integer
 	 */
+	@Override
 	@getter (IKeyword.COLOR_RED)
 	public Integer red() {
-		return super.getRed();
+		return internalColor.getRed();
 	}
 
 	/**
@@ -112,9 +115,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *
 	 * @return the integer
 	 */
+	@Override
 	@getter (IKeyword.COLOR_BLUE)
 	public Integer blue() {
-		return super.getBlue();
+		return internalColor.getBlue();
 	}
 
 	/**
@@ -122,9 +126,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *
 	 * @return the integer
 	 */
+	@Override
 	@getter (IKeyword.COLOR_GREEN)
 	public Integer green() {
-		return super.getGreen();
+		return internalColor.getGreen();
 	}
 
 	/**
@@ -132,9 +137,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *
 	 * @return the integer
 	 */
+	@Override
 	@getter (IKeyword.ALPHA)
 	public Integer alpha() {
-		return super.getAlpha();
+		return internalColor.getAlpha();
 	}
 
 	/** The brightness factor. */
@@ -147,11 +153,11 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 */
 	@Override
 	@getter (IKeyword.BRIGHTER)
-	public GamaColor brighter() {
-		int r = getRed();
-		int g = getGreen();
-		int b = getBlue();
-		int alpha = getAlpha();
+	public IColor brighter() {
+		int r = red();
+		int g = green();
+		int b = blue();
+		int alpha = alpha();
 
 		/*
 		 * From 2D group: 1. black.brighter() should return grey 2. applying brighter to blue will always return blue,
@@ -174,15 +180,15 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 */
 	@Override
 	@getter (IKeyword.DARKER)
-	public GamaColor darker() {
-		return GamaColorFactory.get(Math.max((int) (getRed() * BRIGHTNESS_FACTOR), 0),
-				Math.max((int) (getGreen() * BRIGHTNESS_FACTOR), 0), Math.max((int) (getBlue() * BRIGHTNESS_FACTOR), 0),
-				getAlpha());
+	public IColor darker() {
+		return GamaColorFactory.get(Math.max((int) (red() * BRIGHTNESS_FACTOR), 0),
+				Math.max((int) (green() * BRIGHTNESS_FACTOR), 0), Math.max((int) (blue() * BRIGHTNESS_FACTOR), 0),
+				alpha());
 	}
 
 	@Override
-	public GamaColor copy(final IScope scope) {
-		return GamaColorFactory.get(this);
+	public IColor copy(final IScope scope) {
+		return GamaColorFactory.get(getRGB());
 	}
 
 	/**
@@ -194,9 +200,9 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the c 2
 	 * @return the gama color
 	 */
-	public static GamaColor merge(final GamaColor c1, final GamaColor c2) {
-		return GamaColorFactory.get(c1.getRed() + c2.getRed(), c1.getGreen() + c2.getGreen(),
-				c1.getBlue() + c2.getBlue(), c1.getAlpha() + c2.getAlpha());
+	public static IColor merge(final IColor c1, final IColor c2) {
+		return GamaColorFactory.get(c1.red() + c2.red(), c1.green() + c2.green(), c1.blue() + c2.blue(),
+				c1.alpha() + c2.alpha());
 	}
 
 	/**
@@ -206,7 +212,8 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the c 2
 	 * @return the int
 	 */
-	public int compareRgbTo(final Color c2) {
+	@Override
+	public int compareRgbTo(final IColor c2) {
 		return Integer.signum(getRGB() - c2.getRGB());
 	}
 
@@ -217,9 +224,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the c 2
 	 * @return the int
 	 */
-	public int compareLuminescenceTo(final Color c2) {
-		return Double.compare(this.getRed() * 0.299d + this.getGreen() * 0.587d + this.getBlue() * 0.114d,
-				c2.getRed() * 0.299d + c2.getGreen() * 0.587d + c2.getBlue() * 0.114d);
+	@Override
+	public int compareLuminescenceTo(final IColor c2) {
+		return Double.compare(this.red() * 0.299d + this.green() * 0.587d + this.blue() * 0.114d,
+				c2.red() * 0.299d + c2.green() * 0.587d + c2.blue() * 0.114d);
 	}
 
 	/**
@@ -229,9 +237,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the c 2
 	 * @return the int
 	 */
-	public int compareBrightnessTo(final Color c2) {
-		final float[] hsb = RGBtoHSB(getRed(), getGreen(), getBlue(), null);
-		final float[] hsb2 = RGBtoHSB(c2.getRed(), c2.getGreen(), c2.getBlue(), null);
+	@Override
+	public int compareBrightnessTo(final IColor c2) {
+		final float[] hsb = Color.RGBtoHSB(red(), green(), blue(), null);
+		final float[] hsb2 = Color.RGBtoHSB(c2.red(), c2.green(), c2.blue(), null);
 		return Float.compare(hsb[2], hsb2[2]);
 	}
 
@@ -242,9 +251,10 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the c 2
 	 * @return the int
 	 */
-	public int compareLumaTo(final Color c2) {
-		return Double.compare(this.getRed() * 0.21d + this.getGreen() * 0.72d + this.getBlue() * 0.07d,
-				c2.getRed() * 0.21d + c2.getGreen() * 0.72d + c2.getBlue() * 0.07d);
+	@Override
+	public int compareLumaTo(final IColor c2) {
+		return Double.compare(this.red() * 0.21d + this.green() * 0.72d + this.blue() * 0.07d,
+				c2.red() * 0.21d + c2.green() * 0.72d + c2.blue() * 0.07d);
 	}
 
 	/**
@@ -255,7 +265,7 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 * @return the int
 	 */
 	@Override
-	public int compareTo(final Color c2) {
+	public int compareTo(final IColor c2) {
 		return compareRgbTo(c2);
 	}
 
@@ -274,8 +284,9 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *            the d
 	 * @return the gama color
 	 */
-	public GamaColor withAlpha(final double d) {
-		return GamaColorFactory.getWithDoubleAlpha(getRed(), getGreen(), getBlue(), d);
+	@Override
+	public IColor withAlpha(final double d) {
+		return GamaColorFactory.getWithDoubleAlpha(red(), green(), blue(), d);
 	}
 
 	/**
@@ -283,18 +294,24 @@ public class GamaColor extends Color implements IValue, Comparable<Color> {
 	 *
 	 * @return true, if is zero
 	 */
-	public boolean isZero() { return getRed() == 0 && getGreen() == 0 && getBlue() == 0; }
+	@Override
+	public boolean isZero() { return red() == 0 && green() == 0 && blue() == 0; }
 
 	@Override
 	public int intValue(final IScope scope) {
-		return super.getRGB();
+		return internalColor.getRGB();
 	}
 
 	@Override
 	public JsonValue serializeToJson(final Json json) {
-		return json.typedObject(getGamlType(), "red", getRed(), "green", getGreen(), "blue", getBlue(), "alpha",
-				getAlpha());
+		return json.typedObject(getGamlType(), "red", red(), "green", green(), "blue", blue(), "alpha", alpha());
 
 	}
+
+	@Override
+	public int getRGB() { return internalColor.getRGB(); }
+
+	@Override
+	public Color getAWTColor() { return internalColor; }
 
 }

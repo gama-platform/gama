@@ -1,22 +1,19 @@
 /*******************************************************************************************************
  *
  * AspectStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.facet;
@@ -24,6 +21,8 @@ import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
 import gama.annotations.precompiler.GamlAnnotations.usage;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -33,8 +32,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.draw.DrawingAttributes;
@@ -107,7 +106,7 @@ public class AspectStatement extends AbstractStatementSequence {
 	};
 
 	/** The border color. */
-	public static final GamaColor borderColor = GamaColorFactory.get(Color.black.getRGB());
+	public static final IColor borderColor = GamaColorFactory.BLACK;
 
 	/** The default aspect. */
 	public static final IExecutable DEFAULT_ASPECT = sc -> {
@@ -120,7 +119,7 @@ public class AspectStatement extends AbstractStatementSequence {
 			try {
 				if (agent == scope.getGui().getHighlightedAgent()) { g.beginHighlight(); }
 				final boolean hasColor = agent.getSpecies().hasVar(IKeyword.COLOR);
-				GamaColor color;
+				IColor color;
 				if (hasColor) {
 					final Object value = agent.getDirectVarValue(scope, IKeyword.COLOR);
 					color = Cast.asColor(scope, value);

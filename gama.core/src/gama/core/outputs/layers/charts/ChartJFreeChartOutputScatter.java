@@ -3,7 +3,7 @@
  * ChartJFreeChartOutputScatter.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -310,7 +310,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			xy.setUseFillPaint(false);
 			// ((XYShapeRenderer) newr).setDrawOutlines(true);
 		}
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor().getAWTColor()); }
 		// DEBUG.OUT("Changing series stroke to " + myserie.getLineThickness().value(scope));
 		newr.setSeriesStroke(0,
 				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
@@ -467,19 +467,22 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 * @return the number axis
 	 */
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis) {
-		axis.setAxisLinePaint(axesColor);
+		Color ac = axesColor.getAWTColor();
+		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
 		axis.setLabelFont(getLabelFont());
 		if (textColor != null) {
-			axis.setLabelPaint(textColor);
-			axis.setTickLabelPaint(textColor);
+			Color tc = textColor.getAWTColor();
+			axis.setLabelPaint(tc);
+			axis.setTickLabelPaint(tc);
 		}
-		axis.setAxisLinePaint(axesColor);
+		axis.setAxisLinePaint(ac);
 		axis.setLabelFont(getLabelFont());
 		axis.setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			axis.setLabelPaint(textColor);
-			axis.setTickLabelPaint(textColor);
+			Color tc = textColor.getAWTColor();
+			axis.setLabelPaint(tc);
+			axis.setTickLabelPaint(tc);
 		}
 		if (!this.getYTickValueVisible(scope)) {
 			axis.setTickMarksVisible(false);
@@ -549,8 +552,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			}
 
 		}
+		Color tc = tickColor == null ? null : tickColor.getAWTColor();
 		if (this.getXTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(this.tickColor);
+			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
 			if (getXTickUnit(scope) > 0) {
 				domainAxis.setTickUnit(new NumberTickUnit(getXTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(true);
@@ -582,7 +586,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		}
 		if (this.getYTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(this.tickColor);
+			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
 			if (getYTickUnit(scope) > 0) {
 				rangeAxis.setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
@@ -615,7 +619,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 			}
 			if (this.getYTickLineVisible(scope)) {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(this.tickColor);
+				((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
 				if (getY2TickUnit(scope) > 0) {
 					range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
 					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
@@ -750,22 +754,23 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-
+		Color ac = axesColor.getAWTColor();
 		final XYPlot pp = (XYPlot) chart.getPlot();
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
-		pp.setDomainCrosshairPaint(axesColor);
-		pp.setRangeCrosshairPaint(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		pp.setDomainCrosshairPaint(ac);
+		pp.setRangeCrosshairPaint(ac);
 		pp.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		pp.setDomainCrosshairVisible(false);
 		pp.setRangeCrosshairVisible(false);
 
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = textColor.getAWTColor();
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 		}
 
 		NumberAxis axis = (NumberAxis) pp.getRangeAxis();

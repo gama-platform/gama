@@ -1,8 +1,17 @@
+/*******************************************************************************************************
+ *
+ * IGridAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.metamodel.topology.grid;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 
 /**
@@ -15,55 +24,58 @@ public interface IGridAgent extends IAgent {
 	 *
 	 * @return the color
 	 */
-	public GamaColor getColor();
+	IColor getColor();
 
 	/**
 	 * Sets the color.
 	 *
-	 * @param color the new color
+	 * @param color
+	 *            the new color
 	 */
-	public void setColor(final GamaColor color);
+	void setColor(final IColor color);
 
 	/**
 	 * Gets the x.
 	 *
 	 * @return the x
 	 */
-	public int getX();
+	int getX();
 
 	/**
 	 * Gets the y.
 	 *
 	 * @return the y
 	 */
-	public int getY();
+	int getY();
 
 	/**
 	 * Gets the value.
 	 *
 	 * @return the value
 	 */
-	public double getValue();
+	double getValue();
 
 	/**
 	 * Gets the bands.
 	 *
 	 * @return the bands
 	 */
-	public IList<Double> getBands();
+	IList<Double> getBands();
 
 	/**
 	 * Gets the neighbors.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the neighbors
 	 */
-	public IList<IAgent> getNeighbors(IScope scope);
+	IList<IAgent> getNeighbors(IScope scope);
 
 	/**
 	 * Sets the value.
 	 *
-	 * @param d the new value
+	 * @param d
+	 *            the new value
 	 */
-	public void setValue(final double d);
+	void setValue(final double d);
 }

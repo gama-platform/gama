@@ -3,7 +3,7 @@
  * HexagonalGridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +20,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IExecutionResult;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.IExecutable;
 import gama.gaml.statements.draw.DrawingAttributes;
@@ -51,14 +51,14 @@ public class HexagonalGridLayer extends AgentLayer implements IGridLayer {
 
 	@Override
 	public void privateDraw(final IGraphicsScope s, final IGraphics gr) throws GamaRuntimeException {
-		final GamaColor borderColor = getData().drawLines() ? getData().getLineColor() : null;
+		final IColor borderColor = getData().drawLines() ? getData().getLineColor() : null;
 		final IExecutable aspect = scope -> {
 			IGraphicsScope sc = (IGraphicsScope) scope;
 			final IAgent agent = sc.getAgent();
 			final IGraphics g = sc.getGraphics();
 			try {
 				if (agent == sc.getGui().getHighlightedAgent()) { g.beginHighlight(); }
-				final GamaColor color = Cast.asColor(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
+				final IColor color = Cast.asColor(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
 				final IShape ag = agent.getGeometry();
 				final IShape ag2 = ag.copy(sc);
 				final DrawingAttributes attributes = new ShapeDrawingAttributes(ag2, agent, color, borderColor);

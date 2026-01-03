@@ -2,7 +2,7 @@
  *
  * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -56,14 +56,15 @@ import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaPair;
+import gama.core.util.IColor;
 import gama.core.util.IContainer;
 import gama.core.util.graph.IGraph;
 import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
 import gama.core.util.list.GamaListFactory.GamaListSupplier;
+import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
 import gama.core.util.map.GamaMapFactory.GamaMapSupplier;
+import gama.core.util.map.IMap;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
@@ -2410,7 +2411,7 @@ public class Containers {
 			case IType.INT -> ((Stream<Integer>) s).reduce(0, Integer::sum);
 			case IType.FLOAT -> ((Stream<Double>) s).reduce(0d, Double::sum);
 			case IType.POINT -> ((Stream<GamaPoint>) s).reduce(new GamaPoint(), GamaPoint::plus);
-			case IType.COLOR -> ((Stream<GamaColor>) s).reduce(GamaColorFactory.get(0, 0, 0, 0), GamaColor::merge);
+			case IType.COLOR -> ((Stream<IColor>) s).reduce(GamaColorFactory.get(0, 0, 0, 0), GamaColor::merge);
 			case IType.STRING -> ((Stream<String>) s).reduce("", String::concat);
 			default -> throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
 					scope);
@@ -3414,7 +3415,7 @@ public class Containers {
 		if (size == 0) { size = 1; }
 		if (s instanceof Number) return ((Number) s).doubleValue() / size;
 		if (s instanceof GamaPoint) return Points.divide(scope, (GamaPoint) s, size);
-		if (s instanceof GamaColor) return Colors.divide((GamaColor) s, size);
+		if (s instanceof IColor) return Colors.divide((GamaColor) s, size);
 		return Cast.asFloat(scope, s) / size;
 	}
 

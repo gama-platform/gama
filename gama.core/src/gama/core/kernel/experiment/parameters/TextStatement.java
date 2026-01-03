@@ -3,7 +3,7 @@
  * TextStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,8 +22,8 @@ import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -150,8 +150,8 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	}
 
 	@Override
-	public GamaColor getColor(final IScope scope) {
-		GamaColor rgb = null;
+	public IColor getColor(final IScope scope) {
+		IColor rgb = null;
 		if (color != null) { rgb = Cast.asColor(scope, color.value(scope)); }
 		return rgb;
 	}
@@ -163,8 +163,8 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	 *            the scope
 	 * @return the background
 	 */
-	public GamaColor getBackground(final IScope scope) {
-		GamaColor rgb = null;
+	public IColor getBackground(final IScope scope) {
+		IColor rgb = null;
 		if (background != null) { rgb = Cast.asColor(scope, background.value(scope)); }
 		return rgb;
 	}

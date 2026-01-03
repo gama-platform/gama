@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AWTDisplayGraphics.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -62,8 +62,8 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.IField;
@@ -219,7 +219,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final AxisAngle rotation = attributes.getRotation();
 		shape = GamaShapeFactory.createFrom(shape).withRotation(rotation).withLocation(attributes.getLocation())
 				.withScaling(attributes.getSize(), true);
-		final GamaColor c = attributes.getColor();
+		final IColor c = attributes.getColor();
 		return drawShape(shape.getInnerGeometry(),
 				new ShapeDrawingAttributes(shape.getLocation(), c, c, (IShape.Type) null));
 	}
@@ -307,7 +307,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			}
 			return result;
 		}
-		currentRenderer.setColor(highlight ? data.getHighlightColor() : attributes.getColor());
+		currentRenderer.setColor((highlight ? data.getHighlightColor() : attributes.getColor()).getAWTColor());
 		double curX, curY;
 		// final double curZ;
 		if (attributes.getLocation() == null) {
@@ -369,7 +369,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			isLine = false;
 			attributes.setFill(attributes.getBorder());
 		}
-		GamaColor border = isLine ? attributes.getColor() : attributes.getBorder();
+		IColor border = isLine ? attributes.getColor() : attributes.getBorder();
 		if (border == null && attributes.isEmpty()) { border = attributes.getColor(); }
 		if (highlight) {
 			attributes.setFill(GamaColorFactory.get(data.getHighlightColor().getRGB()));
@@ -378,7 +378,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final Shape s = sw.toShape(geometry);
 		try {
 			final Rectangle2D r = s.getBounds2D();
-			currentRenderer.setColor(attributes.getColor());
+			currentRenderer.setColor(attributes.getColor().getAWTColor());
 			if (!isLine && !attributes.isEmpty()) {
 				BufferedImage texture = null;
 				List obj = attributes.getTextures();
@@ -394,7 +394,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 				currentRenderer.fill(s);
 			}
 			if (isLine || border != null || attributes.isEmpty()) {
-				if (border != null) { currentRenderer.setColor(border); }
+				if (border != null) { currentRenderer.setColor(border.getAWTColor()); }
 				currentRenderer.draw(s);
 			}
 			return r;
@@ -405,9 +405,9 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	}
 
 	@Override
-	public void fillBackground(final Color bgColor) {
+	public void fillBackground(final IColor bgColor) {
 		setAlpha(1);
-		currentRenderer.setColor(bgColor);
+		currentRenderer.setColor(bgColor.getAWTColor());
 		currentRenderer.fillRect(0, 0, (int) surface.getDisplayWidth(), (int) surface.getDisplayHeight());
 	}
 
@@ -419,14 +419,14 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	 * @param lineColor
 	 *            the line color
 	 */
-	public void drawGridLine(final BufferedImage image, final Color lineColor) {
+	public void drawGridLine(final BufferedImage image, final IColor lineColor) {
 
 		// The image contains the dimensions of the grid.
 		final double stepx = (double) getLayerWidth() / (double) image.getWidth();
 		final double stepy = (double) getLayerHeight() / (double) image.getHeight();
 		if (stepx < 2 || stepy < 2) return;
 		final Line2D line = new Line2D.Double();
-		currentRenderer.setColor(lineColor);
+		currentRenderer.setColor(lineColor.getAWTColor());
 		for (double step = 0.0, end = getLayerWidth(); step < end + 1; step += stepx) {
 			line.setLine(getXOffsetInPixels() + step, getYOffsetInPixels(), getXOffsetInPixels() + step,
 					getYOffsetInPixels() + getLayerHeight());
@@ -458,7 +458,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final Stroke oldStroke = currentRenderer.getStroke();
 		currentRenderer.setStroke(new BasicStroke(5));
 		final Color old = currentRenderer.getColor();
-		currentRenderer.setColor(data.getHighlightColor());
+		currentRenderer.setColor(data.getHighlightColor().getAWTColor());
 		currentRenderer.draw(r);
 		currentRenderer.setStroke(oldStroke);
 		currentRenderer.setColor(old);
@@ -477,7 +477,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void beginOverlay(final OverlayLayer layer) {
 		currentRenderer = overlayRenderer;
-		currentRenderer.setColor(layer.getData().getBackgroundColor(getSurface().getScope()));
+		currentRenderer.setColor(layer.getData().getBackgroundColor(getSurface().getScope()).getAWTColor());
 		final int x = (int) getXOffsetInPixels();
 		final int y = (int) getYOffsetInPixels();
 		final int w = getLayerWidth();
@@ -488,7 +488,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			currentRenderer.fillRect(x, y, w, h);
 		}
 		if (layer.getData().getBorderColor() != null) {
-			currentRenderer.setColor(layer.getData().getBorderColor());
+			currentRenderer.setColor(layer.getData().getBorderColor().getAWTColor());
 			if (layer.getData().isRounded()) {
 				currentRenderer.drawRoundRect(x, y, w, h, 10, 10);
 			} else {

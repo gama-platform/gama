@@ -12,7 +12,7 @@ package gama.core.common.interfaces;
 
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * The Interface IStatusDisplayer.
@@ -90,7 +90,7 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 * @param icon
 	 *            the icon
 	 */
-	default void setStatus(final String message, final String icon, final GamaColor color) {}
+	default void setStatus(final String message, final String icon, final IColor color) {}
 
 	/**
 	 * Begin sub status.

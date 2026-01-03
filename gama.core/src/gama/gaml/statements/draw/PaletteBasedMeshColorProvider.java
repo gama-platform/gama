@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PaletteBasedMeshColorProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,10 +34,10 @@ public class PaletteBasedMeshColorProvider implements IMeshColorProvider {
 		components = new double[size * 4];
 		for (var i = 0; i < size; i++) {
 			var c = palette.get(i);
-			components[i * 3] = c.getRed() / 255d;
-			components[i * 3 + 1] = c.getGreen() / 255d;
-			components[i * 3 + 2] = c.getBlue() / 255d;
-			components[i * 3 + 3] = c.getAlpha() / 255d;
+			components[i * 3] = c.red() / 255d;
+			components[i * 3 + 1] = c.green() / 255d;
+			components[i * 3 + 2] = c.blue() / 255d;
+			components[i * 3 + 3] = c.alpha() / 255d;
 		}
 	}
 

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,8 +14,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.Types;
@@ -37,7 +37,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	final Attribute<String> typeAttribute;
 
 	/** The intensity attribute. */
-	final Attribute<GamaColor> intensityAttribute;
+	final Attribute<IColor> intensityAttribute;
 
 	/** The target. */
 	final Attribute<GamaPoint> directionAttribute;
@@ -105,7 +105,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	public String getType() { return typeAttribute.get(); }
 
 	@Override
-	public GamaColor getIntensity() { return intensityAttribute.get(); }
+	public IColor getIntensity() { return intensityAttribute.get(); }
 
 	@Override
 	public double getAngle() { return angleAttribute.get(); }

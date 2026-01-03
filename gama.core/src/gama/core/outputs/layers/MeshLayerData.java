@@ -16,8 +16,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.matrix.IField;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
@@ -30,7 +30,7 @@ import gama.gaml.types.Types;
 public class MeshLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColorFactory.BLACK;
+	static IColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The should compute values. */
 	boolean shouldComputeValues = true;
@@ -42,7 +42,7 @@ public class MeshLayerData extends LayerData {
 	IField values;
 
 	/** The line. */
-	final Attribute<GamaColor> line;
+	final Attribute<IColor> line;
 
 	/** The texture. */
 	final Attribute<IImageProvider> texture;
@@ -189,7 +189,7 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return the line color
 	 */
-	public GamaColor getLineColor() { return line.get() == null && wireframe.get() ? defaultLineColor : line.get(); }
+	public IColor getLineColor() { return line.get() == null && wireframe.get() ? defaultLineColor : line.get(); }
 
 	/**
 	 * Draw lines.

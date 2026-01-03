@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FileDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AssetDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * The Class FileDrawingAttributes.
@@ -48,8 +48,8 @@ public class AssetDrawingAttributes extends DrawingAttributes {
 	 *            the lighting
 	 */
 	public AssetDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
-			final GamaColor color, final GamaColor border, final IAgent agent, final Double lineWidth,
-			final boolean isImage, final Boolean lighting) {
+			final IColor color, final IColor border, final IAgent agent, final Double lineWidth, final boolean isImage,
+			final Boolean lighting) {
 		super(size, rotation, location, color, border, lighting);
 		this.agentIdentifier = agent;
 		setLineWidth(lineWidth);

@@ -3,7 +3,7 @@
  * TextDisplayer.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,8 +34,8 @@ import gama.core.kernel.experiment.parameters.InputParameter;
 import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.text.XmlText;
@@ -78,8 +78,8 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	public TextDisplayer(final IScope scope, final TextStatement command) {
 		super(scope.getAgent(), new InputParameter(command.getName(), null), null);
 		statement = command;
-		GamaColor c = command.getColor(scope);
-		GamaColor b = command.getBackground(scope);
+		IColor c = command.getColor(scope);
+		IColor b = command.getBackground(scope);
 		front = c == null ? null : GamaColors.toSwtColor(c);
 		back = b == null ? null : GamaColors.toSwtColor(b);
 		font = command.getFont(scope);

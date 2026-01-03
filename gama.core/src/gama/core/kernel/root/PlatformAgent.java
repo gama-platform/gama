@@ -50,8 +50,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.runtime.server.GamaServerMessage;
 import gama.core.runtime.server.MessageType;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.core.util.file.json.Json;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
@@ -268,7 +268,7 @@ public class PlatformAgent extends GamlAgent implements ITopLevelAgent, IExpress
 	public IScope getScope() { return basicScope; }
 
 	@Override
-	public GamaColor getColor() { return GamaColorFactory.get(102, 114, 126); }
+	public IColor getColor() { return GamaColorFactory.get(102, 114, 126); }
 
 	@Override
 	public IRandom getRandomGenerator() { return new RandomUtils(); }

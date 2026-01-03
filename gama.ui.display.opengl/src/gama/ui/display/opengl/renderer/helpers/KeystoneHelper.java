@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * KeystoneHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * KeystoneHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer.helpers;
 
-import java.awt.Color;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -26,6 +25,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
@@ -67,7 +67,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	private boolean worldCorners = false;
 
 	/** The Constant FILL_COLORS. */
-	private static final Color[] FILL_COLORS = { GamaColorFactory.get("gamared").withAlpha(0.3),
+	private static final IColor[] FILL_COLORS = { GamaColorFactory.get("gamared").withAlpha(0.3),
 			GamaColorFactory.get("gamablue").withAlpha(0.3), GamaColorFactory.get("black").withAlpha(0.3) };
 
 	/** The ib idx buff. */
@@ -193,7 +193,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the fill
 	 */
 	private void drawRectangle(final OpenGL openGL, final double centerX, final double centerY, final double centerZ,
-			final double width, final double height, final Color fill) {
+			final double width, final double height, final IColor fill) {
 		openGL.pushMatrix();
 		openGL.translateBy(centerX, centerY, centerY);
 		openGL.setCurrentColor(fill);
@@ -329,7 +329,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the shader program
 	 */
 	private void prepareShader(final AbstractPostprocessingShader shaderProgram) {
-	//	shaderProgram.loadTexture(0);
+		// shaderProgram.loadTexture(0);
 		shaderProgram.storeTextureID(fboScene.getFBOTexture());
 	}
 

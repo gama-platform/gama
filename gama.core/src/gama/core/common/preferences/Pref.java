@@ -2,7 +2,7 @@
  *
  * Pref.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,7 +20,7 @@ import gama.core.common.util.StringUtils;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.map.GamaMapFactory;
 import gama.dev.COUNTER;
 import gama.gaml.types.IType;
@@ -103,7 +103,7 @@ public class Pref<T> implements IParameter {
 	String[] labels = PREF_SWITCH_STRINGS;
 
 	/** The colors. */
-	List<GamaColor> colors = null;
+	List<IColor> colors = null;
 
 	/** The listeners. */
 	Set<IPreferenceChangeListener<T>> listeners = new HashSet<>();
@@ -569,12 +569,12 @@ public class Pref<T> implements IParameter {
 	}
 
 	@Override
-	public List<GamaColor> getColors(final IScope scope) {
+	public List<IColor> getColors(final IScope scope) {
 		return colors;
 	}
 
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		return colors == null || colors.isEmpty() ? null : colors.get(0);
 	}
 
@@ -640,7 +640,7 @@ public class Pref<T> implements IParameter {
 	 *            the gcs
 	 * @return the pref
 	 */
-	public Pref<T> withColors(final GamaColor... gcs) {
+	public Pref<T> withColors(final IColor... gcs) {
 		colors = Arrays.asList(gcs);
 		return this;
 	}

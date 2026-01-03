@@ -15,7 +15,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.architecture.user.UserPanelStatement;
 import gama.gaml.statements.test.CompoundSummary;
 
@@ -334,7 +334,7 @@ public interface IGamaView {
 		 * @param color
 		 *            the color
 		 */
-		void append(String msg, ITopLevelAgent root, GamaColor color);
+		void append(String msg, ITopLevelAgent root, IColor color);
 
 	}
 

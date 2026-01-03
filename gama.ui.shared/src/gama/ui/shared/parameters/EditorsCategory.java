@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * The EditorsCategory.
  */
-public record EditorsCategory(String name, GamaColor color, Boolean expanded) {
+public record EditorsCategory(String name, IColor color, Boolean expanded) {
 
 }

@@ -34,9 +34,9 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.descriptions.IDescription;
@@ -651,7 +651,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 		// ((BarRenderer) plot.getRenderer()).setItemMargin(gap);
 
-		GamaColor colorvalue = GamaColorFactory.BLACK;
+		IColor colorvalue = GamaColorFactory.BLACK;
 		IExpression color = getFacet(IKeyword.AXES);
 		if (color != null) { colorvalue = Cast.asColor(scope, color.value(scope)); }
 		chartOutput.setAxesColorValue(scope, colorvalue);

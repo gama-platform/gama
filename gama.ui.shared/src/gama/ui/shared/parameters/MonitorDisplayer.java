@@ -3,7 +3,7 @@
  * MonitorDisplayer.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,6 +36,7 @@ import gama.core.outputs.ValuedDisplayOutputFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.interfaces.IValue;
 import gama.gaml.types.IType;
@@ -113,7 +114,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			action(m, "Copy value", ex -> {
 				final Object v = getStatement().getLastValue();
 				WorkbenchHelper.copy(
-						v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
+						v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
 			});
 			final IExpression exp = getStatement().getValue();
 			final IType<?> type = exp == null ? Types.NO_TYPE : exp.getGamlType();
@@ -171,7 +172,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 
 	@Override
 	protected void applyEdit() {
-		GamaColor color = getStatement().getColor(getScope());
+		IColor color = getStatement().getColor(getScope());
 		if (color == null) { color = IGamaColors.NEUTRAL.gamaColor(); }
 		Map<String, Object> init = userInputDialog(getScope(), "Edit monitor",
 				wrap(NO_TYPE,

@@ -21,8 +21,8 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.gaml.constants.GamlCoreConstants;
 
@@ -77,10 +77,10 @@ public class DrawingAttributes {
 	private static int INDEX = 0;
 
 	/** The Constant TEXTURED_COLOR. */
-	public static final GamaColor TEXTURED_COLOR = GamaColorFactory.WHITE;
+	public static final IColor TEXTURED_COLOR = GamaColorFactory.WHITE;
 
 	/** The Constant SELECTED_COLOR. */
-	public static final GamaColor SELECTED_COLOR = GamaColorFactory.RED;
+	public static final IColor SELECTED_COLOR = GamaColorFactory.RED;
 
 	/** The flags. */
 	EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);
@@ -104,7 +104,7 @@ public class DrawingAttributes {
 	public IShape.Type type;
 
 	/** The border. */
-	GamaColor fill, highlight, border;
+	IColor fill, highlight, border;
 
 	/** The textures. */
 	List<?> textures;
@@ -137,7 +137,7 @@ public class DrawingAttributes {
 	 *            the lighting
 	 */
 	public DrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
-			final GamaColor color, final GamaColor border, final Boolean lighting) {
+			final IColor color, final IColor border, final Boolean lighting) {
 		this();
 		setBorder(border);
 		setFill(color);
@@ -377,7 +377,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the color
 	 */
-	public GamaColor getColor() {
+	public IColor getColor() {
 		if (isSelected()) // DEBUG.OUT("Selected agent: " + getAgentIdentifier() + " / index : " + uniqueIndex);
 			return SELECTED_COLOR;
 		if (highlight != null) return highlight;
@@ -398,7 +398,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the border
 	 */
-	public GamaColor getBorder() {
+	public IColor getBorder() {
 		if (isSet(Flag.Empty) && border == null) return fill;
 		return border;
 	}
@@ -423,7 +423,7 @@ public class DrawingAttributes {
 	 * @param color
 	 *            the new fill
 	 */
-	public void setFill(final GamaColor color) { fill = color; }
+	public void setFill(final IColor color) { fill = color; }
 
 	/**
 	 * Sets the border.
@@ -431,7 +431,7 @@ public class DrawingAttributes {
 	 * @param border
 	 *            the new border
 	 */
-	public void setBorder(final GamaColor border) { this.border = border; }
+	public void setBorder(final IColor border) { this.border = border; }
 
 	/**
 	 * Sets the lighting.
@@ -524,7 +524,7 @@ public class DrawingAttributes {
 	 * @param color
 	 *            the new highlighted
 	 */
-	public void setHighlighted(final GamaColor color) { highlight = color; }
+	public void setHighlighted(final IColor color) { highlight = color; }
 
 	/**
 	 * Checks if is selected.

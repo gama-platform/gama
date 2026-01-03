@@ -12,7 +12,7 @@ package gama.workspace.status;
 
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  *
@@ -25,7 +25,7 @@ public record CompletionStatusMessage(String message, Double completion, long ti
 	}
 
 	@Override
-	public GamaColor color() {
+	public IColor color() {
 		return WAIT_AND_TASK_COLOR;
 	}
 

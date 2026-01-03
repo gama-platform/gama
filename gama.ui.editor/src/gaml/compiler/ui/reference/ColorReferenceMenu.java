@@ -3,7 +3,7 @@
  * ColorReferenceMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,8 +19,8 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.menus.GamaColorMenu.IColorRunnable;
 import gama.ui.shared.resources.GamaIcon;
@@ -40,7 +40,7 @@ public class ColorReferenceMenu extends GamlReferenceMenu {
 
 	/** The runnable. */
 	IColorRunnable runnable = (r, g, b) -> {
-		final GamaColor c = GamaColorFactory.get(r, g, b, 255);
+		final IColor c = GamaColorFactory.get(r, g, b, 255);
 		applyText(c.serializeToGaml(true));
 	};
 

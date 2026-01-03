@@ -10,13 +10,11 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.awt.Color;
-
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.types.Types;
 
 /**
@@ -25,10 +23,10 @@ import gama.gaml.types.Types;
 public class FramedLayerData extends LayerData {
 
 	/** The border. */
-	final Attribute<GamaColor> border;
+	final Attribute<IColor> border;
 
 	/** The background. */
-	final Attribute<GamaColor> background;
+	final Attribute<IColor> background;
 
 	/**
 	 * Instantiates a new overlay layer data.
@@ -52,10 +50,10 @@ public class FramedLayerData extends LayerData {
 	 *            the scope
 	 * @return the background color
 	 */
-	public Color getBackgroundColor(final IScope scope) {
-		Color c = background.get();
+	public IColor getBackgroundColor(final IScope scope) {
+		IColor c = background.get();
 		return c == null ? null
-				: new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) ((1 - getTransparency(scope)) * 255));
+				: GamaColorFactory.get(c.red(), c.green(), c.blue(), (int) ((1 - getTransparency(scope)) * 255));
 	}
 
 	/**
@@ -63,6 +61,6 @@ public class FramedLayerData extends LayerData {
 	 *
 	 * @return the border color
 	 */
-	public Color getBorderColor() { return border.get(); }
+	public IColor getBorderColor() { return border.get(); }
 
 }

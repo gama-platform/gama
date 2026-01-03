@@ -1,16 +1,16 @@
 /*******************************************************************************************************
  *
  * GradientBasedMeshColorProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Colors.GamaGradient;
 
@@ -42,11 +42,11 @@ public class GradientBasedMeshColorProvider implements IMeshColorProvider {
 		components = new double[size * 5]; // last value is the stop position
 
 		int i = 0;
-		for (GamaColor c : palette.keySet()) {
-			components[i * 4] = c.getRed() / 255d;
-			components[i * 4 + 1] = c.getGreen() / 255d;
-			components[i * 4 + 2] = c.getBlue() / 255d;
-			components[i * 4 + 3] = c.getAlpha() / 255d;
+		for (IColor c : palette.keySet()) {
+			components[i * 4] = c.red() / 255d;
+			components[i * 4 + 1] = c.green() / 255d;
+			components[i * 4 + 2] = c.blue() / 255d;
+			components[i * 4 + 3] = c.alpha() / 255d;
 			components[i * 4 + 4] = palette.get(c);
 			i++;
 		}

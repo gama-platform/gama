@@ -1,16 +1,16 @@
 /*******************************************************************************************************
  *
  * ColorBasedMeshColorProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 
 /**
  * The Class ColorBasedMeshColorProvider.
@@ -26,10 +26,10 @@ public class ColorBasedMeshColorProvider implements IMeshColorProvider {
 	 * @param c
 	 *            the c
 	 */
-	public ColorBasedMeshColorProvider(final GamaColor c) {
-		r = c.getRed() / 255d;
-		g = c.getGreen() / 255d;
-		b = c.getBlue() / 255d;
+	public ColorBasedMeshColorProvider(final IColor c) {
+		r = c.red() / 255d;
+		g = c.green() / 255d;
+		b = c.blue() / 255d;
 	}
 
 	@Override

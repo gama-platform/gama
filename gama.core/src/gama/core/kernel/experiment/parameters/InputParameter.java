@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * InputParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.types.GamaType;
 import gama.gaml.types.IType;
 
@@ -188,7 +188,7 @@ public class InputParameter extends ParameterAdapter {
 	public boolean isEditable() { return true; }
 
 	@Override
-	public List<GamaColor> getColors(final IScope scope) {
+	public List<IColor> getColors(final IScope scope) {
 		return null;
 	}
 

@@ -14,8 +14,8 @@ import java.util.HashMap;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -33,7 +33,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	@Override
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
-		final GamaColor col =
+		final IColor col =
 				GamaColorFactory.get(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;

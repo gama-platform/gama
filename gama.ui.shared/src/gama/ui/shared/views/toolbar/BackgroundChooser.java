@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -44,7 +44,7 @@ public class BackgroundChooser {
 		for (int i = 0; i < labels.length; i++) {
 			final int index = i;
 			final ToolItem item = tb.button(null, labels[index], labels[index], null, SWT.RIGHT);
-			GamaColor color = colors[index].gamaColor();
+			IColor color = colors[index].gamaColor();
 			item.setImage(GamaIcon.ofColor(color).image());
 			item.addSelectionListener(new SelectionAdapter() {
 
@@ -54,7 +54,7 @@ public class BackgroundChooser {
 					public void widgetSelected(final SelectionEvent e) {
 						final MenuItem i = (MenuItem) e.widget;
 						final String color = i.getText().replace("#", "");
-						final GamaColor c = GamaColorFactory.colors.get(color);
+						final IColor c = GamaColorFactory.COLORS.get(color);
 						if (c == null) return;
 						changeColor(c.red(), c.green(), c.blue());
 					}

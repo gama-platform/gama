@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * TestState.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * TestState.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,8 +11,8 @@ package gama.gaml.statements.test;
 
 import gama.core.common.interfaces.IColored;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
+import gama.core.util.IColor;
 
 /**
  * The Enum TestState.
@@ -54,7 +54,7 @@ public enum TestState implements IColored {
 	 * @return the color
 	 */
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		return switch (this) {
 			case FAILED -> GamaColorFactory.get("gamared");
 			case NOT_RUN -> GamaColorFactory.get("gamablue");

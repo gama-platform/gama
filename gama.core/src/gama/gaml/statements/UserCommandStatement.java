@@ -31,7 +31,7 @@ import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.kernel.simulation.SimulationPopulation;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.architecture.user.UserInputStatement;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.ValidNameValidator;
@@ -265,7 +265,7 @@ public class UserCommandStatement extends AbstractStatementSequence
 	 * @return the color
 	 */
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		final IExpression exp = getFacet(IKeyword.COLOR);
 		if (exp == null) return null;
 		return Cast.asColor(scope, exp.value(scope));

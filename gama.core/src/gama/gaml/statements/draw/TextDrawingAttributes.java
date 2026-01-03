@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TextDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,8 +14,8 @@ import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape.Type;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaFont;
+import gama.core.util.IColor;
 
 /**
  * The Class TextDrawingAttributes.
@@ -45,7 +45,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *            the color
 	 */
 	public TextDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
-			final GamaColor color) {
+			final IColor color) {
 		super(size, rotation, location, color, null, null);
 		setFlag(Flag.Perspective, true); // by default
 		setType(Type.POLYGON);
@@ -62,7 +62,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	}
 
 	@Override
-	public GamaColor getColor() {
+	public IColor getColor() {
 		if (isEmpty() && fill == null && border != null) return border;
 		return super.getColor();
 	}

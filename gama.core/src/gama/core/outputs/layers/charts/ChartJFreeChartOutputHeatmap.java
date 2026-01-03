@@ -3,7 +3,7 @@
  * ChartJFreeChartOutputHeatmap.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -133,7 +133,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 				break;
 			}
 		}
-		;
+
 		return newr;
 	}
 
@@ -230,32 +230,33 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		// newr.setSeriesStroke(0, new BasicStroke(0));
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
 
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor().getAWTColor()); }
 		if (myserie.getSValues(scope).size() > 0) {
 			final double maxval = Collections.max(myserie.getSValues(scope));
 			final double minval = Collections.min(myserie.getSValues(scope));
 			Color cdeb = new Color(0, 0, 0, 0);
-			if (myserie.getMyMincolor() != null) { cdeb = myserie.getMyMincolor(); }
+			if (myserie.getMyMincolor() != null) { cdeb = myserie.getMyMincolor().getAWTColor(); }
 			Color cend = new Color(0.9f, 0.9f, 0.9f, 1.0f);
-			if (myserie.getMycolor() != null) { cend = myserie.getMycolor(); }
+			if (myserie.getMycolor() != null) { cend = myserie.getMycolor().getAWTColor(); }
 
 			LookupPaintScale paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, cend);
 			if (myserie.getMyMedcolor() != null) {
-				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, myserie.getMyMedcolor(), cend);
+				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, myserie.getMyMedcolor().getAWTColor(),
+						cend);
 			}
 
 			newr.setPaintScale(paintscale);
 
 			final NumberAxis scaleAxis = new NumberAxis(myserie.getName());
-			scaleAxis.setAxisLinePaint(this.axesColor);
-			scaleAxis.setTickMarkPaint(this.axesColor);
+			scaleAxis.setAxisLinePaint(this.axesColor.getAWTColor());
+			scaleAxis.setTickMarkPaint(this.axesColor.getAWTColor());
 			scaleAxis.setTickLabelFont(this.getTickFont());
 			scaleAxis.setRange(paintscale.getLowerBound(), paintscale.getUpperBound());
-			scaleAxis.setAxisLinePaint(axesColor);
+			scaleAxis.setAxisLinePaint(axesColor.getAWTColor());
 			scaleAxis.setLabelFont(getLabelFont());
 			if (textColor != null) {
-				scaleAxis.setLabelPaint(textColor);
-				scaleAxis.setTickLabelPaint(textColor);
+				scaleAxis.setLabelPaint(textColor.getAWTColor());
+				scaleAxis.setTickLabelPaint(textColor.getAWTColor());
 			}
 			if (!this.getXTickValueVisible(scope)) {
 				scaleAxis.setTickMarksVisible(false);
@@ -271,7 +272,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			// legend.setPadding(new RectangleInsets(10, 10, 10, 10));
 			// legend.setStripWidth(10);
 			legend.setPosition(RectangleEdge.RIGHT);
-			legend.setBackgroundPaint(this.backgroundColor);
+			legend.setBackgroundPaint(this.backgroundColor.getAWTColor());
 			// ArrayList<PaintScaleLegend> caxe=new
 			// ArrayList<PaintScaleLegend>();
 			// caxe.add(legend);
@@ -518,34 +519,35 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-
+		Color ac = axesColor.getAWTColor();
+		Color tc = textColor == null ? null : textColor.getAWTColor();
 		final XYPlot pp = (XYPlot) chart.getPlot();
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
-		pp.setDomainCrosshairPaint(axesColor);
-		pp.setRangeCrosshairPaint(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		pp.setDomainCrosshairPaint(ac);
+		pp.setRangeCrosshairPaint(ac);
 		pp.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		pp.setDomainCrosshairVisible(false);
 		pp.setRangeCrosshairVisible(false);
 		pp.setRangeGridlinesVisible(false);
 		pp.setDomainGridlinesVisible(false);
 
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
-		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+		if (tc != null) {
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 		}
 		if (xtickunit > 0) { ((NumberAxis) pp.getDomainAxis()).setTickUnit(new NumberTickUnit(xtickunit)); }
 
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
-		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+		if (tc != null) {
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (ytickunit > 0) { ((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit)); }
 

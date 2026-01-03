@@ -14,7 +14,7 @@ import gama.core.common.interfaces.IClock;
 import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.outputs.IOutputManager;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.interfaces.IScopedStepable;
 import gama.gaml.statements.IExecutable;
 
@@ -39,7 +39,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	 *
 	 * @return the color
 	 */
-	GamaColor getColor();
+	IColor getColor();
 
 	/**
 	 * Gets the random generator.

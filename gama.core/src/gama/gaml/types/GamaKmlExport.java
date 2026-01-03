@@ -43,7 +43,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.IDate;
 import gama.dev.DEBUG;
 import gama.gaml.operators.spatial.SpatialProjections;
@@ -150,8 +150,8 @@ public class GamaKmlExport {
 	 * @param fillColor
 	 *            Polygon fill color.
 	 */
-	public void defStyle(final String name, final double lineWidth, final GamaColor lineColor,
-			final GamaColor fillColor) {
+	public void defStyle(final String name, final double lineWidth, final IColor lineColor,
+			final IColor fillColor) {
 		final Style style = doc.createAndAddStyle().withId(name);
 		style.createAndSetLineStyle().withColor(kmlColor(lineColor)).withWidth(lineWidth);
 		style.createAndSetPolyStyle().withColor(kmlColor(fillColor)).withColorMode(ColorMode.NORMAL);
@@ -177,7 +177,7 @@ public class GamaKmlExport {
 	 *            A Color
 	 * @return A String in ABGR Hex text format
 	 */
-	public String kmlColor(final GamaColor c) {
+	public String kmlColor(final IColor c) {
 		return toHex2Digit(c.alpha()) + toHex2Digit(c.blue()) + toHex2Digit(c.green()) + toHex2Digit(c.red());
 	}
 

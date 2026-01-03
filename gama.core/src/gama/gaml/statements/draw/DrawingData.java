@@ -16,10 +16,10 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
 import gama.core.util.GamaPair;
+import gama.core.util.IColor;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.constants.GamlCoreConstants;
@@ -41,7 +41,7 @@ import gama.gaml.types.Types;
 public class DrawingData extends AttributeHolder {
 
 	/** The Constant DEFAULT_BORDER_COLOR. */
-	static final GamaColor DEFAULT_BORDER_COLOR = GamaColorFactory.BLACK;
+	static final IColor DEFAULT_BORDER_COLOR = GamaColorFactory.BLACK;
 
 	/** The size. */
 	public final Attribute<GamaPoint> size;
@@ -62,7 +62,7 @@ public class DrawingData extends AttributeHolder {
 	public final Attribute<Boolean> empty;
 
 	/** The color. */
-	public final Attribute<GamaColor> border, color;
+	public final Attribute<IColor> border, color;
 
 	/** The font. */
 	public final Attribute<GamaFont> font;
@@ -255,7 +255,7 @@ public class DrawingData extends AttributeHolder {
 	 *            the e
 	 * @return the gama color
 	 */
-	private GamaColor constCastColor(final IExpression e) {
+	private IColor constCastColor(final IExpression e) {
 		return switch (e.getGamlType().id()) {
 			case IType.COLOR -> Cast.asColor(null, e.getConstValue());
 			default -> null;
@@ -269,8 +269,8 @@ public class DrawingData extends AttributeHolder {
 	 *            the exp
 	 * @return the gama color
 	 */
-	private GamaColor constCastBorder(final IExpression exp) {
-		if (exp.getGamlType() != Types.BOOL) return (GamaColor) exp.getConstValue();
+	private IColor constCastBorder(final IExpression exp) {
+		if (exp.getGamlType() != Types.BOOL) return (IColor) exp.getConstValue();
 		final boolean hasBorder = (boolean) exp.getConstValue();
 		if (hasBorder) return DEFAULT_BORDER_COLOR;
 		return null;
@@ -285,7 +285,7 @@ public class DrawingData extends AttributeHolder {
 	 *            the exp
 	 * @return the gama color
 	 */
-	private GamaColor castColor(final IScope scope, final IExpression exp) {
+	private IColor castColor(final IScope scope, final IExpression exp) {
 		return switch (exp.getGamlType().id()) {
 			case IType.COLOR -> Cast.asColor(scope, exp.value(scope));
 			default -> null;
@@ -301,8 +301,8 @@ public class DrawingData extends AttributeHolder {
 	 *            the exp
 	 * @return the gama color
 	 */
-	private GamaColor castBorder(final IScope scope, final IExpression exp) {
-		if (exp.getGamlType() != Types.BOOL) return (GamaColor) exp.value(scope);
+	private IColor castBorder(final IScope scope, final IExpression exp) {
+		if (exp.getGamlType() != Types.BOOL) return (IColor) exp.value(scope);
 		final boolean hasBorder = Cast.asBool(scope, exp.value(scope));
 		if (hasBorder) return DEFAULT_BORDER_COLOR;
 		return null;

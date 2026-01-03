@@ -3,7 +3,7 @@
  * TestView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -43,7 +43,7 @@ import gama.core.common.interfaces.ItemList;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.util.FileUtils;
 import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.statements.test.AbstractSummary;
 import gama.gaml.statements.test.CompoundSummary;
 import gama.gaml.statements.test.TestExperimentSummary;
@@ -319,7 +319,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final AbstractSummary<?> t) {
+	public IColor getItemDisplayColor(final AbstractSummary<?> t) {
 		return t.getColor(null);
 	}
 

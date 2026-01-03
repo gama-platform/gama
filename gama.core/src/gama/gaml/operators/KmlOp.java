@@ -19,7 +19,7 @@ import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.IDate;
 import gama.gaml.types.GamaKmlExport;
 
@@ -61,7 +61,7 @@ public class KmlOp {
 			masterDoc = true)
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
-			final double lineWidth, final GamaColor lineColor, final GamaColor fillColor, final IDate begin,
+			final double lineWidth, final IColor lineColor, final IColor fillColor, final IDate begin,
 			final IDate end) throws GamaRuntimeException {
 		if (kml == null || shape == null) return kml;
 		String styleName = shape.stringValue(scope) + ":" + begin.toString();
@@ -101,7 +101,7 @@ public class KmlOp {
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
-			final double lineWidth, final GamaColor lineColor, final GamaColor fillColor, final IDate end)
+			final double lineWidth, final IColor lineColor, final IColor fillColor, final IDate end)
 			throws GamaRuntimeException {
 		IDate begin = scope.getClock().getCurrentDate();
 		return addShape(scope, kml, shape, lineWidth, lineColor, fillColor, begin, end);
@@ -135,7 +135,7 @@ public class KmlOp {
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
-			final double lineWidth, final GamaColor lineColor, final GamaColor fillColor) throws GamaRuntimeException {
+			final double lineWidth, final IColor lineColor, final IColor fillColor) throws GamaRuntimeException {
 		IDate begin = scope.getClock().getCurrentDate();
 		IDate end = Dates.plusDuration(scope, begin, scope.getClock().getStepInSeconds());
 		return addShape(scope, kml, shape, lineWidth, lineColor, fillColor, begin, end);
@@ -167,7 +167,7 @@ public class KmlOp {
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
-			final GamaColor lineColor, final GamaColor fillColor) throws GamaRuntimeException {
+			final IColor lineColor, final IColor fillColor) throws GamaRuntimeException {
 		return addShape(scope, kml, shape, 1.0, lineColor, fillColor);
 	}
 
@@ -197,7 +197,7 @@ public class KmlOp {
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
-			final double lineWidth, final GamaColor color) throws GamaRuntimeException {
+			final double lineWidth, final IColor color) throws GamaRuntimeException {
 		return addShape(scope, kml, shape, lineWidth, color, color);
 	}
 

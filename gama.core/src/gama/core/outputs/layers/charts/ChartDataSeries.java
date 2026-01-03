@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -52,7 +52,7 @@ public class ChartDataSeries {
 	final ArrayList<Double> yerrvaluesmin = new ArrayList<>();
 
 	/** The mymedcolor. */
-	GamaColor mycolor, mymincolor, mymedcolor;
+	IColor mycolor, mymincolor, mymedcolor;
 
 	/** The mysource. */
 	// HashMap<String,Object> serieParameters=new HashMap<String,Object>();
@@ -171,21 +171,21 @@ public class ChartDataSeries {
 	 *
 	 * @return the mycolor
 	 */
-	public GamaColor getMycolor() { return mycolor; }
+	public IColor getMycolor() { return mycolor; }
 
 	/**
 	 * Gets the my medcolor.
 	 *
 	 * @return the my medcolor
 	 */
-	public GamaColor getMyMedcolor() { return mymedcolor; }
+	public IColor getMyMedcolor() { return mymedcolor; }
 
 	/**
 	 * Gets the my mincolor.
 	 *
 	 * @return the my mincolor
 	 */
-	public GamaColor getMyMincolor() { return mymincolor; }
+	public IColor getMyMincolor() { return mymincolor; }
 
 	/**
 	 * Sets the mycolor.
@@ -193,7 +193,7 @@ public class ChartDataSeries {
 	 * @param mycolor
 	 *            the new mycolor
 	 */
-	public void setMycolor(final GamaColor mycolor) { this.mycolor = mycolor; }
+	public void setMycolor(final IColor mycolor) { this.mycolor = mycolor; }
 
 	/**
 	 * Sets the my medcolor.
@@ -201,7 +201,7 @@ public class ChartDataSeries {
 	 * @param mycolor
 	 *            the new my medcolor
 	 */
-	public void setMyMedcolor(final GamaColor mycolor) { this.mymedcolor = mycolor; }
+	public void setMyMedcolor(final IColor mycolor) { this.mymedcolor = mycolor; }
 
 	/**
 	 * Sets the my mincolor.
@@ -209,7 +209,7 @@ public class ChartDataSeries {
 	 * @param mycolor
 	 *            the new my mincolor
 	 */
-	public void setMyMincolor(final GamaColor mycolor) { this.mymincolor = mycolor; }
+	public void setMyMincolor(final IColor mycolor) { this.mymincolor = mycolor; }
 
 	/**
 	 * Checks if is use Y err values.
@@ -432,7 +432,7 @@ public class ChartDataSeries {
 						this.setMycolor(Cast.asColor(scope, ol.get(2)));
 					}
 				} else {
-					final GamaColor col = Cast.asColor(scope, o);
+					final IColor col = Cast.asColor(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -497,7 +497,7 @@ public class ChartDataSeries {
 						this.setMycolor(Cast.asColor(scope, ol.get(2)));
 					}
 				} else {
-					final GamaColor col = Cast.asColor(scope, o);
+					final IColor col = Cast.asColor(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -671,7 +671,7 @@ public class ChartDataSeries {
 						this.setMycolor(Cast.asColor(scope, ol.get(2)));
 					}
 				} else {
-					final GamaColor col = Cast.asColor(scope, o);
+					final IColor col = Cast.asColor(scope, o);
 					this.setMycolor(col);
 
 				}

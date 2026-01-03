@@ -28,7 +28,7 @@ import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.outputs.IOutputManager;
 import gama.core.outputs.MonitorOutput;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.core.util.IColor;
 import gama.gaml.operators.Cast;
 import gama.gaml.statements.UserCommandStatement;
 import gama.ui.shared.interfaces.EditorListener.Command;
@@ -86,7 +86,7 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final String o) {
+	public IColor getItemDisplayColor(final String o) {
 		EditorsCategory ec = categories.get(o);
 		return ec == null ? null : ec.color();
 	}
@@ -223,7 +223,7 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	 *            the color
 	 * @param b
 	 */
-	public void addCategory(final String name, final GamaColor color, final boolean expanded) {
+	public void addCategory(final String name, final IColor color, final boolean expanded) {
 		categories.put(name, new EditorsCategory(name, color, expanded));
 	}
 
