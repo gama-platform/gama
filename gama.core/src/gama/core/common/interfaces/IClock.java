@@ -9,17 +9,18 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.util.IDate;
 
 /**
- *
+ * The Interface IClock. Defines the methods required for a clock used in simulations.
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IClock {
 
 	/**
-	 * @throws GamaRuntimeException
-	 *             Sets a new value to the cycle.
+	 * Sets a new value to the cycle.
+	 *
 	 * @param i
 	 *            the new value
 	 */
@@ -27,7 +28,7 @@ public interface IClock {
 	// FIXME Make setCycle() or incrementCycle() advance the other variables as
 	// well, so as to allow writing
 	// "cycle <- cycle + 1" in GAML and have the correct information computed.
-	void setCycle(int i) throws GamaRuntimeException;
+	void setCycle(int i);
 
 	/**
 	 * Sets the cycle without doing no check (except on negative cycles). Used by restoration of simulations
@@ -35,11 +36,9 @@ public interface IClock {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param i
 	 *            the new cycle no check
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
 	 * @date 9 août 2023
 	 */
-	void setCycleNoCheck(int i) throws GamaRuntimeException;
+	void setCycleNoCheck(int i);
 
 	/**
 	 * Increment cycle.
@@ -64,15 +63,13 @@ public interface IClock {
 	double getTimeElapsedInSeconds();
 
 	/**
-	 * @throws GamaRuntimeException
-	 *             Sets the value of the current step duration (in model time) of the simulation. Cannot be negative.
+	 * Sets the value of the current step duration (in model time) of the simulation. Cannot be negative.
 	 *
-	 * @throws GamaRuntimeException
 	 * @param i
 	 *            a positive double
 	 */
 
-	void setStep(double exp) throws GamaRuntimeException;
+	void setStep(double exp);
 
 	/**
 	 * Return the current value of step
@@ -135,10 +132,8 @@ public interface IClock {
 	/**
 	 * Reset.
 	 *
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
 	 */
-	void reset() throws GamaRuntimeException;
+	void reset();
 
 	/**
 	 * Begin cycle.
