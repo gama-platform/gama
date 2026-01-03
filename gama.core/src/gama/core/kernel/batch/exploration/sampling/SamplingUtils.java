@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SamplingUtils.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.kernel.batch.exploration.sampling;
 
 import java.time.temporal.ChronoUnit;
@@ -6,41 +16,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.kernel.experiment.parameters.IParameter.Batch;
+import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.GamaDateType;
 import gama.gaml.types.IType;
 
 /**
- * 
+ *
  * @author tomroy
  *
  */
 /**
- * 
+ *
  * This abstract class gives methods for all sampling methods.
  *
  */
 public abstract class SamplingUtils {
 
+	/**
+	 * Instantiates a new sampling utils.
+	 */
 	public SamplingUtils() {}
-	
+
 	/**
 	 * This scale the sampling value for discrete values
-	 * 
+	 *
 	 * @param scope
 	 * @param set
 	 * @param var
 	 * @param valFromSampling
 	 * @return
 	 */
-	private static ParametersSet scaleSamplingAmongValue(IScope scope, ParametersSet set, Batch var,
-			double valFromSampling) {
+	private static ParametersSet scaleSamplingAmongValue(final IScope scope, final ParametersSet set, final Batch var,
+			final double valFromSampling) {
 		int size = var.getAmongValue(scope).size();
 		int idx = IntStream.range(1, size).filter(i -> valFromSampling <= 1d * i / size).findFirst().orElse(size);
 		set.put(var.getName(), var.getAmongValue(scope).get(idx - 1));
@@ -49,14 +62,14 @@ public abstract class SamplingUtils {
 
 	/**
 	 * This function scale the sampling value
-	 * 
+	 *
 	 * @param scope
 	 * @param set
 	 * @param var
 	 * @param ValFromSampling
 	 * @return
 	 */
-	private static ParametersSet scaleSampling(IScope scope, ParametersSet set, Batch var, double ValFromSampling) {
+	private static ParametersSet scaleSampling(final IScope scope, final ParametersSet set, final Batch var, final double ValFromSampling) {
 		switch (var.getType().id()) {
 			case IType.INT:
 				int intValue = Cast.asInt(scope, var.getMinValue(scope));
@@ -71,9 +84,9 @@ public abstract class SamplingUtils {
 				set.put(var.getName(), sampleFValue);
 				return set;
 			case IType.DATE:
-				GamaDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
-				GamaDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
-				GamaDate sampleDValue = dateValue.plus(
+				IDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
+				IDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
+				IDate sampleDValue = dateValue.plus(
 						dateValue.getTemporal().until(maxDateValue, ChronoUnit.SECONDS) * ValFromSampling,
 						ChronoUnit.SECONDS);
 				set.put(var.getName(), sampleDValue);
@@ -87,13 +100,11 @@ public abstract class SamplingUtils {
 				set.put(var.getName(), new GamaPoint(samplePXValue, samplePYValue, samplePZValue));
 				return set;
 			case IType.BOOL:
-				set.put(var.getName(), ValFromSampling > 0.5 ? true : false);
+				set.put(var.getName(), (ValFromSampling > 0.5) == true);
 				return set;
 			case IType.STRING:
-				if (var.getAmongValue(scope).isEmpty()) {
-					throw GamaRuntimeException
-							.error("Trying to force a string variable in sampling without among facets", scope);
-				}
+				if (var.getAmongValue(scope).isEmpty()) throw GamaRuntimeException
+						.error("Trying to force a string variable in sampling without among facets", scope);
 				int ms = var.getAmongValue(scope).size();
 				int sv = (int) Math.round(ValFromSampling * ms);
 				set.put(var.getName(), var.getAmongValue(scope).get(sv));
@@ -107,24 +118,23 @@ public abstract class SamplingUtils {
 
 	/**
 	 * Build the parameters set from samples between 0 and 1, and scale it between min and max value of the parameters
-	 * 
+	 *
 	 * @param scope
 	 * @param parameters
 	 * @param SamplingData
 	 * @return
 	 */
-	public static List<ParametersSet> buildParametersSetfromSample(IScope scope, List<Batch> parameters,
-			List<Map<String, Double>> SamplingData) {
+	public static List<ParametersSet> buildParametersSetfromSample(final IScope scope, final List<Batch> parameters,
+			final List<Map<String, Double>> SamplingData) {
 		List<ParametersSet> ParameterSet = new ArrayList<>();
 		for (int i = 0; i < SamplingData.size(); i++) {
 			ParametersSet origi = new ParametersSet();
-			for (int y = 0; y < parameters.size(); y++) {
-				if (parameters.get(y).getAmongValue(scope) != null) {
-					origi = scaleSamplingAmongValue(scope, origi, parameters.get(y),
-							SamplingData.get(i).get(parameters.get(y).getName()));
+			for (Batch parameter : parameters) {
+				if (parameter.getAmongValue(scope) != null) {
+					origi = scaleSamplingAmongValue(scope, origi, parameter,
+							SamplingData.get(i).get(parameter.getName()));
 				} else {
-					origi = scaleSampling(scope, origi, parameters.get(y),
-							SamplingData.get(i).get(parameters.get(y).getName()));
+					origi = scaleSampling(scope, origi, parameter, SamplingData.get(i).get(parameter.getName()));
 				}
 			}
 			ParameterSet.add(origi);

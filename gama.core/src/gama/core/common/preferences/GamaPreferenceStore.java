@@ -3,7 +3,7 @@
  * GamaPreferenceStore.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,7 +38,7 @@ import gama.core.common.preferences.Pref.ValueProvider;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.core.util.file.GenericFile;
 import gama.core.util.file.IGamaFile;
 import gama.dev.FLAGS;
@@ -520,10 +520,10 @@ public abstract class GamaPreferenceStore<T> {
 			case IType.POINT -> put(key, value == null ? "{0,0}" : ((GamaPoint) value).stringValue(null));
 			case IType.FONT -> put(key, value == null ? DEFAULT_FONT : value.toString());
 			case IType.DATE -> put(key, value == null ? toJavaString(GamaDateType.EPOCH.toISOString())
-					: toJavaString(((GamaDate) value).toISOString()));
+					: toJavaString(((IDate) value).toISOString()));
 			default -> put(key, (String) value);
 		}
-		;
+
 		flush();
 	}
 
@@ -540,7 +540,8 @@ public abstract class GamaPreferenceStore<T> {
 		final var value = gp.value;
 		if (getKeys().contains(key)) {
 			switch (gp.type) {
-				case IType.POINT -> gp.init((ValueProvider) () -> Cast.asPoint(scope, get(key, asString(scope, value)), false));
+				case IType.POINT -> gp
+						.init((ValueProvider) () -> Cast.asPoint(scope, get(key, asString(scope, value)), false));
 				case IType.INT -> gp.init((ValueProvider) () -> getInt(key, asInt(scope, value)));
 				case IType.FLOAT -> gp.init((ValueProvider) () -> getDouble(key, Cast.asFloat(scope, value)));
 				case IType.BOOL -> gp.init((ValueProvider) () -> getBoolean(key, Cast.asBool(scope, value)));
@@ -552,11 +553,11 @@ public abstract class GamaPreferenceStore<T> {
 					if (DEFAULT_FONT.equals(font)) return null;
 					return GamaFontType.staticCast(scope, font, false);
 				});
-				case IType.DATE -> gp.init((ValueProvider) () -> GamaDate
+				case IType.DATE -> gp.init((ValueProvider) () -> GamaDateType
 						.fromISOString(toJavaString(get(key, asString(scope, value)))));
 				default -> gp.init((ValueProvider) () -> get(key, asString(scope, value)));
 			}
-			;
+
 		}
 		flush();
 	}

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SimulationClock.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * SimulationClock.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.kernel.simulation;
 
@@ -20,7 +20,7 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.dev.THREADS;
 import gama.gaml.operators.Dates;
 
@@ -78,10 +78,10 @@ public class SimulationClock implements IClock {
 	// private volatile boolean displayCycles = true;
 
 	/** The starting date. */
-	protected GamaDate startingDate = null;
+	protected IDate startingDate = null;
 
 	/** The current date. */
-	protected GamaDate currentDate = null;
+	protected IDate currentDate = null;
 
 	/** The output current date as duration. */
 	private final boolean outputAsDuration;
@@ -340,7 +340,7 @@ public class SimulationClock implements IClock {
 					.append("elapsed ");
 
 			try {
-				GamaDate d = getCurrentDate();
+				IDate d = getCurrentDate();
 				final String date = outputAsDuration ? Dates.asDuration(getStartingDate(), d)
 						: d.toString("yyyy-MM-dd HH:mm:ss", "en");
 				sb.append("[").append(date).append("]");
@@ -366,7 +366,7 @@ public class SimulationClock implements IClock {
 	 * @return the current date
 	 */
 	@Override
-	public GamaDate getCurrentDate() {
+	public IDate getCurrentDate() {
 		if (currentDate == null) { currentDate = getStartingDate(); }
 		return currentDate;
 	}
@@ -377,7 +377,7 @@ public class SimulationClock implements IClock {
 	 * @return the starting date
 	 */
 	@Override
-	public GamaDate getStartingDate() {
+	public IDate getStartingDate() {
 		if (startingDate == null) { setStartingDate(Dates.DATES_STARTING_DATE.getValue()); }
 		return startingDate;
 	}
@@ -389,7 +389,7 @@ public class SimulationClock implements IClock {
 	 *            the new starting date
 	 */
 	@Override
-	public void setStartingDate(final GamaDate starting_date) {
+	public void setStartingDate(final IDate starting_date) {
 		this.startingDate = starting_date;
 		this.currentDate = starting_date;
 		cycle.set(0);
@@ -402,6 +402,6 @@ public class SimulationClock implements IClock {
 	 *            the new current date
 	 */
 	@Override
-	public void setCurrentDate(final GamaDate date) { currentDate = date; }
+	public void setCurrentDate(final IDate date) { currentDate = date; }
 
 }

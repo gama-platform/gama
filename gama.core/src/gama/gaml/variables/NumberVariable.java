@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * NumberVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,20 +13,20 @@ package gama.gaml.variables;
 import static gama.gaml.operators.Cast.asFloat;
 import static gama.gaml.operators.Cast.asPoint;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.facet;
 import gama.annotations.precompiler.GamlAnnotations.facets;
 import gama.annotations.precompiler.GamlAnnotations.inside;
 import gama.annotations.precompiler.GamlAnnotations.symbol;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
@@ -200,7 +200,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 		return switch (type.id()) {
 			case IType.INT -> checkMinMax(agent, scope, (Integer) val);
 			case IType.FLOAT -> checkMinMax(agent, scope, (Double) val);
-			case IType.DATE -> checkMinMax(agent, scope, (GamaDate) val);
+			case IType.DATE -> checkMinMax(agent, scope, (IDate) val);
 			case IType.POINT -> checkMinMax(agent, scope, (GamaPoint) val);
 			default -> throw GamaRuntimeException.error("Impossible to create " + getName(), scope);
 		};
@@ -303,17 +303,16 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected GamaDate checkMinMax(final IAgent agent, final IScope scope, final GamaDate f)
-			throws GamaRuntimeException {
+	protected IDate checkMinMax(final IAgent agent, final IScope scope, final IDate f) throws GamaRuntimeException {
 		if (f == null) return null;
 		if (min != null) {
-			final GamaDate fmin = (GamaDate) (minVal == null
+			final IDate fmin = (IDate) (minVal == null
 					? GamaDateType.staticCast(scope, scope.evaluate(min, agent).getValue(), null, false)
 					: minVal.run(scope));
 			if (f.compareTo(fmin) < 0) return fmin;
 		}
 		if (max != null) {
-			final GamaDate fmax = (GamaDate) (maxVal == null
+			final IDate fmax = (IDate) (maxVal == null
 					? GamaDateType.staticCast(scope, scope.evaluate(max, agent).getValue(), null, false)
 					: maxVal.run(scope));
 			if (f.compareTo(fmax) > 0) return fmax;

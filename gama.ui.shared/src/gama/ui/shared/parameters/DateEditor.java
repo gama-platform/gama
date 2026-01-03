@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DateEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * DateEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,8 @@ import org.eclipse.swt.widgets.DateTime;
 
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
+import gama.gaml.types.GamaDateType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
 import gama.ui.shared.interfaces.EditorListener;
@@ -32,7 +33,7 @@ import gama.ui.shared.interfaces.EditorListener;
 /**
  * The Class DateEditor.
  */
-public class DateEditor extends AbstractEditor<GamaDate> {
+public class DateEditor extends AbstractEditor<IDate> {
 
 	/** The edit. */
 	private Composite edit;
@@ -55,7 +56,7 @@ public class DateEditor extends AbstractEditor<GamaDate> {
 	 * @param l
 	 *            the l
 	 */
-	DateEditor(final IAgent agent, final IParameter param, final EditorListener<GamaDate> l) {
+	DateEditor(final IAgent agent, final IParameter param, final EditorListener<IDate> l) {
 		super(agent, param, l);
 	}
 
@@ -76,8 +77,8 @@ public class DateEditor extends AbstractEditor<GamaDate> {
 
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
-		modifyAndDisplayValue(GamaDate.of(LocalDateTime.of(date.getYear(), date.getMonth() + 1, date.getDay(),
-				time.getHours(), time.getMinutes(), time.getSeconds())));
+		modifyAndDisplayValue(GamaDateType.fromTemporal(LocalDateTime.of(date.getYear(), date.getMonth() + 1,
+				date.getDay(), time.getHours(), time.getMinutes(), time.getSeconds())));
 	}
 
 	@Override
@@ -106,7 +107,7 @@ public class DateEditor extends AbstractEditor<GamaDate> {
 	@Override
 	protected void displayParameterValue() {
 		internalModification = true;
-		final GamaDate d = getCurrentValue();
+		final IDate d = getCurrentValue();
 		if (d != null) {
 			date.setDate(d.getYear(), d.getMonth() - 1, d.getDay());
 			time.setTime(d.getHour(), d.getMinute(), d.getSecond());

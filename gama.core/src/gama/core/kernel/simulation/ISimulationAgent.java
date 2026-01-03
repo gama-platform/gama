@@ -19,7 +19,7 @@ import gama.core.outputs.IOutput;
 import gama.core.outputs.IOutputManager;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.SimulationLocal;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 
 /**
  *
@@ -53,7 +53,7 @@ public interface ISimulationAgent extends ITopLevelAgent {
 	/**
 	 * @return
 	 */
-	GamaDate getCurrentDate();
+	IDate getCurrentDate();
 
 	/**
 	 * @return
@@ -69,7 +69,7 @@ public interface ISimulationAgent extends ITopLevelAgent {
 	/**
 	 * @return
 	 */
-	GamaDate getStartingDate();
+	IDate getStartingDate();
 
 	/**
 	 * @return

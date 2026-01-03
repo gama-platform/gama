@@ -2,7 +2,7 @@
  *
  * GamaListType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,8 @@ import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
 import gama.core.util.IContainer;
+import gama.core.util.IDate;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.gaml.expressions.IExpression;
@@ -66,7 +66,7 @@ public class GamaListType extends GamaContainerType<IList> {
 		final IType contentsType = ct == null ? Types.NO_TYPE : ct;
 		return switch (obj) {
 			case null -> GamaListFactory.create(contentsType, 0);
-			case GamaDate gd -> gd.listValue(scope, contentsType);
+			case IDate gd -> gd.listValue(scope, contentsType);
 			// Explicitly set copy to true if we deal with a population
 			case IPopulation ip -> ip.listValue(scope, contentsType, true);
 			case IContainer ic -> ic.listValue(scope, contentsType, copy);

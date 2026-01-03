@@ -3,7 +3,7 @@
  * ExperimentParameter.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,8 +36,8 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaDate;
 import gama.core.util.GamaDateInterval;
+import gama.core.util.IDate;
 import gama.gaml.compilation.ISymbol;
 import gama.gaml.compilation.Symbol;
 import gama.gaml.compilation.annotations.validator;
@@ -671,11 +671,11 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 				case IType.DATE -> {
 					final double dStep =
 							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
-					final GamaDate dMin = minValue == null
-							? GamaDate.of(LocalDateTime.now()).minus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
-							: GamaDateType.staticCast(scope, minValue, null, false);
-					final GamaDate dMax = maxValue == null
-							? GamaDate.of(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
+					final IDate dMin =
+							minValue == null ? GamaDateType.fromTemporal(LocalDateTime.now()).minus(Integer.MAX_VALUE,
+									ChronoUnit.SECONDS) : GamaDateType.staticCast(scope, minValue, null, false);
+					final IDate dMax = maxValue == null
+							? GamaDateType.fromTemporal(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
 							: GamaDateType.staticCast(scope, maxValue, null, false);
 					yield new GamaDateInterval(dMin, dMax, Duration.of((long) dStep, ChronoUnit.SECONDS))
 							.anyValue(scope);
@@ -757,14 +757,14 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 				case IType.DATE:
 					final double dStep =
 							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
-					final GamaDate dMin = minValue == null
-							? GamaDate.of(LocalDateTime.now()).minus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
-							: GamaDateType.staticCast(scope, minValue, null, false);
-					final GamaDate dMax = maxValue == null
-							? GamaDate.of(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
+					final IDate dMin =
+							minValue == null ? GamaDateType.fromTemporal(LocalDateTime.now()).minus(Integer.MAX_VALUE,
+									ChronoUnit.SECONDS) : GamaDateType.staticCast(scope, minValue, null, false);
+					final IDate dMax = maxValue == null
+							? GamaDateType.fromTemporal(LocalDateTime.now()).plus(Integer.MAX_VALUE, ChronoUnit.SECONDS)
 							: GamaDateType.staticCast(scope, maxValue, null, false);
 					Duration dd = Duration.of((long) dStep, ChronoUnit.SECONDS);
-					final GamaDate dVal = GamaDateType.staticCast(scope, value(scope), null, false);
+					final IDate dVal = GamaDateType.staticCast(scope, value(scope), null, false);
 					if (dVal.isGreaterThan(dMin.plus(dd), false)) { neighborValues.add(dVal.minus(dd)); }
 					if (dVal.isSmallerThan(dMax.minus(dd), false)) { neighborValues.add(dVal.plus(dd)); }
 					break;

@@ -2,7 +2,7 @@
  *
  * Dates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -62,6 +62,7 @@ import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaDate;
 import gama.core.util.GamaDateInterval;
+import gama.core.util.IDate;
 import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.gaml.compilation.IOperatorValidator;
@@ -148,7 +149,7 @@ public class Dates {
 			});
 
 	/** The Constant DATES_STARTING_DATE. */
-	public final static Pref<GamaDate> DATES_STARTING_DATE = GamaPreferences
+	public final static Pref<IDate> DATES_STARTING_DATE = GamaPreferences
 			.create("pref_date_starting_date", "Default starting date of models", GamaDateType.EPOCH, IType.DATE, true)
 			.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES);
 
@@ -195,8 +196,8 @@ public class Dates {
 	public static double approximalQuery(final IScope scope, final IExpression left, final IExpression right) {
 		final Double arg = Cast.asFloat(scope, left.value(scope));
 		if (right instanceof TimeUnitConstantExpression timeUnit) {
-			GamaDate date = scope.getClock().getCurrentDate();
-			GamaDate next = date.plus(1l, timeUnit.getName().startsWith("m") ? ChronoUnit.MONTHS : ChronoUnit.YEARS);
+			IDate date = scope.getClock().getCurrentDate();
+			IDate next = date.plus(1l, timeUnit.getName().startsWith("m") ? ChronoUnit.MONTHS : ChronoUnit.YEARS);
 			return arg * date.until(next, ChronoUnit.MILLIS) / 1000d;
 		}
 		return 0d;
@@ -243,7 +244,7 @@ public class Dates {
 							equals = "86400") }))
 	@test ("date('2000-01-02') - date('2000-01-01') = 86400")
 
-	public static double minusDate(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static double minusDate(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		final Duration duration = Duration.between(date2, date1);
 		return duration.getSeconds();
@@ -526,7 +527,7 @@ public class Dates {
 					value = "(date('2000-01-01') to date('2010-01-01')) every (#day) // builds an interval between these two dates which contains all the days starting from the beginning of the interval",
 					isExecutable = false) })
 	@test ("list((date('2001-01-01') to date('2001-1-02')) every(#day)) collect each = [date ('2001-01-01 00:00:00')]")
-	public static IList<GamaDate> every(final IScope scope, final GamaDateInterval interval, final IExpression period) {
+	public static IList<IDate> every(final IScope scope, final GamaDateInterval interval, final IExpression period) {
 		return interval.step(Cast.asFloat(scope, period.value(scope)));
 	}
 
@@ -562,7 +563,7 @@ public class Dates {
 							isExecutable = false) })
 	@test ("to_list((date('2001-01-01') to date('2001-01-06')) every(#day)) =\n"
 			+ "		[date ('2001-01-01 00:00:00'),date ('2001-01-02 00:00:00'),date ('2001-01-03 00:00:00'),date ('2001-01-04 00:00:00'),date ('2001-01-05 00:00:00')]")
-	public static IList<GamaDate> to(final IScope scope, final GamaDate start, final GamaDate end) {
+	public static IList<IDate> to(final IScope scope, final IDate start, final IDate end) {
 		return GamaDateInterval.of(start, end);
 	}
 
@@ -600,7 +601,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);since(date([2019,5,10])) = false")
 	@test ("starting_date <- date([2019,5,9]);since(date([2019,5,9])) = true")
 	@test ("starting_date <- date([2019,5,9]);since(date([2019,5,8])) = true")
-	public static boolean since(final IScope scope, final GamaDate date) {
+	public static boolean since(final IScope scope, final IDate date) {
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date, false);
 	}
 
@@ -641,7 +642,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);after(date([2019,5,10])) = false")
 	@test ("starting_date <- date([2019,5,9]);after(date([2019,5,9])) = false")
 	@test ("starting_date <- date([2019,5,9]);after(date([2019,5,8])) = true")
-	public static boolean after(final IScope scope, final GamaDate date) {
+	public static boolean after(final IScope scope, final IDate date) {
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date, true);
 	}
 
@@ -676,7 +677,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);before(date([2019,5,10])) = true")
 	@test ("starting_date <- date([2019,5,9]);before(date([2019,5,9])) = false")
 	@test ("starting_date <- date([2019,5,9]);before(date([2019,5,8])) = false")
-	public static boolean before(final IScope scope, final GamaDate date) {
+	public static boolean before(final IScope scope, final IDate date) {
 		return scope.getSimulation().getCurrentDate().isSmallerThan(date, true);
 	}
 
@@ -711,7 +712,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);until(date([2019,5,10])) = true")
 	@test ("starting_date <- date([2019,5,9]);until(date([2019,5,9])) = true")
 	@test ("starting_date <- date([2019,5,9]);until(date([2019,5,8])) = false")
-	public static boolean until(final IScope scope, final GamaDate date) {
+	public static boolean until(final IScope scope, final IDate date) {
 		return scope.getSimulation().getCurrentDate().isSmallerThan(date, false);
 	}
 
@@ -744,7 +745,7 @@ public class Dates {
 			doc = @doc ("Returns true if the first operand is true and the current date is equal to or after the second operand"),
 			concept = { IConcept.DATE })
 	@no_test
-	public static boolean since(final IScope scope, final IExpression expression, final GamaDate date) {
+	public static boolean since(final IScope scope, final IExpression expression, final IDate date) {
 		return since(scope, date) && Cast.asBool(scope, expression.value(scope));
 	}
 
@@ -777,7 +778,7 @@ public class Dates {
 			category = { IOperatorCategory.DATE },
 			concept = { IConcept.DATE })
 	@no_test
-	public static boolean after(final IScope scope, final IExpression expression, final GamaDate date) {
+	public static boolean after(final IScope scope, final IExpression expression, final IDate date) {
 		return after(scope, date) && Cast.asBool(scope, expression.value(scope));
 	}
 
@@ -810,7 +811,7 @@ public class Dates {
 			doc = @doc ("Returns true if the first operand is true and the current date is situated strictly before the second operand"),
 			concept = { IConcept.DATE })
 	@no_test
-	public static boolean before(final IScope scope, final IExpression expression, final GamaDate date) {
+	public static boolean before(final IScope scope, final IExpression expression, final IDate date) {
 		return before(scope, date) && Cast.asBool(scope, expression.value(scope));
 	}
 
@@ -843,7 +844,7 @@ public class Dates {
 			category = { IOperatorCategory.DATE },
 			concept = { IConcept.DATE })
 	@no_test
-	public static boolean until(final IScope scope, final IExpression expression, final GamaDate date) {
+	public static boolean until(final IScope scope, final IExpression expression, final IDate date) {
 		return until(scope, date) && Cast.asBool(scope, expression.value(scope));
 	}
 
@@ -880,8 +881,8 @@ public class Dates {
 			doc = @doc ("Returns true if the first operand is true and the current date is situated strictly after the second operand and before the third one"),
 			concept = { IConcept.DATE })
 	@no_test
-	public static boolean between(final IScope scope, final IExpression expression, final GamaDate start,
-			final GamaDate stop) {
+	public static boolean between(final IScope scope, final IExpression expression, final IDate start,
+			final IDate stop) {
 		return between(scope, scope.getClock().getCurrentDate(), start, stop) && (boolean) expression.value(scope);
 	}
 
@@ -929,7 +930,7 @@ public class Dates {
 									value = "every(#day between(date('2000-01-01'), date('2020-02-02'))) ",
 									isExecutable = false) }))
 
-	public static boolean between(final IScope scope, final GamaDate date, final GamaDate date1, final GamaDate date2) {
+	public static boolean between(final IScope scope, final IDate date, final IDate date1, final IDate date2) {
 		return date.isGreaterThan(date1, true) && date.isSmallerThan(date2, true);
 	}
 
@@ -967,7 +968,7 @@ public class Dates {
 							value = "between(date('2000-01-01'), date('2020-02-02'))",
 							equals = "false") }))
 	@test ("starting_date <- date([2019,5,9]);between((date([2019,5,8])), (date([2019,5,10]))) = true")
-	public static boolean between(final IScope scope, final GamaDate date1, final GamaDate date2) {
+	public static boolean between(final IScope scope, final IDate date1, final IDate date2) {
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date1, true)
 				&& scope.getSimulation().getCurrentDate().isSmallerThan(date2, true);
 	}
@@ -1011,7 +1012,7 @@ public class Dates {
 							value = "date('2000-01-01') + 86400",
 							equals = "date('2000-01-02')") }))
 	@test ("date('2000-01-01') + 86400 = date('2000-01-02')")
-	public static GamaDate plusDuration(final IScope scope, final GamaDate date1, final int duration)
+	public static IDate plusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
 		return date1.plus(duration, SECONDS);
 	}
@@ -1055,7 +1056,7 @@ public class Dates {
 					value = "date('2016-01-01 00:00:01') + 86400",
 					equals = "date('2016-01-02 00:00:01')"), })
 	@test ("date('2016-01-01 00:00:01') + 86400 = date('2016-01-02 00:00:01')")
-	public static GamaDate plusDuration(final IScope scope, final GamaDate date1, final double duration)
+	public static IDate plusDuration(final IScope scope, final IDate date1, final double duration)
 			throws GamaRuntimeException {
 		return date1.plus(duration * 1000, ChronoUnit.MILLIS);
 	}
@@ -1100,7 +1101,7 @@ public class Dates {
 							value = "date('2000-01-01') - 86400",
 							equals = "date('1999-12-31')") }))
 	@test ("date('2000-01-01') - 86400 = date('1999-12-31')")
-	public static GamaDate minusDuration(final IScope scope, final GamaDate date1, final int duration)
+	public static IDate minusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
 		return date1.plus(-duration, SECONDS);
 	}
@@ -1144,7 +1145,7 @@ public class Dates {
 					value = "date('2000-01-01') - 86400",
 					equals = "date('1999-12-31')") })
 	@test ("date('2000-01-01') - 86400 = date('1999-12-31')")
-	public static GamaDate minusDuration(final IScope scope, final GamaDate date1, final double duration)
+	public static IDate minusDuration(final IScope scope, final IDate date1, final double duration)
 			throws GamaRuntimeException {
 		return date1.plus(-duration * 1000, ChronoUnit.MILLIS);
 	}
@@ -1173,7 +1174,7 @@ public class Dates {
 					value = "date('2000-01-01 00:00:00') + '_Test'",
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
-	public static String concatenateDate(final IScope scope, final GamaDate date1, final String text)
+	public static String concatenateDate(final IScope scope, final IDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
 	}
@@ -1216,8 +1217,7 @@ public class Dates {
 					value = "date('2000-01-01') plus_years 15",
 					equals = "date('2015-01-01')") })
 	@test ("date('2000-01-01') plus_years 15 = date('2015-01-01')")
-	public static GamaDate addYears(final IScope scope, final GamaDate date1, final int nbYears)
-			throws GamaRuntimeException {
+	public static IDate addYears(final IScope scope, final IDate date1, final int nbYears) throws GamaRuntimeException {
 
 		return date1.plus(nbYears, YEARS);
 
@@ -1261,7 +1261,7 @@ public class Dates {
 					value = "date('2000-01-01') plus_months 5",
 					equals = "date('2000-06-01')") })
 	@test ("date('2000-01-01') plus_months 5 = date('2000-06-01')")
-	public static GamaDate addMonths(final IScope scope, final GamaDate date1, final int nbMonths)
+	public static IDate addMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
 
 		return date1.plus(nbMonths, MONTHS);
@@ -1306,8 +1306,7 @@ public class Dates {
 					value = "date('2000-01-01') plus_weeks 15",
 					equals = "date('2000-04-15')") })
 	@test ("is_error(date('2000-15-01'))")
-	public static GamaDate addWeeks(final IScope scope, final GamaDate date1, final int nbWeeks)
-			throws GamaRuntimeException {
+	public static IDate addWeeks(final IScope scope, final IDate date1, final int nbWeeks) throws GamaRuntimeException {
 		return date1.plus(nbWeeks, WEEKS);
 
 	}
@@ -1350,8 +1349,7 @@ public class Dates {
 					value = "date('2000-01-01') plus_days 12",
 					equals = "date('2000-01-13')") })
 	@test ("date('2000-01-01') plus_days 12 = date('2000-01-13')")
-	public static GamaDate addDays(final IScope scope, final GamaDate date1, final int nbDays)
-			throws GamaRuntimeException {
+	public static IDate addDays(final IScope scope, final IDate date1, final int nbDays) throws GamaRuntimeException {
 		return date1.plus(nbDays, DAYS);
 
 	}
@@ -1397,8 +1395,7 @@ public class Dates {
 							value = "date('2000-01-01') plus_hours 24",
 							equals = "date('2000-01-02')") })
 	@test ("date('2000-01-01') plus_hours 24  = date('2000-01-02')")
-	public static GamaDate addHours(final IScope scope, final GamaDate date1, final int nbHours)
-			throws GamaRuntimeException {
+	public static IDate addHours(final IScope scope, final IDate date1, final int nbHours) throws GamaRuntimeException {
 		return date1.plus(nbHours, HOURS);
 
 	}
@@ -1444,7 +1441,7 @@ public class Dates {
 							value = "date('2000-01-01') plus_minutes 5 ",
 							equals = "date('2000-01-01 00:05:00')") })
 	@test ("date('2000-01-01') plus_minutes 5  = date('2000-01-01 00:05:00')")
-	public static GamaDate addMinutes(final IScope scope, final GamaDate date1, final int nbMinutes)
+	public static IDate addMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
 		return date1.plus(nbMinutes, MINUTES);
 
@@ -1488,7 +1485,7 @@ public class Dates {
 					value = "date('2000-01-01') minus_years 3",
 					equals = "date('1997-01-01')") })
 	@test ("date('2000-01-01') minus_years 3 = date('1997-01-01')")
-	public static GamaDate subtractYears(final IScope scope, final GamaDate date1, final int nbYears)
+	public static IDate subtractYears(final IScope scope, final IDate date1, final int nbYears)
 			throws GamaRuntimeException {
 		return date1.plus(-nbYears, YEARS);
 
@@ -1532,7 +1529,7 @@ public class Dates {
 					value = "date('2000-01-01') minus_months 5",
 					equals = "date('1999-08-01')") })
 	@test ("date('2000-01-01') minus_months 5 = date('1999-08-01')")
-	public static GamaDate subtractMonths(final IScope scope, final GamaDate date1, final int nbMonths)
+	public static IDate subtractMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
 		return date1.plus(-nbMonths, MONTHS);
 
@@ -1576,7 +1573,7 @@ public class Dates {
 					value = "date('2000-01-01') minus_weeks 15",
 					equals = "date('1999-09-18')") })
 	@test ("date('2000-01-01') minus_weeks 15 = date('1999-09-18')")
-	public static GamaDate subtractWeeks(final IScope scope, final GamaDate date1, final int nbWeeks)
+	public static IDate subtractWeeks(final IScope scope, final IDate date1, final int nbWeeks)
 			throws GamaRuntimeException {
 		return date1.plus(-nbWeeks, WEEKS);
 
@@ -1620,7 +1617,7 @@ public class Dates {
 					value = "date('2000-01-01') minus_days 20",
 					equals = "date('1999-12-12')") })
 	@test ("date('2000-01-01') minus_days 20 = date('1999-12-12')")
-	public static GamaDate subtractDays(final IScope scope, final GamaDate date1, final int nbDays)
+	public static IDate subtractDays(final IScope scope, final IDate date1, final int nbDays)
 			throws GamaRuntimeException {
 		return date1.plus(-nbDays, DAYS);
 
@@ -1667,7 +1664,7 @@ public class Dates {
 							value = "date('2000-01-01') minus_hours 15 ",
 							equals = "date('1999-12-31 09:00:00')") })
 	@test ("(date('2000-01-01') minus_hours 15)  = date('1999-12-31 09:00:00')")
-	public static GamaDate subtractHours(final IScope scope, final GamaDate date1, final int nbHours)
+	public static IDate subtractHours(final IScope scope, final IDate date1, final int nbHours)
 			throws GamaRuntimeException {
 		return date1.plus(-nbHours, HOURS);
 
@@ -1714,8 +1711,7 @@ public class Dates {
 							value = "date('2000-01-01') minus_ms 1000 ",
 							equals = "date('1999-12-31 23:59:59')") })
 	@test ("date('2000-01-01') minus_ms 1000  = date('1999-12-31 23:59:59')")
-	public static GamaDate subtractMs(final IScope scope, final GamaDate date1, final int nbMs)
-			throws GamaRuntimeException {
+	public static IDate subtractMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
 		return date1.plus(-nbMs, ChronoUnit.MILLIS);
 	}
 
@@ -1760,7 +1756,7 @@ public class Dates {
 							value = "date('2000-01-01') plus_ms 1000 ",
 							equals = "date('2000-01-01 00:00:01')") })
 	@test ("date('2000-01-01') plus_ms 1000  = date('2000-01-01 00:00:01')")
-	public static GamaDate addMs(final IScope scope, final GamaDate date1, final int nbMs) throws GamaRuntimeException {
+	public static IDate addMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
 		return date1.plus(nbMs, ChronoUnit.MILLIS);
 	}
 
@@ -1805,7 +1801,7 @@ public class Dates {
 							value = "date('2000-01-01') minus_minutes 5 ",
 							equals = "date('1999-12-31 23:55:00')") })
 	@test ("date('2000-01-01') minus_minutes 5  = date('1999-12-31 23:55:00')")
-	public static GamaDate subtractMinutes(final IScope scope, final GamaDate date1, final int nbMinutes)
+	public static IDate subtractMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
 		return date1.plus(-nbMinutes, MINUTES);
 
@@ -1849,7 +1845,7 @@ public class Dates {
 					value = "years_between(date('2000-01-01'), date('2010-01-01'))",
 					equals = "10") })
 	@test ("years_between(date('2000-01-01'), date('2010-01-01')) = 10")
-	public static int years_between(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static int years_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return (int) ChronoUnit.YEARS.between(date1, date2);
 	}
@@ -1892,7 +1888,7 @@ public class Dates {
 					value = "milliseconds_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "2.6784E9") })
 	@test ("milliseconds_between(date('2000-01-01'), date('2000-02-01')) = 2.6784E9")
-	public static double milliseconds_between(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static double milliseconds_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return ChronoUnit.MILLIS.between(date1, date2);
 	}
@@ -1935,7 +1931,7 @@ public class Dates {
 					value = "months_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "1") })
 	@test ("months_between(date('2000-01-01'), date('2000-02-01')) = 1")
-	public static int months_between(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static int months_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return (int) ChronoUnit.MONTHS.between(date1, date2);
 	}
@@ -1978,7 +1974,7 @@ public class Dates {
 					value = "(#now > (#now minus_hours 1))",
 					equals = "true") })
 	@test ("(#now > (#now minus_hours 1)) = true")
-	public static boolean greater_than(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static boolean greater_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isGreaterThan(date2, true);
 	}
@@ -2021,7 +2017,7 @@ public class Dates {
 					value = "#now >= #now minus_hours 1",
 					equals = "true") })
 	@test ("(#now >= (#now minus_hours 1)) = true")
-	public static boolean greater_than_or_equal(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static boolean greater_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isGreaterThan(date2, false);
 	}
@@ -2064,7 +2060,7 @@ public class Dates {
 					value = "#now < #now minus_hours 1",
 					equals = "false") })
 	@test ("(#now < (#now minus_hours 1)) = false")
-	public static boolean smaller_than(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static boolean smaller_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isSmallerThan(date2, true);
 	}
@@ -2107,7 +2103,7 @@ public class Dates {
 					value = "(#now <= (#now minus_hours 1))",
 					equals = "false") })
 	@test ("(#now <= (#now minus_hours 1)) = false")
-	public static boolean smaller_than_or_equal(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static boolean smaller_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isSmallerThan(date2, false);
 	}
@@ -2150,8 +2146,7 @@ public class Dates {
 					value = "#now = #now minus_hours 1",
 					equals = "false") })
 	@test ("(#now = (#now minus_hours 1)) = false")
-	public static boolean equal(final IScope scope, final GamaDate date1, final GamaDate date2)
-			throws GamaRuntimeException {
+	public static boolean equal(final IScope scope, final IDate date1, final IDate date2) throws GamaRuntimeException {
 		return date1.equals(date2);
 	}
 
@@ -2193,7 +2188,7 @@ public class Dates {
 					value = "#now != #now minus_hours 1",
 					equals = "true") })
 	@test ("(#now != (#now minus_hours 1)) = true")
-	public static boolean different(final IScope scope, final GamaDate date1, final GamaDate date2)
+	public static boolean different(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return !date1.equals(date2);
 	}
@@ -2281,36 +2276,18 @@ public class Dates {
 			if (s.charAt(0) == '%' && s.length() == 2) {
 				final Character c = s.charAt(1);
 				switch (c) {
-					case 'Y':
-						df.appendValue(YEAR, 4);
-						break;
-					case 'M':
-						df.appendValue(MONTH_OF_YEAR, 2);
-						break;
-					case 'N':
-						df.appendText(MONTH_OF_YEAR);
-						break;
-					case 'D':
-						df.appendValue(DAY_OF_MONTH, 2);
-						break;
-					case 'E':
-						df.appendText(DAY_OF_WEEK);
-						break;
-					case 'h':
-						df.appendValue(HOUR_OF_DAY, 2);
-						break;
-					case 'm':
-						df.appendValue(MINUTE_OF_HOUR, 2);
-						break;
-					case 's':
-						df.appendValue(SECOND_OF_MINUTE, 2);
-						break;
-					case 'z':
-						df.appendZoneOrOffsetId();
-						break;
-					default:
-						df.appendLiteral(s);
+					case 'Y' -> df.appendValue(YEAR, 4);
+					case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
+					case 'N' -> df.appendText(MONTH_OF_YEAR);
+					case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
+					case 'E' -> df.appendText(DAY_OF_WEEK);
+					case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
+					case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
+					case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
+					case 'z' -> df.appendZoneOrOffsetId();
+					default -> df.appendLiteral(s);
 				}
+
 			} else {
 				df.appendLiteral(s);
 			}
@@ -2371,7 +2348,7 @@ public class Dates {
 							value = "date den <- date(\"1999-12-30\", 'yyyy-MM-dd');",
 							test = false)))
 	@no_test
-	public static GamaDate date(final IScope scope, final String value, final String pattern) {
+	public static IDate date(final IScope scope, final String value, final String pattern) {
 		return new GamaDate(scope, value, pattern);
 	}
 
@@ -2416,7 +2393,7 @@ public class Dates {
 							test = false)))
 	@test ("date('1999-01-30', 'yyyy-MM-dd', 'en') = date('1999-01-30 00:00:00')")
 	// @test("date('1999-january-30', 'yyyy-MMMM-dd', 'en') = date('1999-01-30 00:00:00')")
-	public static GamaDate date(final IScope scope, final String value, final String pattern, final String locale) {
+	public static IDate date(final IScope scope, final String value, final String pattern, final String locale) {
 		return new GamaDate(scope, value, pattern, locale);
 	}
 
@@ -2455,7 +2432,7 @@ public class Dates {
 	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
 	@test ("string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31'")
 	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
-	public static String format(final GamaDate time, final String pattern) {
+	public static String format(final IDate time, final String pattern) {
 		return format(time, pattern, null);
 	}
 
@@ -2497,7 +2474,7 @@ public class Dates {
 							isExecutable = false)))
 	@test ("string(date('2000-01-02'),'yyyy-MMMM-dd','en') = '2000-January-02'")
 
-	public static String format(final GamaDate time, final String pattern, final String locale) {
+	public static String format(final IDate time, final String pattern, final String locale) {
 		return time.toString(pattern, locale);
 	}
 

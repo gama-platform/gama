@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * AExplorationAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * AExplorationAlgorithm.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,14 +43,14 @@ import gama.core.kernel.batch.exploration.sampling.SaltelliSampling;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.experiment.parameters.IParameter;
+import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.core.util.list.IList;
 import gama.core.util.map.IMap;
 import gama.gaml.compilation.Symbol;
@@ -87,6 +88,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	/** The sample size. */
 	protected int sample_size = 132;
 
+	/** The Constant CSV_SEP. */
 	public static final String CSV_SEP = ",";
 
 	@Override
@@ -123,38 +125,38 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			public Object value() {
 				if (hasFacet(IKeyword.FROM)) return Exploration.FROM_FILE;
 				if (hasFacet(IKeyword.WITH)) return Exploration.FROM_LIST;
-				final String methodName = IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+				final String methodName =
+						IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
 				if (!hasFacet(Exploration.METHODS)) {
-					if (methodName==IKeyword.MORRIS) { return IKeyword.MORRIS; }
-					if (methodName==IKeyword.SOBOL) {return IKeyword.SALTELLI; }
+					if (methodName == IKeyword.MORRIS) return IKeyword.MORRIS;
+					if (methodName == IKeyword.SOBOL) return IKeyword.SALTELLI;
 					return Exploration.DEFAULT_SAMPLING;
 				}
 				return hasFacet(Exploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope())) : 
-							Exploration.DEFAULT_SAMPLING;
+						? Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()))
+						: Exploration.DEFAULT_SAMPLING;
 			}
 		});
-		
+
 		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 			@Override
-			public Object value() { return estimateSamples(agent); }
+			public Object value() {
+				return estimateSamples(agent);
+			}
 		});
-		
+
 		exp.add(new ParameterAdapter("Simulation runs", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 			@Override
 			public Object value() {
 				int res = estimateSamples(agent);
-				final String methodName = IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
-				if (Arrays.asList(IKeyword.SOBOL,IKeyword.MORRIS,IKeyword.BETAD).contains(methodName)) {
-					return res;
-				}
-				return res * 
-					(agent.getSpecies().hasFacet(IKeyword.REPEAT) ? 
-						Cast.asInt(agent.getScope(), 
-								agent.getSpecies().getFacet(IKeyword.REPEAT).value(agent.getScope())) 
-						: 1); }
+				final String methodName =
+						IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+				if (Arrays.asList(IKeyword.SOBOL, IKeyword.MORRIS, IKeyword.BETAD).contains(methodName)) return res;
+				return res * (agent.getSpecies().hasFacet(IKeyword.REPEAT) ? Cast.asInt(agent.getScope(),
+						agent.getSpecies().getFacet(IKeyword.REPEAT).value(agent.getScope())) : 1);
+			}
 		});
-		
+
 		if (getOutputs() != null) {
 			exp.add(new ParameterAdapter("Outputs of interest", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 				@Override
@@ -199,16 +201,16 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	@Override
 	public IExpression getOutputs() { return outputsExpression; }
-	
+
 	/**
 	 * Return the name of variables / or string representation entered in BATCH_OUTPUT_VAR facet
+	 *
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public IList<String> getLitteralOutputs() {;
-		return StreamEx.of(((ListExpression) outputsExpression)
-					.getElements()).map(IExpression::getName).toCollection(
-							Containers.listOf(Types.STRING));
+	@SuppressWarnings ("unchecked")
+	public IList<String> getLitteralOutputs() {
+		return StreamEx.of(((ListExpression) outputsExpression).getElements()).map(IExpression::getName)
+				.toCollection(Containers.listOf(Types.STRING));
 	}
 
 	/**
@@ -312,8 +314,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param results
 	 */
 	public void saveRawResults(final IScope scope, final IMap<ParametersSet, Map<String, List<Object>>> results) {
-		String path_to = outputFilePath==null ? FileUtils.constructAbsoluteFilePath(scope, currentExperiment.getName()+"_results.csv", false) :
-				Cast.asString(scope, outputFilePath.value(scope));
+		String path_to = outputFilePath == null
+				? FileUtils.constructAbsoluteFilePath(scope, currentExperiment.getName() + "_results.csv", false)
+				: Cast.asString(scope, outputFilePath.value(scope));
 		final File fo = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
 		final File parento = fo.getParentFile();
 		if (!parento.exists()) {
@@ -352,19 +355,28 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) throw GamaRuntimeException.error(
-				"You cannot use " + IKeyword.WITH + " facet without input a list of maps: got "+psexp.getDenotedType(), scope);
-		List<IMap<IExpression, IExpression>> parameterSets = StreamEx.of( ((ListExpression) psexp).getElements() )
+		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) throw GamaRuntimeException.error("You cannot use "
+				+ IKeyword.WITH + " facet without input a list of maps: got " + psexp.getDenotedType(), scope);
+		List<IMap<IExpression, IExpression>> parameterSets = StreamEx.of(((ListExpression) psexp).getElements())
 				.map(e -> ((MapExpression) e).getElements()).toList();
 		List<Map<String, Object>> paramSets = new ArrayList<>();
 		for (IMap<IExpression, IExpression> ps : parameterSets) {
-			Map<String,Object> lt = new HashMap<>();
+			Map<String, Object> lt = new HashMap<>();
 			for (var e : ps.entrySet()) { lt.put(e.getKey().getName(), e.getValue()); }
 			paramSets.add(lt);
 		}
 		return buildParametersSetList(scope, paramSets);
 	}
 
+	/**
+	 * Builds the parameters set list.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param parameterSets
+	 *            the parameter sets
+	 * @return the list
+	 */
 	private List<ParametersSet> buildParametersSetList(final IScope scope,
 			final List<Map<String, Object>> parameterSets) {
 		var sets = new ArrayList<ParametersSet>();
@@ -390,9 +402,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
 
-		try (FileReader fr = new FileReader(
-				new File(FileUtils.constructAbsoluteFilePath(scope, path, false)), StandardCharsets.UTF_8);
-				BufferedReader br = new BufferedReader(fr)) {
+		try (FileReader fr = new FileReader(new File(FileUtils.constructAbsoluteFilePath(scope, path, false)),
+				StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
 			String line = " ";
 			String[] tempArr;
 			List<String> list_name = new ArrayList<>();
@@ -457,48 +468,59 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 
 		return sb.toString();
 	}
-	
+
 	// ##################### Estimate sample size based on method facets
-	
+
+	/**
+	 * Estimate samples.
+	 *
+	 * @param agent
+	 *            the agent
+	 * @return the int
+	 */
 	private int estimateSamples(final BatchAgent agent) {
-		String method = Exploration.DEFAULT_SAMPLING; 
+		String method = Exploration.DEFAULT_SAMPLING;
 		if (hasFacet(Exploration.METHODS)) {
 			method = Cast.asString(agent.getScope(), getFacet(Exploration.METHODS).value(agent.getScope()));
 		} else {
-			String xpm =IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
-			if (hasFacet(IKeyword.FROM)) method = Exploration.FROM_FILE;
-			else if (hasFacet(IKeyword.WITH)) method = Exploration.FROM_LIST;
-			else if (xpm == IKeyword.MORRIS) method = IKeyword.MORRIS;
-			else if (xpm == IKeyword.SOBOL) method = IKeyword.SALTELLI;
+			String xpm = IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())];
+			if (hasFacet(IKeyword.FROM)) {
+				method = Exploration.FROM_FILE;
+			} else if (hasFacet(IKeyword.WITH)) {
+				method = Exploration.FROM_LIST;
+			} else if (xpm == IKeyword.MORRIS) {
+				method = IKeyword.MORRIS;
+			} else if (xpm == IKeyword.SOBOL) { method = IKeyword.SALTELLI; }
 		}
 		int K = agent.getParametersToExplore().size();
-		int N = hasFacet(Exploration.SAMPLE_SIZE) ? Cast.asInt(agent.getScope(), 
-					getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope())) : sample_size;
+		int N = hasFacet(Exploration.SAMPLE_SIZE)
+				? Cast.asInt(agent.getScope(), getFacet(Exploration.SAMPLE_SIZE).value(agent.getScope())) : sample_size;
 		int res = switch (method) {
 			case IKeyword.MORRIS:
-				yield N * (K+1);
+				yield N * (K + 1);
 			case IKeyword.SALTELLI:
-				yield N * (2*K + 2);
+				yield N * (2 * K + 2);
 			case IKeyword.LHS, IKeyword.ORTHOGONAL, IKeyword.UNIFORM:
 				yield N;
 			case Exploration.FROM_LIST:
 				yield buildParameterFromMap(agent.getScope()).size();
 			case Exploration.FROM_FILE:
-				yield buildParametersFromCSV(agent.getScope(), 
+				yield buildParametersFromCSV(agent.getScope(),
 						Cast.asString(agent.getScope(), getFacet(IKeyword.FROM).value(agent.getScope()))).size();
 			default:
-				yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? 
-						IntStreamEx.of(getFactorial(agent.getScope(), agent.getParametersToExplore()))
-							.reduce(1, (a,b) -> a*b) 
-							: (hasFacet(Exploration.SAMPLE_SIZE) ? N 
-									: IntStreamEx.of(agent.getParametersToExplore().stream().mapToInt(
-											b -> getParameterSwip(agent.getScope(), b).size())).reduce(1, (a,b) -> a*b)); 
-			
+				yield hasFacet(Exploration.SAMPLE_FACTORIAL) ? IntStreamEx
+						.of(getFactorial(agent.getScope(), agent.getParametersToExplore())).reduce(1, (a, b) -> a * b)
+						: hasFacet(Exploration.SAMPLE_SIZE) ? N
+						: IntStreamEx
+								.of(agent.getParametersToExplore().stream()
+										.mapToInt(b -> getParameterSwip(agent.getScope(), b).size()))
+								.reduce(1, (a, b) -> a * b);
+
 		};
-		if (IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())]==IKeyword.BETAD 
-				&& hasFacet(BetaExploration.BOOTSTRAP)) { res = N + N * 
-									Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope()))
-									* K;}
+		if (IKeyword.METHODS[Arrays.asList(CLASSES).indexOf(AExplorationAlgorithm.this.getClass())] == IKeyword.BETAD
+				&& hasFacet(BetaExploration.BOOTSTRAP)) {
+			res = N + N * Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope())) * K;
+		}
 		return res;
 	}
 
@@ -517,15 +539,24 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IType.FLOAT -> getFloatParameterSwip(scope, var);
 			case IType.DATE -> getDateParameterSwip(scope, var);
 			case IType.POINT -> getPointParameterSwip(scope, var);
-			case IType.BOOL -> Arrays.asList(true,false);
+			case IType.BOOL -> Arrays.asList(true, false);
 			default -> getDefaultParameterSwip(scope, var);
 		};
 	}
 
+	/**
+	 * Gets the date parameter swip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @return the date parameter swip
+	 */
 	private List<Object> getDateParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
-		GamaDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
-		GamaDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
+		IDate dateValue = GamaDateType.staticCast(scope, var.getMinValue(scope), null, false);
+		IDate maxDateValue = GamaDateType.staticCast(scope, var.getMaxValue(scope), null, false);
 		Double stepVal = Cast.asFloat(scope, var.getStepValue(scope));
 		while (dateValue.isSmallerThan(maxDateValue, false)) {
 			if (stepVal > 0) {
@@ -539,6 +570,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return res;
 	}
 
+	/**
+	 * Gets the point parameter swip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @return the point parameter swip
+	 */
 	private List<Object> getPointParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
 		GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
@@ -572,6 +612,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return res;
 	}
 
+	/**
+	 * Gets the float parameter swip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @return the float parameter swip
+	 */
 	private List<Object> getFloatParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
 
@@ -602,6 +651,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return res;
 	}
 
+	/**
+	 * Gets the int parameter swip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @return the int parameter swip
+	 */
 	private List<Object> getIntParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
 
@@ -618,14 +676,23 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			stepValue = Cast.asInt(scope, var.getStepValue(scope));
 		} else if (maxValue - minValue > df) { stepValue = (maxValue - minValue) / df; }
 
-		int nbIterNeeded = 0;
+		
 		// This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
-		nbIterNeeded = Math.abs((int) ((maxValue - minValue) / stepValue));
+		int nbIterNeeded = Math.abs((int) ((maxValue - minValue) / stepValue));
 		double start = stepValue >= 0 ? minValue : maxValue;
 		for (int i = 0; i <= nbIterNeeded; i++) { res.add(start + (int) (stepValue * i)); }
 		return res;
 	}
 
+	/**
+	 * Gets the default parameter swip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param var
+	 *            the var
+	 * @return the default parameter swip
+	 */
 	private List<Object> getDefaultParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
 		double varValue = Cast.asFloat(scope, var.getMinValue(scope));

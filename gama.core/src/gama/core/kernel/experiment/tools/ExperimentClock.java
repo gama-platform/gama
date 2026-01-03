@@ -1,8 +1,18 @@
+/*******************************************************************************************************
+ *
+ * ExperimentClock.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.kernel.experiment.tools;
 
 import gama.core.kernel.simulation.SimulationClock;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 
 /**
  * The Class ExperimentClock.
@@ -43,7 +53,7 @@ public class ExperimentClock extends SimulationClock {
 
 	// Quick and dirty solution to avoid that Experiments have one cycle left compared to simulations
 	@Override
-	public void setStartingDate(final GamaDate starting_date) {
+	public void setStartingDate(final IDate starting_date) {
 		this.startingDate = starting_date;
 		this.currentDate = starting_date;
 	}

@@ -62,7 +62,7 @@ import gama.core.runtime.concurrent.GamaExecutorService.Caller;
 import gama.core.runtime.concurrent.SimulationLocal;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.core.util.IReference;
 import gama.core.util.map.GamaMapFactory;
 import gama.gaml.compilation.ISymbol;
@@ -659,7 +659,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *             the gama runtime exception
 	 */
 	@setter (CURRENT_DATE)
-	public void setCurrentDate(final GamaDate d) throws GamaRuntimeException {
+	public void setCurrentDate(final IDate d) throws GamaRuntimeException {
 		// NOTHING
 	}
 
@@ -670,7 +670,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	@Override
 	@getter (CURRENT_DATE)
-	public GamaDate getCurrentDate() { return ownClock.getCurrentDate(); }
+	public IDate getCurrentDate() { return ownClock.getCurrentDate(); }
 
 	/**
 	 * Sets the starting date.
@@ -681,7 +681,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *             the gama runtime exception
 	 */
 	@setter (STARTING_DATE)
-	public void setStartingDate(final GamaDate d) throws GamaRuntimeException {
+	public void setStartingDate(final IDate d) throws GamaRuntimeException {
 		ownClock.setStartingDate(d);
 	}
 
@@ -694,7 +694,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	@getter (
 			value = STARTING_DATE,
 			initializer = true)
-	public GamaDate getStartingDate() { return ownClock.getStartingDate(); }
+	public IDate getStartingDate() { return ownClock.getStartingDate(); }
 
 	/**
 	 * Pause.

@@ -1,13 +1,19 @@
-/**
- * 
- */
+/*******************************************************************************************************
+ *
+ * IClock.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.common.interfaces;
 
 import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 
 /**
- * 
+ *
  */
 public interface IClock {
 
@@ -160,14 +166,14 @@ public interface IClock {
 	 *
 	 * @return the current date
 	 */
-	GamaDate getCurrentDate();
+	IDate getCurrentDate();
 
 	/**
 	 * Gets the starting date.
 	 *
 	 * @return the starting date
 	 */
-	GamaDate getStartingDate();
+	IDate getStartingDate();
 
 	/**
 	 * Sets the starting date.
@@ -175,7 +181,7 @@ public interface IClock {
 	 * @param starting_date
 	 *            the new starting date
 	 */
-	void setStartingDate(GamaDate starting_date);
+	void setStartingDate(IDate starting_date);
 
 	/**
 	 * Sets the current date.
@@ -183,6 +189,6 @@ public interface IClock {
 	 * @param date
 	 *            the new current date
 	 */
-	void setCurrentDate(GamaDate date);
+	void setCurrentDate(IDate date);
 
 }

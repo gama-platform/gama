@@ -3,7 +3,7 @@
  * GamaKmlExport.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -44,7 +44,7 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.dev.DEBUG;
 import gama.gaml.operators.spatial.SpatialProjections;
 
@@ -85,7 +85,7 @@ public class GamaKmlExport {
 	 *            the end date
 	 * @return the kml folder
 	 */
-	public KmlFolder addFolder(final String label, final GamaDate beginDate, final GamaDate endDate) {
+	public KmlFolder addFolder(final String label, final IDate beginDate, final IDate endDate) {
 		final KmlFolder kf = new KmlFolder(doc, label, dateToKml(beginDate), dateToKml(endDate));
 		folders.put(label, kf);
 		return kf;
@@ -110,7 +110,7 @@ public class GamaKmlExport {
 	 *            the daefile
 	 */
 	public void add3DModel(final IScope scope, final GamaPoint loc, final double orientation, final double scale,
-			final GamaDate beginDate, final GamaDate endDate, final String daefile) {
+			final IDate beginDate, final IDate endDate, final String daefile) {
 		getDefaultFolder().add3DModel(scope, loc, orientation, scale, dateToKml(beginDate), dateToKml(endDate),
 				daefile);
 	}
@@ -133,7 +133,7 @@ public class GamaKmlExport {
 	 * @param height
 	 *            the height
 	 */
-	public void addGeometry(final IScope scope, final String label, final GamaDate beginDate, final GamaDate endDate,
+	public void addGeometry(final IScope scope, final String label, final IDate beginDate, final IDate endDate,
 			final IShape geom, final String styleName, final double height) {
 		getDefaultFolder().addGeometry(scope, label, dateToKml(beginDate), dateToKml(endDate), geom, styleName, height);
 	}
@@ -300,7 +300,7 @@ public class GamaKmlExport {
 	 *            the d
 	 * @return the string
 	 */
-	protected String dateToKml(final GamaDate d) {
+	protected String dateToKml(final IDate d) {
 		return d.toISOString();
 		// ("yyyy-MM-dd") + "T" + d.toString("HH:mm:ss");
 	}
@@ -323,7 +323,7 @@ public class GamaKmlExport {
 	 * @param styleName
 	 *            the style name
 	 */
-	public void addLabel(final IScope scope, final GamaPoint loc, final GamaDate beginDate, final GamaDate endDate,
+	public void addLabel(final IScope scope, final GamaPoint loc, final IDate beginDate, final IDate endDate,
 			final String name, final String description, final String styleName) {
 		getDefaultFolder().addLabel(scope, loc, dateToKml(beginDate), dateToKml(endDate), name, description, styleName);
 	}
@@ -348,8 +348,8 @@ public class GamaKmlExport {
 	 * @param styleName
 	 *            the style name
 	 */
-	public void addLabel(final IScope scope, final String foldname, final GamaPoint loc, final GamaDate beginDate,
-			final GamaDate endDate, final String name, final String description, final String styleName) {
+	public void addLabel(final IScope scope, final String foldname, final GamaPoint loc, final IDate beginDate,
+			final IDate endDate, final String name, final String description, final String styleName) {
 		getFolder(foldname).addLabel(scope, loc, dateToKml(beginDate), dateToKml(endDate), name, description,
 				styleName);
 	}

@@ -25,9 +25,9 @@ import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
-import gama.core.util.GamaDate;
 import gama.core.util.GamaPair;
 import gama.core.util.IContainer;
+import gama.core.util.IDate;
 import gama.core.util.file.IGamaFile;
 import gama.core.util.graph.IGraph;
 import gama.core.util.list.IList;
@@ -144,7 +144,7 @@ public abstract class UtilsForGamlAdditions {
 	protected Class<?> SC = IScope.class;
 
 	/** The gd. */
-	protected Class<?> GD = GamaDate.class;
+	protected Class<?> GD = IDate.class;
 
 	/** The sa. */
 	protected Class<?> SA = SimulationAgent.class;

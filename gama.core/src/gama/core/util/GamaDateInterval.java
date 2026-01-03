@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaDateInterval.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaDateInterval.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util;
 
@@ -37,7 +37,7 @@ import gama.gaml.types.Types;
 /**
  * An immutable interval of time between two instants.
  * <p>
- * An interval represents the time on the time-line between two {@link GamaDate} s. The class stores the start and end
+ * An interval represents the time on the time-line between two {@link IDate} s. The class stores the start and end
  * dates, with the start inclusive and the end exclusive. The end date is always greater than or equal to the start
  * instant.
  * <p>
@@ -47,16 +47,16 @@ import gama.gaml.types.Types;
  * Intervals are not comparable. To compare the length of two intervals, it is generally recommended to compare their
  * durations.
  */
-public final class GamaDateInterval implements IList<GamaDate> {
+public final class GamaDateInterval implements IList<IDate> {
 
 	/**
 	 * The start instant (inclusive).
 	 */
-	final GamaDate start;
+	final IDate start;
 	/**
 	 * The end instant (exclusive).
 	 */
-	final GamaDate end;
+	final IDate end;
 
 	/** The step. */
 	final Duration step;
@@ -73,17 +73,19 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	 * @throws DateTimeException
 	 *             if the end is before the start
 	 */
-	public static GamaDateInterval of(final GamaDate startInclusive, final GamaDate endExclusive) {
+	public static GamaDateInterval of(final IDate startInclusive, final IDate endExclusive) {
 		return new GamaDateInterval(startInclusive, endExclusive);
 	}
 
 	/**
 	 * Instantiates a new gama date interval.
 	 *
-	 * @param startInclusive the start inclusive
-	 * @param endExclusive the end exclusive
+	 * @param startInclusive
+	 *            the start inclusive
+	 * @param endExclusive
+	 *            the end exclusive
 	 */
-	private GamaDateInterval(final GamaDate startInclusive, final GamaDate endExclusive) {
+	private GamaDateInterval(final IDate startInclusive, final IDate endExclusive) {
 		this(startInclusive, endExclusive,
 				Duration.of(Dates.DATES_TIME_STEP.getValue().longValue(), ChronoUnit.SECONDS));
 	}
@@ -91,11 +93,14 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	/**
 	 * Instantiates a new gama date interval.
 	 *
-	 * @param startInclusive the start inclusive
-	 * @param endExclusive the end exclusive
-	 * @param step the step
+	 * @param startInclusive
+	 *            the start inclusive
+	 * @param endExclusive
+	 *            the end exclusive
+	 * @param step
+	 *            the step
 	 */
-	public GamaDateInterval(final GamaDate startInclusive, final GamaDate endExclusive, final Duration step) {
+	public GamaDateInterval(final IDate startInclusive, final IDate endExclusive, final Duration step) {
 		this.start = startInclusive;
 		this.end = endExclusive;
 		if (start.isAfter(end)) {
@@ -111,31 +116,26 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	 *
 	 * @return the start instant (inclusive)
 	 */
-	public GamaDate getStart() {
-		return start;
-	}
+	public IDate getStart() { return start; }
 
 	/**
 	 * Gets the end instant (exclusive).
 	 *
 	 * @return the end instant (exclusive)
 	 */
-	public GamaDate getEnd() {
-		return end;
-	}
+	public IDate getEnd() { return end; }
 
 	@Override
-	public boolean isEmpty() {
-		return start.equals(end);
-	}
+	public boolean isEmpty() { return start.equals(end); }
 
 	/**
 	 * Contains.
 	 *
-	 * @param instant the instant
+	 * @param instant
+	 *            the instant
 	 * @return true, if successful
 	 */
-	public boolean contains(final GamaDate instant) {
+	public boolean contains(final IDate instant) {
 		return start.compareTo(instant) <= 0 && instant.compareTo(end) < 0;
 	}
 
@@ -168,10 +168,7 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) return true;
-		if (obj instanceof GamaDateInterval) {
-			final GamaDateInterval other = (GamaDateInterval) obj;
-			return start.equals(other.start) && end.equals(other.end);
-		}
+		if (obj instanceof final GamaDateInterval other) return start.equals(other.start) && end.equals(other.end);
 		return false;
 	}
 
@@ -200,18 +197,16 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() {
-		return Types.LIST.of(Types.DATE);
-	}
+	public IContainerType<?> getGamlType() { return Types.LIST.of(Types.DATE); }
 
 	@Override
-	public IList<GamaDate> listValue(final IScope scope, final IType contentType, final boolean copy) {
+	public IList<IDate> listValue(final IScope scope, final IType contentType, final boolean copy) {
 		if (copy) return GamaListFactory.createWithoutCasting(Types.DATE, this);
 		return this;
 	}
 
 	@Override
-	public Iterable<? extends GamaDate> iterable(final IScope scope) {
+	public Iterable<? extends IDate> iterable(final IScope scope) {
 		return this;
 	}
 
@@ -221,12 +216,12 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public GamaDate firstValue(final IScope scope) throws GamaRuntimeException {
+	public IDate firstValue(final IScope scope) throws GamaRuntimeException {
 		return start;
 	}
 
 	@Override
-	public GamaDate lastValue(final IScope scope) throws GamaRuntimeException {
+	public IDate lastValue(final IScope scope) throws GamaRuntimeException {
 		return end;
 	}
 
@@ -241,7 +236,7 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public GamaDate anyValue(final IScope scope) {
+	public IDate anyValue(final IScope scope) {
 		final int i = scope.getRandom().between(0, size());
 		return get(i);
 	}
@@ -258,8 +253,8 @@ public final class GamaDateInterval implements IList<GamaDate> {
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "(" + start.serializeToGaml(includingBuiltIn) + " to " + end.serializeToGaml(includingBuiltIn) + ") every ("
-				+ (double) step.get(ChronoUnit.SECONDS) + ")";
+		return "(" + start.serializeToGaml(includingBuiltIn) + " to " + end.serializeToGaml(includingBuiltIn)
+				+ ") every (" + (double) step.get(ChronoUnit.SECONDS) + ")";
 	}
 	//
 	// @Override
@@ -267,20 +262,56 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	// return false;
 	// }
 
+	/**
+	 * Adds the value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
 	@Override
-	public void addValue(final IScope scope, final GamaDate value) {}
+	public void addValue(final IScope scope, final IDate value) {}
 
+	/**
+	 * Adds the value at index.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param index
+	 *            the index
+	 * @param value
+	 *            the value
+	 */
 	@Override
-	public void addValueAtIndex(final IScope scope, final Object index, final GamaDate value) {}
+	public void addValueAtIndex(final IScope scope, final Object index, final IDate value) {}
 
+	/**
+	 * Sets the value at index.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param index
+	 *            the index
+	 * @param value
+	 *            the value
+	 */
 	@Override
-	public void setValueAtIndex(final IScope scope, final Object index, final GamaDate value) {}
+	public void setValueAtIndex(final IScope scope, final Object index, final IDate value) {}
 
 	@Override
 	public void addValues(final IScope scope, final IContainer values) {}
 
+	/**
+	 * Sets the all values.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
 	@Override
-	public void setAllValues(final IScope scope, final GamaDate value) {}
+	public void setAllValues(final IScope scope, final IDate value) {}
 
 	@Override
 	public void removeValue(final IScope scope, final Object value) {}
@@ -298,12 +329,12 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	public void removeAllOccurrencesOfValue(final IScope scope, final Object value) {}
 
 	@Override
-	public GamaDate get(final IScope scope, final Integer index) throws GamaRuntimeException {
+	public IDate get(final IScope scope, final Integer index) throws GamaRuntimeException {
 		return get(index);
 	}
 
 	@Override
-	public GamaDate getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
+	public IDate getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		return get(scope, (Integer) indices.get(0));
 	}
 
@@ -315,15 +346,15 @@ public final class GamaDateInterval implements IList<GamaDate> {
 
 	@Override
 	public boolean contains(final Object o) {
-		if (!(o instanceof GamaDate)) return false;
-		return this.contains((GamaDate) o);
+		if (!(o instanceof IDate)) return false;
+		return this.contains((IDate) o);
 	}
 
 	@Override
-	public Iterator<GamaDate> iterator() {
+	public Iterator<IDate> iterator() {
 		return new Iterator<>() {
 
-			GamaDate current = null;
+			IDate current = null;
 
 			@Override
 			public boolean hasNext() {
@@ -332,16 +363,14 @@ public final class GamaDateInterval implements IList<GamaDate> {
 			}
 
 			@Override
-			public GamaDate next() {
+			public IDate next() {
 				if (current == null) {
 					current = start;
 				} else {
-					
+
 					current = current.plus(step);
-					if (current.isGreaterThan(end, false)) {
-						throw new NoSuchElementException();						
-					}
-					
+					if (current.isGreaterThan(end, false)) throw new NoSuchElementException();
+
 				}
 				return current;
 			}
@@ -349,8 +378,8 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public GamaDate[] toArray() {
-		return Iterators.toArray(iterator(), GamaDate.class);
+	public IDate[] toArray() {
+		return Iterators.toArray(iterator(), IDate.class);
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -359,8 +388,15 @@ public final class GamaDateInterval implements IList<GamaDate> {
 		return (T[]) Iterators.toArray(iterator(), Object.class);
 	}
 
+	/**
+	 * Adds the.
+	 *
+	 * @param e
+	 *            the e
+	 * @return true, if successful
+	 */
 	@Override
-	public boolean add(final GamaDate e) {
+	public boolean add(final IDate e) {
 		return false;
 	}
 
@@ -371,19 +407,33 @@ public final class GamaDateInterval implements IList<GamaDate> {
 
 	@Override
 	public boolean containsAll(final Collection<?> c) {
-		for (final Object o : c) {
-			if (!contains(o)) return false;
-		}
+		for (final Object o : c) { if (!contains(o)) return false; }
 		return true;
 	}
 
+	/**
+	 * Adds the all.
+	 *
+	 * @param c
+	 *            the c
+	 * @return true, if successful
+	 */
 	@Override
-	public boolean addAll(final Collection<? extends GamaDate> c) {
+	public boolean addAll(final Collection<? extends IDate> c) {
 		return false;
 	}
 
+	/**
+	 * Adds the all.
+	 *
+	 * @param index
+	 *            the index
+	 * @param c
+	 *            the c
+	 * @return true, if successful
+	 */
 	@Override
-	public boolean addAll(final int index, final Collection<? extends GamaDate> c) {
+	public boolean addAll(final int index, final Collection<? extends IDate> c) {
 		return false;
 	}
 
@@ -401,27 +451,44 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	public void clear() {}
 
 	@Override
-	public GamaDate get(final int index) {
+	public IDate get(final int index) {
 		return start.plus(step.get(ChronoUnit.SECONDS), index, ChronoUnit.SECONDS);
 	}
 
+	/**
+	 * Sets the.
+	 *
+	 * @param index
+	 *            the index
+	 * @param element
+	 *            the element
+	 * @return the gama date
+	 */
 	@Override
-	public GamaDate set(final int index, final GamaDate element) {
+	public IDate set(final int index, final IDate element) {
 		return null;
 	}
 
+	/**
+	 * Adds the.
+	 *
+	 * @param index
+	 *            the index
+	 * @param element
+	 *            the element
+	 */
 	@Override
-	public void add(final int index, final GamaDate element) {}
+	public void add(final int index, final IDate element) {}
 
 	@Override
-	public GamaDate remove(final int index) {
+	public IDate remove(final int index) {
 		return null;
 	}
 
 	@Override
 	public int indexOf(final Object o) {
 		int i = 0;
-		for (final GamaDate d : this) {
+		for (final IDate d : this) {
 
 			if (d.equals(o)) return i;
 			i++;
@@ -435,12 +502,12 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public ListIterator<GamaDate> listIterator() {
+	public ListIterator<IDate> listIterator() {
 		return new ArrayList<>(this).listIterator();
 	}
 
 	@Override
-	public ListIterator<GamaDate> listIterator(final int index) {
+	public ListIterator<IDate> listIterator(final int index) {
 		return new ArrayList<>(this).listIterator(index);
 	}
 
@@ -455,33 +522,32 @@ public final class GamaDateInterval implements IList<GamaDate> {
 	}
 
 	@Override
-	public IMatrix<GamaDate> matrixValue(final IScope scope, final IType contentType, final GamaPoint size,
+	public IMatrix<IDate> matrixValue(final IScope scope, final IType contentType, final GamaPoint size,
 			final boolean copy) {
 		return GamaListFactory.wrap(Types.DATE, this).matrixValue(scope, contentType, copy);
 	}
 
 	@Override
-	public IMatrix<GamaDate> matrixValue(final IScope scope, final IType contentType, final boolean copy) {
+	public IMatrix<IDate> matrixValue(final IScope scope, final IType contentType, final boolean copy) {
 		return GamaListFactory.wrap(Types.DATE, this).matrixValue(scope, contentType, copy);
 	}
 
 	/**
 	 * Step.
 	 *
-	 * @param step the step
+	 * @param step
+	 *            the step
 	 * @return the i list
 	 */
-	public IList<GamaDate> step(final Double step) {
+	public IList<IDate> step(final Double step) {
 		return new GamaDateInterval(start, end, Duration.of(step.longValue(), ChronoUnit.SECONDS));
 	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
 	public IMap mapValue(final IScope scope, final IType keyType, final IType contentType, final boolean copy) {
-		final IMap<GamaDate, GamaDate> map = GamaMapFactory.create(Types.DATE, Types.DATE, this.size());
-		for (final GamaDate date : this) {
-			map.put(date, date);
-		}
+		final IMap<IDate, IDate> map = GamaMapFactory.create(Types.DATE, Types.DATE, this.size());
+		for (final IDate date : this) { map.put(date, date); }
 		return map;
 	}
 

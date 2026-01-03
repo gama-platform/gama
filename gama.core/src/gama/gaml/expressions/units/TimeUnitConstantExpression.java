@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TimeUnitConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 import gama.core.runtime.IScope;
-import gama.core.util.GamaDate;
+import gama.core.util.IDate;
 import gama.gaml.types.IType;
 
 /**
@@ -35,7 +35,7 @@ public class TimeUnitConstantExpression extends UnitConstantExpression {
 	 *            the right
 	 * @return the double
 	 */
-	public static double approximalQuery(final GamaDate date, final ChronoUnit right) {
+	public static double approximalQuery(final IDate date, final ChronoUnit right) {
 		return date.until(date.plus(1l, right), ChronoUnit.SECONDS);
 	}
 

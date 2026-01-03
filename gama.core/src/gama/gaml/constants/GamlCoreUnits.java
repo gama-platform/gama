@@ -1,20 +1,20 @@
 /*******************************************************************************************************
  *
  * GamlCoreUnits.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.constants;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IConstantCategory;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.util.GamaDate;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IConstantCategory;
+import gama.core.util.IDate;
 import gama.gaml.operators.Dates;
 import gama.gaml.types.GamaDateType;
 
@@ -240,7 +240,7 @@ public interface GamlCoreUnits {
 			value = "epoch",
 			category = { IConstantCategory.TIME },
 			concept = { IConcept.DATE, IConcept.TIME },
-			doc = { @doc ("The epoch default starting date as defined by the ISO format (1970-01-01T00:00Z)") }) GamaDate epoch =
+			doc = { @doc ("The epoch default starting date as defined by the ISO format (1970-01-01T00:00Z)") }) IDate epoch =
 					GamaDateType.EPOCH;
 
 	/*
