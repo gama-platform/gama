@@ -2,7 +2,7 @@
  *
  * IProjection.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
@@ -74,7 +74,7 @@ public interface IProjection {
 	 *
 	 * @return the projected envelope
 	 */
-	Envelope3D getProjectedEnvelope();
+	IEnvelope getProjectedEnvelope();
 
 	/**
 	 * @param geom

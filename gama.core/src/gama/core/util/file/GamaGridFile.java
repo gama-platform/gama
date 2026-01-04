@@ -2,14 +2,13 @@
  *
  * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.common.geometry.Envelope3D.of;
 import static gama.core.metamodel.topology.projection.ProjectionFactory.getTargetCRSOrDefault;
 import static org.geotools.util.factory.Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM;
 
@@ -45,13 +44,13 @@ import org.geotools.geometry.Envelope2DArchived;
 import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.Position2D;
 import org.geotools.util.factory.Hints;
-import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.metamodel.shape.GamaPoint;
@@ -376,7 +375,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 						if (noData != null) { this.noData = noDataD; }
 						double xC = xCorner == null ? 0 : xCorner;
 						double yC = yCorner == null ? 0 : yCorner;
-						final Envelope3D env = of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
+						final IEnvelope env =
+								GamaEnvelopeFactory.of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
 						computeProjection(scope, env);
 						numRows = nbRows;
 						numCols = nbCols;
@@ -503,8 +503,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
 			}
 			genv = store.getOriginalEnvelope();
-			final Envelope3D env =
-					of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1), genv.getMaximum(1), 0, 0);
+			final IEnvelope env = GamaEnvelopeFactory.of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1),
+					genv.getMaximum(1), 0, 0);
 			computeProjection(scope, env);
 			numRows = store.getOriginalGridRange().getHigh(1) + 1;
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
@@ -555,7 +555,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			String task = "Reading file " + getName(scope);
 			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 
-			final Envelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
+			final IEnvelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
 			if (gis != null && !(gis.getInitialCRS(scope) instanceof ProjectedCRS)) {
 				GAMA.reportError(scope, GamaRuntimeException.warning("Try to project a grid -" + this.originalPath
 						+ "-  that is not projected. Projection of grids can lead to errors in the cell coordinates. ",
@@ -650,7 +650,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		if (gis == null) { createCoverage(scope); }
 		return gis.getProjectedEnvelope();
 		// OLD : see what it changes to not do it

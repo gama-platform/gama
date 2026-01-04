@@ -3,7 +3,7 @@
  * WorldProjection.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
@@ -42,7 +42,7 @@ public class WorldProjection extends Projection {
 	 * @param fact
 	 *            the fact
 	 */
-	public WorldProjection(final IScope scope, final CoordinateReferenceSystem crs, final Envelope3D env,
+	public WorldProjection(final IScope scope, final CoordinateReferenceSystem crs, final IEnvelope env,
 			final ProjectionFactory fact) {
 		super(scope, null, crs, env, fact);
 	}
@@ -100,7 +100,7 @@ public class WorldProjection extends Projection {
 	 * @param env
 	 *            the env
 	 */
-	public void updateTranslations(final Envelope3D env) {
+	public void updateTranslations(final IEnvelope env) {
 		if (env != null) { projectedEnv = env; }
 	}
 

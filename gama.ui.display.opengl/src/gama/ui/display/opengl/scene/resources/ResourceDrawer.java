@@ -11,7 +11,7 @@
 package gama.ui.display.opengl.scene.resources;
 
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.util.IColor;
@@ -64,7 +64,7 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 	}
 
 	@Override
-	protected boolean isDrawing2D(final Scaling3D size, final Envelope3D env, final ResourceObject object) {
+	protected boolean isDrawing2D(final Scaling3D size, final IEnvelope env, final ResourceObject object) {
 		return super.isDrawing2D(size, env, object) || object.getObject().is2D();
 	}
 

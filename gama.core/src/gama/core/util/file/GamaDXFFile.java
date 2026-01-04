@@ -2,7 +2,7 @@
  *
  * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,13 +28,13 @@ import org.kabeja.dxf.DXFVertex;
 import org.kabeja.parser.DXFParser;
 import org.kabeja.parser.Parser;
 import org.kabeja.parser.ParserBuilder;
-import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
@@ -496,8 +496,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 					g.setAttribute("color_index", obj.getColor());
 
 					if (obj.getColorRGB() != null) {
-						g.setAttribute("color",
-								GamaColorFactory.get(obj.getColorRGB()[0], obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
+						g.setAttribute("color", GamaColorFactory.get(obj.getColorRGB()[0], obj.getColorRGB()[1],
+								obj.getColorRGB()[2], 255));
 					}
 					if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
 
@@ -528,7 +528,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		final Parser parser = ParserBuilder.createDefaultParser();
 		try (InputStream in = new FileInputStream(getFile(scope))) {
 
@@ -537,9 +537,9 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 			// get the documnet and the layer
 			final DXFDocument doc = parser.getDocument();
-			return Envelope3D.of(new Envelope(0,
+			return GamaEnvelopeFactory.of(0,
 					(doc.getBounds().getMaximumX() - doc.getBounds().getMinimumX()) * (unit == null ? 1 : unit), 0,
-					(doc.getBounds().getMaximumY() - doc.getBounds().getMinimumY()) * (unit == null ? 1 : unit)));
+					(doc.getBounds().getMaximumY() - doc.getBounds().getMinimumY()) * (unit == null ? 1 : unit));
 		} catch (final Exception e) {
 
 			e.printStackTrace();

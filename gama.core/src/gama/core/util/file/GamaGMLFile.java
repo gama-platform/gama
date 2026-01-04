@@ -24,7 +24,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.list.GamaListFactory;
@@ -165,7 +165,7 @@ public class GamaGMLFile extends GamaGisFile {
 		final var gml = new GML(Version.GML3);
 		try {
 			SimpleFeatureCollection collection = gml.decodeFeatureCollection(new FileInputStream(getFile(scope)));
-			computeProjection(scope, Envelope3D.of(collection.getBounds()));
+			computeProjection(scope, GamaEnvelopeFactory.of(collection.getBounds()));
 			return collection;
 		} catch (IOException | SAXException | ParserConfigurationException e) {
 			throw GamaRuntimeException.create(e, scope);

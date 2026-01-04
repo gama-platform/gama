@@ -20,7 +20,7 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IVarAndActionSupport;
 import gama.core.kernel.experiment.ITopLevelAgent;
@@ -536,7 +536,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 *
 	 */
 	@Override
-	default Envelope3D getEnvelope() {
+	default IEnvelope getEnvelope() {
 		final IShape g = getGeometry();
 		return g == null ? null : g.getEnvelope();
 	}

@@ -1,20 +1,18 @@
 /*******************************************************************************************************
  *
- * ISpatialIndex.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ISpatialIndex.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.topology;
 
 import java.util.Collection;
 
-import org.locationtech.jts.geom.Envelope;
-
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.IAgentFilter;
@@ -45,7 +43,7 @@ public interface ISpatialIndex {
 	 * @param agent
 	 *            the agent
 	 */
-	void remove(final Envelope3D previous, final IAgent agent);
+	void remove(final IEnvelope previous, final IAgent agent);
 
 	/**
 	 * First at distance.
@@ -97,7 +95,7 @@ public interface ISpatialIndex {
 	 *            the contained
 	 * @return the collection
 	 */
-	Collection<IAgent> allInEnvelope(IScope scope, final IShape source, final Envelope envelope, final IAgentFilter f,
+	Collection<IAgent> allInEnvelope(IScope scope, final IShape source, final IEnvelope envelope, final IAgentFilter f,
 			boolean contained);
 
 	/**
@@ -143,7 +141,7 @@ public interface ISpatialIndex {
 		 * @param parallel
 		 *            the parallel
 		 */
-		void update(IScope scope, Envelope envelope, boolean parallel);
+		void update(IScope scope, IEnvelope envelope, boolean parallel);
 
 		/**
 		 * Merge with.

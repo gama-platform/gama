@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * Scaling3D.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Scaling3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.common.geometry;
 
@@ -26,9 +25,12 @@ public abstract class Scaling3D implements Transformation3D {
 	/**
 	 * Of.
 	 *
-	 * @param x the x
-	 * @param y the y
-	 * @param z the z
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @param z
+	 *            the z
 	 * @return the scaling 3 D
 	 */
 	public static Scaling3D of(final double x, final double y, final double z) {
@@ -39,7 +41,8 @@ public abstract class Scaling3D implements Transformation3D {
 	/**
 	 * Of.
 	 *
-	 * @param p the p
+	 * @param p
+	 *            the p
 	 * @return the scaling 3 D
 	 */
 	public static Scaling3D of(final GamaPoint p) {
@@ -50,7 +53,8 @@ public abstract class Scaling3D implements Transformation3D {
 	/**
 	 * Of.
 	 *
-	 * @param factor the factor
+	 * @param factor
+	 *            the factor
 	 * @return the scaling 3 D
 	 */
 	public static Scaling3D of(final double factor) {
@@ -62,14 +66,15 @@ public abstract class Scaling3D implements Transformation3D {
 	 * The Class Uniform.
 	 */
 	public static class Uniform extends Scaling3D {
-		
+
 		/** The factor. */
 		final double factor;
 
 		/**
 		 * Instantiates a new uniform.
 		 *
-		 * @param f the f
+		 * @param f
+		 *            the f
 		 */
 		public Uniform(final double f) {
 			factor = f;
@@ -82,24 +87,18 @@ public abstract class Scaling3D implements Transformation3D {
 		}
 
 		@Override
-		public Scaling3D asBoundingBoxIn(final Envelope3D env) {
+		public Scaling3D asBoundingBoxIn(final IEnvelope env) {
 			return of(factor / env.getWidth(), factor / env.getHeight(), env.isFlat() ? 1.0 : factor / env.getDepth());
 		}
 
 		@Override
-		public double getZ() {
-			return factor;
-		}
+		public double getZ() { return factor; }
 
 		@Override
-		public double getY() {
-			return factor;
-		}
+		public double getY() { return factor; }
 
 		@Override
-		public double getX() {
-			return factor;
-		}
+		public double getX() { return factor; }
 
 		@Override
 		public Scaling3D dividedBy(final double i) {
@@ -111,16 +110,19 @@ public abstract class Scaling3D implements Transformation3D {
 	 * The Class Heterogeneous.
 	 */
 	public static class Heterogeneous extends Scaling3D {
-		
+
 		/** The z. */
 		public double x, y, z;
 
 		/**
 		 * Instantiates a new heterogeneous.
 		 *
-		 * @param i the i
-		 * @param j the j
-		 * @param k the k
+		 * @param i
+		 *            the i
+		 * @param j
+		 *            the j
+		 * @param k
+		 *            the k
 		 */
 		public Heterogeneous(final double i, final double j, final double k) {
 			x = i;
@@ -131,9 +133,12 @@ public abstract class Scaling3D implements Transformation3D {
 		/**
 		 * Sets the to.
 		 *
-		 * @param i the i
-		 * @param j the j
-		 * @param k the k
+		 * @param i
+		 *            the i
+		 * @param j
+		 *            the j
+		 * @param k
+		 *            the k
 		 * @return the scaling 3 D
 		 */
 		public Scaling3D setTo(final double i, final double j, final double k) {
@@ -146,7 +151,8 @@ public abstract class Scaling3D implements Transformation3D {
 		/**
 		 * Sets the to.
 		 *
-		 * @param i the i
+		 * @param i
+		 *            the i
 		 * @return the scaling 3 D
 		 */
 		public Scaling3D setTo(final double i) {
@@ -161,8 +167,15 @@ public abstract class Scaling3D implements Transformation3D {
 			coord.z *= z;
 		}
 
+		/**
+		 * As bounding box in.
+		 *
+		 * @param env
+		 *            the env
+		 * @return the scaling 3 D
+		 */
 		@Override
-		public Scaling3D asBoundingBoxIn(final Envelope3D env) {
+		public Scaling3D asBoundingBoxIn(final IEnvelope env) {
 			x /= env.getWidth();
 			y /= env.getHeight();
 			if (!env.isFlat()) {
@@ -174,19 +187,13 @@ public abstract class Scaling3D implements Transformation3D {
 		}
 
 		@Override
-		public double getZ() {
-			return z;
-		}
+		public double getZ() { return z; }
 
 		@Override
-		public double getY() {
-			return y;
-		}
+		public double getY() { return y; }
 
 		@Override
-		public double getX() {
-			return x;
-		}
+		public double getX() { return x; }
 
 		@Override
 		public Scaling3D dividedBy(final double i) {
@@ -197,10 +204,11 @@ public abstract class Scaling3D implements Transformation3D {
 	/**
 	 * As bounding box in.
 	 *
-	 * @param env the env
+	 * @param env
+	 *            the env
 	 * @return the scaling 3 D
 	 */
-	public abstract Scaling3D asBoundingBoxIn(final Envelope3D env);
+	public abstract Scaling3D asBoundingBoxIn(final IEnvelope env);
 
 	/**
 	 * Gets the z.
@@ -226,7 +234,8 @@ public abstract class Scaling3D implements Transformation3D {
 	/**
 	 * Divided by.
 	 *
-	 * @param i the i
+	 * @param i
+	 *            the i
 	 * @return the scaling 3 D
 	 */
 	public abstract Scaling3D dividedBy(double i);

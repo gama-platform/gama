@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ObjectDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,7 @@
 package gama.ui.display.opengl.scene;
 
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.ui.display.opengl.OpenGL;
@@ -46,7 +46,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 *            the is picking
 	 */
 	@SuppressWarnings ("unchecked")
-	public final void draw(final AbstractObject<?,?> object, final boolean isPicking) {
+	public final void draw(final AbstractObject<?, ?> object, final boolean isPicking) {
 		gl.beginObject(object, isPicking);
 		_draw((T) object);
 		gl.endObject(object, isPicking);
@@ -65,7 +65,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 
 		final Scaling3D size = object.getAttributes().getSize();
 		if (size != null) {
-			final Envelope3D env = gl.getEnvelopeFor(object.getObject());
+			final IEnvelope env = gl.getEnvelopeFor(object.getObject());
 			if (env != null) {
 				// try {
 				final boolean in2D = isDrawing2D(size, env, object);
@@ -120,7 +120,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 *            the object
 	 * @return true, if is drawing 2 D
 	 */
-	protected boolean isDrawing2D(final Scaling3D size, final Envelope3D env, final T object) {
+	protected boolean isDrawing2D(final Scaling3D size, final IEnvelope env, final T object) {
 		return env.isFlat() || size.getZ() == 0d;
 	}
 

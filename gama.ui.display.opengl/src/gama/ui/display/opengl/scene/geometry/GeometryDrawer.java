@@ -21,9 +21,9 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GamaGeometryFactory;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.common.geometry.Scaling3D.Heterogeneous;
 import gama.core.common.geometry.UnboundedCoordinateSequence;
@@ -504,7 +504,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param envelope
 	 *            the size of the ROI box
 	 */
-	public void drawROIHelper(final Envelope3D envelope) {
+	public void drawROIHelper(final IEnvelope envelope) {
 		if (envelope == null) return;
 		final Polygon polygon = envelope.yNegated().toGeometry();
 		gl.setCurrentColor(0, 0.5, 0, 0.15);

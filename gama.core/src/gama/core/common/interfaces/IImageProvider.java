@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * IImageProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * IImageProvider.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +12,8 @@ package gama.core.common.interfaces;
 
 import java.awt.image.BufferedImage;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
@@ -44,8 +46,8 @@ public interface IImageProvider extends IEnvelopeProvider, IAsset {
 	 * @return the envelope 3 D
 	 */
 	@Override
-	default Envelope3D computeEnvelope(final IScope scope) {
-		return Envelope3D.of(0, getCols(scope), 0, getRows(scope), 0, 0);
+	default IEnvelope computeEnvelope(final IScope scope) {
+		return GamaEnvelopeFactory.of(0, getCols(scope), 0, getRows(scope), 0, 0);
 	}
 
 	/**

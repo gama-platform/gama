@@ -3,7 +3,7 @@
  * ProjectionFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,9 +31,8 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.cs.CartesianCS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultProjectedCRS;
-import org.locationtech.jts.geom.Envelope;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -117,7 +116,7 @@ public class ProjectionFactory {
 	 * @param env
 	 *            the env
 	 */
-	public void setWorldProjectionEnv(final IScope scope, final Envelope3D env) {
+	public void setWorldProjectionEnv(final IScope scope, final IEnvelope env) {
 		if (world != null) return;
 		world = new WorldProjection(scope, null, env, this);
 		// ((WorldProjection) world).updateTranslations(env);
@@ -347,7 +346,7 @@ public class ProjectionFactory {
 	 *            the env
 	 * @return the i projection
 	 */
-	public IProjection fromParams(final IScope scope, final Map<String, Object> params, final Envelope3D env) {
+	public IProjection fromParams(final IScope scope, final Map<String, Object> params, final IEnvelope env) {
 		final Boolean lonFirst = params.containsKey("longitudeFirst") ? (Boolean) params.get("longitudeFirst") : true;
 		final Object crs = params.get("crs");
 		if (crs instanceof String) return fromCRS(scope, getCRS(scope, (String) crs, lonFirst), env);
@@ -367,7 +366,7 @@ public class ProjectionFactory {
 	 *            the env
 	 * @return the i projection
 	 */
-	public IProjection fromCRS(final IScope scope, final CoordinateReferenceSystem crs, final Envelope3D env) {
+	public IProjection fromCRS(final IScope scope, final CoordinateReferenceSystem crs, final IEnvelope env) {
 		if (env != null) { testConsistency(scope, crs, env); }
 		if (world != null) return new Projection(scope, world, crs, env, this);
 		if (env != null) { computeTargetCRS(scope, crs, env.centre().x, env.centre().y); }
@@ -499,7 +498,7 @@ public class ProjectionFactory {
 	 * @param env
 	 *            the env
 	 */
-	public void testConsistency(final IScope scope, final CoordinateReferenceSystem crs, final Envelope env) {
+	public void testConsistency(final IScope scope, final CoordinateReferenceSystem crs, final IEnvelope env) {
 		if (!(crs instanceof DefaultProjectedCRS) && (env.getHeight() > 180 || env.getWidth() > 180))
 			throw GamaRuntimeException.error(
 					"Inconsistency between the data and the CRS: The CRS " + crs

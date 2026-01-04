@@ -3,7 +3,7 @@
  * GamaSVGFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,7 +35,8 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -238,9 +239,9 @@ public class GamaSVGFile extends GamaGeometryFile {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		FloatSize size = getDocument(scope).size();
-		return Envelope3D.of(0, size.getWidth(), 0, size.getHeight(), 0, 0);
+		return GamaEnvelopeFactory.of(0, size.getWidth(), 0, size.getHeight(), 0, 0);
 	}
 
 }

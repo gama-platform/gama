@@ -2,7 +2,7 @@
  *
  * GamaPoint.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,9 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.IIntersectable;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
@@ -473,14 +474,14 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.interfaces.IGeometry#getEnvelope()
 	 */
 	@Override
-	public Envelope3D getEnvelope() { return Envelope3D.of((Coordinate) this); }
+	public IEnvelope getEnvelope() { return GamaEnvelopeFactory.of((Coordinate) this); }
 
 	/**
 	 * Returns the envelope considering this point as bounds
 	 */
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
-		return Envelope3D.of(0, x, 0, y, 0, z);
+	public IEnvelope computeEnvelope(final IScope scope) {
+		return GamaEnvelopeFactory.of(0, x, 0, y, 0, z);
 	}
 
 	@Override
@@ -967,6 +968,11 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 
 	@Override
 	public boolean intersects(final Envelope env) {
+		return env.intersects(this);
+	}
+
+	@Override
+	public boolean intersects(final IEnvelope env) {
 		return env.intersects(this);
 	}
 

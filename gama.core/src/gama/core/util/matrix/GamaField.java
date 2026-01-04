@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * GamaField.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaField.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
@@ -14,17 +13,17 @@ import static gama.gaml.types.GamaGeometryType.buildRectangle;
 
 import java.util.Arrays;
 
-
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Doubles;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.core.common.geometry.Envelope3D;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.shape.GamaPoint;
@@ -199,11 +198,12 @@ public class GamaField extends GamaFloatMatrix implements IField {
 
 	@Override
 	public double[] getMinMax() {
-		double[] result  = new double[] {Double.MAX_VALUE,-Double.MAX_VALUE};
-		DoubleStreamEx.of(getMatrix()).parallel().forEach(f-> {
+		double[] result = { Double.MAX_VALUE, -Double.MAX_VALUE };
+		DoubleStreamEx.of(getMatrix()).parallel().forEach(f -> {
 			if (f != noDataValue) {
-			if (f > result[1]) { result[1] = f; } 
-			if (f < result[0]) { result[0] = f; }}
+				if (f > result[1]) { result[1] = f; }
+				if (f < result[0]) { result[0] = f; }
+			}
 		});
 		return result;
 	}
@@ -275,7 +275,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IList<Double> getValuesIntersecting(final IScope scope, final IShape shape) {
 		computeDimensions(scope);
-		Envelope3D env = Envelope3D.of(shape);
+		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<Double> inEnv = GamaListFactory.create(Types.FLOAT);
 		GamaPoint p = new GamaPoint();
 		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
@@ -293,7 +293,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IList<IShape> getCellsIntersecting(final IScope scope, final IShape shape) {
 		computeDimensions(scope);
-		Envelope3D env = Envelope3D.of(shape);
+		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<IShape> inEnv = GamaListFactory.create(Types.GEOMETRY);
 		GamaPoint p = new GamaPoint();
 		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
@@ -311,7 +311,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IList<IShape> getCellsOverlapping(final IScope scope, final IShape shape) {
 		computeDimensions(scope);
-		Envelope3D env = Envelope3D.of(shape);
+		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<IShape> inEnv = GamaListFactory.create(Types.GEOMETRY);
 		GamaPoint p = new GamaPoint();
 		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
@@ -327,7 +327,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IList<GamaPoint> getLocationsIntersecting(final IScope scope, final IShape shape) {
 		computeDimensions(scope);
-		Envelope3D env = Envelope3D.of(shape);
+		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<GamaPoint> inEnv = GamaListFactory.create(Types.POINT);
 		GamaPoint p = new GamaPoint();
 		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
@@ -408,13 +408,21 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@no_test
 	public GamaField plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		if (other instanceof GamaField gf) {
-			double otherNoDataValue = gf.noDataValue;
-			for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] += gf.matrix[i]; } }
-		} else if (other instanceof GamaFloatMatrix nm) {
-			for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += nm.matrix[i]; } }
-		} else if (other instanceof GamaIntMatrix nm) {
+		switch (other) {
+			case GamaField gf -> {
+				double otherNoDataValue = gf.noDataValue;
+				for (int i = 0; i < matrix.length; i++) {
+					if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] += gf.matrix[i]; }
+				}
+			}
+			case GamaFloatMatrix nm -> {
 				for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += nm.matrix[i]; } }
+			}
+			case GamaIntMatrix nm -> {
+				for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += nm.matrix[i]; } }
+			}
+			case null, default -> {
+			}
 		}
 		return this;
 	}
@@ -432,13 +440,21 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@no_test
 	public GamaField minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		if (other instanceof GamaField gf) {
-			double otherNoDataValue = gf.noDataValue;
-			for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] -= gf.matrix[i]; } }
-		} else if (other instanceof GamaFloatMatrix nm) {
-			for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= nm.matrix[i]; } }
-		} else if (other instanceof GamaIntMatrix nm) {
+		switch (other) {
+			case GamaField gf -> {
+				double otherNoDataValue = gf.noDataValue;
+				for (int i = 0; i < matrix.length; i++) {
+					if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] -= gf.matrix[i]; }
+				}
+			}
+			case GamaFloatMatrix nm -> {
 				for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= nm.matrix[i]; } }
+			}
+			case GamaIntMatrix nm -> {
+				for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= nm.matrix[i]; } }
+			}
+			case null, default -> {
+			}
 		}
 		return this;
 	}

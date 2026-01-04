@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaProxyGeometry.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,8 +16,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -219,8 +219,8 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	 * @see gama.core.metamodel.shape.IShape#getEnvelope()
 	 */
 	@Override
-	public Envelope3D getEnvelope() {
-		final Envelope3D copy = getReferenceGeometry().getEnvelope();
+	public IEnvelope getEnvelope() {
+		final IEnvelope copy = getReferenceGeometry().getEnvelope();
 		final GamaPoint loc = getLocation();
 		final GamaPoint loc2 = getReferenceGeometry().getLocation();
 		final double dx = loc.getX() - loc2.getX();

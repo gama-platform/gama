@@ -2,7 +2,7 @@
  *
  * Projection.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,13 +16,13 @@ import org.geotools.api.referencing.operation.NoninvertibleTransformException;
 import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.geometry.jts.DefaultCoordinateSequenceTransformer;
 import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
@@ -40,7 +40,7 @@ public class Projection implements IProjection {
 	CoordinateReferenceSystem initialCRS;
 
 	/** The projected env. */
-	Envelope3D projectedEnv;
+	IEnvelope projectedEnv;
 
 	/** The reference projection. */
 	final IProjection referenceProjection;
@@ -72,7 +72,7 @@ public class Projection implements IProjection {
 	 * @param fact
 	 *            the fact
 	 */
-	Projection(final IScope scope, final IProjection world, final CoordinateReferenceSystem crs, final Envelope3D env,
+	Projection(final IScope scope, final IProjection world, final CoordinateReferenceSystem crs, final IEnvelope env,
 			final ProjectionFactory fact) {
 		this.factory = fact;
 		this.referenceProjection = world;
@@ -143,9 +143,9 @@ public class Projection implements IProjection {
 	 *            the g
 	 * @return the envelope 3 D
 	 */
-	Envelope3D transform(final Envelope3D g) {
+	IEnvelope transform(final IEnvelope g) {
 		if (transformer == null) return g;
-		return Envelope3D.of(transform(JTS.toGeometry(g)).getEnvelopeInternal());
+		return GamaEnvelopeFactory.of(transform(g.toGeometry()).getEnvelopeInternal());
 	}
 
 	@Override
@@ -188,7 +188,7 @@ public class Projection implements IProjection {
 	}
 
 	@Override
-	public Envelope3D getProjectedEnvelope() { return projectedEnv; }
+	public IEnvelope getProjectedEnvelope() { return projectedEnv; }
 
 	/**
 	 * Method getTargetCRS()

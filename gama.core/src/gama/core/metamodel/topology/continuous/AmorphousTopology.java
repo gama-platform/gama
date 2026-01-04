@@ -15,10 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -80,7 +79,7 @@ public class AmorphousTopology implements ITopology {
 	public void initialize(final IScope scope, final IPopulation<? extends IAgent> pop) throws GamaRuntimeException {}
 
 	@Override
-	public void updateAgent(final Envelope3D previous, final IAgent agent) {
+	public void updateAgent(final IEnvelope previous, final IAgent agent) {
 		final IShape ng =
 				SpatialOperators.union(agent.getScope(), expandableEnvironment.getGeometry(), agent.getGeometry());
 		expandableEnvironment.setGeometry(GamaShapeFactory.createFrom(ng.getInnerGeometry().getEnvelope()));
@@ -250,7 +249,7 @@ public class AmorphousTopology implements ITopology {
 			public void insert(final IAgent agent) {}
 
 			@Override
-			public void remove(final Envelope3D previous, final IAgent agent) {}
+			public void remove(final IEnvelope previous, final IAgent agent) {}
 
 			@Override
 			public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist,
@@ -265,7 +264,7 @@ public class AmorphousTopology implements ITopology {
 			}
 
 			@Override
-			public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final Envelope envelope,
+			public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
 					final IAgentFilter f, final boolean contained) {
 				return Collections.EMPTY_LIST;
 			}

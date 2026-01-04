@@ -17,8 +17,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import org.locationtech.jts.geom.Envelope;
-
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
@@ -291,7 +290,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	}
 
 	@Override
-	public Envelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
+	public IEnvelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
 
 	@Override
 	public IRandom getRandom() { return random; }

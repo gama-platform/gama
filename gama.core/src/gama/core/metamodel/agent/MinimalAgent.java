@@ -2,7 +2,7 @@
  *
  * MinimalAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,8 @@ import java.util.Set;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -139,7 +140,7 @@ public class MinimalAgent extends AbstractAgent {
 		if (!newGeomLocation.equals(newLocalGeom.getLocation())) { newLocalGeom.setLocation(newGeomLocation); }
 
 		newLocalGeom.setAgent(this);
-		final Envelope3D previous = Envelope3D.of(geometry);
+		final IEnvelope previous = GamaEnvelopeFactory.of(geometry);
 		geometry.setGeometry(newLocalGeom);
 
 		topology.updateAgent(previous, this);
@@ -181,7 +182,7 @@ public class MinimalAgent extends AbstractAgent {
 		} else {
 			final GamaPoint previousPoint = geometry.getLocation();
 			if (newLocation.equals(previousPoint)) return newLocation;
-			final Envelope3D previous = geometry.getEnvelope();
+			final IEnvelope previous = geometry.getEnvelope();
 			geometry.setLocation(newLocation);
 			topology.updateAgent(previous, this);
 

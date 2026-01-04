@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * IDisplaySurface.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,9 +16,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-import org.locationtech.jts.geom.Envelope;
-
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -71,7 +69,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 		 *
 		 * @return the ROI dimensions
 		 */
-		Envelope3D getROIDimensions();
+		IEnvelope getROIDimensions();
 
 		/**
 		 * Sets the paused.
@@ -95,7 +93,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 		 * @param env
 		 *            the env
 		 */
-		void selectionIn(Envelope3D env);
+		void selectionIn(IEnvelope env);
 
 	}
 
@@ -330,7 +328,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 *            the current layer
 	 * @return the visible region for layer
 	 */
-	Envelope getVisibleRegionForLayer(ILayer currentLayer);
+	IEnvelope getVisibleRegionForLayer(ILayer currentLayer);
 
 	/**
 	 * Gets the fps.

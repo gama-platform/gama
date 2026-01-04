@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Gama3DGeometryFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,8 +16,8 @@ import java.util.List;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
@@ -35,7 +35,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	protected AxisAngle initRotation;
 
 	/** The envelope. */
-	protected Envelope3D envelope;
+	protected IEnvelope envelope;
 
 	/**
 	 * Instantiates a new gama 3 D geometry file.
@@ -94,7 +94,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	public void setInitRotation(final AxisAngle initRotation) { this.initRotation = initRotation; }
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		if (envelope == null) {
 			fillBuffer(scope);
 			if (initRotation != null && initRotation.angle != 0.0) { envelope = envelope.rotate(initRotation); }

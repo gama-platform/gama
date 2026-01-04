@@ -29,7 +29,7 @@ import gama.annotations.precompiler.GamlAnnotations.species;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
@@ -490,7 +490,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 			geom.getInnerGeometry().setUserData(savedData);
 		}
 
-		final Envelope3D env = geom.getEnvelope();
+		final IEnvelope env = geom.getEnvelope();
 		if (getProjectionFactory().getWorld() == null) { projectionFactory.setWorldProjectionEnv(scope, env); }
 
 		((WorldProjection) getProjectionFactory().getWorld()).updateTranslations(env);

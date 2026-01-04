@@ -2,27 +2,20 @@
  *
  * Envelope3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.common.geometry;
 
-import java.util.List;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.core.common.util.PoolUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.gaml.interfaces.IDisposable;
 import gama.gaml.operators.Comparison;
 import gama.gaml.types.GamaGeometryType;
 
@@ -36,159 +29,12 @@ import gama.gaml.types.GamaGeometryType;
  * @adapted for GAMA by A. Drogoul
  *
  */
-public class Envelope3D extends Envelope implements IDisposable, IIntersectable {
-
-	/** The Constant POOL. */
-	private static final PoolUtils.ObjectPool<Envelope3D> POOL =
-			PoolUtils.create("Envelope 3D", true, Envelope3D::new, (from, to) -> to.set(from), null);
-
-	/** The Constant EMPTY. */
-	public static final Envelope3D EMPTY = create();
-
-	/**
-	 * Creates the.
-	 *
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D create() {
-		return POOL.get();
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param g
-	 *            the g
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final Geometry g) {
-		if (g instanceof GeometryCollection gc) return of(gc);
-		final ICoordinates sq = GeometryUtils.getContourCoordinates(g);
-		return sq.getEnvelope();
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param g
-	 *            the g
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final GeometryCollection g) {
-		final int i = g.getNumGeometries();
-		if (i == 0) return EMPTY;
-		final Envelope3D result = of(g.getGeometryN(0));
-		for (int j = 1; j < i; j++) { result.expandToInclude(of(g.getGeometryN(j))); }
-		return result;
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param list
-	 *            the list
-	 * @return the envelope 3 D
-	 * @date 18 juil. 2023
-	 */
-	public static Envelope3D of(final List<IShape> list) {
-		final int i = list.size();
-		if (i == 0) return EMPTY;
-		final Envelope3D result = of(list.get(0));
-		for (int j = 1; j < i; j++) { result.expandToInclude(Envelope3D.of(list.get(j))); }
-		return result;
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param s
-	 *            the s
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final IShape s) {
-		return of(s.getInnerGeometry());
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param s
-	 *            the s
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final GamaPoint s) {
-		return of((Coordinate) s);
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param e
-	 *            the e
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final Envelope e) {
-		final Envelope3D env = create();
-		env.init(e);
-		return env;
-	}
-
-	/**
-	 * With Y negated.
-	 *
-	 * @param e
-	 *            the e
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D withYNegated(final Envelope e) {
-		final Envelope3D env = create();
-		env.init(e);
-		env.init(env.getMinX(), env.getMaxX(), -env.getMinY(), -env.getMaxY(), env.minz, env.maxz);
-		return env;
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param p
-	 *            the p
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final Coordinate p) {
-		final Envelope3D env = create();
-		env.init(p);
-		return env;
-	}
-
-	/**
-	 * Of.
-	 *
-	 * @param x1
-	 *            the x 1
-	 * @param x2
-	 *            the x 2
-	 * @param y1
-	 *            the y 1
-	 * @param y2
-	 *            the y 2
-	 * @param z1
-	 *            the z 1
-	 * @param z2
-	 *            the z 2
-	 * @return the envelope 3 D
-	 */
-	public static Envelope3D of(final double x1, final double x2, final double y1, final double y2, final double z1,
-			final double z2) {
-		final Envelope3D env = create();
-		env.init(x1, x2, y1, y2, z1, z2);
-		return env;
-	}
+public class Envelope3D extends Envelope implements IEnvelope {
 
 	@Override
 	public void dispose() {
 		setToNull();
-		POOL.release(this);
+		GamaEnvelopeFactory.release(this);
 	}
 
 	/**
@@ -222,6 +68,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @param z2
 	 *            the second z-value
 	 */
+	@Override
 	public void init(final double x1, final double x2, final double y1, final double y2, final double z1,
 			final double z2) {
 		init(x1, x2, y1, y2);
@@ -273,10 +120,11 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @param env
 	 *            the 3D Envelope to initialize from
 	 */
-	public void init(final Envelope3D env) {
-		super.init(env);
-		this.minz = env.minz;
-		this.maxz = env.maxz;
+	@Override
+	public void init(final IEnvelope env) {
+		super.init(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY());
+		this.minz = env.getMinZ();
+		this.maxz = env.getMaxZ();
 	}
 
 	/**
@@ -286,18 +134,9 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *            the env
 	 * @return the envelope 3 D
 	 */
-	private Envelope3D set(final Envelope3D env) {
+	IEnvelope set(final IEnvelope env) {
 		init(env);
 		return this;
-	}
-
-	/**
-	 * Returns the maximal dimension of the envelope
-	 */
-
-	public double getLargestDimension() {
-		double result = Math.max(getWidth(), getHeight());
-		return Math.max(result, getDepth());
 	}
 
 	/**
@@ -315,6 +154,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *
 	 * @return max z - min z, or 0 if this is a null <code>Envelope</code>
 	 */
+	@Override
 	public double getDepth() {
 		if (isNull()) return 0;
 		return maxz - minz;
@@ -326,6 +166,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *
 	 * @return the minimum z-coordinate
 	 */
+	@Override
 	public double getMinZ() { return minz; }
 
 	/**
@@ -334,6 +175,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *
 	 * @return the maximum z-coordinate
 	 */
+	@Override
 	public double getMaxZ() { return maxz; }
 
 	/**
@@ -342,6 +184,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @return the volume of the envelope
 	 * @return 0.0 if the envelope is null
 	 */
+	@Override
 	public double getVolume() {
 		if (isNull()) return 0.0;
 		return getWidth() * getHeight() * getDepth();
@@ -400,6 +243,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @param deltaY
 	 *            the distance to expand the envelope along the the Y axis
 	 */
+	@Override
 	public void expandBy(final double deltaX, final double deltaY, final double deltaZ) {
 		if (isNull()) return;
 		minz -= deltaZ;
@@ -421,6 +265,7 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @param z
 	 *            the value to lower the minimum z to or to raise the maximum z to
 	 */
+	@Override
 	public void expandToInclude(final double x, final double y, final double z) {
 		if (isNull()) {
 			expandToInclude(x, y);
@@ -443,7 +288,8 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @param transZ
 	 *            the amount to translate along the Z axis
 	 */
-	public Envelope3D translate(final double transX, final double transY, final double transZ) {
+	@Override
+	public IEnvelope translate(final double transX, final double transY, final double transZ) {
 		if (isNull()) return this;
 		init(getMinX() + transX, getMaxX() + transX, getMinY() + transY, getMaxY() + transY, getMinZ() + transZ,
 				getMaxZ() + transZ);
@@ -475,16 +321,10 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 		return getMinZOf(other) <= maxz && getMaxZOf(other) >= minz;
 	}
 
-	/**
-	 * Check if the point <code>p</code> overlaps (lies inside) the region of this <code>Envelope</code>.
-	 *
-	 * @param p
-	 *            the <code>Coordinate</code> to be tested
-	 * @return <code>true</code> if the point overlaps this <code>Envelope</code>
-	 */
 	@Override
-	public boolean intersects(final Coordinate p) {
-		return intersects(p.x, p.y, p.z);
+	public boolean intersects(final IEnvelope other) {
+		if (!(other instanceof Envelope env)) return false;
+		return intersects(env);
 	}
 
 	/**
@@ -498,9 +338,14 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *            the z-ordinate of the point
 	 * @return <code>true</code> if the point overlaps this <code>Envelope</code>
 	 */
-	protected boolean intersects(final double x, final double y, final double z) {
+	private boolean intersects(final double x, final double y, final double z) {
 		if (isNull()) return false;
 		return intersects(x, y) && z >= minz && z <= maxz;
+	}
+
+	@Override
+	public boolean intersects(final Coordinate p) {
+		return intersects(p.x, p.y, p.z);
 	}
 
 	/**
@@ -513,21 +358,14 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 * @return <code>true</code> if <code>(x, y)</code> lies in the interior or on the boundary of this
 	 *         <code>Envelope</code>.
 	 */
-	protected boolean covers(final double x, final double y, final double z) {
+	private boolean covers(final double x, final double y, final double z) {
 		if (isNull()) return false;
 		return covers(x, y) && z >= minz && z <= maxz;
 	}
 
-	/**
-	 * Tests if the given point lies in or on the envelope.
-	 *
-	 * @param p
-	 *            the point which this <code>Envelope</code> is being checked for containing
-	 * @return <code>true</code> if the point lies in the interior or on the boundary of this <code>Envelope</code>.
-	 */
 	@Override
 	public boolean covers(final Coordinate p) {
-		return covers(p.x, p.y, p.z);
+		return covers(p.x, p.y, p.getZ());
 	}
 
 	/**
@@ -542,6 +380,12 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	public boolean covers(final Envelope other) {
 		if (isNull() || other.isNull() || !super.covers(other)) return false;
 		return getMinZOf(other) >= minz && getMaxZOf(other) <= maxz;
+	}
+
+	@Override
+	public boolean covers(final IEnvelope other) {
+		if (!(other instanceof Envelope env)) return false;
+		return covers(env);
 	}
 
 	/**
@@ -577,12 +421,13 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------
+	@Override
+	public double distance(final IEnvelope env) {
+		if (!(env instanceof Envelope other)) return Double.NaN;
+		return distance(other);
+	}
 
-	/**
-	 * Instantiates a new envelope 3 D.
-	 */
-	private Envelope3D() {}
+	// ---------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Computes the intersection of two {@link Envelope}s.
@@ -594,13 +439,27 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 */
 	@Override
 	public Envelope3D intersection(final Envelope env) {
-		if (isNull() || env.isNull() || !intersects(env)) return EMPTY;
+		if (isNull() || env.isNull() || !intersects(env)) return GamaEnvelopeFactory.create();
 		final Envelope xyInt = super.intersection(env);
 		final double otherMinZ = getMinZOf(env);
 		final double intMinZ = minz > otherMinZ ? minz : otherMinZ;
 		final double otherMaxZ = getMaxZOf(env);
 		final double intMaxZ = maxz < otherMaxZ ? maxz : otherMaxZ;
-		return of(xyInt.getMinX(), xyInt.getMaxX(), xyInt.getMinY(), xyInt.getMaxY(), intMinZ, intMaxZ);
+		return GamaEnvelopeFactory.of(xyInt.getMinX(), xyInt.getMaxX(), xyInt.getMinY(), xyInt.getMaxY(), intMinZ,
+				intMaxZ);
+	}
+
+	/**
+	 * Intersection I.
+	 *
+	 * @param ie
+	 *            the ie
+	 * @return the i envelope
+	 */
+	@Override
+	public IEnvelope intersection(final IEnvelope ie) {
+		if (!(ie instanceof Envelope other)) return GamaEnvelopeFactory.EMPTY;
+		return intersection(other);
 	}
 
 	/**
@@ -624,6 +483,12 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 			if (otherMinZ < minz) { minz = otherMinZ; }
 			if (otherMaxZ > maxz) { maxz = otherMaxZ; }
 		}
+	}
+
+	@Override
+	public void expandToInclude(final IEnvelope ie) {
+		if (ie.isNull() || !(ie instanceof Envelope other)) return;
+		expandToInclude(other);
 	}
 
 	/**
@@ -673,20 +538,15 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *
 	 * @return true, if is flat
 	 */
+	@Override
 	public boolean isFlat() { return minz == maxz; }
-
-	/**
-	 * Checks if is horizontal.
-	 *
-	 * @return true, if is horizontal
-	 */
-	public boolean isHorizontal() { return minz == maxz; }
 
 	/**
 	 * To geometry.
 	 *
 	 * @return the polygon
 	 */
+	@Override
 	public Polygon toGeometry() {
 		if (isFlat())
 			return (Polygon) GamaGeometryType.buildRectangle(getWidth(), getHeight(), centre()).getInnerGeometry();
@@ -704,8 +564,9 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *
 	 * @return the envelope 3 D
 	 */
-	public Envelope3D yNegated() {
-		return of(getMinX(), getMaxX(), -getMaxY(), -getMinY(), minz, maxz);
+	@Override
+	public IEnvelope yNegated() {
+		return GamaEnvelopeFactory.of(getMinX(), getMaxX(), -getMaxY(), -getMinY(), minz, maxz);
 	}
 
 	/**
@@ -715,7 +576,8 @@ public class Envelope3D extends Envelope implements IDisposable, IIntersectable 
 	 *            the rotation
 	 * @return the envelope 3 D
 	 */
-	public Envelope3D rotate(final AxisAngle rotation) {
+	@Override
+	public IEnvelope rotate(final AxisAngle rotation) {
 		if (isNull()) return this;
 		GamaShape source = GamaShapeFactory.createFrom(this);
 		source = GamaShapeFactory.createFrom(source).withRotation(rotation).withLocation(source.getLocation());

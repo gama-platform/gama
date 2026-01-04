@@ -19,8 +19,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.google.common.base.Objects;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
@@ -537,11 +538,11 @@ public class LayeredDisplayData {
 			sim = exp.getSimulation();
 		}
 		// end-hqnghi
-		Envelope3D env = null;
+		IEnvelope env = null;
 		if (sim != null) {
 			env = sim.getEnvelope();
 		} else {
-			env = Envelope3D.of(0, 100, 0, 100, 0, 0);
+			env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 0);
 		}
 		setEnvWidth(env.getWidth());
 		setEnvHeight(env.getHeight());

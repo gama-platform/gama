@@ -480,7 +480,7 @@ public class GeometryUtils {
 	 * @return the i list
 	 */
 	public static IList<IShape> hexagonalGridFromGeom(final IShape geom, final int nbRows, final int nbColumns) {
-		final Envelope env = geom.getEnvelope();
+		final IEnvelope env = geom.getEnvelope();
 		final double widthEnv = env.getWidth();
 		final double heightEnv = env.getHeight();
 		double xmin = env.getMinX();
@@ -674,7 +674,7 @@ public class GeometryUtils {
 	public static IList<IShape> voronoi(final IScope scope, final IList<GamaPoint> points) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final VoronoiDiagramBuilder dtb = new VoronoiDiagramBuilder();
-		dtb.setClipEnvelope(scope.getSimulation().getEnvelope());
+		dtb.setClipEnvelope((Envelope) scope.getSimulation().getEnvelope());
 		dtb.setSites(points);
 		final GeometryCollection g = (GeometryCollection) dtb.getDiagram(GEOMETRY_FACTORY);
 		final int nb = g.getNumGeometries();
@@ -699,7 +699,7 @@ public class GeometryUtils {
 	public static IList<IShape> voronoi(final IScope scope, final IList<GamaPoint> points, final IShape clip) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final VoronoiDiagramBuilder dtb = new VoronoiDiagramBuilder();
-		dtb.setClipEnvelope(clip.getEnvelope());
+		dtb.setClipEnvelope((Envelope) clip.getEnvelope());
 		dtb.setSites(points);
 		final GeometryCollection g = (GeometryCollection) dtb.getDiagram(GEOMETRY_FACTORY);
 		final int nb = g.getNumGeometries();
@@ -802,7 +802,7 @@ public class GeometryUtils {
 		final IList<IShape> result = GamaListFactory.create(Types.GEOMETRY);
 		final Geometry bufferClip = sizeTol != 0.0 ? clip.buffer(sizeTol, 5, 0) : clip;
 		final PreparedGeometry buffered = PREPARED_GEOMETRY_FACTORY.create(bufferClip);
-		final Envelope3D env = Envelope3D.of(buffered.getGeometry());
+		final IEnvelope env = GamaEnvelopeFactory.of(buffered.getGeometry());
 		try {
 			for (int i = 0; i < geom.getNumGeometries(); i++) {
 				final Geometry gg = geom.getGeometryN(i);
@@ -848,7 +848,7 @@ public class GeometryUtils {
 		final double sizeTol = Math.sqrt(polygon.getArea()) / 100.0;
 		final DelaunayTriangulationBuilder dtb = new DelaunayTriangulationBuilder();
 		final PreparedGeometry buffered = PREPARED_GEOMETRY_FACTORY.create(polygon.buffer(sizeTol, 5, 0));
-		final Envelope3D env = Envelope3D.of(buffered.getGeometry());
+		final IEnvelope env = GamaEnvelopeFactory.of(buffered.getGeometry());
 		try {
 			dtb.setSites(polygon);
 			dtb.setTolerance(sizeTol);
@@ -1181,7 +1181,7 @@ public class GeometryUtils {
 	 *            the obj
 	 * @return the envelope 3 D
 	 */
-	public static Envelope3D computeEnvelopeFrom(final IScope scope, final Object obj) {
+	public static IEnvelope computeEnvelopeFrom(final IScope scope, final Object obj) {
 
 		switch (obj) {
 			case IEnvelopeProvider ep:
@@ -1190,17 +1190,17 @@ public class GeometryUtils {
 				return computeEnvelopeFrom(scope, s.getPopulation(scope));
 			case Number n:
 				double size = n.doubleValue();
-				return Envelope3D.of(0, size, 0, size, 0, size);
+				return GamaEnvelopeFactory.of(0, size, 0, size, 0, size);
 			case Envelope e:
-				return Envelope3D.of(e);
+				return GamaEnvelopeFactory.of(e);
 			case String s:
 				return computeEnvelopeFrom(scope, Files.from(scope, s));
 			case IList l: {
-				Envelope3D result = null;
+				IEnvelope result = null;
 				for (final Object bounds : l) {
-					final Envelope3D env = computeEnvelopeFrom(scope, bounds);
+					final IEnvelope env = computeEnvelopeFrom(scope, bounds);
 					if (result == null) {
-						result = Envelope3D.of(env);
+						result = GamaEnvelopeFactory.of(env);
 					} else {
 						result.expandToInclude(env);
 					}
@@ -1209,7 +1209,7 @@ public class GeometryUtils {
 			}
 			default:
 				for (final IEnvelopeComputer ec : envelopeComputers) {
-					Envelope3D result = ec.computeEnvelopeFrom(scope, obj);
+					IEnvelope result = ec.computeEnvelopeFrom(scope, obj);
 					if (result != null) return result;
 				}
 				return null;

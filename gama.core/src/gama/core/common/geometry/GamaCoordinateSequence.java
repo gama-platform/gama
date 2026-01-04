@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaCoordinateSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaCoordinateSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -218,6 +218,19 @@ public class GamaCoordinateSequence implements ICoordinates {
 		return env;
 	}
 
+	/**
+	 * Expand envelope.
+	 *
+	 * @param env
+	 *            the env
+	 * @return the i envelope
+	 */
+	public IEnvelope expandEnvelope(final IEnvelope env) {
+		// TODO Create an Envelope3D ??
+		for (final GamaPoint p : points) { env.expandToInclude(p); }
+		return env;
+	}
+
 	@Override
 	public Iterator<GamaPoint> iterator() {
 		return forArray(points);
@@ -301,7 +314,8 @@ public class GamaCoordinateSequence implements ICoordinates {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see gama.core.common.util.ICoordinates#visitConsecutive(gama.core.common.util.GamaCoordinateSequence.PairVisitor)
+	 * @see
+	 * gama.core.common.util.ICoordinates#visitConsecutive(gama.core.common.util.GamaCoordinateSequence.PairVisitor)
 	 */
 	@Override
 	public void visit(final PairVisitor v) {
@@ -344,8 +358,15 @@ public class GamaCoordinateSequence implements ICoordinates {
 		normal.divideBy(norm / factor);
 	}
 
+	/**
+	 * Gets the envelope into.
+	 *
+	 * @param envelope
+	 *            the envelope
+	 * @return the envelope into
+	 */
 	@Override
-	public Envelope3D getEnvelopeInto(final Envelope3D envelope) {
+	public IEnvelope getEnvelopeInto(final IEnvelope envelope) {
 		envelope.setToNull();
 		expandEnvelope(envelope);
 		return envelope;
@@ -425,8 +446,15 @@ public class GamaCoordinateSequence implements ICoordinates {
 
 	}
 
+	/**
+	 * Checks if is covered by.
+	 *
+	 * @param env
+	 *            the env
+	 * @return true, if is covered by
+	 */
 	@Override
-	public boolean isCoveredBy(final Envelope3D env) {
+	public boolean isCoveredBy(final IEnvelope env) {
 		for (final GamaPoint point : points) { if (!env.covers(point)) return false; }
 		return true;
 	}

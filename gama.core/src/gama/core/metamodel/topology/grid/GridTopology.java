@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GridTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridTopology.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -55,7 +55,7 @@ public class GridTopology extends AbstractTopology {
 	}
 
 	@Override
-	public void updateAgent(final Envelope3D previous, final IAgent agent) {}
+	public void updateAgent(final IEnvelope previous, final IAgent agent) {}
 
 	@Override
 	public void initialize(final IScope scope, final IPopulation<? extends IAgent> pop) throws GamaRuntimeException {

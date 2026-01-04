@@ -3,7 +3,7 @@
  * SqlConnection.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,8 @@ import java.util.Map;
 import org.geotools.api.referencing.FactoryException;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.metamodel.topology.projection.Projection;
@@ -538,7 +539,7 @@ public abstract class SqlConnection implements AutoCloseable {
 				gis = scope.getSimulation().getProjectionFactory().getWorld();
 				if (gis != null) // create envelope for environment
 				{
-					final Envelope3D env = scope.getSimulation().getEnvelope();
+					final IEnvelope env = scope.getSimulation().getEnvelope();
 					gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);
 					result = SqlUtils.transform(scope, gis, result, false);
 				}
@@ -708,9 +709,9 @@ public abstract class SqlConnection implements AutoCloseable {
 	 * @return the bounds
 	 */
 	// super IList>> IList) {
-	public static Envelope3D getBounds(final IList<? super IList<? super IList>> IList) {
+	public static IEnvelope getBounds(final IList<? super IList<? super IList>> IList) {
 
-		Envelope3D envelope;
+		IEnvelope envelope;
 		// get Column name
 		// final IList colNames = (IList) IList.get(0);
 		// get Column type
@@ -721,34 +722,31 @@ public abstract class SqlConnection implements AutoCloseable {
 		final IList initValue = (IList) IList.get(2);
 		final int n = initValue.size();
 		// int max = number == null ? Integer.MAX_VALUE : numberOfAgents;
-		if (n == 0)
-			return null;
-		else {
-			IList<Object> rowList = (IList<Object>) initValue.get(0);
-			Geometry geo = (Geometry) rowList.get(index);
-			envelope = Envelope3D.of(geo);
-			double maxX = envelope.getMaxX();
-			double maxY = envelope.getMaxY();
-			double minX = envelope.getMinX();
-			double minY = envelope.getMinY();
-			for (int i = 1; i < n && i < Integer.MAX_VALUE; i++) {
-				rowList = (IList<Object>) initValue.get(i);
-				geo = (Geometry) rowList.get(index);
-				envelope = Envelope3D.of(geo);
-				final double maxX1 = envelope.getMaxX();
-				final double maxY1 = envelope.getMaxY();
-				final double minX1 = envelope.getMinX();
-				final double minY1 = envelope.getMinY();
+		if (n == 0) return null;
+		IList<Object> rowList = (IList<Object>) initValue.get(0);
+		Geometry geo = (Geometry) rowList.get(index);
+		envelope = GamaEnvelopeFactory.of(geo);
+		double maxX = envelope.getMaxX();
+		double maxY = envelope.getMaxY();
+		double minX = envelope.getMinX();
+		double minY = envelope.getMinY();
+		for (int i = 1; i < n && i < Integer.MAX_VALUE; i++) {
+			rowList = (IList<Object>) initValue.get(i);
+			geo = (Geometry) rowList.get(index);
+			envelope = GamaEnvelopeFactory.of(geo);
+			final double maxX1 = envelope.getMaxX();
+			final double maxY1 = envelope.getMaxY();
+			final double minX1 = envelope.getMinX();
+			final double minY1 = envelope.getMinY();
 
-				maxX = maxX > maxX1 ? maxX : maxX1;
-				maxY = maxY > maxY1 ? maxY : maxY1;
-				minX = minX < minX1 ? minX : minX1;
-				minY = minY < minY1 ? minY : minY1;
-				envelope.init(minX, maxX, minY, maxY);
+			maxX = maxX > maxX1 ? maxX : maxX1;
+			maxY = maxY > maxY1 ? maxY : maxY1;
+			minX = minX < minX1 ? minX : minX1;
+			minY = minY < minY1 ? minY : minY1;
+			envelope.init(minX, maxX, minY, maxY);
 
-			}
-			return envelope;
 		}
+		return envelope;
 	}
 
 	/**
@@ -937,7 +935,7 @@ public abstract class SqlConnection implements AutoCloseable {
 				if (columns.contains(GEOMETRYTYPE) && transformed) {
 					gis = scope.getSimulation().getProjectionFactory().getWorld();
 					if (gis != null) {
-						final Envelope3D env = scope.getSimulation().getEnvelope();
+						final IEnvelope env = scope.getSimulation().getEnvelope();
 						gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);
 						result = SqlUtils.transform(scope, gis, result, false);
 					}

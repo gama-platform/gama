@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ImageDisplaySurface.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,10 +17,9 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.locationtech.jts.geom.Envelope;
-
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -326,7 +325,7 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	 * @see gama.core.common.interfaces.IDisplaySurface#getVisibleRegionForLayer(gama.core.common.interfaces.ILayer)
 	 */
 	@Override
-	public Envelope getVisibleRegionForLayer(final ILayer currentLayer) {
+	public IEnvelope getVisibleRegionForLayer(final ILayer currentLayer) {
 		return null;
 	}
 

@@ -2,7 +2,7 @@
  *
  * GamaCSVFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.metamodel.shape.GamaPoint;
@@ -27,15 +27,14 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
+import gama.core.util.file.csv.CsvReader;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
-import gama.core.util.file.csv.CsvReader;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
 import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
 import gama.gaml.types.GamaMatrixType;
 import gama.gaml.types.IType;
 import gama.gaml.types.Types;
@@ -257,14 +256,16 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		 *            the property string
 		 */
 		public CSVInfo(final String propertyString) {
-			final String[] segments = StringUtils.splitByWholeSeparatorPreserveAllTokens(propertyString, IGamaFileMetaData.DELIMITER);
+			final String[] segments =
+					StringUtils.splitByWholeSeparatorPreserveAllTokens(propertyString, IGamaFileMetaData.DELIMITER);
 			cols = Integer.parseInt(segments[1]);
 			rows = Integer.parseInt(segments[2]);
 			header = Boolean.parseBoolean(segments[3]);
 			delimiter = segments[4].charAt(0);
 			type = Types.get(segments[5]);
 			if (header) {
-				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6], IGamaFileMetaData.SUB_DELIMITER);
+				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6],
+						IGamaFileMetaData.SUB_DELIMITER);
 			} else {
 
 				headers = new String[cols];
@@ -710,7 +711,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
 	 */
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		// See how to read information from there
 		return null;
 	}

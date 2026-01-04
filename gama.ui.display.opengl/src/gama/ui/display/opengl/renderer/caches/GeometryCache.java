@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GeometryCache.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,8 +40,9 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -175,7 +176,7 @@ public class GeometryCache {
 	private final Map<String, GamaGeometryFile> geometriesToProcess = new ConcurrentHashMap<>();
 
 	/** The envelopes. */
-	private final Cache<String, Envelope3D> envelopes;
+	private final Cache<String, IEnvelope> envelopes;
 
 	/** The scope. */
 	private final IScope scope;
@@ -312,11 +313,11 @@ public class GeometryCache {
 	 *            the file
 	 * @return the envelope
 	 */
-	public Envelope3D getEnvelope(final GamaGeometryFile file) {
+	public IEnvelope getEnvelope(final GamaGeometryFile file) {
 		try {
 			return envelopes.get(file.getPath(scope), () -> file.computeEnvelope(scope));
 		} catch (final ExecutionException e) {
-			return Envelope3D.EMPTY;
+			return GamaEnvelopeFactory.EMPTY;
 		}
 	}
 
@@ -556,8 +557,8 @@ public class GeometryCache {
 			gl.beginDrawing(GL2.GL_QUAD_STRIP);
 			for (i = 0; i <= slices; i++) {
 				if (i == slices) {
-					x = 0; //Math.sin(0.0f);
-					y = 1; //Math.cos(0.0f);
+					x = 0; // Math.sin(0.0f);
+					y = 1; // Math.cos(0.0f);
 				} else {
 					x = Math.sin(i * da);
 					y = Math.cos(i * da);

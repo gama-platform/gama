@@ -3,7 +3,7 @@
  * GamaImageFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,6 @@ import javax.imageio.ImageIO;
 
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.data.PrjFileReader;
-import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.io.Files;
 
@@ -36,7 +35,8 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.metamodel.shape.GamaPoint;
@@ -415,14 +415,14 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 				return null;
 			}
 		}
-		;
+
 		final File infodata = new File(geodataFile);
 		if (infodata.exists()) return geodataFile;
 		return val;
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		final String geodataFile = getGeoDataFile(scope);
 		double cellSizeX = 1;
 		double cellSizeY = 1;
@@ -430,7 +430,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		double yllcorner = 0;
 		boolean xNeg = false;
 		boolean yNeg = false;
-		final String extension = getExtension(scope);
+		// final String extension = getExtension(scope);
 		if (geodataFile != null && !"".equals(geodataFile)) {
 			try (final InputStream ips = java.nio.file.Files.newInputStream(new File(geodataFile).toPath());
 					final InputStreamReader ipsr = new InputStreamReader(ips);
@@ -467,7 +467,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		} else if ("tiff".equals(extension) || "tif".equals(extension)) {
 			final GamaGridFile file = new GamaGridFile(null, this.getPath(scope));
 
-			final Envelope e = file.computeEnvelope(scope);
+			final IEnvelope e = file.computeEnvelope(scope);
 			if (e != null) {
 				GamaPoint minCorner = new GamaPoint(e.getMinX(), e.getMinY());
 				GamaPoint maxCorner = new GamaPoint(e.getMaxX(), e.getMaxY());
@@ -486,7 +486,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 
 				}
 				isGeoreferenced = true;
-				return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+				return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
 			}
 
 		}
@@ -521,7 +521,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 										.getLocation();
 								maxCorner = GamaShapeFactory.createFrom(gis.transform(maxCorner.getInnerGeometry()))
 										.getLocation();
-								return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+								return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
 							}
 						}
 					} catch (IOException | FactoryException e) {}
@@ -534,7 +534,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			maxCorner = SpatialProjections.to_GAMA_CRS(scope, maxCorner, crs).getLocation();
 		}
 
-		return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+		return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
 
 	}
 

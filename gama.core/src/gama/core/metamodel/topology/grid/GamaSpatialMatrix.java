@@ -30,14 +30,14 @@ import java.util.Set;
 import org.geotools.api.referencing.ReferenceIdentifier;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.google.common.collect.Ordering;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -96,7 +96,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	public String optimizer = "A*"; // possible value: ["BF","Dijkstra", "A*"]
 
 	/** The bounds. */
-	final Envelope bounds;
+	final IEnvelope bounds;
 
 	/** The precision. */
 	final double precision;
@@ -1675,14 +1675,22 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public void insert(final IAgent a) {}
 
+	/**
+	 * Removes the.
+	 *
+	 * @param previous
+	 *            the previous
+	 * @param a
+	 *            the a
+	 */
 	@Override
-	public void remove(final Envelope3D previous, final IAgent a) {}
+	public void remove(final IEnvelope previous, final IAgent a) {}
 
 	//
 	@Override
 	public Set<IAgent> allAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
 		final double exp = dist * Maths.SQRT2;
-		final Envelope3D env = Envelope3D.of(source.getEnvelope());
+		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);
 			final Set<IAgent> result = allInEnvelope(scope, source, env, f, false);
@@ -1696,7 +1704,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
 		final double exp = dist * Maths.SQRT2;
-		final Envelope3D env = Envelope3D.of(source.getEnvelope());
+		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);
 			final Ordering<IShape> ordering = Ordering.natural().onResultOf(input -> source.euclidianDistanceTo(input));
@@ -1712,7 +1720,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	public Collection<IAgent> firstAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f, final int number, final Collection<IAgent> alreadyChosen) {
 		final double exp = dist * Maths.SQRT2;
-		final Envelope3D env = Envelope3D.of(source.getEnvelope());
+		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);
 			final Set<IAgent> shapes = allInEnvelope(scope, source, env, f, false);
@@ -1735,7 +1743,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	 *            the env
 	 * @return the sets the
 	 */
-	private Set<IAgent> inEnvelope(final Envelope env) {
+	private Set<IAgent> inEnvelope(final IEnvelope env) {
 		// TODO Is it really efficient?
 		final Set<IAgent> shapes = new LinkedHashSet();
 		int minX = 0;
@@ -1776,8 +1784,23 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 	}
 
+	/**
+	 * All in envelope.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param source
+	 *            the source
+	 * @param env
+	 *            the env
+	 * @param f
+	 *            the f
+	 * @param covered
+	 *            the covered
+	 * @return the sets the
+	 */
 	@Override
-	public Set<IAgent> allInEnvelope(final IScope scope, final IShape source, final Envelope env, final IAgentFilter f,
+	public Set<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope env, final IAgentFilter f,
 			final boolean covered) {
 		// scope.getGui().debug("GamaSpatialMatrix.allInEnvelope");
 		// if ( !f.filterSpecies(cellSpecies) ) { return
@@ -1786,7 +1809,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		shapes.remove(source);
 
 		shapes.removeIf(each -> {
-			final Envelope3D e = each.getEnvelope();
+			final IEnvelope e = each.getEnvelope();
 			return each.getAgent() == null || !(covered ? env.covers(e) : env.intersects(e));
 		});
 

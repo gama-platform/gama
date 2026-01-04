@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ShapeDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ShapeDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,14 +11,13 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
@@ -104,9 +102,9 @@ public class ShapeDrawer implements IDrawDelegate {
 
 		// XXX EXPERIMENTAL See Issue #1521
 		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue() && !scope.getExperiment().isHeadless()) {
-			final Envelope3D e = shape.getEnvelope();
+			final IEnvelope e = shape.getEnvelope();
 			try {
-				final Envelope visible = scope.getGraphics().getVisibleRegion();
+				final IEnvelope visible = scope.getGraphics().getVisibleRegion();
 				if (visible != null && !visible.intersects(e)) return null;
 			} finally {
 				e.dispose();

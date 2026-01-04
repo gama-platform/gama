@@ -33,10 +33,11 @@ import javax.swing.JPanel;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Monitor;
-import org.locationtech.jts.geom.Envelope;
 
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
@@ -683,9 +684,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	@Override
-	public Envelope getVisibleRegionForLayer(final ILayer currentLayer) {
+	public IEnvelope getVisibleRegionForLayer(final ILayer currentLayer) {
 		if (currentLayer instanceof OverlayLayer) return getScope().getSimulation().getEnvelope();
-		final Envelope e = new Envelope();
+		final IEnvelope e = GamaEnvelopeFactory.create();
 		final Point origin = getOrigin();
 		int xc = -origin.x;
 		int yc = -origin.y;

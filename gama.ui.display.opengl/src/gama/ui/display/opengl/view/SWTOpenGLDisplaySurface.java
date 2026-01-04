@@ -3,7 +3,7 @@
  * SWTOpenGLDisplaySurface.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,7 +34,6 @@ import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.locationtech.jts.geom.Envelope;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
@@ -45,7 +44,8 @@ import com.jogamp.opengl.GLContext;
 
 import gama.annotations.precompiler.GamlAnnotations.display;
 import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
@@ -63,8 +63,8 @@ import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.core.runtime.PlatformHelper;
+import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
@@ -171,17 +171,17 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public GamaImage getImage(final int desiredWidth, final int desiredHeight) {
-		if (desiredWidth == 0 || desiredHeight == 0 || !renderer.hasDrawnOnce()) { return null; }
+		if (desiredWidth == 0 || desiredHeight == 0 || !renderer.hasDrawnOnce()) return null;
 		// We first render at the right dimensions and then we scale
 		Rectangle dimensions = this.getBoundsForRegularSnapshot();
 		int w = dimensions.width;
 		int h = dimensions.height;
 		final GLAutoDrawable glad = renderer.getCanvas();
-		if (glad == null) { return null; }
+		if (glad == null) return null;
 		GL2 gl = glad.getGL().getGL2();
-		if (gl == null) { return null; }
+		if (gl == null) return null;
 		GLContext context = gl.getContext();
-		if (context == null) { return null; }
+		if (context == null) return null;
 		final boolean current = context.isCurrent();
 		if (!current) { context.makeCurrent(); }
 		GamaImage[] image = new GamaImage[1];
@@ -264,7 +264,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
-		if (alreadyUpdating) { return; }
+		if (alreadyUpdating) return;
 		try {
 			alreadyUpdating = true;
 			renderer.setSynchronizer(synchronizer);
@@ -287,7 +287,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void zoomIn() {
-		if (renderer.getData().isCameraLocked()) { return; }
+		if (renderer.getData().isCameraLocked()) return;
 		renderer.getCameraHelper().zoom(true);
 	}
 
@@ -298,7 +298,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void zoomOut() {
-		if (renderer.getData().isCameraLocked()) { return; }
+		if (renderer.getData().isCameraLocked()) return;
 		renderer.getCameraHelper().zoom(false);
 	}
 
@@ -487,11 +487,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	}
 
 	@Override
-	public Envelope getVisibleRegionForLayer(final ILayer currentLayer) {
-		if (currentLayer instanceof OverlayLayer) { return getScope().getSimulation().getEnvelope(); }
-		Envelope e = currentLayer.getData().getVisibleRegion();
+	public IEnvelope getVisibleRegionForLayer(final ILayer currentLayer) {
+		if (currentLayer instanceof OverlayLayer) return getScope().getSimulation().getEnvelope();
+		IEnvelope e = currentLayer.getData().getVisibleRegion();
 		if (e == null) {
-			e = new Envelope();
+			e = GamaEnvelopeFactory.create();
 			final Point origin = new Point(0, 0);
 			int xc = -origin.x;
 			int yc = -origin.y;
@@ -628,9 +628,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.core.common.interfaces.IDisplaySurface.OpenGL#selectSeveralAgents(java.util.Collection, int)
 	 */
 	@Override
-	public void selectionIn(final Envelope3D env) {
+	public void selectionIn(final IEnvelope env) {
 
-		final Envelope3D envInWorld = Envelope3D.withYNegated(env);
+		final IEnvelope envInWorld = GamaEnvelopeFactory.withYNegated(env);
 		final Collection<IAgent> agents = scope.getTopology().getSpatialIndex().allInEnvelope(scope,
 				envInWorld.centre(), envInWorld, new Different(), false);
 		final Map<String, Runnable> actions = new LinkedHashMap<>();
@@ -678,7 +678,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public void dispose() {
-		if (disposed) { return; }
+		if (disposed) return;
 		disposed = true;
 		if (layerManager != null) { layerManager.dispose(); }
 		if (animator != null && animator.isStarted()) { animator.stop(); }
@@ -700,7 +700,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void changed(final Changes property, final Object value) {
-		if (renderer == null) { return; }
+		if (renderer == null) return;
 		switch (property) {
 			case ZOOM:
 				renderer.getCameraHelper().zoom((Double) value);
@@ -758,7 +758,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public boolean isDisposed() { return disposed; }
 
 	@Override
-	public Envelope3D getROIDimensions() { return renderer.getCameraHelper().getROIEnvelope(); }
+	public IEnvelope getROIDimensions() { return renderer.getCameraHelper().getROIEnvelope(); }
 
 	@Override
 	public void dispatchKeyEvent(final char e) {
@@ -820,7 +820,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public boolean isVisible() {
-		if (renderer == null) { return false; }
+		if (renderer == null) return false;
 		return renderer.getCanvas().getVisibleStatus();
 	}
 

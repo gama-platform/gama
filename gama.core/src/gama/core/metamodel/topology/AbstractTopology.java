@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -25,8 +24,8 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 
 import com.google.common.collect.Ordering;
 
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
@@ -164,7 +163,7 @@ public abstract class AbstractTopology implements ITopology {
 	 */
 	protected void createVirtualEnvironments() {
 		adjustedXYVector = new double[8][2];
-		final Envelope environmentEnvelope = environment.getEnvelope();
+		final IEnvelope environmentEnvelope = environment.getEnvelope();
 
 		final double environmentWidth = environmentEnvelope.getWidth();
 		final double environmentHeight = environmentEnvelope.getHeight();
@@ -254,8 +253,16 @@ public abstract class AbstractTopology implements ITopology {
 		return paths;
 	}
 
+	/**
+	 * Update agent.
+	 *
+	 * @param previous
+	 *            the previous
+	 * @param agent
+	 *            the agent
+	 */
 	@Override
-	public void updateAgent(final Envelope3D previous, final IAgent agent) {
+	public void updateAgent(final IEnvelope previous, final IAgent agent) {
 		// if (GamaPreferences.External.QUADTREE_OPTIMIZATION.getValue()) {
 		// if (speciesInserted.contains(agent.getSpecies())) { updateAgentBase(previous, agent); }
 		// } else {
@@ -608,7 +615,7 @@ public abstract class AbstractTopology implements ITopology {
 		boolean covered = relation == SpatialRelation.INSIDE;
 		// insertAgents(scope, f);
 		if (!isTorus()) {
-			final Envelope3D envelope = source.getEnvelope().intersection(environment.getEnvelope());
+			final IEnvelope envelope = source.getEnvelope().intersection(environment.getEnvelope());
 			try {
 				final Collection<IAgent> shapes = getSpatialIndex().allInEnvelope(scope, source, envelope, f, covered);
 				final PreparedGeometry pg = pgFact.create(source.getInnerGeometry());

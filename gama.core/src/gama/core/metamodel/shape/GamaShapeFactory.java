@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaShapeFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,8 @@ package gama.core.metamodel.shape;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 
 /**
  * A factory for creating GamaShape objects. Replaces the constuctors of GamaShape, all deprecated. They can be created
@@ -20,7 +21,7 @@ import gama.core.common.geometry.Envelope3D;
  * be taken care of using the GamaShape.withXXX (withRotation, withScaling, etc.) methods.
  *
  * So for instance, g = new GamaShape(previousShape, newGeometry, translation, rotation) now should be written :
- * 
+ *
  * g =
  * GamaShapeFactory.createFrom(newGeometry).withAttributesOf(previousShape).withTranslation(translation).withRotation(rotration);
  *
@@ -62,8 +63,8 @@ public class GamaShapeFactory {
 	 * @return the gama shape
 	 * @date 17 sept. 2023
 	 */
-	public static GamaShape createFrom(final Envelope3D env) {
-		return createFrom(env == null ? Envelope3D.EMPTY.toGeometry() : env.toGeometry());
+	public static GamaShape createFrom(final IEnvelope env) {
+		return createFrom(env == null ? GamaEnvelopeFactory.EMPTY.toGeometry() : env.toGeometry());
 	}
 
 	/**

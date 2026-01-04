@@ -2,7 +2,7 @@
  *
  * GamaFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,7 @@ import java.net.URL;
 import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.util.FileUtils;
@@ -104,7 +104,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	protected final String originalPath;
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		return null;
 	}
 
@@ -666,6 +666,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	/**
 	 * Invalidate contents.
 	 */
+	@Override
 	public void invalidateContents() {
 		buffer = null;
 	}

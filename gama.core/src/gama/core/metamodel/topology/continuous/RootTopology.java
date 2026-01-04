@@ -9,8 +9,7 @@
  ********************************************************************************************************/
 package gama.core.metamodel.topology.continuous;
 
-import org.locationtech.jts.geom.Envelope;
-
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.IShape;
@@ -38,7 +37,7 @@ public class RootTopology extends ContinuousTopology {
 	 */
 	public RootTopology(final IScope scope, final IShape geom, final boolean isTorus, final boolean hasParallelism) {
 		super(scope, geom);
-		final Envelope bounds = geom.getEnvelope();
+		final IEnvelope bounds = geom.getEnvelope();
 		spatialIndex = new CompoundSpatialIndex(bounds, hasParallelism);
 		this.isTorus = isTorus;
 		root = this;

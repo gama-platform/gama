@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * UnboundedCoordinateSequence.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * UnboundedCoordinateSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.common.geometry;
 
@@ -28,28 +28,27 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	/** The dimension. */
 	final int dimension;
-	
+
 	/** The Constant INITIAL_SIZE. */
 	final static int INITIAL_SIZE = 1000;
-	
+
 	/** The points. */
 	GamaPoint[] points = null;
-	
+
 	/** The nb points. */
 	int nbPoints;
-	
+
 	/** The temp. */
 	final GamaPoint temp = new GamaPoint();
 
 	/**
 	 * Fill from.
 	 *
-	 * @param begin the begin
+	 * @param begin
+	 *            the begin
 	 */
 	private void fillFrom(final int begin) {
-		for (int i = begin; i < points.length; i++) {
-			points[i] = new GamaPoint();
-		}
+		for (int i = begin; i < points.length; i++) { points[i] = new GamaPoint(); }
 	}
 
 	/**
@@ -62,7 +61,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	/**
 	 * Instantiates a new unbounded coordinate sequence.
 	 *
-	 * @param dimension the dimension
+	 * @param dimension
+	 *            the dimension
 	 */
 	public UnboundedCoordinateSequence(final int dimension) {
 		this.dimension = dimension;
@@ -72,7 +72,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	/**
 	 * Grow to.
 	 *
-	 * @param size the size
+	 * @param size
+	 *            the size
 	 */
 	private void growTo(final int size) {
 		int begin = 0;
@@ -87,25 +88,25 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	}
 
 	@Override
-	public int getDimension() {
-		return 3;
-	}
+	public int getDimension() { return 3; }
 
 	/**
 	 * Instantiates a new unbounded coordinate sequence.
 	 *
-	 * @param dimension the dimension
-	 * @param copy the copy
-	 * @param size the size
-	 * @param points2 the points 2
+	 * @param dimension
+	 *            the dimension
+	 * @param copy
+	 *            the copy
+	 * @param size
+	 *            the size
+	 * @param points2
+	 *            the points 2
 	 */
 	UnboundedCoordinateSequence(final int dimension, final boolean copy, final int size, final GamaPoint[] points2) {
 		this.dimension = dimension;
 		growTo(size);
 		nbPoints = size;
-		for (int i = 0; i < size; i++) {
-			points[i].setLocation(points2[i]);
-		}
+		for (int i = 0; i < size; i++) { points[i].setLocation(points2[i]); }
 		if (copy) { ensureClockwiseness(); }
 	}
 
@@ -158,9 +159,19 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public Envelope expandEnvelope(final Envelope env) {
-		for (int i = 0; i < nbPoints - 1; i++) {
-			env.expandToInclude(points[i]);
-		}
+		for (int i = 0; i < nbPoints - 1; i++) { env.expandToInclude(points[i]); }
+		return env;
+	}
+
+	/**
+	 * Expand envelope.
+	 *
+	 * @param env
+	 *            the env
+	 * @return the i envelope
+	 */
+	public IEnvelope expandEnvelope(final IEnvelope env) {
+		for (int i = 0; i < nbPoints - 1; i++) { env.expandToInclude(points[i]); }
 		return env;
 	}
 
@@ -223,8 +234,10 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	/**
 	 * Visit.
 	 *
-	 * @param v the v
-	 * @param max the max
+	 * @param v
+	 *            the v
+	 * @param max
+	 *            the max
 	 */
 	private void visit(final IndexedVisitor v, final int max) {
 		for (int i = 0; i < max; i++) {
@@ -236,8 +249,10 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	/**
 	 * Reverse visit.
 	 *
-	 * @param v the v
-	 * @param max the max
+	 * @param v
+	 *            the v
+	 * @param max
+	 *            the max
 	 */
 	private void reverseVisit(final IndexedVisitor v, final int max) {
 		for (int i = max - 1, j = 0; i >= 0; i--, j++) {
@@ -268,9 +283,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public void visit(final PairVisitor v) {
-		for (int i = 0; i < nbPoints - 1; i++) {
-			v.process(points[i], points[i + 1]);
-		}
+		for (int i = 0; i < nbPoints - 1; i++) { v.process(points[i], points[i + 1]); }
 	}
 
 	@Override
@@ -296,7 +309,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	}
 
 	@Override
-	public Envelope3D getEnvelopeInto(final Envelope3D envelope) {
+	public IEnvelope getEnvelopeInto(final IEnvelope envelope) {
 		envelope.setToNull();
 		expandEnvelope(envelope);
 		return envelope;
@@ -306,9 +319,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	public double averageZ() {
 		double sum = 0d;
 		if (nbPoints == 0) return sum;
-		for (int i = 0; i < nbPoints; i++) {
-			sum += points[i].z;
-		}
+		for (int i = 0; i < nbPoints; i++) { sum += points[i].z; }
 		return sum / nbPoints;
 	}
 
@@ -316,9 +327,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	public ICoordinates setTo(final GamaPoint... points2) {
 		growTo(points2.length);
 		nbPoints = points2.length;
-		for (int i = 0; i < nbPoints; i++) {
-			points[i].setLocation(points2[i]);
-		}
+		for (int i = 0; i < nbPoints; i++) { points[i].setLocation(points2[i]); }
 		return this;
 	}
 
@@ -355,48 +364,36 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public void applyRotation(final Rotation3D rotation) {
-		for (int i = 0; i < nbPoints; i++) {
-			rotation.applyTo(points[i]);
-		}
+		for (int i = 0; i < nbPoints; i++) { rotation.applyTo(points[i]); }
 	}
 
 	@Override
 	public boolean isHorizontal() {
 		final double z = points[0].z;
-		for (int i = 1; i < nbPoints; i++) {
-			if (points[i].z != z) return false;
-		}
+		for (int i = 1; i < nbPoints; i++) { if (points[i].z != z) return false; }
 		return true;
 	}
 
 	@Override
 	public double getLength() {
 		double result = 0;
-		for (int i = 1; i < nbPoints; i++) {
-			result += points[i].euclidianDistanceTo(points[i - 1]);
-		}
+		for (int i = 1; i < nbPoints; i++) { result += points[i].euclidianDistanceTo(points[i - 1]); }
 		return result;
 	}
 
 	@Override
 	public void setAllZ(final double elevation) {
-		for (int i = 0; i < nbPoints; i++) {
-			points[i].z = elevation;
-		}
+		for (int i = 0; i < nbPoints; i++) { points[i].z = elevation; }
 	}
 
 	@Override
-	public boolean isCoveredBy(final Envelope3D envelope3d) {
-		for (int i = 0; i < nbPoints; i++) {
-			if (!envelope3d.covers(points[i])) return false;
-		}
+	public boolean isCoveredBy(final IEnvelope envelope3d) {
+		for (int i = 0; i < nbPoints; i++) { if (!envelope3d.covers(points[i])) return false; }
 		return true;
 	}
 
 	@Override
-	public boolean isClockwise() {
-		return signedArea() > 0;
-	}
+	public boolean isClockwise() { return signedArea() > 0; }
 
 	@Override
 	public void completeRing() {
@@ -405,9 +402,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public void translateBy(final double i, final double j, final double k) {
-		for (int index = 0; i < nbPoints; index++) {
-			points[index].add(i, j, k);
-		}
+		for (int index = 0; i < nbPoints; index++) { points[index].add(i, j, k); }
 
 	}
 
@@ -450,30 +445,28 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	/**
 	 * Sets the to Y negated.
 	 *
-	 * @param other the new to Y negated
+	 * @param other
+	 *            the new to Y negated
 	 */
 	public void setToYNegated(final ICoordinates other) {
 		growTo(other.size());
 		nbPoints = other.size();
 		int i = 0;
-		for (final GamaPoint p : other) {
-			points[i++].setLocation(p.x, -p.y, p.z);
-		}
+		for (final GamaPoint p : other) { points[i++].setLocation(p.x, -p.y, p.z); }
 		if (isRing()) { reverse(); }
 	}
 
 	/**
 	 * Sets the to.
 	 *
-	 * @param other the new to
+	 * @param other
+	 *            the new to
 	 */
 	public void setTo(final ICoordinates other) {
 		growTo(other.size());
 		nbPoints = other.size();
 		int i = 0;
-		for (final GamaPoint p : other) {
-			points[i++].setLocation(p);
-		}
+		for (final GamaPoint p : other) { points[i++].setLocation(p); }
 	}
 
 	/**

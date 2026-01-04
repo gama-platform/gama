@@ -3,7 +3,7 @@
  * SpatialTransformations.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -38,8 +38,8 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.Reason;
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
 import gama.core.common.geometry.GeometryUtils;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IKeyword;
@@ -1324,7 +1324,7 @@ public class SpatialTransformations {
 	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols, final int nbRows,
 			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		final Envelope3D envelope = geom.getEnvelope();
+		final IEnvelope envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
 		final double y_size = envelope.getHeight() / nbRows;
 
@@ -1416,7 +1416,7 @@ public class SpatialTransformations {
 	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols,
 			final int nbRows) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		final Envelope3D envelope = geom.getEnvelope();
+		final IEnvelope envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
 		final double y_size = envelope.getHeight() / nbRows;
 

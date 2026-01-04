@@ -1,15 +1,15 @@
 /*******************************************************************************************************
  *
- * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IImageProvider;
@@ -34,7 +34,7 @@ public class ImageLayer extends AbstractLayer {
 
 	/** The env. */
 	// Cache a copy of both to avoid reloading them each time.
-	Envelope3D env;
+	IEnvelope env;
 
 	/** The cached file. */
 	IImageProvider cachedImageProvider;
@@ -48,8 +48,8 @@ public class ImageLayer extends AbstractLayer {
 	/** The is file. */
 	boolean isImageProvider;
 
-//	/** cached copy to avoid reloading **/
-//	BufferedImage cachedBufferedImage;
+	// /** cached copy to avoid reloading **/
+	// BufferedImage cachedBufferedImage;
 
 	/**
 	 * Instantiates a new image layer.
@@ -89,9 +89,11 @@ public class ImageLayer extends AbstractLayer {
 	 *
 	 * @return true, if is image provider
 	 */
-	private boolean isImageProvider(IScope scope) {
-		var providerClass = providerExpression.value(scope).getClass(); // Needs to be evaluated else what is GamaIntMatrix at runtime is considered GamaMatrix
-		return IImageProvider.class.isAssignableFrom(providerClass); 
+	private boolean isImageProvider(final IScope scope) {
+		var providerClass = providerExpression.value(scope).getClass(); // Needs to be evaluated else what is
+																		// GamaIntMatrix at runtime is considered
+																		// GamaMatrix
+		return IImageProvider.class.isAssignableFrom(providerClass);
 	}
 
 	@Override
@@ -114,7 +116,8 @@ public class ImageLayer extends AbstractLayer {
 	}
 
 	/**
-	 * Verify that the provider and the environment is well setup and use it to generate an image (reuse the previous one in case it should be cached)
+	 * Verify that the provider and the environment is well setup and use it to generate an image (reuse the previous
+	 * one in case it should be cached)
 	 *
 	 * @param scope
 	 *            the scope
@@ -122,10 +125,11 @@ public class ImageLayer extends AbstractLayer {
 	 *            the input
 	 * @return the gama image provider after the image generation
 	 */
-	private IImageProvider getImageFromProvider(final IScope scope, final Object input) throws GamaRuntimeFileException, GamaRuntimeException {
+	private IImageProvider getImageFromProvider(final IScope scope, final Object input)
+			throws GamaRuntimeFileException, GamaRuntimeException {
 		if (input == cachedImageProvider) return cachedImageProvider;
-		if (!(input instanceof IImageProvider result))
-			throw GamaRuntimeException.error("Not a provider of images: " + providerExpression.serializeToGaml(false), scope);
+		if (!(input instanceof IImageProvider result)) throw GamaRuntimeException
+				.error("Not a provider of images: " + providerExpression.serializeToGaml(false), scope);
 		try {
 			result.getImage(scope, !getData().getRefresh());
 		} catch (final GamaRuntimeFileException ex) {
@@ -147,7 +151,7 @@ public class ImageLayer extends AbstractLayer {
 	 *            the file
 	 * @return the envelope 3 D
 	 */
-	private Envelope3D computeEnvelope(final IScope scope, final IImageProvider file) {
+	private IEnvelope computeEnvelope(final IScope scope, final IImageProvider file) {
 		if (file instanceof IGamaFile gf && gf.hasGeoDataAvailable(scope)) return file.computeEnvelope(scope);
 		return scope.getSimulation().getEnvelope();
 	}
@@ -161,11 +165,9 @@ public class ImageLayer extends AbstractLayer {
 	 */
 	protected IImageProvider buildImage(final IScope scope) {
 		if (!isProviderPotentiallyVariable) return cachedImageProvider;
-		return 		isImageProvider 
-				? getImageFromProvider(scope, providerExpression.value(scope))
+		return isImageProvider ? getImageFromProvider(scope, providerExpression.value(scope))
 				: createFileFromString(scope, Cast.asString(scope, providerExpression.value(scope)));
 	}
-
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
@@ -187,11 +189,11 @@ public class ImageLayer extends AbstractLayer {
 		}
 
 		if (actualProvider != null) {
-			// TODO: possibly drawn a second time ? shouldn't we use drawImage and return a BufferedImage from buildImage instead ?
-			dg.drawAsset(actualProvider, attributes);				
-		}
-		else {
-			//TODO: should probably raise some kind of error/warning
+			// TODO: possibly drawn a second time ? shouldn't we use drawImage and return a BufferedImage from
+			// buildImage instead ?
+			dg.drawAsset(actualProvider, attributes);
+		} else {
+			// TODO: should probably raise some kind of error/warning
 		}
 	}
 

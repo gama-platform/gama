@@ -30,10 +30,11 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
 import gama.core.common.geometry.ICoordinates.VertexVisitor;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.geometry.UnboundedCoordinateSequence;
@@ -130,7 +131,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private final ITextureCache textureCache = new TextureCache2(this);
 
 	/** The texture envelope. */
-	private final Envelope3D textureEnvelope = Envelope3D.create();
+	private final IEnvelope textureEnvelope = GamaEnvelopeFactory.create();
 
 	/** The current texture rotation. */
 	private final Rotation3D currentTextureRotation = Rotation3D.identity();
@@ -1216,9 +1217,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the obj
 	 * @return the envelope for
 	 */
-	public Envelope3D getEnvelopeFor(final Object obj) {
+	public IEnvelope getEnvelopeFor(final Object obj) {
 		if (obj instanceof GamaGeometryFile) return geometryCache.getEnvelope((GamaGeometryFile) obj);
-		if (obj instanceof Geometry) return Envelope3D.of((Geometry) obj);
+		if (obj instanceof Geometry) return GamaEnvelopeFactory.of((Geometry) obj);
 		return null;
 	}
 

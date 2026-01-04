@@ -2,9 +2,9 @@
 /*******************************************************************************************************
  *
  * CompoundSpatialIndex.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,12 +17,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
 
-import org.locationtech.jts.geom.Envelope;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
@@ -49,7 +47,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	private final WeakHashMap<ISpecies, ISpatialIndex> spatialIndexes = new WeakHashMap<>();
 
 	/** The bounds. */
-	private Envelope bounds;
+	private IEnvelope bounds;
 
 	/** The parallel. */
 	private boolean parallel;
@@ -71,7 +69,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	 * @param parallel
 	 *            the parallel
 	 */
-	public CompoundSpatialIndex(final Envelope bounds, final boolean parallel) {
+	public CompoundSpatialIndex(final IEnvelope bounds, final boolean parallel) {
 		this.bounds = bounds;
 		this.parallel = parallel;
 		final double biggest = Math.max(bounds.getWidth(), bounds.getHeight());
@@ -91,7 +89,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	}
 
 	@Override
-	public void remove(final Envelope3D previous, final IAgent agent) {
+	public void remove(final IEnvelope previous, final IAgent agent) {
 		if (disposed || agent == null) return;
 		ISpatialIndex index = spatialIndexes.getOrDefault(agent.getSpecies(), null);
 		if (index != null) { index.remove(previous, agent); }
@@ -172,8 +170,23 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 		return nFirstAtDistanceInSpatialIndexes(scope, source, f, number, alreadyChosen, indices);
 	}
 
+	/**
+	 * All in envelope.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param source
+	 *            the source
+	 * @param envelope
+	 *            the envelope
+	 * @param f
+	 *            the f
+	 * @param contained
+	 *            the contained
+	 * @return the collection
+	 */
 	@Override
-	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final Envelope envelope,
+	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
 			final IAgentFilter f, final boolean contained) {
 		if (disposed) return Collections.EMPTY_LIST;
 		Iterable<ISpatialIndex> indices = add(scope, f);
@@ -282,8 +295,18 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 		spatialIndexes.remove(species);
 	}
 
+	/**
+	 * Update.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param envelope
+	 *            the envelope
+	 * @param parallel
+	 *            the parallel
+	 */
 	@Override
-	public void update(final IScope scope, final Envelope envelope, final boolean parallel) {
+	public void update(final IScope scope, final IEnvelope envelope, final boolean parallel) {
 		this.bounds = envelope;
 		this.parallel = parallel;
 		final WeakHashMap<ISpecies, ISpatialIndex> spatialIndexesTmp = new WeakHashMap<>();

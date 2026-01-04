@@ -3,7 +3,7 @@
  * FileMetaDataProvider.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -48,7 +48,8 @@ import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.parser.SVGLoader;
 
 import gama.core.common.GamlFileExtension;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.runtime.GAMA;
 import gama.core.util.file.IFileMetaDataProvider;
@@ -559,7 +560,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 					String t = value.asObject().get("type").asString();
 					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
 						isGeoJson = true;
-						Envelope3D env = Envelope3D.of(0, 0, 0, 0, 0, 0);
+						IEnvelope env = GamaEnvelopeFactory.of(0, 0, 0, 0, 0, 0);
 						switch (t) {
 							case "FeatureCollection": {
 								IJsonValue features = value.asObject().get("features");
@@ -619,7 +620,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @param env
 	 *            the env
 	 */
-	private void computeEnvelope(final IJsonValue geom, final Envelope3D env) {
+	private void computeEnvelope(final IJsonValue geom, final IEnvelope env) {
 		IJsonValue coords = geom.asObject().get("coordinates");
 		if (coords == null) return;
 		String type = geom.asObject().get("type").asString();
@@ -637,7 +638,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 				break;
 			case "MultiPolygon":
 				for (IJsonValue v : coords.asArray()) {
-					for (IJsonValue v2 : v.asArray()) { for (IJsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); } }
+					for (IJsonValue v2 : v.asArray()) {
+						for (IJsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); }
+					}
 				}
 				break;
 			case null:
@@ -654,7 +657,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 * @param env
 	 *            the env
 	 */
-	private void expandEnvelope(final IJsonValue coord, final Envelope3D env) {
+	private void expandEnvelope(final IJsonValue coord, final IEnvelope env) {
 		if (coord.isArray() && coord.asArray().size() >= 2) {
 			double x = coord.asArray().get(0).asDouble();
 			double y = coord.asArray().get(1).asDouble();

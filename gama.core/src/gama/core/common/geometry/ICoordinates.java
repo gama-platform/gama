@@ -252,14 +252,14 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *
 	 * @param envelope
 	 */
-	Envelope3D getEnvelopeInto(Envelope3D envelope);
+	IEnvelope getEnvelopeInto(IEnvelope envelope);
 
 	/**
 	 * Returns a new envelope that contains all the points in the sequence
 	 *
 	 * @return a new Envelope3D containing all the points
 	 */
-	default Envelope3D getEnvelope() { return getEnvelopeInto(Envelope3D.create()); }
+	default IEnvelope getEnvelope() { return getEnvelopeInto(GamaEnvelopeFactory.create()); }
 
 	/**
 	 * Compute the average z ordinate of this sequence of points
@@ -366,7 +366,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *            an Envelope3D (cannot be null)
 	 * @return true or false if at least one point lies outside the envelope
 	 */
-	boolean isCoveredBy(Envelope3D envelope3d);
+	boolean isCoveredBy(IEnvelope envelope3d);
 
 	/**
 	 * Creates a sequence filled with {0,0,0} points of the given length

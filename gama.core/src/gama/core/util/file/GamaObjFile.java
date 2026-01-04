@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.util.FileUtils;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -368,7 +368,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 				getBuffer().add(GamaGeometryType.buildPolygon(face));
 			}
 		}
-		envelope = Envelope3D.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
+		envelope = GamaEnvelopeFactory.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
 
 	}
 

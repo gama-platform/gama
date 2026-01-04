@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * LayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * LayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,8 +25,7 @@ import static gama.gaml.types.Types.POINT;
 
 import java.awt.Point;
 
-import org.locationtech.jts.geom.Envelope;
-
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
@@ -58,7 +57,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	boolean positionIsInPixels, sizeIsInPixels;
 
 	/** The visible region. */
-	Envelope visibleRegion;
+	IEnvelope visibleRegion;
 
 	/** The rotation. */
 	final Attribute<Double> rotation;
@@ -101,10 +100,10 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	public LayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
 		final IExpression sizeExp = def.getFacet(SIZE);
-		sizeIsInPixels = sizeExp != null && sizeExp.findAny(p -> p instanceof PixelUnitExpression);
+		sizeIsInPixels = sizeExp != null && sizeExp.findAny(PixelUnitExpression.class::isInstance);
 		size = create(SIZE, sizeExp, POINT, new GamaPoint(1, 1, 1));
 		final IExpression posExp = def.getFacet(POSITION);
-		positionIsInPixels = posExp != null && posExp.findAny(p -> p instanceof PixelUnitExpression);
+		positionIsInPixels = posExp != null && posExp.findAny(PixelUnitExpression.class::isInstance);
 		position = create(POSITION, posExp, POINT, new GamaPoint());
 		refresh = create(REFRESH, def.getRefreshFacet(), BOOL, true);
 		fading = create(FADING, BOOL, false);
@@ -267,10 +266,10 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	}
 
 	@Override
-	public void setVisibleRegion(final Envelope e) { visibleRegion = e; }
+	public void setVisibleRegion(final IEnvelope e) { visibleRegion = e; }
 
 	@Override
-	public Envelope getVisibleRegion() { return visibleRegion; }
+	public IEnvelope getVisibleRegion() { return visibleRegion; }
 
 	/**
 	 * Checks if is visible.

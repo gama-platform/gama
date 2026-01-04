@@ -13,9 +13,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.outputs.layers.OverlayLayer;
@@ -246,7 +246,7 @@ public interface IGraphics {
 	/*
 	 * Returns the region of the current layer (in model units) that is visible on screen
 	 */
-	Envelope getVisibleRegion();
+	IEnvelope getVisibleRegion();
 
 	/**
 	 * End drawing layer.

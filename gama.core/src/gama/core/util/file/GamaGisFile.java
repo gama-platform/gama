@@ -2,7 +2,7 @@
  *
  * GamaGisFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,9 +29,10 @@ import org.locationtech.jts.geom.Polygon;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.shape.GamaGisGeometry;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
@@ -194,7 +195,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 * @param env
 	 *            the env
 	 */
-	protected void computeProjection(final IScope scope, final Envelope3D env) {
+	protected void computeProjection(final IScope scope, final IEnvelope env) {
 		if (scope == null) return;
 		final CoordinateReferenceSystem crs = getExistingCRS(scope);
 		final ProjectionFactory pf;
@@ -353,11 +354,11 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		if (gis == null) {
 			final SimpleFeatureCollection collection = getFeatureCollection(scope);
-			if (collection == null) return Envelope3D.EMPTY;
-			final Envelope3D env = Envelope3D.of(collection.getBounds());
+			if (collection == null) return GamaEnvelopeFactory.EMPTY;
+			final IEnvelope env = GamaEnvelopeFactory.of(collection.getBounds());
 			computeProjection(scope, env);
 		}
 		return gis.getProjectedEnvelope();

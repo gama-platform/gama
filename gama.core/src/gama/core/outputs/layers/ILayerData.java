@@ -2,7 +2,7 @@
  *
  * ILayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,8 +11,7 @@ package gama.core.outputs.layers;
 
 import java.awt.Point;
 
-import org.locationtech.jts.geom.Envelope;
-
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.runtime.IScope;
@@ -197,14 +196,14 @@ public interface ILayerData {
 	 * @param e
 	 *            the new visible region
 	 */
-	void setVisibleRegion(Envelope e);
+	void setVisibleRegion(IEnvelope e);
 
 	/**
 	 * Gets the visible region.
 	 *
 	 * @return the visible region
 	 */
-	Envelope getVisibleRegion();
+	IEnvelope getVisibleRegion();
 
 	/**
 	 * Gets the added elevation.

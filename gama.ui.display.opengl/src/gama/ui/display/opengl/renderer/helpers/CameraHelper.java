@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * CameraHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,8 @@ import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.glu.GLU;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.GamaPoint;
@@ -112,7 +113,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	private final boolean useNumKeys = GamaPreferences.Displays.OPENGL_NUM_KEYS_CAM.getValue();
 
 	/** The roi envelope. */
-	Envelope3D roiEnvelope;
+	IEnvelope roiEnvelope;
 
 	/** The is ROI sticky. */
 	private boolean isROISticky;
@@ -493,7 +494,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		setCtrlPressed(isCtrl);
 		setShiftPressed(isShift);
 
-		if (!buttonPressed || button != 1) { return; }
+		if (!buttonPressed || button != 1) return;
 		final GamaPoint newPoint = new GamaPoint(x, y);
 
 		if (!data.isCameraLocked() && isCtrl) {
@@ -546,7 +547,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else if (mouseInROI(new GamaPoint(mousePosition.x, mousePosition.y))) {
 			GamaPoint p = positionInTheWorld;
 			p = p.minus(roiEnvelope.centre());
-			roiEnvelope.translate(p.x, p.y);
+			roiEnvelope.translate(p.x, p.y, 0);
 		} else if (!data.isCameraLocked()) {
 			int horizMovement = (int) (x - lastMousePressedPosition.x);
 			int vertMovement = (int) (y - lastMousePressedPosition.y);
@@ -712,7 +713,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	void finishROISelection() {
 		if (ROICurrentlyDrawn) {
-			final Envelope3D env = getROIEnvelope();
+			final IEnvelope env = getROIEnvelope();
 			if (env != null) { renderer.getSurface().selectionIn(env); }
 		}
 	}
@@ -758,7 +759,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public GamaPoint getWorldPositionFrom(final GamaPoint mouse, final GamaPoint result) {
 		final GamaPoint camLoc = getPosition();
 		OpenGL gl = renderer.getOpenGLHelper();
-		if (gl == null) { return new GamaPoint(); }
+		if (gl == null) return new GamaPoint();
 		final double[] wcoord = new double[4];
 		final double x = (int) mouse.x, y = gl.viewport[3] - (int) mouse.y;
 		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
@@ -1090,7 +1091,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the in
 	 */
 	public void zoom(final boolean in) {
-		if (keystoneMode) { return; }
+		if (keystoneMode) return;
 		Double distance = data.getCameraDistance();
 		final double step = distance != 0d ? distance / 10d * GamaPreferences.Displays.OPENGL_ZOOM.getValue() : 0.1d;
 		data.setCameraDistance(distance + (in ? -step : step));
@@ -1103,7 +1104,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param env
 	 *            the env
 	 */
-	public void zoomFocus(final Envelope3D env) {
+	public void zoomFocus(final IEnvelope env) {
 		// REDO it entirely
 		final double extent = env.maxExtent();
 		if (extent == 0) {
@@ -1200,13 +1201,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *
 	 * @return the ROI envelope
 	 */
-	public Envelope3D getROIEnvelope() { return roiEnvelope; }
+	public IEnvelope getROIEnvelope() { return roiEnvelope; }
 
 	/**
 	 * Cancel ROI.
 	 */
 	public void cancelROI() {
-		if (isROISticky) { return; }
+		if (isROISticky) return;
 		roiEnvelope = null;
 	}
 
@@ -1221,8 +1222,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public void defineROI(final GamaPoint mouseStart) {
 		final GamaPoint start = getWorldPositionFrom(mouseStart, new GamaPoint());
 
-		roiEnvelope =
-				Envelope3D.of(start.x, positionInTheWorld.x, start.y, positionInTheWorld.y, 0, getMaxEnvDim() / 20d);
+		roiEnvelope = GamaEnvelopeFactory.of(start.x, positionInTheWorld.x, start.y, positionInTheWorld.y, 0,
+				getMaxEnvDim() / 20d);
 	}
 
 	/**
@@ -1233,10 +1234,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return true, if successful
 	 */
 	public boolean mouseInROI(final GamaPoint mousePosition) {
-		final Envelope3D env = getROIEnvelope();
-		if (env == null) { return false; }
+		final IEnvelope env = getROIEnvelope();
+		if (env == null) return false;
 		final GamaPoint p = getWorldPositionFrom(mousePosition, new GamaPoint());
-		return env.contains(p);
+		return env.intersects(p);
 	}
 
 }

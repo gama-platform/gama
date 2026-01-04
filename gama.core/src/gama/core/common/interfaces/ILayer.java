@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ILayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ILayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,7 @@ import java.util.Set;
 
 import com.google.common.primitives.Ints;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.IShape;
@@ -163,7 +163,7 @@ public interface ILayer extends INamed, Comparable<ILayer> {
 	 * @return a rectangle in screen coordinates
 	 */
 	default Rectangle2D focusOn(final IShape geometry, final IDisplaySurface s) {
-		final Envelope3D envelope = geometry.getEnvelope();
+		final IEnvelope envelope = geometry.getEnvelope();
 		final Point min = this.getScreenCoordinatesFrom(envelope.getMinX(), envelope.getMinY(), s);
 		final Point max = this.getScreenCoordinatesFrom(envelope.getMaxX(), envelope.getMaxY(), s);
 		return new Rectangle2D.Double(min.x, min.y, (double) max.x - min.x, (double) max.y - min.y);

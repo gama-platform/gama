@@ -20,7 +20,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IEnvelopeProvider;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -293,7 +293,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 *
 	 * @return the envelope
 	 */
-	Envelope3D getEnvelope();
+	IEnvelope getEnvelope();
 
 	/**
 	 * Returns the geometrical type of this shape. May be computed dynamically (from the JTS inner geometry) or stored
@@ -550,7 +550,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the envelope 3 D
 	 */
 	@Override
-	default Envelope3D computeEnvelope(final IScope scope) {
+	default IEnvelope computeEnvelope(final IScope scope) {
 		return getEnvelope();
 	}
 

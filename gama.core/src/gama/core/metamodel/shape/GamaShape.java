@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaShape.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaShape.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,9 +25,10 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
 import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.ICoordinates;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -96,7 +97,7 @@ public class GamaShape implements IShape {
 	 * @deprecated use GamaShapeFactory instead
 	 */
 	@Deprecated
-	public GamaShape(final Envelope3D env) {
+	public GamaShape(final IEnvelope env) {
 		this(env == null ? null : env.toGeometry());
 	}
 
@@ -177,7 +178,7 @@ public class GamaShape implements IShape {
 	 */
 	public GamaShape withScaling(final Scaling3D bounds, final boolean isBoundingBox) {
 		if (bounds != null && !isPoint()) {
-			final Envelope3D env = getEnvelope();
+			final IEnvelope env = getEnvelope();
 			final GamaPoint previous = getLocation();
 			if (isBoundingBox) {
 				geometry.apply(bounds.asBoundingBoxIn(env));
@@ -350,8 +351,8 @@ public class GamaShape implements IShape {
 			case CONE -> 1 / (double) 3 * Maths.PI * Maths.pow(getWidth() / 2.0, 2) * d;
 			case PYRAMID -> Maths.pow(getWidth(), 2) * d / 3;
 			case THREED_FILE, NULL -> {
-				final Envelope3D env3D = getEnvelope();
-				yield env3D == null ? Envelope3D.of(this.getGeometry().getInnerGeometry()).getVolume()
+				final IEnvelope env3D = getEnvelope();
+				yield env3D == null ? GamaEnvelopeFactory.of(this.getGeometry().getInnerGeometry()).getVolume()
 						: env3D.getVolume();
 			}
 			default -> getArea() * d;
@@ -451,9 +452,9 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public Envelope3D getEnvelope() {
+	public IEnvelope getEnvelope() {
 		if (geometry == null) return null;
-		return Envelope3D.of(this);
+		return GamaEnvelopeFactory.of(this);
 	}
 
 	@Override

@@ -3,7 +3,7 @@
  * GamaFolderFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,7 @@ import static gama.core.util.list.GamaListFactory.createWithoutCasting;
 
 import java.io.File;
 
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -111,12 +111,12 @@ public class GamaFolderFile extends GamaFile<IList<String>, String> {
 
 	@SuppressWarnings ("rawtypes")
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		final IContainer<Integer, String> files = getContents(scope);
-		Envelope3D globalEnv = null;
+		IEnvelope globalEnv = null;
 		for (final String s : files.iterable(scope)) {
 			final IGamaFile f = Files.from(scope, s);
-			final Envelope3D env = f.computeEnvelope(scope);
+			final IEnvelope env = f.computeEnvelope(scope);
 			if (globalEnv == null) {
 				globalEnv = env;
 			} else {

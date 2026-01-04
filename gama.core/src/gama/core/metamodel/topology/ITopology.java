@@ -18,7 +18,7 @@ import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.geometry.Envelope3D;
+import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
@@ -110,7 +110,7 @@ public interface ITopology extends IValue {
 	 * @param agent
 	 *            the agent
 	 */
-	void updateAgent(Envelope3D previous, IAgent agent);
+	void updateAgent(IEnvelope previous, IAgent agent);
 
 	/**
 	 * Removes the agent.
