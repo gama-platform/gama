@@ -10,12 +10,14 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
  * The Interface IEnvelopeProvider. Returns an envelope3D that contains the object represented by this interface
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IEnvelopeProvider {
 
 	/**

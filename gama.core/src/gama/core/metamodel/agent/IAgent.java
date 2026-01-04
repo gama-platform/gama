@@ -28,7 +28,6 @@ import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
@@ -439,7 +438,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @see gama.core.metamodel.shape.IGeometricalShape#getHoles()
 	 */
 	@Override
-	default IList<GamaShape> getHoles() { return getGeometry().getHoles(); }
+	default IList<IShape> getHoles() { return getGeometry().getHoles(); }
 
 	/**
 	 * Method getCentroid()
@@ -455,7 +454,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @see gama.core.metamodel.shape.IGeometricalShape#getExteriorRing()
 	 */
 	@Override
-	default GamaShape getExteriorRing(final IScope scope) {
+	default IShape getExteriorRing(final IScope scope) {
 		return getGeometry().getExteriorRing(scope);
 	}
 
@@ -489,7 +488,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @see gama.core.metamodel.shape.IGeometricalShape#getGeometricEnvelope()
 	 */
 	@Override
-	default GamaShape getGeometricEnvelope() { return getGeometry().getGeometricEnvelope(); }
+	default IShape getGeometricEnvelope() { return getGeometry().getGeometricEnvelope(); }
 
 	/**
 	 * Gets the geometries.

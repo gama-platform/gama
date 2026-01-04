@@ -15,7 +15,6 @@ import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
@@ -148,7 +147,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	 * @see gama.core.metamodel.shape.IShape#getHoles()
 	 */
 	@Override
-	public IList<GamaShape> getHoles() { return geometry.getHoles(); }
+	public IList<IShape> getHoles() { return geometry.getHoles(); }
 
 	/**
 	 * Method getCentroid()
@@ -164,7 +163,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	 * @see gama.core.metamodel.shape.IShape#getExteriorRing(gama.core.runtime.IScope)
 	 */
 	@Override
-	public GamaShape getExteriorRing(final IScope scope) {
+	public IShape getExteriorRing(final IScope scope) {
 		return geometry.getExteriorRing(scope);
 	}
 
@@ -198,7 +197,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	 * @see gama.core.metamodel.shape.IShape#getGeometricEnvelope()
 	 */
 	@Override
-	public GamaShape getGeometricEnvelope() { return geometry.getGeometricEnvelope(); }
+	public IShape getGeometricEnvelope() { return geometry.getGeometricEnvelope(); }
 
 	@Override
 	public IList<? extends IShape> getGeometries() { return geometry.getGeometries(); }

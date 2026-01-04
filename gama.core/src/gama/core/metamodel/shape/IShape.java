@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.metamodel.shape;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,12 +25,7 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IEnvelopeProvider;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonConstants;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.file.json.JsonGeometryObject;
 import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
 import gama.core.util.map.IMap;
 import gama.gaml.interfaces.IAttributed;
 import gama.gaml.interfaces.ILocated;
@@ -111,7 +107,7 @@ import gama.gaml.types.IType;
 public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider {
 
 	/** The jts types. */
-	Map<String, Type> JTS_TYPES = GamaMapFactory.createUnordered();
+	Map<String, Type> JTS_TYPES = new HashMap<>();
 
 	/** The threed types. */
 	Set<Type> THREED_TYPES = new HashSet<>();
@@ -445,7 +441,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the holes
 	 */
 	@getter ("holes")
-	IList<GamaShape> getHoles();
+	IList<IShape> getHoles();
 
 	/**
 	 * Gets the centroid.
@@ -463,7 +459,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the exterior ring
 	 */
 	@getter ("contour")
-	GamaShape getExteriorRing(IScope scope);
+	IShape getExteriorRing(IScope scope);
 
 	/**
 	 * Gets the width.
@@ -504,7 +500,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the geometric envelope
 	 */
 	@getter ("envelope")
-	default GamaShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(getEnvelope()); }
+	default IShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(getEnvelope()); }
 
 	/**
 	 * Gets the points.
@@ -555,29 +551,10 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	}
 
 	/**
-	 * Serialize to json.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the json value
-	 * @date 30 oct. 2023
+	 * @param scope
+	 * @param absoluteLocation
+	 * @return
 	 */
-	@SuppressWarnings ("deprecation")
-	@Override
-	default IJsonValue serializeToJson(final IJSon json) {
-
-		try {
-			JsonGeometryObject result = new JsonGeometryObject(getInnerGeometry(), json);
-			result.add("inner_type", getGeometricalType().name());
-			if (getAgent() != null) { result.add("agent", json.valueOf(getAgent())); }
-			if (getDepth() != null) { result.add("depth", json.valueOf(getDepth())); }
-			// DEBUG.LOG("GAMA: " + result.toString());
-			// DEBUG.LOG("JTS : " + new GeoJsonWriter().write(getInnerGeometry()));
-			return result;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return IJsonConstants.NULL;
-		}
-
-	}
+	IShape translatedTo(IScope scope, GamaPoint absoluteLocation);
 
 }

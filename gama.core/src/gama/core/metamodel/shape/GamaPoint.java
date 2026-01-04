@@ -841,7 +841,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.core.metamodel.shape.IShape#getHoles()
 	 */
 	@Override
-	public IList<GamaShape> getHoles() { return GamaListFactory.EMPTY_LIST; }
+	public IList<IShape> getHoles() { return GamaListFactory.EMPTY_LIST; }
 
 	/**
 	 * Method getCentroid()
@@ -857,7 +857,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.core.metamodel.shape.IShape#getExteriorRing()
 	 */
 	@Override
-	public GamaShape getExteriorRing(final IScope scope) {
+	public IShape getExteriorRing(final IScope scope) {
 		return GamaShapeFactory.createFrom(this);
 	}
 
@@ -891,7 +891,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.core.metamodel.shape.IShape#getGeometricEnvelope()
 	 */
 	@Override
-	public GamaShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(this); }
+	public IShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(this); }
 
 	/**
 	 * Method getGeometries()
@@ -1000,6 +1000,12 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	@Override
 	public IJsonValue serializeToJson(final IJSon json) {
 		return json.typedObject(getGamlType(), "x", x, "y", y, "z", z);
+	}
+
+	@Override
+	public IShape translatedTo(final IScope scope, final GamaPoint absoluteLocation) {
+		this.setLocation(absoluteLocation);
+		return this;
 	}
 
 }

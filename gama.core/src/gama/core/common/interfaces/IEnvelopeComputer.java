@@ -10,12 +10,14 @@
  ********************************************************************************************************/
 package gama.core.common.interfaces;
 
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.runtime.IScope;
 
 /**
  * The Interface IEnvelopeComputer.
  */
+@OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IEnvelopeComputer {
 
 	/**

@@ -372,8 +372,8 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	 * @see gama.core.metamodel.shape.IShape#getHoles()
 	 */
 	@Override
-	public IList<GamaShape> getHoles() {
-		final IList<GamaShape> holes = GamaListFactory.create(Types.GEOMETRY);
+	public IList<IShape> getHoles() {
+		final IList<IShape> holes = GamaListFactory.create(Types.GEOMETRY);
 		final Geometry g = getInnerGeometry();
 		if (g instanceof Polygon p) {
 			final int n = p.getNumInteriorRing();
@@ -399,7 +399,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	 * @see gama.core.metamodel.shape.IShape#getExteriorRing()
 	 */
 	@Override
-	public GamaShape getExteriorRing(final IScope scope) {
+	public IShape getExteriorRing(final IScope scope) {
 		return getReferenceGeometry().getExteriorRing(scope).translatedTo(scope, absoluteLocation);
 	}
 
@@ -433,6 +433,12 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	 * @see gama.core.metamodel.shape.IShape#getGeometricEnvelope()
 	 */
 	@Override
-	public GamaShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(getEnvelope().toGeometry()); }
+	public IShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(getEnvelope().toGeometry()); }
+
+	@Override
+	public IShape translatedTo(final IScope scope, final GamaPoint absoluteLocation) {
+		this.setLocation(absoluteLocation);
+		return this;
+	}
 
 }

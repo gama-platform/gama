@@ -639,4 +639,10 @@ public abstract class AbstractAgent implements IAgent {
 
 	@Override
 	public ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
+
+	@Override
+	public IShape translatedTo(final IScope scope, final GamaPoint absoluteLocation) {
+		this.setLocation(absoluteLocation);
+		return this;
+	}
 }

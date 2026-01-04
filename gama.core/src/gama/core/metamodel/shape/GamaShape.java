@@ -32,6 +32,10 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonConstants;
+import gama.core.util.file.json.IJsonValue;
+import gama.core.util.file.json.JsonGeometryObject;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
@@ -52,6 +56,10 @@ import gama.gaml.types.Types;
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 17 sept. 2023
+ */
+
+/**
+ * The Class GamaShape.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaShape implements IShape {
@@ -273,7 +281,7 @@ public class GamaShape implements IShape {
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		if (isPoint()) return getLocation().serializeToGaml(includingBuiltIn) + " as geometry";
 		if (isMultiple()) return getGeometries().serializeToGaml(includingBuiltIn) + " as geometry";
-		final IList<GamaShape> holes = getHoles();
+		final IList<IShape> holes = getHoles();
 		// String result = "";
 		StringBuilder strBuilder = new StringBuilder();
 		if (getInnerGeometry() instanceof LineString) {
@@ -286,7 +294,7 @@ public class GamaShape implements IShape {
 
 		if (holes.isEmpty()) return strBuilder.toString();
 
-		for (final GamaShape g : holes) {
+		for (final IShape g : holes) {
 			strBuilder.insert(0, "("); // TODO: this is weird, are we sure this is the way we want to output this ?
 			strBuilder.append(") - (");
 			strBuilder.append(g.serializeToGaml(includingBuiltIn));
@@ -325,6 +333,7 @@ public class GamaShape implements IShape {
 	 *            the target
 	 * @return the gama shape
 	 */
+	@Override
 	public GamaShape translatedTo(final IScope scope, final GamaPoint target) {
 		final GamaShape result = copy(scope);
 		result.setLocation(target);
@@ -372,8 +381,8 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public IList<GamaShape> getHoles() {
-		final IList<GamaShape> holes = GamaListFactory.create(Types.GEOMETRY);
+	public IList<IShape> getHoles() {
+		final IList<IShape> holes = GamaListFactory.create(Types.GEOMETRY);
 		if (getInnerGeometry() instanceof Polygon) {
 			final Polygon p = (Polygon) getInnerGeometry();
 			final int n = p.getNumInteriorRing();
@@ -395,7 +404,7 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public GamaShape getExteriorRing(final IScope scope) {
+	public IShape getExteriorRing(final IScope scope) {
 
 		// WARNING Only in 2D
 		Geometry result = getInnerGeometry();
@@ -611,5 +620,22 @@ public class GamaShape implements IShape {
 
 	@Override
 	public IType getGamlType() { return Types.GEOMETRY; }
+
+	@Override
+	public IJsonValue serializeToJson(final IJSon json) {
+
+		try {
+			JsonGeometryObject result = new JsonGeometryObject(getInnerGeometry(), json);
+			result.add("inner_type", getGeometricalType().name());
+			if (getAgent() != null) { result.add("agent", json.valueOf(getAgent())); }
+			if (getDepth() != null) { result.add("depth", json.valueOf(getDepth())); }
+			// DEBUG.LOG("GAMA: " + result.toString());
+			// DEBUG.LOG("JTS : " + new GeoJsonWriter().write(getInnerGeometry()));
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return IJsonConstants.NULL;
+		}
+	}
 
 }

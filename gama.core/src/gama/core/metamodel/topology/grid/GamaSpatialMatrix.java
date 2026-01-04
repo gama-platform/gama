@@ -55,6 +55,8 @@ import gama.core.util.Collector;
 import gama.core.util.ICollector;
 import gama.core.util.IContainer;
 import gama.core.util.file.GamaGridFile;
+import gama.core.util.file.json.IJSon;
+import gama.core.util.file.json.IJsonValue;
 import gama.core.util.list.GamaListFactory;
 import gama.core.util.list.IList;
 import gama.core.util.map.GamaMapFactory;
@@ -1906,6 +1908,11 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		 */
 		@Override
 		public boolean isMultiple() { return getReferenceGeometry().isMultiple(); }
+
+		@Override
+		public IJsonValue serializeToJson(final IJSon json) {
+			return getReferenceGeometry().serializeToJson(json);
+		}
 
 	}
 
