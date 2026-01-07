@@ -255,9 +255,10 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 *            the max
 	 */
 	private void reverseVisit(final IndexedVisitor v, final int max) {
-		for (int i = max - 1, j = 0; i >= 0; i--, j++) {
+		v.process(0, points[0].getX(), points[0].getY(), points[0].getZ());
+		for (int i = max - 1; i > 0; i--) {
 			final IPoint p = points[i];
-			v.process(j, p.getX(), p.getY(), p.getZ());
+			v.process(i, p.getX(), p.getY(), p.getZ());
 		}
 	}
 

@@ -459,6 +459,8 @@ public class GamaCoordinateSequence implements ICoordinates {
 				return result;
 			}
 		}
+		// In case all points are equal (e.g. a point geometry treated as a polygon), we return a default direction
+		result.setLocation(1, 0, 0);
 		return result;
 	}
 
