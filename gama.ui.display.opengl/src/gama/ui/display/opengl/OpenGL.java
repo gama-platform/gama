@@ -733,7 +733,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the z
 	 */
 	public void rotateBy(final double angle, final double x, final double y, final double z) {
-		gl.glRotated(angle, x, y, z);
+		if (x == 0d && y == 0d && z == 0d) {
+			gl.glRotated(angle, 0, 0, 1);
+		} else {
+			gl.glRotated(angle, x, y, z);
+		}
 	}
 
 	/**
