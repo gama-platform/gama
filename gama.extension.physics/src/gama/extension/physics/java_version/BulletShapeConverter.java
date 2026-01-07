@@ -3,7 +3,7 @@
  * BulletShapeConverter.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,7 +37,7 @@ import com.bulletphysics.util.ObjectArrayList;
 
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.matrix.IField;
@@ -116,7 +116,7 @@ public class BulletShapeConverter implements IShapeConverter<CollisionShape, Vec
 			case CUBE:
 				return new UniformScalingShape(shapes.get(type), depth / 2f);
 			default:
-				GamaPoint[] points = GeometryUtils.getPointsOf(shape);
+				IPoint[] points = GeometryUtils.getPointsOf(shape);
 				switch (points.length) {
 					case 0:
 						return null;
@@ -132,7 +132,7 @@ public class BulletShapeConverter implements IShapeConverter<CollisionShape, Vec
 					default:
 						// ConvexHullShape result = new ConvexHullShape();
 						ObjectArrayList<Vector3f> vertices = new ObjectArrayList<>(points.length);
-						for (final GamaPoint p : points) {
+						for (final IPoint p : points) {
 							vertices.add(toVector(p));
 							// result.addPoint(toVector(p));
 						}
@@ -149,15 +149,15 @@ public class BulletShapeConverter implements IShapeConverter<CollisionShape, Vec
 			final Double height, final float depth) {
 		double[] minMax = field.getMinMax();
 		float max = (float) minMax[1], min = (float) minMax[0];
-		GamaPoint dim = field.getDimensions();
+		IPoint dim = field.getDimensions();
 		float[] data = toFloats(field.getMatrix());
 
 		// AD TODO: verify min and max
 		float scale = max == min ? 1f : depth / (max - min);
 		HeightfieldTerrainShape shape =
-				new HeightfieldTerrainShape((int) dim.x, (int) dim.y, data, scale, min, max, ZAXIS, false);
+				new HeightfieldTerrainShape((int) dim.getX(), (int) dim.getY(), data, scale, min, max, ZAXIS, false);
 		shape.setLocalScaling(
-				new Vector3f(width.floatValue() / (float) dim.x, height.floatValue() / (float) dim.y, 1f));
+				new Vector3f(width.floatValue() / (float) dim.getX(), height.floatValue() / (float) dim.getY(), 1f));
 		return shape;
 	}
 

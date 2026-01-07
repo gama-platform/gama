@@ -48,6 +48,7 @@ import org.jfree.data.xy.XYDataset;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -230,33 +231,33 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		// newr.setSeriesStroke(0, new BasicStroke(0));
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
 
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor().getAWTColor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 		if (myserie.getSValues(scope).size() > 0) {
 			final double maxval = Collections.max(myserie.getSValues(scope));
 			final double minval = Collections.min(myserie.getSValues(scope));
 			Color cdeb = new Color(0, 0, 0, 0);
-			if (myserie.getMyMincolor() != null) { cdeb = myserie.getMyMincolor().getAWTColor(); }
+			if (myserie.getMyMincolor() != null) { cdeb = IColor.toAWTColor(myserie.getMyMincolor()); }
 			Color cend = new Color(0.9f, 0.9f, 0.9f, 1.0f);
-			if (myserie.getMycolor() != null) { cend = myserie.getMycolor().getAWTColor(); }
+			if (myserie.getMycolor() != null) { cend = IColor.toAWTColor(myserie.getMycolor()); }
 
 			LookupPaintScale paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, cend);
 			if (myserie.getMyMedcolor() != null) {
-				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, myserie.getMyMedcolor().getAWTColor(),
-						cend);
+				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb,
+						IColor.toAWTColor(myserie.getMyMedcolor()), cend);
 			}
 
 			newr.setPaintScale(paintscale);
 
 			final NumberAxis scaleAxis = new NumberAxis(myserie.getName());
-			scaleAxis.setAxisLinePaint(this.axesColor.getAWTColor());
-			scaleAxis.setTickMarkPaint(this.axesColor.getAWTColor());
+			scaleAxis.setAxisLinePaint(IColor.toAWTColor(this.axesColor));
+			scaleAxis.setTickMarkPaint(IColor.toAWTColor(this.axesColor));
 			scaleAxis.setTickLabelFont(this.getTickFont());
 			scaleAxis.setRange(paintscale.getLowerBound(), paintscale.getUpperBound());
-			scaleAxis.setAxisLinePaint(axesColor.getAWTColor());
+			scaleAxis.setAxisLinePaint(IColor.toAWTColor(axesColor));
 			scaleAxis.setLabelFont(getLabelFont());
 			if (textColor != null) {
-				scaleAxis.setLabelPaint(textColor.getAWTColor());
-				scaleAxis.setTickLabelPaint(textColor.getAWTColor());
+				scaleAxis.setLabelPaint(IColor.toAWTColor(textColor));
+				scaleAxis.setTickLabelPaint(IColor.toAWTColor(textColor));
 			}
 			if (!this.getXTickValueVisible(scope)) {
 				scaleAxis.setTickMarksVisible(false);
@@ -272,7 +273,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			// legend.setPadding(new RectangleInsets(10, 10, 10, 10));
 			// legend.setStripWidth(10);
 			legend.setPosition(RectangleEdge.RIGHT);
-			legend.setBackgroundPaint(this.backgroundColor.getAWTColor());
+			legend.setBackgroundPaint(IColor.toAWTColor(this.backgroundColor));
 			// ArrayList<PaintScaleLegend> caxe=new
 			// ArrayList<PaintScaleLegend>();
 			// caxe.add(legend);
@@ -519,8 +520,8 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-		Color ac = axesColor.getAWTColor();
-		Color tc = textColor == null ? null : textColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
+		Color tc = IColor.toAWTColor(textColor);
 		final XYPlot pp = (XYPlot) chart.getPlot();
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);

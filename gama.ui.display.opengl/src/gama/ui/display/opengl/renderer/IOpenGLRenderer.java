@@ -13,7 +13,8 @@ package gama.ui.display.opengl.renderer;
 import com.jogamp.opengl.GLEventListener;
 
 import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.outputs.LayeredDisplayData;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
@@ -70,7 +71,7 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 *            the mouse
 	 * @return the real world point from window point
 	 */
-	GamaPoint getRealWorldPointFromWindowPoint(final GamaPoint mouse);
+	IPoint  getRealWorldPointFromWindowPoint(final IPoint mouse);
 
 	/**
 	 * Gets the surface.

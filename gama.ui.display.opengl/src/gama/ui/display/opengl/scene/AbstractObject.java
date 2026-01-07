@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.interfaces.IDisposable;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
@@ -155,7 +155,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation into
 	 */
-	public void getTranslationInto(final GamaPoint p) {
+	public void getTranslationInto(final IPoint p) {
 		final var explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
 			p.setLocation(0, 0, 0);
@@ -171,7 +171,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation for rotation into
 	 */
-	public void getTranslationForRotationInto(final GamaPoint p) {
+	public void getTranslationForRotationInto(final IPoint p) {
 		getTranslationInto(p);
 	}
 
@@ -182,7 +182,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation for scaling into
 	 */
-	public void getTranslationForScalingInto(final GamaPoint p) {
+	public void getTranslationForScalingInto(final IPoint p) {
 		p.setLocation(0, 0, 0);
 	}
 

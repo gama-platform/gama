@@ -20,7 +20,7 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.IIntersectable;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
@@ -198,7 +198,7 @@ public class GamaQuadTree implements ISpatialIndex {
 		final IEnvelope current = previous == null ? agent.getEnvelope() : previous;
 		if (current == null) return;
 		if (current.getArea() == 0.0) {
-			root.remove(current.centre(), agent);
+			root.remove(current.center(), agent);
 		} else {
 			root.remove(current, agent);
 		}
@@ -375,7 +375,7 @@ public class GamaQuadTree implements ISpatialIndex {
 		 * @param a
 		 *            the a
 		 */
-		private void add(final GamaPoint p, final IAgent a) {
+		private void add(final IPoint p, final IAgent a) {
 			trySplit();
 			if (nw == null) {
 				objects.put(a, p);
@@ -419,7 +419,7 @@ public class GamaQuadTree implements ISpatialIndex {
 		 * @param a
 		 *            the a
 		 */
-		private void remove(final GamaPoint p, final IShape a) {
+		private void remove(final IPoint p, final IShape a) {
 			if (nw == null) {
 				final IIntersectable env = objects.remove(a);
 				if (env != null) { env.dispose(); }
@@ -455,9 +455,11 @@ public class GamaQuadTree implements ISpatialIndex {
 		 *            the p
 		 * @return the int
 		 */
-		private QuadNode getNode(final GamaPoint p) {
-			final boolean north = p.y >= bounds.getMinY() && p.y < halfy;
-			final boolean west = p.x >= bounds.getMinX() && p.x < halfx;
+		private QuadNode getNode(final IPoint p) {
+			double px = p.getX();
+			double py = p.getY();
+			final boolean north = py >= bounds.getMinY() && py < halfy;
+			final boolean west = px >= bounds.getMinX() && px < halfx;
 			return north ? west ? nw : ne : west ? sw : se;
 		}
 

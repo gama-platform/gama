@@ -12,7 +12,8 @@ package gama.extension.physics.native_version;
 
 import com.jme3.math.Vector3f;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.extension.physics.common.IPhysicalEntity;
 import gama.extension.physics.common.VectorUtils;
 
@@ -28,7 +29,7 @@ public interface INativeBulletPhysicalEntity extends IPhysicalEntity<Vector3f> {
 	 * @return the vector 3 f
 	 */
 	@Override
-	default Vector3f toVector(final GamaPoint v) {
+	default Vector3f toVector(final IPoint v) {
 		return VectorUtils.toNativeBulletVector(v);
 	}
 
@@ -39,7 +40,7 @@ public interface INativeBulletPhysicalEntity extends IPhysicalEntity<Vector3f> {
 	 * @return the gama point
 	 */
 	@Override
-	default GamaPoint toGamaPoint(final Vector3f v) {
+	default IPoint  toGamaPoint(final Vector3f v) {
 		return VectorUtils.toGamaPoint(v);
 	}
 
@@ -50,7 +51,7 @@ public interface INativeBulletPhysicalEntity extends IPhysicalEntity<Vector3f> {
 	 * @param result the result
 	 * @return the gama point
 	 */
-	default GamaPoint toGamaPoint(final Vector3f v, final GamaPoint result) {
+	default IPoint  toGamaPoint(final Vector3f v, final IPoint result) {
 		return VectorUtils.toGamaPoint(v, result);
 	}
 }

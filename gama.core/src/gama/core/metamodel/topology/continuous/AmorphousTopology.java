@@ -20,8 +20,9 @@ import org.locationtech.jts.geom.Geometry;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ISpatialIndex;
 import gama.core.metamodel.topology.ITopology;
@@ -49,7 +50,7 @@ import gama.gaml.types.Types;
 public class AmorphousTopology implements ITopology {
 
 	/** The expandable environment. */
-	IShape expandableEnvironment = GamaGeometryType.createPoint(new GamaPoint(0, 0));
+	IShape expandableEnvironment = GamaGeometryType.createPoint(GamaPointFactory.create());
 
 	/**
 	 * @see gama.gaml.interfaces.interfaces.IValue#stringValue()
@@ -122,7 +123,7 @@ public class AmorphousTopology implements ITopology {
 	}
 
 	@Override
-	public Double distanceBetween(final IScope scope, final GamaPoint source, final GamaPoint target) {
+	public Double distanceBetween(final IScope scope, final IPoint source, final IPoint target) {
 		return source.euclidianDistanceTo(target);
 	}
 
@@ -134,26 +135,26 @@ public class AmorphousTopology implements ITopology {
 	}
 
 	@Override
-	public GamaPoint getDestination(final IScope scope, final GamaPoint source, final double direction,
-			final double distance, final boolean nullIfOutside) {
+	public IPoint getDestination(final IScope scope, final IPoint source, final double direction, final double distance,
+			final boolean nullIfOutside) {
 		final double cos = distance * Maths.cos(direction);
 		final double sin = distance * Maths.sin(direction);
-		return new GamaPoint(source.getX() + cos, source.getY() + sin);
+		return GamaPointFactory.create(source.getX() + cos, source.getY() + sin);
 
 	}
 
 	@Override
-	public GamaPoint getDestination3D(final IScope scope, final GamaPoint source, final double heading,
-			final double pitch, final double distance, final boolean nullIfOutside) {
+	public IPoint getDestination3D(final IScope scope, final IPoint source, final double heading, final double pitch,
+			final double distance, final boolean nullIfOutside) {
 		final double x = distance * Maths.cos(pitch) * Maths.cos(heading);
 		final double y = distance * Maths.cos(pitch) * Maths.sin(heading);
 		final double z = distance * Maths.sin(pitch);
-		return new GamaPoint(source.getX() + x, source.getY() + y, source.getZ() + z);
+		return GamaPointFactory.create(source.getX() + x, source.getY() + y, source.getZ() + z);
 	}
 
 	@Override
-	public GamaPoint getRandomLocation(final IScope scope) {
-		return new GamaPoint(scope.getRandom().next(), scope.getRandom().next());
+	public IPoint getRandomLocation(final IScope scope) {
+		return GamaPointFactory.create(scope.getRandom().next(), scope.getRandom().next());
 	}
 
 	@Override
@@ -170,7 +171,7 @@ public class AmorphousTopology implements ITopology {
 	 * @see gama.environment.ITopology#normalizeLocation(gama.core.util.GamaPoint, boolean)
 	 */
 	@Override
-	public GamaPoint normalizeLocation(final IScope scope, final GamaPoint p, final boolean nullIfOutside) {
+	public IPoint normalizeLocation(final IScope scope, final IPoint p, final boolean nullIfOutside) {
 		return p;
 	}
 
@@ -199,7 +200,7 @@ public class AmorphousTopology implements ITopology {
 	 * @see gama.environment.ITopology#isValidLocation(gama.core.util.GamaPoint)
 	 */
 	@Override
-	public boolean isValidLocation(final IScope scope, final GamaPoint p) {
+	public boolean isValidLocation(final IScope scope, final IPoint p) {
 		return true;
 	}
 
@@ -210,8 +211,8 @@ public class AmorphousTopology implements ITopology {
 
 	@Override
 	public Double directionInDegreesTo(final IScope scope, final IShape g1, final IShape g2) {
-		final GamaPoint source = g1.getLocation();
-		final GamaPoint target = g2.getLocation();
+		final IPoint source = g1.getLocation();
+		final IPoint target = g2.getLocation();
 		final double x2 = /* translateX(source.x, target.x); */target.getX();
 		final double y2 = /* translateY(source.y, target.y); */target.getY();
 		final double dx = x2 - source.getX();
@@ -225,7 +226,7 @@ public class AmorphousTopology implements ITopology {
 	 *      gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
-	public GamaSpatialPath pathBetween(final IScope scope, final GamaPoint source, final GamaPoint target)
+	public GamaSpatialPath pathBetween(final IScope scope, final IPoint source, final IPoint target)
 			throws GamaRuntimeException {
 		return PathFactory.newInstance(scope, this, GamaListFactory.create(scope, Types.POINT, source, target), 0.0);
 	}
@@ -290,7 +291,7 @@ public class AmorphousTopology implements ITopology {
 	}
 
 	@Override
-	public IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaPoint source, final GamaPoint target,
+	public IList<GamaSpatialPath> kPathsBetween(final IScope scope, final IPoint source, final IPoint target,
 			final int k) {
 		final IList<GamaSpatialPath> paths = GamaListFactory.create(Types.PATH);
 		paths.add(pathBetween(scope, source, target));

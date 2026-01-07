@@ -19,7 +19,8 @@ import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -89,7 +90,7 @@ public class DrawingAttributes {
 	private final int uniqueIndex;
 
 	/** The location. */
-	GamaPoint location;
+	IPoint location;
 
 	/** The size. */
 	Scaling3D size;
@@ -136,13 +137,13 @@ public class DrawingAttributes {
 	 * @param lighting
 	 *            the lighting
 	 */
-	public DrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
-			final IColor color, final IColor border, final Boolean lighting) {
+	public DrawingAttributes(final Scaling3D size, final AxisAngle rotation, final IPoint location, final IColor color,
+			final IColor border, final Boolean lighting) {
 		this();
 		setBorder(border);
 		setFill(color);
 		setSize(size);
-		setLocation(location == null ? null : new GamaPoint(location));
+		setLocation(location == null ? null : GamaPointFactory.create(location));
 		setRotation(rotation);
 		setLighting(lighting);
 	}
@@ -249,14 +250,14 @@ public class DrawingAttributes {
 	 *
 	 * @return the anchor
 	 */
-	public GamaPoint getAnchor() { return GamlCoreConstants.bottom_left; }
+	public IPoint getAnchor() { return GamlCoreConstants.bottom_left; }
 
 	/**
 	 * Gets the location.
 	 *
 	 * @return the location
 	 */
-	public GamaPoint getLocation() { return location; }
+	public IPoint getLocation() { return location; }
 
 	/**
 	 * Gets the size.
@@ -340,7 +341,7 @@ public class DrawingAttributes {
 	 * @param loc
 	 *            the new location
 	 */
-	public void setLocation(final GamaPoint loc) { location = loc; }
+	public void setLocation(final IPoint loc) { location = loc; }
 
 	/**
 	 * Sets the size.

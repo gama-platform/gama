@@ -27,7 +27,8 @@ import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.core.kernel.experiment.ExperimentAgent;
 import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.layers.properties.GenericCameraDefinition;
 import gama.core.outputs.layers.properties.GenericLightDefinition;
 import gama.core.outputs.layers.properties.ICameraDefinition;
@@ -174,7 +175,7 @@ public class LayeredDisplayData {
 	private boolean isAntialiasing = GamaPreferences.Displays.CORE_ANTIALIAS.getValue();
 
 	/** The image dimension. */
-	private volatile GamaPoint imageDimension;
+	private volatile IPoint imageDimension;
 
 	/** The zoom level. */
 	private Double zoomLevel = INITIAL_ZOOM;
@@ -358,13 +359,13 @@ public class LayeredDisplayData {
 	/**
 	 * @return the imageDimension
 	 */
-	public GamaPoint getImageDimension() { return imageDimension; }
+	public IPoint getImageDimension() { return imageDimension; }
 
 	/**
 	 * @param imageDimension
 	 *            the imageDimension to set
 	 */
-	public void setImageDimension(final GamaPoint imageDimension) {
+	public void setImageDimension(final IPoint imageDimension) {
 		// DEBUG.OUT("Setting image dimension to : " + imageDimension);
 		this.imageDimension = imageDimension;
 	}
@@ -464,9 +465,9 @@ public class LayeredDisplayData {
 	 * @param value
 	 *            the new keystone
 	 */
-	public void setKeystone(final List<GamaPoint> value) {
+	public void setKeystone(final List<IPoint> value) {
 		if (value == null) return;
-		keystone.setTo(value.toArray(new GamaPoint[4]));
+		keystone.setTo(value.toArray(new IPoint[4]));
 	}
 
 	/**
@@ -477,7 +478,7 @@ public class LayeredDisplayData {
 	 */
 	public void setKeystone(final ICoordinates value) {
 		if (value == null) return;
-		this.keystone.setTo(value.toCoordinateArray());
+		this.keystone.setTo(value.toPointsArray());
 	}
 
 	/**
@@ -574,7 +575,7 @@ public class LayeredDisplayData {
 
 		final IExpression keystone_exp = facets.getExpr(IKeyword.KEYSTONE);
 		if (keystone_exp != null) {
-			@SuppressWarnings ("unchecked") final List<GamaPoint> val =
+			@SuppressWarnings ("unchecked") final List<IPoint> val =
 					GamaListFactory.create(scope, Types.POINT, Cast.asList(scope, keystone_exp.value(scope)));
 			if (val.size() >= 4) { setKeystone(val); }
 		}
@@ -647,7 +648,7 @@ public class LayeredDisplayData {
 	private void updateAutoSave(final IScope scope, final IExpression auto) throws GamaRuntimeException {
 		if (auto == null) return;
 		if (auto.getGamlType().equals(Types.POINT)) {
-			GamaPoint result = Cast.asPoint(scope, auto.value(scope));
+			IPoint result = Cast.asPoint(scope, auto.value(scope));
 			setAutosave(result != null);
 			setImageDimension(result);
 		} else if (auto.getGamlType().equals(Types.STRING)) {
@@ -801,7 +802,7 @@ public class LayeredDisplayData {
 		double w = getEnvWidth();
 		double h = getEnvHeight();
 		double max = Math.max(w, h) * getCameraDistanceCoefficient();
-		GamaPoint target = new GamaPoint(w / 2, -h / 2, 0); // Y negated
+		IPoint target = GamaPointFactory.create(w / 2, -h / 2, 0); // Y negated
 		for (String preset : ICameraDefinition.PRESETS) {
 			addCameraDefinition(new GenericCameraDefinition(preset, target, getEnvWidth(), getEnvHeight(), max));
 		}
@@ -842,26 +843,26 @@ public class LayeredDisplayData {
 	/**
 	 * @return the cameraPos
 	 */
-	public GamaPoint getCameraPos() { return camera.getLocation(); }
+	public IPoint getCameraPos() { return camera.getLocation(); }
 
 	/**
 	 * @param cameraPos
 	 *            the cameraPos to set
 	 */
-	public void setCameraPos(final GamaPoint point) {
+	public void setCameraPos(final IPoint point) {
 		camera.setLocation(point);
 	}
 
 	/**
 	 * @return the cameraLookPos
 	 */
-	public GamaPoint getCameraTarget() { return camera.getTarget(); }
+	public IPoint getCameraTarget() { return camera.getTarget(); }
 
 	/**
 	 * @param cameraLookPos
 	 *            the cameraLookPos to set
 	 */
-	public void setCameraTarget(final GamaPoint point) {
+	public void setCameraTarget(final IPoint point) {
 		camera.setTarget(point);
 	}
 
@@ -987,14 +988,14 @@ public class LayeredDisplayData {
 	 *
 	 * @return the rotation center
 	 */
-	public GamaPoint getRotationCenter() { return rotation != null ? rotation.getCenter().yNegated() : null; }
+	public IPoint getRotationCenter() { return rotation != null ? rotation.getCenter().yNegated() : null; }
 
 	/**
 	 * Gets the rotation axis.
 	 *
 	 * @return the rotation axis
 	 */
-	public GamaPoint getRotationAxis() { return rotation != null ? rotation.getAxis().yNegated() : null; }
+	public IPoint getRotationAxis() { return rotation != null ? rotation.getAxis().yNegated() : null; }
 
 	/**
 	 * Reset Z rotation.

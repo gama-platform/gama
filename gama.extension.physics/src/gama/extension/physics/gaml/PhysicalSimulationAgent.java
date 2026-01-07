@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PhysicalSimulationAgent.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * PhysicalSimulationAgent.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,7 +23,8 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
@@ -111,7 +112,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	Boolean automatedRegistration = true;
 
 	/** The gravity. */
-	final GamaPoint gravity = new GamaPoint(0, 0, -9.81d);
+	final IPoint gravity = GamaPointFactory.create(0, 0, -9.81d);
 
 	/** The terrain. */
 	IField terrain;
@@ -367,7 +368,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@getter (
 			value = GRAVITY,
 			initializer = true)
-	public GamaPoint getGravity(final IScope scope) {
+	public IPoint getGravity(final IScope scope) {
 		return gravity;
 	}
 
@@ -380,7 +381,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the g
 	 */
 	@setter (GRAVITY)
-	public void setGravity(final IScope scope, final GamaPoint g) {
+	public void setGravity(final IScope scope, final IPoint g) {
 		this.gravity.setLocation(g);
 		// Dont provoke the instantiation of the gateway yet if it is null
 		if (gateway != null) { gateway.setGravity(g); }

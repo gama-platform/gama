@@ -24,8 +24,8 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.runtime.IScope;
@@ -100,7 +100,7 @@ public class SpatialProjections {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.inverseTransform(g.getInnerGeometry()));
-		if (g instanceof GamaPoint) return s.getLocation();
+		if (g instanceof IPoint ) return s.getLocation();
 		return s;
 	}
 
@@ -130,7 +130,7 @@ public class SpatialProjections {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.transform(g.getInnerGeometry()));
-		if (g instanceof GamaPoint) return s.getLocation();
+		if (g instanceof IPoint ) return s.getLocation();
 		return s;
 	}
 
@@ -166,7 +166,7 @@ public class SpatialProjections {
 		}
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.transform(g.getInnerGeometry()));
-		if (g instanceof GamaPoint) return s.getLocation();
+		if (g instanceof IPoint ) return s.getLocation();
 		return s;
 	}
 
@@ -203,7 +203,7 @@ public class SpatialProjections {
 		}
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.inverseTransform(g.getInnerGeometry()));
-		if (g instanceof GamaPoint) return s.getLocation();
+		if (g instanceof IPoint ) return s.getLocation();
 		return s;
 	}
 
@@ -261,7 +261,7 @@ public class SpatialProjections {
 		}
 		if (targetGeometry == null) return null;
 		final IShape s = GamaShapeFactory.createFrom(targetGeometry);
-		if (g instanceof GamaPoint) return s.getLocation();
+		if (g instanceof IPoint ) return s.getLocation();
 		return s;
 	}
 }

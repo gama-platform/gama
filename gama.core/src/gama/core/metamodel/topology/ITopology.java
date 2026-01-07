@@ -22,7 +22,8 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.runtime.IScope;
@@ -241,7 +242,7 @@ public interface ITopology extends IValue {
 	 *            the target
 	 * @return the double
 	 */
-	Double distanceBetween(IScope scope, final GamaPoint source, final GamaPoint target);
+	Double distanceBetween(IScope scope, final IPoint  source, final IPoint  target);
 
 	/**
 	 * Path between.
@@ -271,8 +272,7 @@ public interface ITopology extends IValue {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	GamaSpatialPath pathBetween(IScope scope, final GamaPoint source, final GamaPoint target)
-			throws GamaRuntimeException;
+	GamaSpatialPath pathBetween(IScope scope, final IPoint  source, final IPoint  target) throws GamaRuntimeException;
 
 	/**
 	 * Return the location corresponding to a displacement from source, with an angle (in degrees) given by direction
@@ -288,7 +288,7 @@ public interface ITopology extends IValue {
 	 *            tells wether to return the destination point or null if the destination is outside the topology
 	 * @return a point or null if no random locations are available
 	 */
-	GamaPoint getDestination(IScope scope, final GamaPoint source, final double direction, final double distance,
+	IPoint  getDestination(IScope scope, final IPoint  source, final double direction, final double distance,
 			boolean nullIfOutside);
 
 	/**
@@ -305,7 +305,7 @@ public interface ITopology extends IValue {
 	 *            tells wether to return the destination point or null if the destination is outside the topology
 	 * @return a point or null if no random locations are available
 	 */
-	GamaPoint getDestination3D(IScope scope, final GamaPoint source, final double heading, final double pitch,
+	IPoint  getDestination3D(IScope scope, final IPoint  source, final double heading, final double pitch,
 			final double distance, boolean nullIfOutside);
 
 	/**
@@ -314,7 +314,7 @@ public interface ITopology extends IValue {
 	 *
 	 * @return a point, or null if no random locations are available
 	 */
-	GamaPoint getRandomLocation(IScope scope);
+	IPoint  getRandomLocation(IScope scope);
 
 	/**
 	 * Return the collection of places (IGeometry) defined by this topology. For continuous topologies, it is a GamaList
@@ -344,7 +344,7 @@ public interface ITopology extends IValue {
 	 *            tells whether to return null or to coerce p if p is outside the bounds of the topology
 	 * @return a valid point or null if nullIfOutside is true and the point is outside
 	 */
-	GamaPoint normalizeLocation(IScope scope, final GamaPoint p, boolean nullIfOutside);
+	IPoint  normalizeLocation(IScope scope, final IPoint  p, boolean nullIfOutside);
 
 	/**
 	 * @throws GamaRuntimeException
@@ -380,7 +380,7 @@ public interface ITopology extends IValue {
 	 *            the p
 	 * @return true, if is valid location
 	 */
-	boolean isValidLocation(IScope scope, GamaPoint p);
+	boolean isValidLocation(IScope scope, IPoint p);
 
 	/**
 	 * Checks if is valid geometry.
@@ -431,7 +431,7 @@ public interface ITopology extends IValue {
 	 *            the k
 	 * @return the i list
 	 */
-	IList<GamaSpatialPath> kPathsBetween(IScope scope, GamaPoint source, GamaPoint target, int k);
+	IList<GamaSpatialPath> kPathsBetween(IScope scope, IPoint source, IPoint target, int k);
 
 	/**
 	 * Sets the root.

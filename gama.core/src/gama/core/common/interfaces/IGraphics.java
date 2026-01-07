@@ -17,7 +17,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.charts.ChartOutput;
 import gama.core.util.IColor;
@@ -61,21 +61,21 @@ public interface IGraphics {
 		 *
 		 * @return the camera pos
 		 */
-		GamaPoint getCameraPos();
+		IPoint  getCameraPos();
 
 		/**
 		 * Gets the camera target.
 		 *
 		 * @return the camera target
 		 */
-		GamaPoint getCameraTarget();
+		IPoint  getCameraTarget();
 
 		/**
 		 * Gets the camera orientation.
 		 *
 		 * @return the camera orientation
 		 */
-		GamaPoint getCameraOrientation();
+		IPoint  getCameraOrientation();
 	}
 
 	/** The quality rendering. */

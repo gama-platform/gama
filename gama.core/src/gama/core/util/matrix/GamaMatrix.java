@@ -15,7 +15,8 @@ import org.eclipse.core.runtime.ISafeRunnable;
 
 import gama.core.common.interfaces.ISafeConsumer;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -79,7 +80,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 *            the object
 	 * @return the gama point
 	 */
-	protected GamaPoint buildIndex(final IScope scope, final Object object) {
+	protected IPoint buildIndex(final IScope scope, final Object object) {
 		return GamaPointType.staticCast(scope, object, false);
 	}
 
@@ -194,8 +195,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @param preferredSize
 	 *            the preferred size
 	 */
-	protected GamaMatrix(final IScope scope, final List objects, final GamaPoint preferredSize,
-			final IType contentsType) {
+	protected GamaMatrix(final IScope scope, final List objects, final IPoint preferredSize, final IType contentsType) {
 		if (preferredSize != null) {
 			numRows = (int) preferredSize.getY();
 			numCols = (int) preferredSize.getX();
@@ -217,8 +217,17 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		this.type = Types.MATRIX.of(contentsType);
 	}
 
+	/**
+	 * Gets the.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p
+	 *            the p
+	 * @return the t
+	 */
 	@Override
-	public T get(final IScope scope, final GamaPoint p) {
+	public T get(final IScope scope, final IPoint p) {
 		final double px = p.getX();
 		final double py = p.getY();
 		if (px > numCols - 1 || px < 0)
@@ -234,7 +243,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		final int size = indices.size();
 		if (size == 1) {
 			final Object index = indices.get(0);
-			if (index instanceof GamaPoint) return get(scope, (GamaPoint) index);
+			if (index instanceof IPoint ip) return get(scope, ip);
 			return this.getNthElement(Cast.asInt(scope, index));
 		}
 		final int px = Cast.asInt(scope, indices.get(0));
@@ -262,7 +271,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	}
 
 	@Override
-	public GamaPoint getDimensions() { return new GamaPoint(numCols, numRows); }
+	public IPoint getDimensions() { return GamaPointFactory.create(numCols, numRows); }
 
 	@Override
 	public final String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -433,7 +442,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 			setNthElement(scope, (int) index, value);
 			return;
 		}
-		final GamaPoint p = buildIndex(scope, index);
+		final IPoint p = buildIndex(scope, index);
 		set(scope, (int) p.getX(), (int) p.getY(), value);
 
 	}
@@ -503,7 +512,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 *
 	 */
 	@Override
-	public final IMatrix<T> matrixValue(final IScope scope, final IType type, final GamaPoint size, final boolean copy)
+	public final IMatrix<T> matrixValue(final IScope scope, final IType type, final IPoint size, final boolean copy)
 			throws GamaRuntimeException {
 		return _matrixValue(scope, size, type, copy);
 	}
@@ -632,7 +641,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 *            the copy
 	 * @return the i matrix
 	 */
-	protected abstract IMatrix<T> _matrixValue(IScope scope, GamaPoint size, IType type, boolean copy);
+	protected abstract IMatrix<T> _matrixValue(IScope scope, IPoint size, IType type, boolean copy);
 
 	/**
 	 * Clear.

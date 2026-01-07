@@ -18,7 +18,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationSet;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.AbstractTopology;
 import gama.core.metamodel.topology.ITopology;
@@ -269,7 +269,7 @@ public class GridTopology extends AbstractTopology {
 	 * @see gama.environment.ITopology#isValidLocation(gama.core.util.GamaPoint)
 	 */
 	@Override
-	public boolean isValidLocation(final IScope scope, final GamaPoint p) {
+	public boolean isValidLocation(final IScope scope, final IPoint p) {
 		return getPlaces().getPlaceAt(p) != null;
 
 	}
@@ -287,7 +287,7 @@ public class GridTopology extends AbstractTopology {
 	}
 
 	@Override
-	public Double distanceBetween(final IScope scope, final GamaPoint source, final GamaPoint target) {
+	public Double distanceBetween(final IScope scope, final IPoint source, final IPoint target) {
 		if (!isValidLocation(scope, source) || !isValidLocation(scope, target)) return Double.MAX_VALUE;
 		// TODO null or Double.MAX_VALUE ?
 		return (double) getPlaces().manhattanDistanceBetween(source, target);
@@ -356,7 +356,7 @@ public class GridTopology extends AbstractTopology {
 	// }
 	//
 	// @Override
-	// public IList<GamaSpatialPath> KpathsBetween(final IScope scope, final GamaPoint source, final GamaPoint target,
+	// public IList<GamaSpatialPath> KpathsBetween(final IScope scope, final IPoint source, final IPoint target,
 	// final int k) {
 	// // TODO for the moment, returns only 1 shortest path.... need to fix it!
 	// return super.KpathsBetween(scope, source, target, k);

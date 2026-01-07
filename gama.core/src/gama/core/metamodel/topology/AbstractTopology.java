@@ -28,8 +28,9 @@ import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.continuous.RootTopology;
 import gama.core.metamodel.topology.filter.IAgentFilter;
@@ -113,9 +114,9 @@ public abstract class AbstractTopology implements ITopology {
 	 *            the loc
 	 * @return the geometry
 	 */
-	public Geometry returnToroidalGeom(final GamaPoint loc) {
+	public Geometry returnToroidalGeom(final IPoint loc) {
 		final List<Geometry> geoms = new ArrayList<>();
-		final Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(loc);
+		final Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(loc.toCoordinate());
 		final AffineTransformation at = new AffineTransformation();
 		geoms.add(pt);
 		for (int cnt = 0; cnt < 8; cnt++) {
@@ -231,8 +232,21 @@ public abstract class AbstractTopology implements ITopology {
 				GamaListFactory.create(scope, Types.POINT, source.getLocation(), target.getLocation()), 0.0);
 	}
 
+	/**
+	 * Path between.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param source
+	 *            the source
+	 * @param target
+	 *            the target
+	 * @return the gama spatial path
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@Override
-	public GamaSpatialPath pathBetween(final IScope scope, final GamaPoint source, final GamaPoint target)
+	public GamaSpatialPath pathBetween(final IScope scope, final IPoint source, final IPoint target)
 			throws GamaRuntimeException {
 		return PathFactory.newInstance(scope, this, GamaListFactory.wrap(Types.POINT, source, target), 0.0);
 	}
@@ -246,7 +260,7 @@ public abstract class AbstractTopology implements ITopology {
 	}
 
 	@Override
-	public IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaPoint source, final GamaPoint target,
+	public IList<GamaSpatialPath> kPathsBetween(final IScope scope, final IPoint source, final IPoint target,
 			final int k) {
 		final IList<GamaSpatialPath> paths = GamaListFactory.create(Types.PATH);
 		paths.add(pathBetween(scope, source, target));
@@ -279,7 +293,7 @@ public abstract class AbstractTopology implements ITopology {
 	public IShape getEnvironment() { return environment; }
 
 	@Override
-	public GamaPoint normalizeLocation(final IScope scope, final GamaPoint point, final boolean nullIfOutside) {
+	public IPoint normalizeLocation(final IScope scope, final IPoint point, final boolean nullIfOutside) {
 
 		boolean covers = environment.getGeometry().covers(point);
 		if (covers) return point;
@@ -291,10 +305,10 @@ public abstract class AbstractTopology implements ITopology {
 
 		// final Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(point);
 		// final AffineTransformation at = new AffineTransformation();
-		GamaPoint p = new GamaPoint();
+		IPoint p = GamaPointFactory.create();
 		for (int cnt = 0; cnt < 8; cnt++) {
 			// at.setToTranslation(getAdjustedXYVector()[cnt][0], getAdjustedXYVector()[cnt][1]);
-			// final GamaPoint newPt = new GamaPoint(at.transform(pt).getCoordinate());
+			// final IPoint newPt = GamaPointFactory.create(at.transform(pt).getCoordinate());
 			p.setLocation(point).add(getAdjustedXYVector()[cnt][0], getAdjustedXYVector()[cnt][1], 0);
 			if (environment.getGeometry().covers(p)) return p;
 		}
@@ -330,22 +344,22 @@ public abstract class AbstractTopology implements ITopology {
 	}
 
 	@Override
-	public GamaPoint getDestination(final IScope scope, final GamaPoint source, final double direction,
-			final double distance, final boolean nullIfOutside) {
+	public IPoint getDestination(final IScope scope, final IPoint source, final double direction, final double distance,
+			final boolean nullIfOutside) {
 		final double cos = distance * Maths.cos(direction);
 		final double sin = distance * Maths.sin(direction);
-		final GamaPoint result = source.plus(cos, sin, 0);
+		final IPoint result = source.plus(cos, sin, 0);
 		return normalizeLocation(scope, result, nullIfOutside);
 	}
 
 	@Override
-	public GamaPoint getDestination3D(final IScope scope, final GamaPoint source, final double heading,
-			final double pitch, final double distance, final boolean nullIfOutside) throws GamaRuntimeException {
+	public IPoint getDestination3D(final IScope scope, final IPoint source, final double heading, final double pitch,
+			final double distance, final boolean nullIfOutside) throws GamaRuntimeException {
 		final double x = distance * Maths.cos(pitch) * Maths.cos(heading);
 		final double y = distance * Maths.cos(pitch) * Maths.sin(heading);
 		final double z = distance * Maths.sin(pitch);
-		return normalizeLocation3D(scope, new GamaPoint(source.getX() + x, source.getY() + y, source.getZ() + z),
-				nullIfOutside);
+		return normalizeLocation3D(scope,
+				GamaPointFactory.create(source.getX() + x, source.getY() + y, source.getZ() + z), nullIfOutside);
 	}
 
 	/**
@@ -357,9 +371,9 @@ public abstract class AbstractTopology implements ITopology {
 	 *            the null if outside
 	 * @return the gama point
 	 */
-	public GamaPoint normalizeLocation3D(final IScope scope, final GamaPoint point, final boolean nullIfOutside)
+	public IPoint normalizeLocation3D(final IScope scope, final IPoint point, final boolean nullIfOutside)
 			throws GamaRuntimeException {
-		final GamaPoint p = normalizeLocation(scope, point, nullIfOutside);
+		final IPoint p = normalizeLocation(scope, point, nullIfOutside);
 		if (p == null) return null;
 		final double z = p.getZ();
 		if (z < 0) return null;
@@ -393,7 +407,7 @@ public abstract class AbstractTopology implements ITopology {
 	protected abstract ITopology _copy(IScope scope) throws GamaRuntimeException;
 
 	@Override
-	public GamaPoint getRandomLocation(final IScope scope) {
+	public IPoint getRandomLocation(final IScope scope) {
 		return GeometryUtils.pointInGeom(scope, environment);
 	}
 

@@ -23,7 +23,8 @@ import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.ILayer;
 import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.runtime.GAMA;
@@ -104,7 +105,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	protected final Rectangle2D rect = new Rectangle2D.Double(0, 0, 1, 1);
 
 	/** The Constant origin. */
-	protected static final GamaPoint origin = new GamaPoint(0, 0);
+	protected static final IPoint origin = GamaPointFactory.create();
 
 	/** The current layer alpha. */
 	protected double currentLayerAlpha = 1;
@@ -220,12 +221,12 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 
 	@Override
 	public double getXOffsetInPixels() {
-		return currentLayer == null ? origin.x : currentLayer.getData().getPositionInPixels().getX();
+		return currentLayer == null ? origin.getX() : currentLayer.getData().getPositionInPixels().getX();
 	}
 
 	@Override
 	public double getYOffsetInPixels() {
-		return currentLayer == null ? origin.y : currentLayer.getData().getPositionInPixels().getY();
+		return currentLayer == null ? origin.getY() : currentLayer.getData().getPositionInPixels().getY();
 	}
 
 	@Override

@@ -19,7 +19,8 @@ import java.util.Random;
 import gama.core.common.interfaces.IGamaRNG;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.operators.Maths;
 
 /**
@@ -572,11 +573,27 @@ public class RandomUtils implements IRandom {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint between(final GamaPoint pMin, final GamaPoint pMax, final GamaPoint pStep) {
-		double x = between(pMin.x, pMax.x, pStep.x);
-		double y = between(pMin.y, pMax.y, pStep.y);
-		double z = between(pMin.z, pMax.z, pStep.z);
-		return new GamaPoint(x, y, z);
+	public IPoint between(final IPoint pMin, final IPoint pMax, final IPoint pStep) {
+		double x = between(pMin.getX(), pMax.getX(), pStep.getX());
+		double y = between(pMin.getY(), pMax.getY(), pStep.getY());
+		double z = between(pMin.getZ(), pMax.getZ(), pStep.getZ());
+		return GamaPointFactory.create(x, y, z);
+	}
+
+	/**
+	 * Between.
+	 *
+	 * @param pMin
+	 *            the min
+	 * @param pMax
+	 *            the max
+	 * @return the i point
+	 */
+	public IPoint between(final IPoint pMin, final IPoint pMax) {
+		double x = between(pMin.getX(), pMax.getX());
+		double y = between(pMin.getY(), pMax.getY());
+		double z = between(pMin.getZ(), pMax.getZ());
+		return GamaPointFactory.create(x, y, z);
 	}
 
 }

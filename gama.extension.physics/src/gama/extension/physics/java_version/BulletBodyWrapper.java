@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * BulletBodyWrapper.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * BulletBodyWrapper.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,7 +28,8 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaPair;
 import gama.extension.physics.common.AbstractBodyWrapper;
@@ -76,7 +77,7 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	public RigidBody createAndInitializeBody(final CollisionShape shape, final DiscreteDynamicsWorld world) {
 		final Transform startTransform = new Transform();
 		startTransform.setIdentity();
-		GamaPoint p = agent.getLocation();
+		IPoint p = agent.getLocation();
 		startTransform.origin.set((float) p.getX(), (float) p.getY(), (float) p.getZ() + aabbTranslation.getZ());
 		final MotionState state = new DefaultMotionState(startTransform);
 		final RigidBodyConstructionInfo info = new RigidBodyConstructionInfo(0f, state, shape);
@@ -94,7 +95,7 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 		RigidBody body = new RigidBody(info);
 		if (!isStatic) { body.setActivationState(CollisionObject.DISABLE_DEACTIVATION); }
 		if (previous != null) {
-			GamaPoint pointTransfer = new GamaPoint();
+			IPoint pointTransfer = GamaPointFactory.create();
 			body.setLinearVelocity(toVector(previous.getLinearVelocity(pointTransfer)));
 			body.setAngularVelocity(toVector(previous.getAngularVelocity(pointTransfer)));
 		}
@@ -140,38 +141,38 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	}
 
 	@Override
-	public void setAngularVelocity(final GamaPoint angularVelocity) {
+	public void setAngularVelocity(final IPoint angularVelocity) {
 		body.setAngularVelocity(toVector(angularVelocity));
 	}
 
 	@Override
-	public void setLinearVelocity(final GamaPoint linearVelocity) {
+	public void setLinearVelocity(final IPoint linearVelocity) {
 		body.setLinearVelocity(toVector(linearVelocity));
 	}
 
 	@Override
-	public void setLocation(final GamaPoint loc) {
+	public void setLocation(final IPoint loc) {
 		// We synchronize both the world transform of the body (which holds the position at the end of last tick) and
 		// the motion state.
 		body.getWorldTransform(temp);
-		temp.origin.set((float) loc.x, (float) loc.y, (float) loc.z + aabbTranslation.z);
+		temp.origin.set((float) loc.getX(), (float) loc.getY(), (float) loc.getZ() + aabbTranslation.z);
 		body.setWorldTransform(temp);
 	}
 
 	@Override
-	public void applyImpulse(final GamaPoint impulse) {
+	public void applyImpulse(final IPoint impulse) {
 		body.applyCentralImpulse(toVector(impulse));
 
 	}
 
 	@Override
-	public void applyTorque(final GamaPoint torque) {
+	public void applyTorque(final IPoint torque) {
 		body.applyTorque(toVector(torque));
 
 	}
 
 	@Override
-	public void applyForce(final GamaPoint force) {
+	public void applyForce(final IPoint force) {
 		body.applyCentralForce(toVector(force));
 
 	}
@@ -189,13 +190,13 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	}
 
 	@Override
-	public GamaPoint getAngularVelocity(final GamaPoint v) {
+	public IPoint getAngularVelocity(final IPoint v) {
 		body.getAngularVelocity(vtemp);
 		return toGamaPoint(vtemp, v);
 	}
 
 	@Override
-	public GamaPoint getLinearVelocity(final GamaPoint v) {
+	public IPoint getLinearVelocity(final IPoint v) {
 		body.getLinearVelocity(vtemp);
 		return toGamaPoint(vtemp, v);
 	}
@@ -204,7 +205,7 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	public IShape getAABB() {
 		body.getAabb(vtemp, vtemp2);
 		return buildBox(vtemp2.x - vtemp.x, vtemp2.y - vtemp.y, vtemp2.z - vtemp.z,
-				new GamaPoint(vtemp.x + (vtemp2.x - vtemp.x) / 2, vtemp.y + (vtemp2.y - vtemp.y) / 2,
+				GamaPointFactory.create(vtemp.x + (vtemp2.x - vtemp.x) / 2, vtemp.y + (vtemp2.y - vtemp.y) / 2,
 						vtemp.z + (vtemp2.z - vtemp.z) / 2 + visualTranslation.z));
 	}
 
@@ -239,12 +240,13 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	@Override
 	public void transferLocationAndRotationToAgent() {
 		Vector3f vectorTransfer = body.getWorldTransform(temp).origin;
-		agent.setLocation(new GamaPoint(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
+		agent.setLocation(
+				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		temp.getRotation(quatTransfer);
 		axisAngleTransfer.set(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, GamaPoint>) agent.getAttribute(ROTATION);
+		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, IPoint>) agent.getAttribute(ROTATION);
 		if (rot == null) {
-			rot = new GamaPair<>(0d, new GamaPoint(0, 0, 1), Types.FLOAT, Types.POINT);
+			rot = new GamaPair<>(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
 			agent.setAttribute(ROTATION, rot);
 		}
 		rot.key = Math.toDegrees(axisAngleTransfer.angle);

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Particle.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Particle.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,8 @@ import java.util.Map;
 import gama.core.kernel.experiment.BatchAgent;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.gaml.operators.Cast;
 
@@ -44,7 +45,7 @@ class Particle {
 	BatchAgent currentExperiment;
 
 	/** The parameters. */
-	final Map<String, GamaPoint> parameters;
+	final Map<String, IPoint> parameters;
 
 	/** The algo. */
 	AOptimizationAlgorithm algo;
@@ -69,7 +70,7 @@ class Particle {
 		final List<IParameter.Batch> v = agent.getParametersToExplore();
 		parameters = new HashMap<>();
 		for (IParameter p : v) {
-			GamaPoint minMax = new GamaPoint(
+			IPoint minMax = GamaPointFactory.create(
 					p.getMinValue(scope) != null ? Cast.asFloat(scope, p.getMinValue(scope)) : Double.NEGATIVE_INFINITY,
 					p.getMaxValue(scope) != null ? Cast.asFloat(scope, p.getMaxValue(scope))
 							: Double.POSITIVE_INFINITY);
@@ -142,9 +143,9 @@ class Particle {
 	void updatePosition(final IScope scope) {
 
 		for (String key : position.keySet()) {
-			GamaPoint p = parameters.get(key);
+			IPoint p = parameters.get(key);
 			double val = Cast.asFloat(scope, position.get(key)) + Cast.asFloat(scope, velocity.get(key));
-			val = Math.min(Math.max(val, Cast.asFloat(scope, p.x)), p.y);
+			val = Math.min(Math.max(val, Cast.asFloat(scope, p.getX())), p.getY());
 			position.put(key, val);
 		}
 	}

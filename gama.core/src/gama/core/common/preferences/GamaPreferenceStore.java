@@ -35,7 +35,7 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import gama.core.common.preferences.Pref.ValueProvider;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
 import gama.core.util.GamaColorFactory;
@@ -518,7 +518,7 @@ public abstract class GamaPreferenceStore<T> {
 			case IType.STRING -> put(key, toJavaString((String) value));
 			case IType.FILE -> put(key, value == null ? "" : ((IGamaFile) value).getPath(null));
 			case IType.COLOR -> putInt(key, value == null ? 0 : ((GamaColor) value).getRGB());
-			case IType.POINT -> put(key, value == null ? "{0,0}" : ((GamaPoint) value).stringValue(null));
+			case IType.POINT -> put(key, value == null ? "{0,0}" : ((IPoint) value).stringValue(null));
 			case IType.FONT -> put(key, value == null ? DEFAULT_FONT : value.toString());
 			case IType.DATE -> put(key, value == null ? toJavaString(GamaDateType.EPOCH.toISOString())
 					: toJavaString(((IDate) value).toISOString()));
@@ -548,7 +548,8 @@ public abstract class GamaPreferenceStore<T> {
 				case IType.BOOL -> gp.init((ValueProvider) () -> getBoolean(key, Cast.asBool(scope, value)));
 				case IType.STRING -> gp.init((ValueProvider) () -> get(key, toJavaString(asString(scope, value))));
 				case IType.FILE -> gp.init((ValueProvider) () -> new GenericFile(get(key, (String) value), false));
-				case IType.COLOR -> gp.init((ValueProvider) () -> GamaColorFactory.get(getInt(key, asInt(scope, value))));
+				case IType.COLOR -> gp
+						.init((ValueProvider) () -> GamaColorFactory.get(getInt(key, asInt(scope, value))));
 				case IType.FONT -> gp.init((ValueProvider) () -> {
 					final var font = get(key, asString(scope, value));
 					if (DEFAULT_FONT.equals(font)) return null;

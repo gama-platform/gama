@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.interfaces.IDisposable;
 
 /**
@@ -76,6 +76,16 @@ public interface IEnvelope extends IIntersectable, IDisposable {
 	void expandToInclude(final Coordinate p);
 
 	/**
+	 * Expand to include.
+	 *
+	 * @param p
+	 *            the p
+	 */
+	default void expandToInclude(final IPoint p) {
+		expandToInclude(p.toCoordinate());
+	}
+
+	/**
 	 * Enlarges this <code>Envelope</code> so that it contains the given point. Has no effect if the point is already on
 	 * or within the envelope.
 	 *
@@ -125,6 +135,17 @@ public interface IEnvelope extends IIntersectable, IDisposable {
 	boolean covers(final Coordinate p);
 
 	/**
+	 * Covers.
+	 *
+	 * @param p
+	 *            the p
+	 * @return true, if successful
+	 */
+	default boolean covers(final IPoint p) {
+		return covers(p.toCoordinate());
+	}
+
+	/**
 	 * Check if the point <code>p</code> overlaps (lies inside) the region of this <code>Envelope</code>.
 	 *
 	 * @param p
@@ -137,10 +158,22 @@ public interface IEnvelope extends IIntersectable, IDisposable {
 	/**
 	 * Intersects.
 	 *
+	 * @param p
+	 *            the p
+	 * @return true, if successful
+	 */
+	default boolean intersects(final IPoint p) {
+		return intersects(p.toCoordinate());
+	}
+
+	/**
+	 * Intersects.
+	 *
 	 * @param other
 	 *            the other
 	 * @return true, if successful
 	 */
+	@Override
 	boolean intersects(final IEnvelope other);
 
 	/**
@@ -148,7 +181,7 @@ public interface IEnvelope extends IIntersectable, IDisposable {
 	 *
 	 * @return the centre coordinate of this envelope <code>null</code> if the envelope is null
 	 */
-	GamaPoint centre();
+	IPoint center();
 
 	/**
 	 * Translates this envelope by given amounts in the X and Y direction. Returns the envelope

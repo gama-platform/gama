@@ -14,7 +14,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.AbstractAgent;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColor;
@@ -110,7 +110,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	 * @see gama.core.metamodel.shape.IShape#getPoints()
 	 */
 	@Override
-	public IList<GamaPoint> getPoints() { return geometry.getPoints(); }
+	public IList<IPoint> getPoints() { return geometry.getPoints(); }
 
 	@Override
 	public void setDepth(final double depth) {
@@ -155,7 +155,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	 * @see gama.core.metamodel.shape.IShape#getCentroid()
 	 */
 	@Override
-	public GamaPoint getCentroid() { return geometry.getCentroid(); }
+	public IPoint getCentroid() { return geometry.getCentroid(); }
 
 	/**
 	 * Method getExteriorRing()

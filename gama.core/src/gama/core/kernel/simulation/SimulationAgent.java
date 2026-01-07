@@ -45,7 +45,8 @@ import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.ISerialisedPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.continuous.RootTopology;
@@ -463,13 +464,13 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public boolean isMicroSimulation() { return getSpecies().getDescription().belongsToAMicroModel(); }
 
 	@Override
-	public GamaPoint setLocation(final IScope scope, final GamaPoint p) {
+	public IPoint setLocation(final IScope scope, final IPoint p) {
 		return p;
 	}
 
 	@Override
-	public GamaPoint getLocation(final IScope scope) {
-		if (geometry == null || geometry.getInnerGeometry() == null) return new GamaPoint(0, 0);
+	public IPoint getLocation(final IScope scope) {
+		if (geometry == null || geometry.getInnerGeometry() == null) return GamaPointFactory.create(0, 0);
 		return super.getLocation(scope);
 	}
 
@@ -480,7 +481,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		// We systematically translate the geometry to {0,0}
 		IShape geom = g;
 		if (geom == null) {
-			geom = GamaGeometryType.buildBox(100, 100, 100, new GamaPoint(50, 50, 50));
+			geom = GamaGeometryType.buildBox(100, 100, 100, GamaPointFactory.create(50, 50, 50));
 		} else {
 			// See Issue #2787, #2795
 			final Geometry gg = geom.getInnerGeometry();
@@ -495,7 +496,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 		((WorldProjection) getProjectionFactory().getWorld()).updateTranslations(env);
 		((WorldProjection) getProjectionFactory().getWorld()).updateUnit(getProjectionFactory().getUnitConverter());
-		final GamaPoint p = new GamaPoint(-env.getMinX(), -env.getMinY(), -env.getMinZ());
+		final IPoint p = GamaPointFactory.create(-env.getMinX(), -env.getMinY(), -env.getMinZ());
 		geometry.setGeometry(SpatialTransformations.translated_by(scope, geom, p));
 		if (getProjectionFactory().getUnitConverter() != null) {
 			((WorldProjection) getProjectionFactory().getWorld()).convertUnit(geometry.getInnerGeometry());

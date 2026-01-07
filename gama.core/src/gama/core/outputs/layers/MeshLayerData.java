@@ -13,7 +13,8 @@ package gama.core.outputs.layers;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColorFactory;
@@ -78,7 +79,7 @@ public class MeshLayerData extends LayerData {
 	final Attribute<Double> above;
 
 	/** The dim. */
-	private final GamaPoint dim = new GamaPoint();
+	private final IPoint dim = GamaPointFactory.create();
 
 	/**
 	 * Instantiates a new mesh layer data.
@@ -93,9 +94,9 @@ public class MeshLayerData extends LayerData {
 		super(def);
 		size = create(IKeyword.SIZE, (scope, exp) -> {
 			Object result = exp.value(scope);
-			if (result instanceof Number) return new GamaPoint(1, 1, ((Number) result).doubleValue());
+			if (result instanceof Number) return GamaPointFactory.create(1, 1, ((Number) result).doubleValue());
 			return Cast.asPoint(scope, result);
-		}, Types.POINT, new GamaPoint(1, 1, 1));
+		}, Types.POINT, GamaPointFactory.create(1, 1, 1));
 		line = create(IKeyword.BORDER, Types.COLOR, null);
 		elevation = create(IKeyword.SOURCE, (scope, exp) -> {
 			if (exp != null) return buildValues(scope, exp.value(scope));
@@ -205,7 +206,7 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return the dimension
 	 */
-	public GamaPoint getDimension() { return dim; }
+	public IPoint getDimension() { return dim; }
 
 	/**
 	 * Gets the elevation matrix.

@@ -25,6 +25,7 @@ import org.jfree.data.general.Dataset;
 
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.runtime.IScope;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -111,7 +112,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 			// DEBUG.LOG("pb!!!");
 		} else {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { plot.setSeriesPaint(myrow, myserie.getMycolor().getAWTColor()); }
+			if (myserie.getMycolor() != null) { plot.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
 			if ("onchart".equals(series_label_position)) {
 				//// newr.setBaseItemLabelGenerator(new LabelGenerator());
@@ -265,11 +266,11 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
-		Color ac = axesColor == null ? null : axesColor.getAWTColor();
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
 		pp.setAxisLinePaint(ac);
 
 		pp.setLabelFont(getLabelFont());
-		if (textColor != null) { pp.setLabelPaint(textColor.getAWTColor()); }
+		if (textColor != null) { pp.setLabelPaint(IColor.toAWTColor(textColor)); }
 
 		// if (ylabel != null && ylabel != "") {}
 		if ("yaxis".equals(series_label_position)) {
@@ -282,7 +283,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 			// pp.getDomainAxis().setLabel(xlabel);
 		}
 
-		if ("none".equals(series_label_position)) { pp.setLabelPaint(this.backgroundColor.getAWTColor()); }
+		if ("none".equals(series_label_position)) { pp.setLabelPaint(IColor.toAWTColor(this.backgroundColor)); }
 		if (this.useyrangeinterval) {
 			((SpiderWebPlot) chart.getPlot()).setMaxValue(this.yrangeinterval);
 		} else if (this.useyrangeminmax) { ((SpiderWebPlot) chart.getPlot()).setMaxValue(this.yrangemax); }

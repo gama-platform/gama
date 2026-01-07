@@ -1,16 +1,22 @@
-/**
- * 
- */
+/*******************************************************************************************************
+ *
+ * IRandom.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.common.util.random;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 
 /**
- * 
+ *
  */
 public interface IRandom {
 
@@ -266,6 +272,17 @@ public interface IRandom {
 	 *            the step
 	 * @return the gama point
 	 */
-	GamaPoint between(GamaPoint pMin, GamaPoint pMax, GamaPoint pStep);
+	IPoint between(IPoint pMin, IPoint pMax, IPoint pStep);
+
+	/**
+	 * Between.
+	 *
+	 * @param pMin
+	 *            the min
+	 * @param pMax
+	 *            the max
+	 * @return the i point
+	 */
+	IPoint between(IPoint pMin, IPoint pMax);
 
 }

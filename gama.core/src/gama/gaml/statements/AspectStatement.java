@@ -27,7 +27,7 @@ import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
@@ -132,7 +132,7 @@ public class AspectStatement extends AbstractStatementSequence {
 
 				if (index != null) {
 					final Double defaultSize = GamaPreferences.Displays.CORE_SIZE.getValue();
-					final GamaPoint point = agent.getLocation();
+					final IPoint point = agent.getLocation();
 
 					ag = switch (SHAPES.get(defaultShape)) {
 						case 1 -> GamaGeometryType.buildCircle(defaultSize, point);

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import gama.core.common.util.StringUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaPair;
@@ -116,7 +116,7 @@ public interface IList<E>
 	 * @return the i matrix
 	 */
 	@Override
-	default IMatrix<E> matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	default IMatrix<E> matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) {
 		return GamaMatrixType.from(scope, this, contentsType, preferredSize);
 	}

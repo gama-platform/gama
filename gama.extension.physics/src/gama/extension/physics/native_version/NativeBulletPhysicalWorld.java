@@ -20,7 +20,7 @@ import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Vector3f;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractPhysicalWorld;
@@ -179,7 +179,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	}
 
 	@Override
-	public void setGravity(final GamaPoint g) {
+	public void setGravity(final IPoint g) {
 		PhysicsSpace world = getWorld();
 		if (world != null) { world.setGravity(toVector(g)); }
 	}

@@ -27,7 +27,8 @@ import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
@@ -144,7 +145,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 */
 
 	@Override
-	default GamaPoint getLocation() { return getLocation(getScope()); }
+	default IPoint getLocation() { return getLocation(getScope()); }
 
 	/**
 	 * Gets the location.
@@ -156,7 +157,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	@getter (
 			value = IKeyword.LOCATION,
 			initializer = true)
-	GamaPoint getLocation(IScope scope);
+	IPoint getLocation(IScope scope);
 
 	/**
 	 * Sets the location.
@@ -166,7 +167,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @return the gama point
 	 */
 	@setter (IKeyword.LOCATION)
-	GamaPoint setLocation(IScope scope, final GamaPoint l);
+	IPoint  setLocation(IScope scope, final IPoint l);
 
 	/**
 	 * Sets the location.
@@ -176,7 +177,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @return the gama point
 	 */
 	@Override
-	default GamaPoint setLocation(final GamaPoint l) {
+	default IPoint  setLocation(final IPoint l) {
 		return setLocation(getScope(), l);
 	}
 
@@ -446,7 +447,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @see gama.core.metamodel.shape.IGeometricalShape#getCentroid()
 	 */
 	@Override
-	default GamaPoint getCentroid() { return getGeometry().getCentroid(); }
+	default IPoint getCentroid() { return getGeometry().getCentroid(); }
 
 	/**
 	 * Method getExteriorRing()
@@ -572,7 +573,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @return the double
 	 */
 	@Override
-	default double euclidianDistanceTo(final GamaPoint g) {
+	default double euclidianDistanceTo(final IPoint g) {
 		return getGeometry().euclidianDistanceTo(g);
 	}
 
@@ -638,7 +639,7 @@ public interface IAgent extends IShape, INamed, IAttributed, Comparable<IAgent>,
 	 * @see gama.core.metamodel.shape.IShape#getPoints()
 	 */
 	@Override
-	default IList<GamaPoint> getPoints() {
+	default IList<IPoint> getPoints() {
 		if (getGeometry() == null) return GamaListFactory.EMPTY_LIST;
 		return getGeometry().getPoints();
 	}

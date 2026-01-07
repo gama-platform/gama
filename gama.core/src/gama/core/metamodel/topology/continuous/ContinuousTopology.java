@@ -11,7 +11,7 @@
 package gama.core.metamodel.topology.continuous;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.AbstractTopology;
 import gama.core.metamodel.topology.ITopology;
@@ -68,7 +68,7 @@ public class ContinuousTopology extends AbstractTopology {
 	 * @see gama.environment.ITopology#isValidLocation(gama.core.util.GamaPoint)
 	 */
 	@Override
-	public boolean isValidLocation(final IScope scope, final GamaPoint p) {
+	public boolean isValidLocation(final IScope scope, final IPoint p) {
 		return environment.covers(p);
 	}
 
@@ -83,8 +83,8 @@ public class ContinuousTopology extends AbstractTopology {
 		// conviendrait plutot de
 		// faire une DistanceOp().getNearestPoints()
 		if (g1 == null || g2 == null) return null;
-		GamaPoint source = g1.getLocation();
-		GamaPoint target = g2.getLocation();
+		IPoint source = g1.getLocation();
+		IPoint target = g2.getLocation();
 		if (isTorus()) {
 			source = normalizeLocation(scope, source, false);
 			target = normalizeLocation(scope, target, false);
@@ -111,7 +111,7 @@ public class ContinuousTopology extends AbstractTopology {
 	}
 
 	@Override
-	public Double distanceBetween(final IScope scope, final GamaPoint g1, final GamaPoint g2) {
+	public Double distanceBetween(final IScope scope, final IPoint g1, final IPoint g2) {
 		if (g1 == g2) return 0d;
 		if (isTorus()) return returnToroidalGeom(g1).distance(returnToroidalGeom(g2));
 		return g1.euclidianDistanceTo(g2);

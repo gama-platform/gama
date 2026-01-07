@@ -20,7 +20,7 @@ import com.google.common.collect.Iterables;
 import gama.core.common.util.StringUtils;
 import gama.core.common.util.random.IRandom;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -329,7 +329,7 @@ public class MetaPopulation implements IContainer.Addressable<Integer, IAgent>, 
 	 * @see gama.core.util.IContainer#matrixValue(gama.core.runtime.IScope, gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
-	public IMatrix matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	public IMatrix matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		return listValue(scope, contentsType, false).matrixValue(scope, contentsType, preferredSize, false);
 	}

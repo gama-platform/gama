@@ -37,7 +37,7 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
 import gama.core.runtime.IScope;
@@ -1088,7 +1088,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	}
 
 	@Override
-	public IMatrix matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	public IMatrix matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) {
 		return this.toMatrix(scope);
 	}

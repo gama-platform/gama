@@ -26,7 +26,8 @@ import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -49,10 +50,10 @@ import one.util.streamex.StreamEx;
 public class GamaField extends GamaFloatMatrix implements IField {
 
 	/** The world dimensions. */
-	GamaPoint worldDimensions = null;
+	IPoint worldDimensions = null;
 
 	/** The cell dimensions. */
-	GamaPoint cellDimensions = null;
+	IPoint cellDimensions = null;
 
 	/** The no data value. */
 	double noDataValue;
@@ -124,8 +125,8 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	private void computeDimensions(final IScope scope) {
 		if (worldDimensions != null) return;
 		IShape world = scope.getSimulation().getGeometry();
-		worldDimensions = new GamaPoint(world.getWidth(), world.getHeight());
-		cellDimensions = new GamaPoint(world.getWidth() / this.numCols, world.getHeight() / this.numRows);
+		worldDimensions = GamaPointFactory.create(world.getWidth(), world.getHeight());
+		cellDimensions = GamaPointFactory.create(world.getWidth() / this.numCols, world.getHeight() / this.numRows);
 	}
 
 	@Override
@@ -134,7 +135,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		final int size = indices.size();
 		if (size == 1) {
 			final Object index = indices.get(0);
-			if (index instanceof GamaPoint) return get(scope, (GamaPoint) index);
+			if (index instanceof IPoint ip) return get(scope, ip);
 			return matrix[Cast.asInt(scope, index)];
 		}
 		return get(scope, Cast.asInt(scope, indices.get(0)), Cast.asInt(scope, indices.get(1)));
@@ -145,12 +146,14 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	 * grid coordinates is already taken in charge by matrices
 	 */
 	@Override
-	public Double get(final IScope scope, final GamaPoint p) {
+	public Double get(final IScope scope, final IPoint p) {
 		computeDimensions(scope);
-		GamaPoint gp = new GamaPoint(p);
+		IPoint gp = GamaPointFactory.create(p);
 		// May happen in case of torus environment (see #3132)
-		int x = gp.x < 0 ? 0 : gp.x >= worldDimensions.x ? this.numCols - 1 : (int) (gp.x / cellDimensions.x);
-		int y = gp.y < 0 ? 0 : gp.y >= worldDimensions.y ? this.numRows - 1 : (int) (gp.y / cellDimensions.y);
+		double gpx = gp.getX();
+		double gpy = gp.getY();
+		int x = gpx < 0 ? 0 : gpx >= worldDimensions.getX() ? this.numCols - 1 : (int) (gpx / cellDimensions.getX());
+		int y = gpy < 0 ? 0 : gpy >= worldDimensions.getY() ? this.numRows - 1 : (int) (gpy / cellDimensions.getY());
 		return matrix[y * numCols + x];
 	}
 
@@ -166,16 +169,20 @@ public class GamaField extends GamaFloatMatrix implements IField {
 			index = (Integer) at;
 		} else if (at instanceof IList list) {
 			index = (Integer) list.get(1) * numCols + (Integer) list.get(0);
-		} else if (at instanceof GamaPoint gp) {
-			int x = gp.x < 0 ? 0 : gp.x >= worldDimensions.x ? this.numCols - 1 : (int) (gp.x / cellDimensions.x);
-			int y = gp.y < 0 ? 0 : gp.y >= worldDimensions.y ? this.numRows - 1 : (int) (gp.y / cellDimensions.y);
+		} else if (at instanceof IPoint gp) {
+			double gpx = gp.getX();
+			double gpy = gp.getY();
+			int x = gpx < 0 ? 0 : gpx >= worldDimensions.getX() ? this.numCols - 1
+					: (int) (gpx / cellDimensions.getX());
+			int y = gpy < 0 ? 0 : gpy >= worldDimensions.getY() ? this.numRows - 1
+					: (int) (gpy / cellDimensions.getY());
 			index = y * numCols + x;
 		}
 		if (index > -1 && index < matrix.length) { matrix[index] = value; }
 	}
 
 	@Override
-	public GamaPoint getCellSize(final IScope scope) {
+	public IPoint getCellSize(final IScope scope) {
 		computeDimensions(scope);
 		return cellDimensions;
 	}
@@ -255,10 +262,12 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	}
 
 	@Override
-	public IShape getCellShapeAt(final IScope scope, final GamaPoint gp) {
+	public IShape getCellShapeAt(final IScope scope, final IPoint gp) {
 		computeDimensions(scope);
-		int x = gp.x < 0 ? 0 : gp.x >= worldDimensions.x ? this.numCols - 1 : (int) (gp.x / cellDimensions.x);
-		int y = gp.y < 0 ? 0 : gp.y >= worldDimensions.y ? this.numRows - 1 : (int) (gp.y / cellDimensions.y);
+		double gpx = gp.getX();
+		double gpy = gp.getY();
+		int x = gpx < 0 ? 0 : gpx >= worldDimensions.getX() ? this.numCols - 1 : (int) (gpx / cellDimensions.getX());
+		int y = gpy < 0 ? 0 : gpy >= worldDimensions.getY() ? this.numRows - 1 : (int) (gpy / cellDimensions.getY());
 		return getCellShapeAt(scope, x, y);
 
 	}
@@ -267,9 +276,10 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	public IShape getCellShapeAt(final IScope scope, final int columns, final int rows) {
 		computeDimensions(scope);
 		// Necessary to add the z ? Verify the translations
-		return buildRectangle(cellDimensions.x, cellDimensions.y,
-				new GamaPoint(columns * cellDimensions.x + cellDimensions.x / 2,
-						rows * cellDimensions.y + cellDimensions.y / 2, get(scope, columns, rows)));
+		double x = cellDimensions.getX();
+		double y = cellDimensions.getY();
+		return buildRectangle(x, y,
+				GamaPointFactory.create(columns * x + x / 2, rows * y + y / 2, get(scope, columns, rows)));
 	}
 
 	@Override
@@ -277,11 +287,11 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		computeDimensions(scope);
 		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<Double> inEnv = GamaListFactory.create(Types.FLOAT);
-		GamaPoint p = new GamaPoint();
-		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
-			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.y) {
+		IPoint p = GamaPointFactory.create();
+		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.getX()) {
+			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.getY()) {
 				p.setLocation(i, j, 0);
-				if (GeometryUtils.POINT_LOCATOR.intersects(p, shape.getInnerGeometry())) {
+				if (GeometryUtils.POINT_LOCATOR.intersects(p.toCoordinate(), shape.getInnerGeometry())) {
 					Double d = get(scope, p);
 					if (d != null) { inEnv.add(d); }
 				}
@@ -295,11 +305,11 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		computeDimensions(scope);
 		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<IShape> inEnv = GamaListFactory.create(Types.GEOMETRY);
-		GamaPoint p = new GamaPoint();
-		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
-			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.y) {
+		IPoint p = GamaPointFactory.create();
+		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.getX()) {
+			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.getY()) {
 				p.setLocation(i, j, 0);
-				if (GeometryUtils.POINT_LOCATOR.intersects(p, shape.getInnerGeometry())) {
+				if (GeometryUtils.POINT_LOCATOR.intersects(p.toCoordinate(), shape.getInnerGeometry())) {
 					IShape s = getCellShapeAt(scope, p);
 					if (s != null) { inEnv.add(s); }
 				}
@@ -313,9 +323,9 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		computeDimensions(scope);
 		IEnvelope env = GamaEnvelopeFactory.of(shape);
 		IList<IShape> inEnv = GamaListFactory.create(Types.GEOMETRY);
-		GamaPoint p = new GamaPoint();
-		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
-			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.y) {
+		IPoint p = GamaPointFactory.create();
+		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.getX()) {
+			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.getY()) {
 				p.setLocation(i, j, 0);
 				IShape s = getCellShapeAt(scope, p);
 				if (s != null && s.intersects(shape)) { inEnv.add(s); }
@@ -325,15 +335,17 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	}
 
 	@Override
-	public IList<GamaPoint> getLocationsIntersecting(final IScope scope, final IShape shape) {
+	public IList<IPoint> getLocationsIntersecting(final IScope scope, final IShape shape) {
 		computeDimensions(scope);
 		IEnvelope env = GamaEnvelopeFactory.of(shape);
-		IList<GamaPoint> inEnv = GamaListFactory.create(Types.POINT);
-		GamaPoint p = new GamaPoint();
-		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.x) {
-			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.y) {
+		IList<IPoint> inEnv = GamaListFactory.create(Types.POINT);
+		IPoint p = GamaPointFactory.create();
+		for (double i = env.getMinX(); i < env.getMaxX(); i += cellDimensions.getX()) {
+			for (double j = env.getMinY(); j < env.getMaxY(); j += cellDimensions.getY()) {
 				p.setLocation(i, j, 0);
-				if (GeometryUtils.POINT_LOCATOR.intersects(p, shape.getInnerGeometry())) { inEnv.add(p.copy(scope)); }
+				if (GeometryUtils.POINT_LOCATOR.intersects(p.toCoordinate(), shape.getInnerGeometry())) {
+					inEnv.add(p.copy(scope));
+				}
 			}
 		}
 		return inEnv;
@@ -341,18 +353,19 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	}
 
 	@Override
-	public IList<GamaPoint> getNeighborsOf(final IScope scope, final GamaPoint point) {
+	public IList<IPoint> getNeighborsOf(final IScope scope, final IPoint point) {
 		computeDimensions(scope);
-		IList<GamaPoint> result = GamaListFactory.create(Types.POINT);
-		int x = (int) (point.x / cellDimensions.x);
-		int y = (int) (point.y / cellDimensions.y);
+		IList<IPoint> result = GamaListFactory.create(Types.POINT);
+		int x = (int) (point.getX() / cellDimensions.getX());
+		int y = (int) (point.getY() / cellDimensions.getY());
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
 				int x1 = x + i;
 				int y1 = y + j;
 				if (x1 < 0 || x1 > numCols - 1 || y1 < 0 || y1 > numRows - 1 || i == 0 && j == 0) { continue; }
 				// We add the z ?
-				result.add(new GamaPoint(x1 * cellDimensions.x, y1 * cellDimensions.y, this.get(scope, x1, y1)));
+				result.add(GamaPointFactory.create(x1 * cellDimensions.getX(), y1 * cellDimensions.getY(),
+						this.get(scope, x1, y1)));
 			}
 		}
 		return result;
@@ -371,7 +384,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	}
 
 	@Override
-	public GamaField copy(final IScope scope, final GamaPoint size, final boolean copy) {
+	public GamaField copy(final IScope scope, final IPoint size, final boolean copy) {
 		if (size == null) {
 			if (!copy) return this;
 			GamaField result =

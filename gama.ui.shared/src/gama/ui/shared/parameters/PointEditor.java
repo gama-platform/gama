@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PointEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * PointEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,8 @@ import org.eclipse.swt.widgets.Text;
 import gama.core.common.util.StringUtils;
 import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.gaml.operators.Cast;
 import gama.gaml.types.IType;
@@ -46,7 +47,7 @@ import gama.ui.shared.interfaces.EditorListener;
 /**
  * The Class PointEditor.
  */
-public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyListener {
+public class PointEditor extends AbstractEditor<IPoint> implements VerifyListener {
 
 	/** The Constant LABELS. */
 	private static final String[] LABELS = { "x", "y", "z" };
@@ -87,7 +88,7 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	 * @param l
 	 *            the l
 	 */
-	PointEditor(final IAgent agent, final IParameter param, final EditorListener<GamaPoint> l) {
+	PointEditor(final IAgent agent, final IParameter param, final EditorListener<IPoint> l) {
 		super(agent, param, l);
 	}
 
@@ -100,8 +101,8 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	// * @param value the value
 	// * @param whenModified the when modified
 	// */
-	// PointEditor(final IScope scope, final EditorsGroup parent, final String title, final GamaPoint value,
-	// final EditorListener<GamaPoint> whenModified) {
+	// PointEditor(final IScope scope, final EditorsGroup parent, final String title, final IPoint value,
+	// final EditorListener<IPoint> whenModified) {
 	// // Convenience method
 	// super(scope, new InputParameter(title, value), whenModified);
 	// this.createControls(parent);
@@ -163,7 +164,7 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	@Override
 	protected void displayParameterValue() {
 		allowVerification = false;
-		final var p = currentValue;
+		final IPoint p = currentValue;
 		for (var i = 0; i < 3; i++) {
 			if (isReverting || !ordinates[i].isFocusControl()) {
 				ordinates[i].setText(currentValue == null ? "0.0" : StringUtils.toGaml(p.getOrdinate(i), false));
@@ -176,14 +177,14 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	@Override
 	public void modifyText(final ModifyEvent me) {
 		if (internalModification || !allowVerification) return;
-		modifyAndDisplayValue(new GamaPoint(Cast.asFloat(getScope(), ordinates[0].getText()),
+		modifyAndDisplayValue(GamaPointFactory.create(Cast.asFloat(getScope(), ordinates[0].getText()),
 				Cast.asFloat(getScope(), ordinates[1].getText()), Cast.asFloat(getScope(), ordinates[2].getText())));
 
 	}
 
 	@Override
 	protected boolean modifyValue(final Object val) throws GamaRuntimeException {
-		GamaPoint i = Cast.asPoint(getScope(), val);
+		IPoint i = Cast.asPoint(getScope(), val);
 		if (minValue != null && i.smallerThan(Cast.asPoint(getScope(), minValue))
 				|| getMaxValue() != null && i.biggerThan(Cast.asPoint(getScope(), getMaxValue())))
 			return false;
@@ -191,8 +192,8 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	}
 
 	@Override
-	protected GamaPoint defaultStepValue() {
-		return new GamaPoint(0.1, 0.1, 0.1);
+	protected IPoint defaultStepValue() {
+		return GamaPointFactory.create(0.1, 0.1, 0.1);
 	}
 
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
@@ -203,23 +204,23 @@ public class PointEditor extends AbstractEditor<GamaPoint> implements VerifyList
 	protected int[] getToolItems() { return new int[] { PLUS, MINUS, REVERT }; }
 
 	@Override
-	protected GamaPoint applyRevert() {
+	protected IPoint applyRevert() {
 		isReverting = true;
 		return super.applyRevert();
 	}
 
 	@Override
-	protected GamaPoint applyPlus() {
+	protected IPoint applyPlus() {
 		isReverting = true;
-		GamaPoint p = currentValue.clone();
+		IPoint p = currentValue.clone();
 		p.add(getStepValue());
 		return p;
 	}
 
 	@Override
-	protected GamaPoint applyMinus() {
+	protected IPoint applyMinus() {
 		isReverting = true;
-		GamaPoint p = currentValue.clone();
+		IPoint p = currentValue.clone();
 		p.subtract(getStepValue());
 		return p;
 	}

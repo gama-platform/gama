@@ -30,7 +30,7 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.BiConsumerWithPruning;
@@ -438,7 +438,7 @@ public interface IMap<K, V>
 	 *             the gama runtime exception
 	 */
 	@Override
-	default IMatrix matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	default IMatrix matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		return matrixValue(scope, contentsType, copy);
 	}

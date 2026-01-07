@@ -46,7 +46,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulationSet;
 import gama.core.metamodel.population.MetaPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.grid.IGrid;
@@ -611,7 +612,7 @@ public class Containers {
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Integer> columns,
 				final IList<Integer> rows) {
 
-			final GamaPoint aimedDimensions = new GamaPoint(columns.size(), rows.size());
+			final IPoint aimedDimensions = GamaPointFactory.create(columns.size(), rows.size());
 			final IMatrix result = GamaMatrixType.matrixLike(scope, m1, aimedDimensions);
 
 			for (int colIdx = 0; colIdx < columns.size(); colIdx++) {
@@ -693,11 +694,11 @@ public class Containers {
 
 			// TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid
 			// creating the intermediate lists
-			final GamaPoint initialDimensions = notNull(scope, m1).getDimensions();
-			final int startCol = convertToListIndex(columns.key, (int) initialDimensions.x);
-			final int endCol = convertToListIndex(columns.value, (int) initialDimensions.x);
-			final int startRow = convertToListIndex(rows.key, (int) initialDimensions.y);
-			final int endRow = convertToListIndex(rows.value, (int) initialDimensions.y);
+			final IPoint initialDimensions = notNull(scope, m1).getDimensions();
+			final int startCol = convertToListIndex(columns.key, (int) initialDimensions.getX());
+			final int endCol = convertToListIndex(columns.value, (int) initialDimensions.getX());
+			final int startRow = convertToListIndex(rows.key, (int) initialDimensions.getY());
+			final int endRow = convertToListIndex(rows.value, (int) initialDimensions.getY());
 
 			final boolean positiveColStep = steps.key > 0;
 			final boolean positiveRowStep = steps.value > 0;
@@ -705,7 +706,7 @@ public class Containers {
 			// Eliminating nonsensical cases
 			if (steps.key == 0 || steps.value == 0 || (positiveColStep ? startCol > endCol : startCol < endCol)
 					|| (positiveRowStep ? startRow > endRow : startRow < endRow))
-				return GamaMatrixType.matrixLike(scope, m1, new GamaPoint(0, 0));
+				return GamaMatrixType.matrixLike(scope, m1, GamaPointFactory.create(0, 0));
 
 			IList<Integer> cols = GamaListFactory.create(Types.INT);
 			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
@@ -787,10 +788,10 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final GamaPair<Integer, Integer> columns,
 				final GamaPair<Integer, Integer> rows) {
-			final int firstCol = convertToListIndex(columns.key, (int) m1.getDimensions().x);
-			final int lastCol = convertToListIndex(columns.value, (int) m1.getDimensions().x);
-			final int firstRow = convertToListIndex(rows.key, (int) m1.getDimensions().y);
-			final int lastRow = convertToListIndex(rows.value, (int) m1.getDimensions().y);
+			final int firstCol = convertToListIndex(columns.key, (int) m1.getDimensions().getX());
+			final int lastCol = convertToListIndex(columns.value, (int) m1.getDimensions().getX());
+			final int firstRow = convertToListIndex(rows.key, (int) m1.getDimensions().getY());
+			final int lastRow = convertToListIndex(rows.value, (int) m1.getDimensions().getY());
 			GamaPair<Integer, Integer> steps =
 					new GamaPair<>(lastCol == firstCol ? 1 : (int) Math.signum(lastCol - firstCol),
 							lastRow == firstRow ? 1 : (int) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
@@ -1111,7 +1112,7 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc ("the element at the right (point) operand index of the matrix")
 	@no_test
-	public static Object at(final IScope scope, final IMatrix container, final GamaPoint key) {
+	public static Object at(final IScope scope, final IMatrix container, final IPoint key) {
 		return container.get(scope, key);
 	}
 
@@ -1165,8 +1166,7 @@ public class Containers {
 					equals = "the agent grid_cell with grid_x=1 and grid_y = 2",
 					isExecutable = false) })
 	@no_test
-	public static IAgent grid_at(final IScope scope, final ISpecies s, final GamaPoint val)
-			throws GamaRuntimeException {
+	public static IAgent grid_at(final IScope scope, final ISpecies s, final IPoint val) throws GamaRuntimeException {
 		final ITopology t = scope.getAgent().getPopulationFor(s).getTopology();
 		final IContainer<?, IShape> m = t.getPlaces();
 		if (m instanceof IGrid) {
@@ -1505,9 +1505,11 @@ public class Containers {
 							value = "matrix([[1,2,3],[4,5,6]]) index_of 4",
 							equals = "{1.0,0.0}") }))
 	@test ("matrix([[1,2,3],[4,5,6]]) index_of 4 = {1.0,0.0}")
-	public static GamaPoint index_of(final IScope scope, final IMatrix c, final Object o) {
+	public static IPoint index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = 0; i < notNull(scope, c).getCols(scope); i++) {
-			for (int j = 0; j < c.getRows(scope); j++) { if (c.get(scope, i, j).equals(o)) return new GamaPoint(i, j); }
+			for (int j = 0; j < c.getRows(scope); j++) {
+				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
+			}
 		}
 		return null;
 	}
@@ -1635,10 +1637,10 @@ public class Containers {
 							value = "matrix([[1,2,3],[4,5,4]]) last_index_of 4",
 							equals = "{1.0,2.0}") }))
 	@test ("matrix([[1,2,3],[4,5,4]]) last_index_of 4 = {1.0,2.0}")
-	public static GamaPoint last_index_of(final IScope scope, final IMatrix c, final Object o) {
+	public static IPoint last_index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = notNull(scope, c).getCols(scope) - 1; i > -1; i--) {
 			for (int j = c.getRows(scope) - 1; j > -1; j--) {
-				if (c.get(scope, i, j).equals(o)) return new GamaPoint(i, j);
+				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
 			}
 		}
 		return null;
@@ -2410,7 +2412,7 @@ public class Containers {
 		return switch (t.id()) {
 			case IType.INT -> ((Stream<Integer>) s).reduce(0, Integer::sum);
 			case IType.FLOAT -> ((Stream<Double>) s).reduce(0d, Double::sum);
-			case IType.POINT -> ((Stream<GamaPoint>) s).reduce(new GamaPoint(), GamaPoint::plus);
+			case IType.POINT -> ((Stream<IPoint>) s).reduce(GamaPointFactory.create(), IPoint::plus);
 			case IType.COLOR -> ((Stream<IColor>) s).reduce(GamaColorFactory.get(0, 0, 0, 0), GamaColor::merge);
 			case IType.STRING -> ((Stream<String>) s).reduce("", String::concat);
 			default -> throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
@@ -3413,10 +3415,12 @@ public class Containers {
 		final Object s = sum(scope, l);
 		int size = l.length(scope);
 		if (size == 0) { size = 1; }
-		if (s instanceof Number) return ((Number) s).doubleValue() / size;
-		if (s instanceof GamaPoint) return Points.divide(scope, (GamaPoint) s, size);
-		if (s instanceof IColor) return Colors.divide((GamaColor) s, size);
-		return Cast.asFloat(scope, s) / size;
+		return switch (s) {
+			case Number n -> n.doubleValue() / size;
+			case IPoint ip -> ip.dividedBy(size);
+			case IColor ic -> Colors.divide(ic, size);
+			case null, default -> Cast.asFloat(scope, s) / size;
+		};
 	}
 
 }

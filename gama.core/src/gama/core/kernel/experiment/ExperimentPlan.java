@@ -43,7 +43,7 @@ import gama.core.kernel.experiment.parameters.TextStatement;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.GamaPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.topology.continuous.AmorphousTopology;
 import gama.core.outputs.ExperimentOutputManager;
 import gama.core.outputs.IOutputManager;
@@ -467,7 +467,7 @@ public class ExperimentPlan extends GamlSpecies implements IExperimentPlan {
 		}
 
 		@Override
-		public ExperimentAgent getAgent(final IScope scope, final GamaPoint value) {
+		public ExperimentAgent getAgent(final IScope scope, final IPoint value) {
 			return agent;
 		}
 

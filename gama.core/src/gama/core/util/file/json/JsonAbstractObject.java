@@ -255,7 +255,7 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @return the object itself, to enable method chaining
 	 */
 	@Override
-	public IJsonObject add(final String name, final JsonValue value) {
+	public IJsonObject add(final String name, final IJsonValue value) {
 		if (name == null) throw new NullPointerException("name is null");
 		if (value == null) throw new NullPointerException("value is null");
 		members.put(name, value);

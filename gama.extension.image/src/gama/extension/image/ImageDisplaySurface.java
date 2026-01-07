@@ -27,7 +27,8 @@ import gama.core.common.interfaces.ILayer;
 import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.LayeredDisplayData.Changes;
@@ -266,9 +267,9 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	public Collection<IEventLayerListener> getLayerListeners() { return Collections.EMPTY_LIST; }
 
 	@Override
-	public GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
+	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
 			final Point positionInPixels) {
-		return NULL_POINT;
+		return GamaPointFactory.NULL_POINT;
 	}
 
 	@Override

@@ -279,7 +279,7 @@ species road {
 	
 	int total_traffic_per_mode(string m){
 		return sum(traffic_density[m]);
-	}
+	} 
 	
 	
 	rgb color_map(rgb c, float scale){

@@ -21,7 +21,7 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
@@ -68,9 +68,9 @@ public class ShapeDrawer implements IDrawDelegate {
 		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
 		if (scope.getGraphics().is2D()) {
 			/** The center. */
-			final GamaPoint center = ic.getCenter();
+			final IPoint center = ic.getCenter();
 			final AxisAngle rot = attributes.getRotation();
-			final GamaPoint location = attributes.getLocation();
+			final IPoint location = attributes.getLocation();
 			if (rot != null || location != null) {
 				// Do this instead of copy() or clone() to avoid the exception quoted in #3602
 				// Seems to work...
@@ -79,7 +79,7 @@ public class ShapeDrawer implements IDrawDelegate {
 			GeometryUtils.rotate(gg, center, rot);
 			if (location != null) {
 				if (gg.getNumPoints() == 1) {
-					gg = GeometryUtils.GEOMETRY_FACTORY.createPoint(location);
+					gg = GeometryUtils.GEOMETRY_FACTORY.createPoint(location.toCoordinate());
 				} else {
 					GeometryUtils.translate(gg, center, location);
 				}
@@ -195,7 +195,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	private Geometry addArrows(final IScope scope, final Geometry g1, final IExpression beginArrow,
 			final IExpression endArrow, final Boolean fill) {
 		if (g1 == null) return g1;
-		final GamaPoint[] points = GeometryUtils.getPointsOf(g1);
+		final IPoint[] points = GeometryUtils.getPointsOf(g1);
 		final int size = points.length;
 		if (size < 2) return g1;
 		Geometry end = null, begin = null;

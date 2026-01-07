@@ -21,7 +21,8 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
@@ -49,9 +50,6 @@ import gama.gaml.statements.test.CompoundSummary;
  *
  */
 public interface IGui {
-
-	/** The null point. */
-	GamaPoint NULL_POINT = new GamaPoint.Immutable();
 
 	/** The null metadata provider. */
 	IFileMetaDataProvider NULL_METADATA_PROVIDER =
@@ -456,14 +454,14 @@ public interface IGui {
 	 *
 	 * @return the mouse location in model
 	 */
-	default GamaPoint getMouseLocationInModel() { return NULL_POINT; }
+	default IPoint  getMouseLocationInModel() { return GamaPointFactory.NULL_POINT; }
 
 	/**
 	 * Gets the mouse location in display.
 	 *
 	 * @return the mouse location in model
 	 */
-	default GamaPoint getMouseLocationInDisplay() { return NULL_POINT; }
+	default IPoint  getMouseLocationInDisplay() { return GamaPointFactory.NULL_POINT; }
 
 	/**
 	 * Sets the mouse location in model.
@@ -471,7 +469,7 @@ public interface IGui {
 	 * @param modelCoordinates
 	 *            the new mouse location in model
 	 */
-	default void setMouseLocationInModel(final GamaPoint modelCoordinates) {}
+	default void setMouseLocationInModel(final IPoint  modelCoordinates) {}
 
 	/**
 	 * Sets the mouse location in model.
@@ -479,7 +477,7 @@ public interface IGui {
 	 * @param modelCoordinates
 	 *            the new mouse location in model
 	 */
-	default void setMouseLocationInDisplay(final GamaPoint displayCoordinates) {}
+	default void setMouseLocationInDisplay(final IPoint  displayCoordinates) {}
 
 	/**
 	 * Exit.

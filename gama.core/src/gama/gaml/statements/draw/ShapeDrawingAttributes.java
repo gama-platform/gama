@@ -16,7 +16,7 @@ import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.IColor;
 
@@ -61,7 +61,7 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 *            the lighting
 	 */
 	public ShapeDrawingAttributes(final Scaling3D size, final Double depth, final AxisAngle rotation,
-			final GamaPoint location, final Boolean empty, final IColor color, /* final List<GamaColor> colors, */
+			final IPoint location, final Boolean empty, final IColor color, /* final List<GamaColor> colors, */
 			final IColor border, final List<IImageProvider> textures,
 			/* final GamaMaterial material, */ final IAgent agent, final IShape.Type type, final Double lineWidth,
 			final Boolean lighting) {
@@ -86,7 +86,7 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 * @param type
 	 *            the type
 	 */
-	public ShapeDrawingAttributes(final GamaPoint location, final IColor color, final IColor border,
+	public ShapeDrawingAttributes(final IPoint location, final IColor color, final IColor border,
 			final IShape.Type type) {
 		super(null, null, location, color, border, null, null, false, null);
 		setHeight(null);

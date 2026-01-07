@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
 import gama.core.util.Collector;
@@ -222,8 +222,8 @@ public class AStar<V, E> {
 	 */
 	protected double heuristic(final Object node1, final Object node2) {
 		if (isSpatialGraph) {
-			final GamaPoint pt1 = ((IShape) node1).getLocation();
-			final GamaPoint pt2 = ((IShape) node2).getLocation();
+			final IPoint pt1 = ((IShape) node1).getLocation();
+			final IPoint pt2 = ((IShape) node2).getLocation();
 			return pt1.distance(pt2);
 
 		}

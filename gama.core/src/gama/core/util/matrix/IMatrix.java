@@ -25,7 +25,7 @@ import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IAddressableContainer;
@@ -58,8 +58,8 @@ import one.util.streamex.StreamEx;
 				doc = { @doc ("Returns the number of columns of the receiver matrix") }) })
 
 @SuppressWarnings ({ "rawtypes" })
-public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint, T>,
-		IAddressableContainer<GamaPoint, T, GamaPoint, T>, IFieldMatrixProvider {
+public interface IMatrix<T> extends IModifiableContainer<IPoint, T, IPoint, T>,
+		IAddressableContainer<IPoint, T, IPoint, T>, IFieldMatrixProvider {
 
 	/**
 	 * Cols, rows instead of row cols because intended to work with xSize and ySize dimensions.
@@ -121,7 +121,7 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	 * @return the dimensions
 	 */
 	@getter (DIMENSION)
-	GamaPoint getDimensions();
+	IPoint getDimensions();
 
 	/**
 	 * Gets the rows list.
@@ -513,7 +513,8 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	 */
 	@Override
 	default boolean containsKey(final IScope scope, final Object o) {
-		if (o instanceof final GamaPoint p) return p.x >= 0 && p.y >= 0 && p.x < getCols(scope) && p.y < getRows(scope);
+		if (o instanceof final IPoint p)
+			return p.getX() >= 0 && p.getY() >= 0 && p.getX() < getCols(scope) && p.getY() < getRows(scope);
 		return false;
 	}
 
@@ -563,7 +564,7 @@ public interface IMatrix<T> extends IModifiableContainer<GamaPoint, T, GamaPoint
 	 *            the copy
 	 * @return the i matrix
 	 */
-	IMatrix copy(IScope scope, GamaPoint preferredSize, boolean copy);
+	IMatrix copy(IScope scope, IPoint preferredSize, boolean copy);
 
 	/**
 	 * Reverse.

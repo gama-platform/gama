@@ -51,7 +51,8 @@ import gama.core.common.util.StringUtils;
 import gama.core.kernel.batch.exploration.morris.Morris;
 import gama.core.kernel.batch.exploration.sobol.Sobol;
 import gama.core.kernel.batch.exploration.stochanalysis.Stochanalysis;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.Collector;
@@ -1617,13 +1618,13 @@ public class Stats {
 	public static Object opMax(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[1];
 		Number maxNum = null;
-		GamaPoint maxPoint = null;
+		IPoint maxPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && maxNum == null) {
-				if (maxPoint == null || ((GamaPoint) o).compareTo(maxPoint) > 0) { maxPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && maxPoint == null
-					&& (maxNum == null || ((Number) o).doubleValue() > maxNum.doubleValue())) {
-				maxNum = (Number) o;
+			if (o instanceof IPoint ip && maxNum == null) {
+				if (maxPoint == null || ip.compareTo(maxPoint) > 0) { maxPoint = ip; }
+			} else if (o instanceof Number n && maxPoint == null
+					&& (maxNum == null || n.doubleValue() > maxNum.doubleValue())) {
+				maxNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (maxNum == null || d > maxNum.doubleValue()) { maxNum = d; }
@@ -1702,13 +1703,13 @@ public class Stats {
 				final DataSet y = new DataSet();
 				final DataSet z = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaPoint p = (GamaPoint) o;
+					final IPoint p = (IPoint) o;
 					x.addValue(p.getX());
 					y.addValue(p.getY());
 					z.addValue(p.getZ());
 				}
-				if (x.getSize() == 0) return new GamaPoint(0, 0, 0);
-				return new GamaPoint(x.getMedian(), y.getMedian(), z.getMedian());
+				if (x.getSize() == 0) return GamaPointFactory.create(0, 0, 0);
+				return GamaPointFactory.create(x.getMedian(), y.getMedian(), z.getMedian());
 			case IType.COLOR:
 				final DataSet r = new DataSet();
 				final DataSet g = new DataSet();
@@ -1784,13 +1785,13 @@ public class Stats {
 	public static Object opMin(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[0];
 		Number minNum = null;
-		GamaPoint minPoint = null;
+		IPoint minPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && minNum == null) {
-				if (minPoint == null || ((GamaPoint) o).compareTo(minPoint) < 0) { minPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && minPoint == null
-					&& (minNum == null || ((Number) o).doubleValue() < minNum.doubleValue())) {
-				minNum = (Number) o;
+			if (o instanceof IPoint ip && minNum == null) {
+				if (minPoint == null || ip.compareTo(minPoint) < 0) { minPoint = ip; }
+			} else if (o instanceof Number n && minPoint == null
+					&& (minNum == null || n.doubleValue() < minNum.doubleValue())) {
+				minNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (minNum == null || d < minNum.doubleValue()) { minNum = d; }
@@ -2010,7 +2011,7 @@ public class Stats {
 		final DataSet x = new DataSet();
 		DataSet y = null, z = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof final GamaPoint p) {
+			if (o instanceof final IPoint p) {
 				if (y == null) {
 					y = new DataSet();
 					z = new DataSet();
@@ -2024,10 +2025,10 @@ public class Stats {
 		}
 		if (x.getSize() == 0) {
 			if (y == null) return 0.0;
-			return new GamaPoint(0, 0, 0);
+			return GamaPointFactory.create(0, 0, 0);
 		}
 		if (y == null) return x.getProduct();
-		return new GamaPoint(x.getProduct(), y.getProduct(), z.getProduct());
+		return GamaPointFactory.create(x.getProduct(), y.getProduct(), z.getProduct());
 	}
 
 	/**

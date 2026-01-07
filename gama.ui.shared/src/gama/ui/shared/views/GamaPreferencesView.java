@@ -3,7 +3,7 @@
  * GamaPreferencesView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,7 +36,8 @@ import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.common.preferences.Pref;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
@@ -71,12 +72,13 @@ public class GamaPreferencesView {
 	}
 
 	/** The dialog location. */
-	static final Pref<GamaPoint> DIALOG_LOCATION = GamaPreferences.create("dialog_location",
-			"Location of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
+	static final Pref<IPoint> DIALOG_LOCATION =
+			GamaPreferences.create("dialog_location", "Location of the preferences dialog on screen",
+					GamaPointFactory.create(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog size. */
-	static final Pref<GamaPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
-			"Size of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
+	static final Pref<IPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
+			"Size of the preferences dialog on screen", GamaPointFactory.create(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog tab. */
 	static final Pref<Integer> DIALOG_TAB = GamaPreferences
@@ -472,7 +474,7 @@ public class GamaPreferencesView {
 	 */
 	private void saveLocation() {
 		final var p = shell.getLocation();
-		DIALOG_LOCATION.set(new GamaPoint(p.x, p.y)).save();
+		DIALOG_LOCATION.set(GamaPointFactory.create(p.x, p.y)).save();
 	}
 
 	/**
@@ -480,7 +482,7 @@ public class GamaPreferencesView {
 	 */
 	private void saveSize() {
 		final var s = shell.getSize();
-		DIALOG_SIZE.set(new GamaPoint(s.x, s.y)).save();
+		DIALOG_SIZE.set(GamaPointFactory.create(s.x, s.y)).save();
 	}
 
 	/**
@@ -512,10 +514,10 @@ public class GamaPreferencesView {
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
 		final int tab = DIALOG_TAB.getValue();
-		var x = (int) loc.x;
-		var y = (int) loc.y;
-		var width = (int) size.x;
-		var height = (int) size.y;
+		var x = (int) loc.getX();
+		var y = (int) loc.getY();
+		var width = (int) size.getX();
+		var height = (int) size.getY();
 		Rectangle savedBounds = new Rectangle(x, y, width, height);
 		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
 		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();

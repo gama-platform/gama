@@ -19,13 +19,13 @@ import gama.core.kernel.root.PlatformAgent;
 import gama.core.kernel.simulation.SimulationAgent;
 import gama.core.metamodel.agent.GamlAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
 import gama.core.util.GamaPair;
+import gama.core.util.IColor;
 import gama.core.util.IContainer;
 import gama.core.util.IDate;
 import gama.core.util.file.IGamaFile;
@@ -77,7 +77,7 @@ public abstract class UtilsForGamlAdditions {
 	protected Class<?> GA = GamlAgent.class;
 
 	/** The gc. */
-	protected Class<?> GC = GamaColor.class;
+	protected Class<?> GC = IColor.class;
 
 	/** The gp. */
 	protected Class<?> GP = GamaPair.class;
@@ -111,13 +111,13 @@ public abstract class UtilsForGamlAdditions {
 
 	/** The p. */
 	// public final static Class<?> GL = GamaList.class;
-	protected Class<?> P = GamaPoint.class;
+	protected Class<?> P = IPoint.class;
 
 	/** The ic. */
 	protected Class<?> IC = IContainer.class;
 
 	/** The il. */
-	protected Class<?> IL = GamaPoint.class;
+	protected Class<?> IL = IPoint.class;
 
 	/** The li. */
 	protected Class<?> LI = IList.class;

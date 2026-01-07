@@ -15,7 +15,7 @@ import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -233,7 +233,7 @@ public class KmlOp {
 			see = { "add_geometry", "add_icon", "add_label" },
 			masterDoc = true)
 	@no_test
-	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final GamaPoint loc,
+	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file, final IDate begin, final IDate end)
 			throws GamaRuntimeException {
 		if (kml == null || loc == null || file == null || file.isEmpty()) return kml;
@@ -268,7 +268,7 @@ public class KmlOp {
 			value = "Kml export with a 3D model",
 			see = { "add_geometry", "add_icon", "add_label" })
 	@no_test
-	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final GamaPoint loc,
+	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file) throws GamaRuntimeException {
 		IDate currentDate = scope.getClock().getCurrentDate();
 		IDate endDate = Dates.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());
@@ -307,7 +307,7 @@ public class KmlOp {
 			see = { "add_geometry", "add_icon" },
 			masterDoc = true)
 	@no_test
-	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final GamaPoint loc,
+	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file, final IDate begin, final IDate end)
 			throws GamaRuntimeException {
 		if (kml == null || loc == null || file == null || file.isEmpty()) return kml;
@@ -344,7 +344,7 @@ public class KmlOp {
 			value = "the kml export manager with new icons: take the following argument: (kml, location (point),orientation (float), scale (float), file_path (string))",
 			see = { "add_geometry", "add_icon" })
 	@no_test
-	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final GamaPoint loc,
+	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file) throws GamaRuntimeException {
 		IDate currentDate = scope.getClock().getCurrentDate();
 		IDate endDate = Dates.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());

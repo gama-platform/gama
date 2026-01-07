@@ -11,20 +11,62 @@ package gama.core.util;
 
 import java.awt.Color;
 
+import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.GamlAnnotations.getter;
+import gama.annotations.precompiler.GamlAnnotations.variable;
+import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.OkForAPI;
+import gama.core.common.interfaces.IKeyword;
 import gama.gaml.interfaces.IValue;
+import gama.gaml.types.IType;
 
 /**
  *
  */
+@vars ({ @variable (
+		name = IKeyword.COLOR_RED,
+		type = IType.INT,
+		doc = { @doc ("Returns the red component of the color (between 0 and 255)") }),
+		@variable (
+				name = IKeyword.COLOR_GREEN,
+				type = IType.INT,
+				doc = { @doc ("Returns the green component of the color (between 0 and 255)") }),
+		@variable (
+				name = IKeyword.COLOR_BLUE,
+				type = IType.INT,
+				doc = { @doc ("Returns the blue component of the color (between 0 and 255)") }),
+		@variable (
+				name = IKeyword.ALPHA,
+				type = IType.INT,
+				doc = { @doc ("Returns the alpha component (transparency) of the color (between 0 for transparent and 255 for opaque)") }),
+		@variable (
+				name = IKeyword.BRIGHTER,
+				type = IType.COLOR,
+				doc = { @doc ("Returns a lighter color (with increased luminance)") }),
+		@variable (
+				name = IKeyword.DARKER,
+				type = IType.COLOR,
+				doc = { @doc ("Returns a darker color (with decreased luminance)") }) })
 @OkForAPI (OkForAPI.Location.INTERFACES)
 public interface IColor extends IValue, Comparable<IColor> {
+
+	/**
+	 * To AWT color.
+	 *
+	 * @param c
+	 *            the c
+	 * @return the java.awt. color
+	 */
+	static java.awt.Color toAWTColor(final IColor c) {
+		return c == null ? null : c.getAWTColor();
+	}
 
 	/**
 	 * Red.
 	 *
 	 * @return the integer
 	 */
+	@getter (IKeyword.COLOR_RED)
 	Integer red();
 
 	/**
@@ -32,6 +74,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the integer
 	 */
+	@getter (IKeyword.COLOR_BLUE)
 	Integer blue();
 
 	/**
@@ -39,6 +82,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the integer
 	 */
+	@getter (IKeyword.COLOR_GREEN)
 	Integer green();
 
 	/**
@@ -46,6 +90,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the integer
 	 */
+	@getter (IKeyword.ALPHA)
 	Integer alpha();
 
 	/**
@@ -53,6 +98,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the brighter
 	 */
+	@getter (IKeyword.BRIGHTER)
 	IColor brighter();
 
 	/**
@@ -60,6 +106,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the darker
 	 */
+	@getter (IKeyword.DARKER)
 	IColor darker();
 
 	/**

@@ -303,7 +303,6 @@ public class AgentsMenu extends ContributionItem {
 			final MenuItem source = (MenuItem) e.widget;
 			final IAgent a = (IAgent) source.getData("agent");
 			final IStatement c = (IStatement) source.getData("command");
-			// final GamaPoint p = (GamaPoint) source.getData("location");
 
 			// We run into the scope provided by the simulation to which this
 			// agent belongs

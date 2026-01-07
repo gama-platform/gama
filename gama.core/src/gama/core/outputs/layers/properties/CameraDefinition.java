@@ -11,7 +11,7 @@ package gama.core.outputs.layers.properties;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GraphicsScope;
 import gama.core.runtime.IScope;
 import gama.gaml.operators.Cast;
@@ -37,10 +37,10 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	final Attribute<Object> initialLocationAttribute;
 
 	/** The target. */
-	Attribute<GamaPoint> targetAttribute;
+	Attribute<IPoint> targetAttribute;
 
 	/** The initial target attribute. */
-	final Attribute<GamaPoint> initialTargetAttribute;
+	final Attribute<IPoint> initialTargetAttribute;
 
 	/** The distance. */
 	Attribute<Double> distanceAttribute;
@@ -82,11 +82,11 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	public void update(final IScope scope) {
 
 		// First we determine the target.
-		GamaPoint target = targetAttribute.get();
+		IPoint target = targetAttribute.get();
 		if (target == null) { target = scope.getSimulation().getCentroid(); }
 		// Then we determine the location
 		Object temp = locationAttribute.get();
-		GamaPoint location;
+		IPoint location;
 		boolean noLocation = temp == null;
 		if (noLocation) { temp = GamaPreferences.Displays.OPENGL_DEFAULT_CAM.getValue(); }
 		// We negate the Y ordinate coming from GAML
@@ -111,7 +111,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 		// defined
 		Double d = distanceAttribute.get();
 		if (d != null) {
-			GamaPoint vector = location.minus(target).normalized().times(d);
+			IPoint vector = location.minus(target).normalized().times(d);
 			location = target.plus(vector);
 		}
 
@@ -131,7 +131,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 */
 
 	@Override
-	public GamaPoint getLocation() { return current.getLocation(); }
+	public IPoint getLocation() { return current.getLocation(); }
 
 	/**
 	 * Sets the location.Comes from the OpenGL world, where the Y axis is reversed, so we store it as an attribute (to
@@ -142,7 +142,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 * @return true, if changed
 	 */
 	@Override
-	public boolean setLocation(final GamaPoint loc) {
+	public boolean setLocation(final IPoint loc) {
 		if (isLocked() || isDynamic() || loc == null) return false;
 		locationAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setLocation(loc);
@@ -157,7 +157,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 * @return true, if successful
 	 */
 	@Override
-	public boolean setTarget(final GamaPoint loc) {
+	public boolean setTarget(final IPoint loc) {
 		if (isLocked() || isDynamic() || loc == null) return false;
 		targetAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setTarget(loc);
@@ -173,7 +173,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	public void setLens(final Double lens) { this.lens = new ConstantAttribute<>(lens == null ? 45.0 : lens); }
 
 	@Override
-	public GamaPoint getTarget() { return current.getTarget(); }
+	public IPoint getTarget() { return current.getTarget(); }
 
 	@Override
 	public Double getLens() { return lens.get(); }

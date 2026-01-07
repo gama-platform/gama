@@ -3,7 +3,7 @@
  * GamaCoordinateSequenceFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 
 /**
  * A factory for creating GamaCoordinateSequence objects.
@@ -37,11 +38,23 @@ public class GamaCoordinateSequenceFactory implements CoordinateSequenceFactory 
 	 *
 	 * @param coordinates
 	 *            the coordinates
+	 * @return the i coordinates
+	 */
+	public ICoordinates create(final IPoint[] coordinates) {
+		if (coordinates.length == 1) return new UniqueCoordinateSequence(3, coordinates[0]);
+		return new GamaCoordinateSequence(3, true, coordinates);
+	}
+
+	/**
+	 * Creates the.
+	 *
+	 * @param coordinates
+	 *            the coordinates
 	 * @param copy
 	 *            the copy
 	 * @return the i coordinates
 	 */
-	public ICoordinates create(final GamaPoint[] coordinates, final boolean copy) {
+	public ICoordinates create(final IPoint[] coordinates, final boolean copy) {
 		if (coordinates.length == 1) return new UniqueCoordinateSequence(3, coordinates[0]);
 		return new GamaCoordinateSequence(3, copy, coordinates);
 	}
@@ -53,7 +66,7 @@ public class GamaCoordinateSequenceFactory implements CoordinateSequenceFactory 
 	 */
 	@Override
 	public ICoordinates create(final CoordinateSequence cs) {
-		if (cs.size() == 1) return new UniqueCoordinateSequence(cs.getDimension(), cs.getCoordinate(0));
+		if (cs.size() == 1) return new UniqueCoordinateSequence(cs.getDimension(), (IPoint) cs.getCoordinate(0));
 		if (cs instanceof GamaCoordinateSequence gcs) return gcs.copy();
 		return new GamaCoordinateSequence(cs.getDimension(), cs.toCoordinateArray());
 	}
@@ -65,7 +78,7 @@ public class GamaCoordinateSequenceFactory implements CoordinateSequenceFactory 
 	 */
 	@Override
 	public ICoordinates create(final int size, final int dimension) {
-		if (size == 1) return new UniqueCoordinateSequence(dimension, new GamaPoint());
+		if (size == 1) return new UniqueCoordinateSequence(dimension, GamaPointFactory.create());
 		return new GamaCoordinateSequence(dimension, size);
 	}
 

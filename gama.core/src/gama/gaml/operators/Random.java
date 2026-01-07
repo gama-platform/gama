@@ -21,7 +21,8 @@ import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.util.random.IRandom;
 import gama.core.common.util.random.RandomUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -225,8 +226,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
 	@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514")
-	public static Double opTGauss(final IScope scope, final GamaPoint p) {
-		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.x, p.y));
+	public static Double opTGauss(final IScope scope, final IPoint p) {
+		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
 
 	/**
@@ -301,9 +302,9 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; gauss({0.5, 0.2}) = 0.6343093594589535")
-	public static Double opGauss(final IScope scope, final GamaPoint point) {
-		final double mean = point.x;
-		final double sd = point.y;
+	public static Double opGauss(final IScope scope, final IPoint point) {
+		final double mean = point.getX();
+		final double sd = point.getY();
 		return RANDOM(scope).createGaussian(mean, sd);
 	}
 
@@ -756,11 +757,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint min, final GamaPoint max) {
-		final double x = opRnd(scope, min.x, max.x);
-		final double y = opRnd(scope, min.y, max.y);
-		final double z = opRnd(scope, min.z, max.z);
-		return new GamaPoint(x, y, z);
+	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
+		return scope.getRandom().between(min, max);
 	}
 
 	/**
@@ -789,15 +787,12 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint min, final GamaPoint max, final Double step) {
-		final double x = opRnd(scope, min.x, max.x, step);
-		final double y = opRnd(scope, min.y, max.y, step);
-		final double z = opRnd(scope, min.z, max.z, step);
-		return new GamaPoint(x, y, z);
+	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
+		return scope.getRandom().between(min, max, GamaPointFactory.create(step, step, step));
 	}
 
 	/** The null point. */
-	static GamaPoint NULL_POINT = new GamaPoint(0, 0, 0);
+	static IPoint NULL_POINT = GamaPointFactory.create(0, 0, 0);
 
 	/**
 	 * Op rnd.
@@ -822,7 +817,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.5,3, 1.0}) = {1.935030382553449,2.3551192220022856,0.5087825199078746}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint max) {
+	public static IPoint opRnd(final IScope scope, final IPoint max) {
 		return opRnd(scope, NULL_POINT, max);
 	}
 

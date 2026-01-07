@@ -18,7 +18,8 @@ import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.topology.grid.GridPopulation;
 import gama.core.metamodel.topology.grid.IGrid;
 import gama.core.outputs.display.AbstractDisplayGraphics;
@@ -73,7 +74,7 @@ public class GridLayerData extends LayerData {
 	Attribute<Boolean> text;
 	//
 	// /** The cell size. */
-	// private GamaPoint cellSize;
+	// private IPoint cellSize;
 
 	/** The wireframe. */
 	Attribute<Boolean> wireframe;
@@ -82,7 +83,7 @@ public class GridLayerData extends LayerData {
 	BufferedImage image;
 
 	/** The dim. */
-	private final GamaPoint dim = new GamaPoint();
+	private final IPoint dim = GamaPointFactory.create();
 
 	/**
 	 * Instantiates a new grid layer data.
@@ -270,7 +271,7 @@ public class GridLayerData extends LayerData {
 	 *
 	 * @return the dimensions
 	 */
-	public GamaPoint getDimensions() { return dim; }
+	public IPoint getDimensions() { return dim; }
 
 	/**
 	 * Checks if is smooth.

@@ -13,7 +13,7 @@ package gama.gaml.statements.draw;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.IColor;
 
@@ -47,7 +47,7 @@ public class AssetDrawingAttributes extends DrawingAttributes {
 	 * @param lighting
 	 *            the lighting
 	 */
-	public AssetDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
+	public AssetDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final IPoint location,
 			final IColor color, final IColor border, final IAgent agent, final Double lineWidth, final boolean isImage,
 			final Boolean lighting) {
 		super(size, rotation, location, color, border, lighting);
@@ -65,7 +65,7 @@ public class AssetDrawingAttributes extends DrawingAttributes {
 	 * @param isImage
 	 *            the is image
 	 */
-	public AssetDrawingAttributes(final GamaPoint location, final boolean isImage) {
+	public AssetDrawingAttributes(final IPoint location, final boolean isImage) {
 		super(null, null, location, null, null, null);
 		agentIdentifier = null;
 		setType(isImage ? IShape.Type.POLYGON : IShape.Type.THREED_FILE);

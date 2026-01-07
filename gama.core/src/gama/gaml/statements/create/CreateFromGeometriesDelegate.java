@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.IAddressableContainer;
@@ -67,7 +67,7 @@ public class CreateFromGeometriesDelegate implements ICreateDelegate {
 		final int num = max == null ? container.length(scope) : Math.min(container.length(scope), max);
 		for (int i = 0; i < num; i++) {
 			IShape g = container.get(scope, i);
-			if (g instanceof GamaPoint) { g = GamaGeometryType.createPoint(g); }
+			if (g instanceof IPoint ) { g = GamaGeometryType.createPoint(g); }
 
 			final Map map = g.getAttributes(true);
 			// The shape is added to the initial values

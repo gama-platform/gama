@@ -31,7 +31,7 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -480,7 +480,7 @@ public class RoadSkill extends Skill {
 		int numLanesOccupied = DrivingSkill.getNumLanesOccupied(vehicle);
 		int numSegments = getNumSegments(road);
 		List<Double> lengths = getSegmentLengths(road);
-		GamaPoint roadEndPt = getTargetNode(road).getLocation();
+		IPoint roadEndPt = getTargetNode(road).getLocation();
 		boolean violatingOneway = !DrivingSkill.getCurrentTarget(vehicle).getLocation().equals(roadEndPt);
 		int segmentIdx = !violatingOneway ? 0 : getNumSegments(road) - 1;
 		for (int i = 0; i < numLanesOccupied; i += 1) {

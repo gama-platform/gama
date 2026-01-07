@@ -3,7 +3,7 @@
  * GamlCoreConstants.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,7 +16,8 @@ import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IConstantCategory;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 
 /**
  * The Interface GamlCoreConstants.
@@ -244,72 +245,72 @@ public interface GamlCoreConstants {
 			value = "center",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the text to draw")) GamaPoint center =
-					new GamaPoint(0.5, 0.5);
+			doc = @doc ("Represents an anchor situated at the center of the text to draw")) IPoint center =
+					GamaPointFactory.create(0.5, 0.5);
 
 	/** The top left. */
 	@constant (
 			value = "top_left",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the top left corner of the text to draw")) GamaPoint top_left =
-					new GamaPoint(0, 1);
+			doc = @doc ("Represents an anchor situated at the top left corner of the text to draw")) IPoint top_left =
+					GamaPointFactory.create(0, 1);
 
 	/** The left center. */
 	@constant (
 			value = "left_center",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the left side of the text to draw")) GamaPoint left_center =
-					new GamaPoint(0, 0.5);
+			doc = @doc ("Represents an anchor situated at the center of the left side of the text to draw")) IPoint left_center =
+					GamaPointFactory.create(0, 0.5);
 
 	/** The bottom left. */
 	@constant (
 			value = "bottom_left",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the bottom left corner of the text to draw")) GamaPoint bottom_left =
-					new GamaPoint(0, 0);
+			doc = @doc ("Represents an anchor situated at the bottom left corner of the text to draw")) IPoint bottom_left =
+					GamaPointFactory.create(0, 0);
 
 	/** The bottom center. */
 	@constant (
 			value = "bottom_center",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the bottom side of the text to draw")) GamaPoint bottom_center =
-					new GamaPoint(0.5, 0);
+			doc = @doc ("Represents an anchor situated at the center of the bottom side of the text to draw")) IPoint bottom_center =
+					GamaPointFactory.create(0.5, 0);
 
 	/** The bottom right. */
 	@constant (
 			value = "bottom_right",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the bottom right corner of the text to draw")) GamaPoint bottom_right =
-					new GamaPoint(1, 0);
+			doc = @doc ("Represents an anchor situated at the bottom right corner of the text to draw")) IPoint bottom_right =
+					GamaPointFactory.create(1, 0);
 
 	/** The right center. */
 	@constant (
 			value = "right_center",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the right side of the text to draw")) GamaPoint right_center =
-					new GamaPoint(1, 0.5);
+			doc = @doc ("Represents an anchor situated at the center of the right side of the text to draw")) IPoint right_center =
+					GamaPointFactory.create(1, 0.5);
 
 	/** The top right. */
 	@constant (
 			value = "top_right",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the top right corner of the text to draw")) GamaPoint top_right =
-					new GamaPoint(1, 1);
+			doc = @doc ("Represents an anchor situated at the top right corner of the text to draw")) IPoint top_right =
+					GamaPointFactory.create(1, 1);
 
 	/** The top center. */
 	@constant (
 			value = "top_center",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the top side of the text to draw")) GamaPoint top_center =
-					new GamaPoint(0.5, 1);
+			doc = @doc ("Represents an anchor situated at the center of the top side of the text to draw")) IPoint top_center =
+					GamaPointFactory.create(0.5, 1);
 
 	/**
 	 * Layout constants
@@ -386,40 +387,40 @@ public interface GamlCoreConstants {
 			altNames = { "user_location_in_world" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit permanently holds the mouse's location in the world's coordinates. If it is outside a display window, its last position is used.")) GamaPoint user_location =
-					new GamaPoint();
+			doc = @doc ("This unit permanently holds the mouse's location in the world's coordinates. If it is outside a display window, its last position is used.")) IPoint user_location =
+					GamaPointFactory.create();
 
 	/** The user location in display. */
 	@constant (
 			value = "user_location_in_display",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit permanently holds the mouse's location in the display's coordinates. If it is outside a display window, its last position is used.")) GamaPoint user_location_in_display =
-					new GamaPoint();
+			doc = @doc ("This unit permanently holds the mouse's location in the display's coordinates. If it is outside a display window, its last position is used.")) IPoint user_location_in_display =
+					GamaPointFactory.create();
 
 	/** The camera location. */
 	@constant (
 			value = "camera_location",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
-			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current position of the camera as a point")) GamaPoint camera_location =
-					new GamaPoint();
+			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current position of the camera as a point")) IPoint camera_location =
+					GamaPointFactory.create();
 
 	/** The camera target. */
 	@constant (
 			value = "camera_target",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
-			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current target of the camera as a point")) GamaPoint camera_target =
-					new GamaPoint();
+			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current target of the camera as a point")) IPoint camera_target =
+					GamaPointFactory.create();
 
 	/** The camera orientation. */
 	@constant (
 			value = "camera_orientation",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
-			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current orientation of the camera as a point")) GamaPoint camera_orientation =
-					new GamaPoint();
+			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current orientation of the camera as a point")) IPoint camera_orientation =
+					GamaPointFactory.create();
 
 	/** The zoom. */
 	@constant (

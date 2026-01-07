@@ -23,7 +23,8 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.GAMA;
@@ -333,12 +334,12 @@ public abstract class AbstractAgent implements IAgent {
 	public void setName(final String name) {}
 
 	@Override
-	public GamaPoint getLocation(final IScope scope) {
+	public IPoint getLocation(final IScope scope) {
 		return getGeometry().getLocation();
 	}
 
 	@Override
-	public GamaPoint setLocation(final IScope scope, final GamaPoint l) {
+	public IPoint  setLocation(final IScope scope, final IPoint l) {
 		return getGeometry(scope).setLocation(l);
 	}
 
@@ -641,7 +642,7 @@ public abstract class AbstractAgent implements IAgent {
 	public ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
 
 	@Override
-	public IShape translatedTo(final IScope scope, final GamaPoint absoluteLocation) {
+	public IShape translatedTo(final IScope scope, final IPoint absoluteLocation) {
 		this.setLocation(absoluteLocation);
 		return this;
 	}

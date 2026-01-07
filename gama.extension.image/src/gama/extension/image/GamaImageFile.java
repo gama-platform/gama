@@ -39,8 +39,9 @@ import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.topology.projection.IProjection;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -243,7 +244,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
 		if (preferredSize != null)
@@ -301,8 +302,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private IMatrix matrixValueFromImage(final IScope scope, final GamaPoint preferredSize)
-			throws GamaRuntimeException {
+	private IMatrix matrixValueFromImage(final IScope scope, final IPoint preferredSize) throws GamaRuntimeException {
 		final BufferedImage image = loadImage(scope, true);
 		return matrixValueFromImage(scope, image, preferredSize);
 	}
@@ -319,7 +319,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @return the i matrix
 	 */
 	public static IMatrix matrixValueFromImage(final IScope scope, final BufferedImage image,
-			final GamaPoint preferredSize) {
+			final IPoint preferredSize) {
 		int xSize, ySize;
 		BufferedImage resultingImage = image;
 		if (preferredSize == null) {
@@ -353,7 +353,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private IMatrix matrixValueFromPgm(final IScope scope, final GamaPoint preferredSize) throws GamaRuntimeException {
+	private IMatrix matrixValueFromPgm(final IScope scope, final IPoint preferredSize) throws GamaRuntimeException {
 		// TODO PreferredSize is not respected here
 		try (BufferedReader in = new BufferedReader(new FileReader(getFile(scope)))) {
 			StringTokenizer tok;
@@ -469,8 +469,8 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 
 			final IEnvelope e = file.computeEnvelope(scope);
 			if (e != null) {
-				GamaPoint minCorner = new GamaPoint(e.getMinX(), e.getMinY());
-				GamaPoint maxCorner = new GamaPoint(e.getMaxX(), e.getMaxY());
+				IPoint minCorner = GamaPointFactory.create(e.getMinX(), e.getMinY());
+				IPoint maxCorner = GamaPointFactory.create(e.getMaxX(), e.getMaxY());
 				if (geodataFile != null) {
 					IProjection pr;
 					try {
@@ -486,7 +486,8 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 
 				}
 				isGeoreferenced = true;
-				return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+				return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(), maxCorner.getY(), 0,
+						0);
 			}
 
 		}
@@ -497,10 +498,10 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		final double x2 = xllcorner + cellSizeX * nbCols;
 		final double y1 = yllcorner;
 		final double y2 = yllcorner + cellSizeY * nbRows;
-		GamaPoint minCorner =
-				new GamaPoint(xNeg ? Math.max(x1, x2) : Math.min(x1, x2), yNeg ? Math.max(y1, y2) : Math.min(y1, y2));
-		GamaPoint maxCorner =
-				new GamaPoint(xNeg ? Math.min(x1, x2) : Math.max(x1, x2), yNeg ? Math.min(y1, y2) : Math.max(y1, y2));
+		IPoint minCorner = GamaPointFactory.create(xNeg ? Math.max(x1, x2) : Math.min(x1, x2),
+				yNeg ? Math.max(y1, y2) : Math.min(y1, y2));
+		IPoint maxCorner = GamaPointFactory.create(xNeg ? Math.min(x1, x2) : Math.max(x1, x2),
+				yNeg ? Math.min(y1, y2) : Math.max(y1, y2));
 		if (geodataFile != null) {
 			String fp = this.getPath(scope);
 			String path = fp.replace(Files.getFileExtension(fp), "prj");
@@ -521,7 +522,8 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 										.getLocation();
 								maxCorner = GamaShapeFactory.createFrom(gis.transform(maxCorner.getInnerGeometry()))
 										.getLocation();
-								return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+								return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(),
+										maxCorner.getY(), 0, 0);
 							}
 						}
 					} catch (IOException | FactoryException e) {}
@@ -534,7 +536,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			maxCorner = SpatialProjections.to_GAMA_CRS(scope, maxCorner, crs).getLocation();
 		}
 
-		return GamaEnvelopeFactory.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+		return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(), maxCorner.getY(), 0, 0);
 
 	}
 

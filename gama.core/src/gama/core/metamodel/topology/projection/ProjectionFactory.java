@@ -369,7 +369,7 @@ public class ProjectionFactory {
 	public IProjection fromCRS(final IScope scope, final CoordinateReferenceSystem crs, final IEnvelope env) {
 		if (env != null) { testConsistency(scope, crs, env); }
 		if (world != null) return new Projection(scope, world, crs, env, this);
-		if (env != null) { computeTargetCRS(scope, crs, env.centre().x, env.centre().y); }
+		if (env != null) { computeTargetCRS(scope, crs, env.center().getX(), env.center().getY()); }
 		world = new WorldProjection(scope, crs, env, this);
 		return world;
 	}

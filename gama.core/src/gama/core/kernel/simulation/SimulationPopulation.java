@@ -23,7 +23,7 @@ import gama.core.kernel.experiment.parameters.ParametersSet;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.ISerialisedAgent;
 import gama.core.metamodel.population.GamaPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.topology.continuous.AmorphousTopology;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -219,7 +219,7 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> {
 	public ExperimentAgent getHost() { return (ExperimentAgent) super.getHost(); }
 
 	@Override
-	public ISimulationAgent getAgent(final IScope scope, final GamaPoint value) {
+	public ISimulationAgent getAgent(final IScope scope, final IPoint value) {
 		return get(null, 0);
 	}
 

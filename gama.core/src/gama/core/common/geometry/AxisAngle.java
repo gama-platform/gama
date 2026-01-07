@@ -2,7 +2,7 @@
  *
  * AxisAngle.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,7 +10,8 @@
 
 package gama.core.common.geometry;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint ;
 
 /**
  * A four-element axis angle represented by double-precision floating point x,y,z,angle components. An axis angle is a
@@ -24,7 +25,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	/**
 	 * The Axis around which the rotation is done
 	 */
-	public final GamaPoint axis = new GamaPoint(Rotation3D.PLUS_K);
+	public final IPoint  axis = GamaPointFactory.create(Rotation3D.PLUS_K);
 
 	/**
 	 * The angle of rotation in degrees.
@@ -42,7 +43,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 *
 	 * @since vecmath 1.2
 	 */
-	public AxisAngle(final GamaPoint axis, final double angle) {
+	public AxisAngle(final IPoint  axis, final double angle) {
 		if (axis != null) {
 			this.axis.setLocation(axis);
 		} else {
@@ -76,7 +77,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 */
 	@Override
 	public String toString() {
-		return "(" + axis.x + ", " + axis.y + ", " + axis.z + ", " + this.angle + ")";
+		return "(" + axis.getX() + ", " + axis.getY() + ", " + axis.getZ() + ", " + this.angle + ")";
 	}
 
 	/**
@@ -117,9 +118,9 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	@Override
 	public int hashCode() {
 		long bits = 1L;
-		bits = 31L * bits + Double.doubleToLongBits(axis.x);
-		bits = 31L * bits + Double.doubleToLongBits(axis.y);
-		bits = 31L * bits + Double.doubleToLongBits(axis.z);
+		bits = 31L * bits + Double.doubleToLongBits(axis.getX());
+		bits = 31L * bits + Double.doubleToLongBits(axis.getY());
+		bits = 31L * bits + Double.doubleToLongBits(axis.getZ());
 		bits = 31L * bits + Double.doubleToLongBits(angle);
 		return (int) (bits ^ bits >> 32);
 	}
@@ -167,7 +168,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 * @return the <i>x</i> coordinate.
 	 *
 	 */
-	public double getX() { return axis.x; }
+	public double getX() { return axis.getX(); }
 
 	/**
 	 * Set a new value for <i>x</i> coordinate.
@@ -176,7 +177,9 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 *            the <i>x</i> coordinate.
 	 *
 	 */
-	public final void setX(final double x) { axis.x = x; }
+	public final void setX(final double x) {
+		axis.setX(x);
+	}
 
 	/**
 	 * Get value of <i>y</i> coordinate.
@@ -184,7 +187,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 * @return the <i>y</i> coordinate.
 	 *
 	 */
-	public final double getY() { return axis.y; }
+	public final double getY() { return axis.getY(); }
 
 	/**
 	 * Set a new value for <i>y</i> coordinate.
@@ -193,7 +196,9 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 *            the <i>y</i> coordinate.
 	 *
 	 */
-	public final void setY(final double y) { axis.y = y; }
+	public final void setY(final double y) {
+		axis.setY(y);
+	}
 
 	/**
 	 * Get value of <i>z</i> coordinate.
@@ -201,7 +206,7 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 * @return the <i>z</i> coordinate.
 	 *
 	 */
-	public double getZ() { return axis.z; }
+	public double getZ() { return axis.getZ(); }
 
 	/**
 	 * Set a new value for <i>z</i> coordinate.
@@ -210,13 +215,15 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 *            the <i>z</i> coordinate.
 	 *
 	 */
-	public final void setZ(final double z) { axis.z = z; }
+	public final void setZ(final double z) {
+		axis.setZ(z);
+	}
 
 	/**
 	 * Gets the Axis around which the rotation is done.
 	 *
 	 * @return the Axis around which the rotation is done
 	 */
-	public GamaPoint getAxis() { return axis; }
+	public IPoint  getAxis() { return axis; }
 
 }

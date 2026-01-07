@@ -33,6 +33,7 @@ import org.jfree.data.xy.XYDataset;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -100,10 +101,12 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		pp.setShadowYOffset(0);
 		if (!"none".equals(this.series_label_position)) {
 			pp.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1} ({2})"));
-			if (axesColor != null) { pp.setLabelLinkPaint(axesColor.getAWTColor()); }
+			if (axesColor != null) { pp.setLabelLinkPaint(IColor.toAWTColor(axesColor)); }
 			pp.setLabelFont(getTickFont());
-			if (labelTextColor != null) { pp.setLabelPaint(labelTextColor.getAWTColor()); }
-			if (labelBackgroundColor != null) { pp.setLabelBackgroundPaint(this.labelBackgroundColor.getAWTColor()); }
+			if (labelTextColor != null) { pp.setLabelPaint(IColor.toAWTColor(labelTextColor)); }
+			if (labelBackgroundColor != null) {
+				pp.setLabelBackgroundPaint(IColor.toAWTColor(this.labelBackgroundColor));
+			}
 
 		}
 		if ("none".equals(this.series_label_position)) {
@@ -146,7 +149,8 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
 		// final int myrow = IdPosition.get(serieid);
 		if (myserie.getMycolor() != null) {
-			((PiePlot<?>) this.getJFChart().getPlot()).setSectionPaint(serieid, myserie.getMycolor().getAWTColor());
+			((PiePlot<?>) this.getJFChart().getPlot()).setSectionPaint(serieid,
+					IColor.toAWTColor(myserie.getMycolor()));
 		}
 
 	}

@@ -11,7 +11,8 @@ package gama.core.common.geometry;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 
 /**
  * The Class Scaling3D.
@@ -45,9 +46,9 @@ public abstract class Scaling3D implements Transformation3D {
 	 *            the p
 	 * @return the scaling 3 D
 	 */
-	public static Scaling3D of(final GamaPoint p) {
+	public static Scaling3D of(final IPoint p) {
 		if (p == null) return null;
-		return of(p.x, p.y, p.z);
+		return of(p.getX(), p.getY(), p.getZ());
 	}
 
 	/**
@@ -82,7 +83,7 @@ public abstract class Scaling3D implements Transformation3D {
 
 		@Override
 		public void filter(final Coordinate coord) {
-			((GamaPoint) coord).multiplyBy(factor);
+			((IPoint) coord).multiplyBy(factor);
 
 		}
 
@@ -245,8 +246,8 @@ public abstract class Scaling3D implements Transformation3D {
 	 *
 	 * @return the gama point
 	 */
-	public GamaPoint toGamaPoint() {
-		return new GamaPoint(getX(), getY(), getZ());
+	public IPoint toGamaPoint() {
+		return GamaPointFactory.create(getX(), getY(), getZ());
 	}
 
 }

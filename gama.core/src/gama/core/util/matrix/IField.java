@@ -14,7 +14,8 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.grid.IDiffusionTarget;
 import gama.core.runtime.IScope;
@@ -126,7 +127,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 * @return the cell size
 	 */
 	@getter ("cell_size")
-	GamaPoint getCellSize(IScope scope);
+	IPoint  getCellSize(IScope scope);
 
 	/**
 	 * Sets the cell size.
@@ -137,7 +138,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 *            the size
 	 */
 	@setter ("cell_size")
-	default void setCellSize(final IScope scope, final GamaPoint size) {
+	default void setCellSize(final IScope scope, final IPoint  size) {
 		// Nothing to do by default as this value is supposed to be read-only
 	}
 
@@ -148,7 +149,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 *            a world location (location of an agent, for instance)
 	 * @return A list of values at this location. Never null nor empty (as there is at least one band).
 	 */
-	IShape getCellShapeAt(IScope scope, GamaPoint loc);
+	IShape getCellShapeAt(IScope scope, IPoint loc);
 
 	/**
 	 * Gets the cell shape at.
@@ -199,7 +200,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 *            the shape
 	 * @return the locations intersecting
 	 */
-	IList<GamaPoint> getLocationsIntersecting(final IScope scope, final IShape shape);
+	IList<IPoint> getLocationsIntersecting(final IScope scope, final IShape shape);
 
 	/**
 	 * Gets the neighbors of.
@@ -210,6 +211,6 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 *            the point
 	 * @return the neighbors of
 	 */
-	IList<GamaPoint> getNeighborsOf(IScope scope, GamaPoint point);
+	IList<IPoint> getNeighborsOf(IScope scope, IPoint point);
 
 }

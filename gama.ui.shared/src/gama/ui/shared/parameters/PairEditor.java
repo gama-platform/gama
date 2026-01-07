@@ -98,8 +98,8 @@ public class PairEditor extends AbstractEditor<GamaPair> implements VerifyListen
 	// * @param value the value
 	// * @param whenModified the when modified
 	// */
-	// PointEditor(final IScope scope, final EditorsGroup parent, final String title, final GamaPoint value,
-	// final EditorListener<GamaPoint> whenModified) {
+	// PointEditor(final IScope scope, final EditorsGroup parent, final String title, final IPoint value,
+	// final EditorListener<IPoint> whenModified) {
 	// // Convenience method
 	// super(scope, new InputParameter(title, value), whenModified);
 	// this.createControls(parent);

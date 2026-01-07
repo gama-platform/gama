@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph._Edge;
@@ -391,8 +391,8 @@ public final class NBAStarPathfinder<V, E> {
 	 */
 	public double estimateDistanceBetween(final V node1, final V node2) {
 		if (isSpatialGraph) {
-			final GamaPoint pt1 = ((IShape) node1).getLocation();
-			final GamaPoint pt2 = ((IShape) node2).getLocation();
+			final IPoint pt1 = ((IShape) node1).getLocation();
+			final IPoint pt2 = ((IShape) node2).getLocation();
 			return pt1.euclidianDistanceTo(pt2);
 
 		}

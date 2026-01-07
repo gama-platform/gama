@@ -13,7 +13,8 @@ package gama.core.outputs.layers.properties;
 import static gama.core.common.interfaces.IKeyword.LOCATION;
 
 import gama.core.common.geometry.Rotation3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.gaml.compilation.GAML;
 import gama.gaml.expressions.IExpression;
@@ -30,10 +31,10 @@ public class RotationDefinition extends AbstractDefinition {
 	}
 
 	/** The location. */
-	final Attribute<GamaPoint> locationAttribute;
+	final Attribute<IPoint> locationAttribute;
 
 	/** The target. */
-	final Attribute<GamaPoint> axisAttribute;
+	final Attribute<IPoint> axisAttribute;
 
 	/** The angle. Can be changed from outside to another value */
 	Attribute<Double> angleAttribute;
@@ -90,14 +91,14 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the center
 	 */
-	public GamaPoint getCenter() { return locationAttribute.get(); }
+	public IPoint  getCenter() { return locationAttribute.get(); }
 
 	/**
 	 * Gets the axis.
 	 *
 	 * @return the axis
 	 */
-	public GamaPoint getAxis() { return axisAttribute.get(); }
+	public IPoint  getAxis() { return axisAttribute.get(); }
 
 	/**
 	 * Reset.

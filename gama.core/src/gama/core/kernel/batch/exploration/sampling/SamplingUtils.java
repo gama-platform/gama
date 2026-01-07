@@ -18,7 +18,8 @@ import java.util.stream.IntStream;
 
 import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IDate;
@@ -69,7 +70,8 @@ public abstract class SamplingUtils {
 	 * @param ValFromSampling
 	 * @return
 	 */
-	private static ParametersSet scaleSampling(final IScope scope, final ParametersSet set, final Batch var, final double ValFromSampling) {
+	private static ParametersSet scaleSampling(final IScope scope, final ParametersSet set, final Batch var,
+			final double ValFromSampling) {
 		switch (var.getType().id()) {
 			case IType.INT:
 				int intValue = Cast.asInt(scope, var.getMinValue(scope));
@@ -92,15 +94,15 @@ public abstract class SamplingUtils {
 				set.put(var.getName(), sampleDValue);
 				return set;
 			case IType.POINT:
-				GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
-				GamaPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
+				IPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
+				IPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
 				double samplePXValue = pointValue.getX() + ValFromSampling * (maxPointValue.getX() - pointValue.getX());
 				double samplePYValue = pointValue.getY() + ValFromSampling * (maxPointValue.getY() - pointValue.getY());
 				double samplePZValue = pointValue.getZ() + ValFromSampling * (maxPointValue.getZ() - pointValue.getZ());
-				set.put(var.getName(), new GamaPoint(samplePXValue, samplePYValue, samplePZValue));
+				set.put(var.getName(), GamaPointFactory.create(samplePXValue, samplePYValue, samplePZValue));
 				return set;
 			case IType.BOOL:
-				set.put(var.getName(), (ValFromSampling > 0.5) == true);
+				set.put(var.getName(), (ValFromSampling > 0.5));
 				return set;
 			case IType.STRING:
 				if (var.getAmongValue(scope).isEmpty()) throw GamaRuntimeException

@@ -17,7 +17,7 @@ import com.google.common.base.Predicate;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
@@ -394,7 +394,7 @@ public interface IPopulation<T extends IAgent>
 	 * @param coord
 	 * @return
 	 */
-	T getAgent(IScope scope, GamaPoint coord);
+	T getAgent(IScope scope, IPoint coord);
 
 	/**
 	 * To array.

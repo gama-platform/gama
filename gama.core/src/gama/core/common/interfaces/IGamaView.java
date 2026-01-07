@@ -11,7 +11,7 @@ package gama.core.common.interfaces;
 
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.IScope;
@@ -240,7 +240,7 @@ public interface IGamaView {
 		 *
 		 * @return
 		 */
-		void takeSnapshot(GamaPoint customDimensions);
+		void takeSnapshot(IPoint customDimensions);
 
 		/**
 		 * Hide canvas.

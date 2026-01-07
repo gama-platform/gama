@@ -19,7 +19,8 @@ import org.jfree.chart.JFreeChart;
 import gama.core.common.interfaces.IClock;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -170,7 +171,7 @@ public abstract class ChartOutput {
 	protected String series_label_position = IKeyword.DEFAULT;
 
 	/** The series label anchor. */
-	protected GamaPoint series_label_anchor = new GamaPoint(1, 1);
+	protected IPoint series_label_anchor = GamaPointFactory.create(1, 1);
 
 	/** The style. */
 	protected String style = IKeyword.DEFAULT;
@@ -1496,7 +1497,7 @@ public abstract class ChartOutput {
 	 * @param scope
 	 * @param pt
 	 */
-	public void setSeriesLabelAnchor(final IScope scope, final GamaPoint pt) {
+	public void setSeriesLabelAnchor(final IScope scope, final IPoint pt) {
 		series_label_anchor = pt;
 	}
 

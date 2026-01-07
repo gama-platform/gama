@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DrivingGraph.java, in gaml.extensions.traffic, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DrivingGraph.java, in gama.extension.traffic, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,15 +16,16 @@ import org.locationtech.jts.geom.Coordinate;
 
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
 import gama.core.util.graph.GraphEvent;
-import gama.core.util.graph._Edge;
 import gama.core.util.graph.GraphEvent.GraphEventType;
+import gama.core.util.graph._Edge;
 import gama.core.util.map.IMap;
 
 /**
@@ -47,12 +48,23 @@ public class DrivingGraph extends GamaSpatialGraph {
 		init(scope, edges, vertices);
 	}
 
+	/**
+	 * Adds the edge with nodes.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param e
+	 *            the e
+	 * @param nodes
+	 *            the nodes
+	 * @return true, if successful
+	 */
 	@Override
-	public boolean addEdgeWithNodes(final IScope scope, final IShape e, final IMap<GamaPoint, IShape> nodes) {
+	public boolean addEdgeWithNodes(final IScope scope, final IShape e, final IMap<IPoint, IShape> nodes) {
 		if (containsEdge(e)) return false;
 		final Coordinate[] coord = e.getInnerGeometry().getCoordinates();
-		final IShape ptS = new GamaPoint(coord[0]);
-		final IShape ptT = new GamaPoint(coord[coord.length - 1]);
+		final IShape ptS = GamaPointFactory.create(coord[0]);
+		final IShape ptT = GamaPointFactory.create(coord[coord.length - 1]);
 		final IShape v1 = nodes.get(ptS);
 		if (v1 == null) return false;
 		final IShape v2 = nodes.get(ptT);

@@ -56,6 +56,7 @@ import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -247,7 +248,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			// DEBUG.LOG("pb!!!");
 		} else {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, myserie.getMycolor().getAWTColor()); }
+			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
 			if ("onchart".equals(this.series_label_position)) {
 				// ((BarRenderer)newr).setBaseItemLabelGenerator(new
@@ -390,7 +391,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		resetDomainAxis(scope);
 
 		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
-		Color ac = axesColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
 		pp.setRangeCrosshairVisible(true);
@@ -399,7 +400,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getRangeAxis().setLabelPaint(tc);
 			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
@@ -449,13 +450,13 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
 		}
-		Color ac = axesColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
 
 		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
@@ -543,7 +544,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
-		Color ac = axesColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
 		if (!this.getXTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
@@ -553,7 +554,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getRangeAxis().setLabelPaint(tc);
 			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
@@ -567,7 +568,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 		if (xlabel != null && !xlabel.isEmpty()) { pp.getDomainAxis().setLabel(xlabel); }
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {

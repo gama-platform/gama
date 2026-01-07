@@ -56,7 +56,8 @@ import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
@@ -208,9 +209,9 @@ public class Graphs {
 
 				return nb == 2;
 			}
-			try (ICollector<GamaPoint> cp = Collector.getSet()) {
-				final GamaPoint[] lp1 = GeometryUtils.getPointsOf(p1);
-				for (final GamaPoint pt : GeometryUtils.getPointsOf(p2)) {
+			try (ICollector<IPoint> cp = Collector.getSet()) {
+				final IPoint[] lp1 = GeometryUtils.getPointsOf(p1);
+				for (final IPoint pt : GeometryUtils.getPointsOf(p2)) {
 					if (ArrayUtils.contains(lp1, pt)) { cp.add(pt); }
 				}
 
@@ -2671,7 +2672,7 @@ public class Graphs {
 		for (Object s : graph.vertexSet()) {
 			if (s instanceof IShape) {
 				Point2D pt = model.get(s);
-				((IShape) s).setLocation(new GamaPoint(pt.getX(), pt.getY()));
+				((IShape) s).setLocation(GamaPointFactory.create(pt.getX(), pt.getY()));
 			}
 		}
 		return graph;

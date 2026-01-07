@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Comparison.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Comparison.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,7 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.test;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.compilation.IOperatorValidator;
 import gama.gaml.compilation.annotations.validator;
 import gama.gaml.descriptions.IDescription;
@@ -939,8 +939,8 @@ public class Comparison {
 							@example (
 									value = "{5,7} < {4,8}",
 									equals = "false") }) })
-	public static Boolean less(final GamaPoint p1, final GamaPoint p) {
-		return p1.x < p.x && p1.y < p.y;
+	public static Boolean less(final IPoint p1, final IPoint p) {
+		return p1.smallerThan(p);
 	}
 
 	/**
@@ -967,8 +967,8 @@ public class Comparison {
 							@example (
 									value = "{5,7} > {4,8}",
 									equals = "false") }) })
-	public static Boolean greater(final GamaPoint p1, final GamaPoint p) {
-		return p1.x > p.x && p1.y > p.y;
+	public static Boolean greater(final IPoint p1, final IPoint p) {
+		return p1.biggerThan(p);
 	}
 
 	/**
@@ -995,8 +995,8 @@ public class Comparison {
 							@example (
 									value = "{5,7} <= {4,8}",
 									equals = "false") }) })
-	public static Boolean lessOrEqual(final GamaPoint p1, final GamaPoint p) {
-		return p1.x <= p.x && p1.y <= p.y;
+	public static Boolean lessOrEqual(final IPoint p1, final IPoint p) {
+		return p1.smallerThanOrEqualTo(p);
 	}
 
 	/**
@@ -1023,8 +1023,8 @@ public class Comparison {
 							@example (
 									value = "{5,7} >= {4,8}",
 									equals = "false") }) })
-	public static Boolean greaterOrEqual(final GamaPoint p1, final GamaPoint p) {
-		return p1.x >= p.x && p1.y >= p.y;
+	public static Boolean greaterOrEqual(final IPoint p1, final IPoint p) {
+		return p1.biggerThanOrEqualTo(p);
 	}
 
 }

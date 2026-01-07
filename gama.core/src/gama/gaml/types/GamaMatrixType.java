@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaMatrixType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,8 @@ import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -65,13 +66,13 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	public static IMatrix staticCast(final IScope scope, final Object obj, final Object param, final IType contentType,
 			final boolean copy) {
 		if (obj == null && param == null) return null;
-		final GamaPoint size = param instanceof GamaPoint ? (GamaPoint) param : null;
+		final IPoint size = param instanceof IPoint i ? i : null;
 
 		if (size == null) {
 			if (obj instanceof IContainer) return ((IContainer) obj).matrixValue(scope, contentType, copy);
-			return with(scope, obj, new GamaPoint(1, 1), contentType);
+			return with(scope, obj, GamaPointFactory.create(1, 1), contentType);
 		}
-		if (size.x <= 0 || size.y < 0)
+		if (size.getX() <= 0 || size.getY() < 0)
 			throw GamaRuntimeException.error("Dimensions of a matrix should be positive.", scope);
 
 		if (obj instanceof IContainer) return ((IContainer) obj).matrixValue(scope, contentType, size, copy);
@@ -99,26 +100,26 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * @return the i matrix
 	 */
 	public static IMatrix from(final IScope scope, final IList list, final IType desiredType,
-			final GamaPoint preferredSize) {
+			final IPoint preferredSize) {
 		if (list == null || list.isEmpty()) return new GamaObjectMatrix(0, 0, desiredType);
 		if (desiredType.id() == IType.INT) return new GamaIntMatrix(scope, list, preferredSize);
 		if (desiredType.id() == IType.FLOAT) return new GamaFloatMatrix(scope, list, preferredSize);
 		return new GamaObjectMatrix(scope, list, preferredSize, desiredType);
 
 	}
-	
+
 	/**
 	 * Creates a new matrix of the same type as the given one with the asked dimensions and default values.
-	 * 
+	 *
 	 * @param matrix
 	 *            the base matrix
 	 * @param dimensions
-	 * 				the dimensions of the new matrix
+	 *            the dimensions of the new matrix
 	 * @return a new empty matrix
 	 */
-	public static IMatrix matrixLike(final IScope scope, final IMatrix matrix, final GamaPoint dimensions) {
-		return 		matrix.getGamlType().id() ==  IType.FIELD 
-				? GamaFieldType.buildField(scope, (int) dimensions.x, (int) dimensions.y)
+	public static IMatrix matrixLike(final IScope scope, final IMatrix matrix, final IPoint dimensions) {
+		return matrix.getGamlType().id() == IType.FIELD
+				? GamaFieldType.buildField(scope, (int) dimensions.getX(), (int) dimensions.getY())
 				: switch (matrix.getGamlType().getContentType().id()) {
 					case IType.INT -> new GamaIntMatrix(dimensions);
 					case IType.FLOAT -> new GamaFloatMatrix(dimensions);
@@ -140,7 +141,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * @return
 	 */
 	public static IMatrix from(final IScope scope, final IMatrix matrix, final IType desiredType,
-			final GamaPoint preferredSize, final boolean copy) {
+			final IPoint preferredSize, final boolean copy) {
 		final IType contentsType = matrix.getGamlType().getContentType();
 		if (!GamaType.requiresCasting(desiredType, contentsType)) {
 			if (matrix instanceof IField f) return GamaFloatMatrix.from(scope, f);
@@ -182,9 +183,9 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static IMatrix with(final IScope scope, final IExpression val, final GamaPoint p, final boolean parallel)
+	public static IMatrix with(final IScope scope, final IExpression val, final IPoint p, final boolean parallel)
 			throws GamaRuntimeException {
-		return with(scope, val, (int) p.x, (int) p.y, parallel);
+		return with(scope, val, (int) p.getX(), (int) p.getY(), parallel);
 	}
 
 	/**
@@ -263,9 +264,9 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static IMatrix with(final IScope scope, final Object val, final GamaPoint p, final IType contentsType)
+	public static IMatrix with(final IScope scope, final Object val, final IPoint p, final IType contentsType)
 			throws GamaRuntimeException {
-		return withObject(scope, val, (int) p.x, (int) p.y, contentsType);
+		return withObject(scope, val, (int) p.getX(), (int) p.getY(), contentsType);
 	}
 
 	/**
@@ -339,7 +340,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 		IList contents = (IList) map2.get("contents");
 		Integer x = (Integer) map2.get("cols");
 		Integer y = (Integer) map2.get("rows");
-		GamaPoint size = new GamaPoint(x, y);
+		IPoint size = GamaPointFactory.create(x, y);
 		return GamaMatrixType.from(scope, contents, requested.getContentType(), size);
 	}
 

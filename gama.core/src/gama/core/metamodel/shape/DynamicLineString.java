@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * DynamicLineString.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * DynamicLineString.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.metamodel.shape;
 
@@ -74,9 +74,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#getGeometryType()
 	 */
 	@Override
-	public String getGeometryType() {
-		return "LineString";
-	}
+	public String getGeometryType() { return "LineString"; }
 
 	/*
 	 * (non-Javadoc)
@@ -84,9 +82,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#getCoordinate()
 	 */
 	@Override
-	public Coordinate getCoordinate() {
-		return source.getLocation();
-	}
+	public Coordinate getCoordinate() { return source.getLocation().toCoordinate(); }
 
 	/*
 	 * (non-Javadoc)
@@ -95,7 +91,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 */
 	@Override
 	public Coordinate[] getCoordinates() {
-		return new Coordinate[] { source.getLocation(), target.getLocation() };
+		return new Coordinate[] { source.getLocation().toCoordinate(), target.getLocation().toCoordinate() };
 	}
 
 	@Override
@@ -109,9 +105,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#getNumPoints()
 	 */
 	@Override
-	public int getNumPoints() {
-		return 2;
-	}
+	public int getNumPoints() { return 2; }
 
 	/*
 	 * (non-Javadoc)
@@ -119,9 +113,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#isEmpty()
 	 */
 	@Override
-	public boolean isEmpty() {
-		return false;
-	}
+	public boolean isEmpty() { return false; }
 
 	/*
 	 * (non-Javadoc)
@@ -129,9 +121,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#getDimension()
 	 */
 	@Override
-	public int getDimension() {
-		return 1;
-	}
+	public int getDimension() { return 1; }
 
 	/*
 	 * (non-Javadoc)
@@ -144,14 +134,10 @@ public class DynamicLineString extends LineString implements Cloneable {
 	}
 
 	@Override
-	public Point getStartPoint() {
-		return getFactory().createPoint(getCoordinate());
-	}
+	public Point getStartPoint() { return getFactory().createPoint(getCoordinate()); }
 
 	@Override
-	public Point getEndPoint() {
-		return getFactory().createPoint(target.getLocation());
-	}
+	public Point getEndPoint() { return getFactory().createPoint(target.getLocation().toCoordinate()); }
 
 	/*
 	 * (non-Javadoc)
@@ -159,9 +145,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 * @see org.locationtech.jts.geom.Geometry#getBoundaryDimension()
 	 */
 	@Override
-	public int getBoundaryDimension() {
-		return 0;
-	}
+	public int getBoundaryDimension() { return 0; }
 
 	/*
 	 * (non-Javadoc)
@@ -180,8 +164,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	 */
 	@Override
 	public boolean equalsExact(final Geometry other, final double tolerance) {
-		if (!(other instanceof DynamicLineString)) return false;
-		final DynamicLineString dls = (DynamicLineString) other;
+		if (!(other instanceof final DynamicLineString dls)) return false;
 		return Objects.equals(dls.source, source) && Objects.equals(dls.target, target);
 	}
 
@@ -200,7 +183,7 @@ public class DynamicLineString extends LineString implements Cloneable {
 	@Override
 	public void apply(final CoordinateFilter filter) {
 		filter.filter(getCoordinate());
-		filter.filter(target.getLocation());
+		filter.filter(target.getLocation().toCoordinate());
 	}
 
 	/*
@@ -238,14 +221,10 @@ public class DynamicLineString extends LineString implements Cloneable {
 	}
 
 	@Override
-	public boolean isSimple() {
-		return true;
-	}
+	public boolean isSimple() { return true; }
 
 	@Override
-	public boolean isValid() {
-		return true;
-	}
+	public boolean isValid() { return true; }
 
 	/*
 	 * (non-Javadoc)
@@ -304,26 +283,22 @@ public class DynamicLineString extends LineString implements Cloneable {
 	}
 
 	@Override
-	public boolean isRing() {
-		return false;
-	}
+	public boolean isRing() { return false; }
 
 	@Override
-	public boolean isClosed() {
-		return false;
-	}
+	public boolean isClosed() { return false; }
 
 	@Override
 	public Point getPointN(final int n) {
 		if (n == 0) return getFactory().createPoint(getCoordinate());
-		if (n == 1) return getFactory().createPoint(target.getLocation());
+		if (n == 1) return getFactory().createPoint(target.getLocation().toCoordinate());
 		return null;
 	}
 
 	@Override
 	public Coordinate getCoordinateN(final int n) {
 		if (n == 0) return getCoordinate();
-		if (n == 1) return target.getLocation();
+		if (n == 1) return target.getLocation().toCoordinate();
 		return null;
 
 	}
@@ -331,17 +306,13 @@ public class DynamicLineString extends LineString implements Cloneable {
 	/**
 	 * @return
 	 */
-	public IShape getSource() {
-		return source;
-	}
+	public IShape getSource() { return source; }
 
 	/**
 	 * Gets the target.
 	 *
 	 * @return the target
 	 */
-	public IShape getTarget() {
-		return target;
-	}
+	public IShape getTarget() { return target; }
 
 }

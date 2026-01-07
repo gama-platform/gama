@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaGeometryType.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaGeometryType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.types;
 
@@ -52,9 +52,10 @@ import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.shape.DynamicLineString;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.shape.IShape.Type;
 import gama.core.runtime.GAMA;
@@ -152,7 +153,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return
 	 */
 	private static boolean isPoints(final IScope scope, final IContainer obj) {
-		for (final Object o : obj.iterable(scope)) { if (!(o instanceof GamaPoint)) return false; }
+		for (final Object o : obj.iterable(scope)) { if (!(o instanceof IPoint)) return false; }
 		return true;
 	}
 
@@ -196,7 +197,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 		// be lost when copying this geometry
 		CoordinateSequence cs = fact.create(size, 3);
 		for (int i = 0; i < size; i++) {
-			final Coordinate p = points.get(i).getLocation();
+			final Coordinate p = points.get(i).getLocation().toCoordinate();
 			cs.setOrdinate(i, 0, p.x);
 			cs.setOrdinate(i, 1, p.y);
 			cs.setOrdinate(i, 2, p.z);
@@ -235,7 +236,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 			// be lost when copying this geometry
 			CoordinateSequence cs = fact.create(size, 3);
 			for (int i = 0; i < size; i++) {
-				final Coordinate p = points.get(i).getLocation();
+				final Coordinate p = points.get(i).getLocation().toCoordinate();
 				cs.setOrdinate(i, 0, p.x);
 				cs.setOrdinate(i, 1, p.y);
 				cs.setOrdinate(i, 2, p.z);
@@ -263,12 +264,12 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildTriangle(final double base, final double height, final GamaPoint location) {
+	public static IShape buildTriangle(final double base, final double height, final IPoint location) {
 		final Coordinate[] points = new Coordinate[4];
 		final double z = location == null ? 0.0 : location.getZ();
-		points[0] = new GamaPoint(-base / 2.0, height / 2, z);
-		points[1] = new GamaPoint(0, -height / 2, z);
-		points[2] = new GamaPoint(base / 2.0, height / 2, z);
+		points[0] = GamaPointFactory.create(-base / 2.0, height / 2, z).toCoordinate();
+		points[1] = GamaPointFactory.create(0, -height / 2, z).toCoordinate();
+		points[2] = GamaPointFactory.create(base / 2.0, height / 2, z).toCoordinate();
 		points[3] = points[0];
 		final CoordinateSequenceFactory fact = GamaGeometryFactory.COORDINATES_FACTORY;
 		final CoordinateSequence cs = fact.create(points);
@@ -288,15 +289,15 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildTriangle(final double side_size, final GamaPoint location) {
+	public static IShape buildTriangle(final double side_size, final IPoint location) {
 		final double h = Math.sqrt(3) / 2 * side_size;
 		final Coordinate[] points = new Coordinate[4];
 		final double x = location == null ? 0 : location.getX();
 		final double y = location == null ? 0 : location.getY();
 		final double z = location == null ? 0 : location.getZ();
-		points[0] = new GamaPoint(x - side_size / 2.0, y + h / 3, z);
-		points[1] = new GamaPoint(x, y - 2 * h / 3, z);
-		points[2] = new GamaPoint(x + side_size / 2.0, y + h / 3, z);
+		points[0] = GamaPointFactory.create(x - side_size / 2.0, y + h / 3, z).toCoordinate();
+		points[1] = GamaPointFactory.create(x, y - 2 * h / 3, z).toCoordinate();
+		points[2] = GamaPointFactory.create(x + side_size / 2.0, y + h / 3, z).toCoordinate();
 		points[3] = points[0];
 		final CoordinateSequenceFactory fact = GamaGeometryFactory.COORDINATES_FACTORY;
 		final CoordinateSequence cs = fact.create(points);
@@ -316,16 +317,16 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildRectangle(final double width, final double height, final GamaPoint location) {
-		final Coordinate[] points = new Coordinate[5];
+	public static IShape buildRectangle(final double width, final double height, final IPoint location) {
+		final IPoint[] points = new IPoint[5];
 		final double x = location == null ? 0 : location.getX();
 		final double y = location == null ? 0 : location.getY();
 		final double z = location == null ? 0 : location.getZ();
-		points[4] = new GamaPoint(x - width / 2.0, y + height / 2.0, z);
-		points[3] = new GamaPoint(x + width / 2.0, y + height / 2.0, z);
-		points[2] = new GamaPoint(x + width / 2.0, y - height / 2.0, z);
-		points[1] = new GamaPoint(x - width / 2.0, y - height / 2.0, z);
-		points[0] = new GamaPoint(x - width / 2.0, y + height / 2.0, z);
+		points[4] = GamaPointFactory.create(x - width / 2.0, y + height / 2.0, z);
+		points[3] = GamaPointFactory.create(x + width / 2.0, y + height / 2.0, z);
+		points[2] = GamaPointFactory.create(x + width / 2.0, y - height / 2.0, z);
+		points[1] = GamaPointFactory.create(x - width / 2.0, y - height / 2.0, z);
+		points[0] = GamaPointFactory.create(x - width / 2.0, y + height / 2.0, z);
 		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createRectangle(points));
 	}
 
@@ -356,7 +357,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return the i shape
 	 */
 	public static IShape buildLine(final IShape location2) {
-		return buildLine(new GamaPoint(), location2);
+		return buildLine(GamaPointFactory.create(), location2);
 	}
 
 	/**
@@ -369,14 +370,14 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return the i shape
 	 */
 	public static IShape buildLine(final IShape location1, final IShape location2) {
-		final Coordinate coordinates[] =
-				{ location1 == null ? new GamaPoint(0, 0) : (GamaPoint) location1.getLocation(),
-						location2 == null ? new GamaPoint(0, 0) : (GamaPoint) location2.getLocation() };
+		final IPoint coordinates[] =
+				{ location1 == null ? GamaPointFactory.create(0, 0) : (IPoint) location1.getLocation(),
+						location2 == null ? GamaPointFactory.create(0, 0) : (IPoint) location2.getLocation() };
 		// WARNING Circumvents a bug in JTS 1.13, where a line built between two
 		// identical points would return a null
 		// centroid
-		if (coordinates[0].equals(coordinates[1])) return createPoint((GamaPoint) coordinates[0]);
-		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates));
+		if (coordinates[0].equals(coordinates[1])) return createPoint(coordinates[0]);
+		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates, true));
 	}
 
 	/**
@@ -424,7 +425,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 */
 	public static IShape buildPolyline(final List<IShape> points) {
 		final List<Coordinate> coordinates = new ArrayList<>();
-		for (final IShape p : points) { coordinates.add(p.getLocation()); }
+		for (final IShape p : points) { coordinates.add(p.getLocation().toCoordinate()); }
 		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY
 				.createLineString(coordinates.toArray(new Coordinate[coordinates.size()])));
 	}
@@ -469,8 +470,8 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return the gama shape
 	 */
 	public static GamaShape createPoint(final IShape location) {
-		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY
-				.createPoint(location == null ? new GamaPoint(0, 0) : location.getLocation()));
+		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createPoint(location == null
+				? GamaPointFactory.create(0, 0).toCoordinate() : location.getLocation().toCoordinate()));
 	}
 
 	/**
@@ -482,7 +483,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildSquare(final double side_size, final GamaPoint location) {
+	public static IShape buildSquare(final double side_size, final IPoint location) {
 		return buildRectangle(side_size, side_size, location);
 	}
 
@@ -495,7 +496,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildCube(final double side_size, final GamaPoint location) {
+	public static IShape buildCube(final double side_size, final IPoint location) {
 
 		final IShape g = buildRectangle(side_size, side_size, location);
 		g.setDepth(side_size);
@@ -517,8 +518,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildBox(final double width, final double height, final double depth,
-			final GamaPoint location) {
+	public static IShape buildBox(final double width, final double height, final double depth, final IPoint location) {
 		final IShape g = buildRectangle(width, height, location);
 		g.setDepth(depth);
 		g.setGeometricalType(BOX);
@@ -537,7 +537,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return the i shape
 	 */
 	public static IShape buildHexagon(final double size, final double x, final double y) {
-		return buildHexagon(size, new GamaPoint(x, y));
+		return buildHexagon(size, GamaPointFactory.create(x, y));
 	}
 
 	/**
@@ -549,7 +549,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildHexagon(final double size, final GamaPoint location) {
+	public static IShape buildHexagon(final double size, final IPoint location) {
 		return buildHexagon(size, size, location);
 	}
 
@@ -564,19 +564,19 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildHexagon(final double sizeX, final double sizeY, final GamaPoint location) {
+	public static IShape buildHexagon(final double sizeX, final double sizeY, final IPoint location) {
 		final double x = location.getX();
 		final double y = location.getY();
-		final Coordinate[] coords = new Coordinate[7];
-		coords[0] = new GamaPoint(x - sizeX / 2.0, y);
-		coords[1] = new GamaPoint(x - sizeX / 4, y + sizeY / 2);
-		coords[2] = new GamaPoint(x + sizeX / 4, y + sizeY / 2);
-		coords[3] = new GamaPoint(x + sizeX / 2, y);
-		coords[4] = new GamaPoint(x + sizeX / 4, y - sizeY / 2);
-		coords[5] = new GamaPoint(x - sizeX / 4, y - sizeY / 2);
-		coords[6] = new GamaPoint(coords[0]);
+		final IPoint[] coords = new IPoint[7];
+		coords[0] = GamaPointFactory.create(x - sizeX / 2.0, y);
+		coords[1] = GamaPointFactory.create(x - sizeX / 4, y + sizeY / 2);
+		coords[2] = GamaPointFactory.create(x + sizeX / 4, y + sizeY / 2);
+		coords[3] = GamaPointFactory.create(x + sizeX / 2, y);
+		coords[4] = GamaPointFactory.create(x + sizeX / 4, y - sizeY / 2);
+		coords[5] = GamaPointFactory.create(x - sizeX / 4, y - sizeY / 2);
+		coords[6] = GamaPointFactory.create(coords[0]);
 		final Geometry g = GeometryUtils.GEOMETRY_FACTORY
-				.createPolygon(GeometryUtils.GEOMETRY_FACTORY.createLinearRing(coords), null);
+				.createPolygon(GeometryUtils.GEOMETRY_FACTORY.createLinearRing((Coordinate[]) coords), null);
 		return GamaShapeFactory.createFrom(g);
 
 	}
@@ -590,13 +590,13 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildCircle(final double radius, final GamaPoint location) {
+	public static IShape buildCircle(final double radius, final IPoint location) {
 		final Geometry geom = GeometryUtils.GEOMETRY_FACTORY
-				.createPoint(location == null ? new GamaPoint(0, 0) : (GamaPoint) location);
+				.createPoint(location == null ? GamaPointFactory.create(0, 0).toCoordinate() : location.toCoordinate());
 		final Geometry g = geom.buffer(radius);
 		if (location != null) {
 			final Coordinate[] coordinates = g.getCoordinates();
-			for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.z; }
+			for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.getZ(); }
 		}
 		IShape shape = GamaShapeFactory.createFrom(g);
 		shape.setGeometricalType(Type.CIRCLE);
@@ -614,20 +614,16 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildEllipse(final double xRadius, final double yRadius, final GamaPoint location) {
+	public static IShape buildEllipse(final double xRadius, final double yRadius, final IPoint location) {
 		if (xRadius <= 0 && yRadius <= 0) return GamaShapeFactory.createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.GEOMETRY_FACTORY);
-		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue()); // WARNING AD Arbitrary number.
-																						// Maybe add a
-		// parameter and/or preference ?
-		factory.setCentre(location);
+		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
+		factory.setCentre(location.toCoordinate());
 		factory.setWidth(xRadius);
 		factory.setHeight(yRadius);
 		final Geometry g = factory.createEllipse();
-		if (location != null) {
-			final Coordinate[] coordinates = g.getCoordinates();
-			for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.z; }
-		}
+		final Coordinate[] coordinates = g.getCoordinates();
+		for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.getZ(); }
 		return GamaShapeFactory.createFrom(g);
 	}
 
@@ -642,19 +638,15 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildSquircle(final double xRadius, final double power, final GamaPoint location) {
+	public static IShape buildSquircle(final double xRadius, final double power, final IPoint location) {
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.GEOMETRY_FACTORY);
-		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue()); // WARNING AD Arbitrary number.
-																						// Maybe add a
-		// parameter and/or preference ?
-		factory.setCentre(location);
+		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
+		factory.setCentre(location.toCoordinate());
 		factory.setSize(xRadius);
 		final Geometry g = factory.createSupercircle(power);
-		if (location != null) {
-			final Coordinate[] coordinates = g.getCoordinates();
-			for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.z; }
-		}
+		final Coordinate[] coordinates = g.getCoordinates();
+		for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.getZ(); }
 		return GamaShapeFactory.createFrom(g);
 
 	}
@@ -671,14 +663,13 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return
 	 */
 	public static IShape buildArc(final double xRadius, final double heading, final double amplitude,
-			final boolean filled, final GamaPoint location) {
+			final boolean filled, final IPoint location) {
 		if (amplitude <= 0 || xRadius <= 0) return GamaShapeFactory.createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.GEOMETRY_FACTORY);
 		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
-		factory.setCentre(location);
+		factory.setCentre(location.toCoordinate());
 		factory.setSize(xRadius);
 		final double ampl = Maths.checkHeading(amplitude);
-
 		final double angExtent = Maths.toRad * ampl;
 		final double startAng = Maths.toRad * Maths.checkHeading(heading - ampl / 2);
 		Geometry g;
@@ -687,10 +678,8 @@ public class GamaGeometryType extends GamaType<IShape> {
 		} else {
 			g = factory.createArc(startAng, angExtent);
 		}
-		if (location != null) {
-			final Coordinate[] coordinates = g.getCoordinates();
-			for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.z; }
-		}
+		final Coordinate[] coordinates = g.getCoordinates();
+		for (int i = 0; i < coordinates.length; i++) { coordinates[i].z = location.getZ(); }
 		return GamaShapeFactory.createFrom(g);
 
 	}
@@ -706,7 +695,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildCylinder(final double radius, final double depth, final GamaPoint location) {
+	public static IShape buildCylinder(final double radius, final double depth, final IPoint location) {
 		final IShape g = buildCircle(radius, location);
 		g.setDepth(depth);
 		g.setGeometricalType(CYLINDER);
@@ -723,7 +712,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @return the i shape
 	 */
 	// FIXME: Be sure that a buffer on a sphere returns a sphere.
-	public static IShape buildSphere(final double radius, final GamaPoint location) {
+	public static IShape buildSphere(final double radius, final IPoint location) {
 		final IShape g = buildCircle(radius, location);
 		g.setDepth(radius);
 		g.setGeometricalType(SPHERE);
@@ -741,7 +730,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildCone3D(final double radius, final double depth, final GamaPoint location) {
+	public static IShape buildCone3D(final double radius, final double depth, final IPoint location) {
 		final IShape g = buildCircle(radius, location);
 		g.setDepth(depth);
 		g.setGeometricalType(CONE);
@@ -757,7 +746,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildTeapot(final double size, final GamaPoint location) {
+	public static IShape buildTeapot(final double size, final IPoint location) {
 		final IShape g = buildCircle(size, location);
 		g.setDepth(size);
 		g.setGeometricalType(TEAPOT);
@@ -773,7 +762,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildPyramid(final double side_size, final GamaPoint location) {
+	public static IShape buildPyramid(final double side_size, final IPoint location) {
 		final IShape g = buildRectangle(side_size, side_size, location);
 		g.setDepth(side_size);
 		g.setGeometricalType(PYRAMID);
@@ -792,8 +781,8 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the size
 	 * @return the i shape
 	 */
-	public static IShape buildArrow(final GamaPoint head, final double size) {
-		return buildArrow(new GamaPoint(), head, size, size, true);
+	public static IShape buildArrow(final IPoint head, final double size) {
+		return buildArrow(GamaPointFactory.create(), head, size, size, true);
 	}
 
 	/**
@@ -811,20 +800,20 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the closed
 	 * @return the i shape
 	 */
-	public static IShape buildArrow(final GamaPoint tail, final GamaPoint head, final double arrowWidth,
+	public static IShape buildArrow(final IPoint tail, final IPoint head, final double arrowWidth,
 			final double arrowLength, final boolean closed) {
 		final IList points = GamaListFactory.createWithoutCasting(Types.POINT, head);
 		// build the line vector
-		final GamaPoint vecLine = head.minus(tail);
+		final IPoint vecLine = head.minus(tail);
 		// build the arrow base vector - normal to the line
-		GamaPoint vecLeft = new GamaPoint(-vecLine.y, vecLine.x);
-		if (vecLine.y == 0 && vecLine.x == 0) { vecLeft = new GamaPoint(-vecLine.z, 0, 0); }
+		IPoint vecLeft = GamaPointFactory.create(-vecLine.getY(), vecLine.getX());
+		if (vecLine.getY() == 0 && vecLine.getX() == 0) { vecLeft = GamaPointFactory.create(-vecLine.getZ(), 0, 0); }
 		// setup length parameters
 		final double fLength = vecLine.norm();
 		final double th = arrowWidth / (2.0d * fLength);
 		final double ta = arrowLength / (2.0d * theta * fLength);
 		// find the base of the arrow
-		final GamaPoint base = head.minus(vecLine.times(ta));
+		final IPoint base = head.minus(vecLine.times(ta));
 		// build the points on the sides of the arrow
 		if (closed) {
 			points.add(base.plus(vecLeft.times(th)));
@@ -909,13 +898,13 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static GamaShape pointsToGeometry(final IScope scope, final IContainer<?, GamaPoint> coordinates)
+	public static GamaShape pointsToGeometry(final IScope scope, final IContainer<?, IPoint> coordinates)
 			throws GamaRuntimeException {
 		if (coordinates != null && !coordinates.isEmpty(scope)) {
-			final List<List<GamaPoint>> geoSimp = GamaListFactory.create(Types.LIST.of(Types.POINT));
+			final List<List<IPoint>> geoSimp = GamaListFactory.create(Types.LIST.of(Types.POINT));
 			// WARNING The list of points is NOT recopied (verify side effects)
 			geoSimp.add(coordinates.listValue(scope, Types.NO_TYPE, false));
-			final List<List<List<GamaPoint>>> geomG = GamaListFactory.create(Types.LIST);
+			final List<List<List<IPoint>>> geomG = GamaListFactory.create(Types.LIST);
 			geomG.add(geoSimp);
 			final Geometry geom = GeometryUtils.buildGeometryJTS(geomG);
 			return GamaShapeFactory.createFrom(geom);
@@ -997,13 +986,11 @@ public class GamaGeometryType extends GamaType<IShape> {
 	 *            the location
 	 * @return the i shape
 	 */
-	public static IShape buildCross(final Double xRadius, final Double width, final GamaPoint location) {
+	public static IShape buildCross(final Double xRadius, final Double width, final IPoint location) {
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
 		final double val = xRadius / Math.sqrt(2);
-		IShape line1 = GamaGeometryType.buildLine(new GamaPoint(location.x - val, location.y - val),
-				new GamaPoint(location.x + val, location.y + val));
-		IShape line2 = GamaGeometryType.buildLine(new GamaPoint(location.x - val, location.y + val),
-				new GamaPoint(location.x + val, location.y - val));
+		IShape line1 = GamaGeometryType.buildLine(location.minus(val, val, 0), location.plus(val, val, 0));
+		IShape line2 = GamaGeometryType.buildLine(location.minus(-val, val, 0), location.minus(val, -val, 0));
 		if (width != null && width > 0) {
 			line1 = SpatialTransformations.enlarged_by(null, line1, width);
 			line2 = SpatialTransformations.enlarged_by(null, line2, width);

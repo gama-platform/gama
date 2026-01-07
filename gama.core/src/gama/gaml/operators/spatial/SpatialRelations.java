@@ -9,7 +9,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.grid.GridTopology;
@@ -438,7 +438,7 @@ public class SpatialRelations {
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
 	@test (" {20,20} distance_to {30,30} = 14.142135623730951")
-	public static Double distance_to(final IScope scope, final GamaPoint source, final GamaPoint target) {
+	public static Double distance_to(final IScope scope, final IPoint source, final IPoint target) {
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 
@@ -499,7 +499,7 @@ public class SpatialRelations {
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
 	@no_test // test already done in Spatial tests models
-	public static IPath path_to(final IScope scope, final GamaPoint g, final GamaPoint g1)
+	public static IPath path_to(final IScope scope, final IPoint g, final IPoint g1)
 			throws GamaRuntimeException {
 		if (g == null) return null;
 		return scope.getTopology().pathBetween(scope, g, g1);

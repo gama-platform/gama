@@ -1,16 +1,17 @@
 /*******************************************************************************************************
  *
- * UserLocationUnitExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * UserLocationInDisplayUnitExpression.java, in gama.core, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.expressions.units;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.gaml.types.Types;
 
@@ -26,11 +27,11 @@ public class UserLocationInDisplayUnitExpression extends UnitConstantExpression 
 	 *            the doc
 	 */
 	public UserLocationInDisplayUnitExpression(final String doc) {
-		super(new GamaPoint(), Types.POINT, "user_location_in_display", doc, null);
+		super(GamaPointFactory.create(), Types.POINT, "user_location_in_display", doc, null);
 	}
 
 	@Override
-	public GamaPoint _value(final IScope scope) {
+	public IPoint _value(final IScope scope) {
 		return scope.getGui().getMouseLocationInDisplay();
 	}
 

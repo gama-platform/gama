@@ -3,7 +3,7 @@
  * GamaPopulation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -42,8 +42,9 @@ import com.google.common.collect.Iterators;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.continuous.ContinuousTopology;
@@ -551,14 +552,14 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 				final Object val = init.get(SHAPE);
 				final Object loc = init.get(LOCATION);
 				if (val != null) {
-					if (val instanceof GamaPoint p) {
+					if (val instanceof IPoint p) {
 						a.setGeometry(GamaShapeFactory.createFrom(p));
 					} else {
 						a.setGeometry((IShape) val);
 					}
 					init.remove(SHAPE);
 				} else if (loc != null) {
-					a.setLocation(scope, (GamaPoint) loc);
+					a.setLocation(scope, (IPoint) loc);
 					init.remove(LOCATION);
 				}
 			}
@@ -674,7 +675,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 
 	@SuppressWarnings ("unchecked")
 	@Override
-	public T getAgent(final IScope scope, final GamaPoint coord) {
+	public T getAgent(final IScope scope, final IPoint coord) {
 		final IAgentFilter filter = In.list(scope, this);
 		if (filter == null) return null;
 
@@ -932,7 +933,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 			case 0 -> null;
 			case 1 -> super.getFromIndicesList(scope, indices);
 			case 2 -> this.getAgent(scope,
-					new GamaPoint(Cast.asFloat(scope, indices.get(0)), Cast.asFloat(scope, indices.get(1))));
+					GamaPointFactory.create(Cast.asFloat(scope, indices.get(0)), Cast.asFloat(scope, indices.get(1))));
 			default -> throw GamaRuntimeException.error("Populations cannot be accessed with 3 or more indexes", scope);
 		};
 

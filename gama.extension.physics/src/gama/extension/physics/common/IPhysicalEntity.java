@@ -10,7 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 
 /**
  * The Interface IPhysicalEntity.
@@ -25,7 +26,7 @@ public interface IPhysicalEntity<VectorType> extends IPhysicalConstants {
 	 * @param v the v
 	 * @return the vector type
 	 */
-	VectorType toVector(final GamaPoint v);
+	VectorType toVector(final IPoint v);
 
 	/**
 	 * To gama point.
@@ -33,6 +34,6 @@ public interface IPhysicalEntity<VectorType> extends IPhysicalConstants {
 	 * @param v the v
 	 * @return the gama point
 	 */
-	GamaPoint toGamaPoint(VectorType v);
+	IPoint  toGamaPoint(VectorType v);
 
 }

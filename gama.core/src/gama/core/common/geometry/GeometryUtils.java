@@ -57,9 +57,10 @@ import org.locationtech.jts.util.AssertionFailedException;
 import gama.core.common.interfaces.IEnvelopeComputer;
 import gama.core.common.interfaces.IEnvelopeProvider;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.shape.IShape.Type;
 import gama.core.runtime.GAMA;
@@ -150,11 +151,11 @@ public class GeometryUtils {
 	 *            the pt 2
 	 * @return the double
 	 */
-	public static Double distanceOnPolyline(final IShape line, final GamaPoint pt1, final GamaPoint pt2) {
+	public static Double distanceOnPolyline(final IShape line, final IPoint pt1, final IPoint pt2) {
 		int indexS = 0;
 		int indexT = 0;
 
-		IList<GamaPoint> points = line.getPoints();
+		IList<IPoint> points = line.getPoints();
 		int nbSp = points.size();
 		if (nbSp == 2)
 			return pt1.euclidianDistanceTo(pt2);
@@ -163,8 +164,10 @@ public class GeometryUtils {
 			double distanceS = Double.MAX_VALUE;
 			double distanceT = Double.MAX_VALUE;
 			for (int i = 0; i < nbSp - 1; i++) {
-				final double distS = Distance.pointToSegment(pt1, points.get(i), points.get(i + 1));
-				final double distT = Distance.pointToSegment(pt2, points.get(i), points.get(i + 1));
+				final double distS = Distance.pointToSegment(pt1.toCoordinate(), points.get(i).toCoordinate(),
+						points.get(i + 1).toCoordinate());
+				final double distT = Distance.pointToSegment(pt2.toCoordinate(), points.get(i).toCoordinate(),
+						points.get(i + 1).toCoordinate());
 				if (distS < distanceS) {
 					distanceS = distS;
 					indexS = i;
@@ -179,7 +182,7 @@ public class GeometryUtils {
 		}
 		if (indexS == indexT) return pt1.euclidianDistanceTo(pt2);
 		int minI, maxI;
-		GamaPoint source, target;
+		IPoint source, target;
 
 		if (indexT > indexS) {
 			minI = indexS + 1;
@@ -194,7 +197,7 @@ public class GeometryUtils {
 		}
 		double distance = source.euclidianDistanceTo(points.get(minI));
 		for (int i = minI; i < maxI - 1; i++) {
-			GamaPoint pt = points.get(i);
+			IPoint pt = points.get(i);
 			distance += source.euclidianDistanceTo(pt);
 			source = pt;
 		}
@@ -211,12 +214,12 @@ public class GeometryUtils {
 	 *            the rand
 	 * @return the gama point
 	 */
-	public static GamaPoint pointInGeom(final IScope scope, final Geometry geom) {
+	public static IPoint pointInGeom(final IScope scope, final Geometry geom) {
 		// WARNING Only in 2D for Polygons !
 		if (geom == null) return null;
 		Coordinate[] coordinates = geom.getCoordinates();
 		if (coordinates.length < 1 || coordinates[0] == null) return null;
-		if (geom instanceof Point || coordinates.length < 2) return new GamaPoint(geom.getCoordinate());
+		if (geom instanceof Point || coordinates.length < 2) return GamaPointFactory.create(geom.getCoordinate());
 		if (geom instanceof LineString ls) return pointInLineString(scope, ls);
 		if (geom instanceof Polygon polygon) return pointInPolygon(scope, polygon);
 		// DEBUG.OUT("Point not in Polygon but in a collection of geometries");
@@ -251,7 +254,7 @@ public class GeometryUtils {
 	 *            the polygon
 	 * @return the gama point
 	 */
-	private static GamaPoint pointInPolygon(final IScope scope, final Polygon polygon) {
+	private static IPoint pointInPolygon(final IScope scope, final Polygon polygon) {
 
 		IRandom rand = scope.getRandom();
 		final Envelope env = polygon.getEnvelopeInternal();
@@ -261,34 +264,22 @@ public class GeometryUtils {
 		final double yMax = env.getMaxY();
 		final double x = rand.between(xMin, xMax);
 		if (polygon.getArea() > 0) {
-			// if (polygon.getArea() > 800000) {
-
-			// DEBUG.OUT("Big Polygon");
-
-			// }
 			final double y = rand.between(yMin, yMax);
 			if (polygon.getNumInteriorRing() == 0) {
-				GamaPoint p = new GamaPoint(x, y, 0);
+				IPoint p = GamaPointFactory.create(x, y, 0);
 				Coordinate[] coordinates = polygon.getCoordinates();
-				// int i = 0;
-				while (!PointLocation.isInRing(p, coordinates)) {
-					// i++;
+				while (!PointLocation.isInRing(p.toCoordinate(), coordinates)) {
 					p.setLocation(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
 				}
-				// DEBUG.OUT("Point in Polygon with solid Area = " + polygon.getArea() + " tried " + i + " times");
 				return p;
 			}
 			final ICoordinates ucs = ICoordinates.ofLength(1);
 			ucs.setTo(x, y, 0);
 			final Point pt = GEOMETRY_FACTORY.createPoint(ucs);
-			// int i = 0;
 			while (!polygon.intersects(pt)) {
-				// i++;
 				ucs.setTo(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
 				pt.geometryChanged();
 			}
-			// DEBUG.OUT("Point in Polygon with holes Area = " + polygon.getArea() + " tried " + i + " times");
-
 			return ucs.at(0);
 		}
 		DEBUG.OUT("Point in Polygon with Area = 0");
@@ -316,7 +307,7 @@ public class GeometryUtils {
 	 *            the rand
 	 * @return
 	 */
-	private static GamaPoint pointInLineString(final IScope scope, final LineString geom) {
+	private static IPoint pointInLineString(final IScope scope, final LineString geom) {
 		DEBUG.OUT("Point in LineString");
 		final double perimeter = GeometryUtils.getContourCoordinates(geom).getLength();
 		final double dist = perimeter * scope.getRandom().between(0.0, 1.0);
@@ -330,7 +321,7 @@ public class GeometryUtils {
 				final double newX = pS.x + ratio * (pT.x - pS.x);
 				final double newY = pS.y + ratio * (pT.y - pS.y);
 				final double newZ = pS.z + ratio * (pT.z - pS.z);
-				return new GamaPoint(newX, newY, newZ);
+				return GamaPointFactory.create(newX, newY, newZ);
 			}
 			pS = pT;
 			sumDist += d;
@@ -348,7 +339,7 @@ public class GeometryUtils {
 	 *            the rand
 	 * @return the gama point
 	 */
-	public static GamaPoint pointInGeom(final IScope scope, final IShape shape) {
+	public static IPoint pointInGeom(final IScope scope, final IShape shape) {
 		if (shape == null) return null;
 		return pointInGeom(scope, shape.getInnerGeometry());
 	}
@@ -463,8 +454,8 @@ public class GeometryUtils {
 			pts[1] = l2.getCentroid().getCoordinate();
 		} else if (nbCommonPoints(l3, triangle2.getInnerGeometry()) == 2) { pts[1] = l3.getCentroid().getCoordinate(); }
 
-		pts[0] = triangle1.getCentroid();
-		pts[2] = triangle2.getCentroid();
+		pts[0] = triangle1.getCentroid().toCoordinate();
+		pts[2] = triangle2.getCentroid().toCoordinate();
 		return pts;
 	}
 
@@ -493,14 +484,14 @@ public class GeometryUtils {
 		for (int l = 0; l < nbRows; l++) {
 			for (int c = 0; c < nbColumns; c = c + 2) {
 				final GamaShape poly = (GamaShape) GamaGeometryType.buildHexagon(widthHex, heightHex,
-						new GamaPoint(xmin + c * widthHex * 0.75, ymin + l * heightHex, 0));
+						GamaPointFactory.create(xmin + c * widthHex * 0.75, ymin + l * heightHex, 0));
 				if (geom.covers(poly)) { geoms.add(poly); }
 			}
 		}
 		for (int l = 0; l < nbRows; l++) {
 			for (int c = 1; c < nbColumns; c = c + 2) {
 				final GamaShape poly = (GamaShape) GamaGeometryType.buildHexagon(widthHex, heightHex,
-						new GamaPoint(xmin + c * widthHex * 0.75, ymin + (l + 0.5) * heightHex, 0));
+						GamaPointFactory.create(xmin + c * widthHex * 0.75, ymin + (l + 0.5) * heightHex, 0));
 				if (geom.covers(poly)) { geoms.add(poly); }
 			}
 		}
@@ -651,9 +642,9 @@ public class GeometryUtils {
 			final IShape gg = SpatialOperators.inter(null, shape, geom);
 			if (gg != null && !gg.getInnerGeometry().isEmpty()) {
 				final GamaShape sp = GamaShapeFactory.createFrom(gg);
-				final GamaPoint[] pts = getPointsOf(sp);
+				final IPoint[] pts = getPointsOf(sp);
 				for (int i = 0; i < pts.length; i++) {
-					final GamaPoint gp = pts[i];
+					final IPoint gp = pts[i];
 					if (zVal != gp.getZ()) { SpatialThreeD.set_z(null, sp, i, zVal); }
 				}
 				geoms.add(sp);
@@ -671,7 +662,7 @@ public class GeometryUtils {
 	 *            the points
 	 * @return the i list
 	 */
-	public static IList<IShape> voronoi(final IScope scope, final IList<GamaPoint> points) {
+	public static IList<IShape> voronoi(final IScope scope, final IList<IPoint> points) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final VoronoiDiagramBuilder dtb = new VoronoiDiagramBuilder();
 		dtb.setClipEnvelope((Envelope) scope.getSimulation().getEnvelope());
@@ -696,7 +687,7 @@ public class GeometryUtils {
 	 *            the clip
 	 * @return the i list
 	 */
-	public static IList<IShape> voronoi(final IScope scope, final IList<GamaPoint> points, final IShape clip) {
+	public static IList<IShape> voronoi(final IScope scope, final IList<IPoint> points, final IShape clip) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		final VoronoiDiagramBuilder dtb = new VoronoiDiagramBuilder();
 		dtb.setClipEnvelope((Envelope) clip.getEnvelope());
@@ -918,7 +909,7 @@ public class GeometryUtils {
 	 *            the geom G
 	 * @return the geometry
 	 */
-	public static Geometry buildGeometryJTS(final List<List<List<GamaPoint>>> geomG) {
+	public static Geometry buildGeometryJTS(final List<List<List<IPoint>>> geomG) {
 		final IShape.Type geometryType = geometryType(geomG);
 		switch (geometryType) {
 			case NULL:
@@ -956,8 +947,8 @@ public class GeometryUtils {
 	 *            the list points
 	 * @return the geometry
 	 */
-	private static Geometry buildPoint(final List<List<GamaPoint>> listPoints) {
-		return GEOMETRY_FACTORY.createPoint(listPoints.get(0).get(0));
+	private static Geometry buildPoint(final List<List<IPoint>> listPoints) {
+		return GEOMETRY_FACTORY.createPoint(listPoints.get(0).get(0).toCoordinate());
 	}
 
 	/**
@@ -982,11 +973,11 @@ public class GeometryUtils {
 	 *            the list points
 	 * @return the geometry
 	 */
-	private static Geometry buildLine(final List<List<GamaPoint>> listPoints) {
-		final List<GamaPoint> coords = listPoints.get(0);
+	private static Geometry buildLine(final List<List<IPoint>> listPoints) {
+		final List<IPoint> coords = listPoints.get(0);
 		final int nb = coords.size();
 		final Coordinate[] coordinates = new Coordinate[nb];
-		for (int i = 0; i < nb; i++) { coordinates[i] = coords.get(i); }
+		for (int i = 0; i < nb; i++) { coordinates[i] = coords.get(i).toCoordinate(); }
 		return GEOMETRY_FACTORY.createLineString(coordinates);
 	}
 
@@ -997,20 +988,20 @@ public class GeometryUtils {
 	 *            the list points
 	 * @return the geometry
 	 */
-	private static Geometry buildPolygon(final List<List<GamaPoint>> listPoints) {
-		final List<GamaPoint> coords = listPoints.get(0);
+	private static Geometry buildPolygon(final List<List<IPoint>> listPoints) {
+		final List<IPoint> coords = listPoints.get(0);
 		final int nb = coords.size();
 		final Coordinate[] coordinates = new Coordinate[nb];
-		for (int i = 0; i < nb; i++) { coordinates[i] = coords.get(i); }
+		for (int i = 0; i < nb; i++) { coordinates[i] = coords.get(i).toCoordinate(); }
 		final int nbHoles = listPoints.size() - 1;
 		LinearRing[] holes = null;
 		if (nbHoles > 0) {
 			holes = new LinearRing[nbHoles];
 			for (int i = 0; i < nbHoles; i++) {
-				final List<GamaPoint> coordsH = listPoints.get(i + 1);
+				final List<IPoint> coordsH = listPoints.get(i + 1);
 				final int nbp = coordsH.size();
 				final Coordinate[] coordinatesH = new Coordinate[nbp];
-				for (int j = 0; j < nbp; j++) { coordinatesH[j] = coordsH.get(j); }
+				for (int j = 0; j < nbp; j++) { coordinatesH[j] = coordsH.get(j).toCoordinate(); }
 				holes[i] = GEOMETRY_FACTORY.createLinearRing(coordinatesH);
 			}
 		}
@@ -1024,7 +1015,7 @@ public class GeometryUtils {
 	 *            the list points
 	 * @return the i shape. type
 	 */
-	private static IShape.Type geometryType(final List<List<List<GamaPoint>>> listPoints) {
+	private static IShape.Type geometryType(final List<List<List<IPoint>>> listPoints) {
 		final int size = listPoints.size();
 		if (size == 0) return gama.core.metamodel.shape.IShape.Type.NULL;
 		if (size == 1) return geometryTypeSimp(listPoints.get(0));
@@ -1044,11 +1035,11 @@ public class GeometryUtils {
 	 *            the list points
 	 * @return the i shape. type
 	 */
-	private static IShape.Type geometryTypeSimp(final List<List<GamaPoint>> listPoints) {
+	private static IShape.Type geometryTypeSimp(final List<List<IPoint>> listPoints) {
 		if (listPoints.isEmpty() || listPoints.get(0).isEmpty()) return gama.core.metamodel.shape.IShape.Type.NULL;
-		final List<GamaPoint> list0 = listPoints.get(0);
+		final List<IPoint> list0 = listPoints.get(0);
 		final int size0 = list0.size();
-		if (size0 == 1 || size0 == 2 && list0.get(0).equals(list0.get(listPoints.size() - 1)))
+		if (size0 == 1 || size0 == 2 && list0.get(0).equals(list0.get(size0 - 1)))
 			return gama.core.metamodel.shape.IShape.Type.POINT;
 		if (!list0.get(0).equals(list0.get(listPoints.size() - 1)) || size0 < 3)
 			return gama.core.metamodel.shape.IShape.Type.LINESTRING;
@@ -1064,14 +1055,14 @@ public class GeometryUtils {
 	 *            the distance
 	 * @return the i list
 	 */
-	public static IList<GamaPoint> locsOnGeometry(final Geometry geom, final Double distance) {
-		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
+	public static IList<IPoint> locsOnGeometry(final Geometry geom, final Double distance) {
+		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		if (geom instanceof Point) {
-			locs.add(new GamaPoint(geom.getCoordinate()));
+			locs.add(GamaPointFactory.create(geom.getCoordinate()));
 		} else if (geom instanceof LineString) {
 			double distCur = 0;
 			final Coordinate[] coordsSimp = geom.getCoordinates();
-			if (coordsSimp.length > 0) { locs.add(new GamaPoint(coordsSimp[0])); }
+			if (coordsSimp.length > 0) { locs.add(GamaPointFactory.create(coordsSimp[0])); }
 			final int nbSp = coordsSimp.length;
 			for (int i = 0; i < nbSp - 1; i++) {
 
@@ -1084,7 +1075,7 @@ public class GeometryUtils {
 							distCur += dist;
 						} else {
 							distCur = 0;
-							locs.add(new GamaPoint(t));
+							locs.add(GamaPointFactory.create(t));
 						}
 						break;
 					}
@@ -1094,7 +1085,7 @@ public class GeometryUtils {
 					final double y_s = s.y + ratio * (t.y - s.y);
 					final double z_s = s.z + ratio * (t.z - s.z);
 					s = new Coordinate(x_s, y_s, z_s);
-					locs.add(new GamaPoint(s));
+					locs.add(GamaPointFactory.create(s));
 					distCur = 0;
 				}
 
@@ -1120,11 +1111,11 @@ public class GeometryUtils {
 	 *            the rates
 	 * @return the i list
 	 */
-	public static IList<GamaPoint> locsAlongGeometry(final Geometry geom, final List<Double> rates) {
-		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
+	public static IList<IPoint> locsAlongGeometry(final Geometry geom, final List<Double> rates) {
+		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		if (rates == null || rates.isEmpty()) return locs;
 		if (geom instanceof Point) {
-			for (int i = 0; i < rates.size(); i++) { locs.add(new GamaPoint(geom.getCoordinate())); }
+			for (int i = 0; i < rates.size(); i++) { locs.add(GamaPointFactory.create(geom.getCoordinate())); }
 		} else if (geom instanceof LineString) {
 			for (Double rate : rates) {
 				final Coordinate[] coordsSimp = geom.getCoordinates();
@@ -1133,11 +1124,11 @@ public class GeometryUtils {
 				if (rate > 1.0) { rate = 1.0; }
 				if (rate < 0.0) { rate = 0.0; }
 				if (rate == 0) {
-					locs.add(new GamaPoint(coordsSimp[0]));
+					locs.add(GamaPointFactory.create(coordsSimp[0]));
 					continue;
 				}
 				if (rate == 1) {
-					locs.add(new GamaPoint(coordsSimp[nbSp - 1]));
+					locs.add(GamaPointFactory.create(coordsSimp[nbSp - 1]));
 					continue;
 				}
 				double distCur = 0;
@@ -1153,11 +1144,11 @@ public class GeometryUtils {
 						final double y_s = s.y + ratio * (t.y - s.y);
 						final double z_s = s.z + ratio * (t.z - s.z);
 						s = new Coordinate(x_s, y_s, z_s);
-						locs.add(new GamaPoint(s));
+						locs.add(GamaPointFactory.create(s));
 						break;
 					}
 					if (distance - distCur <= dist) {
-						locs.add(new GamaPoint(t));
+						locs.add(GamaPointFactory.create(t));
 						break;
 					}
 					distCur += dist;
@@ -1225,30 +1216,31 @@ public class GeometryUtils {
 	 *            the pt
 	 * @return the i list
 	 */
-	private static IList<IShape> split_at(final Geometry g, final GamaPoint pt) {
+	private static IList<IShape> split_at(final Geometry g, final IPoint pt) {
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
-		// final GamaPoint p = new GamaPoint(pt);
+		// final IPoint p = GamaPointFactory.create(pt);
 		if (g instanceof LineString) {
-			final GamaPoint[] coords = getPointsOf(g);
+			final IPoint[] coords = getPointsOf(g);
 			int indexTarget = -1;
 			double distanceT = Double.MAX_VALUE;
 			for (int i = 0; i < coords.length - 1; i++) {
-				final double distT = Distance.pointToSegment(pt, coords[i], coords[i + 1]);
+				final double distT = Distance.pointToSegment(pt.toCoordinate(), coords[i].toCoordinate(),
+						coords[i + 1].toCoordinate());
 				if (distT < distanceT) {
 					distanceT = distT;
 					indexTarget = i;
 				}
 			}
-			final GamaPoint[] coords1 = new GamaPoint[indexTarget + 2];
+			final IPoint[] coords1 = new IPoint[indexTarget + 2];
 			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
 			coords1[indexTarget + 1] = pt;
 			lines.add(GamaShapeFactory.createFrom(GEOMETRY_FACTORY.createLineString(coords1, false)));
-			final GamaPoint[] coords2 = new GamaPoint[coords.length - indexTarget];
+			final IPoint[] coords2 = new IPoint[coords.length - indexTarget];
 			coords2[0] = pt;
 			for (int i = indexTarget + 1, k = 1; i < coords.length; i++, k++) { coords2[k] = coords[i]; }
 			lines.add(GamaShapeFactory.createFrom(GEOMETRY_FACTORY.createLineString(coords2, false)));
 		} else if (g instanceof final MultiLineString ml) {
-			final Point point = GEOMETRY_FACTORY.createPoint(pt);
+			final Point point = GEOMETRY_FACTORY.createPoint(pt.toCoordinate());
 			LineString geom2 = null;
 			double distMin = Double.MAX_VALUE;
 			for (int i = 0; i < ml.getNumGeometries(); i++) {
@@ -1273,7 +1265,7 @@ public class GeometryUtils {
 	 *            the pt
 	 * @return the i list
 	 */
-	public static IList<IShape> split_at(final IShape geom, final GamaPoint pt) {
+	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
 		return split_at(geom.getInnerGeometry(), pt);
 	}
 
@@ -1429,9 +1421,9 @@ public class GeometryUtils {
 	 *            the shape
 	 * @return the points of
 	 */
-	public static GamaPoint[] getPointsOf(final IShape shape) {
+	public static IPoint[] getPointsOf(final IShape shape) {
 		final Geometry g = shape.getInnerGeometry();
-		return getContourCoordinates(g).toCoordinateArray();
+		return getContourCoordinates(g).toPointsArray();
 	}
 
 	/**
@@ -1441,8 +1433,8 @@ public class GeometryUtils {
 	 *            the g
 	 * @return the points of
 	 */
-	public static GamaPoint[] getPointsOf(final Geometry g) {
-		return getContourCoordinates(g).toCoordinateArray();
+	public static IPoint[] getPointsOf(final Geometry g) {
+		return getContourCoordinates(g).toPointsArray();
 	}
 
 	/**
@@ -1452,10 +1444,10 @@ public class GeometryUtils {
 	 *            the shape
 	 * @return the first point of
 	 */
-	public static GamaPoint getFirstPointOf(final IShape shape) {
+	public static IPoint getFirstPointOf(final IShape shape) {
 		final Geometry g = shape.getInnerGeometry();
 		if (g.isEmpty()) return null;
-		return (GamaPoint) g.getCoordinates()[0];
+		return (IPoint) g.getCoordinates()[0];
 	}
 
 	/**
@@ -1465,11 +1457,11 @@ public class GeometryUtils {
 	 *            the shape
 	 * @return the last point of
 	 */
-	public static GamaPoint getLastPointOf(final IShape shape) {
+	public static IPoint getLastPointOf(final IShape shape) {
 		final Geometry g = shape.getInnerGeometry();
 		if (g.isEmpty()) return null;
 		final Coordinate[] cc = g.getCoordinates();
-		return (GamaPoint) cc[cc.length - 1];
+		return (IPoint) cc[cc.length - 1];
 	}
 
 	/**
@@ -1528,10 +1520,10 @@ public class GeometryUtils {
 	 * @param location
 	 *            the location
 	 */
-	public static void translate(final Geometry geometry, final GamaPoint previous, final GamaPoint location) {
-		final double dx = location.x - previous.x;
-		final double dy = location.y - previous.y;
-		final double dz = location.z - previous.z;
+	public static void translate(final Geometry geometry, final IPoint previous, final IPoint location) {
+		final double dx = location.getX() - previous.getX();
+		final double dy = location.getY() - previous.getY();
+		final double dz = location.getZ() - previous.getZ();
 		translate(geometry, dx, dy, dz);
 	}
 
@@ -1566,7 +1558,7 @@ public class GeometryUtils {
 	 * @param rotation
 	 *            the rotation
 	 */
-	public static void rotate(final Geometry geometry, final GamaPoint center, final AxisAngle rotation) {
+	public static void rotate(final Geometry geometry, final IPoint center, final AxisAngle rotation) {
 		if (rotation == null) return;
 		final Rotation3D r = new Rotation3D.CenteredOn(rotation, center);
 		geometry.apply(r);
@@ -1881,7 +1873,7 @@ public class GeometryUtils {
 		if (s1 == null || s2 == null) return false;
 		Geometry g1 = s1.getInnerGeometry();
 		if (g1 == null) return false;
-		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation(), g1);
+		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation().toCoordinate(), g1);
 		Geometry g2 = s2.getInnerGeometry();
 		if (g2 == null) return false;
 		// WARNING Only 2D now
@@ -1919,7 +1911,7 @@ public class GeometryUtils {
 		if (s1 == null || s2 == null) return false;
 		Geometry g1 = s1.getInnerGeometry();
 		if (g1 == null) return false;
-		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation(), g1);
+		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation().toCoordinate(), g1);
 		Geometry g2 = s2.getInnerGeometry();
 		if (g2 == null) return false;
 		// WARNING Only 2D now
@@ -1957,7 +1949,7 @@ public class GeometryUtils {
 		if (s1 == null || s2 == null) return false;
 		Geometry g1 = s1.getInnerGeometry();
 		if (g1 == null) return false;
-		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation(), g1);
+		if (s2.isPoint()) return POINT_LOCATOR.intersects(s2.getLocation().toCoordinate(), g1);
 		Geometry g2 = s2.getInnerGeometry();
 		if (g2 == null) return false;
 		// WARNING Only 2D now

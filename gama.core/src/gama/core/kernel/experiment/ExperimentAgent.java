@@ -49,7 +49,8 @@ import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.DefaultPopulationFactory;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.IPopulationFactory;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.ExperimentOutputManager;
 import gama.core.outputs.IOutputManager;
@@ -226,7 +227,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	public ExperimentAgent(final IPopulation<? extends IAgent> s, final int index) throws GamaRuntimeException {
 		super(s, index);
-		super.setGeometry(GamaGeometryType.createPoint(new GamaPoint(-1, -1)));
+		super.setGeometry(GamaGeometryType.createPoint(GamaPointFactory.create(-1, -1)));
 		ownScope = new ExperimentAgentScope();
 		ownClock = new ExperimentClock(ownScope);
 		executer = new ActionExecuter(ownScope);
@@ -598,7 +599,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint setLocation(final GamaPoint p) {
+	public IPoint setLocation(final IPoint p) {
 		return p;
 	}
 

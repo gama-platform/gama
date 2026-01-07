@@ -22,7 +22,8 @@ import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -106,7 +107,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	final ICoordinates surface = ICoordinates.ofLength(9);
 
 	/** A temporary transfer value for the normal */
-	final GamaPoint normal = new GamaPoint();
+	final IPoint  normal = GamaPointFactory.create();
 
 	/**
 	 * Instantiates a new mesh drawer.
@@ -139,8 +140,8 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	@Override
 	protected void _draw(final MeshObject object) {
 		var attributes = object.getAttributes();
-		cols = (int) attributes.getXYDimension().x;
-		rows = (int) attributes.getXYDimension().y;
+		cols = (int) attributes.getXYDimension().getX();
+		rows = (int) attributes.getXYDimension().getY();
 		boolean grayscale = attributes.isGrayscaled();
 		IColor line = attributes.getBorder();
 		useFillForLines = line == null && gl.isWireframe() && colorProvider != null;
@@ -356,7 +357,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				get(data, i + 1, j - 1), x + cx, y, get(data, i + 1, j), x + cx, y + cy, get(data, i + 1, j + 1), x,
 				y + cy, get(data, i, j + 1), x - cx, y + cy, get(data, i - 1, j + 1), x - cx, y, get(data, i - 1, j),
 				x - cx, y - cy, get(data, i - 1, j - 1)).getNormal(true, 1, normal);
-		normalBuffer.put(normal.x).put(normal.y).put(normal.z);
+		normalBuffer.put(normal.getX()).put(normal.getY()).put(normal.getZ());
 	}
 
 	/**

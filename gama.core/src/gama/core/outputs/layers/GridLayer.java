@@ -100,7 +100,7 @@ public class GridLayer extends AbstractLayer implements IGridLayer {
 		if (gridValueMatrix == null) {
 			dg.drawImage(image, attributes);
 		} else {
-			dg.drawField(new GamaField(scope, (int) data.getDimensions().x, (int) data.getDimensions().y,
+			dg.drawField(new GamaField(scope, (int) data.getDimensions().getX(), (int) data.getDimensions().getY(),
 					gridValueMatrix, IField.NO_NO_DATA), attributes);
 		}
 	}

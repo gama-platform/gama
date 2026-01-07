@@ -3,7 +3,7 @@
  * PopulationInspectView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -59,7 +59,7 @@ import gama.core.common.util.FileUtils;
 import gama.core.common.util.StringUtils;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.runtime.GAMA;
@@ -171,7 +171,7 @@ public class PopulationInspectView extends GamaViewPart
 
 		@Override
 		public void updateElement(final int index) {
-			if (index > elements.length - 1) { return; }
+			if (index > elements.length - 1) return;
 			IAgent a = elements[index];
 			if (a != null) {
 				viewer.replace(a, index);
@@ -206,9 +206,8 @@ public class PopulationInspectView extends GamaViewPart
 			@Override
 			public IStatus runInUIThread(final IProgressMonitor monitor) {
 				final TableViewer v = viewer;
-				if (v == null || v.getTable() == null || v.getTable().isDisposed() || getOutput() == null) {
+				if (v == null || v.getTable() == null || v.getTable().isDisposed() || getOutput() == null)
 					return Status.CANCEL_STATUS;
-				}
 				if (!locked) {
 					final IAgent[] agents = StreamEx.of(getOutput().getLastValue()).filter(a -> a != null && !a.dead())
 							.toArray(IAgent.class);
@@ -231,7 +230,7 @@ public class PopulationInspectView extends GamaViewPart
 	@Override
 	public void addOutput(final IOutput output) {
 		// Either both are null or they are equal
-		if (getOutput() == output) { return; }
+		if (getOutput() == output) return;
 		// super.addOutput(output);
 		// Only one output allowed for this view.
 		if (getOutput() != null) {
@@ -270,7 +269,7 @@ public class PopulationInspectView extends GamaViewPart
 			if (attributes != null) {
 				selectedColumns.get(name).addAll(attributes.keySet());
 			} else if (getOutput().getValue() != null) {
-				if (species == null) { return; }
+				if (species == null) return;
 				selectedColumns.get(name).addAll(species.getAttributeNames());
 				selectedColumns.get(name).removeAll(DONT_INSPECT_BY_DEFAULT);
 			}
@@ -299,7 +298,7 @@ public class PopulationInspectView extends GamaViewPart
 	 *            the complete
 	 */
 	private void changePartName(final String name, final boolean complete) {
-		if (name == null) { return; }
+		if (name == null) return;
 		// this.setContentDescription(StringUtils.capitalize(name) + "
 		// population in macro-agent " +
 		// getOutput().getRootAgent().getName());
@@ -340,7 +339,7 @@ public class PopulationInspectView extends GamaViewPart
 	 */
 	void fillAttributeMenu() {
 		// Not yet declared or already disposed
-		if (getOutput() == null || attributesMenu == null || attributesMenu.isDisposed()) { return; }
+		if (getOutput() == null || attributesMenu == null || attributesMenu.isDisposed()) return;
 		for (final Control c : attributesMenu.getChildren()) { c.dispose(); }
 		Label attributesLabel = new Label(attributesMenu, SWT.NONE);
 		attributesLabel.setText("Attributes");
@@ -391,7 +390,7 @@ public class PopulationInspectView extends GamaViewPart
 				final Object oldVal = getCurrentValue();
 				super.modifyValue();
 				if (oldVal == null ? getCurrentValue() != null : !oldVal.equals(getCurrentValue())) {
-					if (outputs.isEmpty()) { return; }
+					if (outputs.isEmpty()) return;
 					try {
 						getOutput().setNewExpression((IExpression) getCurrentValue());
 
@@ -453,9 +452,9 @@ public class PopulationInspectView extends GamaViewPart
 	 * @return the species name
 	 */
 	String getSpeciesName() {
-		if (getOutput() == null) { return ""; }
+		if (getOutput() == null) return "";
 		final SpeciesDescription species = getOutput().getSpeciesDescription();
-		if (species == null) { return IKeyword.AGENT; }
+		if (species == null) return IKeyword.AGENT;
 		return species.getName();
 	}
 
@@ -545,9 +544,9 @@ public class PopulationInspectView extends GamaViewPart
 	 * Recreate viewer.
 	 */
 	void recreateViewer() {
-		if (viewer == null) { return; }
+		if (viewer == null) return;
 		final Table table = viewer.getTable();
-		if (table.isDisposed()) { return; }
+		if (table.isDisposed()) return;
 		Font oldFont = viewer.getControl().getFont();
 		table.dispose();
 		createViewer(getParentComposite());
@@ -578,12 +577,11 @@ public class PopulationInspectView extends GamaViewPart
 			@Override
 			public String getText(final Object element) {
 				final IAgent agent = (IAgent) element;
-				if (agent.dead() && !ID_ATTRIBUTE.equals(title)) { return "N/A"; }
-				if (ID_ATTRIBUTE.equals(title)) { return String.valueOf(agent.getIndex()); }
+				if (agent.dead() && !ID_ATTRIBUTE.equals(title)) return "N/A";
+				if (ID_ATTRIBUTE.equals(title)) return String.valueOf(agent.getIndex());
 				// final Object value;
-				if (agent.getSpecies().hasVar(title)) {
+				if (agent.getSpecies().hasVar(title))
 					return StringUtils.toGaml(getScope().getAgentVarValue(agent, title), false);
-				}
 				return StringUtils.toGaml(agent.getAttribute(title), false);
 			}
 		};
@@ -686,8 +684,8 @@ public class PopulationInspectView extends GamaViewPart
 
 		@Override
 		public int compare(final Object e1, final Object e2) {
-			if (e1 == null) { return -1; }
-			if (e2 == null) { return 1; }
+			if (e1 == null) return -1;
+			if (e2 == null) return 1;
 			final IAgent p1 = (IAgent) e1;
 			final IAgent p2 = (IAgent) e2;
 			final IScope myScope = getScope();
@@ -710,7 +708,7 @@ public class PopulationInspectView extends GamaViewPart
 								case IType.INT -> ((Integer) v1).compareTo((Integer) v2);
 								case IType.FLOAT -> ((Double) v1).compareTo((Double) v2);
 								case IType.STRING -> stringComparator.compare(v1, v2);
-								case IType.POINT -> ((GamaPoint) v1).compareTo((GamaPoint) v2);
+								case IType.POINT -> ((IPoint) v1).compareTo((IPoint) v2);
 								default -> StringUtils.toGaml(v1, false).compareTo(StringUtils.toGaml(v2, false));
 							};
 						}
@@ -760,14 +758,14 @@ public class PopulationInspectView extends GamaViewPart
 				final char ca = charAt(a, ia);
 				final char cb = charAt(b, ib);
 
-				if (!Character.isDigit(ca) && !Character.isDigit(cb)) { return bias; }
-				if (!Character.isDigit(ca)) { return -1; }
-				if (!Character.isDigit(cb)) { return +1; }
+				if (!Character.isDigit(ca) && !Character.isDigit(cb)) return bias;
+				if (!Character.isDigit(ca)) return -1;
+				if (!Character.isDigit(cb)) return +1;
 				if (ca < cb) {
 					if (bias == 0) { bias = -1; }
 				} else if (ca > cb) {
 					if (bias == 0) { bias = +1; }
-				} else if (ca == 0 && cb == 0) { return bias; }
+				} else if (ca == 0 && cb == 0) return bias;
 			}
 		}
 
@@ -814,17 +812,14 @@ public class PopulationInspectView extends GamaViewPart
 
 				// process run of digits
 				if (Character.isDigit(ca) && Character.isDigit(cb)
-						&& (result = compareRight(a.substring(ia), b.substring(ib))) != 0) {
+						&& (result = compareRight(a.substring(ia), b.substring(ib))) != 0)
 					return result;
-				}
 
-				if (ca == 0 && cb == 0) { // The strings compare the same. Perhaps the caller
-					// will want to call strcmp to break the tie.
+				if (ca == 0 && cb == 0) // will want to call strcmp to break the tie.
 					return nza - nzb;
-				}
 
-				if (ca < cb) { return -1; }
-				if (ca > cb) { return +1; }
+				if (ca < cb) return -1;
+				if (ca > cb) return +1;
 
 				++ia;
 				++ib;
@@ -842,7 +837,7 @@ public class PopulationInspectView extends GamaViewPart
 		 * @return the char
 		 */
 		char charAt(final String s, final int i) {
-			if (i >= s.length()) { return 0; }
+			if (i >= s.length()) return 0;
 			return s.charAt(i);
 		}
 	}
@@ -893,13 +888,13 @@ public class PopulationInspectView extends GamaViewPart
 
 	@Override
 	public Control getSizableFontControl() {
-		if (viewer == null) { return null; }
+		if (viewer == null) return null;
 		return viewer.getTable();
 	}
 
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
-		if (getOutput() == null) { return; }
+		if (getOutput() == null) return;
 		super.createToolItems(tb);
 		tb.check(IGamaIcons.LOCK_POPULATION, "", "Lock the current population (prevents editing it)", e -> {
 			locked = !locked;
@@ -910,7 +905,7 @@ public class PopulationInspectView extends GamaViewPart
 		}, SWT.RIGHT);
 		createExpressionComposite();
 		populationMenu = tb.menuItem(IGamaIcons.BROWSE_POPULATIONS, "", "Browse a species", trigger -> {
-			if (locked) { return; }
+			if (locked) return;
 			final GamaMenu menu = new GamaMenu() {
 
 				@Override
@@ -925,7 +920,7 @@ public class PopulationInspectView extends GamaViewPart
 								editor.widgetDefaultSelected(null);
 							}
 
-						}, (IGamaIcons.MENU_POPULATION));
+						}, IGamaIcons.MENU_POPULATION);
 					}
 				}
 

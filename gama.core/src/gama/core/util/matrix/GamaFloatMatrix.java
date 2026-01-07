@@ -23,7 +23,7 @@ import com.google.common.primitives.Doubles;
 
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -104,8 +104,8 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param p
 	 *            the p
 	 */
-	public GamaFloatMatrix(final GamaPoint p) {
-		this((int) p.x, (int) p.y);
+	public GamaFloatMatrix(final IPoint p) {
+		this((int) p.getX(), (int) p.getY());
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public GamaFloatMatrix(final IScope scope, final List objects, final GamaPoint preferredSize)
+	public GamaFloatMatrix(final IScope scope, final List objects, final IPoint preferredSize)
 			throws GamaRuntimeException {
 		super(scope, objects, preferredSize, Types.FLOAT);
 		setMatrix(new double[numRows * numCols]);
@@ -290,7 +290,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final GamaPoint preferredSize, final IType type,
+	protected IMatrix _matrixValue(final IScope scope, final IPoint preferredSize, final IType type,
 			final boolean copy) {
 		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
 	}
@@ -308,7 +308,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	public GamaFloatMatrix copy(final IScope scope, final GamaPoint size, final boolean copy) {
+	public GamaFloatMatrix copy(final IScope scope, final IPoint size, final boolean copy) {
 		if (size == null) {
 			if (copy) return new GamaFloatMatrix(numCols, numRows, Arrays.copyOf(getMatrix(), matrix.length));
 			return this;

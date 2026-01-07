@@ -20,7 +20,7 @@ import gama.annotations.precompiler.GamlAnnotations.getter;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.util.StringUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.file.json.IJSon;
@@ -309,7 +309,7 @@ public class GamaPair<K, V>
 	 *      gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
-	public IMatrix matrixValue(final IScope scope, final IType contentType, final GamaPoint size, final boolean copy) {
+	public IMatrix matrixValue(final IScope scope, final IType contentType, final IPoint  size, final boolean copy) {
 		return GamaMatrixType.from(scope, listValue(scope, contentType, copy), contentType, size);
 	}
 

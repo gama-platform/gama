@@ -40,7 +40,8 @@ import gama.core.common.geometry.Scaling3D;
 import gama.core.common.geometry.UnboundedCoordinateSequence;
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -197,18 +198,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The ratios. */
 	// World
-	final GamaPoint ratios = new GamaPoint();
+	final IPoint ratios = GamaPointFactory.create();
 
 	/** The rotation mode. */
 	private boolean rotationMode;
 
 	/** The current normal. */
-	// Working objects
-	final GamaPoint currentNormal = new GamaPoint();
+	final IPoint currentNormal = GamaPointFactory.create();
 
 	/** The texture coords. */
-	// final GamaPoint currentScale = new GamaPoint(1, 1, 1);
-	final GamaPoint textureCoords = new GamaPoint();
+	final IPoint textureCoords = GamaPointFactory.create();
 
 	/** The working vertices. */
 	final UnboundedCoordinateSequence workingVertices = new UnboundedCoordinateSequence();
@@ -258,8 +257,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public ObjectDrawer<? extends AbstractObject<?, ?>> getDrawerFor(final AbstractObject<?, ?> object) {
 		if (object instanceof MeshObject mo) {
-			int cols = (int) mo.getAttributes().getXYDimension().x;
-			int rows = (int) mo.getAttributes().getXYDimension().y;
+			int cols = (int) mo.getAttributes().getXYDimension().getX();
+			int rows = (int) mo.getAttributes().getXYDimension().getY();
 			boolean triangles = mo.getAttributes().isTriangulated();
 			MeshDrawer.Signature sig = new MeshDrawer.Signature(cols, rows, triangles);
 			MeshDrawer md = meshDrawers.get(sig);
@@ -667,6 +666,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
+	 * Translate by Y negated.
+	 *
+	 * @param p
+	 *            the p
+	 */
+	public void translateByYNegated(final IPoint p) {
+		translateBy(p.getX(), -p.getY(), p.getZ());
+	}
+
+	/**
 	 * Translate by.
 	 *
 	 * @param x
@@ -707,8 +716,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param p
 	 *            the p
 	 */
-	public void translateBy(final GamaPoint p) {
-		translateBy(p.x, p.y, p.z);
+	public void translateBy(final IPoint p) {
+		translateBy(p.getX(), p.getY(), p.getZ());
 	}
 
 	/**
@@ -734,9 +743,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the rotation
 	 */
 	public void rotateBy(final Rotation3D rotation) {
-		final GamaPoint axis = rotation.getAxis();
+		final IPoint axis = rotation.getAxis();
 		final double angle = rotation.getAngle() * Maths.toDeg;
-		rotateBy(angle, axis.x, axis.y, axis.z);
+		rotateBy(angle, axis.getX(), axis.getY(), axis.getZ());
 	}
 
 	/**
@@ -909,10 +918,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param tex
 	 *            the tex
 	 */
-	public void drawVertex(final GamaPoint coords, final GamaPoint normal, final GamaPoint tex) {
-		if (normal != null) { outputNormal(normal.x, normal.y, normal.z); }
-		if (tex != null) { gl.glTexCoord3d(tex.x, tex.y, tex.z); }
-		outputVertex(coords.x, coords.y, coords.z);
+	public void drawVertex(final IPoint coords, final IPoint normal, final IPoint tex) {
+		if (normal != null) { outputNormal(normal.getX(), normal.getY(), normal.getZ()); }
+		if (tex != null) { gl.glTexCoord3d(tex.getX(), tex.getY(), tex.getZ()); }
+		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
 	@Override
@@ -924,8 +933,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			} else {
 				nullTextureRotation.applyTo(textureCoords);
 			}
-			final double u = 1 - (textureCoords.x - textureEnvelope.getMinX()) / textureEnvelope.getWidth();
-			final double v = (textureCoords.y - textureEnvelope.getMinY()) / textureEnvelope.getHeight();
+			final double u = 1 - (textureCoords.getX() - textureEnvelope.getMinX()) / textureEnvelope.getWidth();
+			final double v = (textureCoords.getY() - textureEnvelope.getMinY()) / textureEnvelope.getHeight();
 			outputTexCoord(u, v);
 		}
 		outputVertex(x, y, z);
@@ -973,9 +982,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the clockwise
 	 * @return the gama point
 	 */
-	public GamaPoint setNormal(final ICoordinates yNegatedVertices, final boolean clockwise) {
+	public IPoint setNormal(final ICoordinates yNegatedVertices, final boolean clockwise) {
 		yNegatedVertices.getNormal(clockwise, 1, currentNormal);
-		outputNormal(currentNormal.x, currentNormal.y, currentNormal.z);
+		outputNormal(currentNormal.getX(), currentNormal.getY(), currentNormal.getZ());
 		if (isTextured()) { computeTextureCoordinates(yNegatedVertices, clockwise); }
 		return currentNormal;
 	}
@@ -1553,15 +1562,18 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void rotateModel() {
 		if (getData().hasRotation()) {
-			GamaPoint c = getData().getRotationCenter();
-			translateBy(c.x, c.y, c.z);
-			GamaPoint p = getData().getRotationAxis();
+			IPoint c = getData().getRotationCenter();
+			double cx = c.getX();
+			double cy = c.getY();
+			double cz = c.getZ();
+			translateBy(cx, cy, cz);
+			IPoint p = getData().getRotationAxis();
 			if (p == null) {
 				rotateBy(getData().getRotationAngle(), 0, 0, 1);
 			} else {
-				rotateBy(getData().getRotationAngle(), p.x, p.y, p.z);
+				rotateBy(getData().getRotationAngle(), p.getX(), p.getY(), p.getZ());
 			}
-			translateBy(-c.x, -c.y, -c.z);
+			translateBy(-cx, -cy, -cz);
 		}
 	}
 
@@ -1629,7 +1641,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *
 	 * @return the ratios
 	 */
-	public GamaPoint getRatios() { return ratios; }
+	public IPoint getRatios() { return ratios; }
 
 	/**
 	 *
@@ -1688,7 +1700,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawRotation(final boolean doIt) {
 		if (doIt) {
-			final GamaPoint target = getData().getCameraTarget();
+			final IPoint target = getData().getCameraTarget();
 			final double distance = getData().getCameraPos().minus(target).norm();
 			getGeometryDrawer().drawRotationHelper(target, distance, Math.min(getMaxEnvDim() / 4d, distance / 8d));
 		}

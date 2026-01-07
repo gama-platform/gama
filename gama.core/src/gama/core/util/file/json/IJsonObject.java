@@ -166,7 +166,7 @@ public interface IJsonObject extends IJsonValue, Iterable<IJsonObjectMember> {
 	 *            the value of the member to add, must not be <code>null</code>
 	 * @return the object itself, to enable method chaining
 	 */
-	IJsonObject add(String name, JsonValue value);
+	IJsonObject add(String name, IJsonValue value);
 
 	/**
 	 * Sets the value of the member with the specified name to the specified JSON value. If this object does not contain

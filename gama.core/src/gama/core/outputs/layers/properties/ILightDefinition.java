@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ILightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,8 @@ import java.util.List;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.IColor;
 import gama.gaml.interfaces.INamed;
@@ -50,10 +51,10 @@ public interface ILightDefinition extends INamed {
 	String[] LIGHT_PRESETS = List.of(point, direction, spot).toArray(new String[4]);
 
 	/** The Constant DEFAULT_DIRECTION. */
-	GamaPoint DEFAULT_DIRECTION = new GamaPoint(0.5, 0.5, -1);
+	IPoint DEFAULT_DIRECTION = GamaPointFactory.create(0.5, 0.5, -1);
 
 	/** The Constant DEFAULT_LOCATION. */
-	GamaPoint DEFAULT_LOCATION = new GamaPoint(0, 0, 1);
+	IPoint DEFAULT_LOCATION = GamaPointFactory.create(0, 0, 1);
 
 	/** The default angle. */
 	Double DEFAULT_ANGLE = 45d;
@@ -87,7 +88,7 @@ public interface ILightDefinition extends INamed {
 	 *
 	 * @return the direction
 	 */
-	default GamaPoint getDirection() { return DEFAULT_DIRECTION; }
+	default IPoint getDirection() { return DEFAULT_DIRECTION; }
 
 	/**
 	 * Gets the intensity.
@@ -115,7 +116,7 @@ public interface ILightDefinition extends INamed {
 	 *
 	 * @return the location
 	 */
-	default GamaPoint getLocation() { return DEFAULT_LOCATION; }
+	default IPoint getLocation() { return DEFAULT_LOCATION; }
 
 	/**
 	 * Gets the name.

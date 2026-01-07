@@ -20,7 +20,7 @@ import com.google.common.primitives.Ints;
 
 import gama.core.common.interfaces.IImageProvider;
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -91,8 +91,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param p
 	 *            the p
 	 */
-	public GamaIntMatrix(final GamaPoint p) {
-		this((int) p.x, (int) p.y);
+	public GamaIntMatrix(final IPoint p) {
+		this((int) p.getX(), (int) p.getY());
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param preferredSize
 	 *            the preferred size
 	 */
-	public GamaIntMatrix(final IScope scope, final List objects, final GamaPoint preferredSize) {
+	public GamaIntMatrix(final IScope scope, final List objects, final IPoint preferredSize) {
 		super(scope, objects, preferredSize, Types.INT);
 		matrix = new int[numRows * numCols];
 		if (preferredSize != null) {
@@ -303,7 +303,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final GamaPoint preferredSize, final IType type,
+	protected IMatrix _matrixValue(final IScope scope, final IPoint preferredSize, final IType type,
 			final boolean copy) {
 		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
 	}
@@ -318,7 +318,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix copy(final IScope scope, final GamaPoint preferredSize, final boolean copy) {
+	public GamaIntMatrix copy(final IScope scope, final IPoint preferredSize, final boolean copy) {
 		if (preferredSize != null) return new GamaIntMatrix((int) preferredSize.getX(), (int) preferredSize.getX(),
 				Arrays.copyOf(matrix, matrix.length));
 		if (copy) return new GamaIntMatrix(numCols, numRows, Arrays.copyOf(matrix, matrix.length));

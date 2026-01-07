@@ -13,7 +13,8 @@ package gama.ui.display.opengl.scene;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.ui.display.opengl.OpenGL;
 
 /**
@@ -78,7 +79,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 				}
 				if (factor != 1d) {
 					object.getTranslationForScalingInto(loc);
-					gl.translateBy(loc.x * (1 - factor), -loc.y * (1 - factor), loc.z * (1 - factor));
+					gl.translateBy(loc.getX() * (1 - factor), -loc.getY() * (1 - factor), loc.getZ() * (1 - factor));
 					gl.scaleBy(factor, factor, factor);
 
 				}
@@ -94,7 +95,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	}
 
 	/** The loc. */
-	private final GamaPoint loc = new GamaPoint();
+	private final IPoint loc = GamaPointFactory.create();
 
 	/**
 	 * Applies a translation to the gl context
@@ -105,7 +106,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 */
 	protected boolean applyTranslation(final T object) {
 		object.getTranslationInto(loc);
-		gl.translateBy(loc.x, -loc.y, loc.z);
+		gl.translateByYNegated(loc);
 		return true;
 	}
 
@@ -136,11 +137,11 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 		final AxisAngle rotation = object.getAttributes().getRotation();
 		if (rotation == null) return false;
 		object.getTranslationForRotationInto(loc);
-		gl.translateBy(+loc.x, -loc.y, +loc.z);
-		final GamaPoint axis = rotation.getAxis();
+		gl.translateByYNegated(loc);
+		final IPoint axis = rotation.getAxis();
 		// AD Change to a negative rotation to fix Issue #1514
-		gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
-		gl.translateBy(-loc.x, loc.y, -loc.z);
+		gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
+		gl.translateBy(-loc.getX(), loc.getY(), -loc.getZ());
 		return true;
 	}
 

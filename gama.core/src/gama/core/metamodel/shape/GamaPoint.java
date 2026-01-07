@@ -17,15 +17,9 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.util.NumberUtil;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.IIntersectable;
-import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.runtime.IScope;
@@ -45,170 +39,13 @@ import gama.gaml.types.Types;
  * @author drogoul 11 oct. 07
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-@vars ({ @variable (
-		name = IKeyword.X,
-		type = IType.FLOAT,
-		doc = { @doc ("Returns the x ordinate of this point") }),
-		@variable (
-				name = IKeyword.Y,
-				type = IType.FLOAT,
-				doc = { @doc ("Returns the y ordinate of this point") }),
-		@variable (
-				name = IKeyword.Z,
-				type = IType.FLOAT,
-				doc = { @doc ("Returns the z ordinate of this point") }) })
-public class GamaPoint extends Coordinate implements IShape, IIntersectable, Cloneable {
+
+public class GamaPoint extends Coordinate implements IPoint {
 
 	/** The tolerance. */
 	public static double TOLERANCE = GamaPreferences.Experimental.TOLERANCE_POINTS.getValue();
 	static {
 		GamaPreferences.Experimental.TOLERANCE_POINTS.onChange(v -> TOLERANCE = v);
-	}
-
-	/**
-	 * The Class Immutable.
-	 */
-	public static class Immutable extends GamaPoint {
-
-		/** The null point. */
-		public static Immutable NULL_POINT = new GamaPoint.Immutable(0, 0, 0);
-
-		/**
-		 * Instantiates a new immutable.
-		 */
-		public Immutable() {}
-
-		/**
-		 * Instantiates a new immutable.
-		 *
-		 * @param coord
-		 *            the coord
-		 */
-		public Immutable(final Coordinate coord) {
-			x = coord.x;
-			y = coord.y;
-			z = coord.z;
-		}
-
-		/**
-		 * Instantiates a new immutable.
-		 *
-		 * @param x
-		 *            the x
-		 * @param y
-		 *            the y
-		 * @param z
-		 *            the z
-		 */
-		public Immutable(final double x, final double y, final double z) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
-		}
-
-		/**
-		 * Instantiates a new immutable.
-		 *
-		 * @param x
-		 *            the x
-		 * @param y
-		 *            the y
-		 */
-		public Immutable(final double x, final double y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		@Override
-		public GamaPoint setLocation(final GamaPoint al) {
-			return this;
-		}
-
-		@Override
-		public GamaPoint setLocation(final double x, final double y, final double z) {
-			return this;
-		}
-
-		@Override
-		public void setCoordinate(final Coordinate c) {}
-
-		@Override
-		public void setOrdinate(final int i, final double v) {}
-
-		@Override
-		public void setX(final double xx) {}
-
-		@Override
-		public void setY(final double yy) {}
-
-		@Override
-		public void setZ(final double zz) {}
-
-		@Override
-		public GamaPoint add(final GamaPoint loc) {
-			return this;
-		}
-
-		@Override
-		public GamaPoint add(final double ax, final double ay, final double az) {
-			return this;
-		}
-
-		@Override
-		public GamaPoint subtract(final GamaPoint loc) {
-			return this;
-		}
-
-		@Override
-		public GamaPoint multiplyBy(final double value) {
-			return this;
-		}
-
-		@Override
-		public GamaPoint divideBy(final double value) {
-			return this;
-		}
-
-		@Override
-		public void setGeometry(final IShape g) {}
-
-		@Override
-		public void setInnerGeometry(final Geometry point) {
-
-		}
-
-		@Override
-		public GamaPoint normalize() {
-			return this;
-		}
-
-		@Override
-		public void negate() {}
-
-		@Override
-		public void setDepth(final double depth) {}
-
-	}
-
-	/**
-	 * Instantiates a new gama point.
-	 */
-	public GamaPoint() {
-		x = 0.0d;
-		y = 0.0d;
-		z = 0.0d;
-	}
-
-	/**
-	 * Instantiates a new gama point.
-	 *
-	 * @param x
-	 *            the x
-	 * @param y
-	 *            the y
-	 */
-	public GamaPoint(final double x, final double y) {
-		setLocation(x, y, 0d);
 	}
 
 	/**
@@ -226,28 +63,16 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	}
 
 	/**
-	 * Instantiates a new gama point.
-	 *
-	 * @param coord
-	 *            the coord
-	 */
-	public GamaPoint(final Coordinate coord) {
-		if (coord == null) {
-			setLocation(0d, 0d, 0d);
-		} else {
-			setLocation(coord.x, coord.y, coord.z);
-		}
-	}
-
-	/**
 	 * Smaller than.
 	 *
 	 * @param other
 	 *            the other
 	 * @return true, if successful
 	 */
-	public boolean smallerThan(final GamaPoint other) {
-		return x < other.x || y < other.y || z < other.z;
+	@Override
+	public boolean smallerThan(final IPoint other) {
+		if (other == null) return false;
+		return x < other.getX() && y < other.getY();// || z < other.getZ();
 	}
 
 	/**
@@ -257,8 +82,10 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return true, if successful
 	 */
-	public boolean smallerThanOrEqualTo(final GamaPoint other) {
-		return x <= other.x || y <= other.y || z <= other.z;
+	@Override
+	public boolean smallerThanOrEqualTo(final IPoint other) {
+		if (other == null) return false;
+		return x <= other.getX() && y <= other.getY(); // && z <= other.getZ();
 	}
 
 	/**
@@ -268,8 +95,10 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return true, if successful
 	 */
-	public boolean biggerThan(final GamaPoint other) {
-		return x > other.x || y > other.y || z > other.z;
+	@Override
+	public boolean biggerThan(final IPoint other) {
+		if (other == null) return false;
+		return x > other.getX() && y > other.getY(); // && z > other.getZ();
 	}
 
 	/**
@@ -279,14 +108,23 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return true, if successful
 	 */
-	public boolean biggerThanOrEqualTo(final GamaPoint other) {
-		return x >= other.x || y >= other.y || z >= other.z;
+	@Override
+	public boolean biggerThanOrEqualTo(final IPoint other) {
+		if (other == null) return false;
+		return x >= other.getX() && y >= other.getY(); // && z >= other.getZ();
 	}
 
+	/**
+	 * Sets the location.
+	 *
+	 * @param al
+	 *            the al
+	 * @return the i point
+	 */
 	@Override
-	public GamaPoint setLocation(final GamaPoint al) {
+	public IPoint setLocation(final IPoint al) {
 		if (al == this) return this;
-		return setLocation(al.x, al.y, al.z);
+		return setLocation(al.getX(), al.getY(), al.getZ());
 	}
 
 	/**
@@ -300,6 +138,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the z
 	 * @return the gama point
 	 */
+	@Override
 	public GamaPoint setLocation(final double x, final double y, final double z) {
 		this.x = x;
 		this.y = y;
@@ -337,15 +176,12 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	public void setZ(final double zz) { z = Double.isNaN(zz) ? 0.0d : zz; }
 
 	@Override
-	@getter (IKeyword.X)
 	public double getX() { return x; }
 
 	@Override
-	@getter (IKeyword.Y)
 	public double getY() { return y; }
 
 	@Override
-	@getter (IKeyword.Z)
 	public double getZ() { return z; }
 
 	@Override
@@ -365,7 +201,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	}
 
 	@Override
-	public GamaPoint getLocation() { return this; }
+	public IPoint getLocation() { return this; }
 
 	@Override
 	public String stringValue(final IScope scope) {
@@ -379,10 +215,11 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the loc
 	 * @return the gama point
 	 */
-	public GamaPoint add(final GamaPoint loc) {
-		x += loc.x;
-		y += loc.y;
-		setZ(z + loc.z);
+	@Override
+	public GamaPoint add(final IPoint loc) {
+		x += loc.getX();
+		y += loc.getY();
+		setZ(z + loc.getZ());
 		return this;
 	}
 
@@ -397,6 +234,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the az
 	 * @return the gama point
 	 */
+	@Override
 	public GamaPoint add(final double ax, final double ay, final double az) {
 		x += ax;
 		y += ay;
@@ -411,10 +249,11 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the loc
 	 * @return the gama point
 	 */
-	public GamaPoint subtract(final GamaPoint loc) {
-		x -= loc.x;
-		y -= loc.y;
-		setZ(z - loc.z);
+	@Override
+	public IPoint subtract(final IPoint loc) {
+		x -= loc.getX();
+		y -= loc.getY();
+		setZ(z - loc.getZ());
 		return this;
 	}
 
@@ -425,6 +264,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the value
 	 * @return the gama point
 	 */
+	@Override
 	public GamaPoint multiplyBy(final double value) {
 		x *= value;
 		y *= value;
@@ -439,6 +279,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the value
 	 * @return the gama point
 	 */
+	@Override
 	public GamaPoint divideBy(final double value) {
 		x /= value;
 		y /= value;
@@ -447,7 +288,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	}
 
 	@Override
-	public GamaPoint copy(final IScope scope) {
+	public IPoint copy(final IScope scope) {
 		return new GamaPoint(x, y, z);
 	}
 
@@ -474,7 +315,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.interfaces.IGeometry#getEnvelope()
 	 */
 	@Override
-	public IEnvelope getEnvelope() { return GamaEnvelopeFactory.of((Coordinate) this); }
+	public IEnvelope getEnvelope() { return GamaEnvelopeFactory.of(this.toCoordinate()); }
 
 	/**
 	 * Returns the envelope considering this point as bounds
@@ -486,9 +327,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o instanceof GamaPoint) {
-			if (TOLERANCE > 0.0) return equalsWithTolerance((GamaPoint) o, TOLERANCE);
-			return equals3D((GamaPoint) o);
+		if (o instanceof IPoint) {
+			if (TOLERANCE > 0.0) return equalsWithTolerance((IPoint) o, TOLERANCE);
+			return equals3D((IPoint) o);
 		}
 		return super.equals(o);
 	}
@@ -504,12 +345,13 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @return true, if successful
 	 * @date 17 sept. 2023
 	 */
-	public boolean equalsWithTolerance(final Coordinate c, final double tolerance) {
+	@Override
+	public boolean equalsWithTolerance(final IPoint c, final double tolerance) {
 		if (tolerance == 0.0) return equals3D(c);
-		if (!NumberUtil.equalsWithTolerance(this.x, c.x, tolerance)
-				|| !NumberUtil.equalsWithTolerance(this.y, c.y, tolerance))
+		if (!NumberUtil.equalsWithTolerance(this.x, c.getX(), tolerance)
+				|| !NumberUtil.equalsWithTolerance(this.y, c.getY(), tolerance))
 			return false;
-		if (!Double.isNaN(z) && !Double.isNaN(c.z) && !NumberUtil.equalsWithTolerance(this.z, c.z, tolerance))
+		if (!Double.isNaN(z) && !Double.isNaN(c.getZ()) && !NumberUtil.equalsWithTolerance(this.z, c.getZ(), tolerance))
 			return false;
 
 		return true;
@@ -527,8 +369,15 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 		return g.euclidianDistanceTo(this);
 	}
 
+	/**
+	 * Euclidian distance to.
+	 *
+	 * @param p
+	 *            the p
+	 * @return the double
+	 */
 	@Override
-	public double euclidianDistanceTo(final GamaPoint p) {
+	public double euclidianDistanceTo(final IPoint p) {
 		return distance3D(p);
 	}
 
@@ -606,8 +455,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the d
 	 * @return the gama point
 	 */
-	public GamaPoint times(final double d) {
-		return new GamaPoint(x * d, y * d, z * d);
+	@Override
+	public IPoint times(final double d) {
+		return GamaPointFactory.create(x * d, y * d, z * d);
 	}
 
 	/**
@@ -617,8 +467,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the d
 	 * @return the gama point
 	 */
-	public GamaPoint dividedBy(final double d) {
-		return new GamaPoint(x / d, y / d, z / d);
+	@Override
+	public IPoint dividedBy(final double d) {
+		return GamaPointFactory.create(x / d, y / d, z / d);
 	}
 
 	/**
@@ -628,8 +479,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return the gama point
 	 */
-	public GamaPoint minus(final GamaPoint other) {
-		return new GamaPoint(x - other.x, y - other.y, z - other.z);
+	@Override
+	public IPoint minus(final IPoint other) {
+		return GamaPointFactory.create(x - other.getX(), y - other.getY(), z - other.getZ());
 	}
 
 	/**
@@ -643,8 +495,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the az
 	 * @return the gama point
 	 */
-	public GamaPoint minus(final double ax, final double ay, final double az) {
-		return new GamaPoint(x - ax, y - ay, z - az);
+	@Override
+	public IPoint minus(final double ax, final double ay, final double az) {
+		return GamaPointFactory.create(x - ax, y - ay, z - az);
 	}
 
 	/**
@@ -654,8 +507,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return the gama point
 	 */
-	public GamaPoint plus(final GamaPoint other) {
-		return new GamaPoint(x + other.x, y + other.y, z + other.z);
+	@Override
+	public IPoint plus(final IPoint other) {
+		return GamaPointFactory.create(x + other.getX(), y + other.getY(), z + other.getZ());
 	}
 
 	/**
@@ -669,8 +523,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the az
 	 * @return the gama point
 	 */
-	public GamaPoint plus(final double ax, final double ay, final double az) {
-		return new GamaPoint(x + ax, y + ay, z + az);
+	@Override
+	public IPoint plus(final double ax, final double ay, final double az) {
+		return GamaPointFactory.create(x + ax, y + ay, z + az);
 	}
 
 	/**
@@ -678,6 +533,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the double
 	 */
+	@Override
 	public double norm() {
 		return Math.sqrt(x * x + y * y + z * z);
 	}
@@ -687,7 +543,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 		int result = 17;
 		result = 37 * result + hashCode(x);
 		result = 370 * result + hashCode(y);
-		return 3700 * result + hashCode(z);
+		// Keep consistent with `equals3D` and `setZ`
+		final double hz = Double.isNaN(z) ? 0.0d : z;
+		return 3700 * result + hashCode(hz);
 	}
 
 	/**
@@ -695,10 +553,11 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the gama point
 	 */
-	public GamaPoint normalized() {
+	@Override
+	public IPoint normalized() {
 		final double r = this.norm();
-		if (r == 0d) return new GamaPoint(0, 0, 0);
-		return new GamaPoint(this.x / r, this.y / r, this.z / r);
+		if (r == 0d) return GamaPointFactory.create(0, 0, 0);
+		return GamaPointFactory.create(this.x / r, this.y / r, this.z / r);
 	}
 
 	/**
@@ -706,7 +565,8 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the gama point
 	 */
-	public GamaPoint normalize() {
+	@Override
+	public IPoint normalize() {
 		final double r = this.norm();
 		if (r == 0d) return this;
 		x = x / r;
@@ -720,13 +580,15 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the gama point
 	 */
-	public GamaPoint negated() {
-		return new GamaPoint(-x, -y, -z);
+	@Override
+	public IPoint negated() {
+		return GamaPointFactory.create(-x, -y, -z);
 	}
 
 	/**
 	 * Negate.
 	 */
+	@Override
 	public void negate() {
 		x = -x;
 		y = -y;
@@ -742,7 +604,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the v 2
 	 * @return the double
 	 */
-	public final static double dotProduct(final GamaPoint v1, final GamaPoint v2) {
+	public final static double dotProduct(final IPoint v1, final IPoint v2) {
 		return v1.dotProductWith(v2);
 	}
 
@@ -752,8 +614,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @param v2
 	 *            the v 2
 	 */
-	public final double dotProductWith(final GamaPoint v2) {
-		return x * v2.x + y * v2.y + z * v2.z;
+	@Override
+	public final double dotProductWith(final IPoint v2) {
+		return x * v2.getX() + y * v2.getY() + z * v2.getZ();
 	}
 
 	/**
@@ -765,7 +628,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the v 2
 	 * @return the gama point
 	 */
-	public final static GamaPoint crossProduct(final GamaPoint v1, final GamaPoint v2) {
+	public final static IPoint crossProduct(final IPoint v1, final IPoint v2) {
 		return v1.crossProductWith(v2);
 	}
 
@@ -776,8 +639,10 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the other
 	 * @return the gama point
 	 */
-	public final GamaPoint crossProductWith(final GamaPoint v2) {
-		return new GamaPoint(y * v2.z - z * v2.y, v2.x * z - v2.z * x, x * v2.y - y * v2.x);
+	@Override
+	public final IPoint crossProductWith(final IPoint v2) {
+		return GamaPointFactory.create(y * v2.getZ() - z * v2.getY(), v2.getX() * z - v2.getZ() * x,
+				x * v2.getY() - y * v2.getX());
 
 	}
 
@@ -787,7 +652,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.core.metamodel.shape.IShape#getPoints()
 	 */
 	@Override
-	public IList<GamaPoint> getPoints() {
+	public IList<IPoint> getPoints() {
 		final IList result = GamaListFactory.create(Types.POINT);
 		result.add(clone());
 		return result;
@@ -796,6 +661,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	/**
 	 * @return the point with y negated (for OpenGL, for example), without side effect on the point.
 	 */
+	@Override
 	public GamaPoint yNegated() {
 		return new GamaPoint(x, -y, z);
 	}
@@ -849,7 +715,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 * @see gama.core.metamodel.shape.IShape#getCentroid()
 	 */
 	@Override
-	public GamaPoint getCentroid() { return this; }
+	public IPoint getCentroid() { return this; }
 
 	/**
 	 * Method getExteriorRing()
@@ -932,19 +798,20 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the gama point
 	 */
-	public GamaPoint orthogonal() {
+	@Override
+	public IPoint orthogonal() {
 		final double threshold = 0.6 * norm();
 		if (threshold == 0) return this;
 		if (Math.abs(x) <= threshold) {
 			final double inverse = 1 / sqrt(y * y + z * z);
-			return new GamaPoint(0, inverse * z, -inverse * y);
+			return GamaPointFactory.create(0, inverse * z, -inverse * y);
 		}
 		if (Math.abs(y) <= threshold) {
 			final double inverse = 1 / sqrt(x * x + z * z);
-			return new GamaPoint(-inverse * z, 0, inverse * x);
+			return GamaPointFactory.create(-inverse * z, 0, inverse * x);
 		}
 		final double inverse = 1 / sqrt(x * x + y * y);
-		return new GamaPoint(inverse * y, -inverse * x, 0);
+		return GamaPointFactory.create(inverse * y, -inverse * x, 0);
 	}
 
 	/**
@@ -954,8 +821,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *            the i
 	 * @return the gama point
 	 */
-	public GamaPoint withPrecision(final int i) {
-		return new GamaPoint(round(x, i), round(y, i), round(z, i));
+	@Override
+	public IPoint withPrecision(final int i) {
+		return GamaPointFactory.create(round(x, i), round(y, i), round(z, i));
 	}
 
 	@Override
@@ -973,7 +841,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 
 	@Override
 	public boolean intersects(final IEnvelope env) {
-		return env.intersects(this);
+		return env.intersects(this.toCoordinate());
 	}
 
 	@Override
@@ -986,8 +854,9 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return the gamap point
 	 */
-	public GamaPoint rounded() {
-		return new GamaPoint(Math.round(x), Math.round(y), Math.round(z));
+	@Override
+	public IPoint rounded() {
+		return GamaPointFactory.create(Math.round(x), Math.round(y), Math.round(z));
 	}
 
 	/**
@@ -995,6 +864,7 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 	 *
 	 * @return true, if is null
 	 */
+	@Override
 	public boolean isNull() { return x == 0d && y == 0d && z == 0d; }
 
 	@Override
@@ -1002,9 +872,92 @@ public class GamaPoint extends Coordinate implements IShape, IIntersectable, Clo
 		return json.typedObject(getGamlType(), "x", x, "y", y, "z", z);
 	}
 
+	/**
+	 * Translated to.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param absoluteLocation
+	 *            the absolute location
+	 * @return the i shape
+	 */
 	@Override
-	public IShape translatedTo(final IScope scope, final GamaPoint absoluteLocation) {
+	public IShape translatedTo(final IScope scope, final IPoint absoluteLocation) {
 		this.setLocation(absoluteLocation);
+		return this;
+	}
+
+	@Override
+	public boolean equals3D(final IPoint other) {
+		if (other == null) return false;
+		final double oz = other.getZ();
+		final double z1 = Double.isNaN(this.z) ? 0.0d : this.z;
+		final double z2 = Double.isNaN(oz) ? 0.0d : oz;
+		return this.x == other.getX() && this.y == other.getY() && z1 == z2;
+	}
+
+	/**
+	 * Distance 3 D.
+	 *
+	 * @param p
+	 *            the p
+	 * @return true, if successful
+	 */
+	@Override
+	public double distance3D(final IPoint p) {
+		return distance3D(p.toCoordinate());
+	}
+
+	@Override
+	public Coordinate toCoordinate() {
+		return this;
+	}
+
+	@Override
+	public int compareTo(final IPoint p) {
+		double px = p.getX();
+		if (x < px) return -1;
+		if (x > px) return 1;
+		double py = p.getY();
+		if (y < py) return -1;
+		if (y > py) return 1;
+		double pz = p.getZ();
+		if (z < pz) return -1;
+		if (z > pz) return 1;
+		return 0;
+	}
+
+	@Override
+	public int compareTo(final Coordinate p) {
+		double px = p.getX();
+		if (x < px) return -1;
+		if (x > px) return 1;
+		double py = p.getY();
+		if (y < py) return -1;
+		if (y > py) return 1;
+		double pz = p.getZ();
+		if (z < pz) return -1;
+		if (z > pz) return 1;
+		return 0;
+	}
+
+	@Override
+	public double distance(final IPoint pt2) {
+		double dx = x - pt2.getX();
+		double dy = y - pt2.getY();
+		return Math.hypot(dx, dy);
+	}
+
+	@Override
+	public boolean equals2D(final IPoint current, final double tolerance) {
+		if (!NumberUtil.equalsWithTolerance(this.x, current.getX(), tolerance)
+				|| !NumberUtil.equalsWithTolerance(this.y, current.getY(), tolerance))
+			return false;
+		return true;
+	}
+
+	@Override
+	public GamaPoint toGamaPoint() {
 		return this;
 	}
 

@@ -28,7 +28,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.runtime.GAMA;
@@ -539,7 +539,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		// if (expr != null) { chartOutput.setSeriesLabelPosition(scope, Cast.asString(scope, expr.value(scope))); }
 		// expr = getFacet(IKeyword.ANCHOR);
 		// if (expr != null) {
-		// final GamaPoint pt = Cast.asPoint(scope, expr.value(scope));
+		// final IPoint pt = Cast.asPoint(scope, expr.value(scope));
 		// chartOutput.setSeriesLabelAnchor(scope, pt);
 		// }
 
@@ -582,8 +582,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 			if (range instanceof Number) {
 				chartOutput.setXRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof GamaPoint) {
-				chartOutput.setXRangeMinMax(scope, ((GamaPoint) range).getX(), ((GamaPoint) range).getY());
+			} else if (range instanceof IPoint ) {
+				chartOutput.setXRangeMinMax(scope, ((IPoint ) range).getX(), ((IPoint ) range).getY());
 			} else if (range instanceof IList) {
 				chartOutput.setXRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
 						Cast.asFloat(scope, ((IList<?>) range).get(1)));
@@ -596,8 +596,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 			if (range instanceof Number) {
 				chartOutput.setYRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof GamaPoint) {
-				chartOutput.setYRangeMinMax(scope, ((GamaPoint) range).getX(), ((GamaPoint) range).getY());
+			} else if (range instanceof IPoint ) {
+				chartOutput.setYRangeMinMax(scope, ((IPoint ) range).getX(), ((IPoint ) range).getY());
 			} else if (range instanceof IList) {
 				chartOutput.setYRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
 						Cast.asFloat(scope, ((IList<?>) range).get(1)));
@@ -609,8 +609,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 			if (range instanceof Number) {
 				chartOutput.setY2RangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof GamaPoint) {
-				chartOutput.setY2RangeMinMax(scope, ((GamaPoint) range).getX(), ((GamaPoint) range).getY());
+			} else if (range instanceof IPoint ) {
+				chartOutput.setY2RangeMinMax(scope, ((IPoint ) range).getX(), ((IPoint ) range).getY());
 			} else if (range instanceof IList) {
 				chartOutput.setY2RangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
 						Cast.asFloat(scope, ((IList<?>) range).get(1)));
@@ -683,7 +683,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 		expr = getFacet(IKeyword.ANCHOR);
 		if (expr != null) {
-			final GamaPoint pt = Cast.asPoint(scope, expr.value(scope));
+			final IPoint  pt = Cast.asPoint(scope, expr.value(scope));
 			chartOutput.setSeriesLabelAnchor(scope, pt);
 		}
 

@@ -54,7 +54,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.util.IColor;
 import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.ITesselator;
@@ -78,7 +79,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	ICoordinates temp = ICoordinates.ofLength(4);
 
 	/** The normal. */
-	GamaPoint normal = new GamaPoint();
+	IPoint normal = GamaPointFactory.create();
 
 	/** The tobj. */
 	final GLUtessellator tobj = GLU.gluNewTess();
@@ -182,18 +183,18 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 		}
 		gl.pushMatrix();
 		final AxisAngle rotation = attributes.getRotation();
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
 
-		gl.rasterText(object, fontToUse, p.x, p.y, p.z);
+		gl.rasterText(object, fontToUse, p.getX(), p.getY(), p.getZ());
 		gl.popMatrix();
 	}
 
@@ -259,17 +260,17 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 */
 	void drawText(final TextDrawingAttributes attributes, final double y) {
 
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
 		IColor previous = null;
 		gl.pushMatrix();
 		try {
-			GamaPoint anchor = attributes.getAnchor();
+			IPoint anchor = attributes.getAnchor();
 			applyRotation(attributes, p);
 			final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
 					gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
-			gl.translateBy(p.x - width * scale * anchor.x, p.y + y * scale * anchor.y,
-					p.z + gl.getCurrentZTranslation());
+			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
+					p.getZ() + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
@@ -338,13 +339,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param p
 	 *            the p
 	 */
-	private void applyRotation(final TextDrawingAttributes attributes, final GamaPoint p) {
+	private void applyRotation(final TextDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
@@ -379,7 +380,8 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				// We add two normal vectors as the vertex buffer will be filled by 2 coordinates
-				sideNormalBuffer.put(new double[] { normal.x, normal.y, normal.z, normal.x, normal.y, normal.z });
+				sideNormalBuffer.put(new double[] { normal.getX(), normal.getY(), normal.getZ(), normal.getX(),
+						normal.getY(), normal.getZ() });
 			}
 			// And we store the upper face
 			sideQuadsBuffer.put(x).put(y).put(depth);

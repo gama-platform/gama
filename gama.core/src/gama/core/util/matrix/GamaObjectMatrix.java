@@ -18,7 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.collect.ImmutableList;
 
 import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -69,7 +69,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final GamaPoint p, final IType<?> contentsType) {
+	public GamaObjectMatrix(final IPoint  p, final IType<?> contentsType) {
 		this((int) p.getX(), (int) p.getY(), contentsType);
 	}
 
@@ -149,7 +149,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final IScope scope, final IList<?> objects, final GamaPoint preferredSize,
+	public GamaObjectMatrix(final IScope scope, final IList<?> objects, final IPoint  preferredSize,
 			final IType<?> contentsType) {
 		super(scope, objects, preferredSize, contentsType);
 		setMatrix(new Object[numRows * numCols]);
@@ -243,7 +243,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	}
 
 	@Override
-	protected IMatrix<Object> _matrixValue(final IScope scope, final GamaPoint preferredSize, final IType type,
+	protected IMatrix<Object> _matrixValue(final IScope scope, final IPoint  preferredSize, final IType type,
 			final boolean copy) {
 		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
 	}
@@ -258,7 +258,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	}
 
 	@Override
-	public GamaObjectMatrix copy(final IScope scope, final GamaPoint size, final boolean copy) {
+	public GamaObjectMatrix copy(final IScope scope, final IPoint  size, final boolean copy) {
 		if (size == null) {
 			if (copy) return new GamaObjectMatrix(numCols, numRows, Arrays.copyOf(matrix, matrix.length),
 					getGamlType().getContentType());

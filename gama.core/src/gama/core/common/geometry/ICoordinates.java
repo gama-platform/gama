@@ -9,9 +9,11 @@
  ********************************************************************************************************/
 package gama.core.common.geometry;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.util.file.json.IJSon;
 import gama.core.util.file.json.IJsonArray;
 import gama.gaml.interfaces.IJsonable;
@@ -19,7 +21,7 @@ import gama.gaml.interfaces.IJsonable;
 /**
  * The Interface ICoordinates.
  */
-public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, IJsonable {
+public interface ICoordinates extends CoordinateSequence, Iterable<IPoint>, IJsonable {
 
 	/**
 	 * An interface used to visit pairs of coordinates in a sequence
@@ -38,7 +40,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 		 * @param p2
 		 *            the p 2
 		 */
-		void process(GamaPoint p1, GamaPoint p2);
+		void process(IPoint p1, IPoint p2);
 	}
 
 	/**
@@ -89,8 +91,8 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *
 	 * @return a new point containing the ordinates of the center
 	 */
-	default GamaPoint getCenter() {
-		final GamaPoint p = new GamaPoint();
+	default IPoint getCenter() {
+		final IPoint p = GamaPointFactory.create();
 		addCenterTo(p);
 		return p;
 	}
@@ -102,7 +104,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *            the center
 	 * @return the center
 	 */
-	default void getCenter(final GamaPoint center) {
+	default void getCenter(final IPoint center) {
 		center.setLocation(0, 0, 0);
 		addCenterTo(center);
 	}
@@ -124,17 +126,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @param other
 	 *            the result of the computation
 	 */
-	void addCenterTo(final GamaPoint other);
-
-	/**
-	 * Gets the coordinate.
-	 *
-	 * @param i
-	 *            the i
-	 * @return the coordinate
-	 */
-	@Override
-	GamaPoint getCoordinate(int i);
+	void addCenterTo(final IPoint other);
 
 	/**
 	 * Returns the point at index i or null if i is greater than the sequence size or smaller than zero
@@ -142,10 +134,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @param i
 	 * @return a point or null
 	 */
-	default GamaPoint at(final int i) {
-		if (i > size() || i < 0) return null;
-		return getCoordinate(i);
-	}
+	IPoint at(int i);
 
 	/**
 	 * Returns a new sequence of points with all their y ordinate negated. The original sequence is left untouched
@@ -153,14 +142,6 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @return a new sequence of points with all their y ordinate negated
 	 */
 	ICoordinates yNegated();
-
-	/**
-	 * Returns the array backing this sequence of points. Note that this array is *not* a copy. Any modification will
-	 * directly affect the sequence and possibly change its properties (i.e. clockwiseness or ring), which cannot
-	 * therefore be verified
-	 */
-	@Override
-	GamaPoint[] toCoordinateArray();
 
 	/**
 	 * Visits the coordinates, passing the x, y, z ordinates of each coordinate and its index to the visitor
@@ -182,16 +163,6 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *            the visitor (cannot be null)
 	 */
 	void visitClockwise(VertexVisitor v);
-	//
-	// /**
-	// * Visits all the coordinates, passing the x, y, z ordinates of each coordinate to the visitor. The visit is done
-	// in
-	// * the counter-clockwise order. In the case of a line string, the first point is not visited.
-	// *
-	// * @param v
-	// * the visitor (cannot be null)
-	// */
-	// void visitCounterClockwise(VertexVisitor v);
 
 	/**
 	 * Visits all the coordinates, passing the x, -y, z ordinates of each coordinate to the visitor. The visit is done
@@ -228,8 +199,8 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @return the normal to the sequence of points, in clockwise or counter-clockwise direction
 	 */
 
-	default GamaPoint getNormal(final boolean clockwise) {
-		final GamaPoint normal = new GamaPoint();
+	default IPoint getNormal(final boolean clockwise) {
+		final IPoint normal = GamaPointFactory.create();
 		getNormal(clockwise, 1, normal);
 		return normal;
 	}
@@ -245,7 +216,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 * @param normal
 	 *            the result of the computation
 	 */
-	void getNormal(boolean clockwise, double factor, GamaPoint normal);
+	void getNormal(boolean clockwise, double factor, IPoint normal);
 
 	/**
 	 * Expands an existing envelope with this sequence of points
@@ -279,7 +250,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *            an Array of points
 	 * @return this
 	 */
-	ICoordinates setTo(GamaPoint... points);
+	ICoordinates setTo(IPoint... points);
 
 	/**
 	 * To prevent excessive garbage to be created, points can be replaced directly with this method. Note that the size
@@ -329,7 +300,7 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	 *
 	 * @return a point containing the vector
 	 */
-	GamaPoint directionBetweenLastPointAndOrigin();
+	IPoint directionBetweenLastPointAndOrigin();
 
 	/**
 	 * Applies a 3D rotation to the sequence of points
@@ -416,13 +387,28 @@ public interface ICoordinates extends CoordinateSequence, Iterable<GamaPoint>, I
 	@Override
 	default IJsonArray serializeToJson(final IJSon json) {
 		IJsonArray result = json.array();
-		GamaPoint work = new GamaPoint();
+		IPoint work = GamaPointFactory.create();
 		for (int i = 0; i < size(); i++) {
 			getCoordinate(i, work);
-			result.add(json.array(work.x, work.y, work.z));
+			result.add(json.array(work.getX(), work.getY(), work.getZ()));
 		}
 		return result;
 
 	}
+
+	/**
+	 * @param i
+	 * @param work
+	 */
+	default void getCoordinate(final int i, final IPoint work) {
+		if (work instanceof Coordinate c) { getCoordinate(i, c); }
+	}
+
+	/**
+	 * To points array.
+	 *
+	 * @return the i point[]
+	 */
+	IPoint[] toPointsArray();
 
 }

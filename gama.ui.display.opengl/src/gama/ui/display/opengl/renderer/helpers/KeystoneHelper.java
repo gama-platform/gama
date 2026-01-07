@@ -21,7 +21,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.common.geometry.ICoordinates;
 import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.util.GamaColorFactory;
@@ -114,7 +114,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *
 	 * @return the coords
 	 */
-	public GamaPoint[] getCoords() { return getData().getKeystone().toCoordinateArray(); }
+	public IPoint[] getCoords() { return getData().getKeystone().toPointsArray(); }
 
 	/**
 	 * Gets the keystone coordinates.
@@ -123,7 +123,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the corner
 	 * @return the keystone coordinates
 	 */
-	public GamaPoint getKeystoneCoordinates(final int corner) {
+	public IPoint getKeystoneCoordinates(final int corner) {
 		return getCoords()[corner];
 	}
 
@@ -239,7 +239,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		openGL.push(GLMatrixFunc.GL_MODELVIEW);
 		vertices.visit((id, x, y, z) -> {
 			// Basic computations on text and color
-			final String text = floor4Digit(getCoords()[id].x) + "," + floor4Digit(getCoords()[id].y);
+			final String text = floor4Digit(getCoords()[id].getX()) + "," + floor4Digit(getCoords()[id].getY());
 			final int lengthOfTextInPixels = openGL.getGlut().glutBitmapLength(GLUT.BITMAP_HELVETICA_18, text);
 			final double labelWidthIn01 = pixelWidthIn01 * (lengthOfTextInPixels + 20);
 			final int fill = id == cornerSelected ? 0 : id == cornerHovered ? 1 : 2;
@@ -342,10 +342,10 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		// http://www.bitlush.com/posts/arbitrary-quadrilaterals-in-opengl-es-2-0)
 		// transform the coordinates [0,1] --> [-1,+1]
 		final ICoordinates coords = getData().getKeystone();
-		final float[] p0 = { (float) coords.at(0).x * 2f - 1f, (float) (coords.at(0).y * 2f - 1f) }; // bottom-left
-		final float[] p1 = { (float) coords.at(1).x * 2f - 1f, (float) coords.at(1).y * 2f - 1f }; // top-left
-		final float[] p2 = { (float) coords.at(2).x * 2f - 1f, (float) coords.at(2).y * 2f - 1f }; // top-right
-		final float[] p3 = { (float) coords.at(3).x * 2f - 1f, (float) coords.at(3).y * 2f - 1f }; // bottom-right
+		final float[] p0 = { (float) coords.at(0).getX() * 2f - 1f, (float) (coords.at(0).getY() * 2f - 1f) }; // bottom-left
+		final float[] p1 = { (float) coords.at(1).getX() * 2f - 1f, (float) coords.at(1).getY() * 2f - 1f }; // top-left
+		final float[] p2 = { (float) coords.at(2).getX() * 2f - 1f, (float) coords.at(2).getY() * 2f - 1f }; // top-right
+		final float[] p3 = { (float) coords.at(3).getX() * 2f - 1f, (float) coords.at(3).getY() * 2f - 1f }; // bottom-right
 
 		final float ax = (p2[0] - p0[0]) / 2f;
 		final float ay = (p2[1] - p0[1]) / 2f;
@@ -439,12 +439,12 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the mouse
 	 * @return the int
 	 */
-	public int cornerSelected(final GamaPoint mouse) {
-		if (mouse.x < getViewWidth() / 2d) {
-			if (mouse.y < getViewHeight() / 2d) return 1;
+	public int cornerSelected(final IPoint mouse) {
+		if (mouse.getX() < getViewWidth() / 2d) {
+			if (mouse.getY() < getViewHeight() / 2d) return 1;
 			return 0;
 		}
-		if (mouse.y < getViewHeight() / 2d) return 2;
+		if (mouse.getY() < getViewHeight() / 2d) return 2;
 		return 3;
 	}
 
@@ -455,12 +455,12 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the mouse
 	 * @return the int
 	 */
-	public int cornerHovered(final GamaPoint mouse) {
-		if (mouse.x < getViewWidth() / 2d) {
-			if (mouse.y < getViewHeight() / 2d) return 1;
+	public int cornerHovered(final IPoint mouse) {
+		if (mouse.getX() < getViewWidth() / 2d) {
+			if (mouse.getY() < getViewHeight() / 2d) return 1;
 			return 0;
 		}
-		if (mouse.y < getViewHeight() / 2d) return 2;
+		if (mouse.getY() < getViewHeight() / 2d) return 2;
 		return 3;
 	}
 
@@ -480,8 +480,8 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 * @param p
 	 *            the p
 	 */
-	public void setKeystoneCoordinates(final int cornerId, final GamaPoint p) {
-		getData().getKeystone().replaceWith(cornerId, p.x, p.y, p.z);
+	public void setKeystoneCoordinates(final int cornerId, final IPoint p) {
+		getData().getKeystone().replaceWith(cornerId, p.getX(), p.getY(), p.getZ());
 		switchCorners();
 		getData().setKeystone(getData().getKeystone());
 	}

@@ -3,7 +3,7 @@
  * Constants.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -134,9 +134,8 @@ public interface Constants {
 			IEXPRESSION = "IExpression", INTEGER = "Integer", DOUBLE = "Double", BOOLEAN = "Boolean";
 
 	/** The explicit imports. */
-	String[] INDIVIDUAL_IMPORTS =
-			{ "gama.gaml.operators.Random", "gama.gaml.operators.Maths", "gama.gaml.operators.Points",
-					"gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
+	String[] INDIVIDUAL_IMPORTS = { "gama.gaml.operators.Random", "gama.gaml.operators.Maths",
+			"gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
 
 	/** The star imports. */
 	Set<String> COLLECTIVE_IMPORTS = Stream
@@ -172,7 +171,7 @@ public interface Constants {
 		{
 			put("IAgent", "IA");
 			put("IGamlAgent", "IG");
-			put("GamaColor", "GC");
+			put("IColor", "GC");
 			put("GamaPair", "GP");
 			put("GamaShape", "GS");
 			put("Object", "O");
@@ -183,10 +182,10 @@ public interface Constants {
 			put("IShape", "IS");
 			put("IMap", "GM");
 			put("IContainer", "IC");
-			put("GamaPoint", "IL");
+			put("IPoint", "IL");
 			put("IMatrix", "IM");
 			put("String", "S");
-			put("GamaPoint", "P");
+			put("IPoint", "P");
 			put("MovingSkill", "MSK");
 			put("WorldSkill", "WSK");
 			put("GridSkill", "GSK");
@@ -197,7 +196,7 @@ public interface Constants {
 			put("GamlAgent", "GA");
 			put("ISpecies", "SP");
 			put("IScope", "SC");
-			put("GamaDate", "GD");
+			put("IDate", "GD");
 			put("SimulationAgent", "SA");
 			put("ExperimentAgent", "EA");
 			put("DeprecatedOperators", "DO");

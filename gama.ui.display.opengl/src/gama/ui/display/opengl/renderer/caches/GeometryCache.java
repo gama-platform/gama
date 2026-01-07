@@ -44,7 +44,8 @@ import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.ICoordinates;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.shape.IShape.Type;
 import gama.core.runtime.GAMA;
@@ -371,8 +372,8 @@ public class GeometryCache {
 			baseVertices.translateBy(0, 0, -1);
 		})).faces(gl.compileAsList(() -> {
 			baseVertices.visit((pj, pk) -> {
-				faceVertices.setTo(pk.x, pk.y, pk.z, pk.x, pk.y, pk.z + 1, pj.x, pj.y, pj.z + 1, pj.x, pj.y, pj.z, pk.x,
-						pk.y, pk.z);
+				faceVertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX(), pk.getY(), pk.getZ() + 1, pj.getX(),
+						pj.getY(), pj.getZ() + 1, pj.getX(), pj.getY(), pj.getZ(), pk.getX(), pk.getY(), pk.getZ());
 				gl.drawSimpleShape(faceVertices, 4, true, true, null);
 			});
 		})));
@@ -394,9 +395,10 @@ public class GeometryCache {
 		put(PYRAMID, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
 			gl.drawSimpleShape(vertices, 4, false, true, null);
 		})).faces(gl.compileAsList(() -> {
-			final GamaPoint top = new GamaPoint(0, 0, 1);
+			final IPoint  top = GamaPointFactory.create(0, 0, 1);
 			vertices.visit((pj, pk) -> {
-				triangleVertices.setTo(pj.x, pj.y, pj.z, top.x, top.y, top.z, pk.x, pk.y, pk.z, pj.x, pj.y, pj.z);
+				triangleVertices.setTo(pj.getX(), pj.getY(), pj.getZ(), top.getX(), top.getY(), top.getZ(), pk.getX(),
+						pk.getY(), pk.getZ(), pj.getX(), pj.getY(), pj.getZ());
 				gl.drawSimpleShape(triangleVertices, 3, true, true, null);
 
 			});

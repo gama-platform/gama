@@ -18,7 +18,8 @@ import com.google.common.primitives.Ints;
 
 import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.layers.GridLayerData;
 import gama.core.outputs.layers.ILayerData;
@@ -227,7 +228,7 @@ public interface ILayer extends INamed, Comparable<ILayer> {
 	 *            the surface on which the layer is displayed
 	 * @return a point describing a position in the world
 	 */
-	default GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final IDisplaySurface g) {
+	default IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final IDisplaySurface g) {
 		return g.getModelCoordinatesFrom(xOnScreen, yOnScreen, getData().getSizeInPixels(),
 				getData().getPositionInPixels());
 	}
@@ -268,7 +269,7 @@ public interface ILayer extends INamed, Comparable<ILayer> {
 
 	default void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
 			final StringBuilder sb) {
-		final GamaPoint point = getModelCoordinatesFrom(xOnScreen, yOnScreen, g);
+		final IPoint  point = getModelCoordinatesFrom(xOnScreen, yOnScreen, g);
 		final String x = point == null ? "N/A" : String.format("%5.2f", point.getX());
 		final String y = point == null ? "N/A" : String.format("%5.2f", point.getY());
 		sb.append(String.format("X%8s | Y%8s", x, y));

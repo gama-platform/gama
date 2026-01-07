@@ -38,10 +38,6 @@ import java.time.temporal.WeekFields;
 
 import org.apache.commons.lang3.StringUtils;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -63,66 +59,7 @@ import gama.gaml.types.Types;
  * @author Taillandier
  * @author Alexis Drogoul
  */
-@vars ({ @variable (
-		name = "day_of_week",
-		type = IType.INT,
-		doc = { @doc ("Returns the index of the day of the week (with Monday being 1)") }),
-		@variable (
-				name = "date",
-				type = IType.DATE,
-				doc = { @doc ("Returns a new date object with only the year-month-day components of this date") }),
-		@variable (
-				name = "leap",
-				type = IType.BOOL,
-				doc = { @doc ("Returns true if the year is a leap year") }),
-		@variable (
-				name = "days_in_month",
-				type = IType.INT,
-				doc = { @doc ("Returns the number of days of the month (28-31) of this date") }),
-		@variable (
-				name = "day_of_year",
-				type = IType.INT,
-				doc = { @doc ("Returns the current day number of the year of this date") }),
-		@variable (
-				name = "days_in_year",
-				type = IType.INT,
-				doc = { @doc ("Returns the number of days of the year (365-366) of this date") }),
-		@variable (
-				name = "week_of_year",
-				type = IType.INT,
-				doc = { @doc ("Returns the week (1-52) of the year") }),
-		@variable (
-				name = "second",
-				type = IType.INT,
-				doc = { @doc ("Returns the second of minute (0-59) of this date") }),
-		@variable (
-				name = "second_of_day",
-				type = IType.INT,
-				doc = { @doc ("Returns the second of day (0-86399) of this date") }),
-		@variable (
-				name = "minute",
-				type = IType.INT,
-				doc = { @doc ("Returns the minute of hour (0-59) of this date") }),
-		@variable (
-				name = "minute_of_day",
-				type = IType.INT,
-				doc = { @doc ("Returns the minute of day (0-1439) of this date") }),
-		@variable (
-				name = "hour",
-				type = IType.INT,
-				doc = { @doc ("Returns the hour of the day (0-23) of this date") }),
-		@variable (
-				name = "day",
-				type = IType.INT,
-				doc = { @doc ("Returns the day of month (1-31) of this date") }),
-		@variable (
-				name = "month",
-				type = IType.INT,
-				doc = { @doc ("Returns the month of year (1-12) of this date") }),
-		@variable (
-				name = "year",
-				type = IType.INT,
-				doc = { @doc ("Returns the year") }) })
+
 public class GamaDate implements Temporal, IDate {
 
 	/** The Constant THE_DATE. */
@@ -399,6 +336,7 @@ public class GamaDate implements Temporal, IDate {
 	 *            the ct
 	 * @return the i list
 	 */
+	@Override
 	public IList<?> listValue(final IScope scope, final IType<?> ct) {
 		final LocalDateTime ld = LocalDateTime.from(internal);
 		return GamaListFactory.create(scope, ct, ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth(), ld.getHour(),
@@ -469,7 +407,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the year
 	 */
-	@getter ("year")
+	@Override
 	public int getYear() { return internal.get(YEAR); }
 
 	/**
@@ -477,15 +415,15 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the date
 	 */
-	@getter ("date")
-	public GamaDate getDate() { return GamaDateType.fromTemporal(LocalDate.of(getYear(), getMonth(), getDay())); }
+	@Override
+	public IDate getDate() { return GamaDateType.fromTemporal(LocalDate.of(getYear(), getMonth(), getDay())); }
 
 	/**
 	 * Gets the day of year.
 	 *
 	 * @return the day of year
 	 */
-	@getter ("day_of_year")
+	@Override
 	public int getDayOfYear() { return internal.get(DAY_OF_YEAR); }
 
 	/**
@@ -493,7 +431,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the second of day
 	 */
-	@getter ("second_of_day")
+	@Override
 	public int getSecondOfDay() { return internal.get(ChronoField.SECOND_OF_DAY); }
 
 	/**
@@ -501,7 +439,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the month
 	 */
-	@getter ("month")
+	@Override
 	public int getMonth() { return internal.get(MONTH_OF_YEAR); }
 
 	/**
@@ -509,7 +447,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the day
 	 */
-	@getter ("day")
+	@Override
 	public int getDay() { return internal.get(DAY_OF_MONTH); }
 
 	/**
@@ -517,7 +455,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the hour
 	 */
-	@getter ("hour")
+	@Override
 	public int getHour() { return internal.get(ChronoField.HOUR_OF_DAY); }
 
 	/**
@@ -525,7 +463,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the minute
 	 */
-	@getter ("minute")
+	@Override
 	public int getMinute() { return internal.get(MINUTE_OF_HOUR); }
 
 	/**
@@ -533,7 +471,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the minute of day
 	 */
-	@getter ("minute_of_day")
+	@Override
 	public int getMinuteOfDay() { return internal.get(ChronoField.MINUTE_OF_DAY); }
 
 	/**
@@ -541,7 +479,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the second
 	 */
-	@getter ("second")
+	@Override
 	public int getSecond() { return internal.get(SECOND_OF_MINUTE); }
 
 	/**
@@ -549,7 +487,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the day week
 	 */
-	@getter ("day_of_week")
+	@Override
 	public int getDayWeek() { return internal.get(DAY_OF_WEEK); }
 
 	/**
@@ -557,7 +495,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the checks if is leap
 	 */
-	@getter ("leap")
+	@Override
 	public boolean getIsLeap() { return LocalDate.from(internal).isLeapYear(); }
 
 	/**
@@ -565,7 +503,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the week year
 	 */
-	@getter ("week_of_year")
+	@Override
 	public int getWeekYear() { return internal.get(WeekFields.ISO.weekOfYear()); }
 
 	/**
@@ -573,7 +511,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the days month
 	 */
-	@getter ("days_in_month")
+	@Override
 	public int getDaysMonth() { return LocalDate.from(internal).lengthOfMonth(); }
 
 	/**
@@ -581,7 +519,7 @@ public class GamaDate implements Temporal, IDate {
 	 *
 	 * @return the days in year
 	 */
-	@getter ("days_in_year")
+	@Override
 	public int getDaysInYear() { return LocalDate.from(internal).lengthOfYear(); }
 
 	/**

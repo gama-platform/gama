@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaObjFile.java, in gama.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaObjFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,7 +20,8 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -109,7 +109,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName) throws GamaRuntimeException {
-		this(scope, pathName, (GamaPair<Double, GamaPoint>) null);
+		this(scope, pathName, (GamaPair<Double, IPoint>) null);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					value = "file f <- obj_file(\"file.obj\", 90.0::{-1,0,0});",
 					isExecutable = false) })
 
-	public GamaObjFile(final IScope scope, final String pathName, final GamaPair<Double, GamaPoint> initRotation)
+	public GamaObjFile(final IScope scope, final String pathName, final GamaPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		this(scope, pathName, pathName.replace(".obj", ".mtl"), initRotation);
 	}
@@ -175,7 +175,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName, final String mtlPath,
-			final GamaPair<Double, GamaPoint> initRotation) {
+			final GamaPair<Double, IPoint> initRotation) {
 		super(scope, pathName, initRotation);
 		if (mtlPath != null) {
 			this.mtlPath = FileUtils.constructAbsoluteFilePath(scope, mtlPath, false);
@@ -358,7 +358,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 		setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
 		final IList<IShape> vertices = GamaListFactory.create(Types.POINT);
 		for (final double[] coords : setOfVertex) {
-			final GamaPoint pt = new GamaPoint(coords[0], -coords[1], coords[2]);
+			final IPoint pt = GamaPointFactory.create(coords[0], -coords[1], coords[2]);
 			vertices.add(pt);
 		}
 		for (final int[] vertexRefs : faces) {

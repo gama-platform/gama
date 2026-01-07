@@ -24,7 +24,8 @@ import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.IModel;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
@@ -418,8 +419,8 @@ public class Cast {
 	 *            the copy
 	 * @return the gama point
 	 */
-	public static GamaPoint asPoint(final IScope scope, final Object val, final boolean copy) {
-		GamaPoint result = GamaPointType.staticCast(scope, val, copy);
+	public static IPoint asPoint(final IScope scope, final Object val, final boolean copy) {
+		IPoint result = GamaPointType.staticCast(scope, val, copy);
 		return result == null ? null : result;
 	}
 
@@ -432,7 +433,7 @@ public class Cast {
 	 *            the val
 	 * @return the gama point
 	 */
-	public static GamaPoint asPoint(final IScope scope, final Object val) {
+	public static IPoint asPoint(final IScope scope, final Object val) {
 		return asPoint(scope, val, false);
 	}
 
@@ -614,7 +615,7 @@ public class Cast {
 			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.\nIf run in parallel, some exception can happen in case the expression uses a random number generator that doesn't support parallel execution like mersenne.",
 			see = { IKeyword.MATRIX, "as_matrix" })
 	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
-	public static IMatrix parallel_matrix_with(final IScope scope, final GamaPoint size, final IExpression init) {
+	public static IMatrix parallel_matrix_with(final IScope scope, final IPoint size, final IExpression init) {
 		if (size == null) throw GamaRuntimeException.error("A nil size is not allowed for matrices", scope);
 		return GamaMatrixType.with(scope, init, size, true);
 	}
@@ -641,12 +642,12 @@ public class Cast {
 			see = { IKeyword.MATRIX, "as_matrix" })
 	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
 	@test ("{2,2} matrix_with (p: p.x + p.y) = matrix([0.0, 1.0],[1.0,2.0])")
-	public static IMatrix matrix_with(final IScope scope, final String eachName, final GamaPoint size,
+	public static IMatrix matrix_with(final IScope scope, final String eachName, final IPoint size,
 			final IExpression init) {
-		if (init == null || size == null || size.x <= 0 || size.y <= 0)
+		if (init == null || size == null || size.getX() <= 0 || size.getY() <= 0)
 			return new GamaObjectMatrix(0, 0, Types.NO_TYPE);
-		final int cols = (int) size.x;
-		final int rows = (int) size.y;
+		final int cols = (int) size.getX();
+		final int rows = (int) size.getY();
 		int type = init.getGamlType().id();
 		IMatrix result = switch (type) {
 			case IType.FLOAT -> new GamaFloatMatrix(cols, rows);
@@ -670,7 +671,7 @@ public class Cast {
 				yield result;
 			}
 		};
-		GamaPoint each = new GamaPoint();
+		IPoint each = GamaPointFactory.create();
 		scope.setEach(eachName, each);
 		for (int x = 0; x < cols; x++) {
 			for (int y = 0; y < rows; y++) {
@@ -799,7 +800,7 @@ public class Cast {
 			see = { IKeyword.MATRIX })
 	@test ("as_matrix('a', {2,3}) = matrix(['a','a','a'],['a','a','a'])")
 	@test ("as_matrix(1.0, {2,2}) = matrix([1.0,1.0],[1.0,1.0])")
-	public static IMatrix asMatrix(final IScope scope, final Object val, final GamaPoint size)
+	public static IMatrix asMatrix(final IScope scope, final Object val, final IPoint size)
 			throws GamaRuntimeException {
 		return GamaMatrixType.staticCast(scope, val, size, Types.NO_TYPE, false);
 	}

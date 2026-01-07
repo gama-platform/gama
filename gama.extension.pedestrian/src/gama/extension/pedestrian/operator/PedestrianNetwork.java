@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -213,7 +213,7 @@ public class PedestrianNetwork {
 
 		IShape areaTmp = SpatialTransformations.reduced_by(scope, area, valDistForOpenArea);
 		if (areaTmp != null) {
-			List<GamaPoint> pts = GamaListFactory.create(Types.GEOMETRY);
+			List<IPoint> pts = GamaListFactory.create(Types.GEOMETRY);
 			for (IShape g : areaTmp.getGeometries()) {
 				if (g == null || g.getArea() == 0) { continue; }
 				long nbPoints = Math.round(g.getArea() * valDensityOpenArea);
@@ -226,7 +226,7 @@ public class PedestrianNetwork {
 					for (IShape sq : squares) { pts.add(sq.getCentroid()); }
 				}
 			}
-			for (GamaPoint pt : pts) {
+			for (IPoint pt : pts) {
 				area = SpatialOperators.minus(scope, area, SpatialTransformations.enlarged_by(scope, pt, 0.01, 5));
 			}
 		}

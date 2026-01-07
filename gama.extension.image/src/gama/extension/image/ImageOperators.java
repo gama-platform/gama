@@ -41,7 +41,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.ITopLevelAgent;
 import gama.core.kernel.root.PlatformAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
@@ -153,7 +153,7 @@ public class ImageOperators implements ImageConstants {
 			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final IAgent exp, final String displayName,
-			final GamaPoint customDimensions) {
+			final IPoint customDimensions) {
 		if (exp == null) return null;
 		ITopLevelAgent agentWithOutputs;
 		if (exp instanceof ITopLevelAgent top) {
@@ -631,7 +631,7 @@ public class ImageOperators implements ImageConstants {
 		Graphics2D g = result.createGraphics();
 		g.drawImage(image, 0, 0, null);
 		g.setComposite(AlphaComposite.SrcAtop.derive(Math.min(1f, Math.max((float) ratio, 0f))));
-		g.setColor(color.getAWTColor());
+		g.setColor(IColor.toAWTColor(color));
 		g.fillRect(0, 0, w, h);
 		g.dispose();
 		result.setId(image.getId() + "tinted" + color + "|" + ratio);
@@ -848,7 +848,7 @@ public class ImageOperators implements ImageConstants {
 	public static GamaImage image(final int w, final int h, final IColor color) {
 		GamaImage gi = GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = gi.createGraphics();
-		g.setColor(color.getAWTColor());
+		g.setColor(IColor.toAWTColor(color));
 		g.fillRect(0, 0, w, h);
 		g.dispose();
 		return gi;

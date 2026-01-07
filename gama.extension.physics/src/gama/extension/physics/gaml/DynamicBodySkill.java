@@ -1,16 +1,15 @@
 /*******************************************************************************************************
  *
- * DynamicBodySkill.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DynamicBodySkill.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.physics.gaml;
 
-import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.GamlAnnotations.action;
 import gama.annotations.precompiler.GamlAnnotations.arg;
 import gama.annotations.precompiler.GamlAnnotations.doc;
@@ -19,8 +18,10 @@ import gama.annotations.precompiler.GamlAnnotations.setter;
 import gama.annotations.precompiler.GamlAnnotations.skill;
 import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
+import gama.annotations.precompiler.IConcept;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
@@ -76,9 +77,9 @@ public class DynamicBodySkill extends StaticBodySkill {
 	 * @return the velocity
 	 */
 	@getter (VELOCITY)
-	public GamaPoint getVelocity(final IAgent a) {
+	public IPoint getVelocity(final IAgent a) {
 		IBody body = getBody(a);
-		if (body == null) return new GamaPoint();
+		if (body == null) return GamaPointFactory.create();
 		return body.getLinearVelocity(null);
 	}
 
@@ -91,7 +92,7 @@ public class DynamicBodySkill extends StaticBodySkill {
 	 *            the velocity
 	 */
 	@setter (VELOCITY)
-	public void setVelocity(final IAgent a, final GamaPoint velocity) {
+	public void setVelocity(final IAgent a, final IPoint velocity) {
 		IBody body = getBody(a);
 		if (body == null) return;
 		body.setLinearVelocity(velocity);
@@ -208,10 +209,10 @@ public class DynamicBodySkill extends StaticBodySkill {
 	 * @return the angular velocity
 	 */
 	@getter (ANGULAR_VELOCITY)
-	public GamaPoint getAngularVelocity(final IAgent a) {
+	public IPoint getAngularVelocity(final IAgent a) {
 		IBody body = getBody(a);
-		if (body == null) return new GamaPoint();
-		return body.getAngularVelocity(new GamaPoint());
+		if (body == null) return GamaPointFactory.create();
+		return body.getAngularVelocity(GamaPointFactory.create());
 	}
 
 	/**
@@ -223,7 +224,7 @@ public class DynamicBodySkill extends StaticBodySkill {
 	 *            the angular velocity
 	 */
 	@setter (ANGULAR_VELOCITY)
-	public void setAngularVelocity(final IAgent a, final GamaPoint angularVelocity) {
+	public void setAngularVelocity(final IAgent a, final IPoint angularVelocity) {
 		IBody body = getBody(a);
 		if (body == null) return;
 		body.setAngularVelocity(angularVelocity);
@@ -267,13 +268,13 @@ public class DynamicBodySkill extends StaticBodySkill {
 			body.setAngularVelocity(null);
 			return this;
 		}
-		GamaPoint impulse = Cast.asPoint(scope, scope.getArg(IMPULSE, IType.POINT));
+		IPoint impulse = Cast.asPoint(scope, scope.getArg(IMPULSE, IType.POINT));
 		if (impulse != null) { body.applyImpulse(impulse); }
 
-		GamaPoint force = Cast.asPoint(scope, scope.getArg(FORCE, IType.POINT));
+		IPoint force = Cast.asPoint(scope, scope.getArg(FORCE, IType.POINT));
 		if (force != null) { body.applyForce(force); }
 
-		GamaPoint torque = Cast.asPoint(scope, scope.getArg(TORQUE, IType.POINT));
+		IPoint torque = Cast.asPoint(scope, scope.getArg(TORQUE, IType.POINT));
 		if (torque != null) { body.applyTorque(torque); }
 
 		return this;

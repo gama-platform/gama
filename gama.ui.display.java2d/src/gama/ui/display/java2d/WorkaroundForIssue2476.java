@@ -40,7 +40,7 @@ public class WorkaroundForIssue2476 {
 	 */
 	private static void setMousePosition(final IDisplaySurface surface, final int x, final int y) {
 		surface.setMousePosition(x, y);
-		// GAMA.getGui().setMouseLocationInDisplay(new GamaPoint(x, y));
+		// GAMA.getGui().setMouseLocationInDisplay(GamaPointFactory.create(x, y));
 		GAMA.getGui().setMouseLocationInDisplay(surface.getWindowCoordinates());
 		GAMA.getGui().setMouseLocationInModel(surface.getModelCoordinates());
 	}

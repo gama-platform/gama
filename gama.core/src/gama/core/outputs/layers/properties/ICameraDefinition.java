@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * ICameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ICameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +15,8 @@ import java.util.List;
 import gama.annotations.precompiler.GamlAnnotations.constant;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.gaml.interfaces.INamed;
 
@@ -89,14 +91,14 @@ public interface ICameraDefinition extends INamed {
 	 *
 	 * @return the location
 	 */
-	GamaPoint getLocation();
+	IPoint getLocation();
 
 	/**
 	 * Gets the target.
 	 *
 	 * @return the target
 	 */
-	GamaPoint getTarget();
+	IPoint getTarget();
 
 	/**
 	 * Gets the lens.
@@ -127,7 +129,7 @@ public interface ICameraDefinition extends INamed {
 	 *            the point
 	 * @return true, if successful
 	 */
-	boolean setLocation(GamaPoint point);
+	boolean setLocation(IPoint point);
 
 	/**
 	 * Sets the target.
@@ -136,7 +138,7 @@ public interface ICameraDefinition extends INamed {
 	 *            the point
 	 * @return true, if successful
 	 */
-	boolean setTarget(GamaPoint point);
+	boolean setTarget(IPoint point);
 
 	/**
 	 * Sets the lens.
@@ -190,21 +192,28 @@ public interface ICameraDefinition extends INamed {
 	 *            the dimension on the z axis > 0
 	 * @return the gama point
 	 */
-	default GamaPoint computeLocation(final String pos, final GamaPoint target, final double maxX, final double maxY,
+	default IPoint computeLocation(final String pos, final IPoint target, final double maxX, final double maxY,
 			final double maxZ) {
+		double tx = target.getX();
+		double ty = target.getY();
 		return switch (pos) {
-			case from_above -> new GamaPoint(target.x, target.y, maxZ);
-			case from_left -> new GamaPoint(target.x - maxX, target.y, 0);
-			case from_up_left -> new GamaPoint(target.x - maxX, target.y, maxZ);
-			case from_right -> new GamaPoint(target.x + maxX, target.y - maxY / 1000, 0);
-			case from_up_right -> new GamaPoint(target.x + maxX, target.y - maxY / 1000, maxZ);
-			case from_front -> new GamaPoint(target.x, target.y - maxY, 0);
-			case from_up_front -> new GamaPoint(target.x, target.y - maxY, maxZ);
-			case isometric -> new GamaPoint(target.x + maxZ, -maxZ + target.y, maxZ / 1.2);
-			default -> new GamaPoint(target.x, target.y, maxZ); // FROM_ABOVE
+			case from_above -> GamaPointFactory.create(tx, ty, maxZ);
+			case from_left -> GamaPointFactory.create(tx - maxX, ty, 0);
+			case from_up_left -> GamaPointFactory.create(tx - maxX, ty, maxZ);
+			case from_right -> GamaPointFactory.create(tx + maxX, ty - maxY / 1000, 0);
+			case from_up_right -> GamaPointFactory.create(tx + maxX, ty - maxY / 1000, maxZ);
+			case from_front -> GamaPointFactory.create(tx, ty - maxY, 0);
+			case from_up_front -> GamaPointFactory.create(tx, ty - maxY, maxZ);
+			case isometric -> GamaPointFactory.create(tx + maxZ, -maxZ + ty, maxZ / 1.2);
+			default -> GamaPointFactory.create(tx, ty, maxZ); // FROM_ABOVE
 		};
 	}
 
+	/**
+	 * Checks if is dynamic.
+	 *
+	 * @return the boolean
+	 */
 	Boolean isDynamic();
 
 }

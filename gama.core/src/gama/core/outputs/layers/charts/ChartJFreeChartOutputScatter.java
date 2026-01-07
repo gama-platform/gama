@@ -56,6 +56,7 @@ import org.jfree.data.xy.XYIntervalSeriesCollection;
 import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 import gama.gaml.operators.Cast;
 
@@ -310,7 +311,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			xy.setUseFillPaint(false);
 			// ((XYShapeRenderer) newr).setDrawOutlines(true);
 		}
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor().getAWTColor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 		// DEBUG.OUT("Changing series stroke to " + myserie.getLineThickness().value(scope));
 		newr.setSeriesStroke(0,
 				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
@@ -467,12 +468,12 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 * @return the number axis
 	 */
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis) {
-		Color ac = axesColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
 		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
 		axis.setLabelFont(getLabelFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			axis.setLabelPaint(tc);
 			axis.setTickLabelPaint(tc);
 		}
@@ -480,7 +481,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		axis.setLabelFont(getLabelFont());
 		axis.setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			axis.setLabelPaint(tc);
 			axis.setTickLabelPaint(tc);
 		}
@@ -552,7 +553,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			}
 
 		}
-		Color tc = tickColor == null ? null : tickColor.getAWTColor();
+		Color tc = IColor.toAWTColor(tickColor);
 		if (this.getXTickLineVisible(scope)) {
 			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
 			if (getXTickUnit(scope) > 0) {
@@ -754,7 +755,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-		Color ac = axesColor.getAWTColor();
+		Color ac = IColor.toAWTColor(axesColor);
 		final XYPlot pp = (XYPlot) chart.getPlot();
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
@@ -768,7 +769,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 		}

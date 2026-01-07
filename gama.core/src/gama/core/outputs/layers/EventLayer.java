@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * EventLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * EventLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,8 @@ import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -125,8 +126,8 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 
 	// We explicitly translate by the origin of the surface
 	@Override
-	public GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final IDisplaySurface g) {
-		if (xOnScreen == -1 && yOnScreen == -1) return new GamaPoint(0, 0);
+	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final IDisplaySurface g) {
+		if (xOnScreen == -1 && yOnScreen == -1) return GamaPointFactory.create();
 		return g.getModelCoordinates();
 	}
 
@@ -189,7 +190,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 		if (agent == null) return;
 		final IExecutable executer = ((EventLayerStatement) definition).getExecutable(executionScope);
 		if (executer == null) return;
-		final GamaPoint pp = getModelCoordinatesFrom(x, y, surface);
+		final IPoint pp = getModelCoordinatesFrom(x, y, surface);
 		if (pp == null) return;
 		// DEBUG.OUT("Coordinates in env (before test)" + pp);
 		// if (pp.getX() < 0 || pp.getY() < 0 || pp.getX() >= surface.getEnvWidth()

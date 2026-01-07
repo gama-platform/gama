@@ -13,7 +13,7 @@ package gama.ui.display.opengl.scene.resources;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.util.IColor;
 import gama.core.util.file.GamaGeometryFile;
 import gama.ui.display.opengl.OpenGL;
@@ -44,21 +44,24 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 		final AxisAngle rotation = object.getAttributes().getRotation();
 		final AxisAngle initRotation = object.getObject().getInitRotation();
 		if (rotation == null && initRotation == null) return false;
-		final GamaPoint loc = object.getAttributes().getLocation();
+		final IPoint loc = object.getAttributes().getLocation();
+		double lx = loc.getX();
+		double ly = loc.getY();
+		double lz = loc.getZ();
 		try {
-			gl.translateBy(loc.x, -loc.y, loc.z);
+			gl.translateBy(lx, -ly, lz);
 			if (rotation != null) {
-				final GamaPoint axis = rotation.getAxis();
+				final IPoint axis = rotation.getAxis();
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+				gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			}
 			if (initRotation != null) {
-				final GamaPoint initAxis = initRotation.axis;
+				final IPoint initAxis = initRotation.axis;
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-initRotation.angle, initAxis.x, initAxis.y, initAxis.z);
+				gl.rotateBy(-initRotation.angle, initAxis.getX(), initAxis.getY(), initAxis.getZ());
 			}
 		} finally {
-			gl.translateBy(-loc.x, loc.y, -loc.z);
+			gl.translateBy(-lx, ly, -lz);
 		}
 		return true;
 	}

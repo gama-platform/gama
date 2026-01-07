@@ -165,7 +165,7 @@ public class GamaShape implements IShape {
 	 */
 	public GamaShape withScaling(final Double scaling) {
 		if (scaling != null && !isPoint()) {
-			final GamaPoint previous = getLocation();
+			final IPoint previous = getLocation();
 			geometry.apply(Scaling3D.of(scaling));
 			setLocation(previous);
 			if (is3D()) { setDepth(getDepth() * scaling); }
@@ -187,7 +187,7 @@ public class GamaShape implements IShape {
 	public GamaShape withScaling(final Scaling3D bounds, final boolean isBoundingBox) {
 		if (bounds != null && !isPoint()) {
 			final IEnvelope env = getEnvelope();
-			final GamaPoint previous = getLocation();
+			final IPoint previous = getLocation();
 			if (isBoundingBox) {
 				geometry.apply(bounds.asBoundingBoxIn(env));
 			} else {
@@ -208,7 +208,7 @@ public class GamaShape implements IShape {
 	 * @return the gama shape
 	 * @date 17 sept. 2023
 	 */
-	public GamaShape withLocation(final GamaPoint newLocation) {
+	public GamaShape withLocation(final IPoint newLocation) {
 		if (newLocation != null) { setLocation(newLocation); }
 		return this;
 	}
@@ -225,10 +225,10 @@ public class GamaShape implements IShape {
 	public GamaShape withRotation(final AxisAngle rotation) {
 		if (!isPoint() && rotation != null) {
 			Double normalZ = null;
-			if (is3D()) { normalZ = getContourCoordinates(geometry).getNormal(true).z; }
+			if (is3D()) { normalZ = getContourCoordinates(geometry).getNormal(true).getZ(); }
 			rotate(geometry, getLocation(), rotation);
 			if (normalZ != null) {
-				final Double normalZ2 = getContourCoordinates(geometry).getNormal(true).z;
+				final Double normalZ2 = getContourCoordinates(geometry).getNormal(true).getZ();
 				if (normalZ > 0 && normalZ2 < 0) { setDepth(-getDepth()); }
 			}
 		}
@@ -309,15 +309,15 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public GamaPoint getLocation() {
-		if (isPoint()) return (GamaPoint) geometry.getCoordinate();
+	public IPoint getLocation() {
+		if (isPoint()) return (IPoint) geometry.getCoordinate();
 		return getContourCoordinates(geometry).getCenter();
 	}
 
 	@Override
-	public GamaPoint setLocation(final GamaPoint l) {
+	public IPoint setLocation(final IPoint l) {
 		if (isPoint()) {
-			geometry = GEOMETRY_FACTORY.createPoint(l);
+			geometry = GEOMETRY_FACTORY.createPoint(l.toCoordinate());
 		} else {
 			translate(geometry, getLocation(), l);
 		}
@@ -334,7 +334,7 @@ public class GamaShape implements IShape {
 	 * @return the gama shape
 	 */
 	@Override
-	public GamaShape translatedTo(final IScope scope, final GamaPoint target) {
+	public GamaShape translatedTo(final IScope scope, final IPoint target) {
 		final GamaShape result = copy(scope);
 		result.setLocation(target);
 		return result;
@@ -395,12 +395,12 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public GamaPoint getCentroid() {
+	public IPoint getCentroid() {
 		if (geometry == null) return null;
 		if (isPoint()) return getLocation();
 		final Coordinate c = geometry.getCentroid().getCoordinate();
 		c.z = computeAverageZOrdinate();
-		return (GamaPoint) c;
+		return (IPoint) c;
 	}
 
 	@Override
@@ -455,7 +455,7 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public IList<GamaPoint> getPoints() {
+	public IList<IPoint> getPoints() {
 		if (getInnerGeometry() == null) return create(POINT);
 		return GamaListFactory.wrap(POINT, GeometryUtils.getPointsOf(getInnerGeometry()));
 	}
@@ -557,7 +557,7 @@ public class GamaShape implements IShape {
 	}
 
 	@Override
-	public double euclidianDistanceTo(final GamaPoint g) {
+	public double euclidianDistanceTo(final IPoint g) {
 		// WARNING Only 2D now
 		if (isPoint()) return g.euclidianDistanceTo(getLocation());
 		return getInnerGeometry().distance(g.getInnerGeometry());

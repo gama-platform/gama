@@ -22,7 +22,7 @@ import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -214,7 +214,7 @@ public class MatchStatement extends AbstractStatementSequence {
 		public void acceptValue() {
 			super.acceptValue();
 			if (constantValue != null && !(constantValue instanceof IContainer)
-					&& !(constantValue instanceof GamaPoint)) {
+					&& !(constantValue instanceof IPoint )) {
 				constantValue = Types.LIST.cast(null, constantValue, null, false);
 			}
 		}
@@ -262,9 +262,9 @@ public class MatchStatement extends AbstractStatementSequence {
 			if (!(switchValue instanceof Number)) throw GamaRuntimeException
 					.error("Can only match if a number is in an interval. " + switchValue + " is not a number", scope);
 			Object val = value.value(scope);
-			if (!(val instanceof GamaPoint)) { val = Cast.asPoint(scope, val); }
-			final double min = ((GamaPoint) val).getX();
-			final double max = ((GamaPoint) val).getY();
+			if (!(val instanceof IPoint )) { val = Cast.asPoint(scope, val); }
+			final double min = ((IPoint ) val).getX();
+			final double max = ((IPoint ) val).getY();
 			final double in = ((Number) switchValue).doubleValue();
 			return in >= min && in <= max;
 		}
@@ -275,7 +275,7 @@ public class MatchStatement extends AbstractStatementSequence {
 		@Override
 		public void acceptValue() {
 			super.acceptValue();
-			if (constantValue != null && !(constantValue instanceof GamaPoint)) {
+			if (constantValue != null && !(constantValue instanceof IPoint )) {
 				constantValue = Types.POINT.cast(null, constantValue, null, false);
 			}
 

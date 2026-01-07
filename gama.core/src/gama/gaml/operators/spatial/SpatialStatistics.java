@@ -28,7 +28,7 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.annotations.precompiler.Reason;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.filter.IAgentFilter;
 import gama.core.metamodel.topology.filter.In;
@@ -334,7 +334,7 @@ public class SpatialStatistics {
 			double sumNull = 0;
 			int nbNull = 0;
 			for (final Object obj : points.keySet()) {
-				final GamaPoint pt = Cast.asPoint(scope, obj);
+				final IPoint pt = Cast.asPoint(scope, obj);
 				final double dist = scope.getTopology().distanceBetween(scope, geom, pt);
 				if (dist == 0) {
 					nbNull++;

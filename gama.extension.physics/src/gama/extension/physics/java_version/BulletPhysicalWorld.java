@@ -27,7 +27,7 @@ import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSo
 import com.google.common.collect.Multimap;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;
@@ -127,7 +127,7 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	}
 
 	@Override
-	public void setGravity(final GamaPoint g) {
+	public void setGravity(final IPoint g) {
 		if (world != null) { world.setGravity(toVector(g)); }
 	}
 

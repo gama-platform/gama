@@ -20,7 +20,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
 import gama.annotations.precompiler.ITypeProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.concurrent.GamaExecutorService;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -99,7 +99,7 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 *            the copy
 	 * @return the i matrix
 	 */
-	IMatrix<?> matrixValue(IScope scope, IType<?> contentType, GamaPoint size, boolean copy);
+	IMatrix<?> matrixValue(IScope scope, IType<?> contentType, IPoint  size, boolean copy);
 
 	/**
 	 * Map value.

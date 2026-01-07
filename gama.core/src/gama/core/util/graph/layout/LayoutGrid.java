@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * LayoutGrid.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * LayoutGrid.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.util.graph.layout;
 
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.util.graph.IGraph;
@@ -73,7 +72,7 @@ public class LayoutGrid {
 	public void applyLayout(final IScope scope) {
 
 		IList<IShape> places = null;
-		IMap<IShape, GamaPoint> locs = GamaMapFactory.create();
+		IMap<IShape, IPoint> locs = GamaMapFactory.create();
 		do {
 			places = SpatialTransformations.toSquares(scope, envelopeGeometry,
 					Maths.round(graph.getVertices().size() * coeffSq), false);
@@ -149,9 +148,9 @@ public class LayoutGrid {
 				neigh2.removeAll(close);
 				neigh2.removeAll(open);
 				if (!neigh2.isEmpty()) {
-					final IList<GamaPoint> pts = GamaListFactory.create(Types.POINT);
+					final IList<IPoint> pts = GamaListFactory.create(Types.POINT);
 					for (final IShape n : neigh2) { pts.add(locs.get(n)); }
-					final GamaPoint targetLoc = (GamaPoint) Containers.opMean(scope, pts);
+					final IPoint targetLoc = (IPoint) Containers.opMean(scope, pts);
 					center = places.size() > 0 ? SpatialQueries.closest_to(scope, places, targetLoc.getLocation())
 							: locs.get(nV);
 				} else {

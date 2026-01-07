@@ -13,7 +13,8 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.interfaces.IGraphics;
 import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -178,11 +179,11 @@ public class ImageLayer extends AbstractLayer {
 
 		final IImageProvider actualProvider = buildImage(scope);
 		if (env != null) {
-			final GamaPoint loc;
+			final IPoint loc;
 			if (dg.is2D()) {
-				loc = new GamaPoint(env.getMinX(), env.getMinY());
+				loc = GamaPointFactory.create(env.getMinX(), env.getMinY());
 			} else {
-				loc = new GamaPoint(env.getMinX() + env.getWidth() / 2, env.getMinY() + env.getHeight() / 2);
+				loc = GamaPointFactory.create(env.getMinX() + env.getWidth() / 2, env.getMinY() + env.getHeight() / 2);
 			}
 			attributes.setLocation(loc);
 			attributes.setSize(Scaling3D.of(env.getWidth(), env.getHeight(), 0));

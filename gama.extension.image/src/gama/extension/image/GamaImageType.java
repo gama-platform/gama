@@ -24,7 +24,7 @@ import gama.annotations.precompiler.GamlAnnotations.example;
 import gama.annotations.precompiler.GamlAnnotations.type;
 import gama.annotations.precompiler.GamlAnnotations.usage;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -129,7 +129,7 @@ public class GamaImageType extends GamaType<GamaImage> {
 		if (obj instanceof Image im) return ImageHelper.copyToOptimalImage(im);
 		if (obj instanceof GamaSVGFile g) return GamaImage.from(g.getImage(scope, true), true, g.getOriginalPath());
 		if (obj instanceof GamaImageFile f) return GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath());
-		if (obj instanceof GamaPoint p) return ImageOperators.image((int) p.getX(), (int) p.getY());
+		if (obj instanceof IPoint p) return ImageOperators.image((int) p.getX(), (int) p.getY());
 		if (obj instanceof String s) return staticCast(scope, GamaFileType.createFile(scope, s, false, null), false);
 		if (obj instanceof GamaField f) return GamaImage.from(scope, f);
 		if (obj instanceof ISpecies s && s.isGrid())

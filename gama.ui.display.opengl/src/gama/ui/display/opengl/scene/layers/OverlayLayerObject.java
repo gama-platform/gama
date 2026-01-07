@@ -3,7 +3,7 @@
  * OverlayLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,8 @@ import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.ILayer;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.layers.OverlayLayerData;
 import gama.core.runtime.IScope;
@@ -72,26 +73,32 @@ public class OverlayLayerObject extends LayerObject {
 	 */
 	@Override
 	protected void addFrame(final OpenGL gl) {
-		GamaPoint size = new GamaPoint(renderer.getEnvWidth(), renderer.getEnvHeight());
+		IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
 		final IScope scope = renderer.getSurface().getScope();
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
 		OverlayLayerData d = (OverlayLayerData) layer.getData();
-		if (expr != null) {
-			size = Cast.asPoint(scope, expr.value(scope));
-			if (size.x <= 1) { size.x *= renderer.getEnvWidth(); }
-			if (size.y <= 1) { size.y *= renderer.getEnvHeight(); }
+		if (expr != null) { size = Cast.asPoint(scope, expr.value(scope)); }
+		double sx = size.getX();
+		double sy = size.getY();
+		if (sx <= 1) {
+			sx *= renderer.getEnvWidth();
+			size.setX(sx);
+		}
+		if (sy <= 1) {
+			sy *= renderer.getEnvHeight();
+			size.setY(sy);
 		}
 		gl.pushMatrix();
 		boolean previous = gl.setObjectWireframe(false);
 		try {
 			gl.setCurrentColor(d.getBackgroundColor(scope), 1 - layer.getData().getTransparency(scope));
 			if (d.isRounded()) {
-				gl.translateBy(-size.x / 2, -size.y / 2, 0);
+				gl.translateBy(-sx / 2, -sy / 2, 0);
 				gl.scaleBy(1, 1, 1);
-				drawRoundedRectangle(gl.getGL(), size.x / 2, -size.y / 2, size.x, size.y, size.x / 20, 40);
+				drawRoundedRectangle(gl.getGL(), sx / 2, -sy / 2, sx, sy, sx / 20, 40);
 			} else {
-				gl.translateBy(size.x / 2, -size.y / 2, 0);
-				gl.scaleBy(size.x, size.y, 1);
+				gl.translateBy(sx / 2, -sy / 2, 0);
+				gl.scaleBy(sx, sy, 1);
 				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
 			}
 		} finally {

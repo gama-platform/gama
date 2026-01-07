@@ -18,7 +18,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.IContainer;
@@ -73,8 +73,8 @@ public class GamaListType extends GamaContainerType<IList> {
 			case Collection coll -> GamaListFactory.create(scope, contentsType, coll);
 			case Color c -> GamaListFactory.create(scope, contentsType,
 					new int[] { c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() });
-			case GamaPoint point -> GamaListFactory.create(scope, contentsType,
-					new double[] { point.x, point.y, point.z });
+			case IPoint point -> GamaListFactory.create(scope, contentsType,
+					new double[] { point.getX(), point.getY(), point.getZ() });
 			case String s -> GamaListFactory.create(scope, contentsType, s.toCharArray());
 			default -> GamaListFactory.create(scope, contentsType, obj);
 		};

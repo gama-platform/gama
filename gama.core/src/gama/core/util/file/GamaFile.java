@@ -20,7 +20,7 @@ import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.FlushBufferException;
@@ -591,7 +591,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	}
 
 	@Override
-	public IMatrix<?> matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	public IMatrix<?> matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		return _matrixValue(scope, contentsType, preferredSize, copy);
 	}
@@ -611,7 +611,7 @@ public abstract class GamaFile<Container extends IAddressableContainer & IModifi
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint  preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
 		return getBuffer().matrixValue(scope, contentsType, preferredSize, copy);

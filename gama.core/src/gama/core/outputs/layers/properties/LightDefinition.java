@@ -12,7 +12,8 @@ package gama.core.outputs.layers.properties;
 
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -31,7 +32,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	}
 
 	/** The location. */
-	final Attribute<GamaPoint> locationAttribute;
+	final Attribute<IPoint> locationAttribute;
 
 	/** The type attribute. */
 	final Attribute<String> typeAttribute;
@@ -40,7 +41,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	final Attribute<IColor> intensityAttribute;
 
 	/** The target. */
-	final Attribute<GamaPoint> directionAttribute;
+	final Attribute<IPoint> directionAttribute;
 
 	/** The angle attribute. */
 	Attribute<Double> angleAttribute;
@@ -99,7 +100,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	public Boolean isDrawing() { return drawAttribute.get(); }
 
 	@Override
-	public GamaPoint getDirection() { return directionAttribute.get(); }
+	public IPoint getDirection() { return directionAttribute.get(); }
 
 	@Override
 	public String getType() { return typeAttribute.get(); }
@@ -125,7 +126,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	public void setId(final int id) { this.id = id; }
 
 	@Override
-	public GamaPoint getLocation() { return locationAttribute.get(); }
+	public IPoint getLocation() { return locationAttribute.get(); }
 
 	@Override
 	protected boolean getDefaultDynamicValue() { return true; }

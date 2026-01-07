@@ -45,7 +45,8 @@ import gama.core.common.interfaces.ILayer;
 import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.LayeredDisplayData.Changes;
@@ -58,6 +59,7 @@ import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope.IGraphicsScope;
 import gama.core.runtime.PlatformHelper;
 import gama.core.runtime.concurrent.GeneralSynchronizer;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
@@ -155,7 +157,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		setDoubleBuffered(true);
 		setIgnoreRepaint(true);
 		setLayout(new BorderLayout());
-		setBackground(output.getData().getBackgroundColor().getAWTColor());
+		setBackground(IColor.toAWTColor(output.getData().getBackgroundColor()));
 		isLocked = output.getData().isCameraLocked();
 		setName(output.getName());
 		layerManager = new LayerManager(this, output);
@@ -546,7 +548,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public AWTDisplayGraphics getIGraphics() { return (AWTDisplayGraphics) iGraphics; }
 
 	@Override
-	public GamaPoint getModelCoordinates() {
+	public IPoint getModelCoordinates() {
 		final Point origin = getOrigin();
 		final Point mouse = getMousePosition();
 		if (mouse == null) return null;
@@ -558,13 +560,13 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		}
 		// See Issue #2783: we dont return null but 0,0.
 		// return null;
-		return new GamaPoint();
+		return GamaPointFactory.create();
 	}
 
 	@Override
-	public GamaPoint getWindowCoordinates() {
+	public IPoint getWindowCoordinates() {
 		final Point mouse = getMousePosition();
-		return new GamaPoint(mouse.x, mouse.y);
+		return GamaPointFactory.create(mouse.x, mouse.y);
 	}
 
 	@Override
@@ -672,7 +674,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	@Override
-	public GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
+	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
 			final Point positionInPixels) {
 		final double xScale = sizeInPixels.x / getEnvWidth();
 		final double yScale = sizeInPixels.y / getEnvHeight();
@@ -680,7 +682,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final int yInDisplay = yOnScreen - positionInPixels.y;
 		final double xInModel = xInDisplay / xScale;
 		final double yInModel = yInDisplay / yScale;
-		return new GamaPoint(xInModel, yInModel);
+		return GamaPointFactory.create(xInModel, yInModel);
 	}
 
 	@Override

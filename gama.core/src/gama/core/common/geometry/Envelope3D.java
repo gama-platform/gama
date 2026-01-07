@@ -13,9 +13,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.operators.Comparison;
 import gama.gaml.types.GamaGeometryType;
 
@@ -302,10 +303,9 @@ public class Envelope3D extends Envelope implements IEnvelope {
 	 * @return the centre coordinate of this envelope <code>null</code> if the envelope is null
 	 */
 	@Override
-	public GamaPoint centre() {
+	public Coordinate centre() {
 		if (isNull()) return null;
-		return new GamaPoint((getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0,
-				(getMinZ() + getMaxZ()) / 2.0);
+		return center().toCoordinate();
 	}
 
 	/**
@@ -549,8 +549,8 @@ public class Envelope3D extends Envelope implements IEnvelope {
 	@Override
 	public Polygon toGeometry() {
 		if (isFlat())
-			return (Polygon) GamaGeometryType.buildRectangle(getWidth(), getHeight(), centre()).getInnerGeometry();
-		return (Polygon) GamaGeometryType.buildBox(getWidth(), getHeight(), getDepth(), centre()).getInnerGeometry();
+			return (Polygon) GamaGeometryType.buildRectangle(getWidth(), getHeight(), center()).getInnerGeometry();
+		return (Polygon) GamaGeometryType.buildBox(getWidth(), getHeight(), getDepth(), center()).getInnerGeometry();
 	}
 
 	@Override
@@ -583,6 +583,12 @@ public class Envelope3D extends Envelope implements IEnvelope {
 		source = GamaShapeFactory.createFrom(source).withRotation(rotation).withLocation(source.getLocation());
 		init(source.getEnvelope());
 		return this;
+	}
+
+	@Override
+	public IPoint center() {
+		return GamaPointFactory.create((getMinX() + getMaxX()) / 2.0, (getMinY() + getMaxY()) / 2.0,
+				(getMinZ() + getMaxZ()) / 2.0);
 	}
 
 }

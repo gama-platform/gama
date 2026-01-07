@@ -24,9 +24,10 @@ import java.util.List;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.GamaFont;
@@ -49,7 +50,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public final static String[] LABELS = { "X", "Y", "Z" };
 
 	/** The Constant ANCHORS. */
-	public final static GamaPoint[] ANCHORS = { left_center, top_center, bottom_center };
+	public final static IPoint[] ANCHORS = { left_center, top_center, bottom_center };
 
 	/** The Constant ROTATIONS. */
 	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, 90), new AxisAngle(MINUS_I, 90), null };
@@ -59,10 +60,10 @@ public class AxesLayerObject extends StaticLayerObject.World {
 			{ GamaColorFactory.get("gamared"), GamaColorFactory.get("gamaorange"), GamaColorFactory.get("gamablue") };
 
 	/** The Constant DEFAULT_SCALE. */
-	protected final static GamaPoint DEFAULT_SCALE = new GamaPoint(.15, .15, .15);
+	protected final static IPoint DEFAULT_SCALE = GamaPointFactory.create(.15, .15, .15);
 
 	/** The Constant ORIGIN. */
-	protected final static GamaPoint ORIGIN = new GamaPoint(0, 0, 0);
+	protected final static IPoint ORIGIN = GamaPointFactory.create(0, 0, 0);
 
 	/** The Constant AXES_FONT. */
 	protected final static GamaFont AXES_FONT = new GamaFont("Helvetica", 0, 18);
@@ -71,7 +72,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	final GamaShape arrow;
 
 	/** The dirs. */
-	final GamaPoint[] dirs;
+	final IPoint[] dirs;
 
 	/** The axes. */
 	final GamaShape[] axes = new GamaShape[3];
@@ -88,13 +89,13 @@ public class AxesLayerObject extends StaticLayerObject.World {
 		currentList.scale.setLocation(DEFAULT_SCALE);
 		final double max = renderer.getMaxEnvDim();
 		arrow = (GamaShape) buildCone3D(max / 20, max / 8, ORIGIN);
-		dirs = new GamaPoint[] { new GamaPoint(max / 2, 0, 0), new GamaPoint(0, max / 2, 0),
-				new GamaPoint(0, 0, max / 2) };
+		dirs = new IPoint[] { GamaPointFactory.create(max / 2, 0, 0), GamaPointFactory.create(0, max / 2, 0),
+				GamaPointFactory.create(0, 0, max / 2) };
 		for (int i = 0; i < 3; i++) { axes[i] = (GamaShape) buildLineCylinder(ORIGIN, dirs[i], max / 60); }
 	}
 
 	@Override
-	public void setScale(final GamaPoint s) {
+	public void setScale(final IPoint s) {
 		if (s == null) {
 			currentList.scale.setLocation(DEFAULT_SCALE);
 		} else {
@@ -106,11 +107,11 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public void draw(final OpenGL gl) {
 		boolean previous = gl.setObjectWireframe(false);
 		if (gl.isInRotationMode()) {
-			final GamaPoint pivotPoint = renderer.getCameraTarget();
+			final IPoint pivotPoint = renderer.getCameraTarget();
 			setOffset(pivotPoint.yNegated());
 			final double size = gl.sizeOfRotationElements();
 			final double ratio = size / gl.getMaxEnvDim();
-			setScale(new GamaPoint(ratio, ratio, ratio));
+			setScale(GamaPointFactory.create(ratio, ratio, ratio));
 		} else {
 			setOffset(null);
 			setScale(null);
@@ -122,7 +123,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	@Override
 	public void fillWithObjects(final List<AbstractObject<?, ?>> list) {
 		for (int i = 0; i < 3; i++) {
-			final GamaPoint p = dirs[i];
+			final IPoint p = dirs[i];
 			// build axis
 			addSyntheticObject(list, axes[i], COLORS[i], IShape.Type.LINECYLINDER);
 			// build labels

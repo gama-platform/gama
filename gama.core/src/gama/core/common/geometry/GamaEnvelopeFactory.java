@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
 import gama.core.common.util.PoolUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 
 /**
@@ -30,8 +30,104 @@ public class GamaEnvelopeFactory {
 	private static final PoolUtils.ObjectPool<Envelope3D> POOL =
 			PoolUtils.create("Envelope 3D", true, Envelope3D::new, (from, to) -> to.set(from), null);
 
+	/**
+	 * The Class Immutable.
+	 */
+	static class Immutable extends Envelope3D {
+
+		/**
+		 * Instantiates a new immutable.
+		 *
+		 * @param minX
+		 *            the min X
+		 * @param maxX
+		 *            the max X
+		 * @param minY
+		 *            the min Y
+		 * @param maxY
+		 *            the max Y
+		 */
+		Immutable(final double minX, final double maxX, final double minY, final double maxY) {
+			super.init(minX, maxX, minY, maxY);
+		}
+
+		@Override
+		public void expandToInclude(final IPoint p) {}
+
+		@Override
+		public void dispose() {}
+
+		@Override
+		public void init(final double x1, final double x2, final double y1, final double y2, final double z1,
+				final double z2) {}
+
+		@Override
+		public void init(final Coordinate p1, final Coordinate p2) {}
+
+		@Override
+		public void init(final Coordinate p) {}
+
+		@Override
+		public void init(final Envelope env) {}
+
+		@Override
+		public void init(final IEnvelope env) {}
+
+		@Override
+		IEnvelope set(final IEnvelope env) {
+			return this;
+		}
+
+		@Override
+		public void setToNull() {}
+
+		@Override
+		public void expandToInclude(final Coordinate p) {}
+
+		@Override
+		public void expandBy(final double distance) {}
+
+		@Override
+		public void expandBy(final double deltaX, final double deltaY, final double deltaZ) {}
+
+		@Override
+		public void expandToInclude(final double x, final double y, final double z) {}
+
+		@Override
+		public IEnvelope translate(final double transX, final double transY, final double transZ) {
+			return this;
+		}
+
+		@Override
+		public void expandToInclude(final Envelope other) {}
+
+		@Override
+		public void expandToInclude(final IEnvelope ie) {}
+
+		@Override
+		public IEnvelope rotate(final AxisAngle rotation) {
+			return this;
+		}
+
+		@Override
+		public void init() {}
+
+		@Override
+		public void init(final double x1, final double x2, final double y1, final double y2) {}
+
+		@Override
+		public void expandBy(final double deltaX, final double deltaY) {}
+
+		@Override
+		public void expandToInclude(final double x, final double y) {}
+
+		@Override
+		public void translate(final double transX, final double transY) {}
+
+	}
+
 	/** The Constant EMPTY. */
-	public static final IEnvelope EMPTY = create();
+	public static final IEnvelope EMPTY = new Immutable(0, 0, 0, 0);
 
 	/**
 	 * Creates the.
@@ -105,8 +201,8 @@ public class GamaEnvelopeFactory {
 	 *            the s
 	 * @return the envelope 3 D
 	 */
-	public static IEnvelope of(final GamaPoint s) {
-		return of((Coordinate) s);
+	public static IEnvelope of(final IPoint s) {
+		return of(s.toCoordinate());
 	}
 
 	/**

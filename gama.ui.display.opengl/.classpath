@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="gaml">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="libs/jogl 2.6.0/gluegen-rt.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl 2.6.0/gluegen-rt-natives-linux-amd64.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl 2.6.0/gluegen-rt-natives-macosx-universal.jar"/>
@@ -20,5 +15,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="gaml">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

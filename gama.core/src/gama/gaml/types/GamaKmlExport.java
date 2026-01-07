@@ -39,7 +39,7 @@ import de.micromata.opengis.kml.v_2_2_0.Point;
 import de.micromata.opengis.kml.v_2_2_0.Polygon;
 import de.micromata.opengis.kml.v_2_2_0.Scale;
 import de.micromata.opengis.kml.v_2_2_0.Style;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -109,7 +109,7 @@ public class GamaKmlExport {
 	 * @param daefile
 	 *            the daefile
 	 */
-	public void add3DModel(final IScope scope, final GamaPoint loc, final double orientation, final double scale,
+	public void add3DModel(final IScope scope, final IPoint loc, final double orientation, final double scale,
 			final IDate beginDate, final IDate endDate, final String daefile) {
 		getDefaultFolder().add3DModel(scope, loc, orientation, scale, dateToKml(beginDate), dateToKml(endDate),
 				daefile);
@@ -150,8 +150,7 @@ public class GamaKmlExport {
 	 * @param fillColor
 	 *            Polygon fill color.
 	 */
-	public void defStyle(final String name, final double lineWidth, final IColor lineColor,
-			final IColor fillColor) {
+	public void defStyle(final String name, final double lineWidth, final IColor lineColor, final IColor fillColor) {
 		final Style style = doc.createAndAddStyle().withId(name);
 		style.createAndSetLineStyle().withColor(kmlColor(lineColor)).withWidth(lineWidth);
 		style.createAndSetPolyStyle().withColor(kmlColor(fillColor)).withColorMode(ColorMode.NORMAL);
@@ -323,7 +322,7 @@ public class GamaKmlExport {
 	 * @param styleName
 	 *            the style name
 	 */
-	public void addLabel(final IScope scope, final GamaPoint loc, final IDate beginDate, final IDate endDate,
+	public void addLabel(final IScope scope, final IPoint loc, final IDate beginDate, final IDate endDate,
 			final String name, final String description, final String styleName) {
 		getDefaultFolder().addLabel(scope, loc, dateToKml(beginDate), dateToKml(endDate), name, description, styleName);
 	}
@@ -348,7 +347,7 @@ public class GamaKmlExport {
 	 * @param styleName
 	 *            the style name
 	 */
-	public void addLabel(final IScope scope, final String foldname, final GamaPoint loc, final IDate beginDate,
+	public void addLabel(final IScope scope, final String foldname, final IPoint loc, final IDate beginDate,
 			final IDate endDate, final String name, final String description, final String styleName) {
 		getFolder(foldname).addLabel(scope, loc, dateToKml(beginDate), dateToKml(endDate), name, description,
 				styleName);
@@ -417,16 +416,16 @@ public class GamaKmlExport {
 		 * @param description
 		 *            Description (only displayed on mouse click on the label)
 		 */
-		public void addLabel(final IScope scope, final GamaPoint loc, final String beginDate, final String endDate,
+		public void addLabel(final IScope scope, final IPoint loc, final String beginDate, final String endDate,
 				final String name, final String description, final String styleName) {
 			final Placemark placemark = fold.createAndAddPlacemark().withStyleUrl("#" + styleName);
 			placemark.createAndSetTimeSpan().withBegin(beginDate).withEnd(endDate);
 			final Point ls = placemark.createAndSetPoint();
 			ls.setExtrude(true);
 			ls.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
-			final GamaPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
+			final IPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
 
-			ls.addToCoordinates(locTM.x, locTM.y, locTM.z);
+			ls.addToCoordinates(locTM.getX(), locTM.getY(), locTM.getZ());
 			placemark.setName(name);
 			placemark.setDescription(description);
 		}
@@ -449,18 +448,18 @@ public class GamaKmlExport {
 		 * @param daefile
 		 *            the daefile
 		 */
-		public void add3DModel(final IScope scope, final GamaPoint loc, final double orientation, final double scale,
+		public void add3DModel(final IScope scope, final IPoint loc, final double orientation, final double scale,
 				final String beginDate, final String endDate, final String daefile) {
 
 			final Placemark placemark = fold.createAndAddPlacemark();
 			placemark.createAndSetTimeSpan().withBegin(beginDate).withEnd(endDate);
 			final Model model = placemark.createAndSetModel();
 			model.setAltitudeMode(AltitudeMode.RELATIVE_TO_GROUND);
-			final GamaPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
+			final IPoint locTM = SpatialProjections.transform_CRS(scope, loc, EPSG_4326).getCentroid();
 			final Location locKML = new Location();
-			locKML.setLongitude(locTM.x);
-			locKML.setLatitude(locTM.y);
-			locKML.setAltitude(locTM.z);
+			locKML.setLongitude(locTM.getX());
+			locKML.setLatitude(locTM.getY());
+			locKML.setAltitude(locTM.getZ());
 			model.setLocation(locKML);
 			model.setScale(new Scale().withX(scale).withY(scale).withZ(scale));
 			model.setLink(new Link().withHref(daefile));

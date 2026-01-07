@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * NativeBulletBodyWrapper.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * NativeBulletBodyWrapper.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,8 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaPair;
 import gama.extension.physics.common.AbstractBodyWrapper;
@@ -88,7 +89,7 @@ public class NativeBulletBodyWrapper
 			body.setAngularDamping(previous.getAngularDamping());
 			body.setContactDamping(previous.getContactDamping());
 			body.setLinearDamping(previous.getLinearDamping());
-			GamaPoint pointTransfer = new GamaPoint();
+			IPoint pointTransfer = GamaPointFactory.create();
 			body.setLinearVelocity(toVector(previous.getLinearVelocity(pointTransfer)));
 			body.setAngularVelocity(toVector(previous.getAngularVelocity(pointTransfer)));
 		}
@@ -144,34 +145,34 @@ public class NativeBulletBodyWrapper
 	}
 
 	@Override
-	public void setAngularVelocity(final GamaPoint angularVelocity) {
+	public void setAngularVelocity(final IPoint angularVelocity) {
 		body.setAngularVelocity(toVector(angularVelocity));
 	}
 
 	@Override
-	public void setLinearVelocity(final GamaPoint linearVelocity) {
+	public void setLinearVelocity(final IPoint linearVelocity) {
 		body.setLinearVelocity(toVector(linearVelocity));
 	}
 
 	@Override
-	public void setLocation(final GamaPoint loc) {
+	public void setLocation(final IPoint loc) {
 		body.setPhysicsLocation(toVector(loc).addLocal(aabbTranslation));
 	}
 
 	@Override
-	public void applyImpulse(final GamaPoint impulse) {
+	public void applyImpulse(final IPoint impulse) {
 		body.applyCentralImpulse(toVector(impulse));
 
 	}
 
 	@Override
-	public void applyTorque(final GamaPoint torque) {
+	public void applyTorque(final IPoint torque) {
 		body.applyTorque(toVector(torque));
 
 	}
 
 	@Override
-	public void applyForce(final GamaPoint force) {
+	public void applyForce(final IPoint force) {
 		body.applyCentralForce(toVector(force));
 
 	}
@@ -188,11 +189,12 @@ public class NativeBulletBodyWrapper
 	@Override
 	public void transferLocationAndRotationToAgent() {
 		Vector3f vectorTransfer = body.getPhysicsLocation(null);
-		agent.setLocation(new GamaPoint(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
+		agent.setLocation(
+				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		body.getPhysicsRotation(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, GamaPoint>) agent.getAttribute(ROTATION);
+		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, IPoint>) agent.getAttribute(ROTATION);
 		if (rot == null) {
-			rot = new GamaPair<>(0d, new GamaPoint(0, 0, 1), Types.FLOAT, Types.POINT);
+			rot = new GamaPair<>(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
 			agent.setAttribute(ROTATION, rot);
 		}
 		float qx = quatTransfer.getX();
@@ -215,8 +217,9 @@ public class NativeBulletBodyWrapper
 		body.boundingBox(bb);
 		bb.getMax(max);
 		bb.getMin(min);
-		return buildBox(max.x - min.x, max.y - min.y, max.z - min.z, new GamaPoint(min.x + (max.x - min.x) / 2,
-				min.y + (max.y - min.y) / 2, min.z + (max.z - min.z) / 2 + visualTranslation.z));
+		return buildBox(max.x - min.x, max.y - min.y, max.z - min.z,
+				GamaPointFactory.create(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2,
+						min.z + (max.z - min.z) / 2 + visualTranslation.z));
 
 	}
 
@@ -243,15 +246,15 @@ public class NativeBulletBodyWrapper
 	public float getAngularDamping() { return body.getAngularDamping(); }
 
 	@Override
-	public GamaPoint getAngularVelocity(final GamaPoint v) {
+	public IPoint getAngularVelocity(final IPoint v) {
 		Vector3f vectorTransfer = new Vector3f();
 		body.getAngularVelocity(vectorTransfer);
 		return toGamaPoint(vectorTransfer, v);
 	}
 
 	@Override
-	public GamaPoint getLinearVelocity(final GamaPoint v) {
-		GamaPoint result = v == null ? new GamaPoint() : v;
+	public IPoint getLinearVelocity(final IPoint v) {
+		IPoint result = v == null ? GamaPointFactory.create() : v;
 		Vector3f vectorTransfer = new Vector3f();
 		body.getLinearVelocity(vectorTransfer);
 		result.setLocation(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z);

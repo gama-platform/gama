@@ -12,7 +12,7 @@ package gama.gaml.statements.draw;
 
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape.Type;
 import gama.core.util.GamaFont;
 import gama.core.util.IColor;
@@ -27,7 +27,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	private GamaFont font;
 
 	/** The anchor. */
-	public GamaPoint anchor;
+	public IPoint anchor;
 
 	/** The precision. */
 	public Double precision;
@@ -44,7 +44,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param color
 	 *            the color
 	 */
-	public TextDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
+	public TextDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final IPoint location,
 			final IColor color) {
 		super(size, rotation, location, color, null, null);
 		setFlag(Flag.Perspective, true); // by default
@@ -73,10 +73,10 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param anchor
 	 *            the new anchor
 	 */
-	public void setAnchor(final GamaPoint anchor) { this.anchor = anchor; }
+	public void setAnchor(final IPoint anchor) { this.anchor = anchor; }
 
 	@Override
-	public GamaPoint getAnchor() {
+	public IPoint getAnchor() {
 		if (anchor == null) return super.getAnchor();
 		return anchor;
 	}
@@ -113,7 +113,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *            the p
 	 * @return the text drawing attributes
 	 */
-	public TextDrawingAttributes copyTranslatedBy(final GamaPoint p) {
+	public TextDrawingAttributes copyTranslatedBy(final IPoint p) {
 		try {
 			TextDrawingAttributes clone = (TextDrawingAttributes) this.clone();
 			clone.setLocation(getLocation().plus(p));

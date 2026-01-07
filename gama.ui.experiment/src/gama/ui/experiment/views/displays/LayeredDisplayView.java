@@ -32,7 +32,7 @@ import gama.core.common.interfaces.ILayerManager;
 import gama.core.common.interfaces.IStatusMessage;
 import gama.core.common.preferences.GamaPreferences;
 import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.runtime.GAMA;
@@ -442,7 +442,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	}
 
 	@Override
-	public void takeSnapshot(final GamaPoint customDimensions) {
+	public void takeSnapshot(final IPoint customDimensions) {
 		GAMA.getSnapshotMaker().takeAndSaveSnapshot(getDisplaySurface(), customDimensions);
 
 	}

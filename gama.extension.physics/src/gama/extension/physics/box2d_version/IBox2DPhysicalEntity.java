@@ -12,7 +12,8 @@ package gama.extension.physics.box2d_version;
 
 import org.jbox2d.common.Vec2;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.extension.physics.common.IPhysicalEntity;
 import gama.extension.physics.common.VectorUtils;
 
@@ -38,7 +39,7 @@ public interface IBox2DPhysicalEntity extends IPhysicalEntity<Vec2> {
 	 * @return the vec 2
 	 */
 	@Override
-	default Vec2 toVector(final GamaPoint v) {
+	default Vec2 toVector(final IPoint v) {
 		return VectorUtils.toBox2DVector(v, getScale());
 	}
 
@@ -51,7 +52,7 @@ public interface IBox2DPhysicalEntity extends IPhysicalEntity<Vec2> {
 	 *            the to
 	 * @return the vec 2
 	 */
-	default Vec2 toVector(final GamaPoint v, final Vec2 to) {
+	default Vec2 toVector(final IPoint v, final Vec2 to) {
 		return VectorUtils.toBox2DVector(v, to, getScale());
 	}
 
@@ -63,7 +64,7 @@ public interface IBox2DPhysicalEntity extends IPhysicalEntity<Vec2> {
 	 * @return the gama point
 	 */
 	@Override
-	default GamaPoint toGamaPoint(final Vec2 v) {
+	default IPoint toGamaPoint(final Vec2 v) {
 		return VectorUtils.toGamaPoint(v, getScale());
 	}
 
@@ -76,7 +77,7 @@ public interface IBox2DPhysicalEntity extends IPhysicalEntity<Vec2> {
 	 *            the result
 	 * @return the gama point
 	 */
-	default GamaPoint toGamaPoint(final Vec2 v, final GamaPoint result) {
+	default IPoint  toGamaPoint(final Vec2 v, final IPoint result) {
 		return VectorUtils.toGamaPoint(v, result, getScale());
 	}
 

@@ -307,7 +307,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			}
 			return result;
 		}
-		currentRenderer.setColor((highlight ? data.getHighlightColor() : attributes.getColor()).getAWTColor());
+		currentRenderer.setColor(IColor.toAWTColor(highlight ? data.getHighlightColor() : attributes.getColor()));
 		double curX, curY;
 		// final double curZ;
 		if (attributes.getLocation() == null) {
@@ -326,8 +326,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 		final double rWidth = r.getWidth();
 		final double rHeight = r.getHeight();
-		curX -= rWidth * attributes.anchor.x;
-		curY += (rHeight - descent) * attributes.anchor.y;
+		curX -= rWidth * attributes.anchor.getX();
+		curY += (rHeight - descent) * attributes.anchor.getY();
 		final AffineTransform saved = currentRenderer.getTransform();
 		if (attributes.getAngle() != null) {
 			currentRenderer.rotate(Maths.toRad * attributes.getAngle(), curX + r.getWidth() / 2,
@@ -378,7 +378,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final Shape s = sw.toShape(geometry);
 		try {
 			final Rectangle2D r = s.getBounds2D();
-			currentRenderer.setColor(attributes.getColor().getAWTColor());
+			currentRenderer.setColor(IColor.toAWTColor(attributes.getColor()));
 			if (!isLine && !attributes.isEmpty()) {
 				BufferedImage texture = null;
 				List obj = attributes.getTextures();
@@ -394,7 +394,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 				currentRenderer.fill(s);
 			}
 			if (isLine || border != null || attributes.isEmpty()) {
-				if (border != null) { currentRenderer.setColor(border.getAWTColor()); }
+				if (border != null) { currentRenderer.setColor(IColor.toAWTColor(border)); }
 				currentRenderer.draw(s);
 			}
 			return r;
@@ -407,7 +407,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void fillBackground(final IColor bgColor) {
 		setAlpha(1);
-		currentRenderer.setColor(bgColor.getAWTColor());
+		currentRenderer.setColor(IColor.toAWTColor(bgColor));
 		currentRenderer.fillRect(0, 0, (int) surface.getDisplayWidth(), (int) surface.getDisplayHeight());
 	}
 
@@ -426,7 +426,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final double stepy = (double) getLayerHeight() / (double) image.getHeight();
 		if (stepx < 2 || stepy < 2) return;
 		final Line2D line = new Line2D.Double();
-		currentRenderer.setColor(lineColor.getAWTColor());
+		currentRenderer.setColor(IColor.toAWTColor(lineColor));
 		for (double step = 0.0, end = getLayerWidth(); step < end + 1; step += stepx) {
 			line.setLine(getXOffsetInPixels() + step, getYOffsetInPixels(), getXOffsetInPixels() + step,
 					getYOffsetInPixels() + getLayerHeight());
@@ -458,7 +458,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final Stroke oldStroke = currentRenderer.getStroke();
 		currentRenderer.setStroke(new BasicStroke(5));
 		final Color old = currentRenderer.getColor();
-		currentRenderer.setColor(data.getHighlightColor().getAWTColor());
+		currentRenderer.setColor(IColor.toAWTColor(data.getHighlightColor()));
 		currentRenderer.draw(r);
 		currentRenderer.setStroke(oldStroke);
 		currentRenderer.setColor(old);
@@ -477,7 +477,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void beginOverlay(final OverlayLayer layer) {
 		currentRenderer = overlayRenderer;
-		currentRenderer.setColor(layer.getData().getBackgroundColor(getSurface().getScope()).getAWTColor());
+		currentRenderer.setColor(IColor.toAWTColor(layer.getData().getBackgroundColor(getSurface().getScope())));
 		final int x = (int) getXOffsetInPixels();
 		final int y = (int) getYOffsetInPixels();
 		final int w = getLayerWidth();
@@ -488,7 +488,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			currentRenderer.fillRect(x, y, w, h);
 		}
 		if (layer.getData().getBorderColor() != null) {
-			currentRenderer.setColor(layer.getData().getBorderColor().getAWTColor());
+			currentRenderer.setColor(IColor.toAWTColor(layer.getData().getBorderColor()));
 			if (layer.getData().isRounded()) {
 				currentRenderer.drawRoundRect(x, y, w, h, 10, 10);
 			} else {

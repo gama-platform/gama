@@ -43,7 +43,8 @@ import gama.core.metamodel.agent.IMacroAgent;
 import gama.core.metamodel.population.GamaPopulation;
 import gama.core.metamodel.population.IPopulation;
 import gama.core.metamodel.population.PopulationNotifier;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.GAMA;
@@ -425,7 +426,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	}
 
 	@Override
-	public IGridAgent getAgent(final IScope scope, final GamaPoint coord) {
+	public IGridAgent getAgent(final IScope scope, final IPoint coord) {
 		return (IGridAgent) grid.getAgentAt(coord);
 	}
 
@@ -601,7 +602,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) {
 		if (o instanceof Integer i) return IPopulation.super.containsKey(scope, i);
-		if (o instanceof GamaPoint) return grid.containsKey(scope, o);
+		if (o instanceof IPoint ) return grid.containsKey(scope, o);
 		return false;
 	}
 
@@ -709,7 +710,7 @@ public class GridPopulation implements IPopulation<IGridAgent> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IMatrix matrixValue(final IScope scope, final IType type, final GamaPoint size, final boolean copy)
+	public IMatrix matrixValue(final IScope scope, final IType type, final IPoint  size, final boolean copy)
 			throws GamaRuntimeException {
 		if (type == null || type.id() == IType.NONE
 				|| type.getSpeciesName() != null && type.getSpeciesName().equals(getSpecies().getName()))

@@ -266,7 +266,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 *            the g
 	 * @return the double
 	 */
-	double euclidianDistanceTo(GamaPoint g);
+	double euclidianDistanceTo(IPoint  g);
 
 	/**
 	 * Euclidian distance to.
@@ -449,7 +449,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the centroid
 	 */
 	@getter ("centroid")
-	GamaPoint getCentroid();
+	IPoint  getCentroid();
 
 	/**
 	 * Gets the exterior ring.
@@ -508,7 +508,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the points
 	 */
 	@getter ("points")
-	IList<GamaPoint> getPoints();
+	IList<IPoint > getPoints();
 
 	/**
 	 * Gets the geometries.
@@ -555,6 +555,6 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @param absoluteLocation
 	 * @return
 	 */
-	IShape translatedTo(IScope scope, GamaPoint absoluteLocation);
+	IShape translatedTo(IScope scope, IPoint  absoluteLocation);
 
 }

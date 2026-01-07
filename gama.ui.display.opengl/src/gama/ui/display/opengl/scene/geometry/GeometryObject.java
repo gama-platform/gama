@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GeometryObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,7 @@ package gama.ui.display.opengl.scene.geometry;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -36,8 +36,8 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	}
 
 	@Override
-	public void getTranslationInto(final GamaPoint p) {
-		final GamaPoint explicitLocation = getAttributes().getLocation();
+	public void getTranslationInto(final IPoint p) {
+		final IPoint explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
 			p.setLocation(0, 0, 0);
 		} else {
@@ -48,22 +48,22 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	}
 
 	@Override
-	public void getTranslationForRotationInto(final GamaPoint p) {
-		final GamaPoint explicitLocation = getAttributes().getLocation();
+	public void getTranslationForRotationInto(final IPoint p) {
+		final IPoint explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
 			GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
 			Double depth = getAttributes().getDepth();
 			if (depth != null) {
 				switch (getAttributes().type) {
 					case SPHERE:
-						p.z += depth;
+						p.setZ(p.getZ() + depth);
 						break;
 					case CYLINDER:
 					case PYRAMID:
 					case CONE:
 					case BOX:
 					case CUBE:
-						p.z += depth / 2;
+						p.setZ(p.getZ() + depth / 2);
 						break;
 					default:
 						break;
@@ -75,7 +75,7 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	}
 
 	@Override
-	public void getTranslationForScalingInto(final GamaPoint p) {
+	public void getTranslationForScalingInto(final IPoint p) {
 		GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
 	}
 

@@ -26,7 +26,8 @@ import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.extension.physics.common.IBody;
@@ -133,7 +134,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 *
 	 */
 	@listener (IKeyword.LOCATION)
-	public void changeInLocation(final IAgent a, final GamaPoint loc) {
+	public void changeInLocation(final IAgent a, final IPoint loc) {
 		IBody body = getBody(a);
 		if (body == null) return;
 		body.setLocation(loc);
@@ -153,7 +154,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	public void changeInHeading(final IAgent a, final Double heading) {
 		IBody body = getBody(a);
 		if (body == null) return;
-		GamaPoint p = new GamaPoint();
+		IPoint p = GamaPointFactory.create();
 		body.getLinearVelocity(p);
 		double rad = Math.toRadians(heading);
 		double speed = p.norm();
@@ -176,17 +177,17 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		IBody body = getBody(a);
 		if (body == null) return;
 		if (speed <= 0) {
-			body.setLinearVelocity(new GamaPoint());
+			body.setLinearVelocity(GamaPointFactory.create());
 			return;
 		}
-		GamaPoint p = new GamaPoint();
+		IPoint p = GamaPointFactory.create();
 		body.getLinearVelocity(p);
-		double currentSpeed = Math.atan2(p.x, p.y);
+		double currentSpeed = Math.atan2(p.getX(), p.getY());
 		if (currentSpeed <= 0) {
-			body.setLinearVelocity(new GamaPoint(0.7 * speed, 0.7 * speed)); // ???
+			body.setLinearVelocity(GamaPointFactory.create(0.7 * speed, 0.7 * speed)); // ???
 		} else {
 			double ratio = speed / currentSpeed;
-			p.setLocation(ratio * p.x, ratio * p.y, 0);
+			p.setLocation(ratio * p.getX(), ratio * p.getY(), 0);
 			body.setLinearVelocity(p);
 		}
 	}
@@ -335,7 +336,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 * @author drogoul
 	 *
 	 */
-	public class FakeBody implements IBody<Object, Object, Object, GamaPoint> {
+	public class FakeBody implements IBody<Object, Object, Object, IPoint> {
 
 		/** The values. */
 		public final Map<String, Object> values = new HashMap<>();
@@ -365,9 +366,9 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public GamaPoint getAngularVelocity(final GamaPoint v) {
-			GamaPoint result = v == null ? new GamaPoint() : v;
-			GamaPoint existing = (GamaPoint) values.get(ANGULAR_VELOCITY);
+		public IPoint getAngularVelocity(final IPoint v) {
+			IPoint result = v == null ? GamaPointFactory.create() : v;
+			IPoint existing = (IPoint) values.get(ANGULAR_VELOCITY);
 			if (existing == null) {
 				result.setLocation(0, 0, 0);
 			} else {
@@ -377,9 +378,9 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public GamaPoint getLinearVelocity(final GamaPoint v) {
-			GamaPoint result = v == null ? new GamaPoint() : v;
-			GamaPoint existing = (GamaPoint) values.get(VELOCITY);
+		public IPoint getLinearVelocity(final IPoint v) {
+			IPoint result = v == null ? GamaPointFactory.create() : v;
+			IPoint existing = (IPoint) values.get(VELOCITY);
 			if (existing == null) {
 				result.setLocation(0, 0, 0);
 			} else {
@@ -416,17 +417,17 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public void setAngularVelocity(final GamaPoint p) {
+		public void setAngularVelocity(final IPoint p) {
 			values.put(ANGULAR_VELOCITY, p);
 		}
 
 		@Override
-		public void setLinearVelocity(final GamaPoint p) {
+		public void setLinearVelocity(final IPoint p) {
 			values.put(VELOCITY, p);
 		}
 
 		@Override
-		public void setLocation(final GamaPoint loc) {
+		public void setLocation(final IPoint loc) {
 
 		}
 
@@ -434,13 +435,13 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		public void clearForces() {}
 
 		@Override
-		public void applyImpulse(final GamaPoint impulse) {}
+		public void applyImpulse(final IPoint impulse) {}
 
 		@Override
-		public void applyTorque(final GamaPoint torque) {}
+		public void applyTorque(final IPoint torque) {}
 
 		@Override
-		public void applyForce(final GamaPoint force) {}
+		public void applyForce(final IPoint force) {}
 
 		@Override
 		public void setMass(final Double mass) {
@@ -474,12 +475,19 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		public IAgent getAgent() { return null; }
 
 		@Override
-		public GamaPoint toVector(final GamaPoint v) {
+		public IPoint toVector(final IPoint v) {
 			return v;
 		}
 
+		/**
+		 * To gama point.
+		 *
+		 * @param v
+		 *            the v
+		 * @return the i point
+		 */
 		@Override
-		public GamaPoint toGamaPoint(final GamaPoint v) {
+		public IPoint toGamaPoint(final IPoint v) {
 			return v;
 		}
 

@@ -835,7 +835,7 @@
        <serviceFactory
              factoryClass="gaml.compiler.ui.outline.LabelProviderFactory">
           <service
-                serviceClass="gama.core.common.interfaces.IGamlLabelProvider">
+                serviceClass="gama.gaml.interfaces.IGamlLabelProvider">
           </service>
        </serviceFactory>
     </extension>

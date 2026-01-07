@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaGeometryFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,6 +25,8 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
 
 import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 
 /**
  * A factory for creating GamaGeometry objects.
@@ -74,10 +76,57 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 *            the pts
 	 * @return true, if is ring
 	 */
-	public static boolean isRing(final List<GamaPoint> pts) {
+	public static boolean isRing(final GamaPoint[] pts) {
+		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
+		return true;
+	}
+
+	/**
+	 * Checks if is ring.
+	 *
+	 * @param pts
+	 *            the pts
+	 * @return true, if is ring
+	 */
+	public static boolean isRing(final IPoint[] pts) {
+		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
+		return true;
+	}
+
+	/**
+	 * Checks if is ring.
+	 *
+	 * @param pts
+	 *            the pts
+	 * @return true, if is ring
+	 */
+	public static boolean isRing(final List<IPoint> pts) {
 		final int size = pts.size();
 		if (size < 4 || !pts.get(0).equals(pts.get(size - 1))) return false;
 		return true;
+	}
+
+	/**
+	 * Signed area.
+	 *
+	 * @param ring
+	 *            the ring
+	 * @return the double
+	 */
+	public static double signedArea(final IPoint[] ring) {
+		if (ring.length < 3) return 0.0;
+		double sum = 0.0;
+		/*
+		 * Based on the Shoelace formula. http://en.wikipedia.org/wiki/Shoelace_formula
+		 */
+		double x0 = ring[0].getX();
+		for (int i = 1; i < ring.length - 1; i++) {
+			double x = ring[i].getX() - x0;
+			double y1 = ring[i + 1].getY();
+			double y2 = ring[i - 1].getY();
+			sum += x * (y2 - y1);
+		}
+		return sum / 2.0;
 	}
 
 	// public static boolean isRing(final double[] array) {
@@ -104,8 +153,8 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 *            the points
 	 * @return the polygon
 	 */
-	public Polygon createRectangle(final Coordinate... points) {
-		final CoordinateSequenceFactory fact = GamaGeometryFactory.COORDINATES_FACTORY;
+	public Polygon createRectangle(final IPoint... points) {
+		final GamaCoordinateSequenceFactory fact = GamaGeometryFactory.COORDINATES_FACTORY;
 		final CoordinateSequence cs = fact.create(points);
 		final LinearRing geom = GeometryUtils.GEOMETRY_FACTORY.createLinearRing(cs);
 		return GeometryUtils.GEOMETRY_FACTORY.createPolygon(geom, null);
@@ -146,7 +195,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 *            the copy points
 	 * @return the line string
 	 */
-	public LineString createLineString(final GamaPoint[] coordinates, final boolean copyPoints) {
+	public LineString createLineString(final IPoint[] coordinates, final boolean copyPoints) {
 		return createLineString(COORDINATES_FACTORY.create(coordinates, copyPoints));
 	}
 
@@ -167,7 +216,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 		Polygon[] rectangles = new Polygon[c.size() - 1];
 		int[] index = { 0 };
 		c.visit((p0, p1) -> {
-			double x1 = p1.x, x0 = p0.x, y1 = p1.y, y0 = p0.y;
+			double x1 = p1.getX(), x0 = p0.getX(), y1 = p1.getY(), y0 = p0.getY();
 			double dx = x1 - x0; // delta x
 			double dy = y1 - y0; // delta y
 			double linelength = p1.distance(p0);
@@ -177,8 +226,9 @@ public class GamaGeometryFactory extends GeometryFactory {
 			// A perpendicular vector is given by (-dy, dx)
 			double px = 0.5d * thickness * -dy; // perpendicular vector with lenght thickness * 0.5
 			double py = 0.5d * thickness * dx;
-			rectangles[index[0]] = createRectangle(new GamaPoint(x0 + px, y0 + py), new GamaPoint(x1 + px, y1 + py),
-					new GamaPoint(x1 - px, y1 - py), new GamaPoint(x0 - px, y0 - py), new GamaPoint(x0 + px, y0 + py));
+			rectangles[index[0]] = createRectangle(GamaPointFactory.create(x0 + px, y0 + py),
+					GamaPointFactory.create(x1 + px, y1 + py), GamaPointFactory.create(x1 - px, y1 - py),
+					GamaPointFactory.create(x0 - px, y0 - py), GamaPointFactory.create(x0 + px, y0 + py));
 			index[0] += 1;
 		});
 		GeometryCollection result = createGeometryCollection(rectangles);

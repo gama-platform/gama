@@ -50,7 +50,7 @@ import gama.annotations.precompiler.GamlAnnotations.file;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
@@ -191,11 +191,12 @@ public class GamaOsmFile extends GamaGisFile {
 				} else if (returnIt) {
 					if (entity instanceof Node node) {
 						final Geometry g = gis == null
-								? new GamaPoint(node.getLongitude(), node.getLatitude()).getInnerGeometry()
-								: gis.transform(
-										new GamaPoint(node.getLongitude(), node.getLatitude()).getInnerGeometry());
+								? GamaPointFactory.create(node.getLongitude(), node.getLatitude()).getInnerGeometry()
+								: gis.transform(GamaPointFactory.create(node.getLongitude(), node.getLatitude())
+										.getInnerGeometry());
 
-						// final Geometry g = new GamaPoint(node.getLongitude(), node.getLatitude()).getInnerGeometry();
+						// final Geometry g = GamaPointFactory.create(node.getLongitude(),
+						// node.getLatitude()).getInnerGeometry();
 						// env.expandToInclude(g.getCoordinate());
 						nodesPt.put(node.getId(), GamaShapeFactory.createFrom(g));
 						nodesFromId.put(node.getId(), node);
@@ -349,7 +350,7 @@ public class GamaOsmFile extends GamaGisFile {
 			final boolean hasAttributes = !node.getTags().isEmpty();
 			final Map<String, String> atts = new HashMap<>();
 			if (pt != null) {
-				env.expandToInclude(pt.getLocation());
+				env.expandToInclude(pt.getLocation().toCoordinate());
 
 				for (final Tag tg : node.getTags()) {
 					final String key = tg.getKey();

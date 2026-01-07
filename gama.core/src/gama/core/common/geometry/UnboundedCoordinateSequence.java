@@ -20,6 +20,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
 import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 
 /**
  * The Class UnboundedCoordinateSequence.
@@ -39,7 +41,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	int nbPoints;
 
 	/** The temp. */
-	final GamaPoint temp = new GamaPoint();
+	final IPoint temp = GamaPointFactory.create();
 
 	/**
 	 * Fill from.
@@ -48,7 +50,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 *            the begin
 	 */
 	private void fillFrom(final int begin) {
-		for (int i = begin; i < points.length; i++) { points[i] = new GamaPoint(); }
+		for (int i = begin; i < points.length; i++) { points[i] = GamaPointFactory.create().toGamaPoint(); }
 	}
 
 	/**
@@ -102,7 +104,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 * @param points2
 	 *            the points 2
 	 */
-	UnboundedCoordinateSequence(final int dimension, final boolean copy, final int size, final GamaPoint[] points2) {
+	UnboundedCoordinateSequence(final int dimension, final boolean copy, final int size, final IPoint[] points2) {
 		this.dimension = dimension;
 		growTo(size);
 		nbPoints = size;
@@ -133,12 +135,12 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public double getX(final int index) {
-		return points[index].x;
+		return points[index].getX();
 	}
 
 	@Override
 	public double getY(final int index) {
-		return points[index].y;
+		return points[index].getY();
 	}
 
 	@Override
@@ -171,35 +173,33 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 * @return the i envelope
 	 */
 	public IEnvelope expandEnvelope(final IEnvelope env) {
-		for (int i = 0; i < nbPoints - 1; i++) { env.expandToInclude(points[i]); }
+		for (int i = 0; i < nbPoints - 1; i++) { env.expandToInclude((IPoint) points[i]); }
 		return env;
 	}
 
 	@Override
-	public Iterator<GamaPoint> iterator() {
+	public Iterator<IPoint> iterator() {
 		return limit(forArray(points), nbPoints);
 	}
 
 	@Override
-	public void addCenterTo(final GamaPoint other) {
+	public void addCenterTo(final IPoint other) {
 		final int size = isRing() ? nbPoints - 1 : nbPoints;
 		double x = 0, y = 0, z = 0;
 		for (int i = 0; i < size; i++) {
-			final GamaPoint p = points[i];
-			x += p.x;
-			y += p.y;
-			z += p.z;
+			final IPoint p = points[i];
+			x += p.getX();
+			y += p.getY();
+			z += p.getZ();
 		}
 		x /= size;
 		y /= size;
 		z /= size;
-		other.x += x;
-		other.y += y;
-		other.z += z;
+		other.add(x, y, z);
 	}
 
 	@Override
-	public GamaPoint getCoordinate(final int i) {
+	public Coordinate getCoordinate(final int i) {
 		return points[i];
 	}
 
@@ -216,7 +216,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	}
 
 	@Override
-	public GamaPoint[] toCoordinateArray() {
+	public Coordinate[] toCoordinateArray() {
 		return points;
 	}
 
@@ -241,8 +241,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 */
 	private void visit(final IndexedVisitor v, final int max) {
 		for (int i = 0; i < max; i++) {
-			final GamaPoint p = points[i];
-			v.process(i, p.x, p.y, p.z);
+			final IPoint p = points[i];
+			v.process(i, p.getX(), p.getY(), p.getZ());
 		}
 	}
 
@@ -256,8 +256,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	 */
 	private void reverseVisit(final IndexedVisitor v, final int max) {
 		for (int i = max - 1, j = 0; i >= 0; i--, j++) {
-			final GamaPoint p = points[i];
-			v.process(j, p.x, p.y, p.z);
+			final IPoint p = points[i];
+			v.process(j, p.getX(), p.getY(), p.getZ());
 		}
 	}
 
@@ -265,8 +265,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	public void visitClockwise(final VertexVisitor v) {
 		final int max = isRing() ? nbPoints - 1 : nbPoints;
 		for (int i = 0; i < max; i++) {
-			final GamaPoint p = points[i];
-			v.process(p.x, p.y, p.z);
+			final IPoint p = points[i];
+			v.process(p.getX(), p.getY(), p.getZ());
 		}
 
 	}
@@ -275,8 +275,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	public void visitYNegatedCounterClockwise(final VertexVisitor v) {
 		final int max = isRing() ? nbPoints - 1 : nbPoints;
 		for (int i = 0; i < max; i++) {
-			final GamaPoint p = points[i];
-			v.process(p.x, -p.y, p.z);
+			final IPoint p = points[i];
+			v.process(p.getX(), -p.getY(), p.getZ());
 		}
 
 	}
@@ -287,22 +287,22 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	}
 
 	@Override
-	public void getNormal(final boolean clockwise, final double factor, final GamaPoint normal) {
+	public void getNormal(final boolean clockwise, final double factor, final IPoint normal) {
 		normal.setLocation(0, 0, 0);
 		if (nbPoints < 3) return;
 		for (int i = 0; i < nbPoints - 1; i++) {
-			final GamaPoint v0 = points[i];
-			final GamaPoint v1 = points[i + 1];
-			normal.x += (v0.y - v1.y) * (v0.z + v1.z);
-			normal.y += (v0.z - v1.z) * (v0.x + v1.x);
-			normal.z += (v0.x - v1.x) * (v0.y + v1.y);
+			final IPoint v0 = points[i];
+			final IPoint v1 = points[i + 1];
+			normal.add((v0.getY() - v1.getY()) * (v0.getZ() + v1.getZ()),
+					(v0.getZ() - v1.getZ()) * (v0.getX() + v1.getX()),
+					(v0.getX() - v1.getX()) * (v0.getY() + v1.getY()));
 		}
 		if (!isRing()) {
-			final GamaPoint v0 = points[0];
-			final GamaPoint v1 = points[1];
-			normal.x += (v0.y - v1.y) * (v0.z + v1.z);
-			normal.y += (v0.z - v1.z) * (v0.x + v1.x);
-			normal.z += (v0.x - v1.x) * (v0.y + v1.y);
+			final IPoint v0 = points[0];
+			final IPoint v1 = points[1];
+			normal.add((v0.getY() - v1.getY()) * (v0.getZ() + v1.getZ()),
+					(v0.getZ() - v1.getZ()) * (v0.getX() + v1.getX()),
+					(v0.getX() - v1.getX()) * (v0.getY() + v1.getY()));
 		}
 		final double norm = clockwise ? -normal.norm() : normal.norm();
 		normal.divideBy(norm / factor);
@@ -319,12 +319,19 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	public double averageZ() {
 		double sum = 0d;
 		if (nbPoints == 0) return sum;
-		for (int i = 0; i < nbPoints; i++) { sum += points[i].z; }
+		for (int i = 0; i < nbPoints; i++) { sum += points[i].getZ(); }
 		return sum / nbPoints;
 	}
 
+	/**
+	 * Sets the to.
+	 *
+	 * @param points2
+	 *            the points 2
+	 * @return the i coordinates
+	 */
 	@Override
-	public ICoordinates setTo(final GamaPoint... points2) {
+	public ICoordinates setTo(final IPoint... points2) {
 		growTo(points2.length);
 		nbPoints = points2.length;
 		for (int i = 0; i < nbPoints; i++) { points[i].setLocation(points2[i]); }
@@ -350,9 +357,9 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 	}
 
 	@Override
-	public GamaPoint directionBetweenLastPointAndOrigin() {
-		final GamaPoint result = new GamaPoint();
-		final GamaPoint origin = points[0];
+	public IPoint directionBetweenLastPointAndOrigin() {
+		final IPoint result = GamaPointFactory.create();
+		final IPoint origin = points[0];
 		for (int i = nbPoints - 1; i > 0; i--) {
 			if (!points[i].equals(origin)) {
 				result.setLocation(points[i]).subtract(origin).normalize();
@@ -364,13 +371,13 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public void applyRotation(final Rotation3D rotation) {
-		for (int i = 0; i < nbPoints; i++) { rotation.applyTo(points[i]); }
+		for (int i = 0; i < nbPoints; i++) { rotation.applyTo((IPoint) points[i]); }
 	}
 
 	@Override
 	public boolean isHorizontal() {
-		final double z = points[0].z;
-		for (int i = 1; i < nbPoints; i++) { if (points[i].z != z) return false; }
+		final double z = points[0].getZ();
+		for (int i = 1; i < nbPoints; i++) { if (points[i].getZ() != z) return false; }
 		return true;
 	}
 
@@ -383,12 +390,12 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public void setAllZ(final double elevation) {
-		for (int i = 0; i < nbPoints; i++) { points[i].z = elevation; }
+		for (int i = 0; i < nbPoints; i++) { points[i].setZ(elevation); }
 	}
 
 	@Override
 	public boolean isCoveredBy(final IEnvelope envelope3d) {
-		for (int i = 0; i < nbPoints; i++) { if (!envelope3d.covers(points[i])) return false; }
+		for (int i = 0; i < nbPoints; i++) { if (!envelope3d.covers((IPoint) points[i])) return false; }
 		return true;
 	}
 
@@ -432,11 +439,11 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 		/**
 		 * Based on the Shoelace formula. http://en.wikipedia.org/wiki/Shoelace_formula
 		 */
-		final double x0 = points[0].x;
+		final double x0 = points[0].getX();
 		for (int i = 1; i < nbPoints - 1; i++) {
-			final double x = points[i].x - x0;
-			final double y1 = points[i + 1].y;
-			final double y2 = points[i - 1].y;
+			final double x = points[i].getX() - x0;
+			final double y1 = points[i + 1].getY();
+			final double y2 = points[i - 1].getY();
 			sum += x * (y2 - y1);
 		}
 		return sum / 2.0;
@@ -452,7 +459,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 		growTo(other.size());
 		nbPoints = other.size();
 		int i = 0;
-		for (final GamaPoint p : other) { points[i++].setLocation(p.x, -p.y, p.z); }
+		for (final IPoint p : other) { points[i++].setLocation(p.getX(), -p.getY(), p.getZ()); }
 		if (isRing()) { reverse(); }
 	}
 
@@ -466,7 +473,7 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 		growTo(other.size());
 		nbPoints = other.size();
 		int i = 0;
-		for (final GamaPoint p : other) { points[i++].setLocation(p); }
+		for (final IPoint p : other) { points[i++].setLocation(p); }
 	}
 
 	/**
@@ -479,6 +486,17 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 			points[j].setLocation(temp);
 
 		}
+	}
+
+	@Override
+	public IPoint at(final int i) {
+		if (i < 0 || i > nbPoints - 1) return null;
+		return points[i];
+	}
+
+	@Override
+	public IPoint[] toPointsArray() {
+		return points;
 	}
 
 }

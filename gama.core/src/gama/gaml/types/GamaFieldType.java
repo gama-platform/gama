@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaFieldType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,16 +12,16 @@ package gama.gaml.types;
 
 import java.util.Arrays;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
 import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.no_test;
 import gama.annotations.precompiler.GamlAnnotations.operator;
 import gama.annotations.precompiler.GamlAnnotations.type;
+import gama.annotations.precompiler.IConcept;
+import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -43,12 +43,13 @@ import gama.gaml.species.ISpecies;
 		wraps = { IField.class, GamaField.class },
 		kind = ISymbolKind.Variable.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.GRID, IConcept.MATRIX },
-		doc = @doc ("Fields are two-dimensional matrices holding float values. They can be easily created from arbitrary sources (grid, raster or DEM files, matrices, "
-				+ "grids) and of course by hand. The values they hold are accessible by agents like grids are, using their current location. They can be the target of the "
-				+ "'diffuse' statement and can be displayed using the 'mesh' layer definition. "
-				+ "As such, they represent a lightweight alternative to grids, as they hold spatialized discrete values without having to build agents, which can be particularly "
-				+ "interesting for models with large raster data. Several fields can of course be defined, and it makes sense to define them in the global section as, for the moment, "
-				+ "they cover by default the whole environment, exactly like grids, and are created alongside them"))
+		doc = @doc ("""
+				Fields are two-dimensional matrices holding float values. They can be easily created from arbitrary sources (grid, raster or DEM files, matrices, \
+				grids) and of course by hand. The values they hold are accessible by agents like grids are, using their current location. They can be the target of the \
+				'diffuse' statement and can be displayed using the 'mesh' layer definition. \
+				As such, they represent a lightweight alternative to grids, as they hold spatialized discrete values without having to build agents, which can be particularly \
+				interesting for models with large raster data. Several fields can of course be defined, and it makes sense to define them in the global section as, for the moment, \
+				they cover by default the whole environment, exactly like grids, and are created alongside them"""))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaFieldType extends GamaMatrixType {
 
@@ -83,7 +84,7 @@ public class GamaFieldType extends GamaMatrixType {
 	public static IField staticCast(final IScope scope, final Object obj, final Object param, final IType contentType,
 			final boolean copy) {
 		if (obj == null && param == null) return null;
-		final GamaPoint size = param instanceof GamaPoint ? (GamaPoint) param : null;
+		final IPoint size = param instanceof IPoint i ? i : null;
 
 		if (size == null) {
 			if (obj instanceof IField && !copy) return (IField) obj;
@@ -94,7 +95,7 @@ public class GamaFieldType extends GamaMatrixType {
 			if (obj instanceof ISpecies species && species.isGrid()) return staticCast(scope,
 					species.getPopulation(scope).getTopology().getPlaces(), param, contentType, copy);
 
-		} else if (size.x <= 0 || size.y < 0)
+		} else if (size.getX() <= 0 || size.getY() < 0)
 			throw GamaRuntimeException.error("Dimensions of a field should be positive.", scope);
 		if (obj instanceof IContainer) return staticCast(scope,
 				((IContainer) obj).matrixValue(scope, contentType, size, copy), null, contentType, copy);
@@ -117,10 +118,10 @@ public class GamaFieldType extends GamaMatrixType {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public static IField with(final IScope scope, final Object val, final GamaPoint p, final IType contentsType)
+	public static IField with(final IScope scope, final Object val, final IPoint p, final IType contentsType)
 			throws GamaRuntimeException {
-		int x = p == null ? 1 : (int) p.x;
-		int y = p == null ? 1 : (int) p.y;
+		int x = p == null ? 1 : (int) p.getX();
+		int y = p == null ? 1 : (int) p.getY();
 		return withObject(scope, val, x, y, contentsType);
 	}
 
@@ -231,9 +232,9 @@ public class GamaFieldType extends GamaMatrixType {
 			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.",
 			see = { IKeyword.MATRIX, "as_matrix" })
 	@no_test
-	public static IField buildFieldWith(final IScope scope, final GamaPoint size, final IExpression init) {
+	public static IField buildFieldWith(final IScope scope, final IPoint size, final IExpression init) {
 		if (size == null) throw GamaRuntimeException.error("A nil size is not allowed for matrices", scope);
-		IField field = buildField(scope, (int) size.x, (int) size.y, 0d);
+		IField field = buildField(scope, (int) size.getX(), (int) size.getY(), 0d);
 		double[] matrix = field.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { matrix[i] = Cast.asFloat(scope, init.value(scope)); }
 		return field;
@@ -305,7 +306,7 @@ public class GamaFieldType extends GamaMatrixType {
 			concept = { IConcept.GRID },
 			doc = { @doc ("Returns the rectangular shape that corresponds to the 'cell' in the field at this location. This cell has no attributes. A future version may load it with the value of the field at this attribute") })
 	@no_test
-	public static IShape buildShapeFromFieldLocation(final IScope scope, final IField field, final GamaPoint location) {
+	public static IShape buildShapeFromFieldLocation(final IScope scope, final IField field, final IPoint location) {
 		return field.getCellShapeAt(scope, location);
 	}
 
@@ -351,9 +352,10 @@ public class GamaFieldType extends GamaMatrixType {
 			content_type = IType.GEOMETRY,
 			category = { IOperatorCategory.GRID },
 			concept = { IConcept.GRID },
-			doc = { @doc ("Returns the list of 'cells' that 'intersect' with the geometry passed in argument. "
-					+ "(Intersection is understood as the cell center is insside the geometry; if the  geometry is a polyline or a point, results will not be accurate."
-					+ "The cells are ordered by their x-, then y-coordinates") })
+			doc = { @doc ("""
+					Returns the list of 'cells' that 'intersect' with the geometry passed in argument. \
+					(Intersection is understood as the cell center is insside the geometry; if the  geometry is a polyline or a point, results will not be accurate.\
+					The cells are ordered by their x-, then y-coordinates""") })
 	@no_test
 	public static IList<IShape> getShapesFromGeometry(final IScope scope, final IField field, final IShape shape) {
 		return field.getCellsIntersecting(scope, shape);
@@ -376,9 +378,10 @@ public class GamaFieldType extends GamaMatrixType {
 			content_type = IType.GEOMETRY,
 			category = { IOperatorCategory.GRID },
 			concept = { IConcept.GRID },
-			doc = { @doc ("Returns the list of 'cells' that 'overlap' the geometry passed in argument. "
-					+ "It is much less efficient than the cells_in operator, but is relevant is a polynie or a point. "
-					+ "The cells are ordered by their x-, then y-coordinates") })
+			doc = { @doc ("""
+					Returns the list of 'cells' that 'overlap' the geometry passed in argument. \
+					It is much less efficient than the cells_in operator, but is relevant is a polynie or a point. \
+					The cells are ordered by their x-, then y-coordinates""") })
 	@no_test
 	public static IList<IShape> getShapesOverGeometry(final IScope scope, final IField field, final IShape shape) {
 		return field.getCellsOverlapping(scope, shape);
@@ -426,7 +429,7 @@ public class GamaFieldType extends GamaMatrixType {
 			concept = { IConcept.GRID },
 			doc = { @doc ("Returns the list of values in the field whose 'cell' 'intersects' with the geometry passed in argument. The values are ordered by the x-, then y-coordinate, of their 'cell'") })
 	@no_test
-	public static IList<GamaPoint> getPointsFromGeometry(final IScope scope, final IField field, final IShape shape) {
+	public static IList<IPoint> getPointsFromGeometry(final IScope scope, final IField field, final IShape shape) {
 		return field.getLocationsIntersecting(scope, shape);
 	}
 
@@ -449,7 +452,7 @@ public class GamaFieldType extends GamaMatrixType {
 			concept = { IConcept.GRID },
 			doc = { @doc ("Returns the list of the 'neighbors' of a given world coordinate point, which correspond to the world coordinates of the cells that surround the cell located at this point") })
 	@no_test
-	public static IList<GamaPoint> getNeighborsOf(final IScope scope, final IField field, final GamaPoint point) {
+	public static IList<IPoint> getNeighborsOf(final IScope scope, final IField field, final IPoint point) {
 		return field.getNeighborsOf(scope, point);
 	}
 

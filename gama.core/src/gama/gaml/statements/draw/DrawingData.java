@@ -13,7 +13,8 @@ import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.Rotation3D;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.core.util.GamaColorFactory;
@@ -44,7 +45,7 @@ public class DrawingData extends AttributeHolder {
 	static final IColor DEFAULT_BORDER_COLOR = GamaColorFactory.BLACK;
 
 	/** The size. */
-	public final Attribute<GamaPoint> size;
+	public final Attribute<IPoint> size;
 
 	/** The depth. */
 	public final Attribute<Double> depth;
@@ -53,10 +54,10 @@ public class DrawingData extends AttributeHolder {
 	public final Attribute<AxisAngle> rotation;
 
 	/** The location. */
-	public final Attribute<GamaPoint> location;
+	public final Attribute<IPoint> location;
 
 	/** The anchor. */
-	public final Attribute<GamaPoint> anchor;
+	public final Attribute<IPoint> anchor;
 
 	/** The empty. */
 	public final Attribute<Boolean> empty;
@@ -121,13 +122,13 @@ public class DrawingData extends AttributeHolder {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private GamaPoint castSize(final IScope scope, final IExpression exp) throws GamaRuntimeException {
+	private IPoint castSize(final IScope scope, final IExpression exp) throws GamaRuntimeException {
 		if (exp.getGamlType().isNumber()) {
 			final double val = Cast.asFloat(scope, exp.value(scope));
 			// We do not consider the z ordinate -- see Issue #1539
-			return new GamaPoint(val, val, 0);
+			return GamaPointFactory.create(val, val, 0);
 		}
-		return (GamaPoint) exp.value(scope);
+		return (IPoint) exp.value(scope);
 	}
 
 	/**
@@ -137,13 +138,13 @@ public class DrawingData extends AttributeHolder {
 	 *            the exp
 	 * @return the gama point
 	 */
-	private GamaPoint constCastSize(final IExpression exp) {
+	private IPoint constCastSize(final IExpression exp) {
 		if (exp.getGamlType().isNumber()) {
 			final double val = Cast.asFloat(null, exp.getConstValue());
 			// We do not consider the z ordinate -- see Issue #1539
-			return new GamaPoint(val, val, 0);
+			return GamaPointFactory.create(val, val, 0);
 		}
-		return (GamaPoint) exp.getConstValue();
+		return (IPoint) exp.getConstValue();
 	}
 
 	/**
@@ -193,10 +194,10 @@ public class DrawingData extends AttributeHolder {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private GamaPoint castAnchor(final IScope scope, final IExpression exp) throws GamaRuntimeException {
-		final GamaPoint p = Cast.asPoint(scope, exp.value(scope));
-		p.x = Math.min(1d, Math.max(p.x, 0d));
-		p.y = Math.min(1d, Math.max(p.y, 0d));
+	private IPoint castAnchor(final IScope scope, final IExpression exp) throws GamaRuntimeException {
+		final IPoint p = Cast.asPoint(scope, exp.value(scope));
+		p.setX(Math.min(1d, Math.max(p.getX(), 0d)));
+		p.setY(Math.min(1d, Math.max(p.getY(), 0d)));
 		return p;
 	}
 
@@ -209,10 +210,10 @@ public class DrawingData extends AttributeHolder {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private GamaPoint constCastAnchor(final IExpression exp) throws GamaRuntimeException {
-		final GamaPoint p = Cast.asPoint(null, exp.getConstValue());
-		p.x = Math.min(1d, Math.max(p.x, 0d));
-		p.y = Math.min(1d, Math.max(p.y, 0d));
+	private IPoint constCastAnchor(final IExpression exp) throws GamaRuntimeException {
+		final IPoint p = Cast.asPoint(null, exp.getConstValue());
+		p.setX(Math.min(1d, Math.max(p.getX(), 0d)));
+		p.setY(Math.min(1d, Math.max(p.getY(), 0d)));
 		return p;
 	}
 
@@ -313,13 +314,13 @@ public class DrawingData extends AttributeHolder {
 	 *
 	 * @return the location
 	 */
-	public GamaPoint getLocation() { return location.get() == null ? null : location.get(); }
+	public IPoint getLocation() { return location.get() == null ? null : location.get(); }
 
 	/**
 	 * Gets the anchor.
 	 *
 	 * @return the anchor
 	 */
-	public GamaPoint getAnchor() { return anchor.get() == null ? null : anchor.get(); }
+	public IPoint getAnchor() { return anchor.get() == null ? null : anchor.get(); }
 
 }

@@ -50,6 +50,7 @@ import org.geotools.wfs.GML;
 import org.geotools.wfs.GML.Version;
 
 import gama.core.runtime.GAMA;
+import gama.core.util.IColor;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -101,8 +102,9 @@ public class GMLFileViewer extends GISFileViewer {
 				fts = null;
 			}
 			if (fts != null) {
-				this.setFillColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue().getAWTColor(), mode, fts);
-				this.setStrokeColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue().getAWTColor(), mode, fts);
+				this.setFillColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue()), mode, fts);
+				this.setStrokeColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue()), mode,
+						fts);
 				((StyleLayer) layer).setStyle(style);
 			}
 

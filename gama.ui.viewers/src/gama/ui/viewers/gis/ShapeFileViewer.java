@@ -48,6 +48,7 @@ import org.geotools.styling.StyleBuilder;
 
 import gama.core.metamodel.topology.projection.ProjectionFactory;
 import gama.core.runtime.GAMA;
+import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -94,8 +95,9 @@ public class ShapeFileViewer extends GISFileViewer {
 				fts = null;
 			}
 			if (fts != null) {
-				this.setFillColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue().getAWTColor(), mode, fts);
-				this.setStrokeColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue().getAWTColor(), mode, fts);
+				this.setFillColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue()), mode, fts);
+				this.setStrokeColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue()), mode,
+						fts);
 				((StyleLayer) layer).setStyle(style);
 			}
 			content.addLayer(layer);

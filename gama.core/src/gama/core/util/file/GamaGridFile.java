@@ -53,9 +53,10 @@ import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IStatusMessage;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
@@ -568,10 +569,10 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			final double originY = envP.getMinY();
 			final double maxY = envP.getMaxY();
 			final double maxX = envP.getMaxX();
-			shapes.add(new GamaPoint(originX, originY));
-			shapes.add(new GamaPoint(maxX, originY));
-			shapes.add(new GamaPoint(maxX, maxY));
-			shapes.add(new GamaPoint(originX, maxY));
+			shapes.add(GamaPointFactory.create(originX, originY));
+			shapes.add(GamaPointFactory.create(maxX, originY));
+			shapes.add(GamaPointFactory.create(maxX, maxY));
+			shapes.add(GamaPointFactory.create(originX, maxY));
 			shapes.add(shapes.get(0));
 			geom = GamaGeometryType.buildPolygon(shapes);
 			if (!readAll) return;
@@ -626,7 +627,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				// Building geometries
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
 					setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
-					final GamaPoint p = new GamaPoint(records.x[i], records.y[i]);
+					final IPoint p = GamaPointFactory.create(records.x[i], records.y[i]);
 					GamaShape rect = (GamaShape) GamaGeometryType.buildRectangle(cellWidth, cellHeight, p);
 					if (gis == null) {
 						rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
@@ -753,7 +754,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 *            the loc
 	 * @return the double
 	 */
-	public Double valueOf(final IScope scope, final GamaPoint loc) {
+	public Double valueOf(final IScope scope, final IPoint loc) {
 		return valueOf(scope, loc.getX(), loc.getY());
 	}
 
@@ -850,7 +851,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
 		return new GamaField(scope, this);

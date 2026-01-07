@@ -18,6 +18,10 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalUnit;
 
+import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.precompiler.GamlAnnotations.getter;
+import gama.annotations.precompiler.GamlAnnotations.variable;
+import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.OkForAPI;
 import gama.core.runtime.IScope;
 import gama.core.util.list.IList;
@@ -29,6 +33,66 @@ import gama.gaml.types.IType;
  *
  */
 @OkForAPI (OkForAPI.Location.INTERFACES)
+@vars ({ @variable (
+		name = "day_of_week",
+		type = IType.INT,
+		doc = { @doc ("Returns the index of the day of the week (with Monday being 1)") }),
+		@variable (
+				name = "date",
+				type = IType.DATE,
+				doc = { @doc ("Returns a new date object with only the year-month-day components of this date") }),
+		@variable (
+				name = "leap",
+				type = IType.BOOL,
+				doc = { @doc ("Returns true if the year is a leap year") }),
+		@variable (
+				name = "days_in_month",
+				type = IType.INT,
+				doc = { @doc ("Returns the number of days of the month (28-31) of this date") }),
+		@variable (
+				name = "day_of_year",
+				type = IType.INT,
+				doc = { @doc ("Returns the current day number of the year of this date") }),
+		@variable (
+				name = "days_in_year",
+				type = IType.INT,
+				doc = { @doc ("Returns the number of days of the year (365-366) of this date") }),
+		@variable (
+				name = "week_of_year",
+				type = IType.INT,
+				doc = { @doc ("Returns the week (1-52) of the year") }),
+		@variable (
+				name = "second",
+				type = IType.INT,
+				doc = { @doc ("Returns the second of minute (0-59) of this date") }),
+		@variable (
+				name = "second_of_day",
+				type = IType.INT,
+				doc = { @doc ("Returns the second of day (0-86399) of this date") }),
+		@variable (
+				name = "minute",
+				type = IType.INT,
+				doc = { @doc ("Returns the minute of hour (0-59) of this date") }),
+		@variable (
+				name = "minute_of_day",
+				type = IType.INT,
+				doc = { @doc ("Returns the minute of day (0-1439) of this date") }),
+		@variable (
+				name = "hour",
+				type = IType.INT,
+				doc = { @doc ("Returns the hour of the day (0-23) of this date") }),
+		@variable (
+				name = "day",
+				type = IType.INT,
+				doc = { @doc ("Returns the day of month (1-31) of this date") }),
+		@variable (
+				name = "month",
+				type = IType.INT,
+				doc = { @doc ("Returns the month of year (1-12) of this date") }),
+		@variable (
+				name = "year",
+				type = IType.INT,
+				doc = { @doc ("Returns the year") }) })
 public interface IDate extends IValue, Temporal, Comparable<IDate> {
 
 	/**
@@ -258,32 +322,110 @@ public interface IDate extends IValue, Temporal, Comparable<IDate> {
 	/**
 	 * @return
 	 */
+	@getter ("year")
 	int getYear();
+
+	/**
+	 * Gets the date.
+	 *
+	 * @return the date
+	 */
+	@getter ("date")
+	IDate getDate();
+
+	/**
+	 * Gets the day of year.
+	 *
+	 * @return the day of year
+	 */
+	@getter ("day_of_year")
+	int getDayOfYear();
+
+	/**
+	 * Gets the second of day.
+	 *
+	 * @return the second of day
+	 */
+	@getter ("second_of_day")
+	int getSecondOfDay();
 
 	/**
 	 * @return
 	 */
+	@getter ("month")
 	int getMonth();
 
 	/**
 	 * @return
 	 */
+	@getter ("day")
 	int getDay();
 
 	/**
 	 * @return
 	 */
+	@getter ("hour")
 	int getHour();
+
+	/**
+	 * Gets the minute of day.
+	 *
+	 * @return the minute of day
+	 */
+	@getter ("minute_of_day")
+	int getMinuteOfDay();
 
 	/**
 	 * @return
 	 */
+	@getter ("minute")
 	int getMinute();
 
 	/**
 	 * @return
 	 */
+	@getter ("second")
 	int getSecond();
+
+	/**
+	 * Gets the checks if is leap.
+	 *
+	 * @return the checks if is leap
+	 */
+	@getter ("leap")
+	boolean getIsLeap();
+
+	/**
+	 * Gets the day week.
+	 *
+	 * @return the day week
+	 */
+	@getter ("day_of_week")
+	int getDayWeek();
+
+	/**
+	 * Gets the week year.
+	 *
+	 * @return the week year
+	 */
+	@getter ("week_of_year")
+	int getWeekYear();
+
+	/**
+	 * Gets the days month.
+	 *
+	 * @return the days month
+	 */
+	@getter ("days_in_month")
+	int getDaysMonth();
+
+	/**
+	 * Gets the days in year.
+	 *
+	 * @return the days in year
+	 */
+	@getter ("days_in_year")
+	int getDaysInYear();
 
 	/**
 	 * @param scope

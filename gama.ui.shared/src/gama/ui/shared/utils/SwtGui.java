@@ -52,7 +52,7 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.model.IModel;
 import gama.core.kernel.simulation.ISimulationAgent;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.IOutput;
 import gama.core.outputs.InspectDisplayOutput;
@@ -102,7 +102,7 @@ public class SwtGui implements IGui {
 	private IAgent highlightedAgent;
 
 	/** The mouse location in model. */
-	private GamaPoint mouseLocationInModel, mouseLocationInDisplay;
+	private IPoint  mouseLocationInModel, mouseLocationInDisplay;
 
 	/** The parameters view. */
 	private final IGamaView.Parameters[] parametersView = new IGamaView.Parameters[1];
@@ -641,16 +641,16 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public GamaPoint getMouseLocationInModel() { return mouseLocationInModel; }
+	public IPoint  getMouseLocationInModel() { return mouseLocationInModel; }
 
 	@Override
-	public GamaPoint getMouseLocationInDisplay() { return mouseLocationInDisplay; }
+	public IPoint  getMouseLocationInDisplay() { return mouseLocationInDisplay; }
 
 	@Override
-	public void setMouseLocationInModel(final GamaPoint location) { mouseLocationInModel = location; }
+	public void setMouseLocationInModel(final IPoint  location) { mouseLocationInModel = location; }
 
 	@Override
-	public void setMouseLocationInDisplay(final GamaPoint location) { mouseLocationInDisplay = location; }
+	public void setMouseLocationInDisplay(final IPoint  location) { mouseLocationInDisplay = location; }
 
 	@Override
 	public void exit() {

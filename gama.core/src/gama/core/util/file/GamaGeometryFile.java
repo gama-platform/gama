@@ -19,8 +19,7 @@ import gama.core.util.list.IList;
 
 /**
  * Class GamaGeometryFile. An abstract class that supports loading and saving geometries in specific subclasses. The
- * buffer is a GamaList of points (GamaPoint) from which the GamaGeometry can be constructed (using
- * geometry(file("..."));)
+ * buffer is a GamaList of points from which the GamaGeometry can be constructed (using geometry(file("..."));)
  *
  * @author drogoul
  * @since 30 déc. 2013

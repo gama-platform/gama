@@ -41,6 +41,7 @@ import gama.core.common.interfaces.IDisplaySurface;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.core.util.IColor;
 import gama.gaml.expressions.IExpression;
 
 /**
@@ -156,7 +157,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			// DEBUG.LOG("pb!!!");
 		} else {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, myserie.getMycolor().getAWTColor()); }
+			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
 		}
 
@@ -270,7 +271,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		resetDomainAxis(scope);
 
 		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
-		Color ac = axesColor == null ? null : axesColor.getAWTColor();
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
 		pp.setRangeCrosshairVisible(true);
@@ -279,7 +280,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getRangeAxis().setLabelPaint(tc);
 			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
@@ -329,12 +330,12 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
 		}
-		Color ac = axesColor == null ? null : axesColor.getAWTColor();
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
 		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
@@ -405,7 +406,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
-		Color ac = axesColor == null ? null : axesColor.getAWTColor();
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
 		if (!this.getXTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
@@ -415,7 +416,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getRangeAxis().setLabelPaint(tc);
 			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
@@ -429,7 +430,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 
 		if (xlabel != null && !xlabel.isEmpty()) { pp.getDomainAxis().setLabel(xlabel); }
 		if (textColor != null) {
-			Color tc = textColor.getAWTColor();
+			Color tc = IColor.toAWTColor(textColor);
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {

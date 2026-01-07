@@ -11,7 +11,7 @@
 package gama.extension.physics.common;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
 /**
@@ -70,7 +70,7 @@ public interface IPhysicalWorld<WorldType, ShapeType, VectorType> extends IPhysi
 	 *
 	 * @param gravity the new gravity
 	 */
-	void setGravity(GamaPoint gravity);
+	void setGravity(IPoint gravity);
 
 	/**
 	 * Dispose.

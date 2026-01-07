@@ -13,7 +13,7 @@ import java.awt.Point;
 
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
 
@@ -62,7 +62,7 @@ public interface ILayerData {
 	 * @param p
 	 *            the new size
 	 */
-	void setSize(final GamaPoint p);
+	void setSize(final IPoint  p);
 
 	/**
 	 * Sets the size.
@@ -96,7 +96,7 @@ public interface ILayerData {
 	 * @param p
 	 *            the new position
 	 */
-	void setPosition(final GamaPoint p);
+	void setPosition(final IPoint  p);
 
 	/**
 	 * Sets the position.
@@ -115,14 +115,14 @@ public interface ILayerData {
 	 *
 	 * @return the position
 	 */
-	GamaPoint getPosition();
+	IPoint  getPosition();
 
 	/**
 	 * Gets the size.
 	 *
 	 * @return the size
 	 */
-	GamaPoint getSize();
+	IPoint  getSize();
 
 	/**
 	 * Gets the refresh.

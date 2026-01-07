@@ -30,7 +30,8 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -645,7 +646,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 *            the scope
 	 * @return the comparable
 	 */
-	private Comparable drawRandomValue(final IScope scope) {
+	private Object drawRandomValue(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
 			Object minValue = getMinValue(scope);
@@ -659,13 +660,14 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					yield GAMA.getRandom(scope).between(iMin, iMax, iStep);
 				}
 				case IType.POINT -> {
-					final GamaPoint pStep = stepValue == null ? new GamaPoint(1, 1, 1) : Cast.asPoint(scope, stepValue);
-					final GamaPoint pMin =
-							minValue == null ? new GamaPoint(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
-									: Cast.asPoint(scope, minValue);
-					final GamaPoint pMax =
-							maxValue == null ? new GamaPoint(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
-									: Cast.asPoint(scope, maxValue);
+					final IPoint pStep =
+							stepValue == null ? GamaPointFactory.create(1, 1, 1) : Cast.asPoint(scope, stepValue);
+					final IPoint pMin = minValue == null
+							? GamaPointFactory.create(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
+							: Cast.asPoint(scope, minValue);
+					final IPoint pMax = maxValue == null
+							? GamaPointFactory.create(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
+							: Cast.asPoint(scope, maxValue);
 					yield GAMA.getRandom(scope).between(pMin, pMax, pStep);
 				}
 				case IType.DATE -> {
@@ -721,35 +723,36 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					if (iVal <= iMax - iStep) { neighborValues.add(iVal + iStep); }
 					break;
 				case IType.POINT:
-					final GamaPoint pStep = stepValue == null ? new GamaPoint(1, 1, 1) : Cast.asPoint(scope, stepValue);
-					final GamaPoint pMin =
-							minValue == null ? new GamaPoint(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
-									: Cast.asPoint(scope, minValue);
-					final GamaPoint pMax =
-							maxValue == null ? new GamaPoint(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
-									: Cast.asPoint(scope, maxValue);
-					final GamaPoint pVal = Cast.asPoint(scope, value(scope));
+					final IPoint pStep =
+							stepValue == null ? GamaPointFactory.create(1, 1, 1) : Cast.asPoint(scope, stepValue);
+					final IPoint pMin = minValue == null
+							? GamaPointFactory.create(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
+							: Cast.asPoint(scope, minValue);
+					final IPoint pMax = maxValue == null
+							? GamaPointFactory.create(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
+							: Cast.asPoint(scope, maxValue);
+					final IPoint pVal = Cast.asPoint(scope, value(scope));
 					for (int i = -1; i <= 1; i++) {
 						for (int j = -1; j <= 1; j++) {
 							for (int k = -1; k <= 1; k++) {
 								if (i == 0 && j == 0 && k == 0) { continue; }
-								double x = pVal.x + i * pStep.x;
-								double y = pVal.y + j * pStep.y;
-								double z = pVal.z + k * pStep.z;
+								double x = pVal.getX() + i * pStep.getX();
+								double y = pVal.getY() + j * pStep.getY();
+								double z = pVal.getZ() + k * pStep.getZ();
 								int reset = 0;
-								if (x < pMin.x || x > pMax.x) {
-									x = pVal.x;
+								if (x < pMin.getX() || x > pMax.getX()) {
+									x = pVal.getX();
 									reset++;
 								}
-								if (y < pMin.y || y > pMax.y) {
-									y = pVal.y;
+								if (y < pMin.getY() || y > pMax.getY()) {
+									y = pVal.getY();
 									reset++;
 								}
-								if (z < pMin.z || z > pMax.z) {
-									z = pVal.z;
+								if (z < pMin.getZ() || z > pMax.getZ()) {
+									z = pVal.getZ();
 									reset++;
 								}
-								if (reset < 3) { neighborValues.add(new GamaPoint(x, y, z)); }
+								if (reset < 3) { neighborValues.add(GamaPointFactory.create(x, y, z)); }
 							}
 						}
 					}

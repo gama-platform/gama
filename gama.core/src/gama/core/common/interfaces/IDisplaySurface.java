@@ -18,7 +18,8 @@ import java.util.Collection;
 
 import gama.core.common.geometry.IEnvelope;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.outputs.LayeredDisplayData;
 import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
@@ -52,9 +53,6 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 
 	/** The selection size. */
 	double SELECTION_SIZE = 5; // pixels
-
-	/** The null point. */
-	GamaPoint NULL_POINT = new GamaPoint.Immutable();
 
 	/**
 	 * This sub-interface represents display surfaces relying on OpenGL
@@ -224,7 +222,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 *
 	 * @return the model coordinates
 	 */
-	default GamaPoint getModelCoordinates() { return NULL_POINT; }
+	default IPoint  getModelCoordinates() { return GamaPointFactory.NULL_POINT; }
 
 	/**
 	 * Gets the window coordinates.
@@ -233,7 +231,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 * @return the window coordinates
 	 * @date 17 sept. 2023
 	 */
-	default GamaPoint getWindowCoordinates() { return NULL_POINT; }
+	default IPoint  getWindowCoordinates() { return GamaPointFactory.NULL_POINT; }
 
 	/**
 	 * Gets the model coordinates from.
@@ -248,9 +246,9 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 *            the position in pixels
 	 * @return the model coordinates from
 	 */
-	default GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
+	default IPoint  getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
 			final Point positionInPixels) {
-		return NULL_POINT;
+		return GamaPointFactory.NULL_POINT;
 	}
 
 	/**

@@ -46,7 +46,8 @@ import gama.core.kernel.experiment.parameters.IParameter;
 import gama.core.kernel.experiment.parameters.IParameter.Batch;
 import gama.core.kernel.experiment.parameters.ParameterAdapter;
 import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -581,21 +582,21 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private List<Object> getPointParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
-		GamaPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
-		GamaPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
+		IPoint pointValue = Cast.asPoint(scope, var.getMinValue(scope));
+		IPoint maxPointValue = Cast.asPoint(scope, var.getMaxValue(scope));
 		Double stepV = null;
 
-		GamaPoint increment = new GamaPoint((maxPointValue.x - pointValue.x) / 10.0,
-				(maxPointValue.y - pointValue.y) / 10.0, (maxPointValue.z - pointValue.z) / 10.0);
+		IPoint increment = GamaPointFactory.create((maxPointValue.getX() - pointValue.getX()) / 10.0,
+				(maxPointValue.getY() - pointValue.getY()) / 10.0, (maxPointValue.getZ() - pointValue.getZ()) / 10.0);
 		if (var.getStepValue(scope) != null) {
 			increment = GamaPointType.staticCast(scope, var.getStepValue(scope), true);
 
 			if (increment == null) {
 				double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
 				stepV = d;
-				increment = new GamaPoint(d, d, d);
+				increment = GamaPointFactory.create(d, d, d);
 			} else {
-				stepV = (increment.x + increment.y + increment.z) / 3.0;
+				stepV = (increment.getX() + increment.getY() + increment.getZ()) / 3.0;
 			}
 
 		}
@@ -676,7 +677,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			stepValue = Cast.asInt(scope, var.getStepValue(scope));
 		} else if (maxValue - minValue > df) { stepValue = (maxValue - minValue) / df; }
 
-		
 		// This means if we have min=0 max=4 and step=3, we will get [0, 3] in res
 		int nbIterNeeded = Math.abs((int) ((maxValue - minValue) / stepValue));
 		double start = stepValue >= 0 ? minValue : maxValue;

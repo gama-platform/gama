@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,7 +22,7 @@ import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.graph.GamaSpatialGraph;
@@ -75,8 +76,8 @@ public class MovingSkill3D extends MovingSkill {
 
 	@Override
 	@getter (IKeyword.DESTINATION)
-	public GamaPoint getDestination(final IAgent agent) {
-		final GamaPoint actualLocation = agent.getLocation();
+	public IPoint getDestination(final IAgent agent) {
+		final IPoint actualLocation = agent.getLocation();
 		final double dist = this.computeDistance(agent.getScope(), agent);
 		final ITopology topology = getTopology(agent);
 		return topology.getDestination3D(agent.getScope(), actualLocation, getHeading(agent), getPitch(agent), dist,
@@ -211,11 +212,11 @@ public class MovingSkill3D extends MovingSkill {
 					value = "moves the agent forward, the distance being computed with respect to its speed and heading. The value of the corresponding variables are used unless arguments are passed."))
 	public IPath primMoveForward(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint location = agent.getLocation();
+		final IPoint location = agent.getLocation();
 		final double dist = computeDistance(scope, agent);
 		final double heading = computeHeading(scope, agent);
 		final double pitch = computePitch(scope, agent);
-		final GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
+		final IPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
@@ -236,11 +237,11 @@ public class MovingSkill3D extends MovingSkill {
 	public boolean primMoveRandomly(final IScope scope) throws GamaRuntimeException {
 
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint location = agent.getLocation();
+		final IPoint location = agent.getLocation();
 		final double heading = computeHeadingFromAmplitude(scope, agent);
 		final double pitch = computePitchFromAmplitude(scope, agent);
 		final double dist = computeDistance(scope, agent);
-		GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
+		IPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
@@ -268,7 +269,7 @@ public class MovingSkill3D extends MovingSkill {
 					}
 				}
 				if (geom.getInnerGeometry() != null) {
-					final GamaPoint loc2 = computeLocationForward(scope, dist, loc, geom);
+					final IPoint loc2 = computeLocationForward(scope, dist, loc, geom);
 					if (!loc2.equals(loc)) {
 						newHeading = heading - 180;
 						loc = loc2;
@@ -305,25 +306,28 @@ public class MovingSkill3D extends MovingSkill {
 		final Object target = scope.getArg("target", IType.NONE);
 		if (target == null) return null;
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint oldLocation = agent.getLocation();
+		final IPoint oldLocation = agent.getLocation();
 		super.primGoto(scope);
-		final GamaPoint newLocation = agent.getLocation();
-		final GamaPoint diff = newLocation.minus(oldLocation);
-		final int signumX = Maths.signum(diff.x);
-		final int signumY = Maths.signum(diff.y);
+		final IPoint newLocation = agent.getLocation();
+		final IPoint diff = newLocation.minus(oldLocation);
+		final double dx = diff.getX();
+		final double dy = diff.getY();
+		final double dz = diff.getZ();
+		final int signumX = Maths.signum(dx);
+		final int signumY = Maths.signum(dy);
 		// Heading
 		if (signumX == 0) {
 			setHeading(agent, signumY == 0 ? 0 : signumY > 0 ? 90 : 270);
 		} else {
-			setHeading(agent, Math.atan(diff.y / diff.x) * Maths.toDeg + (signumX > 0 ? 0 : 180));
+			setHeading(agent, Math.atan(dy / dx) * Maths.toDeg + (signumX > 0 ? 0 : 180));
 		}
 
 		// Pitch
 		if (signumX == 0 && signumY == 0) {
-			final int signumZ = Maths.signum(diff.z);
+			final int signumZ = Maths.signum(dz);
 			setPitch(agent, signumZ == 0 ? 0 : signumZ > 0 ? 90 : 270);
 		} else {
-			setPitch(agent, Math.atan(diff.z / Math.sqrt(diff.x * diff.x + diff.y * diff.y)) * Maths.toDeg);
+			setPitch(agent, Math.atan(dz / Math.sqrt(dx * dx + dy * dy)) * Maths.toDeg);
 		}
 
 		return null;

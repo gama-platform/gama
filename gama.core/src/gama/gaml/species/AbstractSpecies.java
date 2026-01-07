@@ -20,7 +20,7 @@ import gama.core.common.interfaces.IKeyword;
 import gama.core.kernel.model.GamlModelSpecies;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -479,7 +479,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	@Override
 	public IMatrix<? extends IAgent> matrixValue(final IScope scope, final IType contentsType,
-			final GamaPoint preferredSize, final boolean copy) throws GamaRuntimeException {
+			final IPoint  preferredSize, final boolean copy) throws GamaRuntimeException {
 		final IPopulation<? extends IAgent> pop = getPopulation(scope);
 		return pop == null ? null : pop.matrixValue(scope, contentsType, preferredSize, copy);
 	}

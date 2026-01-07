@@ -22,7 +22,8 @@ import gama.annotations.precompiler.IConcept;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IFieldMatrixProvider;
 import gama.core.common.interfaces.IStatusMessage;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -285,7 +286,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	IType contentsType;
 
 	/** The user size. */
-	GamaPoint userSize;
+	IPoint userSize;
 
 	/** The has header. */
 	Boolean hasHeader;
@@ -464,7 +465,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					isExecutable = false) })
 	public GamaCSVFile(final IScope scope, final String pathName, final String separator, final IType type,
 			final Boolean withHeader) {
-		this(scope, pathName, separator, type, (GamaPoint) null);
+		this(scope, pathName, separator, type, (IPoint) null);
 		hasHeader = withHeader;
 	}
 
@@ -488,7 +489,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					value = "csv_file f <- csv_file(\"file.csv\", \";\",int,true, {5, 100});",
 					isExecutable = false) })
 	public GamaCSVFile(final IScope scope, final String pathName, final String separator, final IType type,
-			final GamaPoint size) {
+			final IPoint size) {
 		super(scope, pathName);
 		setCsvSeparators(separator);
 		contentsType = type;
@@ -590,7 +591,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			final CSVInfo stats = getInfo(scope, csvSeparator);
 			csvSeparator = csvSeparator == null ? "" + stats.delimiter : csvSeparator;
 			contentsType = contentsType == null ? stats.type : contentsType;
-			if (userSize == null) { userSize = new GamaPoint(stats.cols, stats.rows); }
+			if (userSize == null) { userSize = GamaPointFactory.create(stats.cols, stats.rows); }
 
 			// AD We take the decision for the modeler is he/she hasn't
 			// specified if the header must be read or not.
@@ -604,9 +605,9 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				headers = GamaListFactory.createWithoutCasting(Types.STRING, reader.getHeaders());
 				// we remove one row so as to not read the headers as well
 				// Cause for issue #3036
-				userSize.y = userSize.y - 1;
+				userSize.add(0, -1, 0);
 				// Make sure that we do not read more columns than the number of headers
-				userSize.x = headers.size();
+				userSize.setX(headers.size());
 			}
 			// long t = System.currentTimeMillis();
 			setBuffer(createMatrixFrom(scope, reader));
@@ -617,7 +618,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
 			// See Issue #3036 -- value must be modified when the file is reloaded
-			if (hasHeader != null && hasHeader) { userSize.y++; }
+			if (hasHeader != null && hasHeader) { userSize.add(0, 1, 0); }
 		}
 
 	}
@@ -645,7 +646,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				final int[] m = ((GamaIntMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
@@ -662,7 +663,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				final double[] m = ((GamaFloatMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
@@ -679,7 +680,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				final Object[] m = ((GamaObjectMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 

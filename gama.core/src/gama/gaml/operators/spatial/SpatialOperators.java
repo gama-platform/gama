@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import java.util.ArrayList;
@@ -32,9 +42,10 @@ import gama.annotations.precompiler.IOperatorCategory;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.GamaShape;
 import gama.core.metamodel.shape.GamaShapeFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -148,7 +159,7 @@ public class SpatialOperators {
 						.intersection(GeometryPrecisionReducer.reducePointwise(geom2, pm));
 			} catch (final Exception e1) {
 				try {
-					geom = SpatialTransformations.translated_by(scope, g2.copy(scope), new GamaPoint(0.01, 0))
+					geom = SpatialTransformations.translated_by(scope, g2.copy(scope), GamaPointFactory.create(0.01, 0))
 							.getInnerGeometry().union(geom1);
 
 				} catch (final Exception e2) {
@@ -311,8 +322,8 @@ public class SpatialOperators {
 							return EnhancedPrecisionOp.difference(g1, g2);
 						} catch (final RuntimeException e4) {
 							try {
-								return g1.difference(g2.buffer(Math.min(0.01, g2.getArea() / 1000), 10,
-										BufferParameters.CAP_FLAT));
+								return g1.difference(
+										g2.buffer(Math.min(0.01, g2.getArea() / 1000), 10, BufferParameters.CAP_FLAT));
 							} catch (final RuntimeException last) {
 								return null; // return g1; ??
 							}
@@ -344,9 +355,9 @@ public class SpatialOperators {
 					value = "polygon([{10,10},{10,20},{20,20}]) add_point {20,10}",
 					returnType = "geometry",
 					equals = "polygon([{10,10},{10,20},{20,20},{20,10}])") })
-	public static IShape add_point(final IScope scope, final IShape g, final GamaPoint p) {
+	public static IShape add_point(final IScope scope, final IShape g, final IPoint p) {
 		if (p == null || g == null) return g;
-		final Coordinate point = p;
+		final Coordinate point = p.toCoordinate();
 		final Geometry geometry = g.getInnerGeometry();
 		Geometry geom_Tmp = null;
 		if (geometry instanceof Point) {
@@ -356,7 +367,7 @@ public class SpatialOperators {
 			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createLineString(coord);
 		} else if (geometry instanceof MultiPoint) {
 			final Coordinate[] coordinates = new Coordinate[geometry.getNumPoints() + 1];
-			coordinates[coordinates.length - 1] = p;
+			coordinates[coordinates.length - 1] = p.toCoordinate();
 			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createMultiPointFromCoords(coordinates);
 		} else if (geometry instanceof LineString) {
 			geom_Tmp = createLineStringWithPoint(geometry, point);
@@ -490,13 +501,13 @@ public class SpatialOperators {
 	}
 
 	/*
-	 * private static int indexClosestSegment(final Geometry geom, final Coordinate coord) { int index = -1; final
-	 * Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord); double distMin = Double.MAX_VALUE; for (int i =
-	 * 0; i < geom.getCoordinates().length - 1; i++) { final Coordinate cc = geom.getCoordinates()[i]; if
-	 * (cc.equals(coord)) { return -1; } final Coordinate[] coordinates = new Coordinate[2]; coordinates[0] = cc;
-	 * coordinates[1] = geom.getCoordinates()[i + 1]; final Geometry geom_Tmp =
-	 * GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates); final double dist = geom_Tmp.distance(pt); if
-	 * (dist < distMin) { distMin = dist; index = i; } } if (geom.getCoordinates()[geom.getCoordinates().length -
+	 * private static int indexClosestSegment(final Geometry geom, final Coordinate coord) { int index = -1; final Point
+	 * pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord); double distMin = Double.MAX_VALUE; for (int i = 0; i <
+	 * geom.getCoordinates().length - 1; i++) { final Coordinate cc = geom.getCoordinates()[i]; if (cc.equals(coord)) {
+	 * return -1; } final Coordinate[] coordinates = new Coordinate[2]; coordinates[0] = cc; coordinates[1] =
+	 * geom.getCoordinates()[i + 1]; final Geometry geom_Tmp =
+	 * GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates); final double dist = geom_Tmp.distance(pt); if (dist
+	 * < distMin) { distMin = dist; index = i; } } if (geom.getCoordinates()[geom.getCoordinates().length -
 	 * 1].equals(coord)) { return -1; } return index; }
 	 */
 
@@ -529,14 +540,14 @@ public class SpatialOperators {
 		final IAgent a = scope.getAgent();
 		final List<IShape> obst =
 				obstacles == null ? new ArrayList<>() : obstacles.listValue(scope, Types.GEOMETRY, false);
-		final GamaPoint location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		final IPoint location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		final Geometry visiblePercept = GeometryUtils.GEOMETRY_FACTORY.createGeometry(source.getInnerGeometry());
 		final boolean isPoint = source.isPoint();
 		if (obstacles != null && !obstacles.isEmpty(scope)) {
-			final Geometry pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(location);
+			final Geometry pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(location.toCoordinate());
 			final Geometry locG = pt.buffer(0.01).getEnvelope();
 			double percepDist = 0;
-			for (final GamaPoint p : source.getPoints()) {
+			for (final IPoint p : source.getPoints()) {
 				final double dist = location.euclidianDistanceTo(p);
 				if (dist > percepDist) { percepDist = dist; }
 			}
@@ -545,11 +556,10 @@ public class SpatialOperators {
 			for (int k = 1; k < gbuff.getNumPoints(); k++) {
 				final IList coordinates = GamaListFactory.create(Types.POINT, 4);
 				coordinates.add(location);
-				coordinates.add(new GamaPoint(gbuff.getCoordinates()[k - 1]));
-				coordinates.add(new GamaPoint(gbuff.getCoordinates()[k]));
+				coordinates.add(GamaPointFactory.create(gbuff.getCoordinates()[k - 1]));
+				coordinates.add(GamaPointFactory.create(gbuff.getCoordinates()[k]));
 				coordinates.add(location);
-				final IShape gg =
-						SpatialOperators.inter(scope, source, SpatialCreation.polygon(scope, coordinates));
+				final IShape gg = SpatialOperators.inter(scope, source, SpatialCreation.polygon(scope, coordinates));
 
 				if (gg != null && (isPoint || !gg.isPoint())) {
 					final IShape s = GamaShapeFactory
@@ -590,9 +600,7 @@ public class SpatialOperators {
 			final boolean isLineF = isLine;
 
 			geomVisibleF.removeIf(g -> (isPolygonF || isLineF) && g.isPoint() && isPolygonF && g.isLine());
-			if (geomVisibleF.isEmpty(scope)) {
-				return null;
-			}
+			if (geomVisibleF.isEmpty(scope)) return null;
 			IShape result = Cast.asGeometry(scope, geomVisibleF, false);
 			if (result == null || result.getInnerGeometry() == null) {
 				geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
@@ -703,12 +711,12 @@ public class SpatialOperators {
 			examples = { @example (
 					value = "polyline([{1,2},{4,6}]) split_at {7,6}",
 					equals = "[polyline([{1.0,2.0},{7.0,6.0}]), polyline([{7.0,6.0},{4.0,6.0}])]") })
-	public static IList<IShape> split_at(final IShape geom, final GamaPoint pt) {
+	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
 		List<Geometry> geoms = null;
 		if (geom.getInnerGeometry() instanceof LineString) {
 			final Coordinate[] coords = ((LineString) geom.getInnerGeometry()).getCoordinates();
-			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt.getLocation());
+			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt.getLocation().toCoordinate());
 			final int nb = coords.length;
 			int indexTarget = -1;
 			double distanceT = Double.MAX_VALUE;
@@ -726,11 +734,11 @@ public class SpatialOperators {
 			int nbSp = indexTarget + 2;
 			final Coordinate[] coords1 = new Coordinate[nbSp];
 			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = new GamaPoint(pt.getLocation());
+			coords1[indexTarget + 1] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
 
 			nbSp = coords.length - indexTarget;
 			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = new GamaPoint(pt.getLocation());
+			coords2[0] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
 			int k = 1;
 			for (int i = indexTarget + 1; i < coords.length; i++) {
 				coords2[k] = coords[i];
@@ -741,7 +749,7 @@ public class SpatialOperators {
 			geoms1.add(GeometryUtils.GEOMETRY_FACTORY.createLineString(coords2));
 			geoms = geoms1;
 		} else if (geom.getInnerGeometry() instanceof MultiLineString) {
-			final Point point = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt);
+			final Point point = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt.toCoordinate());
 			final MultiLineString ml = (MultiLineString) geom.getInnerGeometry();
 			Geometry geom2 = ml.getGeometryN(0);
 			double distMin = geom2.distance(point);
@@ -754,7 +762,7 @@ public class SpatialOperators {
 				}
 			}
 			final Coordinate[] coords = ((LineString) geom2).getCoordinates();
-			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(new GamaPoint(pt.getLocation()));
+			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt.getLocation().toCoordinate());
 			final int nb = coords.length;
 			int indexTarget = -1;
 			double distanceT = Double.MAX_VALUE;
@@ -772,11 +780,11 @@ public class SpatialOperators {
 			int nbSp = indexTarget + 2;
 			final Coordinate[] coords1 = new Coordinate[nbSp];
 			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = new GamaPoint(pt.getLocation());
+			coords1[indexTarget + 1] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
 
 			nbSp = coords.length - indexTarget;
 			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = new GamaPoint(pt.getLocation());
+			coords2[0] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
 			int k = 1;
 			for (int i = indexTarget + 1; i < coords.length; i++) {
 				coords2[k] = coords[i];

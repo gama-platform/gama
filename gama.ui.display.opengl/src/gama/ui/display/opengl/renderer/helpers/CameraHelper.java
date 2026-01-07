@@ -23,7 +23,8 @@ import gama.core.common.geometry.GamaEnvelopeFactory;
 import gama.core.common.geometry.IEnvelope;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.GAMA;
 import gama.core.runtime.PlatformHelper;
 import gama.core.util.list.GamaListFactory;
@@ -54,20 +55,20 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	/** The mouse position. */
 	// Mouse
-	private final GamaPoint mousePosition = new GamaPoint(0, 0);
+	private final IPoint mousePosition = GamaPointFactory.create(0, 0);
 
 	/**
 	 * Internal world position.
 	 *
 	 * See SWTOpenGLDisplaySUrface::getModelCoordinates() to access the world position is an OpenGL display.
 	 */
-	private final GamaPoint positionInTheWorld = new GamaPoint();
+	private final IPoint positionInTheWorld = GamaPointFactory.create();
 
 	/** The last mouse pressed position. */
-	protected final GamaPoint lastMousePressedPosition = new GamaPoint(0, 0);
+	protected final IPoint lastMousePressedPosition = GamaPointFactory.create(0, 0);
 
 	/** The first mouse pressed position. */
-	protected final GamaPoint firstMousePressedPosition = new GamaPoint(0, 0);
+	protected final IPoint firstMousePressedPosition = GamaPointFactory.create(0, 0);
 
 	/** The firsttime mouse down. */
 	protected boolean firsttimeMouseDown = true;
@@ -82,7 +83,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	protected boolean flipped = false;
 
 	/** The up. */
-	protected final GamaPoint up = new GamaPoint();
+	protected final IPoint up = GamaPointFactory.create();
 
 	/** The goes forward. */
 	// Mouse and keyboard state
@@ -160,22 +161,22 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		final double cosP = Math.cos(factorP);
 		final double sinP = Math.sin(factorP);
 		final double radius = data.getCameraDistance();
-		GamaPoint target = getTarget();
-		data.setCameraPos(new GamaPoint(radius * cosT * sinP + target.x, radius * sinT * sinP + target.y,
-				radius * cosP + target.z));
+		IPoint target = getTarget();
+		data.setCameraPos(GamaPointFactory.create(radius * cosT * sinP + target.getX(),
+				radius * sinT * sinP + target.getY(), radius * cosP + target.getZ()));
 	}
 
 	/**
 	 * Update spherical coordinates from locations.
 	 */
 	public void updateSphericalCoordinatesFromLocations() {
-		final GamaPoint p = getPosition();
-		final GamaPoint t = getTarget();
+		final IPoint p = getPosition();
+		final IPoint t = getTarget();
 
-		theta = Maths.toDeg * Math.atan2(p.y - t.y, p.x - t.x);
+		theta = Maths.toDeg * Math.atan2(p.getY() - t.getY(), p.getX() - t.getX());
 		// See issue on camera_pos
 		if (theta == 0) { theta = -90; }
-		phi = Maths.toDeg * Math.acos((p.z - t.z) / data.getCameraDistance());
+		phi = Maths.toDeg * Math.acos((p.getZ() - t.getZ()) / data.getCameraDistance());
 	}
 
 	/**
@@ -205,13 +206,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 		final double x_translation_in_world = theta_vect_x_norm + phi_vect_x_norm;
 		final double y_translation_in_world = theta_vect_y_norm + phi_vect_y_norm;
-		GamaPoint position = getPosition();
-		GamaPoint target = getTarget();
+		IPoint position = getPosition();
+		IPoint target = getTarget();
 		Double distance = data.getCameraDistance();
-		data.setCameraPos(new GamaPoint(position.x - x_translation_in_world * distance / 1000,
-				position.y - y_translation_in_world * distance / 1000, position.z));
-		data.setCameraTarget(new GamaPoint(target.x - x_translation_in_world * distance / 1000,
-				target.y - y_translation_in_world * distance / 1000, target.z));
+		data.setCameraPos(GamaPointFactory.create(position.getX() - x_translation_in_world * distance / 1000,
+				position.getY() - y_translation_in_world * distance / 1000, position.getZ()));
+		data.setCameraTarget(GamaPointFactory.create(target.getX() - x_translation_in_world * distance / 1000,
+				target.getY() - y_translation_in_world * distance / 1000, target.getZ()));
 
 		updateSphericalCoordinatesFromLocations();
 	}
@@ -247,21 +248,21 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *
 	 * @return the position
 	 */
-	public GamaPoint getPosition() { return data.getCameraPos(); }
+	public IPoint getPosition() { return data.getCameraPos(); }
 
 	/**
 	 * Gets the target.
 	 *
 	 * @return the target
 	 */
-	public GamaPoint getTarget() { return data.getCameraTarget(); }
+	public IPoint getTarget() { return data.getCameraTarget(); }
 
 	/**
 	 * Gets the orientation.
 	 *
 	 * @return the orientation
 	 */
-	public GamaPoint getOrientation() { return up; }
+	public IPoint getOrientation() { return up; }
 
 	/**
 	 * Animate.
@@ -351,12 +352,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		// Completely recomputes the up-vector
 		double tr = theta * Maths.toRad;
 		double pr = phi * Maths.toRad;
-		GamaPoint position = data.getCameraPos();
-		GamaPoint target = data.getCameraTarget();
+		IPoint position = data.getCameraPos();
+		IPoint target = data.getCameraTarget();
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		glu.gluLookAt(position.x, position.y, position.z, target.x, target.y, target.z, up.x, up.y, up.z);
+		glu.gluLookAt(position.getX(), position.getY(), position.getZ(), target.getX(), target.getY(), target.getZ(),
+				up.getX(), up.getY(), up.getZ());
 	}
 
 	/*------------------ Events controls ---------------------*/
@@ -471,35 +473,33 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		if (keystoneMode) {
 			final int selectedCorner = getRenderer().getKeystoneHelper().getCornerSelected();
 			if (selectedCorner != -1) {
-				final GamaPoint origin = getNormalizedCoordinates(mousePosition.x, mousePosition.y);
-				GamaPoint p = getNormalizedCoordinates(x, y);
-				final GamaPoint translation = origin.minus(p).yNegated();
-				p = getRenderer().getKeystoneHelper().getKeystoneCoordinates(selectedCorner).plus(-translation.x,
-						translation.y, 0);
+				final IPoint origin = getNormalizedCoordinates(mousePosition.getX(), mousePosition.getY());
+				IPoint p = getNormalizedCoordinates(x, y);
+				final IPoint translation = origin.minus(p).yNegated();
+				p = getRenderer().getKeystoneHelper().getKeystoneCoordinates(selectedCorner).plus(-translation.getX(),
+						translation.getY(), 0);
 				getRenderer().getKeystoneHelper().setKeystoneCoordinates(selectedCorner, p);
 			} else {
 				final int cornerSelected = hoverOnKeystone(x, y);
 				getRenderer().getKeystoneHelper().setCornerHovered(cornerSelected);
 			}
-			mousePosition.x = x;
-			mousePosition.y = y;
+			mousePosition.setLocation(x, y, 0);
 			computeMouseLocationInTheWorld(x, y);
 			setCtrlPressed(isCtrl);
 			setShiftPressed(isShift);
 			return;
 		}
-		mousePosition.x = x;
-		mousePosition.y = y;
+		mousePosition.setLocation(x, y, 0);
 		computeMouseLocationInTheWorld(x, y);
 		setCtrlPressed(isCtrl);
 		setShiftPressed(isShift);
 
 		if (!buttonPressed || button != 1) return;
-		final GamaPoint newPoint = new GamaPoint(x, y);
+		final IPoint newPoint = GamaPointFactory.create(x, y);
 
 		if (!data.isCameraLocked() && isCtrl) {
-			final int horizMovement = (int) (newPoint.x - lastMousePressedPosition.x);
-			final int vertMovement = (int) (newPoint.y - lastMousePressedPosition.y);
+			final int horizMovement = (int) (newPoint.getX() - lastMousePressedPosition.getX());
+			final int vertMovement = (int) (newPoint.getY() - lastMousePressedPosition.getY());
 			final double horizMovement_real = horizMovement;
 			final double vertMovement_real = vertMovement;
 			lastMousePressedPosition.setLocation(newPoint);
@@ -541,16 +541,16 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			}
 			updateCartesianCoordinatesFromAngles();
 		} else if (shiftPressed && isViewInXYPlan()) {
-			mousePosition.x = x;
-			mousePosition.y = y;
-			defineROI(new GamaPoint(firstMousePressedPosition.x, firstMousePressedPosition.y));
-		} else if (mouseInROI(new GamaPoint(mousePosition.x, mousePosition.y))) {
-			GamaPoint p = positionInTheWorld;
-			p = p.minus(roiEnvelope.centre());
-			roiEnvelope.translate(p.x, p.y, 0);
+			mousePosition.setX(x);
+			mousePosition.setY(y);
+			defineROI(GamaPointFactory.create(firstMousePressedPosition.getX(), firstMousePressedPosition.getY()));
+		} else if (mouseInROI(GamaPointFactory.create(mousePosition.getX(), mousePosition.getY()))) {
+			IPoint p = positionInTheWorld;
+			p = p.minus(roiEnvelope.center());
+			roiEnvelope.translate(p.getX(), p.getY(), 0);
 		} else if (!data.isCameraLocked()) {
-			int horizMovement = (int) (x - lastMousePressedPosition.x);
-			int vertMovement = (int) (y - lastMousePressedPosition.y);
+			int horizMovement = (int) (x - lastMousePressedPosition.getX());
+			int vertMovement = (int) (y - lastMousePressedPosition.getY());
 			if (flipped) {
 				horizMovement = -horizMovement;
 				vertMovement = -vertMovement;
@@ -603,11 +603,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the y
 	 * @return the normalized coordinates
 	 */
-	protected GamaPoint getNormalizedCoordinates(final double x, final double y) {
+	protected IPoint getNormalizedCoordinates(final double x, final double y) {
 		final double xCoordNormalized = x / getRenderer().getWidth();
 		double yCoordNormalized = y / getRenderer().getHeight();
 		if (!renderer.useShader()) { yCoordNormalized = 1 - yCoordNormalized; }
-		return new GamaPoint(xCoordNormalized, yCoordNormalized);
+		return GamaPointFactory.create(xCoordNormalized, yCoordNormalized);
 	}
 
 	/**
@@ -618,7 +618,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return the int
 	 */
 	private int clickOnKeystone(final int x, final int y) {
-		return renderer.getKeystoneHelper().cornerSelected(new GamaPoint(x, y));
+		return renderer.getKeystoneHelper().cornerSelected(GamaPointFactory.create(x, y));
 	}
 
 	/**
@@ -629,7 +629,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return the int
 	 */
 	protected int hoverOnKeystone(final int x, final int y) {
-		return renderer.getKeystoneHelper().cornerHovered(new GamaPoint(x, y));
+		return renderer.getKeystoneHelper().cornerHovered(GamaPointFactory.create(x, y));
 	}
 
 	/**
@@ -667,8 +667,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
 			resetPivot();
 		} else if (isShift && isViewInXYPlan()) { startROI(); }
-		mousePosition.x = x;
-		mousePosition.y = y;
+		mousePosition.setLocation(x, y, 0);
 		computeMouseLocationInTheWorld(x, y);
 
 		setMouseLeftPressed(button == 1);
@@ -704,7 +703,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the e
 	 */
 	private void startROI() {
-		defineROI(new GamaPoint(firstMousePressedPosition));
+		defineROI(GamaPointFactory.create(firstMousePressedPosition));
 		ROICurrentlyDrawn = true;
 	}
 
@@ -743,7 +742,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double z = pixelDepth.get(0);
 
 		if (z == 1d || z == 0d) {
-			getWorldPositionFrom(new GamaPoint(mouse_x, mouse_y), positionInTheWorld);
+			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
 		} else {
 			glu.gluUnProject(x, y, z, mvmatrix, 0, projmatrix, 0, viewport, 0, wcoord, 0);
 			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
@@ -756,18 +755,19 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param mouse
 	 * @return
 	 */
-	public GamaPoint getWorldPositionFrom(final GamaPoint mouse, final GamaPoint result) {
-		final GamaPoint camLoc = getPosition();
+	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
+		final IPoint camLoc = getPosition();
 		OpenGL gl = renderer.getOpenGLHelper();
-		if (gl == null) return new GamaPoint();
+		if (gl == null) return GamaPointFactory.create();
 		final double[] wcoord = new double[4];
-		final double x = (int) mouse.x, y = gl.viewport[3] - (int) mouse.y;
+		final double x = (int) mouse.getX(), y = gl.viewport[3] - (int) mouse.getY();
 		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
 		result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
 		glu.gluUnProject(x, y, 0.9, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
-		result.setLocation(wcoord[0] - result.x, wcoord[1] - result.y, wcoord[2] - result.z).normalize();
-		final double distance = camLoc.z / -result.z;
-		return result.setLocation(result.x * distance + camLoc.x, result.y * distance + camLoc.y, 0);
+		result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ()).normalize();
+		final double distance = camLoc.getZ() / -result.getZ();
+		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
+				0);
 	}
 
 	/**
@@ -775,7 +775,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *
 	 * @return the mouse position
 	 */
-	public GamaPoint getMousePosition() { return mousePosition; }
+	public IPoint getMousePosition() { return mousePosition; }
 
 	/**
 	 * Checks if is view in XY plan.
@@ -792,7 +792,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *
 	 * @return the last mouse pressed position
 	 */
-	public GamaPoint getLastMousePressedPosition() { return lastMousePressedPosition; }
+	public IPoint getLastMousePressedPosition() { return lastMousePressedPosition; }
 
 	/**
 	 * Gets the keyboard sensivity.
@@ -1112,9 +1112,9 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else {
 			data.setCameraDistance(extent * 1.5);
 		}
-		final GamaPoint centre = env.centre();
+		final IPoint centre = env.center();
 		// we suppose y is already negated
-		data.setCameraTarget(new GamaPoint(centre.x, centre.y, centre.z));
+		data.setCameraTarget(GamaPointFactory.create(centre.getX(), centre.getY(), centre.getZ()));
 		data.setZoomLevel(zoomLevel(), true);
 		/**
 		 * Draw rotation helper.
@@ -1173,11 +1173,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public String getCameraDefinition() {
-		StringBuilder text =
-				new StringBuilder(IKeyword.CAMERA).append(" 'default' ").append(IKeyword.LOCATION).append(": ")
-						.append(new GamaPoint(data.getCameraPos()).yNegated().withPrecision(4).serializeToGaml(false));
-		text.append(" ").append(IKeyword.TARGET).append(": ")
-				.append(new GamaPoint(data.getCameraTarget()).yNegated().withPrecision(4).serializeToGaml(false))
+		StringBuilder text = new StringBuilder(IKeyword.CAMERA).append(" 'default' ").append(IKeyword.LOCATION)
+				.append(": ").append(GamaPointFactory.create(data.getCameraPos()).yNegated().withPrecision(4)
+						.serializeToGaml(false));
+		text.append(" ").append(IKeyword.TARGET).append(": ").append(
+				GamaPointFactory.create(data.getCameraTarget()).yNegated().withPrecision(4).serializeToGaml(false))
 				.append(";");
 		return text.toString();
 	}
@@ -1219,11 +1219,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param mouseEnd
 	 *            the mouse end
 	 */
-	public void defineROI(final GamaPoint mouseStart) {
-		final GamaPoint start = getWorldPositionFrom(mouseStart, new GamaPoint());
+	public void defineROI(final IPoint mouseStart) {
+		final IPoint start = getWorldPositionFrom(mouseStart, GamaPointFactory.create());
 
-		roiEnvelope = GamaEnvelopeFactory.of(start.x, positionInTheWorld.x, start.y, positionInTheWorld.y, 0,
-				getMaxEnvDim() / 20d);
+		roiEnvelope = GamaEnvelopeFactory.of(start.getX(), positionInTheWorld.getX(), start.getY(),
+				positionInTheWorld.getY(), 0, getMaxEnvDim() / 20d);
 	}
 
 	/**
@@ -1233,10 +1233,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *            the mouse position
 	 * @return true, if successful
 	 */
-	public boolean mouseInROI(final GamaPoint mousePosition) {
+	public boolean mouseInROI(final IPoint mousePosition) {
 		final IEnvelope env = getROIEnvelope();
 		if (env == null) return false;
-		final GamaPoint p = getWorldPositionFrom(mousePosition, new GamaPoint());
+		final IPoint p = getWorldPositionFrom(mousePosition, GamaPointFactory.create());
 		return env.intersects(p);
 	}
 

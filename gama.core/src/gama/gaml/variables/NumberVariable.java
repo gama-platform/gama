@@ -22,7 +22,7 @@ import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.ISymbolKind;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.runtime.IScope;
 import gama.core.runtime.InScope;
 import gama.core.runtime.exceptions.GamaRuntimeException;
@@ -201,7 +201,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 			case IType.INT -> checkMinMax(agent, scope, (Integer) val);
 			case IType.FLOAT -> checkMinMax(agent, scope, (Double) val);
 			case IType.DATE -> checkMinMax(agent, scope, (IDate) val);
-			case IType.POINT -> checkMinMax(agent, scope, (GamaPoint) val);
+			case IType.POINT -> checkMinMax(agent, scope, (IPoint) val);
 			default -> throw GamaRuntimeException.error("Impossible to create " + getName(), scope);
 		};
 
@@ -274,16 +274,15 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected GamaPoint checkMinMax(final IAgent agent, final IScope scope, final GamaPoint f)
-			throws GamaRuntimeException {
+	protected IPoint checkMinMax(final IAgent agent, final IScope scope, final IPoint f) throws GamaRuntimeException {
 		if (f == null) return null;
 		if (min != null) {
-			final GamaPoint fmin = (GamaPoint) (minVal == null ? asPoint(scope, scope.evaluate(min, agent).getValue())
+			final IPoint fmin = (IPoint) (minVal == null ? asPoint(scope, scope.evaluate(min, agent).getValue())
 					: minVal.run(scope));
 			if (f.smallerThan(fmin)) return fmin;
 		}
 		if (max != null) {
-			final GamaPoint fmax = (GamaPoint) (maxVal == null ? asPoint(scope, scope.evaluate(max, agent).getValue())
+			final IPoint fmax = (IPoint) (maxVal == null ? asPoint(scope, scope.evaluate(max, agent).getValue())
 					: maxVal.run(scope));
 			if (f.biggerThan(fmax)) return fmax;
 		}

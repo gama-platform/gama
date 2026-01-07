@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.Geometry;
 import gama.core.common.geometry.AxisAngle;
 import gama.core.common.geometry.GeometryUtils;
 import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.GamaShapeFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.runtime.IScope;
@@ -63,12 +63,12 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public Gama3DGeometryFile(final IScope scope, final String pathName, final GamaPair<Double, GamaPoint> initRotation)
+	public Gama3DGeometryFile(final IScope scope, final String pathName, final GamaPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		super(scope, pathName);
 		if (initRotation != null) {
 			final Double angle = Cast.asFloat(null, initRotation.key);
-			final GamaPoint axis = initRotation.value;
+			final IPoint axis = initRotation.value;
 			this.initRotation = new AxisAngle(axis, angle);
 		} else {
 			this.initRotation = null;

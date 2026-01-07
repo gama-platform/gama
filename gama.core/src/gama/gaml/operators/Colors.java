@@ -88,7 +88,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) + rgb('red')",
 							equals = "rgb([255,128,32])") }))
 	@test ("rgb([255, 128, 32]) + rgb('red') = rgb([255,128,32])")
-	public static IColor add(final GamaColor c1, final GamaColor c2) {
+	public static IColor add(final IColor c1, final IColor c2) {
 		return GamaColorFactory.get(c1.red() + c2.red(), c1.green() + c2.green(), c1.blue() + c2.blue(), c1.alpha());
 	}
 
@@ -114,7 +114,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) + 3",
 							equals = "rgb([255,131,35])") }))
 	@test ("rgb([255, 128, 32]) + 3 = rgb([255,131,35]) ")
-	public static IColor add(final GamaColor c, final Integer i) {
+	public static IColor add(final IColor c, final Integer i) {
 		return GamaColorFactory.get(c.red() + i, c.green() + i, c.blue() + i, c.alpha());
 	}
 
@@ -140,7 +140,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) - 3",
 							equals = "rgb([252,125,29])") }))
 	@test ("rgb([255, 128, 32]) - 3 = rgb([252,125,29]) ")
-	public static IColor subtract(final GamaColor c, final Integer i) {
+	public static IColor subtract(final IColor c, final Integer i) {
 		return GamaColorFactory.get(c.red() - i, c.green() - i, c.blue() - i, c.alpha());
 	}
 
@@ -166,7 +166,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) - rgb('red')",
 							equals = "rgb([0,128,32])") }))
 	@test ("rgb([255, 128, 32]) - rgb('red') = rgb([0,128,32])")
-	public static IColor subtract(final GamaColor c1, final GamaColor c) {
+	public static IColor subtract(final IColor c1, final IColor c) {
 		return GamaColorFactory.get(c1.red() - c.red(), c1.green() - c.green(), c1.blue() - c.blue(), c1.alpha());
 	}
 
@@ -192,7 +192,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) * 2",
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2 = rgb([255,255,64])")
-	public static IColor multiply(final GamaColor c, final Integer i) {
+	public static IColor multiply(final IColor c, final Integer i) {
 		return GamaColorFactory.get(c.red() * i, c.green() * i, c.blue() * i, c.alpha());
 	}
 
@@ -218,7 +218,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) * 2.0",
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2.0 = rgb([255,255,64])")
-	public static IColor multiply(final GamaColor c, final Double i) {
+	public static IColor multiply(final IColor c, final Double i) {
 		return GamaColorFactory.get((int) (c.red() * i), (int) (c.green() * i), (int) (c.blue() * i), c.alpha());
 	}
 
@@ -244,7 +244,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) / 2",
 							equals = "rgb([127,64,16])") }))
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
-	public static IColor divide(final GamaColor c, final Integer i) {
+	public static IColor divide(final IColor c, final Integer i) {
 		return GamaColorFactory.get(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
 
@@ -272,7 +272,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) / 2.5",
 							equals = "rgb([102,51,13])") }))
 	@test ("rgb([255, 128, 32]) / 2.5 = rgb([102,51,13])")
-	public static IColor divide(final GamaColor c, final Double i) {
+	public static IColor divide(final IColor c, final Double i) {
 		return GamaColorFactory.get(Maths.round(c.red() / i), Maths.round(c.green() / i), Maths.round(c.blue() / i),
 				c.alpha());
 	}

@@ -13,8 +13,8 @@ package gama.core.util.path;
 import static gama.core.common.geometry.GeometryUtils.getFirstPointOf;
 import static gama.core.common.geometry.GeometryUtils.getLastPointOf;
 
-import gama.core.metamodel.shape.GamaPoint;
 import gama.core.metamodel.shape.GamaShape;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.metamodel.topology.continuous.AmorphousTopology;
@@ -44,7 +44,7 @@ public class PathFactory {
 	 */
 	public static <V, E> GamaPath<V, E, IGraph<V, E>> newInstance(final IGraph<V, E> g,
 			final IList<? extends V> nodes) {
-		if (nodes.isEmpty() && g instanceof GamaSpatialGraph || nodes.get(0) instanceof GamaPoint
+		if (nodes.isEmpty() && g instanceof GamaSpatialGraph || nodes.get(0) instanceof IPoint 
 				|| g instanceof GamaSpatialGraph)
 			return (GamaPath) new GamaSpatialPath((GamaSpatialGraph) g, (IList<IShape>) nodes);
 		else

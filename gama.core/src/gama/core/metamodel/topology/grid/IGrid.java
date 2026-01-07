@@ -14,7 +14,7 @@ import java.util.Set;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.metamodel.shape.IShape;
 import gama.core.metamodel.topology.ISpatialIndex;
 import gama.core.metamodel.topology.ITopology;
@@ -72,7 +72,7 @@ public interface IGrid extends IMatrix<IShape>, ISpatialIndex, IDiffusionTarget 
 	 *            the c
 	 * @return the agent at
 	 */
-	IAgent getAgentAt(final GamaPoint c);
+	IAgent getAgentAt(final IPoint c);
 
 	/**
 	 * Compute shortest path between.
@@ -115,7 +115,7 @@ public interface IGrid extends IMatrix<IShape>, ISpatialIndex, IDiffusionTarget 
 			final ITopology topo, final Map<IAgent, Object> on) throws GamaRuntimeException;
 
 	// public abstract Iterator<IAgent> getNeighborsOf(final IScope scope, final
-	// GamaPoint shape, final Double
+	// IPoint shape, final Double
 	// distance,
 	// IAgentFilter filter);
 
@@ -152,7 +152,7 @@ public interface IGrid extends IMatrix<IShape>, ISpatialIndex, IDiffusionTarget 
 	 *            the c
 	 * @return the place at
 	 */
-	IShape getPlaceAt(final GamaPoint c);
+	IShape getPlaceAt(final IPoint c);
 
 	/**
 	 * Gets the display data.

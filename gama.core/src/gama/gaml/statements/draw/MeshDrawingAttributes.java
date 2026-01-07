@@ -14,7 +14,7 @@ import java.awt.Color;
 
 import gama.core.common.geometry.Scaling3D;
 import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.IPoint ;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.core.util.GamaColor;
 import gama.core.util.IColor;
@@ -40,7 +40,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	public String speciesName;
 
 	/** The dimensions. */
-	GamaPoint dimensions;
+	IPoint  dimensions;
 
 	/** The scale. */
 	Double scale;
@@ -137,7 +137,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the XY dimension
 	 */
-	public GamaPoint getXYDimension() { return dimensions; }
+	public IPoint  getXYDimension() { return dimensions; }
 
 	/**
 	 * Sets the XY dimension.
@@ -145,7 +145,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 * @param dim
 	 *            the new XY dimension
 	 */
-	public void setXYDimension(final GamaPoint dim) { dimensions = dim; }
+	public void setXYDimension(final IPoint  dim) { dimensions = dim; }
 
 	/**
 	 * Sets the cell size.
@@ -153,14 +153,14 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 * @param p
 	 *            the new cell size
 	 */
-	// public void setCellSize(final GamaPoint p) { cellSize = p; }
+	// public void setCellSize(final IPoint p) { cellSize = p; }
 
 	/**
 	 * Gets the cell size.
 	 *
 	 * @return the cell size
 	 */
-	// public GamaPoint getCellSize() { return cellSize; }
+	// public IPoint getCellSize() { return cellSize; }
 
 	/**
 	 * Sets the scale.

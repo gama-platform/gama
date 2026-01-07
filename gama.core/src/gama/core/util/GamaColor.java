@@ -11,10 +11,7 @@ package gama.core.util;
 
 import java.awt.Color;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
 import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
 import gama.core.util.file.json.IJSon;
@@ -28,30 +25,7 @@ import gama.gaml.types.Types;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 20 août 2023
  */
-@vars ({ @variable (
-		name = IKeyword.COLOR_RED,
-		type = IType.INT,
-		doc = { @doc ("Returns the red component of the color (between 0 and 255)") }),
-		@variable (
-				name = IKeyword.COLOR_GREEN,
-				type = IType.INT,
-				doc = { @doc ("Returns the green component of the color (between 0 and 255)") }),
-		@variable (
-				name = IKeyword.COLOR_BLUE,
-				type = IType.INT,
-				doc = { @doc ("Returns the blue component of the color (between 0 and 255)") }),
-		@variable (
-				name = IKeyword.ALPHA,
-				type = IType.INT,
-				doc = { @doc ("Returns the alpha component (transparency) of the color (between 0 for transparent and 255 for opaque)") }),
-		@variable (
-				name = IKeyword.BRIGHTER,
-				type = IType.COLOR,
-				doc = { @doc ("Returns a lighter color (with increased luminance)") }),
-		@variable (
-				name = IKeyword.DARKER,
-				type = IType.COLOR,
-				doc = { @doc ("Returns a darker color (with decreased luminance)") }) })
+
 public class GamaColor implements IColor {
 
 	/** The internal color. */

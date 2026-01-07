@@ -13,7 +13,7 @@ package gama.ui.display.opengl.scene.layers;
 import java.util.List;
 
 import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.core.metamodel.shape.GamaPointFactory;
 import gama.core.metamodel.shape.IShape;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -46,7 +46,7 @@ public class FrameLayerObject extends StaticLayerObject.World {
 	public void fillWithObjects(final List<AbstractObject<?, ?>> list) {
 		final double w = renderer.getData().getEnvWidth();
 		final double h = renderer.getData().getEnvHeight();
-		final IShape g = GamaGeometryType.buildRectangle(w, h, new GamaPoint(w / 2, h / 2));
+		final IShape g = GamaGeometryType.buildRectangle(w, h, GamaPointFactory.create(w / 2, h / 2));
 		final DrawingAttributes drawingAttr = new ShapeDrawingAttributes(g, (IAgent) null, null, FRAME);
 		// drawingAttr.setLighting(false);
 		final GeometryObject geomObj = new GeometryObject(g.getInnerGeometry(), drawingAttr);
