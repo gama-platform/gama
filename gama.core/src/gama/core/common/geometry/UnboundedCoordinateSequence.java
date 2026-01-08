@@ -217,7 +217,8 @@ public class UnboundedCoordinateSequence implements ICoordinates {
 
 	@Override
 	public Coordinate[] toCoordinateArray() {
-		return points;
+		if (nbPoints == points.length) return points;
+		return Arrays.copyOf(points, nbPoints);
 	}
 
 	@Override

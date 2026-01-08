@@ -11,6 +11,7 @@
 package gama.ui.display.opengl;
 
 import java.awt.image.BufferedImage;
+import java.nio.DoubleBuffer;
 import java.nio.BufferOverflowException;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES1;
@@ -248,6 +250,15 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		drawers.put(DrawerType.RESOURCE, rd);
 	}
 
+	/** The last bound texture ID for optimization. */
+	private int lastBoundTexture = NO_TEXTURE;
+
+	/** The last anti-aliasing setting for optimization. */
+	private boolean lastAntiAliasSetting = false;
+
+	/** The gl drawer. */
+	private final ICoordinates.IndexedVisitor glDrawer = this::drawVertex;
+
 	/**
 	 * Gets the drawer for.
 	 *
@@ -256,17 +267,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @return the drawer for
 	 */
 	public ObjectDrawer<? extends AbstractObject<?, ?>> getDrawerFor(final AbstractObject<?, ?> object) {
+		// Only create signature and checking mesh drawers if the object is indeed a mesh.
 		if (object instanceof MeshObject mo) {
-			int cols = (int) mo.getAttributes().getXYDimension().getX();
-			int rows = (int) mo.getAttributes().getXYDimension().getY();
-			boolean triangles = mo.getAttributes().isTriangulated();
-			MeshDrawer.Signature sig = new MeshDrawer.Signature(cols, rows, triangles);
-			MeshDrawer md = meshDrawers.get(sig);
-			if (md == null) {
-				md = new MeshDrawer(this);
-				meshDrawers.put(sig, md);
-			}
-			return md;
+			// Optimize: avoid creating a new Signature every time if possible or rely on efficient map operations.
+			// Currently, creating new Signature(cols, rows, triangles) is necessary for lookup.
+			// Assuming Signature is a lightweight object (record-like).
+			final var attributes = mo.getAttributes();
+			final IPoint dim = attributes.getXYDimension();
+			final MeshDrawer.Signature sig = new MeshDrawer.Signature((int) dim.getX(), (int) dim.getY(),
+					attributes.isTriangulated());
+			return meshDrawers.computeIfAbsent(sig, s -> new MeshDrawer(this));
 		}
 		return drawers.get(object.type);
 	}
@@ -959,7 +969,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public void drawVertices(final int style, final ICoordinates yNegatedVertices, final int number,
 			final boolean clockwise) {
 		beginDrawing(style);
-		yNegatedVertices.visit(this::drawVertex, number, clockwise);
+		yNegatedVertices.visit(glDrawer, number, clockwise);
 		endDrawing();
 	}
 
@@ -1117,8 +1127,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-		// Apply antialas to the texture based on the current preferences
-		final boolean isAntiAlias = getData().isAntialias();
+		boolean isAntiAlias = getData().isAntialias();
+		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
+
+		lastBoundTexture = texture;
+		lastAntiAliasSetting = isAntiAlias;
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, isAntiAlias ? ANISOTROPIC_LEVEL : 0);

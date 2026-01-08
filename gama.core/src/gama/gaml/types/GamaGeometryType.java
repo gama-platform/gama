@@ -567,16 +567,16 @@ public class GamaGeometryType extends GamaType<IShape> {
 	public static IShape buildHexagon(final double sizeX, final double sizeY, final IPoint location) {
 		final double x = location.getX();
 		final double y = location.getY();
-		final IPoint[] coords = new IPoint[7];
-		coords[0] = GamaPointFactory.create(x - sizeX / 2.0, y);
-		coords[1] = GamaPointFactory.create(x - sizeX / 4, y + sizeY / 2);
-		coords[2] = GamaPointFactory.create(x + sizeX / 4, y + sizeY / 2);
-		coords[3] = GamaPointFactory.create(x + sizeX / 2, y);
-		coords[4] = GamaPointFactory.create(x + sizeX / 4, y - sizeY / 2);
-		coords[5] = GamaPointFactory.create(x - sizeX / 4, y - sizeY / 2);
-		coords[6] = GamaPointFactory.create(coords[0]);
-		final Geometry g = GeometryUtils.GEOMETRY_FACTORY
-				.createPolygon(GeometryUtils.GEOMETRY_FACTORY.createLinearRing((Coordinate[]) coords), null);
+		final Coordinate[] coords = new Coordinate[7];
+		coords[0] = (Coordinate) GamaPointFactory.create(x - sizeX / 2.0, y);
+		coords[1] = (Coordinate) GamaPointFactory.create(x - sizeX / 4, y + sizeY / 2);
+		coords[2] = (Coordinate) GamaPointFactory.create(x + sizeX / 4, y + sizeY / 2);
+		coords[3] = (Coordinate) GamaPointFactory.create(x + sizeX / 2, y);
+		coords[4] = (Coordinate) GamaPointFactory.create(x + sizeX / 4, y - sizeY / 2);
+		coords[5] = (Coordinate) GamaPointFactory.create(x - sizeX / 4, y - sizeY / 2);
+		coords[6] = (Coordinate) GamaPointFactory.create((IPoint) coords[0]);
+		final Geometry g =
+				GeometryUtils.GEOMETRY_FACTORY.createPolygon(GeometryUtils.GEOMETRY_FACTORY.createLinearRing(coords), null);
 		return GamaShapeFactory.createFrom(g);
 
 	}

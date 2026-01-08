@@ -21,6 +21,7 @@ import gama.annotations.precompiler.GamlAnnotations.variable;
 import gama.annotations.precompiler.GamlAnnotations.vars;
 import gama.annotations.precompiler.IConcept;
 import gama.annotations.precompiler.IOperatorCategory;
+import gama.annotations.precompiler.OkForAPI;
 import gama.core.common.geometry.IIntersectable;
 import gama.core.common.interfaces.IKeyword;
 import gama.core.runtime.IScope;
@@ -44,8 +45,9 @@ import gama.gaml.types.IType;
 				type = IType.FLOAT,
 				doc = { @doc ("Returns the z ordinate of this point") }) })
 /**
- *
+ * Interface for 3D points.
  */
+@OkForAPI(OkForAPI.Location.INTERFACES)
 public interface IPoint extends IShape, IIntersectable, Cloneable {
 
 	/**

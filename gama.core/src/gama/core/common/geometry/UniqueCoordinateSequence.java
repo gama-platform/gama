@@ -318,4 +318,7 @@ public class UniqueCoordinateSequence implements ICoordinates {
 		return new IPoint[] { point };
 	}
 
+	@Override
+	public void reverse() {}
+
 }

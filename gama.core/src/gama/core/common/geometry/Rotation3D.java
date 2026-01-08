@@ -155,11 +155,19 @@ public class Rotation3D implements Serializable, Transformation3D {
 	 *            rotation angle in radians
 	 */
 	public Rotation3D(final IPoint  rotationAxis, final double angle) {
+		if (angle == 0) {
+			setToIdentity();
+			return;
+		}
 		IPoint  axis = rotationAxis;
 		if (axis == null) { axis = PLUS_K; }
 		final double norm = axis.norm();
+		if (norm == 0d) {
+			setToIdentity();
+			return;
+		}
 
-		final double halfAngle = -0.5 * angle;
+		final double halfAngle = 0.5 * angle;
 		final double coeff = Math.sin(halfAngle) / norm;
 
 		q0 = Math.cos(halfAngle);

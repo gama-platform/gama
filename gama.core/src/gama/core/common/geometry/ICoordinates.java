@@ -98,11 +98,16 @@ public interface ICoordinates extends CoordinateSequence, Iterable<IPoint>, IJso
 	}
 
 	/**
-	 * Gets the center.
+	 * Reverse the coordinates.
+	 */
+	void reverse();
+
+	/**
+	 * Gets the at.
 	 *
-	 * @param center
-	 *            the center
-	 * @return the center
+	 * @param i
+	 *            the i
+	 * @return the i point
 	 */
 	default void getCenter(final IPoint center) {
 		center.setLocation(0, 0, 0);

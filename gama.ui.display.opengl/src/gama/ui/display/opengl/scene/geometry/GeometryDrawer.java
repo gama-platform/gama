@@ -16,6 +16,7 @@ import static gama.core.common.geometry.GeometryUtils.getHolesNumber;
 import static gama.core.common.geometry.GeometryUtils.getTypeOf;
 import static gama.core.common.geometry.GeometryUtils.getYNegatedCoordinates;
 
+import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
@@ -214,10 +215,12 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		}
 		gl.enableAlternateTexture();
 		// Draw faces
+		final boolean isCCW = _vertices.isClockwise();
 		_vertices.visit((pj, pk) -> {
 			_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX() + _normal.getX(), pk.getY() + _normal.getY(),
 					pk.getZ() + _normal.getZ(), pj.getX() + _normal.getX(), pj.getY() + _normal.getY(),
 					pj.getZ() + _normal.getZ(), pj.getX(), pj.getY(), pj.getZ(), pk.getX(), pk.getY(), pk.getZ());
+			if (!isCCW) { _quadvertices.reverse(); }
 			gl.drawSimpleShape(_quadvertices, 4, true, true, border);
 		});
 

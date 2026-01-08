@@ -23,7 +23,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.core.common.geometry.ICoordinates;
 import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint ;
+import gama.core.metamodel.shape.IPoint;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.core.util.GamaColorFactory;
 import gama.core.util.IColor;
@@ -107,7 +107,13 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	final ICoordinates surface = ICoordinates.ofLength(9);
 
 	/** A temporary transfer value for the normal */
-	final IPoint  normal = GamaPointFactory.create();
+	final IPoint normal = GamaPointFactory.create();
+
+	/** Does this drawer use VBOs or Vertex Arrays ?. */
+	private final boolean useVBO = true;
+
+	/** The vbo ids. */
+	private int[] vboIds;
 
 	/**
 	 * Instantiates a new mesh drawer.
@@ -192,14 +198,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 * @return the min max
 	 */
 	public void getMinMax(final double[] data, final double noData) {
-		minMax[0] = Double.MAX_VALUE;
-		minMax[1] = -Double.MAX_VALUE;
-		DoubleStreamEx.of(data).parallel().forEach(f -> {
-			if (f != noData) {
-				if (f > minMax[1]) { minMax[1] = f; }
-				if (f < minMax[0]) { minMax[0] = f; }
-			}
-		});
+		final var stats = DoubleStreamEx.of(data).parallel().filter(f -> f != noData).summaryStatistics();
+		minMax[0] = stats.getMin();
+		minMax[1] = stats.getMax();
 	}
 
 	/**
@@ -466,6 +467,36 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL2ES2.GL_CONSTANT_ALPHA, GL2ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
 
+		// VBO Management
+		if (useVBO) {
+			if (vboIds == null) {
+				vboIds = new int[5]; // Vertex, Normal, Tex, Color, LineColor
+				ogl.glGenBuffers(5, vboIds, 0);
+			}
+			// Bind and upload Data
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+			ogl.glBufferData(GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
+					GL.GL_DYNAMIC_DRAW);
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
+			ogl.glBufferData(GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer,
+					GL.GL_DYNAMIC_DRAW);
+			if (outputsTextures) {
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
+				ogl.glBufferData(GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer,
+						GL.GL_DYNAMIC_DRAW);
+			}
+			if (outputsColors) {
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+				ogl.glBufferData(GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer,
+						GL.GL_DYNAMIC_DRAW);
+			}
+			if (outputsLines) {
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
+				ogl.glBufferData(GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
+						GL.GL_DYNAMIC_DRAW);
+			}
+		}
+
 		gl.enable(GLPointerFunc.GL_VERTEX_ARRAY);
 		gl.enable(GLPointerFunc.GL_NORMAL_ARRAY);
 		if (outputsTextures) {
@@ -475,24 +506,45 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		}
 		if (outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
 		try {
-			ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, vertexBuffer);
-			ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, normalBuffer);
+			if (useVBO) {
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+				ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, 0);
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
+				ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, 0);
+				if (outputsTextures) {
+					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
+					ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, 0);
+				}
+				if (outputsColors) {
+					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
+				}
+			} else {
+				ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, vertexBuffer);
+				ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, normalBuffer);
 
-			if (outputsTextures) { ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, texBuffer); }
-			if (outputsColors) { ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, colorBuffer); }
+				if (outputsTextures) { ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, texBuffer); }
+				if (outputsColors) { ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, colorBuffer); }
+			}
 
 			if (!gl.isWireframe()) {
 				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
 			}
 			if (outputsLines) {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
-				ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, lineColorBuffer);
+				if (useVBO) {
+					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
+					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
+				} else {
+					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, lineColorBuffer);
+				}
 				boolean previous = gl.setObjectWireframe(true);
 				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
 				gl.setObjectWireframe(previous);
 			}
 
 		} finally {
+			if (useVBO) { ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0); }
 			gl.disable(GLPointerFunc.GL_NORMAL_ARRAY);
 			if (outputsTextures) { gl.disable(GLPointerFunc.GL_TEXTURE_COORD_ARRAY); }
 			if (outputsColors || outputsLines) { gl.disable(GLPointerFunc.GL_COLOR_ARRAY); }

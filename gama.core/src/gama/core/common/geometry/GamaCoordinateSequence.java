@@ -249,10 +249,12 @@ public class GamaCoordinateSequence implements ICoordinates {
 	 */
 	@Override
 	public Coordinate[] toCoordinateArray() {
-		if (points instanceof Coordinate[]) return (Coordinate[]) points;
 		final int size = points.length;
 		final Coordinate[] result = new Coordinate[size];
-		for (int i = 0; i < size; i++) { result[i] = (Coordinate) points[i]; }
+		for (int i = 0; i < size; i++) {
+			final IPoint p = points[i];
+			result[i] = p instanceof GamaPoint ? ((GamaPoint) p).toCoordinate() : (Coordinate) p;
+		}
 		return result;
 	}
 
@@ -579,6 +581,11 @@ public class GamaCoordinateSequence implements ICoordinates {
 	@Override
 	public IPoint[] toPointsArray() {
 		return points;
+	}
+
+	@Override
+	public void reverse() {
+		ArrayUtils.reverse(points);
 	}
 
 }
