@@ -60,6 +60,9 @@ global {
 		create pedestrian_path from: pedestrian_paths_shape_file {
 			list<geometry> fs <- free_spaces_shape_file overlapping self;
 			free_space <- fs first_with (each covers shape); 
+			if (free_space = nil) {
+				free_space <- fs closest_to location;
+			}
 		}
 		
 
