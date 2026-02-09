@@ -120,7 +120,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 
 	@Override
 	protected Arguments createArgs() {
-		if (!hasFacets() || !hasFacetsNotIn(DO_FACETS)) {
+		if (facets == null || !hasFacetsNotIn(DO_FACETS)) {
 			if (hasFacet(WITH)) {
 				try {
 					return GAML.getExpressionFactory().createArgumentMap(getAction(), getFacet(WITH), this);

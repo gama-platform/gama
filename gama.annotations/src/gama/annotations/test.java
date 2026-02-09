@@ -59,7 +59,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author drogoul
  *
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Repeatable (tests.class)
 
 public @interface test {
